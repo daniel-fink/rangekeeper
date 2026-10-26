@@ -6,20 +6,19 @@ extension is separate from the current canonical Geometry/Bundle candidate.
 
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, closing
 import gzip
 import hashlib
 import json
 import os
-from pathlib import Path
 import sqlite3
 import tempfile
 import zlib
+from contextlib import AbstractContextManager, closing
+from pathlib import Path
 
 from rangekeeper.io import json as codec
 from rangekeeper.io.speckle import validate_associations
 from rangekeeper.model import Model
-
 
 FORMAT = "rk.sqlite-experiment/1"
 GEOMETRY_FORMAT = "speckle-object-transport/1"
@@ -114,7 +113,9 @@ def insert_model(db, model):
             entries = (
                 list(value.items())
                 if meta["mapping"]
-                else list(enumerate(value)) if meta["many"] else [(None, value)]
+                else list(enumerate(value))
+                if meta["many"]
+                else [(None, value)]
             )
             if record_kinds:
                 # A reviewed mapping is required if a slot gains two record alternatives.
@@ -123,7 +124,9 @@ def insert_model(db, model):
                 replacement = (
                     dict(value)
                     if meta["mapping"]
-                    else list(value) if meta["many"] else value
+                    else list(value)
+                    if meta["many"]
+                    else value
                 )
                 for index, item in entries:
                     if not isinstance(item, dict):
@@ -214,10 +217,13 @@ def check_geometry(model, transport, associations, descriptor):
         missing = geometry_dependencies(obj) - transport.keys()
         if missing:
             raise ValueError(f"missing geometry dependencies: {sorted(missing)[:3]}")
-    reached, pending = set(), [
-        descriptor["root_id"],
-        *[a["content_id"] for a in associations],
-    ]
+    reached, pending = (
+        set(),
+        [
+            descriptor["root_id"],
+            *[a["content_id"] for a in associations],
+        ],
+    )
     while pending:
         current = pending.pop()
         if current not in reached:

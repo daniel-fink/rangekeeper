@@ -3,11 +3,14 @@
 import subprocess
 import sys
 from uuid import uuid4
+
 import pytest
-from rangekeeper.model import Model, Metadata, Entity, System, Update
-from rangekeeper.io.speckle import encode_model, decode_model, MappingError
-from .test_model_graph import fixture
+
+from rangekeeper.io.speckle import MappingError, decode_model, encode_model
+from rangekeeper.model import Entity, Metadata, Model, System, Update
 from rangekeeper.model.system import View
+
+from .test_model_graph import fixture
 
 
 def test_current_envelope_and_associations_bind_revision():

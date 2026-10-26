@@ -1,7 +1,8 @@
 """Six deliberately invalid public-domain operations; do not execute."""
 
 from uuid import uuid4
-from rangekeeper.model import Model, Metadata, Update
+
+from rangekeeper.model import Metadata, Model, Update
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.specification import Specification
 

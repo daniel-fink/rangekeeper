@@ -5,9 +5,9 @@ from dataclasses import dataclass, field
 from typing import Protocol
 from uuid import UUID
 
-from rangekeeper.schema.records import Implementation
 from rangekeeper.run.execution.compiler import Compiled
 from rangekeeper.run.execution.settings import Limits
+from rangekeeper.schema.records import Implementation
 
 
 @dataclass(frozen=True)
@@ -23,6 +23,6 @@ class Result:
 class Backend(Protocol):
     """Backends must enforce the remaining wall deadline and return finite evidence."""
 
-    def solve(
-        self, problem: Compiled, *, limits: Limits, remaining: float
-    ) -> Result: ...
+    def solve(self, problem: Compiled, *, limits: Limits, remaining: float) -> Result:
+        """Solve a compiled problem within the remaining seconds; return a Result."""
+        ...

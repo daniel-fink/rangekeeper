@@ -7,7 +7,6 @@ Use --inspect FILE to verify an existing package without building it again.
 import argparse
 import importlib.metadata
 import json
-from pathlib import Path
 import shutil
 import sqlite3
 import statistics
@@ -15,10 +14,10 @@ import subprocess
 import sys
 import tempfile
 import time
+from pathlib import Path
 
-from package import build, capture_inputs, Reader, schema_sql, sha
+from package import Reader, build, capture_inputs, schema_sql, sha
 from render_probe import area, triangulate
-
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "examples/data/mixed_use_property"
@@ -204,13 +203,14 @@ def run(output):
         polygons = []
         for triangle in rendering["triangles"]:
             points = " ".join(
-                f"{20+vertices[i][0]*90},{200-vertices[i][1]*90}" for i in triangle
+                f"{20 + vertices[i][0] * 90},{200 - vertices[i][1] * 90}"
+                for i in triangle
             )
             polygons.append(
                 f'<polygon points="{points}" fill="#dcebe9" stroke="#28685f" stroke-width="2"/>'
             )
         panels.append(
-            f'<section><h2>Display conversion {index+1}</h2><svg viewBox="0 0 220 220" width="260">{"".join(polygons)}</svg><p>Area: {area(rendering):g} m² · 2 triangles</p></section>'
+            f'<section><h2>Display conversion {index + 1}</h2><svg viewBox="0 0 220 220" width="260">{"".join(polygons)}</svg><p>Area: {area(rendering):g} m² · 2 triangles</p></section>'
         )
     (output / "review.html").write_text(
         '<!doctype html><html lang="en"><meta charset="utf-8"><title>RK SQLite experiment</title>'
@@ -218,8 +218,8 @@ def run(output):
         "main{display:flex;gap:50px}section{flex:1}h2{font-size:20px}a{color:#24665c}</style>"
         "<h1>One Model, two display conversions</h1><p>The same stored planar quad produces two triangulations. "
         "The Model ID, package content digest and database bytes stay unchanged.</p>"
-        f'<main>{"".join(panels)}</main><p>This is a headless conversion probe. Browser and native iOS viewers have not been tested.</p>'
-        f'<p>The separate mixed-use package retains {result["geometry_records"]:,} geometry records in one {result["package_bytes"]:,}-byte database.</p>'
+        f"<main>{''.join(panels)}</main><p>This is a headless conversion probe. Browser and native iOS viewers have not been tested.</p>"
+        f"<p>The separate mixed-use package retains {result['geometry_records']:,} geometry records in one {result['package_bytes']:,}-byte database.</p>"
         '<p><a href="result.json">Verification results</a> · <a href="schema.sql">Generated schema</a> · '
         '<a href="mixed-use.rk.sqlite">Mixed-use database</a></p></html>'
     )

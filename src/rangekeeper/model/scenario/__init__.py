@@ -21,15 +21,15 @@ def __getattr__(name):
 """Schema-generated scenario declarations and provenance records."""
 
 from rangekeeper.schema.records import (
+    Binding,
+    CalculationProvenance,
     Distribution,
+    LibraryVersion,
+    ObservationAvailability,
+    RandomStream,
     ScenarioParameter,
     ScenarioPlan,
     ScenarioRealization,
-    CalculationProvenance,
-    Binding,
-    RandomStream,
-    LibraryVersion,
-    ObservationAvailability,
 )
 
 __all__ += [

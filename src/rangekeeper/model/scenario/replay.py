@@ -1,12 +1,13 @@
 """Replay captured calculations without asking any generator for another draw."""
 
-from uuid import UUID
 from typing import Any, cast
+from uuid import UUID
+
 from rangekeeper.model import Model
-from rangekeeper.model.scenario.market import captured_inputs, _flow
 from rangekeeper.model.scenario._paths import construct_paths
-from rangekeeper.model.scenario.view import Market
 from rangekeeper.model.scenario.implementation import calculation_provenance
+from rangekeeper.model.scenario.market import _flow, captured_inputs
+from rangekeeper.model.scenario.view import Market
 
 
 class ReplayUnavailableError(ValueError):

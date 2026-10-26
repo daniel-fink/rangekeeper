@@ -12,10 +12,10 @@ from typing import cast
 import networkx as nx
 import plotly.graph_objects as go
 
-from rangekeeper.shared.table import Table
-from rangekeeper.model.system import View
 from rangekeeper.model.definitions import classification as find_classification
+from rangekeeper.model.system import View
 from rangekeeper.shared.errors import EncodingError
+from rangekeeper.shared.table import Table
 
 __all__ = [
     "icicle",
@@ -216,8 +216,9 @@ class PartitionKind(Enum):
 
 
 from collections.abc import Mapping, Sequence
-from rangekeeper.model.flux import Flow
+
 from rangekeeper.model.duration.period import PeriodTiming
+from rangekeeper.model.flux import Flow
 
 
 def plot_flows(
@@ -268,6 +269,7 @@ def plot_distribution(
 ):
     """Plot detached finite samples as histograms or empirical cumulative curves."""
     import math
+
     import plotly.graph_objects as go
 
     figure = go.Figure()
@@ -317,6 +319,7 @@ def plot_pairs(
 ):
     """Plot paired scenario outcomes, retaining one point per shared realization."""
     import math
+
     import plotly.graph_objects as go
 
     if len(x) != len(y) or not x or any(not math.isfinite(v) for v in (*x, *y)):
@@ -346,6 +349,7 @@ def plot_partition(
     Shared membership requires an occurrence design and is rejected by Hierarchy.
     """
     import math
+
     import plotly.graph_objects as go
 
     if not isinstance(kind, PartitionKind):

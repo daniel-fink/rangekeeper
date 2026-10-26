@@ -1,16 +1,20 @@
 """Immutable market method contracts used without importing numerical execution."""
 
+import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, timedelta
-from uuid import UUID
-from rangekeeper.shared.validation import require, require_unique
-from collections.abc import Mapping
+from itertools import pairwise
 from types import MappingProxyType
-import math
+from uuid import UUID
+
+from rangekeeper.shared.validation import require, require_unique
 
 
 @dataclass(frozen=True, slots=True)
 class Parameter:
+    """Default value and optional open or closed bounds of one scenario parameter."""
+
     default: float | None
     lower: float | None = None
     upper: float | None = None
@@ -18,6 +22,7 @@ class Parameter:
     upper_closed: bool = True
 
     def check(self, name, value):
+        """Require a finite number within the declared bounds."""
         if type(value) not in (int, float) or not math.isfinite(value):
             raise ValueError(f"non-finite scenario parameter: {name}")
         if self.lower is not None and (
@@ -97,6 +102,8 @@ _OUTPUTS = MappingProxyType(
 
 @dataclass(frozen=True, slots=True)
 class Method:
+    """Parameter rules, required input arrays and output period offsets of one scenario method."""
+
     parameters: Mapping[str, Parameter]
     scalar_parameters: bool
     arrays: tuple[str, ...]
@@ -126,6 +133,7 @@ _METHODS = MappingProxyType(
 
 
 def method(name: str) -> Method:
+    """Return the contract of a named scenario method."""
     try:
         return _METHODS[name]
     except (KeyError, TypeError) as error:
@@ -181,10 +189,7 @@ def validate_plan(plan):
         "invalid scenario period",
     )
     require(
-        all(
-            a["end_exclusive"] <= b["start_inclusive"]
-            for a, b in zip(periods, periods[1:])
-        ),
+        all(a["end_exclusive"] <= b["start_inclusive"] for a, b in pairwise(periods)),
         "scenario periods overlap or are out of order",
     )
     params = plan["parameters"]
@@ -218,7 +223,7 @@ def validate_plan(plan):
 
 def validate_realizations(provenance, scope):
     """Check captured input/output references and delayed observation declarations."""
-    from rangekeeper.model.scope import resolve_reference, reference_key
+    from rangekeeper.model.scope import reference_key, resolve_reference
 
     realizations = provenance.get("scenarios") or []
     require_unique(realizations, "id", "scenario realization")
@@ -269,7 +274,7 @@ def validate_realizations(provenance, scope):
 
 def _validate_contents(item, scope):
     """Enforce complete captured shapes without importing generation algorithms."""
-    from rangekeeper.model.scope import resolve_reference, reference_key
+    from rangekeeper.model.scope import reference_key, resolve_reference
 
     plan = item["plan"]
     contract = method(plan["method"])
@@ -309,7 +314,7 @@ def _validate_contents(item, scope):
                 for index, movement in enumerate(movements):
                     require(
                         movement.get("period") == plan["periods"][index]
-                        and movement["key"] == f"p{index+1}",
+                        and movement["key"] == f"p{index + 1}",
                         "scenario path coordinate mismatch",
                     )
                     require(

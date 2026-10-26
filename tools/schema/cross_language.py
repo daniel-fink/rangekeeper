@@ -1,16 +1,15 @@
 """Prepare/check public fixtures through both canonical language boundaries."""
 
-from rangekeeper.model import ValueKind
-
-import argparse, json
+import argparse
+from datetime import date
 from pathlib import Path
 from uuid import uuid4
-from datetime import date
-from rangekeeper_examples import design
-from rangekeeper.model import Model, Update, System, Value
-from rangekeeper.model.flux import Flow, Movement
-from rangekeeper.model.content import encode
+
 from rangekeeper.io import json as codec
+from rangekeeper.model import Model, System, Update, Value, ValueKind
+from rangekeeper.model.content import encode
+from rangekeeper.model.flux import Flow, Movement
+from rangekeeper_examples import design
 
 p = argparse.ArgumentParser()
 p.add_argument("mode", choices=["prepare", "check"])
@@ -88,8 +87,8 @@ if a.mode == "prepare":
         }
     )
     model = model.revise(Update(system=System.from_data(data)))
-    from rangekeeper.model import Geometry
     from rangekeeper.io.migration import model_07_to_08
+    from rangekeeper.model import Geometry
 
     if model.metadata.schema_version == "0.7.0":
         model = model_07_to_08(model)

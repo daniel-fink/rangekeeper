@@ -27,8 +27,9 @@ def check_revision(
         )
     if new.schema_version != old.schema_version:
         raise UnsupportedVersionError("revise cannot migrate schema versions")
-    left, right = comparison_data(before._kind, before._data), comparison_data(
-        after._kind, after._data
+    left, right = (
+        comparison_data(before._kind, before._data),
+        comparison_data(after._kind, after._data),
     )
     for data, metadata in ((left, old), (right, new)):
         data["metadata"] = {

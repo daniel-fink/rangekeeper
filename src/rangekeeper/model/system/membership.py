@@ -1,7 +1,8 @@
 """Assembly membership in one Model; unrelated to Relationship direction."""
 
 from uuid import UUID
-from rangekeeper.model import Model, Entity, Assembly, Relationship
+
+from rangekeeper.model import Assembly, Entity, Model, Relationship
 from rangekeeper.shared.errors import ReferenceTypeError
 
 

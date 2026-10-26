@@ -4,16 +4,16 @@ Run in the isolated environment from tools/schema/requirements.txt.
 """
 
 import argparse
-from contextlib import redirect_stderr
 import hashlib
 import importlib.metadata
 import io
 import json
 import os
-from pathlib import Path
 import sqlite3
 import tempfile
 import traceback
+from contextlib import redirect_stderr
+from pathlib import Path
 
 
 def main():

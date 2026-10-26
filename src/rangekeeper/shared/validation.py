@@ -6,7 +6,7 @@ This module imports no Model, Specification, Run, solver, or storage behavior.
 """
 
 from collections.abc import Callable, Hashable, Iterable, Mapping
-from typing import TypeVar, cast
+from typing import TypeVar
 from uuid import UUID
 
 from rangekeeper.schema.runtime import Record
@@ -223,12 +223,11 @@ def validate_known_reference_types(root: Record, *, index) -> None:
     already declared locally cannot masquerade as another record kind.
     Complete Model/composition validation owns reference existence checks.
     """
-    from rangekeeper.schema.index import walk
-    from rangekeeper.schema.runtime import Record
-    from rangekeeper.schema.validation import _slot_map
     from uuid import UUID
 
-    from rangekeeper.schema.records import _TYPES, Reference, Value, Movement
+    from rangekeeper.schema.index import walk
+    from rangekeeper.schema.records import _TYPES, Movement, Reference, Value
+    from rangekeeper.schema.validation import _slot_map
 
     for record, _, path in walk(root):
         for name, field in _slot_map(record._kind).items():

@@ -36,6 +36,7 @@ def _freeze(value: object, active: set[int]) -> object:
 
 
 def freeze_mapping(value: Mapping[str, object]) -> Mapping[str, object]:
+    """Freeze structured parameters that must be a mapping."""
     if not isinstance(value, Mapping):
         raise TypeError("Expected a mapping")
     result = freeze(value)
@@ -53,4 +54,5 @@ def _encode_structure(value: object) -> object:
 
 
 def fingerprint(value: object) -> str:
+    """Return the SHA-256 fingerprint of a frozen structured value."""
     return "sha256:" + digest(_encode_structure(freeze(value)))
