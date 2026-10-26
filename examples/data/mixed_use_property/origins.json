@@ -1,0 +1,317 @@
+{
+  "description": "The origin of each teaching assumption in assumptions.json and development.json. A key is a JSON pointer; '*' matches one object key, and a pointer covers every value below it. Values in 'metadata' describe a file and are not assumptions.",
+  "origins_vocabulary": {
+    "legacy-notebook": "A cell of the legacy notebook in 'legacy_notebook'. Cell numbers are zero-based.",
+    "book-method": "A method from the cited book. The values are not copied from the book.",
+    "author": "The Rangekeeper author's choice for the teaching example.",
+    "derived": "Taken from another value in this data package."
+  },
+  "legacy_notebook": {
+    "path": "walkthrough/drive_model_from_design.ipynb",
+    "commit": "21107f004665956dc05749af11481503f5e145ba",
+    "note": "assumptions.json#/source/commit names 6732e83d277c8de81f3dec2906e06d0e75d3b6fa, the same notebook before a history rewrite. That commit is not published; 21107f0 has the same notebook bytes and is on main."
+  },
+  "metadata": {
+    "assumptions.json": [
+      "/source",
+      "/status"
+    ],
+    "development.json": [
+      "/name",
+      "/status",
+      "/version"
+    ]
+  },
+  "assumptions.json": {
+    "/annual_opex_growth": {
+      "origin": "legacy-notebook",
+      "cells": [
+        58
+      ]
+    },
+    "/capex_growth_per_payment_interval": {
+      "origin": "legacy-notebook",
+      "cells": [
+        58,
+        63
+      ],
+      "note": "Compounded once per five-year payment interval, as in the legacy projection."
+    },
+    "/capital_payments": {
+      "origin": "legacy-notebook",
+      "cells": [
+        61,
+        63
+      ],
+      "note": "Five-year payment sequence of the legacy capital projection."
+    },
+    "/currency": {
+      "origin": "legacy-notebook",
+      "cells": [
+        25
+      ],
+      "note": "Currency of the en_AU locale that the notebook sets."
+    },
+    "/forecast_span": {
+      "origin": "legacy-notebook",
+      "cells": [
+        28,
+        31
+      ],
+      "note": "Ten annual periods from 2001, plus the reversion year."
+    },
+    "/holding_span": {
+      "origin": "legacy-notebook",
+      "cells": [
+        28
+      ]
+    },
+    "/legacy_correction": {
+      "origin": "author",
+      "note": "Correction of a legacy omission, recorded for notebook 02."
+    },
+    "/reporting": {
+      "origin": "author",
+      "note": "Reporting conventions for notebook 02."
+    },
+    "/timing/annual_discount_rate": {
+      "origin": "legacy-notebook",
+      "cells": [
+        99
+      ]
+    },
+    "/timing/discount_exponents": {
+      "origin": "legacy-notebook",
+      "cells": [
+        99
+      ]
+    },
+    "/timing/exit_capitalization_rate": {
+      "origin": "legacy-notebook",
+      "cells": [
+        94
+      ]
+    },
+    "/timing/first_income_growth_exponent": {
+      "origin": "legacy-notebook",
+      "cells": [
+        35
+      ],
+      "note": "Income compounds from the start of the calculation span."
+    },
+    "/timing/operating_payments": {
+      "origin": "author",
+      "note": "Year-end payment convention chosen to restate the legacy annual flows."
+    },
+    "/timing/sale_basis": {
+      "origin": "legacy-notebook",
+      "cells": [
+        94
+      ]
+    },
+    "/timing/sale_date": {
+      "origin": "legacy-notebook",
+      "cells": [
+        94
+      ]
+    },
+    "/use_assumptions/*/annual_income_growth": {
+      "origin": "legacy-notebook",
+      "cells": [
+        26
+      ]
+    },
+    "/use_assumptions/*/efficiency": {
+      "origin": "legacy-notebook",
+      "cells": [
+        26
+      ]
+    },
+    "/use_assumptions/*/initial_rent_AUD_per_m2_per_year": {
+      "origin": "legacy-notebook",
+      "cells": [
+        26
+      ]
+    },
+    "/use_assumptions/*/vacancy": {
+      "origin": "legacy-notebook",
+      "cells": [
+        26
+      ]
+    },
+    "/use_assumptions/*/facade_opex_AUD_per_m2_per_year": {
+      "origin": "legacy-notebook",
+      "cells": [
+        58
+      ]
+    },
+    "/use_assumptions/*/floor_opex_AUD_per_m2_per_year": {
+      "origin": "legacy-notebook",
+      "cells": [
+        58
+      ]
+    },
+    "/use_assumptions/*/floor_capex_AUD_per_m2_per_payment": {
+      "origin": "legacy-notebook",
+      "cells": [
+        58
+      ]
+    },
+    "/utility_capex_AUD_per_m3_per_payment": {
+      "origin": "legacy-notebook",
+      "cells": [
+        58
+      ]
+    },
+    "/worked_floor_id": {
+      "origin": "author",
+      "note": "Choice of the first worked object: Building A hotel Floor 1."
+    }
+  },
+  "development.json": {
+    "/currency": {
+      "origin": "derived",
+      "from": "assumptions.json#/currency"
+    },
+    "/base_date": {
+      "origin": "author",
+      "note": "Base date of the teaching development plan."
+    },
+    "/horizon_end_exclusive": {
+      "origin": "author",
+      "note": "Ten-year horizon from the base date."
+    },
+    "/stabilised_year": {
+      "origin": "author",
+      "note": "First year with all packages open."
+    },
+    "/starting_state": {
+      "origin": "author",
+      "note": "Starting state for the do-nothing comparison."
+    },
+    "/wait_baseline": {
+      "origin": "author",
+      "note": "Do-nothing baseline for comparisons."
+    },
+    "/operating_inputs": {
+      "origin": "derived",
+      "from": "assumptions.json",
+      "note": "Legacy rates rebased to 2027 without a market or inflation adjustment."
+    },
+    "/growth_convention": {
+      "origin": "author",
+      "note": "One growth calendar, gated by opening dates."
+    },
+    "/land_cost_AUD": {
+      "origin": "author",
+      "note": "Illustrative land price."
+    },
+    "/construction_AUD_per_m2": {
+      "origin": "author",
+      "note": "Illustrative construction rates by use."
+    },
+    "/construction_scope": {
+      "origin": "author",
+      "note": "Scope of the construction rates."
+    },
+    "/soft_cost_fraction_of_hard_cost": {
+      "origin": "author",
+      "note": "Illustrative soft-cost allowance."
+    },
+    "/contingency_fraction_of_hard_cost": {
+      "origin": "author",
+      "note": "Illustrative contingency allowance."
+    },
+    "/cost_escalation": {
+      "origin": "author",
+      "note": "No cost escalation, to keep the example simple."
+    },
+    "/construction_finance_allowance_AUD": {
+      "origin": "author",
+      "note": "Fixed teaching allowance for construction finance charges."
+    },
+    "/construction_finance_payment_date": {
+      "origin": "author",
+      "note": "Payment date of the finance allowance."
+    },
+    "/finance_allowance_scope": {
+      "origin": "author",
+      "note": "Scope of the finance allowance."
+    },
+    "/renewal_interval_years": {
+      "origin": "legacy-notebook",
+      "cells": [
+        63
+      ],
+      "note": "Five-year interval of the legacy capital projection."
+    },
+    "/renewal_convention": {
+      "origin": "legacy-notebook",
+      "cells": [
+        58,
+        63
+      ],
+      "note": "Legacy growth per payment interval, applied from each opening date."
+    },
+    "/valuation/annual_discount_rate": {
+      "origin": "legacy-notebook",
+      "cells": [
+        99
+      ]
+    },
+    "/valuation/exit_capitalization_rate": {
+      "origin": "legacy-notebook",
+      "cells": [
+        94
+      ]
+    },
+    "/valuation/sale_date": {
+      "origin": "author",
+      "note": "End of the holding period of the teaching plan."
+    },
+    "/valuation/sale_basis": {
+      "origin": "legacy-notebook",
+      "cells": [
+        94
+      ],
+      "note": "Legacy reversion method, applied to the forecast year after the sale."
+    },
+    "/lending/leverage": {
+      "origin": "author",
+      "note": "Illustrative SFFA lending input."
+    },
+    "/lending/coverage": {
+      "origin": "author",
+      "note": "Illustrative SFFA lending input."
+    },
+    "/lending/nominal_annual_mortgage_rate": {
+      "origin": "author",
+      "note": "Illustrative SFFA lending input."
+    },
+    "/lending/payments_per_year": {
+      "origin": "author",
+      "note": "Illustrative SFFA lending input."
+    },
+    "/lending/amortization_years": {
+      "origin": "author",
+      "note": "Illustrative SFFA lending input."
+    },
+    "/lending/basis": {
+      "origin": "book-method",
+      "reference": "Geltner, Miller, Clayton and Eichholtz (2007), Commercial Real Estate Analysis and Investments, 2nd edition, section 28.4.1",
+      "note": "Simple financial feasibility analysis: total development cost is a proxy for completed value."
+    },
+    "/funding": {
+      "origin": "author",
+      "note": "Illustrative construction funding: equity, bridge limit, draws and test window."
+    },
+    "/phases": {
+      "origin": "author",
+      "note": "Illustrative phasing. The object identities come from model.json."
+    },
+    "/exclusions": {
+      "origin": "author",
+      "note": "Scope limits of the teaching plan."
+    }
+  }
+}
