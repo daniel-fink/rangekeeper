@@ -9,8 +9,11 @@ from os import PathLike
 from pathlib import Path
 from typing import cast
 
-import networkx as nx
-import plotly.graph_objects as go
+from rangekeeper.shared.optional import requires
+
+with requires("visualisation"):
+    import networkx as nx
+    import plotly.graph_objects as go
 
 from rangekeeper.model.definitions import classification as find_classification
 from rangekeeper.model.system import View

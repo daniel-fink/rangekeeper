@@ -13,9 +13,6 @@ from importlib.resources import files
 from pathlib import Path
 from uuid import UUID
 
-import pyarrow as pa
-import pyarrow.parquet as pq
-
 from rangekeeper import Model, Run, Specification
 from rangekeeper.io._document import require_revision, require_same, snapshot
 from rangekeeper.io.atomic import write_new
@@ -25,7 +22,12 @@ from rangekeeper.schema.runtime import comparison_data
 from rangekeeper.schema.validation import slots_for
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
+from rangekeeper.shared.optional import requires
 from rangekeeper.shared.validation import require_acyclic
+
+with requires("bundle"):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
 
 FORMAT = "rangekeeper.bundle/2-proposal"
 MAPPING = "rangekeeper.parquet/1-proposal"
@@ -965,7 +967,8 @@ class Reader(_Documents):
         if selected is None:
             raise MissingReferenceError(str(document))
         prefix = self._prefix(selected.id)
-        import duckdb
+        with requires("bundle"):
+            import duckdb
 
         connection = duckdb.connect(
             config={

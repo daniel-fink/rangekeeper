@@ -11,7 +11,9 @@ Model revisions followed by finalized Runs. LinkML remains the field authority.
 Install the `execution` extra; YAML fixtures also need the `yaml` extra. See the
 [installation guide](../guides/installation.md). Importing `rangekeeper` or
 `rangekeeper.run.execution` does not load Pyomo or HiGHS. They load in the solve
-worker. The pinned versions are declared in `pyproject.toml`.
+worker. `pyproject.toml` declares the supported version ranges. The worker does
+not refuse other versions; the Run evidence records the Pyomo and HiGHS versions
+that it found.
 
 `Executor(store, *, backend=None, units=default_units, tolerances=Tolerances())`
 supports `MemoryStore`, `DirectoryStore` or a compatible `RecordStore`.

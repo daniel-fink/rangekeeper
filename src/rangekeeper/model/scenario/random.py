@@ -3,6 +3,8 @@
 import hashlib
 import json
 
+from rangekeeper.shared.optional import requires
+
 
 def stream_identifier(scenario_key: str, component: str) -> str:
     """Return the SHA-256 hex digest that names one scenario component stream."""
@@ -19,7 +21,8 @@ def create_generator(master_seed: int, *, scenario_key: str, component: str):
     No global generator, worker number or Python hash participates. Each component
     gets its own stream, so adding another component cannot shift existing draws.
     """
-    import numpy as np
+    with requires("calculations"):
+        import numpy as np
 
     if (
         type(master_seed) is not int

@@ -8,6 +8,7 @@ from itertools import pairwise
 from typing import TYPE_CHECKING, cast
 
 from rangekeeper.schema.enums import DistributionFamily
+from rangekeeper.shared.optional import requires
 
 if TYPE_CHECKING:
     from rangekeeper.schema.records import Distribution, DistributionFamily
@@ -133,7 +134,8 @@ class DistributionBehavior:
 
     def _implementation(self):
         distribution = cast("Distribution", self)
-        from scipy import stats
+        with requires("calculations"):
+            from scipy import stats
 
         distribution.check()
         scale = distribution.upper - distribution.lower
@@ -161,7 +163,8 @@ class DistributionBehavior:
         The record is immutable; only generator state advances.
         """
         distribution = cast("Distribution", self)
-        import numpy as np
+        with requires("calculations"):
+            import numpy as np
 
         if (
             type(size) is not int

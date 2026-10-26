@@ -1,4 +1,4 @@
-<img src="walkthrough/resources/rangekeeper.jpg" width="300">
+<img src="https://raw.githubusercontent.com/daniel-fink/rangekeeper/main/walkthrough/resources/rangekeeper.jpg" alt="Rangekeeper" width="300">
 
 # Rangekeeper
 
