@@ -1,6 +1,11 @@
+[build-system]
+# Pinned to the setuptools release that built 0.8.70 and 0.8.71 on PyPI.
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "Rangekeeper"
-version = "0.8.71"
+version = "0.8.72"
 description = "A Python library assisting financial modelling in real estate asset & development planning, decision-making, cashflow forecasting, and scenario analysis."
 authors = [
     { name = "Daniel Fink", email = "danfink@mit.edu" }

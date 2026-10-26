@@ -1911,8 +1911,8 @@ wheels = [
 
 [[package]]
 name = "rangekeeper"
-version = "0.8.71"
-source = { virtual = "." }
+version = "0.8.72"
+source = { editable = "." }
 dependencies = [
     { name = "aenum" },
     { name = "black" },
