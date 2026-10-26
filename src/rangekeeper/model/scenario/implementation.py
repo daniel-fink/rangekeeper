@@ -1,12 +1,12 @@
 """Calculation provenance; sampling streams and presentation are separate evidence."""
 
-from pathlib import Path
-from importlib.metadata import version
 import hashlib
 import platform
+from importlib.metadata import version
+from pathlib import Path
 
-from rangekeeper.shared.fingerprints import semantic_digest, manifest_digest
 from rangekeeper.schema.records import CalculationProvenance, LibraryVersion
+from rangekeeper.shared.fingerprints import manifest_digest, semantic_digest
 from rangekeeper.shared.units import default_units
 
 NAME = "rangekeeper.scenarios.market"
@@ -73,6 +73,7 @@ def calculation_manifest(*, package: Path | None = None, versions=None) -> dict:
 
 
 def calculation_provenance() -> CalculationProvenance:
+    """Return the calculation name, manifest fingerprint and library versions."""
     manifest = calculation_manifest()
     return CalculationProvenance(
         name=NAME,

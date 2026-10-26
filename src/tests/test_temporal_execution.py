@@ -1,45 +1,36 @@
 """Finite Movement equations checked against an independent temporal oracle."""
 
-from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
-from rangekeeper.model.flux import MissingValueHandling
-from rangekeeper.calculations.series import (
-    AlignmentJoin,
-    AggregationMethod,
-    ResamplingMethod,
-    MeanWeighting,
-)
-from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper.schema.enums import ValueKind, SolutionStatus, CompletionStatus
-
-from rangekeeper.model.expression import Reference
 from dataclasses import replace
 from datetime import date
 from uuid import uuid4
+
 import pytest
 
-from rangekeeper.model import (
-    Model,
-    Metadata,
-    Definitions,
-    System,
-    Entity,
-    Characteristics,
-    Value,
-    Measure,
-    Quantity,
-    Update,
-)
-from rangekeeper.model.flux import Flow, Movement
-from rangekeeper.model.duration.period import make_periods
-from rangekeeper.model.formulation import flow, growth, financial
-from rangekeeper.model.formulation.authoring import declare
-from rangekeeper.model.expression.authoring import equal, reference, divide
-from rangekeeper.specification import Specification, SpecificationRecord, Assignment
-from rangekeeper.specification.targets import assign_flow, unknown_flow
-from rangekeeper.run.execution import Executor
 from rangekeeper.io import MemoryStore
+from rangekeeper.model import (
+    Characteristics,
+    Definitions,
+    Entity,
+    Measure,
+    Metadata,
+    Model,
+    Quantity,
+    System,
+    Update,
+    Value,
+)
+from rangekeeper.model.duration import Frequency
+from rangekeeper.model.duration.period import make_periods
+from rangekeeper.model.expression import Reference
+from rangekeeper.model.expression.authoring import divide, equal, reference
+from rangekeeper.model.flux import Flow, Movement
+from rangekeeper.model.formulation import financial, flow, growth
+from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.run import validate
+from rangekeeper.run.execution import Executor
+from rangekeeper.schema.enums import CompletionStatus, SolutionStatus, ValueKind
+from rangekeeper.specification import Assignment, Specification, SpecificationRecord
+from rangekeeper.specification.targets import assign_flow, unknown_flow
 
 
 def oracle():
@@ -60,7 +51,7 @@ def oracle():
                 flow=Flow(
                     units="AUD",
                     movements=tuple(
-                        Movement(id=uuid4(), key=f"y{i+1}", period=p)
+                        Movement(id=uuid4(), key=f"y{i + 1}", period=p)
                         for i, p in enumerate(periods)
                     ),
                 ),
@@ -148,9 +139,9 @@ def test_forward_then_inverse_temporal_oracle():
     ] == pytest.approx([100, 110, 121])
     assert result.value(ids["pv"]).quantity.magnitude == pytest.approx(3000 / 11)
     inverse = Executor(store).execute(investigate(result, ids, inverse=True))
-    assert (
-        inverse.report.status.solution == SolutionStatus.FEASIBLE
-    ), inverse.report.to_data()
+    assert inverse.report.status.solution == SolutionStatus.FEASIBLE, (
+        inverse.report.to_data()
+    )
     output = store.load_model(inverse.record.outputs[0])
     assert output.value(ids["initial"]).quantity.magnitude == pytest.approx(110)
     assert output.metadata.previous == result.id
@@ -158,8 +149,6 @@ def test_forward_then_inverse_temporal_oracle():
 
 
 def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
-    from rangekeeper.schema.records import Formulation
-    from rangekeeper.shared.errors import ValidationError
 
     model, ids = oracle()
     data = model.system.to_data()
@@ -339,7 +328,6 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
 
 def test_movement_candidate_rejection_and_expansion_limits():
     from rangekeeper.run.execution.backends import PyomoHighs
-    from rangekeeper.schema.records import Settings
 
     model, ids = oracle()
     store = MemoryStore()
@@ -364,8 +352,6 @@ def test_movement_candidate_rejection_and_expansion_limits():
 
 
 def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypatch):
-    import time
-    from rangekeeper.run.execution import preparation
 
     model, ids = oracle()
     store = MemoryStore()
@@ -389,8 +375,6 @@ def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypa
     )
     assert run.report.status.completion == CompletionStatus.LIMITED
     assert any(d.code == "attempt_deadline" for d in run.report.diagnostics)
-
-
 
 
 def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
@@ -489,7 +473,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
                 target=next(
                     m.id
                     for m in model.value(ids["cash"]).flow.movements
-                    if m.key == f"y{i+1}"
+                    if m.key == f"y{i + 1}"
                 )
             ),
             quantity=Quantity(magnitude=x, units="AUD"),

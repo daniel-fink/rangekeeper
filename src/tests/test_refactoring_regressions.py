@@ -6,13 +6,12 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.schema.validation import document_version
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import Model
-from rangekeeper.specification.policy import PolicyCapabilityError, evaluate
 from rangekeeper.run import Run, validate
+from rangekeeper.schema.validation import document_version
 from rangekeeper.specification import Specification
-from rangekeeper.specification.policy import Policy
+from rangekeeper.specification.policy import Policy, PolicyCapabilityError, evaluate
 
 
 def metadata(kind):
@@ -182,14 +181,15 @@ def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidenc
 
 
 def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_path):
-    from pathlib import Path
     import shutil
+    from pathlib import Path
+
     import rangekeeper
     from rangekeeper.run.execution.implementation import (
-        fingerprint,
         _COMMON,
         _GROUPS,
         _RESOURCES,
+        fingerprint,
     )
 
     source = Path(rangekeeper.__file__).parent
@@ -216,8 +216,8 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
 
 
 def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancellation():
-    from rangekeeper.model.expression import Expression, ExpressionKind, Operator
     from rangekeeper.model import Quantity, Reference
+    from rangekeeper.model.expression import Expression, ExpressionKind, Operator
     from rangekeeper.run.execution.acceptance import _comparisons
     from rangekeeper.run.execution.errors import UnsupportedProblem
     from rangekeeper.shared.units import default_units
@@ -261,9 +261,10 @@ def test_shared_numerical_quantity_rejects_nonfinite_boolean_and_complex(number)
 
 def test_policy_result_normalizes_and_checks_outcomes():
     from dataclasses import FrozenInstanceError
-    from rangekeeper.specification.policy import DecisionOutcome, PolicyResult
+
+    from rangekeeper.model import Quantity, Reference
     from rangekeeper.specification import Assignment
-    from rangekeeper.model import Reference, Quantity
+    from rangekeeper.specification.policy import DecisionOutcome, PolicyResult
 
     assignment = Assignment(
         target=Reference(target=uuid4()),

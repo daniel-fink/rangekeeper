@@ -1,12 +1,13 @@
 """Date-only interval behaviour shared by Period and its schema subclasses."""
 
 from __future__ import annotations
+
 from datetime import date, timedelta
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from rangekeeper.schema.records import Period
     from rangekeeper.model.duration.calendar import PeriodTiming
+    from rangekeeper.schema.records import Period
 
 
 class PeriodBehavior:
@@ -16,14 +17,17 @@ class PeriodBehavior:
 
     @property
     def first(self) -> date:
+        """Return the first included date."""
         return cast("Period", self).start_inclusive
 
     @property
     def last(self) -> date:
+        """Return the last included date."""
         return cast("Period", self).end_exclusive - timedelta(days=1)
 
     @property
     def end(self) -> date:
+        """Return the excluded end boundary."""
         return cast("Period", self).end_exclusive
 
     def check(self) -> Period:

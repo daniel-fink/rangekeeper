@@ -1,12 +1,17 @@
 """Independent account equations, signed recurrence and rate preparation regressions."""
 
+import math
 from datetime import date
 from fractions import Fraction
-import math
+
 import pytest
 
-from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper.calculations.account import Account
+from rangekeeper.calculations.account import (
+    Account,
+    Balance,
+    CurrentInterest,
+    InterestTreatment,
+)
 from rangekeeper.model.flux import Flow
 from rangekeeper.model.measure import Quantity
 

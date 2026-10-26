@@ -1,16 +1,17 @@
 """Compare raw LinkML JSON Schema with the logically simplified packaged artifact."""
 
 import argparse
-from copy import deepcopy
 import importlib.util
 import json
-from pathlib import Path
 import shutil
 import tempfile
 import time
+from copy import deepcopy
+from pathlib import Path
+
+import yaml
 from jsonschema import Draft202012Validator, FormatChecker
 from linkml.generators.jsonschemagen import JsonSchemaGenerator
-import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser()
@@ -52,7 +53,9 @@ with tempfile.TemporaryDirectory(prefix="rk-simplification-") as directory:
         kind = (
             "Run"
             if "report" in data
-            else "Specification" if path.name.startswith("specification") else "Model"
+            else "Specification"
+            if path.name.startswith("specification")
+            else "Model"
         )
         cases.append((kind, path.name, data))
         for field in data:
@@ -94,7 +97,7 @@ with tempfile.TemporaryDirectory(prefix="rk-simplification-") as directory:
     )
     for i in range(9):
         node = dict(
-            id=f"00000000-0000-0000-0000-{i+2:012d}",
+            id=f"00000000-0000-0000-0000-{i + 2:012d}",
             kind="unary",
             operator="negate",
             operand=node,

@@ -36,4 +36,5 @@ class PolicyResult:
 
     @property
     def assignments(self) -> tuple[Assignment, ...]:
+        """Return the assignments of all outcomes, in outcome order."""
         return tuple(item for outcome in self.outcomes for item in outcome.assignments)

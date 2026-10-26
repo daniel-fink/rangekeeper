@@ -1,12 +1,15 @@
 """Pure interval partitioning; persistent membership belongs to the Model graph."""
 
-from dataclasses import dataclass
-from collections.abc import Sequence
 import math
+from collections.abc import Sequence
+from dataclasses import dataclass
+from itertools import pairwise
 
 
 @dataclass(frozen=True, slots=True)
 class Interval:
+    """A range of real numbers between finite ordered bounds."""
+
     left: float
     right: float
 
@@ -20,9 +23,11 @@ class Interval:
 
     @property
     def length(self) -> float:
+        """Return the distance from the left bound to the right bound."""
         return self.right - self.left
 
     def split(self, proportion: float) -> tuple["Interval", "Interval"]:
+        """Split into two Intervals; the left one takes the given proportion."""
         if not 0 < proportion < 1:
             raise ValueError("split proportion must lie strictly between zero and one")
         left, right = self.subdivide((proportion, 1 - proportion))
@@ -52,4 +57,4 @@ class Interval:
             ]
             + [self.right]
         )
-        return tuple(Interval(a, b) for a, b in zip(points, points[1:]))
+        return tuple(Interval(a, b) for a, b in pairwise(points))

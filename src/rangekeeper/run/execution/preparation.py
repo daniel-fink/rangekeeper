@@ -1,20 +1,28 @@
 """Resolve immutable mathematics and explicit solve roles without a solver import."""
 
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from collections.abc import Mapping, Callable
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper.schema.records import Constraint, Expression, Quantity, Value, Movement
 from rangekeeper.model import Model
+from rangekeeper.model.scope import target_units
+from rangekeeper.run.execution.errors import UnsupportedProblem
 from rangekeeper.schema.index import walk
+from rangekeeper.schema.records import (
+    Assignment,
+    Constraint,
+    DecisionOutcome,
+    Expression,
+    Movement,
+    Quantity,
+    Reference,
+    Value,
+)
 from rangekeeper.shared.references import SpecificationResolver
+from rangekeeper.shared.units import UnitSystem, default_units
 from rangekeeper.specification import Composition
 from rangekeeper.specification.validation import prepare as validate_prepared
-from rangekeeper.shared.units import UnitSystem, default_units
-from rangekeeper.run.execution.errors import UnsupportedProblem
-from rangekeeper.model.scope import target_units
-from rangekeeper.schema.records import DecisionOutcome, Reference, Assignment
 
 
 @dataclass(frozen=True)

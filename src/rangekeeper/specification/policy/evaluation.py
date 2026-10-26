@@ -3,6 +3,8 @@
 from datetime import date
 from uuid import UUID
 
+from rangekeeper.model import Model
+from rangekeeper.model.scope import scope_for_model
 from rangekeeper.schema.records import (
     ActionKind,
     Assignment,
@@ -10,17 +12,15 @@ from rangekeeper.schema.records import (
     Policy,
     Quantity,
 )
-from rangekeeper.model import Model
 from rangekeeper.shared.errors import ContractError
-from rangekeeper.model.scope import scope_for_model
 from rangekeeper.shared.units import UnitSystem, default_units
 from rangekeeper.specification.policy._availability import evidence_dates
 from rangekeeper.specification.policy.observation import PolicyCapabilityError, _observe
 from rangekeeper.specification.policy.predicate import evaluate as evaluate_expression
 from rangekeeper.specification.policy.result import PolicyResult
 from rangekeeper.specification.policy.validation import (
-    validate_policy,
     validate_outcomes,
+    validate_policy,
 )
 
 

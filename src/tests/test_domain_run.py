@@ -3,19 +3,19 @@
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
 from pathlib import Path
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
 import pytest
 import yaml
 
 import rangekeeper as rk
-from rangekeeper.shared.errors import (
-    ValidationError,
-    UnsupportedVersionError,
-    MissingReferenceError,
-)
 from rangekeeper.io import MemoryStore
 from rangekeeper.run import Run, RunRecord, validate
+from rangekeeper.shared.errors import (
+    MissingReferenceError,
+    UnsupportedVersionError,
+    ValidationError,
+)
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 

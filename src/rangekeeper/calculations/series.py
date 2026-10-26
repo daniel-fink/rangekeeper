@@ -7,30 +7,29 @@ and is responsible for their meaning.
 
 from __future__ import annotations
 
-from uuid import uuid4
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 if TYPE_CHECKING:
     from rangekeeper.calculations._batch import Batch
 
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import date
-import json
-import math
 from enum import Enum, unique
 
-from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.duration import Period
+from rangekeeper.model.duration.calendar import DayCount, year_fraction
+from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.measure import Quantity
-from rangekeeper.model.duration.calendar import DayCount, elapsed_days, year_fraction
-from rangekeeper.shared.units import default_units
 from rangekeeper.schema.behaviors.flow import MissingValueHandling
-from rangekeeper.schema.runtime import UNSET
+from rangekeeper.shared.units import default_units
 
 
 @unique
 class AlignmentJoin(Enum):
+    """Select which coordinates an alignment keeps when the Flows differ."""
+
     EXACT = "exact"
     UNION = "union"
     INTERSECTION = "intersection"
@@ -38,6 +37,8 @@ class AlignmentJoin(Enum):
 
 @unique
 class AggregationMethod(Enum):
+    """Select how aligned Flows combine at each coordinate."""
+
     SUM = "sum"
     MIN = "min"
     MAX = "max"
@@ -45,6 +46,8 @@ class AggregationMethod(Enum):
 
 @unique
 class ResamplingMethod(Enum):
+    """Select how movements in one period reduce to one value."""
+
     SUM = "sum"
     FIRST = "first"
     LAST = "last"
@@ -55,6 +58,8 @@ class ResamplingMethod(Enum):
 
 @unique
 class MeanWeighting(Enum):
+    """Select the weight of each movement in a resampled mean."""
+
     OBSERVATIONS = "observations"
     ELAPSED = "elapsed"
 
@@ -78,7 +83,7 @@ class Alignment:
         if not self.flows or len(self.coverage) != len(self.flows):
             raise ValueError("alignment requires one coverage row per Flow")
         coordinates = tuple(m.coordinate for m in self.flows[0].movements)
-        for flow, row in zip(self.flows, self.coverage):
+        for flow, row in zip(self.flows, self.coverage, strict=True):
             flow.check(resolved=self.missing == MissingValueHandling.ERROR)
             if (
                 len(row) != len(coordinates)
@@ -107,8 +112,8 @@ class Alignment:
                         "present",
                         [
                             k or m.magnitude is None
-                            for f, row in zip(self.flows, self.coverage)
-                            for m, k in zip(f.movements, row)
+                            for f, row in zip(self.flows, self.coverage, strict=True)
+                            for m, k in zip(f.movements, row, strict=True)
                         ],
                         dtype=pl.Boolean,
                     ),
@@ -153,7 +158,7 @@ def align(
         for key, movement in mapping.items():
             templates.setdefault(key, movement)
     aligned, coverages = [], []
-    for flow, mapping in zip(flows, mappings):
+    for flow, mapping in zip(flows, mappings, strict=True):
         movements, coverage = [], []
         for index in grid:
             key = batch.coordinates[index]
@@ -165,7 +170,9 @@ def align(
             magnitude = (
                 source.magnitude
                 if present
-                else 0.0 if missing is MissingValueHandling.ZERO else None
+                else 0.0
+                if missing is MissingValueHandling.ZERO
+                else None
             )
             movements.append(
                 source
@@ -203,9 +210,9 @@ def multiply(flows: Sequence[Flow]) -> Flow:
         group[0].replace(
             id=uuid4(),
             magnitude=math.prod(s.number for s in group),
-            claims=tuple(dict.fromkeys((c for s in group for c in s.claims or ()))),
+            claims=tuple(dict.fromkeys(c for s in group for c in s.claims or ())),
         )
-        for group in zip(*(flow.movements for flow in aligned.flows))
+        for group in zip(*(flow.movements for flow in aligned.flows), strict=True)
     ]
     return flows[0].replace(movements=tuple(movements), units=unit).check()
 
@@ -252,7 +259,7 @@ def integrate(
     if output_units is None:
         raise ValueError("empty integration requires explicit output units")
     movements = []
-    for movement, exposure in zip(flow.movements, exposures):
+    for movement, exposure in zip(flow.movements, exposures, strict=True):
         product_unit = default_units.multiply(flow.units, exposure.units)
         magnitude = (
             None

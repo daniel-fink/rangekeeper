@@ -1,14 +1,13 @@
 """Typed fluent operations on canonical and nested records."""
 
-from rangekeeper.model import ValueKind
-
 from datetime import date
 from uuid import uuid4
-from rangekeeper.model.flux import Flow, Movement
-from rangekeeper.model.distribution import Distribution
-from rangekeeper.schema.records import Assembly, Span, Value
-from rangekeeper.calculations.account import Account
+
 from rangekeeper.calculations.series import Aggregation, AggregationMethod, align
+from rangekeeper.model import ValueKind
+from rangekeeper.model.distribution import Distribution
+from rangekeeper.model.flux import Flow, Movement
+from rangekeeper.schema.records import Assembly, Span, Value
 
 flow: Flow = Flow.from_events([date(2026, 1, 1)], [1], units="m").check()
 movement: Movement = flow.movements[0].replace(magnitude=2, claims=())

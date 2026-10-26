@@ -1,36 +1,31 @@
 """Date-only coordinates, independent payment dates and explicit timing contracts."""
 
-from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
-from rangekeeper.model.flux import MissingValueHandling
-from rangekeeper.calculations.series import (
-    AlignmentJoin,
-    AggregationMethod,
-    ResamplingMethod,
-    MeanWeighting,
-)
-from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper.schema.enums import ValueKind
-
-from rangekeeper.model.flux import Flow
-
+from datetime import UTC, date, datetime
 from uuid import uuid4
-from datetime import date, datetime, timezone
 
 import pytest
 
-from rangekeeper.shared.errors import ValidationError
-from rangekeeper.model.duration import Period
-from rangekeeper.model.flux import Movement
-from rangekeeper.model.duration import make_period, make_periods, offset
 from rangekeeper.calculations import financial, series
-
+from rangekeeper.calculations.series import (
+    ResamplingMethod,
+)
+from rangekeeper.model.duration import (
+    Frequency,
+    Period,
+    PeriodTiming,
+    make_period,
+    make_periods,
+    offset,
+)
+from rangekeeper.model.flux import Flow, Movement
+from rangekeeper.shared.errors import ValidationError
 
 JANUARY = make_period(date(2026, 1, 1), date(2026, 2, 1))
 
 
 def test_schema_date_or_timestamp_union_retains_timestamp_support():
     from uuid import uuid4
+
     from rangekeeper.schema.records import Source
 
     source = Source(
@@ -66,7 +61,7 @@ def test_date_records_and_detached_wire_format():
     "value",
     [
         datetime(2026, 1, 1),
-        datetime(2026, 1, 1, tzinfo=timezone.utc),
+        datetime(2026, 1, 1, tzinfo=UTC),
     ],
 )
 def test_datetimes_are_not_flow_coordinates(value):

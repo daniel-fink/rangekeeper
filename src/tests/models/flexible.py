@@ -2,10 +2,10 @@
 
 from rangekeeper_examples.investment import (
     author,
-    formulate,
-    specify,
     build_stop_gain_resale_policy,
+    formulate,
     report,
+    specify,
     values,
 )
 
