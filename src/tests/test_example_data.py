@@ -12,7 +12,7 @@ ORIGINS = {"legacy-notebook", "book-method", "author", "derived"}
 
 
 def load(name):
-    return json.loads((DATA / name).read_text())
+    return json.loads((DATA / name).read_text(encoding="utf-8"))
 
 
 def leaves(value, pointer=""):
@@ -33,7 +33,9 @@ def covers(pattern, pointer):
 def test_manifest_lists_every_file_with_hash_origin_and_licence():
     manifest = load("manifest.json")
     assert manifest["licence"]["spdx"] == "CC-BY-4.0"
-    assert "Attribution 4.0 International" in (DATA / "LICENSE").read_text()
+    assert "Attribution 4.0 International" in (DATA / "LICENSE").read_text(
+        encoding="utf-8"
+    )
     present = {path.name for path in DATA.iterdir()} - UNLISTED
     assert set(manifest["files"]) == present
     for name, entry in manifest["files"].items():
