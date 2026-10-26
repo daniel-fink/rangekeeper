@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/daniel-fink/rangekeeper/main/walkthrough/resources/rangekeeper.jpg" alt="Rangekeeper" width="300">
+<img src="https://raw.githubusercontent.com/daniel-fink/rangekeeper/v0.8.72/walkthrough/resources/rangekeeper.jpg" alt="Rangekeeper" width="300">
 
 # Rangekeeper
 
@@ -54,7 +54,6 @@ Rangekeeper provides canonical models, schemas, validation, calculations,
 execution, native IO and local display. Source ingestion services, access policy
 and application interfaces are separate consumer responsibilities.
 
-See the [breaking upgrade guide](docs/guides/upgrading.md). The acausal walkthrough is maintained on
-[`codex/walkthrough-acausal`](https://github.com/daniel-fink/rangekeeper/tree/codex/walkthrough-acausal/examples/walkthrough).
-`develop` preserves the original `walkthrough/` sources. See the
-[walkthrough branch procedure](docs/guides/walkthroughs.md#branches-and-publication).
+See the [breaking upgrade guide](docs/guides/upgrading.md). The walkthrough
+lessons are in [`examples/walkthrough`](examples/walkthrough/README.md). See the
+[walkthrough procedure](docs/guides/walkthroughs.md#branches-and-publication).

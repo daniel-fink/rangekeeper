@@ -1,0 +1,33 @@
+[project]
+name = "rangekeeper-walkthrough"
+version = "0"
+description = "Lessons and helpers for the Rangekeeper walkthrough"
+readme = { text = "See examples/walkthrough/README.md in the Rangekeeper repository.", content-type = "text/plain" }
+license = "MPL-2.0"
+requires-python = ">=3.12,<3.14"
+# The lessons and helpers use the Rangekeeper checkout two levels up, never a
+# published release. Helper dependencies are listed here, not in the library.
+dependencies = [
+    "rangekeeper[calculations,execution,visualisation]",
+    "rangekeeper-examples",
+    "ipykernel>=7.3",
+    "ipython>=8.18",
+    "plotly>=6.0",
+]
+
+[dependency-groups]
+test = ["pytest>=8.0", "nbclient>=0.10", "nbformat>=5.10"]
+lab = ["jupyterlab>=4.4"]
+
+[tool.uv]
+# A virtual project: the lessons import the helpers from this folder.
+package = false
+default-groups = ["test", "lab"]
+
+[tool.uv.sources]
+rangekeeper = { path = "../..", editable = true }
+rangekeeper-examples = { path = "..", editable = true }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

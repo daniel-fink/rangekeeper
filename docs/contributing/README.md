@@ -9,9 +9,9 @@ Start with [installation](../guides/installation.md) and the
 
 Follow the [agent instructions](../../AGENTS.md). Start new `feature/<name>`
 branches from `develop` and integrate reviewed work into `develop` through pull
-requests; `main` holds releases. Keep the unfinished teaching work on
-`codex/walkthrough-acausal` and follow the
-[walkthrough branch procedure](walkthrough-branch.md). A merge into `develop` does
+requests; `main` holds releases. Lessons follow the same rule, under
+`examples/walkthrough`; keep `codex/walkthrough-acausal` unchanged as source
+material and follow the [walkthrough procedure](walkthrough-branch.md). A merge into `develop` does
 not make the Bundle format stable or publish the walkthroughs.
 
 Verify the reviewed diff, run the applicable checks and stage only the intended
