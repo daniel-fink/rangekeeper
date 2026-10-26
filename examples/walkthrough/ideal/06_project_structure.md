@@ -35,7 +35,7 @@ and its geometry.
 ```python
 # cell 1
 import rangekeeper as rk
-from walkthrough import helpers
+import helpers
 ```
 
 ```python

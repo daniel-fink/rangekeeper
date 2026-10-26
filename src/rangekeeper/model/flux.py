@@ -400,7 +400,7 @@ class Stream:
 
     def display(self, *, transpose: bool = False, precision: int = 2):
         """Return an HTML/text table with line labels, units and explicit missing states."""
-        from rangekeeper.visualisation.table import StreamTable
+        from rangekeeper.model.display import StreamTable
 
         return StreamTable(self, transpose=transpose, precision=precision)
 

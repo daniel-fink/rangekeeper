@@ -49,7 +49,7 @@ the Model. Only two dates are inputs: the start date and Building B's start.
 from datetime import date
 
 import rangekeeper as rk
-from walkthrough import helpers
+import helpers
 ```
 
 ```python

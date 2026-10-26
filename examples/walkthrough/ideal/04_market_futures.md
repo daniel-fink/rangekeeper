@@ -40,7 +40,7 @@ data package. Show its equations so that nothing is hidden.
 from datetime import date
 
 import rangekeeper as rk
-from walkthrough import helpers
+import helpers
 ```
 
 ```python
@@ -115,7 +115,7 @@ library versions. Replay uses the captured values and draws no new random number
 
 ```python
 # cell 8
-count = helpers.path_count(default=500)          # small in CI, full locally
+count = helpers.path_count(default=500)          # RK_PATH_COUNT: 4 in CI, full locally
 paths = dynamics.generate(periods=years, seed=2027, count=count)
 paths.capture                                     # generator, parameters, seed, versions
 ```

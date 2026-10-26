@@ -3,42 +3,92 @@
   "files": {
     "associations.json": {
       "bytes": 9415,
+      "description": "Model-scoped links from domain records to the original content IDs in transport.json.gz.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
       "sha256": "8b0e9c0f2914d9dc54d077cdfac3114d73b68b685d9e5cad20fc400540804411"
     },
     "assumptions.json": {
       "bytes": 3096,
+      "description": "Legacy teaching assumptions for the property. origins.json gives the origin of each value.",
+      "licence": "CC-BY-4.0",
+      "origin": "teaching-assumptions",
       "sha256": "d8c5d38345baab913e07e1c46b445e026e8d7c2f9a618749b1d034c82a65a879"
     },
     "audit.json": {
       "bytes": 8060,
+      "description": "Counts, graph reconciliation, quantity checks and geometry summary checks of the conversion.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
       "sha256": "7210f5ce07fba42b5049a5a48c196f1744aed531e897fe3e27dee3c8cb98abea"
+    },
+    "development.json": {
+      "bytes": 3376,
+      "description": "Teaching inputs for the development plan. origins.json gives the origin of each value.",
+      "licence": "CC-BY-4.0",
+      "origin": "teaching-assumptions",
+      "sha256": "63db6529bfcb431bb703f1b0003a15f934146e45c64ac43286f6f71d09765ab2"
     },
     "inventory.csv": {
       "bytes": 8579,
+      "description": "A readable inventory derived from model.json.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
       "sha256": "0472cd72a02855941de9444aa894fceb82e91f48abafd88dd42d06f802b26056"
     },
     "mapping.json": {
       "bytes": 449,
+      "description": "The author's interpretation of the source: classifications, units, properties and relationship labels.",
+      "licence": "CC-BY-4.0",
+      "origin": "author",
       "sha256": "a2d140e63dca58b77b75ae5d9909dbd48681665fc390147430ae6bc2f4dcb50f"
     },
     "model.json": {
       "bytes": 375171,
+      "description": "The canonical Rangekeeper Model converted from transport.json.gz with mapping.json. It keeps the source content IDs.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
       "sha256": "a59ac9522d2c16aede7cdc1a77c0a7efe34ec978f5b307e29d87100ba954f200"
+    },
+    "origins.json": {
+      "bytes": 8852,
+      "description": "The origin of each teaching assumption in assumptions.json and development.json.",
+      "licence": "CC-BY-4.0",
+      "origin": "author",
+      "sha256": "fb86274125b5b037f8600cc0c7f3b47d051a3ffdf340d081f970a262c963a10b"
     },
     "relationships.csv": {
       "bytes": 7860,
+      "description": "Relationship endpoints, labels and identities derived from model.json.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
       "sha256": "73142b6dc1e89b054046befd38426682fac19068bea0c6589522360b26aa042a"
     },
     "transport.json.gz": {
       "bytes": 2380678,
+      "description": "The complete original transport records of Speckle project c0f66c35e3, model 119ad04487, object e7acaac21ae7e9369339900a4aaeb827, with the property and its context geometry. Received with specklepy 3.0.7; JSON is gzip-compressed.",
+      "licence": "CC-BY-4.0",
+      "origin": "source",
       "sha256": "90545f7d86192f7f0522e6a2e9e883253a5695ea5fa547bcbb57be72dde2a1ac"
     }
   },
   "geometry_storage": "Complete original transport JSON, including context and property, in transport.json.gz",
   "historical_version_id": "9a9670946f",
   "host": "app.speckle.systems",
+  "licence": {
+    "attribution": "Mixed-use property data by Daniel Fink, from Rangekeeper (https://github.com/daniel-fink/rangekeeper), licensed under CC BY 4.0.",
+    "file": "LICENSE",
+    "scope": "All files in this folder except LICENSE. The mixed-use property design is the Rangekeeper author's own work.",
+    "spdx": "CC-BY-4.0"
+  },
   "model_id": "119ad04487",
   "normalisation": "Resolve all references; remove only __closure indexes for conversion; preserve original content IDs.",
+  "origin_vocabulary": {
+    "author": "Written by the Rangekeeper author.",
+    "derived": "Made from the source capture by the conversion. Recreate it; do not edit it by hand.",
+    "source": "Captured from the pinned source without change, except compression.",
+    "teaching-assumptions": "Teaching inputs. They are not market estimates or measurements of the source."
+  },
   "pin_basis": "Explicit object in the legacy notebooks; historical version resolution is not asserted.",
   "project_id": "c0f66c35e3",
   "requested_object_id": "e7acaac21ae7e9369339900a4aaeb827",

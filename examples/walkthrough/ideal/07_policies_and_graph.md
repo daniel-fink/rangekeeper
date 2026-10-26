@@ -49,7 +49,7 @@ floors. Each use has its own market index from lesson 04's optional section.
 from datetime import date
 
 import rangekeeper as rk
-from walkthrough import helpers
+import helpers
 ```
 
 ```python

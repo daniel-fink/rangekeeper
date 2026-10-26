@@ -7,7 +7,7 @@ There are no forwarding modules, deprecated installation extras or automatic sch
 | Previous import | Current owner and import |
 | --- | --- |
 | `rangekeeper.adapters.plotting` | RK `rangekeeper.visualisation.chart` |
-| `rangekeeper.adapters.presentation` | RK `rangekeeper.visualisation.table` |
+| `rangekeeper.adapters.presentation` | RK `Stream.display()` and `Pivot.display()`, in `rangekeeper.model.display` |
 | `rangekeeper.adapters.visualization.graph_html` | RK `rangekeeper.visualisation.graph.graph_html` |
 | `rangekeeper.adapters.visualization` hierarchy charts | RK `rangekeeper.visualisation.chart` |
 | `rangekeeper.adapters.polars` | RK `rangekeeper.io.polars` |

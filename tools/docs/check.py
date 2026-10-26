@@ -69,11 +69,9 @@ def check() -> list[str]:
             ROOT / "README.md",
             ROOT / "CONTRIBUTING.md",
             ROOT / "examples/README.md",
-            (
-                ROOT / "examples/walkthrough/intro.md"
-                if (ROOT / "examples/walkthrough/intro.md").is_file()
-                else ROOT / "walkthrough/intro.md"
-            ),
+            ROOT / "examples/walkthrough/README.md",
+            ROOT / "examples/walkthrough/resources/README.md",
+            ROOT / "examples/data/mixed_use_property/README.md",
             DOCS / "research/README.md",
         }
     )

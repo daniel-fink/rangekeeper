@@ -19,10 +19,10 @@ when the library work lands.
 | 01 Basic discounted cash flow | [01_basic_dcf.md](01_basic_dcf.md) | 20 |
 | 02 Front door, back door | [02_front_door_back_door.md](02_front_door_back_door.md) | 17 + 4 optional |
 | 03 Cases, debt and equity | [03_cases_debt_equity.md](03_cases_debt_equity.md) | 23 |
-| 04 Many market futures | [04_market_paths.md](04_market_paths.md) | 16 + 2 optional |
+| 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 16 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 17 + 1 optional |
 | 06 Project structure | [06_project_structure.md](06_project_structure.md) | 23 + 1 optional |
-| 07 Policies and the model graph | [07_policies_and_the_model_graph.md](07_policies_and_the_model_graph.md) | 16 + 2 optional |
+| 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 16 + 2 optional |
 
 Each lesson file has the goals box, the narrative outline, the cells, the exercises
 with solutions, the checks and recap, the cell budget and a rule check. The rule

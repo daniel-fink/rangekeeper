@@ -46,7 +46,7 @@ assumptions. The plan does not change in this lesson; the assumptions do.
 from datetime import date
 
 import rangekeeper as rk
-from walkthrough import helpers
+import helpers
 ```
 
 ```python

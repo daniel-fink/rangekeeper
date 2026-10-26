@@ -40,7 +40,7 @@ data package records the origin of each number.
 from datetime import date
 
 import rangekeeper as rk
-from walkthrough import helpers
+import helpers
 ```
 
 ```python

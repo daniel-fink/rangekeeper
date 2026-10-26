@@ -12,10 +12,10 @@ from uuid import UUID, uuid4
 from rangekeeper.schema.runtime import UNSET
 
 if TYPE_CHECKING:
+    from rangekeeper.model.display import StreamTable
     from rangekeeper.model.duration.period import PeriodTiming
     from rangekeeper.schema.records import Flow, Movement, Period, Quantity
     from rangekeeper.shared.units import UnitSystem
-    from rangekeeper.visualisation.table import StreamTable
 
 
 @unique
