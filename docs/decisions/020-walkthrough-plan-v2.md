@@ -408,7 +408,7 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
    `rk.Specification` and `rk.Run`. Cells reach every other name through its
    public namespace, for example `rk.execution.solve`, `rk.units.q`,
    `rk.flow.Flow` and `rk.finance.npv`. The namespaces are `rk.duration`,
-   `rk.flow`, `rk.finance`, `rk.model`, `rk.specification`, `rk.execution`,
+   `rk.profile`, `rk.flow`, `rk.finance`, `rk.model`, `rk.specification`, `rk.execution`,
    `rk.io`, `rk.errors` and `rk.units`. Cells never import `schema`, `shared`
    or private modules.
 2. **Build, do not assemble.** Use `Model.build()`, `model.edit()`, `commit()`

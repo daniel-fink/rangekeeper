@@ -406,7 +406,7 @@ Cell 7 has 9 lines and cell 13 has 13; no cell has more than 15.
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
 | 5 | 2, 5 | G08 (`subject`, `timeline`); G15: date-valued Values; G16: infer units and shapes of other values |
 | 6–8 | 3, 6 | G17: Function catalogue for equations (`event`, `spread`, `grow`, `reversion`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
-| 7 | 6 | `grow` with `base`, `start` and `every` ([#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
+| 7 | 6 | `grow` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
 | 10, 12 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
 | 11, 14 | 8 | Cases ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G20: `cases(mapping)` overrides by key; `Outcome.case`, `Outcome.table` with a case column |

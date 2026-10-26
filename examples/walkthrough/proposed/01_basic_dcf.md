@@ -14,7 +14,7 @@ rule check at the end names each gap from the [gap list](README.md#gap-list).
 > **You will learn to:**
 >
 > 1. make dated Flows with units over yearly periods;
-> 2. grow an amount over periods;
+> 2. describe growth with a profile, and make a Flow from it;
 > 3. combine lines in a Stream, resample them and trim them to a holding span;
 > 4. capitalise the next year's net cash flow for the reversion;
 > 5. calculate present value, NPV and IRR on one date basis.
@@ -55,8 +55,8 @@ rent.to("USD/month")
 
 ```python
 # cell 3
-growth = rk.units.q("2 %/year")
-growth * rk.units.q("1 year")          # 0.02, a dimensionless ratio
+rate = rk.units.q("2 %/year")
+rate * rk.units.q("1 year")          # 0.02, a dimensionless ratio
 ```
 
 > **Under the hood.** `rk.units.q` is short for `rk.units.Quantity.parse`. The unit
@@ -91,12 +91,15 @@ first_two.display()
 ## 5. Growth
 
 Narrative. **Predict:** what is the potential gross income in 2010, after nine years
-of 2 % growth? Then let the library do the compounding. The first Period holds the
-initial amount.
+of 2 % growth? Then let the library do the compounding. A profile says how an amount
+develops over Periods. State it once, as a spreadsheet states a growth row, and use
+it for every line that grows the same way. With a growth profile, the first Period
+holds the initial amount.
 
 ```python
 # cell 6
-pgi = rk.finance.grow("100 USD", rate=growth, periods=years)
+growth = rk.profile.Compounding(rate=rate)
+pgi = rk.flow.Flow.from_profile(growth, periods=years, initial="100 USD")
 pgi.display()
 ```
 
@@ -107,6 +110,11 @@ pgi.at(date(2010, 1, 1))               # the amount of the Period that contains 
 
 > **Finance note.** Potential gross income (PGI) is the income if all the space is
 > let at the market rent.
+
+> **Under the hood.** Profiles live in `rk.profile`. Growth profiles (`Constant`,
+> `Linear`, `Compounding`) start from an `initial=` amount. Distribution profiles
+> (`Uniform`, `SCurve`) divide a `total=` amount over the Periods. A profile refuses
+> the wrong keyword, so a total is never compounded by mistake.
 
 ## 6. Lines of the pro forma
 
@@ -238,7 +246,8 @@ by how much does the value change?
 
 ```python
 # solution
-pgi_3 = rk.finance.grow("100 USD", rate="3 %/year", periods=years)
+pgi_3 = rk.flow.Flow.from_profile(rk.profile.Compounding(rate="3 %/year"), periods=years,
+                                   initial="100 USD")
 nacf_3 = (0.95 * pgi_3 - 0.35 * pgi_3 - 0.10 * pgi_3)
 flows_3 = rk.flow.Stream({
     "NACF": nacf_3,
@@ -307,7 +316,7 @@ questions.
 | 2–3 | 5 | Needs `q` with `pa` and `%/year` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
 | 4 | 1, 11 | G01: `Span.years`, `extend`, `periods("year")` |
 | 5, 10, 18 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
-| 6 | 6 | Growth with an annual rate over Periods ([#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
+| 6 | 1, 6 | G70: `rk.profile` and `Flow.from_profile` with `initial=` or `total=` (D12; absorbs [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 7, 10, 15 | 8 | G03: `Flow.at(date)` returns one Quantity |
 | 8–9, 12–13 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `Stream | mapping`, `select`, `sum()` |
 | 11 | 6 | G05: `rk.finance.reversion` |

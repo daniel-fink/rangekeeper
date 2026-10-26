@@ -41,13 +41,14 @@ contracts in the test suite enforce this rule.
 | 1 | `shared` (internal) | Units policy support, errors and diagnostics, resolver and store protocols, the extension registry, fingerprints |
 | 2 | `schema` (internal) | Data-only generated records, enums and JSON resources; the record runtime; the kind registry; structural validation |
 | 3 | `duration` | Frequency, Period, Span and calendar rules |
-| 4 | `flow` | Movement, Flow, Stream, their options, table display and the private calculation engine |
-| 5 | `finance` | Calculations on known data: present value, NPV, IRR, payments, growth, accounts and path generators ([ADR-014](014-market-paths.md)) |
-| 6 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
-| 7 | `specification` | The Specification document, composition, roles and policy declarations |
-| 8 | `run` | The Run document and the validation of its evidence |
-| 9 | `execution` | The solve pipeline, backends, independent verification, policy evaluation and publication ([ADR-013](013-execution-and-extensions.md)) |
-| 10 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
+| 4 | `profile` | Profiles: how an amount develops over Periods. Growth profiles (constant, linear, compounding) start from an initial amount; distribution profiles (uniform, S-curve) divide a total |
+| 5 | `flow` | Movement, Flow, Stream, their options, `Flow.from_profile`, table display and the private calculation engine |
+| 6 | `finance` | Calculations on known data: present value, NPV, IRR, payments, accounts and path generators ([ADR-014](014-market-paths.md)) |
+| 7 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
+| 8 | `specification` | The Specification document, composition, roles and policy declarations |
+| 9 | `run` | The Run document and the validation of its evidence |
+| 10 | `execution` | The solve pipeline, backends, independent verification, policy evaluation and publication ([ADR-013](013-execution-and-extensions.md)) |
+| 11 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
 `Quantity` and `UnitSystem` live in the public `units` namespace, below
 `duration`. `errors` is a public namespace for the exception hierarchy
@@ -60,6 +61,10 @@ contracts in the test suite enforce this rule.
   is removed.
 - `finance` replaces `calculations`. It keeps the financial operations. Path
   generators move into it from `model.scenario`.
+- Growth and distribution are series shapes, not finance. They move from
+  `calculations.projection` to `profile`, and `Flow.from_profile` applies them.
+  The word "projection" is not used ([ADR-012](012-naming-and-glossary.md)).
+  Amended 2026-10-26 by the walkthrough proposed cells (#201, decision D12).
 - Policy declarations stay in `specification`. Policy evaluation moves to `execution`.
 - The store and resolver protocols move to `shared`. This removes the `run` and
   `io` cycle.
@@ -67,7 +72,7 @@ contracts in the test suite enforce this rule.
 
 ### Public namespaces
 
-Users import from `rangekeeper` (Model, Specification, Run), `duration`, `flow`,
+Users import from `rangekeeper` (Model, Specification, Run), `duration`, `profile`, `flow`,
 `finance`, `model`, `specification`, `execution`, `io`, `errors` and `units`.
 `schema` and `shared` are internal. Each owner re-exports the records that its
 users need. For example, `flow` exports Flow, `model` exports Entity and
@@ -81,7 +86,8 @@ the stability promise for these names.
 | `model.duration` | `duration` |
 | `model.flux`, `model._flow_mapping`, `schema/behaviors/flow.py`, `calculations.series`, `calculations._batch` | `flow` |
 | `model.measure` (Quantity), `shared.units` | `units` |
-| `calculations` (financial, projection, account, dynamics) | `finance` |
+| `calculations` (financial, account, dynamics) | `finance` |
+| `calculations.projection` (growth and distribution) | `profile`, and `Flow.from_profile` in `flow` |
 | `model.scenario` | `finance` generators and the MarketPaths document ([ADR-014](014-market-paths.md)) |
 | `run.execution`, policy evaluation in `specification.policy` | `execution` |
 | `io.store` protocol | `shared` |

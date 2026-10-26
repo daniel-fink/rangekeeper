@@ -56,16 +56,17 @@ contracts enforce the rule.
 | 2 | `schema` (internal) | Data-only generated records, enums and JSON; the record runtime; the kind registry; structural validation |
 | — | `units` | `Quantity` and `UnitSystem`, with the curated unit registry |
 | 3 | `duration` | Frequency, Period, Span and calendar rules |
-| 4 | `flow` | Movement, Flow, Stream, their options and table display, and the private engine |
-| 5 | `finance` | Calculations on known values: PV, NPV, IRR, payments, growth, accounts, and path generators |
-| 6 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
-| 7 | `specification` | The Specification document, composition, roles and policy declarations |
-| 8 | `run` | The Run document and evidence validation |
-| 9 | `execution` | Case resolution, role binding, problem building, backends, verification, policy evaluation and publication |
-| 10 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
+| 4 | `profile` | Growth and distribution profiles: how an amount develops over Periods |
+| 5 | `flow` | Movement, Flow, Stream, their options and table display, and the private engine |
+| 6 | `finance` | Calculations on known values: PV, NPV, IRR, payments, accounts, and path generators |
+| 7 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
+| 8 | `specification` | The Specification document, composition, roles and policy declarations |
+| 9 | `run` | The Run document and evidence validation |
+| 10 | `execution` | Case resolution, role binding, problem building, backends, verification, policy evaluation and publication |
+| 11 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
 `units` sits beside `shared`, below `duration`. Users import from `rangekeeper`,
-`units`, `duration`, `flow`, `finance`, `model`, `specification`, `execution`,
+`units`, `duration`, `profile`, `flow`, `finance`, `model`, `specification`, `execution`,
 `io` and `errors`. `schema` and `shared` are internal. Owners re-export the
 records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
 and [ADR-017](../decisions/017-api-and-formats.md).

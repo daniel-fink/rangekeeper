@@ -48,6 +48,7 @@ pass.
 | D9 | How does a policy change the plan? | If a value can change, it belongs in the Specification. If it is part of the modelling, it belongs in the Model. The Model declares the relations between dates (lesson 03). A rule **decides** one value: it fixes the value on the first review date on which its condition holds. "Decided" is a role beside fixed and free. There is no separate action concept | 03, 05, 07 |
 | D10 | How is a design variant declared? | Each option is its own Model revision. The Specification lists the alternatives, and the choice between them is a decided value. A provision cost is a fixed value in the Specification | 07 |
 | D11 | Rates by use on each floor (lesson 06) | Keyed values (`by="use"`) and floor equations (`equations_for`). The reference income is a rollup of floor income, so income traces to floors | 06, 07 |
+| D12 | Where does growth live, and what replaces "projection"? | A **profile** says how an amount develops over Periods. Profiles live in a new public namespace, `rk.profile`: growth profiles (`Constant`, `Linear`, `Compounding`) take an `initial=` amount; distribution profiles (`Uniform`, `SCurve`) take a `total=` amount. `rk.flow.Flow.from_profile(profile, periods=, initial= or total=)` makes the Flow. Growth is series maths, not finance, so it is not in `rk.finance` | 01, 03 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -67,7 +68,7 @@ their issue. Names with a gap ID are new.
 ```python
 import rangekeeper as rk
 rk.Model, rk.Specification, rk.Run
-rk.duration, rk.flow, rk.finance, rk.model, rk.specification, rk.execution, rk.io, rk.errors, rk.units
+rk.duration, rk.profile, rk.flow, rk.finance, rk.model, rk.specification, rk.execution, rk.io, rk.errors, rk.units
 ```
 
 ### Values and time
@@ -82,12 +83,14 @@ flow.at(date(2010, 1, 1)), flow.total(), -0.05 * flow + other_flow              
 stream = rk.flow.Stream({"PGI": pgi, "OPEX": opex}) | {"NOI": noi}                   # G04
 stream.select("PGI", "OPEX").sum(), stream.trim(span), stream.display()
 flow.resample("quarter", method=rk.flow.ResampleMethod.SPLIT)                       # #103
+growth = rk.profile.Compounding(rate="2 %/year")                                     # G70
+pgi = rk.flow.Flow.from_profile(growth, periods=years, initial="100 USD", base=None, start=None, every=None)
+fees = rk.flow.Flow.from_profile(rk.profile.SCurve(), periods=build, total="3e6 AUD")
 ```
 
 ### Finance on known data
 
 ```python
-rk.finance.grow("100 USD", rate="2 %/year", periods=years, base=None, start=None, every=None)  # #168
 rk.finance.reversion(nacf, cap_rate="5 %", at=holding)                              # G05
 rk.finance.pv(flow, rate="7 %/year", on=date), rk.finance.npv(...), rk.finance.irr(flow)        # #167, #164
 rk.finance.mortgage_constant(rate="6 %/year", term="20 years", payments_per_year=12) # #167
@@ -151,7 +154,9 @@ rk.io.load(path), rk.io.save(document, path), rk.io.DirectoryStore(path)        
 Equations use value keys, dotted paths (`funding.headroom`), keyed members
 (`rent[use]`), quantity literals (`0 AUD`, `2 years`), the operators `+ - * /`, the
 comparisons `= >= <= > <` and the functions in G17. The functions use the same names
-and keywords as `rk.finance` and `rk.flow`:
+and keywords as `rk.finance` and `rk.flow`. `grow` and `spread` are the two common
+profiles: `grow(x, rate=r)` is `Flow.from_profile(rk.profile.Compounding(rate=r),
+initial=x)`, and `spread(x, ...)` is `Flow.from_profile(rk.profile.Uniform(), total=x)`:
 
 | Function | Meaning |
 | --- | --- |
@@ -183,7 +188,7 @@ use. **Issue** is filled in when the issue is filed.
 | 4 | — | `rk.finance.reversion` | G05 | `finance` | 01·11; 03·8 | #167 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
-| 7 | — | Function catalogue for equations, named as in `rk.finance` and `rk.flow` | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
+| 7 | — | Function catalogue for equations, named as in `rk.profile`, `rk.flow` and `rk.finance` | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
 | 8 | — | Flow-valued string equations on the Model timeline | G18 | `model` | 03·6–8 | #145, #163 |
 | 9 | — | Date values, date arithmetic and `never` | G15, G50 | `units`, `model` | 03·5–6; 05·6–13 | #119 |
 | 10 | — | Builder: `subject`, `timeline`, `values(**units)`, `flows(**units)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
@@ -210,6 +215,7 @@ use. **Issue** is filled in when the issue is filed.
 | 31 | — | Rules that decide values: `decide`, traces, availability errors | G49, G51, G53, G55, G64, G65, G67 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
 | 32 | — | Specification parameters, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
+| 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`grow`, `spread`) | #168, #131 |
 
 Not filed as gaps:
 
@@ -246,9 +252,11 @@ These are inputs for authoring, not API gaps:
 
 The sketches in ADR-020 were not binding. The cells differ from them here:
 
-- Growth is `rk.finance.grow`, not `rk.flow.Flow.grow`. `finance` owns growth
-  ([ADR-010](../../../docs/decisions/010-layers-and-packages.md),
-  [ADR-012](../../../docs/decisions/012-naming-and-glossary.md)).
+- Growth is a profile, `rk.flow.Flow.from_profile(rk.profile.Compounding(...), ...)`,
+  not `rk.flow.Flow.grow` (D12). This amends
+  [ADR-010](../../../docs/decisions/010-layers-and-packages.md) and
+  [ADR-012](../../../docs/decisions/012-naming-and-glossary.md), which put growth in
+  `finance`.
 - Policies use `Specification.decide(key, ...)` (D9), not `base.policy(...).when(..., do=...)`.
 - Lesson 06 declares the rollup as a Value (D3), not `edit().fix_from(...)`.
 - Lesson 07 uses separate Model revisions for options (D10), not

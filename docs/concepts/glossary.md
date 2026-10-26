@@ -51,6 +51,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | `start_inclusive`, `end_exclusive` |
 | Span | A named half-open range of time | `duration` | — |
+| Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | `calculations.projection` (`Extrapolation`, `Distribution` projections) |
 | Movement | One dated or period-based amount | `flow` | — |
 | Flow | An ordered series of Movements in one unit | `flow` | `model.flux.Flow` |
 | Stream | A set of named Flows that operations treat together | `flow` | Line names called `labels` |
@@ -107,6 +108,6 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | --- | --- |
 | Target | `Reference.target`, the UUID of a referenced Value or Movement |
 | Accept, acceptance | Not a term for result checks. Use "verify" for the independent check of a solved candidate. The plain sense, such as "a reader accepts a format", is permitted |
-| Projection | Not used. Use "growth" for time paths and "table" for exports |
+| Projection | Not used. Use "profile" (growth or distribution) for time shapes and "table" for exports |
 | Scenario | Not used for generated futures. Use "path" |
 | Measure | Only the Measure record. Use "count steps" for calendar counting |
