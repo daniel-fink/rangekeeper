@@ -12,7 +12,7 @@ check the lessons.
 | `NN_slug.ipynb` | The lessons, in reading order. Lessons have no outputs in git |
 | [`helpers/`](helpers) | Presentation helpers: chart style, chart, graph and geometry display |
 | [`resources/`](resources/README.md) | Images that the lessons show, with their rights |
-| [`tests/`](tests) | Helper tests and lesson checks |
+| [`tests/`](tests) | Helper tests, lesson checks and the fresh-kernel run of each lesson |
 | [`pyproject.toml`](pyproject.toml), `uv.lock` | The locked walkthrough environment |
 | [`../data/mixed_use_property`](../data/mixed_use_property/README.md) | The data package for lessons 02–07 |
 
@@ -49,6 +49,9 @@ checkout, not from a published release.
   graphs and geometry. They do not select financial contributors, supply rates
   or hide an equation (ADR-020, principle 10).
 - Helpers write their files to `output/`, which git ignores.
+- Read the market path count from `RK_PATH_COUNT` and the design source mode
+  from `RK_DESIGN_MODE`. CI sets four paths and `fixture`; use the full count
+  locally.
 
 ## Test
 

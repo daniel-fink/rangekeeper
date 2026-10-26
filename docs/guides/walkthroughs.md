@@ -50,8 +50,10 @@ root, with the walkthrough environment:
 uv run --project examples/walkthrough --locked pytest examples/walkthrough
 ```
 
-The tests check the helpers, the lesson names and the conversion. Inspect the
-tables, figures and expected financial results of each executed lesson. Helpers
+The tests check the helpers, the lesson names and the conversion. They run each
+lesson in a new kernel, then convert it for the docs site. The `walkthrough` CI job
+runs the same tests with `RK_DESIGN_MODE=fixture` and `RK_PATH_COUNT=4`. Inspect
+the tables, figures and expected financial results of each executed lesson. Helpers
 write their HTML to `examples/walkthrough/output/`, which git ignores.
 
 ## Convert for the docs site

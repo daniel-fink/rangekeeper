@@ -77,6 +77,27 @@ jobs:
       - run: python3 tools/docs/check.py
       # TODO: build the Zensical site here when it exists (ADR-018).
 
+  walkthrough:
+    name: walkthrough
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The walkthrough installs Rangekeeper from this checkout (setuptools-scm).
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --project examples/walkthrough --locked --no-default-groups --group test
+      # Helper tests, lesson checks and each lesson in a fresh kernel, then its
+      # conversion for the docs site. Fixture design data and few market paths.
+      - run: uv run --project examples/walkthrough --locked --no-sync pytest examples/walkthrough -q -rs
+        env:
+          RK_DESIGN_MODE: fixture
+          RK_PATH_COUNT: "4"
+
   test:
     name: test (${{ matrix.os }}, ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
