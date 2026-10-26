@@ -1,4 +1,4 @@
-<img src="walkthrough/resources/rangekeeper.jpg" width="300">
+<img src="https://raw.githubusercontent.com/daniel-fink/rangekeeper/main/walkthrough/resources/rangekeeper.jpg" alt="Rangekeeper" width="300">
 
 # Rangekeeper
 
@@ -12,8 +12,8 @@ finite affine equations with Pyomo/HiGHS and independently checks candidate outp
 Public authoring APIs and C# Grasshopper components connect reviewed data and
 design models to canonical records. Polars serves detached tables and CSV.
 
-This checkout contains a pre-1.0 redesign that is not yet the published PyPI API.
-Use the source installation instructions and the upgrade guide together.
+The `develop` branch can differ from the latest PyPI release. Install from source
+with the installation guide, and use the upgrade guide to move from an earlier release.
 The [package ownership and import guide](docs/concepts/architecture.md)
 lists the current namespaces; `Model`, `Specification` and `Run` remain root imports.
 
@@ -27,6 +27,7 @@ lists the current namespaces; `Model`, `Specification` and `Run` remain root imp
 | Rhino/Grasshopper | [C# authoring and host checks](docs/guides/grasshopper.md) |
 | Older consumers | [Upgrade guide](docs/guides/upgrading.md) |
 | Verification | [Checks and limits](docs/contributing/verification.md) |
+| Conduct and citation | [Code of conduct](CODE_OF_CONDUCT.md), [citation metadata](CITATION.cff) |
 
 The walkthroughs follow Geltner and de Neufville's
 [Flexibility and Real Estate Valuation under Uncertainty](https://doi.org/10.1002/9781119106470).
@@ -34,6 +35,18 @@ Historical plans and captured acceptance results are linked from the documentati
 index. The [Windows connector gate](docs/contributing/windows-acceptance.md) remains
 open. The [retirement guide](docs/contributing/legacy-retirement.md) records the
 removed predecessor runtime.
+
+### Versions
+
+| Line | Branch | Status |
+| --- | --- | --- |
+| 1.x | `develop` | In development. The API on this branch is not on PyPI yet. |
+| 0.8.x | [`support/0.8`](https://github.com/daniel-fink/rangekeeper/tree/support/0.8) | Bug and security fixes only, until an announced end of life. |
+
+Applications that use 0.8.x should declare `rangekeeper>=0.8.72,<0.9`. Then a
+1.0 release on PyPI does not replace their version. [SECURITY.md](SECURITY.md)
+lists the supported versions; the [release guide](docs/contributing/releasing.md)
+gives the release procedure.
 
 ### Library boundary
 

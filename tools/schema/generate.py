@@ -2,6 +2,8 @@
 
 --check compares artifacts without changing the checkout. No runtime imports of
 LinkML are required by the immutable records or their packaged validators.
+--native PATH writes the stock LinkML Python module out of tree, for the
+conformance tools; the package does not contain it.
 """
 
 from __future__ import annotations
@@ -11,9 +13,9 @@ import hashlib
 import importlib.metadata
 import json
 import keyword
-from pathlib import Path
 import re
 import tempfile
+from pathlib import Path
 
 import yaml
 from jsonschema import Draft202012Validator
@@ -101,7 +103,8 @@ def simplify_conjunctions(node):
             del node["anyOf"]
 
 
-def generate():
+def generate(*, native_module: bool = False):
+    """Return the packaged artifacts, plus native.py when native_module is set."""
     versions = {name: importlib.metadata.version(name) for name in PINNED}
     if versions != PINNED:
         raise SystemExit(f"Use tools/schema/requirements.txt; observed {versions}")
@@ -172,7 +175,9 @@ def generate():
                             else (
                                 "record"
                                 if kind in classes
-                                else "enum" if kind in enums else "primitive"
+                                else "enum"
+                                if kind in enums
+                                else "primitive"
                             )
                         )
                     )
@@ -298,7 +303,7 @@ def generate():
                 bases.insert(0, BEHAVIORS[name][1])
             lines.extend(
                 [
-                    f'class {name}({", ".join(bases)}):',
+                    f"class {name}({', '.join(bases)}):",
                     f"    {str(classes[name].description or name)!r}",
                     "    __slots__ = ()",
                     f"    _kind = {name!r}",
@@ -373,7 +378,6 @@ def generate():
         files = {
             "enums.py": enum_source(enums),
             "records.py": "\n".join(lines),
-            "native.py": native,
             "schema.json": encoded(shared),
             "slots.json": encoded(slots),
         }
@@ -395,6 +399,8 @@ def generate():
             },
         }
         files["manifest.json"] = encoded(manifest)
+        if native_module:
+            files["native.py"] = native
         return files
 
 
@@ -402,7 +408,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--output", type=Path, default=DESTINATION)
+    parser.add_argument("--native", type=Path, help="write the stock LinkML module")
     args = parser.parse_args()
+    if args.native:
+        args.native.write_text(generate(native_module=True)["native.py"])
+        print(f"Generated stock LinkML module {args.native}")
+        return
     files = generate()
     changed = [
         name

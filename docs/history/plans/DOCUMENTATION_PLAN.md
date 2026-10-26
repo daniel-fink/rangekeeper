@@ -384,8 +384,8 @@ with the current notebooks and match exactly. The notebooks were not executed
 again for these prose and bibliography changes. Their tracked historical build
 outputs were preserved; the new site is a separate local build.
 
-Temporary logs, artifact inventories and the accepted book are under
-`/private/tmp/rk-docs-implementation-20261008/`; they are local diagnostic outputs,
+Temporary logs, artifact inventories and the accepted book were in a temporary
+local directory; they are local diagnostic outputs,
 not a published or permanent evidence store. The complete Python test suite was
 not rerun during the content pass. No remote CI, new Rhino host session, Windows
 connector publication/receive check or site publication was performed. Follow

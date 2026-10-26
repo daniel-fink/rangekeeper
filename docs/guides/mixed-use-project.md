@@ -212,36 +212,18 @@ The original property collection is `bed351126771f61e3d6255c18cd48aa5`.
 | [assumptions.json](../../examples/data/mixed_use_property/assumptions.json) | Separate legacy teaching assumptions and calculation conventions |
 
 SDK reserialization changes content IDs for this historical payload. The package
-therefore retains original transport strings. The offline preparation tool expands
-references and removes only redundant `__closure` indexes before invoking the
-existing legacy converter. All original records and indexes remain in the archive.
+therefore retains original transport strings. The preparation tool expanded
+references and removed only redundant `__closure` indexes before it invoked the
+legacy converter. All original records and indexes remain in the archive.
 The resulting source checksum refers to that expanded conversion input.
 
-From the repository root, with the matching Rangekeeper environment installed:
+The preparation tool captured, rebuilt and verified this package. It used the
+legacy converter that RK no longer contains, so it is not part of the current
+repository. Its source remains at revision
+[`6d39b09`](https://github.com/daniel-fink/rangekeeper/blob/6d39b092e8bc7b5f71b545f6d0d5180e345b9140/tools/docs/prepare_property.py).
+A new capture is source-specific extraction and
+belongs to the consumer; see the [upgrade guide](upgrading.md).
 
-```sh
-python tools/docs/prepare_property.py verify
-```
-
-This checks hashes, complete transport closure, deterministic offline reconstruction,
-all domain identities and relationship triples against the pinned legacy graph,
-mapped values, geometry summaries and canonical codec round trips. It requires
-the recorded legacy Git commit locally; it needs no network or credentials.
-
-For a deliberate new capture, install the `speckle` extra and `python-dotenv`, and
-use a new output path. The capture reads `SPECKLE_TOKEN` from the environment or
-the existing repository `src/.env`. It writes source data only and does not publish:
-
-```sh
-python tools/docs/prepare_property.py capture --output /tmp/rk-property-capture.json
-python tools/docs/prepare_property.py build \
-  --transport /tmp/rk-property-capture.json \
-  --output /tmp/rk-property-package \
-  --captured-on YYYY-MM-DD \
-  --sdk-version VERSION
-```
-
-Use the actual capture date and SDK version. Build rejects an existing destination.
 Routine notebook loading only needs the canonical Model:
 
 ```python

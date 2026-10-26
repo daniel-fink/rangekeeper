@@ -3,13 +3,15 @@
 from rangekeeper.run.run import Run
 from rangekeeper.run.validation import validate
 from rangekeeper.schema.records import (
-    Run as RunRecord,
-    Report,
-    Status,
-    Runtime,
-    Implementation,
     Diagnostic,
+    Implementation,
+    Report,
+    Runtime,
+    Status,
     Step,
+)
+from rangekeeper.schema.records import (
+    Run as RunRecord,
 )
 
 __all__ = [
@@ -26,9 +28,9 @@ __all__ = [
 
 from rangekeeper.schema.enums import (
     CompletionStatus,
-    SolutionStatus,
     ImplementationKind,
     Severity,
+    SolutionStatus,
     StepKind,
 )
 

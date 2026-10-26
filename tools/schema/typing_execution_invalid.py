@@ -1,8 +1,8 @@
 """Four intentional type errors, checked by the schema typing tool."""
 
 from rangekeeper import Model, Specification
-from rangekeeper.run.execution import Executor, Tolerances
 from rangekeeper.io import MemoryStore
+from rangekeeper.run.execution import Executor, Tolerances
 
 
 def misuse(model: Model, specification: Specification) -> None:

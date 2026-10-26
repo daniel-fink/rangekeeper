@@ -1,10 +1,13 @@
 """Detached Polars projections. Records retain identity, units and field presence."""
 
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
-from rangekeeper.model.flux import Flow, Stream
-from rangekeeper.shared.table import Table
+
 from rangekeeper.model.duration.period import PeriodTiming
+from rangekeeper.model.flux import Flow, Stream
+from rangekeeper.shared.optional import requires
+from rangekeeper.shared.table import Table
 
 if TYPE_CHECKING:
     from polars import DataFrame
@@ -19,7 +22,8 @@ def to_frame(flow: Flow | Stream | Table) -> DataFrame:
     Flow units are an explicit argument to from_frame; a table alone does not
     carry the complete domain contract. Empty tables retain their movement columns.
     """
-    import polars as pl
+    with requires("calculations"):
+        import polars as pl
 
     if isinstance(flow, Stream):
         return stream_frame(flow)
@@ -98,7 +102,8 @@ def dates(
 
     This omits Movement IDs, matching keys, coverage and Claims. Use to_frame for interchange.
     """
-    import polars as pl
+    with requires("calculations"):
+        import polars as pl
 
     if name == "date":
         raise ValueError("magnitude column must differ from date")
@@ -114,13 +119,11 @@ def dates(
 
 def stream_projection(stream):
     """One projection for numeric export and both presentation forms."""
-    from rangekeeper.calculations._batch import polars
-
     batch = stream._prepared()
     try:
         grid = batch.grid(stream.join)
     except ValueError as error:
-        raise ValueError(f'{error}; lines: {", ".join(stream.labels)}') from error
+        raise ValueError(f"{error}; lines: {', '.join(stream.labels)}") from error
     amounts = {}
     present = set()
     for line, coordinate, magnitude in batch.frame.select(
@@ -134,6 +137,7 @@ def stream_projection(stream):
 def stream_frame(stream) -> DataFrame:
     """Export numeric line columns and explicit coordinates, without mutable shared state."""
     from datetime import date
+
     from rangekeeper.calculations._batch import polars
 
     pl = polars()
@@ -151,7 +155,9 @@ def stream_frame(stream) -> DataFrame:
                     (
                         date.fromisoformat(c[1])
                         if c[0] == "event"
-                        else date.fromisoformat(c[3]) if c[3] else None
+                        else date.fromisoformat(c[3])
+                        if c[3]
+                        else None
                     )
                     for c in coordinates
                 ],
@@ -191,7 +197,8 @@ def text_frame(table: Table):
     Use the returned Polars frame for CSV or other textual exports. Rich and
     non-finite cells require an explicit caller encoding. Row IDs stay separate.
     """
-    import polars as pl
+    with requires("calculations"):
+        import polars as pl
 
     if not isinstance(table, Table):
         raise TypeError("table must be a Table")
@@ -218,9 +225,10 @@ def _scalar(
 ) -> str | None:
     if value is None:
         return None
-    from uuid import UUID
-    from numbers import Real
     import math
+    from numbers import Real
+    from uuid import UUID
+
     from rangekeeper.shared.errors import EncodingError
 
     if isinstance(value, (str, bool, UUID, int)):

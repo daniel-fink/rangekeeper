@@ -1,10 +1,14 @@
 """Distribution declarations and calculations with lazy numerical backends."""
 
 from __future__ import annotations
+
 import math
 from collections.abc import Sequence
+from itertools import pairwise
 from typing import TYPE_CHECKING, cast
+
 from rangekeeper.schema.enums import DistributionFamily
+from rangekeeper.shared.optional import requires
 
 if TYPE_CHECKING:
     from rangekeeper.schema.records import Distribution, DistributionFamily
@@ -130,7 +134,8 @@ class DistributionBehavior:
 
     def _implementation(self):
         distribution = cast("Distribution", self)
-        from scipy import stats
+        with requires("calculations"):
+            from scipy import stats
 
         distribution.check()
         scale = distribution.upper - distribution.lower
@@ -158,7 +163,8 @@ class DistributionBehavior:
         The record is immutable; only generator state advances.
         """
         distribution = cast("Distribution", self)
-        import numpy as np
+        with requires("calculations"):
+            import numpy as np
 
         if (
             type(size) is not int
@@ -192,14 +198,12 @@ class DistributionBehavior:
         state changes; boundaries use the distribution's units.
         """
         distribution = cast("Distribution", self)
-        if len(boundaries) < 2 or any(
-            b < a for a, b in zip(boundaries, boundaries[1:])
-        ):
+        if len(boundaries) < 2 or any(b < a for a, b in pairwise(boundaries)):
             raise ValueError(
                 "interval boundaries must be ordered and contain at least two values"
             )
         cumulative = distribution.cdf(boundaries)
-        result = [b - a for a, b in zip(cumulative, cumulative[1:])]
+        result = [b - a for a, b in pairwise(cumulative)]
         if (
             distribution.lower == distribution.upper
             and boundaries[0] == distribution.lower

@@ -40,17 +40,17 @@ to their anticipated markets, site, permitted uses, design constraints, and obje
 The current [library plan](../concepts/architecture.md) retains LinkML and builds the
 canonical core directly in the library. The agreed sequence is:
 
-1. Use the completed [domain migration map](DOMAIN_MIGRATION_MAP.md), then implement the minimal
+1. Use the completed [domain migration map](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/DOMAIN_MIGRATION_MAP.md), then implement the minimal
    schema-backed records, validation, and immutable storage in the library.
 2. Execute the scalar forward/inverse model with Pyomo/HiGHS, then formulate and
    implement progressively richer tests, culminating in the two-pad policy example.
 3. Validate the policy example with readable scenarios before evaluating and
    optimizing policies across larger scenario ensembles.
-4. Subsequently connect the approach to EstateMaster reconstruction and Twenty
-   browsing. Neither integration is a prerequisite for specifying the example.
+4. Subsequently connect the approach to EstateMaster reconstruction and browsing
+   in the consumer's CRM. Neither integration is a prerequisite for specifying the example.
 
 Backwards compatibility is not a binding constraint on this design. Existing RK
-and Mark8 work can supply useful concepts and implementations without determining
+and legacy consumer work can supply useful concepts and implementations without determining
 the new boundaries.
 
 ## Agreed architectural direction
@@ -383,9 +383,9 @@ Different policies or scenarios can produce different Models without changing th
 input Model or other evaluations. Recorded resolutions do not
 become permanent constraints in subsequent Specifications.
 
-For eventual Twenty publication, each upload creates an entirely new project.
+For eventual publication to the consumer's CRM, each upload creates an entirely new project.
 Exported snapshots are independent; there is no merge or synchronization back into
-the originating CRM project. Twenty is expected to serve primarily as a viewer of
+the originating CRM project. The consumer's CRM is expected to serve primarily as a viewer of
 the published definition and selected run outcomes.
 
 ## Questions to settle in the schema and test specification
@@ -451,7 +451,7 @@ These are intended acceptance properties, not reports of tests already performed
   on common market scenarios. It is a conceptual reference, not the implementation
   of the proposed two-pad example.
 - Geltner and de Neufville, [Flexibility and Real Estate Valuation under Uncertainty:
-  A Practical Guide for Developers](https://github.com/daniel-fink/rangekeeper/blob/codex/walkthrough-acausal/examples/walkthrough/resources/deNeufvilleGeltnerValuationUnderUncertainty.pdf)
+  A Practical Guide for Developers](https://doi.org/10.1002/9781119106470)
   (2018): Chapter 9, especially printed p. 65, for paired scenario comparisons;
   Chapters 18-19 and Box 18.1 on printed p. 133 for decision rules and information
   limits; Chapter 21, printed pp. 160-161, for product mix; Chapter 22, printed

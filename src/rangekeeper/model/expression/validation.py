@@ -1,18 +1,19 @@
 """One semantic expression traversal in an explicit mathematical scope."""
 
-from dataclasses import dataclass
 from collections.abc import Mapping
+from dataclasses import dataclass
 from types import MappingProxyType
 from uuid import UUID
-from rangekeeper.shared.validation import require
-from rangekeeper.shared.errors import ContractError
-from rangekeeper.model.scope import Scope, resolve_reference
+
 from rangekeeper.model.expression.domains import (
-    compare_domains,
     DomainCompatibility,
+    compare_domains,
     infer_operator_domain,
     infer_selection_domain,
 )
+from rangekeeper.model.scope import Scope, resolve_reference
+from rangekeeper.shared.errors import ContractError
+from rangekeeper.shared.validation import require
 
 
 def validate_function_signature(function, *, scope: Scope) -> None:
@@ -262,6 +263,8 @@ def validate_constraint_predicates(
 
 @dataclass(frozen=True)
 class ExpressionAnalysis:
+    """Read-only Expression nodes, inferred domains and document paths, keyed by ID."""
+
     nodes_by_id: Mapping
     domains_by_id: Mapping
     paths_by_id: Mapping
@@ -298,6 +301,7 @@ def analyze_expressions(expressions, *, scope, reserved=(), locations=None):
 
 
 def infer_expression_domain(node, seen=None, *, scope: Scope) -> dict:
+    """Analyze one Expression node and return its inferred domain."""
     analysis = analyze_expressions((node,), scope=scope, reserved=seen or ())
     return analysis.domains_by_id[UUID(node["id"])]
 
@@ -310,7 +314,7 @@ def bind_arguments(call, function):
     require(len(args) <= len(positional), "too many positional arguments")
     bound = {
         p["name"]: (argument, f"/arguments/{index}")
-        for index, (p, argument) in enumerate(zip(positional, args))
+        for index, (p, argument) in enumerate(zip(positional, args, strict=False))
     }
     by_name = {p["name"]: p for p in parameters}
     for index, argument in enumerate(call.get("named_arguments") or []):

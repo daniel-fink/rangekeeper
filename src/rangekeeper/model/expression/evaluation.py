@@ -1,7 +1,7 @@
 """Pure numerical arithmetic over expressions and explicitly supplied quantities."""
 
-from collections.abc import Mapping
 import math
+from collections.abc import Mapping
 from uuid import UUID
 
 from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity

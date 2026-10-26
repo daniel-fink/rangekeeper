@@ -2,33 +2,13 @@
 
 ## Branches and publication
 
-The [14 October 2026 state record](../history/handoffs/2026-10-14-repository-and-walkthrough.md)
-pins the completed split, local worktrees, verification results and remaining work.
-
-`develop` contains the current library and preserves the original `walkthrough/`
-sources, configuration and tracked outputs from commit
-`2c514cbc0e8c5436d65c142166e5bf3d56609f88`. These are historical teaching material;
-their presence does not establish compatibility with the current library.
-
-The updated book lives on
-[`codex/walkthrough-acausal`](https://github.com/daniel-fink/rangekeeper/tree/codex/walkthrough-acausal).
-Use `/Volumes/Data/Projects/Rangekeeper` as the single local working folder.
-Keep `develop` checked out for library work. Before changing branches, inspect
-`git status --short --branch` and save any unfinished work on its owning branch.
-Switch to `codex/walkthrough-acausal` in the same folder for notebook and book
-work, then run the commands below. Commit and push drafts on that branch. Merge
-`develop` into it to receive library updates; refresh and check its environment
-lock when dependencies change. Return to `develop` when draft work is saved.
-Do not create another RK worktree for this routine workflow. The shared source capture lives at
-[`examples/data/mixed_use_property`](../../examples/data/mixed_use_property).
-Keep its retained source bytes and provenance unchanged.
-
-The `acausal-modelling` checkpoint retains the complete work before this split.
-GitHub Pages serves the root of `gh-pages`. Code and draft pushes do not publish
-the book. Keep the Pages source and `gh-pages` unchanged while the book is in
-progress. When the book is ready, validate its notebooks and local preview,
-merge the draft source into `develop`, then publish the reviewed HTML to
-`gh-pages` as a separate, explicit action. A source merge alone does not publish.
+The current book is on the
+[`codex/walkthrough-acausal`](https://github.com/daniel-fink/rangekeeper/tree/codex/walkthrough-acausal)
+branch. `develop` keeps the original `walkthrough/` sources as historical teaching
+material; they do not show that they work with the current library. GitHub Pages
+serves the published book from `gh-pages`. Code and draft pushes do not publish
+the book; publication is a separate, explicit action. Contributors follow the
+[walkthrough branch procedure](../contributing/walkthrough-branch.md).
 
 The instructions and acceptance records below refer to the acausal draft.
 
@@ -67,8 +47,9 @@ package is captured and reconciled. Notebook and viewer acceptance are recorded
 separately in the evidence linked above.
 
 Shared builders live in `examples/rangekeeper_examples/`. Install both packages
-from the same checkout. Live design receive also needs the `speckle` extra;
-fixture mode needs no service SDK.
+from the same checkout. RK has no `speckle` extra and no service transport. A live
+design receive needs a consumer-supplied service client; fixture mode needs no
+service SDK.
 
 ## Explore the notebooks
 
@@ -94,7 +75,7 @@ mode. The notebooks do not publish.
 
 ## Execute for acceptance
 
-Use the candidate wheel and matching example package in a separate environment,
+Use the built wheel and matching example package in a separate environment,
 with the `calculations`, `execution` and `visualisation` extras
 plus `nbclient`, `nbformat`, `nbconvert` and `ipykernel`. Record the wheel hash and
 interpreter. A fresh kernel must execute each notebook from top to bottom.
@@ -102,7 +83,7 @@ interpreter. A fresh kernel must execute each notebook from top to bottom.
 Copy the accepted notebooks and resources into a new execution directory so their
 relative resources and generated `design-output/` files stay together. Keep
 `data/` beside `walkthrough/`, as in the repository. From the
-repository root, with the candidate-wheel environment active:
+repository root, with the wheel environment active:
 
 ```sh
 mkdir -p /tmp/rk-notebooks-001/walkthrough
@@ -117,7 +98,7 @@ MPLBACKEND=Agg RK_SCENARIO_COUNT=4 RK_DESIGN_MODE=fixture python -m nbconvert --
 
 Use a registered kernel for that environment, or supply its name through
 `--ExecutePreprocessor.kernel_name`. Do not assume that a notebook's saved kernel
-name selects the candidate-wheel environment. Inspect execution errors, tables,
+name selects the wheel environment. Inspect execution errors, tables,
 figures, mode declarations and expected financial results. Preserve the outputs
 with the acceptance result.
 
@@ -228,8 +209,8 @@ To style a Figure for direct notebook display or a fixed export, call
 `apply_theme(figure, mode="light")` or `apply_theme(figure, mode="dark")` from
 `helpers.theme`. The book display helpers select the mode in the browser.
 
-To review a candidate without adding it to the accepted TOC, pass
-`--preview-chapter candidate.ipynb` to `build_book.py`. It applies the same source,
+To review a chapter without adding it to the accepted TOC, pass
+`--preview-chapter chapter.ipynb` to `build_book.py`. It applies the same source,
 execution-count and error checks. Add the source to `myst.yml` only after review.
 
 The local geometry view uses the official Speckle SDK with pinned in-memory source

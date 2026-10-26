@@ -1,9 +1,5 @@
 """Canonical Model behavior, atomic revisions, and schema-owned lookup scopes."""
 
-from rangekeeper.model.expression import ExpressionKind
-from rangekeeper.model.expression import Operator
-from rangekeeper.model import ValueKind
-
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -12,31 +8,34 @@ import pytest
 import yaml
 
 from rangekeeper.model import (
-    Model,
-    Metadata,
-    Definitions,
-    System,
-    Entity,
     Assembly,
-    Relationship,
     Characteristics,
-    Value,
-    Measure,
-    Quantity,
+    Definitions,
+    Entity,
     Formulation,
+    Measure,
+    Metadata,
+    Model,
+    Quantity,
+    System,
     Update,
+    Value,
+    ValueKind,
+    characteristics,
+    definitions,
+    provenance,
 )
-from rangekeeper.model import characteristics, definitions, provenance
 from rangekeeper.model.diff import between
+from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.model.validation import validate
 from rangekeeper.shared.errors import (
+    IdentityConflictError,
     MissingReferenceError,
     ReferenceTypeError,
-    IdentityConflictError,
     RevisionConflictError,
+    UnitError,
     UnsupportedVersionError,
     ValidationError,
-    UnitError,
 )
 from rangekeeper.shared.units import UnitSystem, default_units
 

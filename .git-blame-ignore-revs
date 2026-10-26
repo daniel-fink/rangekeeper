@@ -1,0 +1,5 @@
+# Revisions with mechanical lint and format changes only. Use with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Adopt ruff for linting and formatting (#234)
+03c9ed6e715947784238bcaa58bb709a3d5e3813

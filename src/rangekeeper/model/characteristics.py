@@ -2,7 +2,11 @@
 
 from rangekeeper.schema.records import (
     Characteristics as Characteristics,
+)
+from rangekeeper.schema.records import (
     Label as Label,
+)
+from rangekeeper.schema.records import (
     Value as Value,
 )
 from rangekeeper.shared.arguments import require_text

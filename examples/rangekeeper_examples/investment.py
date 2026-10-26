@@ -4,56 +4,61 @@ This module is an example consumer, not a new domain schema. Generated Values ow
 all parameters and outputs. Construction has no random, solver or storage effects.
 """
 
-from rangekeeper.specification.policy import ActionKind
-from rangekeeper.model import ValueKind
-
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, cast
 from datetime import date
+from typing import Any, cast
 from uuid import UUID, uuid4
+
+from rangekeeper.calculations import financial
 from rangekeeper.model import (
-    Model,
-    Metadata,
     Definitions,
-    Measure,
-    Quantity,
-    System,
     Formulation,
-    Value,
+    Measure,
+    Metadata,
+    Model,
+    Quantity,
+    Reference,
+    System,
     Update,
+    Value,
+    ValueKind,
+)
+from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods, offset
+from rangekeeper.model.expression import Operator
+from rangekeeper.model.expression.authoring import (
+    add,
+    binary,
+    divide,
+    equal,
+    literal,
+    multiply,
+    power,
+)
+from rangekeeper.model.expression.authoring import (
+    reference as ref,
 )
 from rangekeeper.model.flux import Flow, Movement
-from rangekeeper.model.scenario import ScenarioRealization
-from rangekeeper.schema.records import (
-    Reference,
-    Assignment,
-    Policy,
-    Specification as SpecificationRecord,
-)
-from rangekeeper.model.duration import make_periods, offset, Frequency, PeriodTiming
-
 from rangekeeper.model.formulation import declare
 from rangekeeper.model.formulation.authoring import identify, identify_tree
 from rangekeeper.model.formulation.flow import aligned, shape
-from rangekeeper.model.expression.authoring import binary
-from rangekeeper.specification.policy import Decision, Rule, Action, ObservationBinding
-from rangekeeper.model import Reference
-from rangekeeper.model.expression import Operator
-from rangekeeper.model.expression.authoring import (
-    reference as ref,
-    literal,
-    add,
-    subtract,
-    multiply,
-    divide,
-    power,
-    equal,
+from rangekeeper.model.scenario.view import Market
+from rangekeeper.schema.records import (
+    Assignment,
+    Policy,
+)
+from rangekeeper.schema.records import (
+    Specification as SpecificationRecord,
 )
 from rangekeeper.specification import Specification
-from rangekeeper.specification.targets import unknown_flow, assign_flow
-from rangekeeper.calculations import financial, series
-from rangekeeper.model.scenario.view import Market
+from rangekeeper.specification.policy import (
+    Action,
+    ActionKind,
+    Decision,
+    ObservationBinding,
+    Rule,
+)
+from rangekeeper.specification.targets import assign_flow, unknown_flow
 
 _DEFAULTS = dict(
     units="AUD",
@@ -501,7 +506,9 @@ def build_stop_gain_resale_policy(
         if mapping is None:
             mapping = {
                 h.id: p.id
-                for h, p in zip(own["holding"].flow.movements, factors.flow.movements)
+                for h, p in zip(
+                    own["holding"].flow.movements, factors.flow.movements, strict=False
+                )
             }
     elif pricing_factor is None or holding is None or sale is None:
         raise ValueError("explicit resale roles must supply all three Values")
@@ -537,11 +544,11 @@ def build_stop_gain_resale_policy(
 
     def sell(index):
         actions = []
-        for offset, (h, (_, s)) in enumerate(rows[index:]):
+        for position, (h, (_, s)) in enumerate(rows[index:]):
             actions.extend(
                 (
-                    assign(Reference(target=h.id), int(offset == 0)),
-                    assign(Reference(target=s.id), int(offset == 0)),
+                    assign(Reference(target=h.id), int(position == 0)),
+                    assign(Reference(target=s.id), int(position == 0)),
                 )
             )
         return (*actions, Action(kind=ActionKind.TERMINATE))

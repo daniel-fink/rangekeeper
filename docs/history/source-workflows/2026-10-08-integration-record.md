@@ -12,22 +12,22 @@ Current contracts: source workflows (retired external procedure),
 
 ## Real source consumers
 
-Mandarin and both East Whisman scenarios now use outer workflow documents v2.
+Proving project A and both proving project B scenarios now use outer workflow documents v2.
 Their extraction policies retain their own versions. Former Features become
-property Values; every measurement has an owner-local key. Six Mandarin, two
+property Values; every measurement has an owner-local key. Six proving project A, two
 December, and 34 November unresolved measurements are now explicit, alongside
 preserved descriptive properties and findings. Zero remains distinct from missing.
 
 Business UUIDs, source checksums, reviewed decisions and calculation scopes remain.
-East Whisman keeps square-foot units and separate source scenarios. No tower
+Proving project B keeps square-foot units and separate source scenarios. No tower
 crosswalk, basement allocation, individual apartments or deletion from absence is
-inferred. Projects remains an environment-only repository with YAML interpretation
+inferred. The primary consumer remains an environment-only repository with YAML interpretation
 and thin notebooks. The reference graph enters only a separate comparator.
 
 Strict comparisons check canonical content, mapped Value identities, quantities,
 units, membership, relationship endpoints, source cells, decision records and check
 outcomes. Named representation changes are recorded, not broad ignored categories.
-Mandarin also retains its separate older SOM-reference comparison.
+Proving project A also retains its separate older architecture-practice reference comparison.
 
 ## Earlier pinned-service observation
 
@@ -39,7 +39,7 @@ The independently recorded object pin is used for the live read acceptance.
 
 ## Earlier source-adapter migration
 
-Mandarin is the proving project. Its JLL and GFA/MGP adapters now feed RK Evidence
+Proving project A was the main proving project. Its property consultancy and GFA/MGP adapters now feed RK Evidence
 into source review, graph composition and reconciliation. The duplicate Excel
 decoder was removed; review records are presentation views. A captured baseline
 checks source values, graph identities, topology, characteristics and review

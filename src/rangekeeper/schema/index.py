@@ -4,21 +4,21 @@ Only embedded record slots are traversed. References are not followed and opaque
 Claim content is never mistaken for a declaration merely because it contains `id`.
 """
 
+import re
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
-import re
 from types import MappingProxyType
 from typing import TypeVar, cast
 from uuid import UUID
 
 from rangekeeper.schema.runtime import Record
 from rangekeeper.schema.validation import _slot_map
+from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import (
     IdentityConflictError,
     MissingReferenceError,
     ReferenceTypeError,
 )
-from rangekeeper.shared.arguments import require_uuid
 
 R = TypeVar("R", bound=Record)
 
@@ -55,7 +55,7 @@ def record_at(root: Record, path: str) -> RecordLocation:
     while offset < len(tokens):
         fields = _slot_map(current._kind)
         if "id" in fields:
-            owner = getattr(current, "id")
+            owner = current.id  # type: ignore[attr-defined]  # an "id" slot
         name = tokens[offset]
         offset += 1
         # walk emits schema slot names verbatim. Do not introduce pointer aliases.
@@ -110,7 +110,7 @@ def walk(
     yield record, owner, path
     fields = _slot_map(record._kind)
     if "id" in fields:
-        owner = getattr(record, "id")
+        owner = record.id  # type: ignore[attr-defined]  # an "id" slot
     for name in record.field_names():
         field = fields[name]
         if not any(option["category"] == "record" for option in field["options"]):
@@ -134,11 +134,12 @@ class RecordIndex:
 
     @classmethod
     def build(cls, root: Record) -> "RecordIndex":
+        """Index each identified record under one root; reject duplicate UUIDs."""
         records, owners, paths = {}, {}, {}
         for record, owner, path in walk(root):
             if "id" not in _slot_map(record._kind):
                 continue
-            identity = getattr(record, "id")
+            identity = record.id  # type: ignore[attr-defined]  # an "id" slot
             if identity in records:
                 raise IdentityConflictError(f"duplicate declaration UUID: {identity}")
             records[identity], owners[identity], paths[identity] = record, owner, path
@@ -178,7 +179,9 @@ def walk_data(kind: str, data: Mapping, path: str = ""):
         items = (
             value.items()
             if field["mapping"]
-            else enumerate(value) if field["many"] else ((None, value),)
+            else enumerate(value)
+            if field["many"]
+            else ((None, value),)
         )
         for index, child in items:
             if isinstance(child, Mapping):

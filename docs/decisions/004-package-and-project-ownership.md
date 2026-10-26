@@ -1,7 +1,9 @@
 # ADR-004: Organize packages by domain and source projects by build boundary
 
-Status: implemented. Domain package structure accepted on 2026-10-08; the user
-selected `src/grasshopper` and authorized its move on 2026-10-08.
+Status: implemented. Recorded: 2026-10-08.
+
+The domain package structure was accepted on 2026-10-08. On the same day the user
+selected `src/grasshopper` and authorized its move.
 
 ## Problem and choice
 

@@ -8,20 +8,31 @@ is responsible for that interpretation; Flow records carry no semantic kinds.
 
 from __future__ import annotations
 
-from uuid import uuid4
-
+import math
 from dataclasses import dataclass
 from datetime import date
-import math
+from uuid import uuid4
 
+from rangekeeper.model.duration.calendar import DayCount, require_date
+from rangekeeper.model.duration.period import PeriodTiming
 from rangekeeper.model.flux import Flow
 from rangekeeper.model.measure import Quantity
-from rangekeeper.model.duration.period import PeriodTiming
-from rangekeeper.model.duration.calendar import (
-    DayCount,
-    require_date,
-    resolve_day_count,
-)
+from rangekeeper.shared.optional import requires
+
+
+def resolve_day_count(convention: DayCount):
+    """Map one shared convention to its PyXIRR day count."""
+    if not isinstance(convention, DayCount):
+        raise TypeError("convention must be a DayCount")
+    with requires("calculations"):
+        import pyxirr
+
+    return {
+        DayCount.ACTUAL_365: pyxirr.DayCount.ACT_365F,
+        DayCount.ACTUAL_360: pyxirr.DayCount.ACT_360,
+        DayCount.ACTUAL_ACTUAL: pyxirr.DayCount.ACT_ACT_ISDA,
+        DayCount.THIRTY_360: pyxirr.DayCount.THIRTY_E_360,
+    }[convention]
 
 
 def _require_result(value: float | None, operation: str) -> float:
@@ -37,7 +48,8 @@ def calculate_pv(flow: Flow, *, rate: float, first_period: int = 1) -> Flow:
     Rate is per movement period; first_period=1 places the first payment one period
     after valuation. No date convention is inferred from period coverage.
     """
-    import pyxirr
+    with requires("calculations"):
+        import pyxirr
 
     flow.check(resolved=True)
     if not math.isfinite(rate) or rate <= -1 or type(first_period) is not int:
@@ -70,7 +82,8 @@ def calculate_xnpv(
     Undated period movements require timing; recorded dates take precedence.
     Empty Flows have zero value and never enter PyXIRR's empty-date path.
     """
-    import pyxirr
+    with requires("calculations"):
+        import pyxirr
 
     flow.check(resolved=True)
     if timing is not None and not isinstance(timing, PeriodTiming):
@@ -117,7 +130,8 @@ def calculate_irr(
     Same-day payments cannot determine an IRR. Undated periods require timing.
     valuation_date controls residual reporting; it does not change the solver.
     """
-    import pyxirr
+    with requires("calculations"):
+        import pyxirr
 
     flow.check(resolved=True)
     if timing is not None and not isinstance(timing, PeriodTiming):

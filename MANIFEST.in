@@ -1,1 +1,11 @@
-global-exclude *.sync-conflict-*
+# setuptools-scm adds every tracked file to the sdist. Keep the package sources,
+# its metadata files and the licence; the repository tooling stays in git.
+prune .github
+prune docs
+prune examples
+prune schema
+prune src/grasshopper
+prune src/tests
+prune tools
+prune walkthrough
+exclude .git-blame-ignore-revs .gitattributes .gitignore AGENTS.md CONTRIBUTING.md SECURITY.md uv.lock

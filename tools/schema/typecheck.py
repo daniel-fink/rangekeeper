@@ -1,9 +1,9 @@
 """Run with mypy==1.18.2 installed; check valid and deliberately invalid calls."""
 
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
@@ -19,7 +19,7 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
     sources = [
         str(path.relative_to(ROOT / "src"))
         for path in sorted((ROOT / "src/rangekeeper").rglob("*.py"))
-        if "legacy" not in path.parts and path.name != "native.py"
+        if "legacy" not in path.parts
     ]
     subprocess.run(
         command

@@ -4,14 +4,13 @@ Every cell is an ``AggregateEntry`` from ``Reduction.execute``. A Pivot adds no
 arithmetic; it only chooses each column's contributors and compares populations.
 """
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from uuid import UUID
 
 from rangekeeper.model import Entity
-from rangekeeper.schema.records import Flow, Quantity
 from rangekeeper.model.definitions import _classes
 from rangekeeper.model.system.errors import AggregationError
 from rangekeeper.model.system.hierarchy import Hierarchy
@@ -21,6 +20,7 @@ from rangekeeper.model.system.reduction import (
     Contributor,
     Coverage,
 )
+from rangekeeper.schema.records import Flow, Quantity
 
 if TYPE_CHECKING:
     from rangekeeper.model.system.reduction import Reduction
@@ -85,6 +85,9 @@ class Pivot:
     __slots__ = ("rows", "columns", "_columns", "_children", "_positions")
     rows: Hierarchy
     columns: tuple[PivotColumn, ...]
+    _columns: Mapping[UUID | None, PivotColumn]
+    _children: Mapping[UUID | None, tuple[PivotColumn, ...]]
+    _positions: Mapping[UUID, int]
 
     def __init__(self, rows: Hierarchy, columns: Iterable[PivotColumn]) -> None:
         if not isinstance(rows, Hierarchy):
@@ -157,6 +160,7 @@ class Pivot:
     def coverage(
         self, row: UUID, column: "UUID | PivotColumn | None" = None
     ) -> Coverage:
+        """Return the contributor coverage of one cell."""
         return self.column(column).aggregation.coverage(row)
 
     def available_value(
@@ -202,8 +206,11 @@ class Pivot:
         rows = []
         for id in self.rows.preorder():
             entity = self.rows.view.entity(id)
-            cells = {"name": entity.name, "parent_id": self.rows.parent(id)}
-            for item, label in zip(self.columns, labels):
+            cells: dict[str, object] = {
+                "name": entity.name,
+                "parent_id": self.rows.parent(id),
+            }
+            for item, label in zip(self.columns, labels, strict=True):
                 cells[label] = self.value(id, item)
             rows.append(Row(cells, id))
         return Table(("name", "parent_id", *labels), rows)
@@ -245,8 +252,8 @@ def _base_rule(reduction: "Reduction", rows: Hierarchy) -> Callable[[Entity], bo
 def _rule(base, classes):
     if not classes:
         return base
-    return lambda entity: base(entity) and all(
-        entity.classification in group for group in classes
+    return lambda entity: (
+        base(entity) and all(entity.classification in group for group in classes)
     )
 
 

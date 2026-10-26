@@ -5,14 +5,12 @@ from __future__ import annotations
 import calendar
 from datetime import date, timedelta
 from enum import Enum, unique
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pyxirr import DayCount as FinancialDayCount
 
 
 @unique
 class Frequency(Enum):
+    """Select the calendar step of a date grid, from one day to one decade."""
+
     DAY = "day"
     WEEK = "week"
     BIWEEK = "biweek"
@@ -45,18 +43,23 @@ _STEPS = dict(
             (0, 60),
             (0, 120),
         ),
+        strict=True,
     )
 )
 
 
 @unique
 class MonthRoll(Enum):
+    """Select how a month step treats a day that the target month does not have."""
+
     PRESERVE_END = "preserve_end"
     CLAMP = "clamp"
 
 
 @unique
 class PeriodTiming(Enum):
+    """Select the date that represents a Period: first day, last day or end boundary."""
+
     FIRST = "first"
     LAST = "last"
     END = "end"
@@ -64,6 +67,8 @@ class PeriodTiming(Enum):
 
 @unique
 class DayCount(Enum):
+    """Select the day-count convention of a year fraction."""
+
     ACTUAL_365 = "actual/365"
     ACTUAL_360 = "actual/360"
     ACTUAL_ACTUAL = "actual/actual"
@@ -141,23 +146,28 @@ def measure(
 
 
 def year_fraction(start: date, end: date, *, convention: DayCount) -> float:
-    """Use PyXIRR: actual/actual is ISDA; 30/360 is European 30E/360."""
-    import pyxirr
-
-    return pyxirr.year_fraction(
-        require_date(start), require_date(end), resolve_day_count(convention)
-    )
-
-
-def resolve_day_count(convention: DayCount) -> FinancialDayCount:
-    """Map one shared convention to the financial backend, loaded on demand."""
+    """Return the signed year fraction; actual/actual is ISDA, 30/360 is 30E/360."""
     if not isinstance(convention, DayCount):
         raise TypeError("convention must be a DayCount")
-    import pyxirr
-
-    return {
-        DayCount.ACTUAL_365: pyxirr.DayCount.ACT_365F,
-        DayCount.ACTUAL_360: pyxirr.DayCount.ACT_360,
-        DayCount.ACTUAL_ACTUAL: pyxirr.DayCount.ACT_ACT_ISDA,
-        DayCount.THIRTY_360: pyxirr.DayCount.THIRTY_E_360,
-    }[convention]
+    start, end = require_date(start), require_date(end)
+    if end < start:
+        return -year_fraction(end, start, convention=convention)
+    if convention is DayCount.ACTUAL_365:
+        return (end - start).days / 365
+    if convention is DayCount.ACTUAL_360:
+        return (end - start).days / 360
+    if convention is DayCount.THIRTY_360:
+        days = (
+            360 * (end.year - start.year)
+            + 30 * (end.month - start.month)
+            + min(end.day, 30)
+            - min(start.day, 30)
+        )
+        return days / 360
+    # Actual/actual ISDA: days in each calendar year over that year's length.
+    fraction = 0.0
+    for year in range(start.year, end.year + 1):
+        lower = max(start, date(year, 1, 1))
+        upper = min(end, date(year + 1, 1, 1))
+        fraction += (upper - lower).days / (366 if calendar.isleap(year) else 365)
+    return fraction

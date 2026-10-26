@@ -1,18 +1,18 @@
 """Build an isolated wheel and test its record boundary outside the checkout.
 
-Run in the schema tool environment (setuptools>=77 and pip required). Only the
+Run in the schema tool environment. Without --wheel, it needs pip,
+setuptools>=77 and setuptools-scm>=9. Only the
 record boundary's dependencies are copied into a fresh venv; this is intentionally
 not acceptance of the rest of the distribution or its service integrations.
 """
 
 import argparse
-import importlib.metadata
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -50,7 +50,12 @@ with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
     if args.wheel is None:
         stage = temp / "stage"
         stage.mkdir()
-        for name in ("pyproject.toml", "README.md", "LICENSE", "setup.py", "MANIFEST.in"):
+        for name in (
+            "pyproject.toml",
+            "README.md",
+            "LICENSE",
+            "MANIFEST.in",
+        ):
             shutil.copy2(ROOT / name, stage / name)
         shutil.copytree(
             ROOT / "src/rangekeeper",
@@ -194,8 +199,9 @@ for resource in ('io/speckle_contract.json', 'visualisation/assets/geometry/mani
     assert files('rangekeeper').joinpath(resource).is_file(), resource
 from rangekeeper.io.speckle import decode_model, encode_model
 assert 'specklepy' not in sys.modules
-for name in ('schema.json', 'slots.json', 'manifest.json', 'native.py'):
+for name in ('schema.json', 'slots.json', 'manifest.json'):
     assert files('rangekeeper.schema').joinpath(name).is_file()
+assert not files('rangekeeper.schema').joinpath('native.py').is_file()
 data = {'implementations': [{'kind': 'evaluator', 'name': 'test', 'version': '1'}],
         'started_at': '2026-10-02T00:00:00Z'}
 Runtime.from_data(data)

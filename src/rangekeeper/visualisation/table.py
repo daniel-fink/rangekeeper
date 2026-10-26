@@ -55,7 +55,7 @@ class StreamTable:
                         else (
                             "?"
                             if amounts[line, c] is None
-                            else f"{amounts[line,c]:,.{self.precision}f}"
+                            else f"{amounts[line, c]:,.{self.precision}f}"
                         )
                     )
                     for c in grid
@@ -141,7 +141,7 @@ class PivotTable:
             parent = rows.parent(id)
             depths[id] = 0 if parent is None else depths[parent] + 1
             entity = rows.view.entity(id)
-            label = entity.name or entity.code or f"Entity {index+1}"
+            label = entity.name or entity.code or f"Entity {index + 1}"
             cells = ["  " * depths[id] + label]
             for item in pivot.columns:
                 value = pivot.value(id, item)

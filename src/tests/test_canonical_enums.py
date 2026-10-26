@@ -5,13 +5,13 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.schema.enums import _ENUM_TYPES
 from rangekeeper.model import Value, ValueKind
 from rangekeeper.model.content import encode
-from rangekeeper.shared.errors import ValidationError
 from rangekeeper.model.expression import Expression, ExpressionKind, Operator
-from rangekeeper.specification.policy import Action, ActionKind
 from rangekeeper.run import CompletionStatus
+from rangekeeper.schema.enums import _ENUM_TYPES
+from rangekeeper.shared.errors import ValidationError
+from rangekeeper.specification.policy import Action, ActionKind
 
 
 def test_generated_enums_are_unique_plain_enums_with_unchanged_wire_values():
@@ -55,8 +55,9 @@ def test_nested_decoding_returns_the_same_public_enum_classes():
 
 
 def test_currency_catalogue_restrictions_are_sorted_immutable_and_historical():
-    from rangekeeper.shared.units import UnitSystem, default_units
     from moneyed import list_all_currencies
+
+    from rangekeeper.shared.units import UnitSystem, default_units
 
     assert set(default_units.currencies) == {
         item.code for item in list_all_currencies()

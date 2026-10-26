@@ -23,9 +23,19 @@ After delivery, verify that local `develop` matches a fresh remote query and kee
 the primary checkout clean. Preserve the separate unfinished walkthrough branch
 and ignored source data.
 
+## Release lines
+
+`develop` and `main` carry 1.x. `support/0.8` carries the 0.8.x maintenance
+line: bug and security fixes only, until an announced end of life. Start a 0.8
+fix from `support/0.8` and open its pull request into `support/0.8`; do not
+merge between `support/0.8` and `develop`. A pushed version tag starts the
+release workflow. The [release guide](releasing.md) gives the tags, the procedure
+and the one-time PyPI setup. [SECURITY.md](../../SECURITY.md) shows the supported
+versions.
+
 ## Development environment
 
-Use Python 3.10–3.13. From the repository root, install the locked development
+Use Python 3.12 or 3.13. From the repository root, install the locked development
 group and runtime extras:
 
 ```sh
@@ -42,11 +52,55 @@ Schema tooling uses a separate pinned environment. Follow
 [Grasshopper](../guides/grasshopper.md) covers the independent .NET build;
 [Windows acceptance](windows-acceptance.md) covers the external host gate.
 
-## Python formatting
+## Dependencies and versions
 
-Use Black from the development environment. Settings belong in
-[`pyproject.toml`](../../pyproject.toml). Short signatures can stay on one
-line. When a signature spans multiple lines:
+`pyproject.toml` declares compatible version ranges. Exact versions appear only
+in `uv.lock`. The `dev` group includes the `lint` and `notebook` groups;
+`ipykernel` is a notebook dependency, not a runtime dependency.
+
+Import an optional dependency where the feature needs it, inside
+`rangekeeper.shared.optional.requires`. The resulting `ImportError` names the
+extra that installs it:
+
+```python
+from rangekeeper.shared.optional import requires
+
+with requires("bundle"):
+    import pyarrow as pa
+```
+
+setuptools-scm derives the version from git tags; `rangekeeper.__version__`
+reads it from the installed metadata. On `develop`, only `v1.*` tags count.
+Until the first such tag, `develop` builds as `1.0.0a1.devN`. Release tags use
+the PEP 440 form `vX.Y.Z`, with an optional `aN`, `bN` or `rcN` suffix. A CI
+checkout needs the full history (`fetch-depth: 0`) for the correct distance.
+The C# example takes the same version:
+
+```sh
+dotnet build -p:Version=$(python tools/version.py --dotnet)
+```
+
+## Python formatting and linting
+
+Use ruff from the development environment. It formats and lints; it replaces
+Black. Settings belong in [`pyproject.toml`](../../pyproject.toml). From the
+repository root:
+
+```sh
+uv run --locked ruff format .
+uv run --locked ruff check --fix .
+```
+
+The lint rules are Pyflakes (`F`), import order (`I`), bugbear (`B`), pyupgrade
+(`UP`) and pydocstyle (`D`). Docstring rules apply to `src/rangekeeper` only:
+each public module, class, method and function needs a docstring. Write the first
+line of a function or method docstring in the imperative mood. Ruff skips the
+generated schema modules and the captured evidence under `docs/`.
+
+Import order can change module load order. If a sorted import causes a circular
+import, import the name from the module that defines it, not from its package.
+
+Short signatures can stay on one line. When a signature spans multiple lines:
 
 - Put each parameter on its own line.
 - Put `/` and `*` separators on their own lines.
@@ -62,40 +116,57 @@ def author(
     pass
 ```
 
-The trailing comma makes Black preserve the expanded layout. Black also accepts
-some multiline signatures with several parameters on one line, so its check alone
-does not enforce this convention. From the repository root:
+The trailing comma makes the formatter keep the expanded layout. The formatter
+also accepts some multiline signatures with several parameters on one line, so
+the check alone does not enforce this convention.
+
+Keep a `# noqa` or a per-file ignore only with a comment that gives the reason.
+Update generators instead of editing generated outputs by hand.
+
+## Local hooks and changelog
+
+pre-commit runs ruff, mypy and nbstripout before each commit, and the
+changelog check before each push. Install the hooks once:
 
 ```sh
-uv run --locked black path/to/file.py
-uv run --locked black --check path/to/file.py
+uv run --locked pre-commit install
 ```
 
-Apply the convention when adding or changing handwritten Python. Keep unrelated
-formatting outside the task's scope. Run formatting and verification locally
-before delivery. Update generators instead of editing generated outputs by hand.
+mypy uses the settings in `pyproject.toml`. It checks `src/rangekeeper` with a
+baseline that passes; strict mode follows when the public API is typed. Run it
+directly with `uv run --locked mypy`. nbstripout removes notebook outputs from
+committed notebooks.
+
+Each pull request adds a changelog fragment in
+[`changelog.d/`](../../changelog.d/README.md), which gives the names and types.
+A pull request with no change for users can use the `no-changelog` label
+instead. towncrier writes [`CHANGELOG.md`](../../CHANGELOG.md) from the fragments
+at release time.
 
 ## Continuous integration
 
-The [Tests workflow](../../.github/workflows/tests.yml) runs on each pull request
-to `develop` or `main` and on each push to them. On Ubuntu with Python 3.13, it
-runs:
+The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
+`develop`, `main` or `support/0.8` and on each push to `develop` or `main`.
+`--locked` fails a job when `uv.lock` does not match `pyproject.toml`.
 
-```sh
-uv sync --locked --all-extras
-MPLBACKEND=Agg uv run --locked pytest -q -rs
-```
+| Job | Checks |
+| --- | --- |
+| `lint` | `ruff check` and `ruff format --check` |
+| `types` | mypy, with all extras for their types |
+| `changelog` | A fragment in `changelog.d/` (pull requests only; label `no-changelog` skips it) and a draft changelog build |
+| `generated files` | `tools/schema/generate.py --check`, `generate_csharp.py --check`, `verify_native.py` and `typecheck.py` in the pinned schema environment, and the Geometry asset manifest hashes |
+| `docs` | `tools/docs/check.py` |
+| `test` | The full suite with all extras, on Linux and macOS with Python 3.12 and 3.13, and on Windows with Python 3.13 |
+| `extra` | The wheel with no extra, then with each extra alone, on Python 3.12 without the lock file. `tools/ci/check_extra.py` imports every module, requires an installation hint for each failure, and runs a small operation of the extra |
+| `wheel` | `uv build`, `twine check --strict`, `check-wheel-contents`, `verify_install.py` with all optional slices, and the suite against the installed wheel |
 
-`--locked` fails the run when `uv.lock` does not match `pyproject.toml`. The
-workflow installs all extras because the suite imports Matplotlib, Polars, the
-Pyomo/HiGHS backend and Bundle IO. It skips no tests: Matplotlib uses the
-off-screen `Agg` backend, and no test needs a display or network access.
-The `-rs` option lists any optional-dependency skips in the log.
+The test jobs skip no tests: Matplotlib uses the off-screen `Agg` backend, and
+no test needs a display or network access. `-rs` lists any skips in the log.
 
-A pull request merges only after its `pytest` check passes. The workflow does not
-run Black, schema generation, C# builds, wheel checks, notebooks or the
-documentation link check. Run those [verification](verification.md) procedures
-locally when the change affects them.
+CI does not build the .NET example yet: that job waits for the C# example to
+move out of `src/`. It does not execute notebooks or build the documentation
+site. Run those [verification](verification.md) procedures locally when the
+change affects them.
 
 ## Naming and ownership
 

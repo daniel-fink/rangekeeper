@@ -3,7 +3,7 @@
 > Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
 
 **Historical research, with current decision:** Daniel selected LinkML on
-2026-10-02; see the [decision record](../research/current-schema-comparison/DECISION.md)
+2026-10-02; see the [decision record](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/current-schema-comparison/DECISION.md)
 and [library architecture](../concepts/architecture.md). Recommendations and open
 choices below describe the 2026-09-24 study, not the current work queue. Its
 measured observations remain unchanged.
@@ -422,7 +422,7 @@ Regardless of framework, the following decisions remain ours:
    operator/compiler version, and solver/runtime identity are separate. A change
    can preserve its JSON shape while changing its mathematical answer.
 
-No schema framework automatically makes mappings to Twenty records, a property
+No schema framework automatically makes mappings to the consumer's CRM records, a property
 graph, RDF, Python runtime objects, and algebraic solver objects lossless.
 Specify the intended information preserved by each adapter and test that claim.
 

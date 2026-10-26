@@ -7,30 +7,33 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rangekeeper.model.system.pivot import Pivot
+    from rangekeeper.calculations.series import (
+        AggregationMethod,
+        AlignmentJoin,
+        MeanWeighting,
+        ResamplingMethod,
+    )
     from rangekeeper.model.duration import Period
     from rangekeeper.model.flux import MissingValueHandling
-    from rangekeeper.calculations.series import (
-        ResamplingMethod,
-        AggregationMethod,
-        MeanWeighting,
-        AlignmentJoin,
-    )
+    from rangekeeper.model.system.pivot import Pivot
 from dataclasses import dataclass
 from enum import Enum, unique
 from types import MappingProxyType
 from uuid import UUID
-from rangekeeper.model import Model, Entity, Value, Quantity, ValueKind
-from rangekeeper.schema.records import Flow
-from rangekeeper.shared.units import UnitSystem, default_units
+
+from rangekeeper.model import Entity, Model, Quantity, Value, ValueKind
+from rangekeeper.model.system import reducers
 from rangekeeper.model.system.errors import AggregationError, SelectionError
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.selection import ValueSelector, _recorded_quantity
-from rangekeeper.model.system import reducers
+from rangekeeper.schema.records import Flow
+from rangekeeper.shared.units import UnitSystem, default_units
 
 
 @unique
 class Contributor(Enum):
+    """Hierarchy nodes whose Values a Reduction selects: leaves only, or all nodes."""
+
     LEAVES = "leaves"
     ALL = "all"
 
@@ -47,6 +50,8 @@ class _FlowRule:
 
 @unique
 class CoverageStatus(Enum):
+    """Coverage state: no selected contributors, all measured, or some missing."""
+
     EMPTY = "empty"
     COMPLETE = "complete"
     INCOMPLETE = "incomplete"
@@ -82,10 +87,13 @@ class Coverage:
 
     @property
     def status(self) -> CoverageStatus:
+        """Classify this coverage as empty, complete or incomplete."""
         return (
             CoverageStatus.EMPTY
             if not self.selected
-            else CoverageStatus.COMPLETE if self.complete else CoverageStatus.INCOMPLETE
+            else CoverageStatus.COMPLETE
+            if self.complete
+            else CoverageStatus.INCOMPLETE
         )
 
 
@@ -176,9 +184,11 @@ class Aggregation:
 
     @property
     def root_value(self) -> Quantity | Flow | None:
+        """Return the result at the Hierarchy root under the coverage policy."""
         return self.value(self.hierarchy.root)
 
     def value(self, id: UUID) -> Quantity | Flow | None:
+        """Return one node's result; None when required coverage is incomplete."""
         self.hierarchy.view.entity(id)
         entry = self.entries[id]
         return (
@@ -191,10 +201,12 @@ class Aggregation:
         return self.value(id)
 
     def coverage(self, id: UUID) -> Coverage:
+        """Return the contributor coverage for one node."""
         self.hierarchy.view.entity(id)
         return self.entries[id].coverage
 
     def available_value(self, id: UUID) -> Quantity | Flow | None:
+        """Return the reduction over measured contributors, despite missing ones."""
         self.hierarchy.view.entity(id)
         return self.entries[id].available
 
@@ -210,9 +222,9 @@ class Aggregation:
             if not isinstance(value, Flow):
                 raise TypeError("display requires Flow aggregation results")
             entity = self.hierarchy.view.entity(identity)
-            label = entity.name or entity.code or f"Entity {index+1}"
+            label = entity.name or entity.code or f"Entity {index + 1}"
             if label in flows:
-                label = f"{label} ({index+1})"
+                label = f"{label} ({index + 1})"
             flows[label] = value
         return Stream(flows).display(transpose=transpose, precision=precision)
 
@@ -261,7 +273,7 @@ class QuantityPopulation:
 
 def _collect_quantities(
     selections: Iterable[tuple[Entity, Value | None]],
-    units: str,
+    units: str | None,
     unit_system: UnitSystem,
 ) -> QuantityPopulation:
     """Collect canonical selections; callers retain eligibility and reduction policy."""
@@ -539,6 +551,7 @@ class Reduction:
                         missing=rule.missing,
                         join=rule.join,
                     ),
+                    strict=True,
                 )
             )
         entries = {}
@@ -561,8 +574,8 @@ class Reduction:
         aggregates: Mapping[UUID, UUID],
     ):
         """Declare hierarchy sums over the same original structural contributors."""
-        from rangekeeper.model.formulation.hierarchy import formulate
         from rangekeeper.calculations.series import AggregationMethod
+        from rangekeeper.model.formulation.hierarchy import formulate
 
         if self._flow is None or self._flow.aggregation is not AggregationMethod.SUM:
             raise ValueError("formulate requires a built-in Flow SUM rule")

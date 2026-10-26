@@ -97,7 +97,7 @@ the public names that change.
 
 ## Sources and related decisions
 
-- [ADR-008: Bundle contract](008-sqlite-model-package.md), amended by this record.
+- [ADR-008: Bundle contract](008-rangekeeper-bundle-contract.md), amended by this record.
 - [ADR-009: classification sub-types](009-classification-sub-types.md).
 - [ADR-012](012-naming-and-glossary.md), [ADR-014](014-market-paths.md) and
   [ADR-016](016-safety-defaults.md).

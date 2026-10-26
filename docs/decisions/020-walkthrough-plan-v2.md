@@ -141,7 +141,7 @@ the real cells.
 - **Prerequisites.** None in the book. Spreadsheet DCF.
 - **Time.** 45 minutes core, 15 optional.
 - **Library shown.** `rk.duration` (Span, Frequency), `rk.flow` (Flow, Stream:
-  display, resample, trim, sum), growth, `rk.finance` NPV and PV, `rk.q`. Known
+  display, resample, trim, sum), growth, `rk.finance` NPV and PV, `rk.units.q`. Known
   data only: no Model, equations or solve.
 - **Finance taught.** Potential and effective gross income, vacancy, operating
   expenses, NOI, capital expenditure, net annual cash flow, reversion, cap rate,
@@ -159,7 +159,7 @@ the real cells.
 import rangekeeper as rk
 
 holding = rk.duration.Span.years(start=date(2001, 1, 1), count=10)
-pgi = rk.flow.Flow.grow(rk.q("100 USD"), periods=holding.extend(years=1), rate=0.02)
+pgi = rk.flow.Flow.grow(rk.units.q("100 USD"), periods=holding.extend(years=1), rate=0.02)
 noi = rk.flow.Stream({"PGI": pgi, "Vacancy": -0.05 * pgi, "OPEX": -0.35 * pgi}).sum()
 value = rk.finance.npv(cashflows, rate=0.07, on=holding.start)
 ```
@@ -210,7 +210,7 @@ b.equation("effective_income = rent_factor * reference_income")
 model = b.commit()
 
 front = model.specify("Front door").fix(land_cost="20e6 AUD", ...).free("rent_factor")
-rk.solve(front)["rent_factor"]
+rk.execution.solve(front)["rent_factor"]
 back = front.fix(rent_factor=1).free("land_cost")
 ```
 
@@ -251,7 +251,7 @@ cases = {
     "reference": {"rent_growth": "3 %/year", "exit_cap_rate": "5 %"},
     "strong": {"rent_growth": "5 %/year", "exit_cap_rate": "4.5 %"},
 }
-outcome = rk.solve(base.cases(cases))
+outcome = rk.execution.solve(base.cases(cases))
 outcome.table("unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall")
 ```
 
@@ -284,7 +284,7 @@ outcome.table("unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall")
 ```python
 generator = rk.finance.MarketDynamics(trend="2 %/year", volatility=0.1, cycle_years=10)
 paths = generator.generate(periods=plan_years, seed=2027, count=500)
-outcome = rk.solve(base.across(paths, assign={"rent_index": "rent_index"}))
+outcome = rk.execution.solve(base.across(paths, assign={"rent_index": "rent_index"}))
 outcome.distribution("equity_npv")
 ```
 
@@ -324,8 +324,8 @@ outcome.distribution("equity_npv")
 wait = base.policy("Wait to start").when("rent_index >= 1.05", do="start_shared_works")
 start_b = wait.policy("Start B").when("rent_index >= 1.10 and funding_ok", do="start_b",
                                        latest=date(2033, 1, 1))
-outcome = rk.solve(start_b.across(paths, assign={"rent_index": "rent_index"}))
-outcome.compare(rk.solve(base.across(paths, ...)), "equity_npv")
+outcome = rk.execution.solve(start_b.across(paths, assign={"rent_index": "rent_index"}))
+outcome.compare(rk.execution.solve(base.across(paths, ...)), "equity_npv")
 ```
 
 #### 06 Project structure
@@ -395,7 +395,7 @@ feasibility = feasibility_model.edit().fix_from(gfa_by_use).commit()
 switch = model.edit().variant("B as hotel", replace={"Building B/residential": hotel_spaces},
                               provision="2.5e6 AUD").commit()
 strategy = start_b.policy("Use switch").when("hotel_index > residential_index", do="B as hotel")
-rk.solve(strategy.across(paths, ...)).compare(fixed, "equity_npv", "completion", "use_mix")
+rk.execution.solve(strategy.across(paths, ...)).compare(fixed, "equity_npv", "completion", "use_mix")
 ```
 
 ### Developer-experience principles
@@ -404,17 +404,23 @@ These rules apply to every cell that a reader types. #201 tests each ideal cell
 against them. Each break of a rule goes onto the gap list, not into a helper.
 
 1. **One import.** `import rangekeeper as rk`, plus `datetime` and the helpers.
-   Cells use public namespaces only (`rk.duration`, `rk.flow`, `rk.finance`,
-   `rk.model`, `rk.specification`, `rk.execution`, `rk.io`, `rk.errors`,
-   `rk.units`). Cells never import `schema`, `shared` or private modules.
+   The root stays small ([ADR-010](010-layers-and-packages.md)): only `rk.Model`,
+   `rk.Specification` and `rk.Run`. Cells reach every other name through its
+   public namespace, for example `rk.execution.solve`, `rk.units.q`,
+   `rk.flow.Flow` and `rk.finance.npv`. The namespaces are `rk.duration`,
+   `rk.flow`, `rk.finance`, `rk.model`, `rk.specification`, `rk.execution`,
+   `rk.io`, `rk.errors` and `rk.units`. Cells never import `schema`, `shared`
+   or private modules.
 2. **Build, do not assemble.** Use `Model.build()`, `model.edit()`, `commit()`
    and the Specification builder. Cells never write Metadata, a format version,
    `uuid4()` or a `.replace` chain.
 3. **Equations are strings.** Write `b.equation("noi = coverage * debt_service")`.
-   Lesson 02 shows the operator form once, in an Under the hood aside.
+   Lesson 02 shows the operator form once, in an Under the hood aside. Both
+   forms are first-class and make the same records
+   ([ADR-015](015-authoring.md#equations)).
 4. **Refer by key or code.** Cells never paste a UUID. Under the hood asides use
    a namespace for reproducible IDs.
-5. **Quantities, not unit strings.** Use `rk.q("20e6 AUD")` or a unit string as
+5. **Quantities, not unit strings.** Use `rk.units.q("20e6 AUD")` or a unit string as
    an argument. Compare quantities and dimensions, never unit strings. Use the
    curated aliases (`pa`, `sqm`).
 6. **The library does the finance.** NPV, IRR and PV use the same date basis.

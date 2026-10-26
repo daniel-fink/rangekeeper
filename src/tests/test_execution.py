@@ -1,31 +1,37 @@
 """Scalar acceptance through public documents and real isolated Pyomo/HiGHS runs."""
 
-from rangekeeper.run import CompletionStatus
-from rangekeeper.run import Severity, ImplementationKind
-from rangekeeper.run import SolutionStatus
-
-from copy import deepcopy
-from dataclasses import replace
 import importlib.util
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import time
+from copy import deepcopy
+from dataclasses import replace
+from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
 
 from rangekeeper import Model, Specification
-from rangekeeper.shared.errors import MissingReferenceError, ValidationError
-from rangekeeper.io import MemoryStore, DirectoryStore, yaml
-from rangekeeper.run import validate
-from rangekeeper.specification import SpecificationRecord
-from rangekeeper.run.execution import Executor, Tolerances
-from rangekeeper.run.execution import preparation, compiler, acceptance, publication
+from rangekeeper.io import DirectoryStore, MemoryStore, yaml
+from rangekeeper.run import (
+    CompletionStatus,
+    ImplementationKind,
+    Severity,
+    SolutionStatus,
+    validate,
+)
+from rangekeeper.run.execution import (
+    Executor,
+    Tolerances,
+    acceptance,
+    preparation,
+    publication,
+)
 from rangekeeper.run.execution.backends import PyomoHighs, Result
-from rangekeeper.run.execution.errors import NumericalError
+from rangekeeper.shared.errors import MissingReferenceError, ValidationError
+from rangekeeper.specification import SpecificationRecord
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 HOME = UUID("194afc26-3e2e-507b-ad0c-a73a4b0b2ccd")
@@ -452,8 +458,19 @@ def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
     assert time.monotonic() - started < 5
     assert run.report.status.completion == CompletionStatus.LIMITED
     assert run.report.status.solution == SolutionStatus.UNKNOWN
-    with pytest.raises(ProcessLookupError):
-        os.kill(int(pid_file.read_text()), 0)
+    pid = int(pid_file.read_text())
+    if os.name == "nt":
+        # Signal 0 does not test a process on Windows.
+        listing = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+        assert str(pid) not in listing
+    else:
+        with pytest.raises(ProcessLookupError):
+            os.kill(pid, 0)
 
 
 @pytest.mark.parametrize(
@@ -584,7 +601,7 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
         rhs = sum(coefficients) - randomizer.uniform(0.1, 2)
         terms = [
             binary("multiply", literal(c, "dimensionless"), reference(id))
-            for c, id in zip(coefficients, ids)
+            for c, id in zip(coefficients, ids, strict=True)
         ]
         equations.append(
             formulation(

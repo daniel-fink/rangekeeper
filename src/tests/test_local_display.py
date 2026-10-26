@@ -1,6 +1,8 @@
-from urllib.request import urlopen
 from urllib.error import HTTPError
+from urllib.request import urlopen
+
 import pytest
+
 from rangekeeper.visualisation.local import LocalDisplay
 
 

@@ -1,12 +1,10 @@
 """Static examples for the generated boundary; also valid executable authoring."""
 
-from rangekeeper.model import ClaimKind
-from rangekeeper.model.expression import ExpressionKind
-from rangekeeper.model import ValueKind
-
-from uuid import UUID, uuid4
 from datetime import date
+from uuid import UUID, uuid4
 
+from rangekeeper.model import ClaimKind, ValueKind
+from rangekeeper.model.expression import ExpressionKind
 from rangekeeper.schema.records import (
     Assembly,
     Characteristics,
@@ -18,9 +16,9 @@ from rangekeeper.schema.records import (
     Metadata,
     Method,
     Model,
-    Quantity,
-    Period,
     Movement,
+    Period,
+    Quantity,
     Value,
 )
 

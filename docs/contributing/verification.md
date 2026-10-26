@@ -5,9 +5,10 @@ Use separate environments for runtime extras and the pinned schema tools. Histor
 record fresh results for the checkout under review.
 
 Developers and agents run these checks explicitly before delivering a change.
-The [Tests workflow](README.md#continuous-integration) runs only the Python test
-suite on pull requests and pushes to `develop` and `main`. It does not run the
-other checks on this page. Follow
+The [CI workflow](README.md#continuous-integration) runs the lint, type,
+changelog, generated-file, documentation, test, extra and wheel checks on pull
+requests. It does not build the .NET example, execute notebooks or build the
+book; run those procedures locally. Follow
 [the verification decision](../decisions/004-package-and-project-ownership.md#verification-ownership)
 and record the actual environment: local acceptance does not establish Linux,
 Windows or service acceptance on a different host.
@@ -18,11 +19,23 @@ Install the [development environment](README.md#development-environment). From
 the repository root:
 
 ```sh
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked mypy
 MPLBACKEND=Agg uv run --locked pytest -q
 ```
 
+To check an installed wheel with no extra or with one extra, install it in a
+separate environment and run, outside the checkout's `src` folder:
+
+```sh
+python tools/ci/check_extra.py core
+```
+
+Replace `core` with `bundle`, `calculations`, `execution`, `visualisation` or `yaml`.
+
 Record optional dependency skips separately from passed checks. Mathematical
-execution uses the pinned Pyomo/HiGHS backend. Local tests do not close the
+execution uses the Pyomo/HiGHS backend; Run evidence records the installed versions. Local tests do not close the
 [Windows gate](windows-acceptance.md).
 
 Do not edit package source while a workflow verification run is active.
@@ -40,7 +53,10 @@ python tools/schema/verify_native.py
 python tools/schema/typecheck.py
 ```
 
-Typing also needs `mypy==1.18.2`. Valid selected sources must pass, and deliberate
+The native round trip and typing checks also need `mypy==1.18.2`,
+`py-moneyed` and `pint` in that environment. `verify_native.py` generates the
+stock LinkML module in a temporary folder; the package does not contain it.
+`typecheck.py` uses `mypy==1.18.2`. Valid selected sources must pass, and deliberate
 invalid fixtures must produce their expected errors. Run all
 [seven conformance suites](schema.md#conformance) for schema, migration or record
 boundary changes. Native round-trip checks test the stock loader separately from
@@ -55,6 +71,9 @@ by interpreter arguments. Run from the repository root in the schema environment
 ```sh
 python tools/schema/verify_install.py
 ```
+
+Without `--wheel`, the script builds the wheel itself and needs `pip`,
+`setuptools>=77` and `setuptools-scm>=9`.
 
 Use `--wheel /absolute/path/to/candidate.whl` to check an already built artifact.
 Supply `--runtime-python`, `--financial-python` and `--execution-python` with interpreters that have the required dependencies.
@@ -75,7 +94,8 @@ projects and build caches have not entered the Python runtime package.
 
 For changes to the notebook Geometry viewer, follow the
 [viewer build procedure](../../tools/geometry/README.md). Inspect the generated
-assets and their manifest. Browser smoke checks need a local browser runtime;
+assets and their manifest; `python tools/geometry/check_manifest.py` compares
+the packaged assets and the viewer sources with the manifest hashes. Browser smoke checks need a local browser runtime;
 geometry tests alone do not establish rendered interaction.
 
 Follow [Grasshopper](../guides/grasshopper.md#build-and-round-trip) for .NET builds
@@ -115,12 +135,12 @@ wheel across the required installed-package and notebook checks when accepting a
 release or a large refactor. A passing subset is evidence for that subset. Record
 unrun platforms, native hosts and service checks explicitly. Older records of
 GitHub checks remain historical evidence; their workflows have been removed.
-The current Tests workflow is described in [continuous integration](README.md#continuous-integration).
+The current CI workflow is described in [continuous integration](README.md#continuous-integration).
 
 ## Bundle candidate verification
 
 With the `bundle` extra installed, run `python -m pytest -q src/tests/test_bundle.py`
 from the root. Full schema generation and C# checks also apply because Model schema
 changed. See the [Bundle contract](../reference/bundle.md) and the acceptance
-matrix in [ADR-008](../decisions/008-sqlite-model-package.md). Do not infer provider or host acceptance
+matrix in [ADR-008](../decisions/008-rangekeeper-bundle-contract.md). Do not infer provider or host acceptance
 from canonical Parquet tests.

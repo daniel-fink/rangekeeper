@@ -1,18 +1,31 @@
 """Check the shared stock LinkML bundle, separate from immutable runtime records."""
 
-from datetime import datetime
+import importlib.util
 import json
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import yaml
-from linkml_runtime.loaders import json_loader
 from linkml_runtime.dumpers import json_dumper
+from linkml_runtime.loaders import json_loader
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from rangekeeper.schema import native
-from rangekeeper.schema.validation import validate
+sys.path.insert(0, str(ROOT / "tools/schema"))
+from generate import generate  # noqa: E402
+
+from rangekeeper.schema.validation import validate  # noqa: E402
+
+# The stock LinkML module is generated out of tree; the package does not ship it.
+with TemporaryDirectory(prefix="rk-native-") as temp:
+    path = Path(temp) / "native.py"
+    path.write_text(generate(native_module=True)["native.py"])
+    spec = importlib.util.spec_from_file_location("rk_native", path)
+    native = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = native
+    spec.loader.exec_module(native)
 
 
 def normalized(value, key=None):

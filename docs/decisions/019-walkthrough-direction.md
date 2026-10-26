@@ -1,6 +1,6 @@
 # ADR-019: Walkthrough direction for 1.0
 
-Status: accepted for 1.0; walkthrough plan v2 is [ADR-020](020-walkthrough-plan-v2.md). Recorded: 2026-10-26.
+Status: accepted for 1.0; walkthrough plan v2 is ADR-020. Recorded: 2026-10-26.
 
 ## Problem
 

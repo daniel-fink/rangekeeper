@@ -1,10 +1,10 @@
 """Serve local notebook displays without a service or browser dependency."""
 
 import atexit
+import secrets
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-import secrets
 from threading import Thread
 from urllib.parse import quote, unquote, urlsplit
 
@@ -61,14 +61,19 @@ class LocalDisplay:
         """Return a URL for a file under this root; preserve a view query."""
         if self._closed:
             raise ValueError("Display server is closed")
-        parts = urlsplit(str(path))
-        if parts.scheme or parts.netloc:
-            raise ValueError("Supply a local file path")
-        target = (self.directory / unquote(parts.path)).resolve(strict=True)
+        if isinstance(path, Path):
+            # A Windows drive letter would parse as a URL scheme.
+            relative, query = path, ""
+        else:
+            parts = urlsplit(path)
+            if parts.scheme or parts.netloc:
+                raise ValueError("Supply a local file path")
+            relative, query = Path(unquote(parts.path)), parts.query
+        target = (self.directory / relative).resolve(strict=True)
         if not target.is_relative_to(self.directory) or not target.is_file():
             raise ValueError("Display file must be inside the display root")
         result = self.base_url + quote(target.relative_to(self.directory).as_posix())
-        return result + ("?" + parts.query if parts.query else "")
+        return result + ("?" + query if query else "")
 
     def close(self):
         if not self._closed:

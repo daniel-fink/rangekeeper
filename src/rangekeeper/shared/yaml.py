@@ -2,10 +2,14 @@
 
 
 def decode(content: str | bytes):
+    """Decode YAML content; reject aliases, non-string keys and duplicate keys."""
     if not isinstance(content, (str, bytes)):
         raise TypeError("YAML content must be text or bytes")
-    import yaml
-    from yaml.resolver import BaseResolver
+    from rangekeeper.shared.optional import requires
+
+    with requires("yaml"):
+        import yaml
+        from yaml.resolver import BaseResolver
 
     class StrictLoader(yaml.SafeLoader):
         def compose_node(self, parent, index):

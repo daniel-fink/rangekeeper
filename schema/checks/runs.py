@@ -4,25 +4,23 @@ No scheduler or solver executes. The scalar fixture amounts are independently
 asserted arithmetic expectations, not results of a generic evaluation adapter.
 """
 
-from copy import deepcopy
 import importlib.util
 import json
-from pathlib import Path
 import subprocess
 import sys
+from copy import deepcopy
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import NAMESPACE_URL, uuid5
 
+import _library
+import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
 from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
-import yaml
 
-import _library
-
-from rangekeeper.shared.errors import ContractError
 from rangekeeper.run.report import instant
 from rangekeeper.run.validation import validate_records
 from rangekeeper.schema.index import walk_data
@@ -81,7 +79,9 @@ assert not view.induced_slot("spawns", "Run").list_elements_ordered
 
 
 def load(name):
-    return yaml.safe_load((SCHEMA.parent / "examples/schema" / f"{name}.yaml").read_text())
+    return yaml.safe_load(
+        (SCHEMA.parent / "examples/schema" / f"{name}.yaml").read_text()
+    )
 
 
 base = dict(

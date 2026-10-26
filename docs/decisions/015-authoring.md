@@ -35,12 +35,16 @@ Records stay public. They are for reading results and for full control.
 
 ### Equations
 
-There are two ways to write an equation. Both produce the same expression records.
+There are two ways to write an equation. Both are first-class: each is fully
+supported, documented and tested, and both produce the same expression records.
 
 - **Python operators on value handles,** for example
   `builder.equation(v.value == v.noi / v.cap_rate)`.
 - **A string parser,** for example `builder.equation("value = noi / cap_rate")`.
   It resolves names against value keys.
+
+The walkthrough teaches the string form. It shows the operator form once, in an
+Under the hood aside ([ADR-020](020-walkthrough-plan-v2.md)).
 
 ### Identities and deterministic builds
 
@@ -82,5 +86,7 @@ mapping from builder calls to records reduce its maintenance cost.
 - [ADR-011: records and validation](011-records-and-validation.md).
 - [ADR-012: naming](012-naming-and-glossary.md).
 - [ADR-019: walkthrough direction](019-walkthrough-direction.md).
+- [ADR-020: walkthrough plan v2](020-walkthrough-plan-v2.md), which sets the
+  equation style that the book teaches.
 
 Supersedes: none. Superseded by: none.

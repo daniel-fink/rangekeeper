@@ -5,10 +5,10 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper import Model, Specification
-from rangekeeper.run.execution import Executor
 from rangekeeper.io import MemoryStore
-from rangekeeper.specification.policy import Policy, PolicyCapabilityError, evaluate
 from rangekeeper.run import CompletionStatus, SolutionStatus, validate
+from rangekeeper.run.execution import Executor
+from rangekeeper.specification.policy import Policy, PolicyCapabilityError, evaluate
 
 
 def identity():

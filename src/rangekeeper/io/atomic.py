@@ -3,8 +3,8 @@
 import errno
 import json
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 
 class PublishedFileError(OSError):
@@ -94,6 +94,9 @@ def _write(path: Path, text: str, *, replace: bool) -> Path:
 
 def _sync_directory(path: Path) -> None:
     """Persist the directory entry where the local filesystem supports fsync."""
+    if os.name == "nt":
+        # Windows cannot open a directory for fsync; NTFS journals the entry.
+        return
     try:
         descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
         try:

@@ -2,10 +2,9 @@
 
 import operator
 
-from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
 from rangekeeper.model.expression.evaluation import evaluate as numerical
+from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
 from rangekeeper.shared.units import UnitSystem
-
 
 _COMPARISONS = {
     Operator.EQUAL: operator.eq,

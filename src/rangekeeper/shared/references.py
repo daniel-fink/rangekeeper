@@ -10,8 +10,8 @@ from uuid import UUID
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model
-    from rangekeeper.specification.specification import Specification
     from rangekeeper.run.run import Run
+    from rangekeeper.specification.specification import Specification
 
 
 class SpecificationResolver(Protocol):
