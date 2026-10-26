@@ -1,5 +1,7 @@
 # ADR-008: Rangekeeper Bundle contract
 
+Status: accepted; candidate implemented, full conformance open. Recorded: 2026-10-13.
+
 Terminology and scope update, 14 October 2026: use **Rangekeeper Bundle**,
 shortened to **Bundle**, for the outer immutable deliverable. Model remains the
 canonical object. Speckle Bundle names native provider content. Model-only Bundles
@@ -9,7 +11,7 @@ record remain unchanged. Follow the
 for reviewed integration into `develop`. Development integration is separate from
 format approval and publication.
 
-Status: Bundle contract, Entity-to-source-element mappings, separate provenance
+Status history: Bundle contract, Entity-to-source-element mappings, separate provenance
 and Parquet/DuckDB architecture agreed on 13 October 2026. Application/transport
 ownership and the greenfield Interface were clarified on 14 October 2026. A
 [concrete local candidate](../reference/bundle.md) is implemented in 0.10.0.dev3.
@@ -510,4 +512,5 @@ consumer pins. Cold opening still reconstructs retained documents; isolated
 reader timings do not establish service capacity. Walkthrough and native-host
 checks, release approval and publication remain separate.
 
+Supersedes: none. Superseded by: none.
 Amended by: [ADR-017](017-api-and-formats.md), accepted 2026-10-26. Bundle format 1 becomes stable at milestone 1.0.0b1.
