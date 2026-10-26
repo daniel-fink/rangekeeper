@@ -1,33 +1,34 @@
 """Passive account declarations and independent schedules through scalar execution."""
 
+import json
 from datetime import date
 from pathlib import Path
-import json
 from uuid import UUID, uuid4
+
 import pytest
 
 from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper.model.duration import Frequency, make_periods
-from rangekeeper.model.formulation import account, declare, flow
-from rangekeeper.model.expression import authoring as expression
-from rangekeeper.model import (
-    Model,
-    Metadata,
-    Definitions,
-    System,
-    Entity,
-    Characteristics,
-    Value,
-    Measure,
-    Quantity,
-    Update,
-)
-from rangekeeper.model.flux import Flow
-from rangekeeper.model.expression import Reference
-from rangekeeper.schema.enums import ValueKind, Operator, SolutionStatus
-from rangekeeper.specification import Specification, SpecificationRecord, Assignment
-from rangekeeper.specification.targets import unknown_flow
 from rangekeeper.io import MemoryStore
+from rangekeeper.model import (
+    Characteristics,
+    Definitions,
+    Entity,
+    Measure,
+    Metadata,
+    Model,
+    Quantity,
+    System,
+    Update,
+    Value,
+)
+from rangekeeper.model.duration import Frequency, make_periods
+from rangekeeper.model.expression import Reference
+from rangekeeper.model.expression import authoring as expression
+from rangekeeper.model.flux import Flow
+from rangekeeper.model.formulation import account, declare, flow
+from rangekeeper.schema.enums import Operator, SolutionStatus, ValueKind
+from rangekeeper.specification import Assignment, Specification, SpecificationRecord
+from rangekeeper.specification.targets import unknown_flow
 
 
 def u(number):
@@ -275,7 +276,7 @@ def test_flow_rates_match_coordinates_without_reordering_the_schedule():
     for value in data["entities"][0]["characteristics"]["values"]:
         if value.get("flow") is None:
             continue
-        for movement, key in zip(value["flow"]["movements"], ("z", "a")):
+        for movement, key in zip(value["flow"]["movements"], ("z", "a"), strict=True):
             movement.pop("period")
             movement["date"] = "2026-01-01"
             movement["key"] = key
@@ -337,7 +338,9 @@ def execute_schedule(
             quantity=Quantity(magnitude=value, units="AUD"),
         )
         for m, value in zip(
-            model.value(ids["transactions"]).flow.movements, transaction_amounts
+            model.value(ids["transactions"]).flow.movements,
+            transaction_amounts,
+            strict=True,
         )
     )
     unknowns = (

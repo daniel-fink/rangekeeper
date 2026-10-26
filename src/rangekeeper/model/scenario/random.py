@@ -5,6 +5,7 @@ import json
 
 
 def stream_identifier(scenario_key: str, component: str) -> str:
+    """Return the SHA-256 hex digest that names one scenario component stream."""
     return hashlib.sha256(
         json.dumps(
             [scenario_key, component], separators=(",", ":"), ensure_ascii=False

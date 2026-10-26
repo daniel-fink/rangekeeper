@@ -2,8 +2,6 @@ import matplotlib
 import pytest
 
 
-
-
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.getgroup("rangekeeper").addoption(
         "--show-plots",
@@ -34,5 +32,6 @@ def configure_matplotlib_for_tests(
         yield
     finally:
         plt.close("all")
+
 
 collect_ignore_glob = ["*.sync-conflict-*.py"]

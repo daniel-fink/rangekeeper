@@ -4,15 +4,15 @@ from collections.abc import Mapping
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from rangekeeper.model import Model
-from rangekeeper.model.update import Update
-from rangekeeper.schema.records import Quantity, System, Provenance, Reference
 from rangekeeper.io import json
-from rangekeeper.shared.references import DocumentResolver
-from rangekeeper.run.execution.preparation import Prepared
-from rangekeeper.run.execution.errors import NumericalError
+from rangekeeper.model import Model
 from rangekeeper.model.scope import target_value
+from rangekeeper.model.update import Update
+from rangekeeper.run.execution.errors import NumericalError
+from rangekeeper.run.execution.preparation import Prepared
 from rangekeeper.schema.index import walk_data
+from rangekeeper.schema.records import Provenance, System
+from rangekeeper.shared.references import DocumentResolver
 
 
 def candidate(
@@ -111,12 +111,15 @@ class CandidateResolver:
         self.resolver = resolver
 
     def load_model(self, id: UUID) -> Model:
+        """Return the candidate Model for its UUID, else load it from the resolver."""
         return (
             self.candidate if id == self.candidate.id else self.resolver.load_model(id)
         )
 
     def load_specification(self, id: UUID):
+        """Load a Specification from the underlying resolver."""
         return self.resolver.load_specification(id)
 
     def load_run(self, id: UUID):
+        """Load a Run from the underlying resolver."""
         return self.resolver.load_run(id)

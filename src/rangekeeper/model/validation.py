@@ -1,9 +1,29 @@
 """Structural and bounded Model semantics; no evaluation or unit inference."""
 
-from collections.abc import Mapping, Sequence, Callable
+from collections.abc import Callable, Mapping, Sequence
 from typing import TYPE_CHECKING
+from uuid import UUID
+
+from rangekeeper.model.definitions import check_definitions
+from rangekeeper.model.formulation.preparation import prepare_formulations
+from rangekeeper.model.provenance import check_provenance
+from rangekeeper.model.system.validation import check_system
+from rangekeeper.schema.index import RecordIndex, walk, walk_data
+from rangekeeper.schema.records import (
+    Domain,
+    Flow,
+    Measure,
+    Quantity,
+    Value,
+)
+from rangekeeper.schema.records import (
+    Model as ModelRecord,
+)
 from rangekeeper.schema.runtime import Record
 from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.diagnostics import Issue, ValidationReport
+from rangekeeper.shared.errors import UnitError
+from rangekeeper.shared.units import UnitSystem, default_units
 from rangekeeper.shared.validation import (
     bounded,
     checked,
@@ -12,23 +32,6 @@ from rangekeeper.shared.validation import (
     require_acyclic,
     require_declarations,
 )
-from rangekeeper.shared.diagnostics import Issue, ValidationReport
-from rangekeeper.schema.records import (
-    Model as ModelRecord,
-    Measure,
-    Domain,
-    Quantity,
-    Value,
-    Flow,
-)
-from rangekeeper.shared.units import UnitSystem, default_units
-from rangekeeper.schema.index import RecordIndex, walk, walk_data
-from uuid import UUID
-from rangekeeper.shared.errors import UnitError
-from rangekeeper.model.definitions import check_definitions
-from rangekeeper.model.system.validation import check_system
-from rangekeeper.model.provenance import check_provenance
-from rangekeeper.model.formulation.preparation import prepare_formulations
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model

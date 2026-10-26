@@ -1,32 +1,31 @@
 """Comparable hierarchy and mixed-grid workloads, including the pre-005 API."""
 
-from datetime import date
-from pathlib import Path
-from uuid import uuid4
 import argparse
-import importlib
 import json
 import math
 import resource
 import time
+from datetime import date
+from pathlib import Path
+from uuid import uuid4
 
+from rangekeeper.calculations import series
 from rangekeeper.model import (
-    Model,
-    Metadata,
-    Definitions,
-    System,
     Assembly,
+    Characteristics,
+    Definitions,
     Entity,
     Measure,
+    Metadata,
+    Model,
+    System,
     Value,
-    Characteristics,
 )
-from rangekeeper.schema.records import Flow
-from rangekeeper.schema.enums import ValueKind
-from rangekeeper.model.duration import make_periods, Frequency
-from rangekeeper.model.system import View, Hierarchy
-from rangekeeper.calculations import series
+from rangekeeper.model.duration import Frequency, make_periods
+from rangekeeper.model.system import Hierarchy, View
 from rangekeeper.schema.behaviors.flow import MissingValueHandling as Missing
+from rangekeeper.schema.enums import ValueKind
+from rangekeeper.schema.records import Flow
 
 
 def hierarchy_case(legacy):
@@ -55,7 +54,7 @@ def hierarchy_case(legacy):
             entities.append(entity)
             children.append(entity.id)
         buildings.append(
-            Assembly(id=uuid4(), name=f"Building {b+1}", entities=children)
+            Assembly(id=uuid4(), name=f"Building {b + 1}", entities=children)
         )
     root = Assembly(
         id=uuid4(), name="Portfolio", entities=tuple(b.id for b in buildings)

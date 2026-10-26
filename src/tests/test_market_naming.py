@@ -1,20 +1,18 @@
 """Naming changes preserve recorded mathematics, units and deterministic draws."""
 
-from rangekeeper.model.distribution import Distribution
-
-from copy import deepcopy
-from rangekeeper.schema.enums import DistributionFamily
-from datetime import date
 import json
+from datetime import date
 from pathlib import Path
-from uuid import UUID, uuid4
+from uuid import UUID
+
 import numpy as np
 import pytest
-from rangekeeper.model import Model, Metadata, Binding
 
-
-from rangekeeper.model.duration import make_periods, Frequency
-from rangekeeper.model.scenario import market, Market, replay, ReplayUnavailableError
+from rangekeeper.model import Binding, Metadata, Model
+from rangekeeper.model.distribution import Distribution
+from rangekeeper.model.duration import Frequency, make_periods
+from rangekeeper.model.scenario import Market, market
+from rangekeeper.schema.enums import DistributionFamily
 
 FIXTURE = Path(__file__).parent / "fixtures/scenarios/market-v1.json"
 RENAMES = {
@@ -101,5 +99,5 @@ def test_market_view_is_revision_pinned_and_has_named_values():
     cycle = result.space_cycle.flow.movements
     rents = result.space_market.flow.movements
     assert [m.magnitude for m in rents] == pytest.approx(
-        [(1 + c.magnitude) * v.magnitude for c, v in zip(cycle, levels)]
+        [(1 + c.magnitude) * v.magnitude for c, v in zip(cycle, levels, strict=True)]
     )

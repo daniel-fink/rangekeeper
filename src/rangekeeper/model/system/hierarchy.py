@@ -5,14 +5,17 @@ from dataclasses import dataclass
 from enum import Enum, unique
 from types import MappingProxyType
 from uuid import UUID
+
 from rangekeeper.model import Assembly
-from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.model.system.errors import HierarchyError
 from rangekeeper.model.system.view import View
+from rangekeeper.shared.arguments import require_uuid
 
 
 @unique
 class HierarchyKind(Enum):
+    """Edge meaning of a Hierarchy: Relationship edges or Assembly membership."""
+
     RELATIONSHIPS = "relationships"
     MEMBERSHIP = "membership"
 

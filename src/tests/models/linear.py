@@ -1,13 +1,9 @@
 """Readable known-data DCF composition using canonical Flow content."""
 
-from rangekeeper.model.flux import Flow, MissingValueHandling
-
-from dataclasses import dataclass
-from datetime import timedelta
-
-from rangekeeper.model.measure import Quantity
+from rangekeeper.calculations import financial, projection, series
 from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods, offset
-from rangekeeper.calculations import series, projection, financial
+from rangekeeper.model.flux import Flow, MissingValueHandling
+from rangekeeper.model.measure import Quantity
 
 
 class Model:

@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
 from collections.abc import Sequence
+from datetime import date, timedelta
+from itertools import pairwise
 
-from rangekeeper.model.duration import Period, Span
 from rangekeeper.model.duration.calendar import (
     Frequency,
     MonthRoll,
-    PeriodTiming,
     elapsed_days,
     measure,
     offset,
     require_date,
 )
+from rangekeeper.model.duration.calendar import (
+    PeriodTiming as PeriodTiming,
+)
+from rangekeeper.schema.records import Period, Span
 
 
 def make_period(start_inclusive: date, end_exclusive: date) -> Period:
@@ -40,7 +43,7 @@ def make_periods(
         offset(start, frequency=frequency, count=i, month_roll=month_roll)
         for i in range(count + 1)
     ]
-    return tuple(make_period(a, b) for a, b in zip(boundaries, boundaries[1:]))
+    return tuple(make_period(a, b) for a, b in pairwise(boundaries))
 
 
 def periods_between(

@@ -6,14 +6,14 @@ and required recorded quantities, but do not evaluate equations or prove feasibi
 Specification-local Value publication and structural interventions need adapters.
 """
 
-from copy import deepcopy
-from rangekeeper.schema.runtime import exact_equal
 import math
+from copy import deepcopy
 from uuid import UUID
 
-from rangekeeper.model.scope import reference_key, recorded_quantity, numerical_units
-from rangekeeper.shared.validation import require
+from rangekeeper.model.scope import numerical_units, recorded_quantity, reference_key
 from rangekeeper.schema.index import walk_data
+from rangekeeper.schema.runtime import exact_equal
+from rangekeeper.shared.validation import require
 
 
 def validate_outputs(

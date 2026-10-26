@@ -1,20 +1,11 @@
 """UUID identity survives revisions; alignment and report scope stay explicit."""
 
-from rangekeeper.model import ValueKind
-
-from copy import deepcopy
 from datetime import date
 from uuid import UUID, uuid4
 
 import pytest
 
 from rangekeeper.calculations import series
-from rangekeeper.shared.errors import (
-    IdentityConflictError,
-    MissingReferenceError,
-    ValidationError,
-)
-from rangekeeper.model.scope import target_value, target_units
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
     Characteristics,
@@ -27,9 +18,17 @@ from rangekeeper.model import (
     System,
     Update,
     Value,
+    ValueKind,
 )
-from rangekeeper.model.flux import Flow, Movement, MissingValueHandling
-from rangekeeper.run import Run, validate as validate_run
+from rangekeeper.model.flux import Flow, MissingValueHandling, Movement
+from rangekeeper.model.scope import target_units, target_value
+from rangekeeper.run import Run
+from rangekeeper.run import validate as validate_run
+from rangekeeper.shared.errors import (
+    IdentityConflictError,
+    MissingReferenceError,
+    ValidationError,
+)
 from rangekeeper.specification import Specification
 from tests.test_domain_run import inputs, load
 
@@ -178,8 +177,6 @@ def test_alignment_uses_coordinates_while_results_have_independent_ids():
     )
     assert union.flows[0].movements[-1].id != later.movements[0].id
     assert union.flows[0].movements[0].id == left.movements[0].id
-
-
 
 
 def test_diagnostic_participants_use_input_model_even_for_a_specification_subject():

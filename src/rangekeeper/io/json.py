@@ -3,11 +3,11 @@
 import json as _json
 from pathlib import Path
 
+from rangekeeper.io._document import require_kind, restore, snapshot
+from rangekeeper.io.atomic import write_new
+from rangekeeper.io.store import D, Document
 from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.errors import DecodeError
-from rangekeeper.io.atomic import write_new
-from rangekeeper.io._document import restore, require_kind, snapshot
-from rangekeeper.io.store import Document, D
 
 
 def _parse(text: str) -> object:

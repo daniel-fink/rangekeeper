@@ -4,29 +4,28 @@ The manifest is the publication marker. No JSON Model is retained or consulted.
 Import this optional IO module explicitly; domain imports need no Arrow or DuckDB.
 """
 
+import json
+import os
+import shutil
 from collections import defaultdict
 from hashlib import sha256
 from importlib.resources import files
-import json
-import math
-import os
 from pathlib import Path
-import shutil
+from uuid import UUID
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from rangekeeper import Model, Specification, Run
-from uuid import UUID
-from rangekeeper.io._document import snapshot, require_same, require_revision
-from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
-from rangekeeper.shared.arguments import require_uuid
-from rangekeeper.run.validation import validate as validate_run
-from rangekeeper.shared.validation import require_acyclic
+from rangekeeper import Model, Run, Specification
+from rangekeeper.io._document import require_revision, require_same, snapshot
 from rangekeeper.io.atomic import write_new
 from rangekeeper.model.geometry import safe_path
+from rangekeeper.run.validation import validate as validate_run
 from rangekeeper.schema.runtime import comparison_data
 from rangekeeper.schema.validation import slots_for
+from rangekeeper.shared.arguments import require_uuid
+from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
+from rangekeeper.shared.validation import require_acyclic
 
 FORMAT = "rangekeeper.bundle/2-proposal"
 MAPPING = "rangekeeper.parquet/1-proposal"
@@ -36,6 +35,7 @@ SCHEMA_DIGEST = sha256(SCHEMA_BYTES).hexdigest()
 
 
 def encoded(value):
+    """Return canonical JSON text: sorted keys, compact separators and no NaN."""
     return json.dumps(
         value,
         sort_keys=True,
@@ -46,18 +46,22 @@ def encoded(value):
 
 
 def digest(value):
+    """Return the SHA-256 hex digest of the canonical JSON encoding."""
     return sha256(encoded(value).encode()).hexdigest()
 
 
 def model_digest(model):
+    """Return the digest of the comparison data of a Model."""
     return digest(comparison_data("Model", model.to_data()))
 
 
 def document_digest(document):
+    """Return the digest of the comparison data of a document."""
     return digest(comparison_data(type(document).__name__, document.to_data()))
 
 
 def reference(document):
+    """Return the kind and ID of a document as a reference record."""
     return dict(kind=type(document).__name__, id=str(document.id))
 
 
@@ -144,7 +148,7 @@ class _Documents:
 def _resolve(resolver, identifier, kind):
     if resolver is None:
         raise MissingReferenceError(str(identifier))
-    for candidate in ((kind,) if kind else (Model, Specification, Run)):
+    for candidate in (kind,) if kind else (Model, Specification, Run):
         try:
             document = getattr(resolver, "load_" + candidate.__name__.lower())(
                 identifier
@@ -215,6 +219,7 @@ def _value_type(meta):
 
 
 def table_schema(kind):
+    """Return the Arrow schema of the Parquet table for one RK kind."""
     fields = [pa.field("_path", pa.string(), nullable=False)]
     for name, meta in slots_for(kind).items():
         fields.append(pa.field(name + "__state", pa.uint8(), nullable=False))
@@ -362,6 +367,7 @@ PATH_ORDER = (
 
 
 def inventory(root, paths):
+    """Return the size and SHA-256 of each local Bundle file, sorted by path."""
     result = []
     for name in sorted(paths):
         if not safe_path(name):
@@ -870,15 +876,18 @@ class Reader(_Documents):
         return _prefix(identifier, self._primary)
 
     def model(self, id=None):
+        """Return the primary Model, or the Model with the given ID."""
         return self.load_model(self._primary if id is None else id)
 
     def geometry_path(self, id=None):
+        """Return the local Geometry file path of a Model, or None if it has no Geometry."""
         model = self.model(id)
         if model.geometry is None:
             return None
         return self.root / self.manifest["geometry_paths"][str(model.id)]
 
     def verify_geometry(self):
+        """Validate each distinct Geometry pin with its explicit provider."""
         checked = set()
         for document in self.documents():
             pin = _pin(document)
@@ -936,7 +945,7 @@ class Reader(_Documents):
         offset=0,
         limit=100,
     ):
-        """A bounded public projection. No caller-supplied SQL or filesystem path."""
+        """Return a bounded public projection. Accept no caller-supplied SQL or filesystem path."""
         if (
             type(offset) is not int
             or offset < 0
@@ -987,7 +996,13 @@ class Reader(_Documents):
             ).fetchall()
             return dict(
                 items=[
-                    dict(zip(("path", "kind", "canonical_id", "owner_id"), row))
+                    dict(
+                        zip(
+                            ("path", "kind", "canonical_id", "owner_id"),
+                            row,
+                            strict=True,
+                        )
+                    )
                     for row in result[:limit]
                 ],
                 next_offset=offset + limit if len(result) > limit else None,

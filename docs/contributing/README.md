@@ -52,11 +52,27 @@ Schema tooling uses a separate pinned environment. Follow
 [Grasshopper](../guides/grasshopper.md) covers the independent .NET build;
 [Windows acceptance](windows-acceptance.md) covers the external host gate.
 
-## Python formatting
+## Python formatting and linting
 
-Use Black from the development environment. Settings belong in
-[`pyproject.toml`](../../pyproject.toml). Short signatures can stay on one
-line. When a signature spans multiple lines:
+Use ruff from the development environment. It formats and lints; it replaces
+Black. Settings belong in [`pyproject.toml`](../../pyproject.toml). From the
+repository root:
+
+```sh
+uv run --locked ruff format .
+uv run --locked ruff check --fix .
+```
+
+The lint rules are Pyflakes (`F`), import order (`I`), bugbear (`B`), pyupgrade
+(`UP`) and pydocstyle (`D`). Docstring rules apply to `src/rangekeeper` only:
+each public module, class, method and function needs a docstring. Write the first
+line of a function or method docstring in the imperative mood. Ruff skips the
+generated schema modules and the captured evidence under `docs/`.
+
+Import order can change module load order. If a sorted import causes a circular
+import, import the name from the module that defines it, not from its package.
+
+Short signatures can stay on one line. When a signature spans multiple lines:
 
 - Put each parameter on its own line.
 - Put `/` and `*` separators on their own lines.
@@ -72,24 +88,19 @@ def author(
     pass
 ```
 
-The trailing comma makes Black preserve the expanded layout. Black also accepts
-some multiline signatures with several parameters on one line, so its check alone
-does not enforce this convention. From the repository root:
+The trailing comma makes the formatter keep the expanded layout. The formatter
+also accepts some multiline signatures with several parameters on one line, so
+the check alone does not enforce this convention.
 
-```sh
-uv run --locked black path/to/file.py
-uv run --locked black --check path/to/file.py
-```
-
-Apply the convention when adding or changing handwritten Python. Keep unrelated
-formatting outside the task's scope. Run formatting and verification locally
-before delivery. Update generators instead of editing generated outputs by hand.
+Keep a `# noqa` or a per-file ignore only with a comment that gives the reason.
+Update generators instead of editing generated outputs by hand.
 
 ## Continuous integration
 
 The [Tests workflow](../../.github/workflows/tests.yml) runs on each pull request
-to `develop` or `main` and on each push to them. On Ubuntu with Python 3.13, it
-runs:
+to `develop` or `main` and on each push to them. Its `lint` job runs
+`ruff check` and `ruff format --check` on the whole repository. Its `pytest` job
+runs on Ubuntu with Python 3.13:
 
 ```sh
 uv sync --locked --all-extras
@@ -102,8 +113,8 @@ Pyomo/HiGHS backend and Bundle IO. It skips no tests: Matplotlib uses the
 off-screen `Agg` backend, and no test needs a display or network access.
 The `-rs` option lists any optional-dependency skips in the log.
 
-A pull request merges only after its `pytest` check passes. The workflow does not
-run Black, schema generation, C# builds, wheel checks, notebooks or the
+A pull request merges only after its checks pass. The workflow does not
+run schema generation, C# builds, wheel checks, notebooks or the
 documentation link check. Run those [verification](verification.md) procedures
 locally when the change affects them.
 

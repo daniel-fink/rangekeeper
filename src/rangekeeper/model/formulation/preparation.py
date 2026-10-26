@@ -8,13 +8,13 @@ Neither path evaluates quantities, executes graph queries or invokes a solver.
 import math
 from uuid import UUID
 
-from rangekeeper.shared.validation import require, require_unique, require_ownership
-from rangekeeper.model.scope import build_scope, validate_values
 from rangekeeper.model.expression.validation import (
     validate_constraint_predicates,
     validate_function_signature,
 )
 from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.model.scope import build_scope, validate_values
+from rangekeeper.shared.validation import require, require_ownership, require_unique
 
 
 def _walk_formulations(formulations, path):

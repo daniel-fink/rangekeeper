@@ -1,50 +1,55 @@
 """Independent temporal/calculation oracles and explicit migration corrections."""
 
-from rangekeeper.model.content import ContentKind
-
-from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
-from rangekeeper.model.flux import MissingValueHandling
-from rangekeeper.calculations.series import (
-    AlignmentJoin,
-    AggregationMethod,
-    ResamplingMethod,
-    MeanWeighting,
-)
-from rangekeeper.calculations.projection import ProjectionMethod, PaddingMode
-from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper.schema.enums import ValueKind, DistributionFamily
-
-from rangekeeper.calculations.account import Account
-from rangekeeper.model.distribution import Distribution
-from rangekeeper.model.flux import Flow
-
+import math
 from datetime import date, datetime, time, timedelta
 from types import MappingProxyType
 from uuid import uuid4
 from zoneinfo import ZoneInfo
-import math
+
 import numpy as np
 import pytest
+
 from rangekeeper import Model
-from rangekeeper.model.content import encode, decode
-from rangekeeper.model.flux import Stream
-from rangekeeper.schema.records import (
-    Metadata,
-    Entity,
-    Value,
-    Characteristics,
-    Definitions,
-    Measure,
-    System,
-    PropertyContent,
+from rangekeeper.calculations import financial, projection, series
+from rangekeeper.calculations.account import (
+    Account,
+    Balance,
+    CurrentInterest,
+    InterestTreatment,
 )
-from rangekeeper.model.measure import Quantity
-from rangekeeper.model import distribution as distributions
-from rangekeeper.model.duration import make_periods, make_period, offset, year_fraction
-from rangekeeper.calculations import series, projection, financial, account
 from rangekeeper.calculations.interval import Interval
+from rangekeeper.calculations.projection import PaddingMode, ProjectionMethod
+from rangekeeper.calculations.series import (
+    AggregationMethod,
+    AlignmentJoin,
+    MeanWeighting,
+    ResamplingMethod,
+)
 from rangekeeper.io import json as codec
 from rangekeeper.io.memory import MemoryStore
+from rangekeeper.model.content import ContentKind, decode, encode
+from rangekeeper.model.distribution import Distribution
+from rangekeeper.model.duration import (
+    DayCount,
+    Frequency,
+    make_period,
+    make_periods,
+    offset,
+    year_fraction,
+)
+from rangekeeper.model.flux import Flow, MissingValueHandling, Stream
+from rangekeeper.model.measure import Quantity
+from rangekeeper.schema.enums import DistributionFamily, ValueKind
+from rangekeeper.schema.records import (
+    Characteristics,
+    Definitions,
+    Entity,
+    Measure,
+    Metadata,
+    PropertyContent,
+    System,
+    Value,
+)
 
 
 def annual(values, *, units="AUD"):
@@ -451,12 +456,12 @@ def test_adapter_exports_are_detached():
 
 
 def test_dynamics_fixed_inputs():
-    from rangekeeper.calculations.dynamics import calculate_cycle
     from rangekeeper.calculations.dynamics import (
-        calculate_autoregression,
         accumulate_volatility,
+        calculate_autoregression,
+        calculate_cycle,
+        calculate_shock,
     )
-    from rangekeeper.calculations.dynamics import calculate_shock
 
     assert calculate_cycle(count=4, period=4, phase=0, amplitude=2) == pytest.approx(
         [0, 2, 0, -2]
@@ -471,7 +476,7 @@ def test_dynamics_fixed_inputs():
 
 
 def test_weighted_rates_and_partial_period_helpers():
-    from rangekeeper.model.duration import periods_between, cover
+    from rangekeeper.model.duration import cover, periods_between
 
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
     rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
@@ -524,8 +529,8 @@ def test_weighted_rates_and_partial_period_helpers():
 
 
 def test_distinct_property_and_flow_roles_reject_malformed_content():
-    from tests.test_execution import data
     from rangekeeper.shared.errors import ValidationError
+    from tests.test_execution import data
 
     base = data("model")
     value = base["system"]["entities"][0]["characteristics"]["values"][0]
@@ -535,8 +540,8 @@ def test_distinct_property_and_flow_roles_reject_malformed_content():
 
 
 def test_polars_preserves_explicit_null_and_omission():
+    from rangekeeper.io.polars import from_frame, to_frame
     from rangekeeper.model.flux import Flow
-    from rangekeeper.io.polars import to_frame, from_frame
 
     flow = Flow.from_data(
         {

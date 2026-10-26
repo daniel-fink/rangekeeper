@@ -8,36 +8,42 @@ mathematics require a graph adapter and are reported explicitly as unsupported.
 """
 
 import math
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
-from rangekeeper.model.scope import Scope, reference_key, numerical_units
-from rangekeeper.shared.validation import require, require_declarations, require_acyclic
+
 from rangekeeper.model.expression.validation import ExpressionAnalysis
 from rangekeeper.model.formulation.preparation import prepare_formulations
+from rangekeeper.model.scope import Scope, numerical_units, reference_key
 from rangekeeper.model.validation import check_model
-from rangekeeper.specification.composition import (
-    batch_cases,
-    specification_catalogue,
-    validate_roles,
-)
 from rangekeeper.schema.index import walk_data
-from collections.abc import Callable, Mapping
 from rangekeeper.schema.runtime import Record
 from rangekeeper.schema.validation import document_version
-from rangekeeper.shared.validation import bounded, checked
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
-from rangekeeper.specification.composition import compose_specification, Composition
 from rangekeeper.shared.errors import (
     ContractError,
+    IdentityConflictError,
     MissingReferenceError,
     ReferenceTypeError,
-    IdentityConflictError,
     UnitError,
 )
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.shared.units import UnitSystem, default_units
-from dataclasses import dataclass
-
+from rangekeeper.shared.validation import (
+    bounded,
+    checked,
+    require,
+    require_acyclic,
+    require_declarations,
+)
+from rangekeeper.specification.composition import (
+    Composition,
+    batch_cases,
+    compose_specification,
+    specification_catalogue,
+    validate_roles,
+)
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model
@@ -370,6 +376,8 @@ def validate_records(
 
 @dataclass(frozen=True)
 class PreparedValidation:
+    """Validation report of one composition, with its successful prerequisites."""
+
     report: ValidationReport
     composition: Composition
     model: "Model | None" = None
@@ -408,8 +416,8 @@ def prepare(
 ) -> PreparedValidation:
     """Check one composition without recomposing; retain successful prerequisites."""
     from rangekeeper.model.model import Model
-    from rangekeeper.schema.records import Measure
     from rangekeeper.model.validation import recorded_unit_issues
+    from rangekeeper.schema.records import Measure
 
     if not isinstance(composition, Composition):
         raise TypeError("composition must be a Composition")

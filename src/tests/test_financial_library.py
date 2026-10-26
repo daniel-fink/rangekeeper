@@ -1,21 +1,7 @@
 """Independent finance oracles and PyXIRR integration boundary checks."""
 
-from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
-from rangekeeper.model.flux import MissingValueHandling
-from rangekeeper.calculations.series import (
-    AlignmentJoin,
-    AggregationMethod,
-    ResamplingMethod,
-    MeanWeighting,
-)
-from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper.schema.enums import ValueKind
-
-from rangekeeper.model.flux import Flow
-
-from datetime import date, datetime
 import math
+from datetime import date, datetime
 from uuid import uuid4
 
 import pytest
@@ -25,8 +11,9 @@ from rangekeeper.calculations.financial import (
     calculate_pv,
     calculate_xnpv,
 )
-from rangekeeper.model.flux import Movement
+from rangekeeper.model.duration import DayCount
 from rangekeeper.model.duration.calendar import year_fraction
+from rangekeeper.model.flux import Flow, Movement
 
 
 @pytest.mark.parametrize(
@@ -55,11 +42,13 @@ def test_explicit_valuation_before_between_and_after_payments(
         [date(2020, 1, 31), date(2020, 2, 29), date(2021, 1, 1)], amounts, units="AUD"
     )
     for valuation_date, origin in zip(
-        (date(2020, 1, 1), date(2020, 2, 15), date(2021, 1, 1)), valuation_periods
+        (date(2020, 1, 1), date(2020, 2, 15), date(2021, 1, 1)),
+        valuation_periods,
+        strict=True,
     ):
         expected = math.fsum(
             amount / (1 + rate) ** (period - origin)
-            for amount, period in zip(amounts, periods)
+            for amount, period in zip(amounts, periods, strict=True)
         )
         result = calculate_xnpv(
             flow, rate=rate, valuation_date=valuation_date, day_count=convention
@@ -103,7 +92,9 @@ def test_pv_keeps_records_and_non_currency_units(first_period):
     before = source.to_data()
     result = calculate_pv(source, rate=0.1, first_period=first_period)
     assert source.to_data() == before and result.units == "kg"
-    for i, (original, discounted) in enumerate(zip(source.movements, result.movements)):
+    for i, (original, discounted) in enumerate(
+        zip(source.movements, result.movements, strict=True)
+    ):
         expected = original.to_data()
         assert discounted.id != original.id
         expected["id"] = str(discounted.id)
