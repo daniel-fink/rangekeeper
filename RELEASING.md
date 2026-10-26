@@ -33,8 +33,8 @@ a `v0.8.N` tag is pushed. The tag must point to a commit on `support/0.8`.
    git push origin v0.8.N
    ```
 
-4. The workflow builds the sdist and wheel, runs `twine check`, imports the
-   wheel on Python 3.12 and 3.13 and publishes to TestPyPI.
+4. The workflow builds the sdist and wheel, runs `twine check` and imports the
+   wheel on Python 3.12 and 3.13.
 5. Approve the `pypi` deployment in the workflow run. The workflow publishes to
    PyPI and creates the GitHub Release with the changelog section, the files and
    the attestation bundle.
@@ -42,7 +42,7 @@ a `v0.8.N` tag is pushed. The tag must point to a commit on `support/0.8`.
 If the tag does not match the package version, or the commit is not on
 `support/0.8`, the workflow stops before it publishes.
 
-The one-time PyPI, TestPyPI and GitHub environment setup is in the
+The one-time PyPI and GitHub environment setup is in the
 [release guide on `develop`](https://github.com/daniel-fink/rangekeeper/blob/develop/docs/contributing/releasing.md).
 
 ## Build locally
