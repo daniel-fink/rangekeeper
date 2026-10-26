@@ -1,12 +1,14 @@
 """Stable declaration identities independent of recorded amounts and array insertion."""
 
-from collections.abc import Sequence
 import json
+from collections.abc import Sequence
 from uuid import UUID, uuid5
+
 from rangekeeper.schema.records import Binding, Constraint, Expression, Formulation
 
 
 def identify(owner: UUID, *parts: str | UUID) -> UUID:
+    """Derive a deterministic UUID5 from the owner ID and the ordered parts."""
     return uuid5(
         owner, json.dumps([str(part) for part in parts], separators=(",", ":"))
     )
@@ -50,7 +52,7 @@ def declare(
         Constraint(
             id=identify(id, operation, key, "constraint"), predicate=expression.id
         )
-        for (key, _), expression in zip(entries, expressions)
+        for (key, _), expression in zip(entries, expressions, strict=True)
     )
     return Formulation(
         id=id,

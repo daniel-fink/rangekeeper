@@ -11,6 +11,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv run --locked --only-group lint ruff check --output-format github .
+      - run: uv run --locked --only-group lint ruff format --check .
+
   pytest:
     name: pytest
     runs-on: ubuntu-latest

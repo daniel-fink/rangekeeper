@@ -1,13 +1,19 @@
 """Saved partial Specifications and derived complete investigation views."""
 
-from rangekeeper.specification.specification import Specification as Specification
-from rangekeeper.specification.composition import Composition as Composition
 from rangekeeper.schema.records import (
-    Specification as SpecificationRecord,
     Assignment as Assignment,
+)
+from rangekeeper.schema.records import (
     Objective as Objective,
+)
+from rangekeeper.schema.records import (
     Settings as Settings,
 )
+from rangekeeper.schema.records import (
+    Specification as SpecificationRecord,
+)
+from rangekeeper.specification.composition import Composition as Composition
+from rangekeeper.specification.specification import Specification as Specification
 
 __all__ = [
     "Specification",

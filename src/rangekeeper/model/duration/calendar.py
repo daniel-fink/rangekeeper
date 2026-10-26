@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 @unique
 class Frequency(Enum):
+    """Select the calendar step of a date grid, from one day to one decade."""
+
     DAY = "day"
     WEEK = "week"
     BIWEEK = "biweek"
@@ -45,18 +47,23 @@ _STEPS = dict(
             (0, 60),
             (0, 120),
         ),
+        strict=True,
     )
 )
 
 
 @unique
 class MonthRoll(Enum):
+    """Select how a month step treats a day that the target month does not have."""
+
     PRESERVE_END = "preserve_end"
     CLAMP = "clamp"
 
 
 @unique
 class PeriodTiming(Enum):
+    """Select the date that represents a Period: first day, last day or end boundary."""
+
     FIRST = "first"
     LAST = "last"
     END = "end"
@@ -64,6 +71,8 @@ class PeriodTiming(Enum):
 
 @unique
 class DayCount(Enum):
+    """Select the day-count convention of a year fraction."""
+
     ACTUAL_365 = "actual/365"
     ACTUAL_360 = "actual/360"
     ACTUAL_ACTUAL = "actual/actual"

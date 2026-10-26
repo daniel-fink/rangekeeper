@@ -1,3 +1,5 @@
+"""Errors raised by Model selection, hierarchy building and value reduction."""
+
 from collections.abc import Iterable
 from uuid import UUID
 

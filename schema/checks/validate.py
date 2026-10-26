@@ -6,11 +6,10 @@ conformance fixture; generated JSON Schema alone cannot establish referential in
 
 import copy
 import json
-from pathlib import Path
-import _library
-import subprocess
 import sys
+from pathlib import Path
 
+import _library
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
 
@@ -18,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = ROOT / "schema"
 GENERATE = Path(sys.executable).with_name("gen-json-schema")
 validators = {}
-for name, file in (
+for name, _file in (
     ("Definitions", "definitions"),
     ("Taxonomy", "classification"),
     ("Entity", "entity"),
@@ -33,9 +32,7 @@ for name, file in (
     ("Value", "characteristics"),
     ("Provenance", "provenance"),
 ):
-    schema = json.loads(
-        _library.schema_json(name)
-    )
+    schema = json.loads(_library.schema_json(name))
     cls = validator_for(schema)
     cls.check_schema(schema)
     validators[name] = cls(schema, format_checker=FormatChecker())

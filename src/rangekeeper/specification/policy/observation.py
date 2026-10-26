@@ -3,13 +3,13 @@
 from collections.abc import Sequence
 from datetime import date
 
-from rangekeeper.schema.records import ObservationBinding, ObservedQuantity, Quantity
 from rangekeeper.model import Model
 from rangekeeper.model.scope import (
     recorded_quantity,
     resolve_reference,
     scope_for_model,
 )
+from rangekeeper.schema.records import ObservationBinding, ObservedQuantity, Quantity
 from rangekeeper.specification.policy._availability import available_on, evidence_dates
 from rangekeeper.specification.policy.result import Observation
 

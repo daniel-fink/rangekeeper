@@ -9,19 +9,19 @@ from rangekeeper.calculations.account import (
     check_conventions,
 )
 from rangekeeper.model import Model
-from rangekeeper.model.scope import target_value
-from rangekeeper.schema.records import Formulation, Reference, Expression
-from rangekeeper.schema.enums import Operator
-from rangekeeper.model.formulation.flow import aligned, shape
-from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.expression.authoring import (
-    reference,
-    literal,
-    equal,
-    multiply,
-    binary,
     add,
+    binary,
+    equal,
+    literal,
+    multiply,
+    reference,
 )
+from rangekeeper.model.formulation.authoring import declare
+from rangekeeper.model.formulation.flow import aligned, shape
+from rangekeeper.model.scope import target_value
+from rangekeeper.schema.enums import Operator
+from rangekeeper.schema.records import Expression, Formulation, Reference
 
 
 def interest(

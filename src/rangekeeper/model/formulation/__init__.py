@@ -1,7 +1,9 @@
 """Shared Formulation records and passive equation authoring."""
 
 from importlib import import_module
-from rangekeeper.schema.records import Formulation, Binding
+
+from rangekeeper.schema.records import Binding, Formulation
+
 from .authoring import declare
 
 _MODULES = {"account", "financial", "flow", "growth", "hierarchy"}

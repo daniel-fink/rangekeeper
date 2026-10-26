@@ -5,22 +5,9 @@ breaks. Dates, totals, allocation, partition meaning and detached results remain
 covered here. Plotting is tested by the installed walkthroughs and adapters.
 """
 
-from rangekeeper.model.duration import Frequency
-from rangekeeper.model.flux import MissingValueHandling
-from rangekeeper.calculations.series import ResamplingMethod
-from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.model.duration import MonthRoll, PeriodTiming
-
-from rangekeeper.model import ValueKind
-
-from rangekeeper.model.flux import Flow
-
-from rangekeeper.model.distribution import Distribution
-
-
+import math
 from datetime import date, timedelta
 from uuid import uuid4
-import math
 
 import numpy as np
 import pytest
@@ -28,22 +15,32 @@ import pytest
 from rangekeeper import Model
 from rangekeeper.calculations import projection, series
 from rangekeeper.calculations.interval import Interval
-from rangekeeper.model.duration import make_periods, make_period, offset
-from rangekeeper.model.duration.calendar import elapsed_days
+from rangekeeper.calculations.projection import ProjectionMethod
+from rangekeeper.calculations.series import ResamplingMethod
 from rangekeeper.model import (
-    Metadata,
-    System,
-    Entity,
     Assembly,
     Characteristics,
-    Value,
-    Definitions,
     Classification,
+    Definitions,
+    Entity,
+    Metadata,
+    System,
     Taxonomy,
+    Value,
+    ValueKind,
 )
-from rangekeeper.model.content import encode, decode
-
-from rangekeeper.model.flux import Stream
+from rangekeeper.model.content import decode, encode
+from rangekeeper.model.distribution import Distribution
+from rangekeeper.model.duration import (
+    Frequency,
+    MonthRoll,
+    PeriodTiming,
+    make_period,
+    make_periods,
+    offset,
+)
+from rangekeeper.model.duration.calendar import elapsed_days
+from rangekeeper.model.flux import Flow, MissingValueHandling, Stream
 from rangekeeper.model.measure import Measure, Quantity
 
 
@@ -252,7 +249,9 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
                 )
             ),
         )
-        for name, bounds, span in zip(("Parking", "Retail", "BOH"), pieces, (1, 2, 2))
+        for name, bounds, span in zip(
+            ("Parking", "Retail", "BOH"), pieces, (1, 2, 2), strict=True
+        )
     )
     parent = Assembly(id=uuid4(), name="Podium", entities=tuple(c.id for c in children))
     model = Model.create(

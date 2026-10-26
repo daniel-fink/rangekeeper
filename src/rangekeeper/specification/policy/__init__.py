@@ -1,27 +1,45 @@
 """Policy declarations and lazy finite evaluation over explicit observations."""
 
-from typing import TYPE_CHECKING
 from importlib import import_module
+from typing import TYPE_CHECKING
 
 from rangekeeper.schema.records import (
     Action as Action,
+)
+from rangekeeper.schema.records import (
     ActionKind as ActionKind,
+)
+from rangekeeper.schema.records import (
     Decision as Decision,
+)
+from rangekeeper.schema.records import (
     DecisionOutcome as DecisionOutcome,
+)
+from rangekeeper.schema.records import (
     ObservationBinding as ObservationBinding,
+)
+from rangekeeper.schema.records import (
     ObservedQuantity as ObservedQuantity,
+)
+from rangekeeper.schema.records import (
     Policy as Policy,
+)
+from rangekeeper.schema.records import (
     Rule as Rule,
 )
 
 if TYPE_CHECKING:
     from rangekeeper.specification.policy.evaluation import evaluate as evaluate
     from rangekeeper.specification.policy.observation import (
-        observe as observe,
         PolicyCapabilityError as PolicyCapabilityError,
+    )
+    from rangekeeper.specification.policy.observation import (
+        observe as observe,
     )
     from rangekeeper.specification.policy.result import (
         Observation as Observation,
+    )
+    from rangekeeper.specification.policy.result import (
         PolicyResult as PolicyResult,
     )
 

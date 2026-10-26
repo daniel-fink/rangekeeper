@@ -4,13 +4,14 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import UUID
-from rangekeeper.model import Model, Entity, Relationship
+
+from rangekeeper.model import Entity, Model, Relationship
 from rangekeeper.model.definitions import _classes
-from rangekeeper.model.system.errors import SelectionError, HierarchyError
+from rangekeeper.model.system.errors import HierarchyError, SelectionError
 from rangekeeper.model.system.membership import _assembly
 
 if TYPE_CHECKING:
-    from rangekeeper.model.system.reduction import Reduction, Aggregation
+    from rangekeeper.model.system.reduction import Aggregation, Reduction
 
 
 @dataclass(frozen=True, init=False)
@@ -204,8 +205,8 @@ class View:
         Missing Values and unavailable quantities remain missing contributors.
         Real zero remains a measured quantity. No completeness policy is applied.
         """
-        from rangekeeper.model.system.selection import select_value
         from rangekeeper.model.system.reduction import _collect_quantities
+        from rangekeeper.model.system.selection import select_value
         from rangekeeper.shared.units import default_units
 
         select = select_value(key, measure=measure)

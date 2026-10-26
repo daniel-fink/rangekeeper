@@ -1,30 +1,28 @@
 """Acceptance tests for the schema-derived immutable record boundary."""
 
-from rangekeeper.model import ClaimKind
-from rangekeeper.model.expression import ExpressionKind
-from rangekeeper.run import ImplementationKind
-from rangekeeper.model.expression import Operator
-
-from copy import deepcopy
 import inspect
 import json
-from pathlib import Path
 import subprocess
 import sys
 import typing
+from copy import deepcopy
+from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
 import yaml
 
+from rangekeeper.model import ClaimKind
+from rangekeeper.model.expression import ExpressionKind, Operator
+from rangekeeper.model.validation import validate as validate_model
+from rangekeeper.run import ImplementationKind
+from rangekeeper.run.validation import validate_records as validate_run
 from rangekeeper.schema import records as r
 from rangekeeper.schema.validation import schema_for, validate
 from rangekeeper.shared.errors import ValidationError
-from rangekeeper.model.validation import validate as validate_model
 from rangekeeper.specification.validation import (
     validate_records as validate_specification,
 )
-from rangekeeper.run.validation import validate_records as validate_run
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 FIXTURES = sorted(

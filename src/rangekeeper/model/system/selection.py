@@ -2,10 +2,11 @@
 
 from collections.abc import Callable
 from uuid import UUID
-from rangekeeper.model import Model, Entity, Value, Measure
+
+from rangekeeper.model import Entity, Measure, Model, Value
 from rangekeeper.model.characteristics import value
-from rangekeeper.shared.arguments import require_text, require_uuid
 from rangekeeper.model.system.errors import SelectionError
+from rangekeeper.shared.arguments import require_text, require_uuid
 
 ValueSelector = Callable[[Model, Entity], Value | None]
 

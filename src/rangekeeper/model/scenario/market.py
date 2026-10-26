@@ -1,56 +1,63 @@
 """Recorded random inputs and pure realization of normalized market scenarios."""
 
-from collections.abc import Sequence, Mapping
+import hashlib
+import json
+import math
+import multiprocessing
+import platform
+from collections.abc import Mapping, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from importlib.metadata import version
-import json
-import hashlib
 from typing import Any, cast
-import multiprocessing
-import math
-import platform
 from uuid import UUID, uuid5
 
 from rangekeeper.model import (
-    Model,
-    Metadata,
-    Update,
     Definitions,
-    System,
-    Provenance,
-    Measure,
     Formulation,
-    Value,
+    Measure,
+    Metadata,
+    Model,
+    Provenance,
     Quantity,
+    System,
+    Update,
+    Value,
 )
+from rangekeeper.model.duration import PeriodTiming
 from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.scenario import (
-    ScenarioPlan,
-    ScenarioRealization,
     Binding,
-    RandomStream,
+    Distribution,
     LibraryVersion,
     ObservationAvailability,
+    RandomStream,
+    ScenarioParameter,
+    ScenarioPlan,
+    ScenarioRealization,
 )
-from rangekeeper.schema.records import Reference
-
-
-from rangekeeper.model.scenario.contracts import method, check_values, validate_plan
+from rangekeeper.model.scenario._paths import construct_paths
 from rangekeeper.model.scenario.components import _parameters
-from rangekeeper.model.scenario.implementation import calculation_provenance
-from rangekeeper.model.duration import PeriodTiming
-from rangekeeper.schema.enums import ValueKind
-from rangekeeper.model.scenario import ScenarioParameter, Distribution
 from rangekeeper.model.scenario.components import (
-    make_trend,
-    make_volatility,
-    make_cyclicality,
-    make_noise,
-    make_black_swan,
+    make_black_swan as make_black_swan,
 )
+from rangekeeper.model.scenario.components import (
+    make_cyclicality as make_cyclicality,
+)
+from rangekeeper.model.scenario.components import (
+    make_noise as make_noise,
+)
+from rangekeeper.model.scenario.components import (
+    make_trend as make_trend,
+)
+from rangekeeper.model.scenario.components import (
+    make_volatility as make_volatility,
+)
+from rangekeeper.model.scenario.contracts import check_values, method, validate_plan
+from rangekeeper.model.scenario.implementation import calculation_provenance
 from rangekeeper.model.scenario.random import create_generator, stream_identifier
 from rangekeeper.model.scenario.view import Market
-from rangekeeper.model.scenario._paths import construct_paths
+from rangekeeper.schema.enums import ValueKind
+from rangekeeper.schema.records import Reference
 
 
 def make_plan(
@@ -64,6 +71,7 @@ def make_plan(
 ) -> ScenarioPlan:
     """Record the selected market contract, defaults and explicit parameter groups."""
     from uuid import uuid4
+
     from rangekeeper.model.scenario.contracts import method as contract_for
 
     contract = contract_for(method)
@@ -135,7 +143,7 @@ def _flow(plan, amounts, owner: UUID):
                 date=p.resolve(timing=PeriodTiming.LAST),
                 magnitude=float(x),
             )
-            for i, (p, x) in enumerate(zip(plan.periods, amounts))
+            for i, (p, x) in enumerate(zip(plan.periods, amounts, strict=False))
         ),
     )
 
