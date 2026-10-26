@@ -30,7 +30,7 @@ blocked-by links. The
 
 | Decision | Status | Scope |
 | --- | --- | --- |
-| [ADR-010: Layers, packages and public namespaces](010-layers-and-packages.md) | Accepted for 1.0; implementation pending | Library boundary, layer order, ownership rules, public namespaces and the move map |
+| [ADR-010: Layers, packages and public namespaces](010-layers-and-packages.md) | Accepted for 1.0; library boundary implemented, layers pending | Library boundary, layer order, ownership rules, public namespaces and the move map |
 | [ADR-011: Records, behaviour and validation](011-records-and-validation.md) | Accepted for 1.0; implementation pending | Data-only generated records, owner subclasses, document facades, generated runtime and validation tiers |
 | [ADR-012: Naming convention, glossary and rename pass](012-naming-and-glossary.md) | Accepted for 1.0; implementation pending | Naming rules, agreed renames, initial rename map and the single 1.0.0a2 codemod pass |
 | [ADR-013: Execution pipeline and extension points](013-execution-and-extensions.md) | Accepted for 1.0; implementation pending | Pure `solve`, `execute`, `Outcome`, backend contract, worker, registry pattern and fingerprints |
@@ -68,8 +68,9 @@ interim API; all lessons are rebuilt for 1.x.
 ## Work that remains explicit
 
 - The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). [Walkthrough plan v2](020-walkthrough-plan-v2.md) replaces the earlier curriculum with seven lessons. It owns the teaching sequence, preparation decisions and capability dependencies. All lessons need ideal cells, authoring and CI execution on the 1.x API.
-- [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
-  open. The [retirement guide](../contributing/legacy-retirement.md) records removed
+- The [Windows/Rhino/connector gate](../history/windows-acceptance.md) is retired:
+  the envelope is a walkthrough helper and the Grasshopper solution is an
+  unsupported example ([ADR-010](010-layers-and-packages.md)). The [retirement guide](../contributing/legacy-retirement.md) records removed
   APIs; their removal does not establish platform support.
 - [Verification](../contributing/verification.md) is run explicitly by developers
   and agents. The [Tests workflow](../contributing/README.md#continuous-integration)

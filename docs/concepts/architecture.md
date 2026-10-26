@@ -136,6 +136,14 @@ This map applies until the 1.0.0a2 rename pass.
 | `shared` | Shared record, identity, unit and table support. |
 | `schema` | Generated records, enums, the record runtime and structural validation. |
 
+These folders are outside the package and its wheel:
+
+| Folder | Responsibility |
+| --- | --- |
+| [`examples/walkthrough/helpers`](../../examples/walkthrough/helpers/README.md) | Charts, graph display, local display, the canonical Speckle envelope and the geometry viewer, for the lessons |
+| [`examples/grasshopper`](../../examples/grasshopper/README.md) | The unsupported C# Model library and Grasshopper components |
+| [`examples/rangekeeper_examples`](../guides/examples.md) | Shared design and investment builders for examples and tests |
+
 LinkML YAML in `schema/` owns persistent fields. Python, C# and JSON Schema
 definitions are generated from it. See the [record reference](../reference/records.md)
 and the [schema guide](../contributing/schema.md).
@@ -148,7 +156,7 @@ the necessary capabilities.
 ### Local display
 
 Charts, graph display, the canonical Speckle envelope and the geometry viewer
-are [walkthrough helpers](../../examples/walkthrough/README.md), not library
+are [walkthrough helpers](../../examples/walkthrough/helpers/README.md), not library
 modules ([ADR-010](../decisions/010-layers-and-packages.md)). The core keeps Flow,
 Stream and pivot table display. The viewer is built in
 `examples/walkthrough/viewer` and copied to the helpers as static assets; see its
@@ -159,8 +167,8 @@ Stream and pivot table display. The viewer is built in
 The portable C# Model library and generic Grasshopper components are an
 unsupported example in `examples/grasshopper`. The Model project needs neither
 Rhino nor a source SDK. CI generates its C# records, builds it and round-trips the
-cross-language fixtures, so it cannot drift from the schema. See
-[Grasshopper](../guides/grasshopper.md).
+cross-language fixtures, so it cannot drift from the schema. See the
+[Grasshopper example](../../examples/grasshopper/README.md).
 
 ### Bundle implementation boundary
 

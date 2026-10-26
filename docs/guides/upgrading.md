@@ -28,7 +28,7 @@ formats require explicit conversion supplied by the consumer. Historical evidenc
 remain in the repository. They do not restore removed APIs.
 
 Generic Grasshopper authoring stays in RK. Source-specific extraction belongs to
-the consumer. See [Grasshopper](grasshopper.md).
+the consumer. See the [Grasshopper example](../../examples/grasshopper/README.md).
 
 ## Classification filters include sub-types
 

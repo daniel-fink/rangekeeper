@@ -46,8 +46,8 @@ helpers.
 
 Schema tooling uses a separate pinned environment. Follow
 [schema development](schema.md) for generation and conformance checks.
-[Grasshopper](../guides/grasshopper.md) covers the independent .NET build;
-[Windows acceptance](windows-acceptance.md) covers the external host gate.
+The [Grasshopper example](../../examples/grasshopper/README.md) covers the
+independent .NET build.
 
 ## Dependencies and versions
 

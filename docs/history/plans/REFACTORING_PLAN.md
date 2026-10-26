@@ -5,7 +5,7 @@ Archived on 2026-10-08. Implementation and local acceptance were recorded at
 below. Current contracts are linked from the [documentation index](../../README.md)
 and [decision index](../../decisions/README.md).
 
-Carried-forward work: [Windows/Rhino/connector acceptance](../../contributing/windows-acceptance.md),
+Carried-forward work: [Windows/Rhino/connector acceptance](../windows-acceptance.md),
 [legacy retirement](../../contributing/legacy-retirement.md), and any unrun remote
 checks under [verification](../../contributing/verification.md). Archiving this
 implemented plan does not close those gates.
@@ -400,7 +400,7 @@ HTML. Its declared dependency versions and build instructions remain in the
 examples/walkthrough lockfile and README. No site was published.
 
 Reproduction commands are in [Verification](../../contributing/verification.md), the
-[schema guide](../../contributing/schema.md), [C# guide](../../guides/grasshopper.md) and
+[schema guide](../../contributing/schema.md), [C# guide](../../../examples/grasshopper/README.md) and
 [walkthrough guide](../../guides/walkthroughs.md). The local baseline, logs, source
 hashes, notebook outputs and size accounting were retained in a temporary local
 directory; these are evidence, not package inputs.

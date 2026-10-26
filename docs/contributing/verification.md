@@ -35,8 +35,7 @@ python tools/ci/check_extra.py core
 Replace `core` with `bundle`, `calculations`, `execution` or `yaml`.
 
 Record optional dependency skips separately from passed checks. Mathematical
-execution uses the Pyomo/HiGHS backend; Run evidence records the installed versions. Local tests do not close the
-[Windows gate](windows-acceptance.md).
+execution uses the Pyomo/HiGHS backend; Run evidence records the installed versions.
 
 Do not edit package source while a workflow verification run is active.
 Implementation fingerprints read the source; a concurrent edit can change the
@@ -98,10 +97,9 @@ assets and their manifest; `python examples/walkthrough/viewer/check_manifest.py
 the packaged assets and the viewer sources with the manifest hashes. Browser smoke checks need a local browser runtime;
 geometry tests alone do not establish rendered interaction.
 
-Follow [Grasshopper](../guides/grasshopper.md#build-and-round-trip) for .NET builds
-and Python/C# fixture round trips. Follow [Windows acceptance](windows-acceptance.md)
-for Rhino loading and the official connector's publication/receive gate. A portable
-build or offline JSON pass cannot substitute for actual host acceptance.
+Follow the [Grasshopper example](../../examples/grasshopper/README.md#build-and-round-trip)
+for .NET builds and Python/C# fixture round trips; the `dotnet` CI job runs both.
+A portable build or offline JSON pass is not a Rhino host check.
 
 ## Examples and documentation
 

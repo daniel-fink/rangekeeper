@@ -87,6 +87,12 @@ separate work ([#191](https://github.com/daniel-fink/rangekeeper/issues/191)).
 
 ## Design example conventions
 
+[`rangekeeper_examples.design`](../../examples/rangekeeper_examples/design.py)
+provides `author`, `formulate` and `specify`. They construct a Model, finite
+mathematical declarations and a Specification. Construction does not execute or
+store them. Ambiguous use interpretation and missing required geometry quantities
+fail; the builder does not guess them.
+
 The two legacy design notebooks use the maintained
 [`rangekeeper_examples.design`](../../examples/rangekeeper_examples/design.py)
 builder. It authors explicit AUD flows, with signed floor and facade operating
@@ -97,7 +103,7 @@ Reversion is 2011 net after-capital cashflow (NACF) divided by the capitalizatio
 rate, received at the 2010 sale. It does not capitalize net operating income (NOI).
 Contributor IDs are deduplicated before aggregation. Parent totals are not added
 to their constituent values. These conventions belong to this reviewed example;
-the transport adapter does not impose financial equations.
+the design envelope helper does not impose financial equations.
 
 ## Shared chart style
 

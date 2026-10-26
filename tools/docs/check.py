@@ -72,6 +72,9 @@ def check() -> list[str]:
             ROOT / "examples/walkthrough/README.md",
             ROOT / "examples/walkthrough/resources/README.md",
             ROOT / "examples/data/mixed_use_property/README.md",
+            ROOT / "examples/walkthrough/helpers/README.md",
+            ROOT / "examples/walkthrough/viewer/README.md",
+            ROOT / "examples/grasshopper/README.md",
             DOCS / "research/README.md",
         }
     )
