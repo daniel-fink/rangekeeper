@@ -1,3 +1,4 @@
 *.html linguist-detectable=false
-# The data package is hashed byte for byte; keep its line endings.
+# These files are hashed byte for byte; keep their line endings.
 examples/data/** -text
+examples/walkthrough/helpers/assets/** -text
