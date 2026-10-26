@@ -1,13 +1,16 @@
 """Local expression domain rules; no traversal, graph execution or evaluation."""
 
+from enum import Enum
+from typing import cast
+from uuid import UUID
+
 from rangekeeper.model.scope import Scope
 from rangekeeper.shared.validation import require
-from enum import Enum
-from uuid import UUID
-from typing import cast
 
 
 class DomainCompatibility(Enum):
+    """Result of a static domain comparison; UNPROVEN means knowledge is incomplete."""
+
     COMPATIBLE = "compatible"
     INCOMPATIBLE = "incompatible"
     UNPROVEN = "unproven"
@@ -47,7 +50,9 @@ def compare_domains(actual, expected, *, scope: Scope) -> DomainCompatibility:
         return (
             unproven
             if units is None
-            else compatible if units == required else incompatible
+            else compatible
+            if units == required
+            else incompatible
         )
     if actual["kind"] != expected["kind"]:
         return incompatible

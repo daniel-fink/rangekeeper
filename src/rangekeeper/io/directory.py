@@ -4,19 +4,19 @@ import json as _json
 from pathlib import Path
 from uuid import UUID
 
-from rangekeeper.shared.errors import MissingReferenceError, DecodeError
-from rangekeeper.shared.arguments import require_uuid
-from rangekeeper.run.validation import validate as validate_run
-from rangekeeper.io.atomic import write_new
 from rangekeeper.io._document import (
-    snapshot,
-    require_same,
-    require_revision,
     envelope,
     from_envelope,
+    require_revision,
+    require_same,
+    snapshot,
 )
+from rangekeeper.io.atomic import write_new
 from rangekeeper.io.json import _parse
-from rangekeeper.io.store import Document, D, Model, Specification, Run
+from rangekeeper.io.store import Document, Model, Run, Specification
+from rangekeeper.run.validation import validate as validate_run
+from rangekeeper.shared.arguments import require_uuid
+from rangekeeper.shared.errors import DecodeError, MissingReferenceError
 
 
 class DirectoryStore:

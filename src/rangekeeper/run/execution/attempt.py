@@ -1,34 +1,14 @@
 """Sequential scalar attempts and batches over immutable revision stores."""
 
-from rangekeeper.run import ImplementationKind
-from rangekeeper.run import StepKind
-
-from datetime import datetime, timezone
 import json
 import time
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
-from rangekeeper.schema.runtime import UNSET, Unset
 
-from rangekeeper.schema.records import (
-    Diagnostic,
-    Severity,
-    Implementation,
-    Metadata,
-    Report,
-    Runtime,
-    Settings,
-    Status,
-    Step,
-    CompletionStatus,
-    SolutionStatus,
-)
-from rangekeeper.schema.validation import document_version
-from rangekeeper.shared.errors import ValidationError, UnitError
 from rangekeeper.io.store import RecordStore
 from rangekeeper.model import Model
-from rangekeeper.run import Run, RunRecord, validate as validate_run
-from rangekeeper.specification import Composition, Specification
-from rangekeeper.shared.units import UnitSystem
+from rangekeeper.run import ImplementationKind, Run, RunRecord, StepKind
+from rangekeeper.run import validate as validate_run
 from rangekeeper.run.execution import (
     acceptance,
     compiler,
@@ -36,19 +16,37 @@ from rangekeeper.run.execution import (
     publication,
     settings,
 )
-from rangekeeper.run.execution.implementation import fingerprint
 from rangekeeper.run.execution.backends import Backend
 from rangekeeper.run.execution.backends.base import Result
 from rangekeeper.run.execution.errors import (
-    UnsupportedProblem,
-    NumericalError,
-    BackendUnavailable,
     AttemptDeadline,
+    BackendUnavailable,
+    NumericalError,
+    UnsupportedProblem,
 )
+from rangekeeper.run.execution.implementation import fingerprint
+from rangekeeper.schema.records import (
+    CompletionStatus,
+    Diagnostic,
+    Implementation,
+    Metadata,
+    Report,
+    Runtime,
+    Settings,
+    Severity,
+    SolutionStatus,
+    Status,
+    Step,
+)
+from rangekeeper.schema.runtime import UNSET, Unset
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.errors import UnitError, ValidationError
+from rangekeeper.shared.units import UnitSystem
+from rangekeeper.specification import Composition, Specification
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class Attempt:
@@ -115,6 +113,7 @@ class Attempt:
         )
 
     def checkpoint(self) -> None:
+        """Raise AttemptDeadline when this attempt's time limit has elapsed."""
         if (
             self.limits is not None
             and time.monotonic() - self.clock >= self.limits.time_limit
@@ -136,10 +135,13 @@ class Attempt:
             )
             self.diagnose("attempt_deadline", str(error), severity=Severity.WARNING)
         except ValidationError as error:
-            self.completion, self.solution = CompletionStatus.FAILED, (
-                SolutionStatus.NOT_ASSESSED
-                if self.prepared is None
-                else SolutionStatus.UNKNOWN
+            self.completion, self.solution = (
+                CompletionStatus.FAILED,
+                (
+                    SolutionStatus.NOT_ASSESSED
+                    if self.prepared is None
+                    else SolutionStatus.UNKNOWN
+                ),
             )
             self.diagnose(
                 (
@@ -151,10 +153,13 @@ class Attempt:
                 severity=Severity.ERROR,
             )
         except (UnsupportedProblem, UnitError) as error:
-            self.completion, self.solution = CompletionStatus.FAILED, (
-                SolutionStatus.NOT_ASSESSED
-                if self.result is None
-                else SolutionStatus.UNKNOWN
+            self.completion, self.solution = (
+                CompletionStatus.FAILED,
+                (
+                    SolutionStatus.NOT_ASSESSED
+                    if self.result is None
+                    else SolutionStatus.UNKNOWN
+                ),
             )
             self.diagnose(
                 "unsupported_capability",
@@ -303,8 +308,9 @@ class Attempt:
                     "feasible_candidate",
                     "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made.",
                 )
-                rank, count = result.evidence.get("equality_rank"), result.evidence.get(
-                    "unknown_count"
+                rank, count = (
+                    result.evidence.get("equality_rank"),
+                    result.evidence.get("unknown_count"),
                 )
                 if isinstance(rank, int) and isinstance(count, int) and rank < count:
                     self.diagnose(

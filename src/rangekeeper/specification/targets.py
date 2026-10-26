@@ -3,9 +3,9 @@
 from collections.abc import Sequence
 from uuid import UUID
 
-from rangekeeper.schema.enums import ValueKind
-from rangekeeper.schema.records import Assignment, Reference, Quantity
 from rangekeeper.model import Model
+from rangekeeper.schema.enums import ValueKind
+from rangekeeper.schema.records import Assignment, Quantity, Reference
 
 
 def _select(model: Model, value: UUID, ids: Sequence[UUID] | None):
@@ -60,8 +60,8 @@ def expand_targets(
     ids: Sequence[UUID] | None = None,
 ) -> tuple[Reference, ...]:
     """Resolve a scalar, Movement or explicit whole-Flow selection without amounts."""
-    from rangekeeper.schema.records import Value
     from rangekeeper.model.scope import target_units
+    from rangekeeper.schema.records import Value
 
     ref = Reference(target=target) if isinstance(target, UUID) else target
     if not isinstance(ref, Reference):

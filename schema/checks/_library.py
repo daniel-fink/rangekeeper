@@ -1,9 +1,9 @@
 """Locate this checkout for standalone conformance commands."""
 
-import json
 import hashlib
-from pathlib import Path
+import json
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 

@@ -11,10 +11,12 @@ from rangekeeper.shared.errors import ValueEncodingError
 
 
 def canonical_json(value: object) -> str:
+    """Serialize a value as sorted, compact, ASCII-only JSON."""
     return json.dumps(value, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
 
 
 def digest(value: object) -> str:
+    """Return the SHA-256 hex digest of a value's canonical JSON."""
     return sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 

@@ -3,12 +3,13 @@
 from copy import deepcopy
 from pathlib import Path
 from uuid import UUID
+
 import pytest
 import yaml
 
 pytest.importorskip("pyarrow")
 from rangekeeper import Model
-from rangekeeper.io.bundle import Reader, write, identity, model_digest
+from rangekeeper.io.bundle import Reader, identity, model_digest, write
 from rangekeeper.io.migration import model_07_to_08
 from rangekeeper.schema.runtime import exact_equal
 
@@ -98,7 +99,9 @@ def test_opening_validates_each_retained_document_once(tmp_path, monkeypatch):
 
 def test_index_check_rejects_a_rehashed_index_unless_it_is_skipped(tmp_path):
     import json
+
     import pyarrow.parquet as pq
+
     from rangekeeper.io.bundle import inventory
 
     model = Model.from_data(

@@ -1,13 +1,12 @@
 """Execution implementation identities; solver evidence remains adapter-owned."""
 
+import platform
 from hashlib import sha256
 from importlib.metadata import version
 from pathlib import Path
-import platform
 
-from rangekeeper.shared.fingerprints import semantic_digest, manifest_digest
+from rangekeeper.shared.fingerprints import manifest_digest, semantic_digest
 from rangekeeper.shared.units import default_units
-
 
 _COMMON = (
     "shared/fingerprints.py",

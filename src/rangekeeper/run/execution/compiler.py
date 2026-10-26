@@ -5,22 +5,24 @@ Measure units. Numerical acceptance does not use these rows: it reevaluates the
 original expression trees against the proposed serialized Model.
 """
 
-from dataclasses import dataclass
 import math
+import operator
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from types import MappingProxyType
-from collections.abc import Mapping, Callable
 from uuid import UUID
 
-from rangekeeper.schema.records import Expression, Quantity, ExpressionKind, Operator
-from rangekeeper.schema.index import walk
 from rangekeeper.model.expression.evaluation import (
-    evaluate as numerical,
     UnsupportedExpression,
 )
+from rangekeeper.model.expression.evaluation import (
+    evaluate as numerical,
+)
+from rangekeeper.run.execution.errors import NumericalError, UnsupportedProblem
+from rangekeeper.run.execution.preparation import Assertion, Prepared
+from rangekeeper.schema.index import walk
+from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
 from rangekeeper.shared.errors import UnitError
-import operator
-from rangekeeper.run.execution.errors import UnsupportedProblem, NumericalError
-from rangekeeper.run.execution.preparation import Prepared, Assertion
 
 
 @dataclass(frozen=True)
@@ -83,6 +85,7 @@ class Compiler:
 
     @staticmethod
     def scale(value: Affine, factor: float, units: str) -> Affine:
+        """Multiply an affine expression by a factor and attach the given units."""
         return _affine(
             value.constant * factor,
             {k: v * factor for k, v in value.coefficients.items()},
@@ -90,6 +93,7 @@ class Compiler:
         )
 
     def add(self, left: Affine, right: Affine, sign: float = 1) -> Affine:
+        """Add or subtract an affine expression after conversion to the left units."""
         right = self.convert(right, left.units)
         coefficients = dict(left.coefficients)
         for key, value in right.coefficients.items():

@@ -3,10 +3,9 @@
 import ast
 import importlib.util
 from pathlib import Path
-import subprocess
-import sys
 
 import pytest
+
 import rangekeeper
 from rangekeeper.model import system as graph
 
@@ -56,9 +55,9 @@ def test_system_surface_exposes_canonical_records_and_model_operations():
         "adapter",
         "legacy",
     ):
-        assert (
-            importlib.util.find_spec(f"rangekeeper.model.system.{name}") is None
-        ), name
+        assert importlib.util.find_spec(f"rangekeeper.model.system.{name}") is None, (
+            name
+        )
 
 
 def test_canonical_sources_do_not_import_the_predecessor():

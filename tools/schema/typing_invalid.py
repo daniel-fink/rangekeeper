@@ -1,9 +1,9 @@
 """Expected static errors. This file is deliberately not executable."""
 
-from rangekeeper.model.expression import ExpressionKind
-from rangekeeper.model import ValueKind
-
 from uuid import uuid4
+
+from rangekeeper.model import ValueKind
+from rangekeeper.model.expression import ExpressionKind
 from rangekeeper.schema.records import Entity, Expression, Location, Quantity
 
 Entity()  # Missing required identity.

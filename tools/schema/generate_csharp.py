@@ -89,7 +89,7 @@ def generate():
         "namespace Rangekeeper.Serialization;",
         "public static class TransportContract",
         "{",
-        f'    public const string Format = {json.dumps(contract["format"])};',
+        f"    public const string Format = {json.dumps(contract['format'])};",
     ]
     for key, value in contract["fields"].items():
         constants.append(
