@@ -1,16 +1,17 @@
 """Resolve the immutable case graph once before any execution is persisted."""
 
 from uuid import UUID
-from rangekeeper.shared.diagnostics import Issue, ValidationReport
-from rangekeeper.shared.errors import (
-    ValidationError,
-    ReferenceTypeError,
-    IdentityConflictError,
-)
+
 from rangekeeper.io.store import RecordStore
 from rangekeeper.model import Model
+from rangekeeper.shared.diagnostics import Issue, ValidationReport
+from rangekeeper.shared.errors import (
+    IdentityConflictError,
+    ReferenceTypeError,
+    ValidationError,
+)
 from rangekeeper.specification import Composition, Specification
-from rangekeeper.specification.composition import compose, collect_specifications
+from rangekeeper.specification.composition import collect_specifications, compose
 
 
 class Plan:
@@ -93,9 +94,11 @@ class Plan:
         return documents, compositions
 
     def load_model(self, identity: UUID) -> Model:
+        """Load a Model revision once per execution and cache it."""
         if identity not in self.models:
             self.models[identity] = self.store.load_model(identity)
         return self.models[identity]
 
     def load_specification(self, identity: UUID) -> Specification:
+        """Return a Specification that this plan resolved."""
         return self.specifications[identity]

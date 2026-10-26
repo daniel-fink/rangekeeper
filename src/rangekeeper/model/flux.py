@@ -1,27 +1,29 @@
 """Canonical Flow records and ordered, immutable coordination through Stream."""
 
 from __future__ import annotations
+
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
-from rangekeeper.schema.records import Flow, Movement, Value
-from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.behaviors.flow import MissingValueHandling
+from rangekeeper.schema.enums import ValueKind
+from rangekeeper.schema.records import Flow, Movement, Value
 
 if TYPE_CHECKING:
-    from rangekeeper.model.model import Model
-    from rangekeeper.model.duration import Period, Span
-    from rangekeeper.calculations.series import (
-        AlignmentJoin,
-        AggregationMethod,
-        ResamplingMethod,
-        MeanWeighting,
-        Aggregation,
-    )
     from polars import DataFrame
+
     from rangekeeper.calculations._batch import Batch
+    from rangekeeper.calculations.series import (
+        Aggregation,
+        AggregationMethod,
+        AlignmentJoin,
+        MeanWeighting,
+        ResamplingMethod,
+    )
+    from rangekeeper.model.duration import Period, Span
+    from rangekeeper.model.model import Model
 
 __all__ = ["Flow", "Movement", "Stream", "MissingValueHandling"]
 
@@ -292,7 +294,7 @@ class Stream:
         if isinstance(weighting, Mapping):
             mean_labels = {
                 label
-                for label, m in zip(self.labels, methods)
+                for label, m in zip(self.labels, methods, strict=True)
                 if m is ResamplingMethod.MEAN
             }
             if set(weighting) != mean_labels:
@@ -328,7 +330,7 @@ class Stream:
             batch.frame.sort("line", "order").select("line", column).iter_rows()
         ):
             values[line].append(float(value))
-        return MappingProxyType(dict(zip(self.labels, map(tuple, values))))
+        return MappingProxyType(dict(zip(self.labels, map(tuple, values), strict=True)))
 
     def aggregate(
         self,

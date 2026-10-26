@@ -2,14 +2,14 @@
 
 from dataclasses import dataclass
 
-from rangekeeper.schema.runtime import UNSET, Unset
 from rangekeeper.schema.records import (
     Definitions,
+    Geometry,
     Metadata,
     Provenance,
     System,
-    Geometry,
 )
+from rangekeeper.schema.runtime import UNSET, Unset
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

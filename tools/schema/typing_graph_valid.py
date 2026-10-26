@@ -1,11 +1,11 @@
 """Static public graph composition; schema quantities and UUID lookup stay typed."""
 
 from uuid import UUID
+
 from rangekeeper import Model
 from rangekeeper.model import Entity, Quantity
-from rangekeeper.model.system import View, Hierarchy, Reduction, Aggregation
+from rangekeeper.model.system import Aggregation, Hierarchy, Reduction, View, reducers
 from rangekeeper.model.system.selection import select_value
-from rangekeeper.model.system import reducers
 
 
 def inspect(model: Model, id: UUID) -> Quantity | None:

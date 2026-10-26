@@ -2,6 +2,7 @@
 
 
 def decode(content: str | bytes):
+    """Decode YAML content; reject aliases, non-string keys and duplicate keys."""
     if not isinstance(content, (str, bytes)):
         raise TypeError("YAML content must be text or bytes")
     import yaml

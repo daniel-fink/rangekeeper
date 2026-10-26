@@ -1,10 +1,11 @@
 """Display retained geometry with a verified, locally packaged Viewer build."""
 
-from pathlib import Path
-from importlib.resources import files
 import hashlib
 import json
 import os
+from importlib.resources import files
+from pathlib import Path
+
 from rangekeeper.io import json as codec
 from rangekeeper.io.speckle import validate_associations
 from rangekeeper.model import Model

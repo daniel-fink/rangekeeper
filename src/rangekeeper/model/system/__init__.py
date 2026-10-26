@@ -2,29 +2,49 @@
 
 from importlib import import_module
 from typing import TYPE_CHECKING
-from rangekeeper.schema.records import System, Entity, Assembly, Relationship
+
+from rangekeeper.schema.records import Assembly, Entity, Relationship, System
 
 if TYPE_CHECKING:
-    from .view import View as View
-    from .hierarchy import Hierarchy as Hierarchy, HierarchyKind as HierarchyKind
-    from .reduction import (
-        Reduction as Reduction,
-        Contributor as Contributor,
-        Aggregation as Aggregation,
-        Coverage as Coverage,
-        CoverageStatus as CoverageStatus,
-        classified as classified,
+    from .errors import (
+        AggregationError as AggregationError,
     )
-    from .pivot import (
-        Pivot as Pivot,
-        PivotColumn as PivotColumn,
-        Partition as Partition,
+    from .errors import (
+        HierarchyError as HierarchyError,
     )
     from .errors import (
         SelectionError as SelectionError,
-        HierarchyError as HierarchyError,
-        AggregationError as AggregationError,
     )
+    from .hierarchy import Hierarchy as Hierarchy
+    from .hierarchy import HierarchyKind as HierarchyKind
+    from .pivot import (
+        Partition as Partition,
+    )
+    from .pivot import (
+        Pivot as Pivot,
+    )
+    from .pivot import (
+        PivotColumn as PivotColumn,
+    )
+    from .reduction import (
+        Aggregation as Aggregation,
+    )
+    from .reduction import (
+        Contributor as Contributor,
+    )
+    from .reduction import (
+        Coverage as Coverage,
+    )
+    from .reduction import (
+        CoverageStatus as CoverageStatus,
+    )
+    from .reduction import (
+        Reduction as Reduction,
+    )
+    from .reduction import (
+        classified as classified,
+    )
+    from .view import View as View
 
 _EXPORTS = {
     "View": "view",

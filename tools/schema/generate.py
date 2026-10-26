@@ -11,9 +11,9 @@ import hashlib
 import importlib.metadata
 import json
 import keyword
-from pathlib import Path
 import re
 import tempfile
+from pathlib import Path
 
 import yaml
 from jsonschema import Draft202012Validator
@@ -172,7 +172,9 @@ def generate():
                             else (
                                 "record"
                                 if kind in classes
-                                else "enum" if kind in enums else "primitive"
+                                else "enum"
+                                if kind in enums
+                                else "primitive"
                             )
                         )
                     )
@@ -298,7 +300,7 @@ def generate():
                 bases.insert(0, BEHAVIORS[name][1])
             lines.extend(
                 [
-                    f'class {name}({", ".join(bases)}):',
+                    f"class {name}({', '.join(bases)}):",
                     f"    {str(classes[name].description or name)!r}",
                     "    __slots__ = ()",
                     f"    _kind = {name!r}",

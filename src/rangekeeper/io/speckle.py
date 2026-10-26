@@ -1,11 +1,12 @@
 """Decode canonical envelopes without authentication, network, storage or solving."""
 
+import json
 from collections.abc import Mapping, Sequence
 from importlib.resources import files
-import json
 from uuid import UUID
-from rangekeeper.model import Model
+
 from rangekeeper.io import json as codec
+from rangekeeper.model import Model
 from rangekeeper.schema.runtime import copy_json
 
 

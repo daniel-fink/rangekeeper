@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from rangekeeper.model import Entity
-from rangekeeper.schema.records import Flow, Quantity
 from rangekeeper.model.definitions import _classes
 from rangekeeper.model.system.errors import AggregationError
 from rangekeeper.model.system.hierarchy import Hierarchy
@@ -21,6 +20,7 @@ from rangekeeper.model.system.reduction import (
     Contributor,
     Coverage,
 )
+from rangekeeper.schema.records import Flow, Quantity
 
 if TYPE_CHECKING:
     from rangekeeper.model.system.reduction import Reduction
@@ -157,6 +157,7 @@ class Pivot:
     def coverage(
         self, row: UUID, column: "UUID | PivotColumn | None" = None
     ) -> Coverage:
+        """Return the contributor coverage of one cell."""
         return self.column(column).aggregation.coverage(row)
 
     def available_value(
@@ -203,7 +204,7 @@ class Pivot:
         for id in self.rows.preorder():
             entity = self.rows.view.entity(id)
             cells = {"name": entity.name, "parent_id": self.rows.parent(id)}
-            for item, label in zip(self.columns, labels):
+            for item, label in zip(self.columns, labels, strict=True):
                 cells[label] = self.value(id, item)
             rows.append(Row(cells, id))
         return Table(("name", "parent_id", *labels), rows)
@@ -245,8 +246,8 @@ def _base_rule(reduction: "Reduction", rows: Hierarchy) -> Callable[[Entity], bo
 def _rule(base, classes):
     if not classes:
         return base
-    return lambda entity: base(entity) and all(
-        entity.classification in group for group in classes
+    return lambda entity: (
+        base(entity) and all(entity.classification in group for group in classes)
     )
 
 

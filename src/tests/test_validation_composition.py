@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
-from uuid import UUID, NAMESPACE_URL, uuid4, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 
 def uid(name):
@@ -11,6 +11,17 @@ def uid(name):
 
 import pytest
 
+from rangekeeper.model.expression.validation import (
+    infer_expression_domain,
+    validate_constraint_predicates,
+    validate_function_signature,
+)
+from rangekeeper.model.formulation.preparation import prepare_formulations
+from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.model.scope import build_scope
+from rangekeeper.shared.arguments import require_uuid
+from rangekeeper.shared.diagnostics import Issue
+from rangekeeper.shared.errors import ContractError
 from rangekeeper.shared.validation import (
     bounded,
     require,
@@ -18,17 +29,6 @@ from rangekeeper.shared.validation import (
     require_ownership,
     require_unique,
 )
-from rangekeeper.shared.diagnostics import Issue
-from rangekeeper.shared.errors import ContractError
-from rangekeeper.model.scope import build_scope
-from rangekeeper.model.expression.validation import (
-    infer_expression_domain,
-    validate_constraint_predicates,
-    validate_function_signature,
-)
-from rangekeeper.model.formulation.validation import validate_formulation_names
-from rangekeeper.model.formulation.preparation import prepare_formulations
-from rangekeeper.shared.arguments import require_uuid
 
 
 def test_argument_guards_are_distinct_from_semantic_rules():
@@ -263,8 +263,8 @@ def test_signature_validation_is_independently_composable():
 
 
 def test_model_and_partial_specification_share_local_naming_diagnostics():
-    from rangekeeper.shared.errors import ValidationError
     from rangekeeper.model.validation import validate as validate_model
+    from rangekeeper.shared.errors import ValidationError
     from rangekeeper.specification import Specification
 
     constraints = [

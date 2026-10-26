@@ -4,9 +4,9 @@ from typing import Protocol, TypeAlias, TypeVar
 from uuid import UUID
 
 from rangekeeper.model.model import Model
-from rangekeeper.specification.specification import Specification
 from rangekeeper.run.run import Run
 from rangekeeper.shared.references import DocumentResolver
+from rangekeeper.specification.specification import Specification
 
 Document: TypeAlias = Model | Specification | Run
 D = TypeVar("D", bound=Document)

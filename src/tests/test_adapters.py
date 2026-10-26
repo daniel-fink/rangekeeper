@@ -1,22 +1,14 @@
-from rangekeeper.visualisation import graph
 from dataclasses import FrozenInstanceError
 from uuid import uuid4
 
 import numpy as np
 import polars as pl
-import pint
 import pytest
 
-from rangekeeper.shared.errors import EncodingError
-
-import rangekeeper as rk
-
 from rangekeeper.io import polars
-from rangekeeper.visualisation import chart
 from rangekeeper.shared import table as table_module
-from rangekeeper.model import system
-
-
+from rangekeeper.shared.errors import EncodingError
+from rangekeeper.visualisation import chart, graph
 
 
 def test_table_normalizes_and_freezes_columns_and_rows():
@@ -85,27 +77,15 @@ def test_polars_adapter_preserves_empty_columns():
     assert tuple(polars.to_frame(table).columns) == table.columns
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 def visualization_fixture():
     from rangekeeper.model import (
-        Model,
-        Metadata,
-        Definitions,
-        System,
-        Entity,
-        Relationship,
         Classification,
+        Definitions,
+        Entity,
+        Metadata,
+        Model,
+        Relationship,
+        System,
         Taxonomy,
     )
     from rangekeeper.model.system import View
@@ -303,10 +283,6 @@ def test_arborescence_visualization_rejects_child_totals_above_parent():
     )
     with pytest.raises(EncodingError, match="below child total"):
         chart.icicle(table, value_column="total")
-
-
-
-
 
 
 def test_polars_keeps_mixed_and_nested_table_cells():

@@ -3,12 +3,16 @@
 import importlib.util
 import subprocess
 import sys
+
 import pytest
+
 import rangekeeper
 
-
 RETIRED = (
-    "adapters", "workflow", "migration", "legacy",
+    "adapters",
+    "workflow",
+    "migration",
+    "legacy",
     "_schema",
     "_records",
     "_record_index",

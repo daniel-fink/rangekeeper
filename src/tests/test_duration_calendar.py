@@ -1,20 +1,22 @@
 """Independent calendar grids, anchor rules and current Period boundaries."""
 
 from datetime import date, datetime
+
 import pytest
 
 from rangekeeper.model.duration import (
     Frequency,
     MonthRoll,
+    Period,
     PeriodTiming,
-    offset,
-    measure,
+    Span,
     align,
-    make_periods,
-    periods_between,
     make_period,
+    make_periods,
+    measure,
+    offset,
+    periods_between,
 )
-from rangekeeper.model.duration import Period, Span
 from rangekeeper.model.flux import Flow
 
 

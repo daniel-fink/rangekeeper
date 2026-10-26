@@ -1,23 +1,27 @@
 """Independently check proposed serialized quantities against original mathematics."""
 
-from rangekeeper.run import Severity
-
-from dataclasses import dataclass
-from collections.abc import Mapping
-from uuid import UUID
 import math
+from collections.abc import Mapping
+from dataclasses import dataclass
+from uuid import UUID
 
 from rangekeeper.model import Model
-from rangekeeper.schema.records import Diagnostic, Quantity
-from rangekeeper.run.execution.preparation import Prepared
-from rangekeeper.run.execution.errors import NumericalError, UnsupportedProblem
-from rangekeeper.model.scope import recorded_scalar
-from rangekeeper.schema.records import Expression, ExpressionKind, Operator
-from rangekeeper.schema.index import walk
 from rangekeeper.model.expression.evaluation import (
+    UnsupportedExpression,
     evaluate,
     finite_quantity,
-    UnsupportedExpression,
+)
+from rangekeeper.model.scope import recorded_scalar
+from rangekeeper.run import Severity
+from rangekeeper.run.execution.errors import NumericalError, UnsupportedProblem
+from rangekeeper.run.execution.preparation import Prepared
+from rangekeeper.schema.index import walk
+from rangekeeper.schema.records import (
+    Diagnostic,
+    Expression,
+    ExpressionKind,
+    Operator,
+    Quantity,
 )
 from rangekeeper.shared.units import UnitSystem
 
@@ -155,9 +159,12 @@ def _comparisons(
     """Retain conjunction order; fixed strict predicates use exact comparison."""
     try:
         if node.kind is ExpressionKind.BOOLEAN:
-            yield "equal", finite_quantity(
-                0 if node.boolean else 1, "dimensionless"
-            ), finite_quantity(0, "dimensionless"), True
+            yield (
+                "equal",
+                finite_quantity(0 if node.boolean else 1, "dimensionless"),
+                finite_quantity(0, "dimensionless"),
+                True,
+            )
         elif (
             node.kind is ExpressionKind.BINARY and node.operator is Operator.LOGICAL_AND
         ):

@@ -1,12 +1,12 @@
 """Codec fidelity and atomic immutable revision publication at public IO boundaries."""
 
-from concurrent.futures import ThreadPoolExecutor
-from copy import deepcopy
 import json as stdjson
 import os
-from pathlib import Path
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
+from pathlib import Path
 from threading import Barrier
 from uuid import uuid4
 
@@ -14,16 +14,16 @@ import pytest
 import yaml as pyyaml
 
 import rangekeeper as rk
-from rangekeeper.io import json, yaml, MemoryStore, DirectoryStore
-from rangekeeper.model import Metadata, System, Entity, Update
+from rangekeeper.io import DirectoryStore, MemoryStore, json, yaml
+from rangekeeper.model import Entity, Metadata, System, Update
 from rangekeeper.shared.errors import (
     DecodeError,
-    ValidationError,
-    RevisionConflictError,
+    IdentityConflictError,
     MissingReferenceError,
     ReferenceTypeError,
-    IdentityConflictError,
+    RevisionConflictError,
     UnsupportedVersionError,
+    ValidationError,
 )
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"

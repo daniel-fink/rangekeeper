@@ -5,25 +5,25 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.model import (
-    Model,
-    Metadata,
-    Definitions,
-    Classification,
-    Taxonomy,
-    Measure,
-    System,
-    Entity,
     Assembly,
     Characteristics,
+    Classification,
+    Definitions,
+    Entity,
+    Measure,
+    Metadata,
+    Model,
+    Quantity,
+    System,
+    Taxonomy,
     Value,
     ValueKind,
-    Quantity,
 )
 from rangekeeper.model.definitions import descendants
 from rangekeeper.model.system import (
-    View,
     Hierarchy,
     Reduction,
+    View,
     classified,
     reducers,
 )
@@ -224,9 +224,9 @@ def test_deep_taxonomy_descendants_do_not_use_the_call_stack():
     depth = 3000
     chain = classes(
         *(f"c{i}" for i in range(depth)),
-        parents={f"c{i}": f"c{i-1}" for i in range(1, depth)},
+        parents={f"c{i}": f"c{i - 1}" for i in range(1, depth)},
     )
-    leaf = Entity(id=uuid4(), code="leaf", classification=chain[f"c{depth-1}"].id)
+    leaf = Entity(id=uuid4(), code="leaf", classification=chain[f"c{depth - 1}"].id)
     other = Entity(id=uuid4(), code="other", classification=chain["c0"].id)
     model = Model.create(
         metadata=Metadata(id=uuid4(), schema_version="0.7.0"),

@@ -86,7 +86,6 @@ class Table:
 
     def column(self, name: str) -> tuple[object, ...]:
         """Return one column in row order."""
-
         if name not in self.columns:
             raise KeyError(name)
         return tuple(row.values[name] for row in self.rows)

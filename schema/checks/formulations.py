@@ -7,20 +7,19 @@ is not a Model schema. These checks do not evaluate constraints or run a solver.
 import copy
 import importlib.util
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from tempfile import TemporaryDirectory
-from uuid import UUID, NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
+import _library
+import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
 from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
-import yaml
-
-import _library
 
 from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.shared.errors import ContractError
@@ -34,7 +33,7 @@ def uid(name):
 
 
 validators = {}
-for name, file in (
+for name, _file in (
     ("Formulation", "formulation"),
     ("Binding", "formulation"),
     ("Definitions", "definitions"),
@@ -76,8 +75,12 @@ def structural(document):
             validators[cls].validate(record)
 
 
-fixture = yaml.safe_load((SCHEMA.parent / "examples/schema/valuation-formulations.yaml").read_text())
-scalar = yaml.safe_load((SCHEMA.parent / "examples/schema/valuation-expressions.yaml").read_text())
+fixture = yaml.safe_load(
+    (SCHEMA.parent / "examples/schema/valuation-formulations.yaml").read_text()
+)
+scalar = yaml.safe_load(
+    (SCHEMA.parent / "examples/schema/valuation-expressions.yaml").read_text()
+)
 root = fixture["formulations"][0]
 income, capital = root["formulations"]
 noi = root["values"][0]
@@ -139,7 +142,9 @@ valid.append(resolved)
 
 # Relationship-owned Values are also eligible shared symbols.
 relationship_case = copy.deepcopy(fixture)
-graph = json.loads((SCHEMA.parent / "examples/schema/structural-graph.json").read_text())
+graph = json.loads(
+    (SCHEMA.parent / "examples/schema/structural-graph.json").read_text()
+)
 relationship = copy.deepcopy(graph["relationships"][0])
 relationship_case["definitions"]["taxonomies"] = copy.deepcopy(
     graph["definitions"]["taxonomies"]
@@ -375,7 +380,7 @@ print(
     f"Passed {len(validators)} generated schemas, {len(valid)} valid fixture scopes, {len(invalid)} structural rejections,"
 )
 print(
-    f"{len(semantic)+1} bounded semantic rejections, and {roundtrips} native Formulation round trips."
+    f"{len(semantic) + 1} bounded semantic rejections, and {roundtrips} native Formulation round trips."
 )
 print(
     "Formulation compilation, constraint satisfaction, unit inference, and solving remain unimplemented."

@@ -1,20 +1,23 @@
 """Declared discount and present-value equations; no financial results are calculated here."""
 
 from uuid import UUID
+
 from rangekeeper.model import Model
-from rangekeeper.schema.records import Formulation, Reference
-from rangekeeper.model.formulation.flow import aligned, shape
-from rangekeeper.model.formulation.authoring import declare
-from rangekeeper.model.scope import target_value
 from rangekeeper.model.expression.authoring import (
-    reference,
-    literal,
-    equal,
     add,
     divide,
+    equal,
+    literal,
     power,
+    reference,
+)
+from rangekeeper.model.expression.authoring import (
     sum as expression_sum,
 )
+from rangekeeper.model.formulation.authoring import declare
+from rangekeeper.model.formulation.flow import aligned, shape
+from rangekeeper.model.scope import target_value
+from rangekeeper.schema.records import Formulation, Reference
 
 
 def discount(
