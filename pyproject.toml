@@ -88,6 +88,8 @@ extend-immutable-calls = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["rangekeeper", "rangekeeper_examples"]
+# Rhino's .NET namespace; case-insensitive file systems confuse it with src/grasshopper.
+known-third-party = ["Grasshopper"]
 
 [tool.ruff.lint.per-file-ignores]
 # Docstring rules apply to the public package only.

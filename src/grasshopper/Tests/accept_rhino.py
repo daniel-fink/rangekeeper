@@ -10,12 +10,11 @@ import System
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 clr.AddReference("Grasshopper")
+import Grasshopper
 from Grasshopper.Kernel import GH_Document, GH_DocumentIO
 from Grasshopper.Kernel.Special import GH_Panel
 from System.Drawing import PointF
 from System.Reflection import BindingFlags
-
-import Grasshopper
 
 path = os.environ["RK_COMPONENTS"]
 OUTPUT = os.environ["RK_ACCEPTANCE_OUTPUT"]
