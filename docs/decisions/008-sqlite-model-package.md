@@ -509,3 +509,5 @@ explicit. Public API or schema changes need a verified distribution and exact
 consumer pins. Cold opening still reconstructs retained documents; isolated
 reader timings do not establish service capacity. Walkthrough and native-host
 checks, release approval and publication remain separate.
+
+Amended by: [ADR-017](017-api-and-formats.md), accepted 2026-10-26. Bundle format 1 becomes stable at milestone 1.0.0b1.

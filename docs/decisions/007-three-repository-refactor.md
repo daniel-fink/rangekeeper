@@ -396,3 +396,5 @@ and its artifact manifest. These retain recorded local results; external host an
 product acceptance gates remain separate.
 
 See the [current architecture](../concepts/architecture.md), [upgrade guide](../guides/upgrading.md), [verification guide](../contributing/verification.md) and [Windows acceptance](../contributing/windows-acceptance.md).
+
+Amended by: [ADR-010](010-layers-and-packages.md), accepted 2026-10-26. Local display adapters move to the walkthrough helpers; the Grasshopper solution moves to `examples/grasshopper`.

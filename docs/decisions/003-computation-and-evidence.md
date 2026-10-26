@@ -35,4 +35,4 @@ not establish acceptance of external hosts or services.
 - [RF-032 acceptance ownership](../history/plans/REFACTORING_FOLLOWUP_PLAN.md#rf-032-execution-acceptance-ownership).
 - [ADR-001: document roots](001-document-roots.md).
 
-Supersedes: no earlier ADR identifier was assigned. Superseded by: none.
+Supersedes: no earlier ADR identifier was assigned. Superseded by: none. Amended by: [ADR-010](010-layers-and-packages.md) and [ADR-013](013-execution-and-extensions.md) for package locations and the backend contract.
