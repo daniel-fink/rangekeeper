@@ -153,15 +153,15 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 | `docs` | `tools/docs/check.py` |
 | `test` | The full suite with all extras, on Linux and macOS with Python 3.12 and 3.13, and on Windows with Python 3.13 |
 | `extra` | The wheel with no extra, then with each extra alone, on Python 3.12 without the lock file. `tools/ci/check_extra.py` imports every module, requires an installation hint for each failure, and runs a small operation of the extra |
+| `walkthrough` | The helper tests and lesson checks, then each lesson from a fresh kernel and its conversion for the docs site, in the locked walkthrough environment. Fixture design data and four market paths |
 | `wheel` | `uv build`, `twine check --strict`, `check-wheel-contents`, `verify_install.py` with all optional slices, and the suite against the installed wheel |
 
 The test jobs skip no tests: Matplotlib uses the off-screen `Agg` backend, and
 no test needs a display or network access. `-rs` lists any skips in the log.
 
 CI does not build the .NET example yet: that job waits for the C# example to
-move out of `src/`. It does not execute notebooks or build the documentation
-site. Run those [verification](verification.md) procedures locally when the
-change affects them.
+move out of `src/`. It does not build the documentation site. Run those
+[verification](verification.md) procedures locally when the change affects them.
 
 ## Naming and ownership
 
