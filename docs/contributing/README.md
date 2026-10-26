@@ -148,7 +148,7 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 | --- | --- |
 | `lint` | `ruff check` and `ruff format --check` |
 | `types` | mypy, with all extras for their types |
-| `changelog` | A fragment in `changelog.d/` (pull requests only; label `no-changelog` skips it) and a draft changelog build |
+| `changelog` | A fragment in `changelog.d/` and a draft changelog build, in the separate [Changelog workflow](../../.github/workflows/changelog.yml) on pull requests. The `no-changelog` label skips the fragment check; adding or removing a label reruns only this check |
 | `generated files` | `tools/schema/generate.py --check`, `generate_csharp.py --check`, `verify_native.py` and `typecheck.py` in the pinned schema environment, and the Geometry asset manifest hashes |
 | `docs` | `tools/docs/check.py` |
 | `test` | The full suite with all extras, on Linux and macOS with Python 3.12 and 3.13, and on Windows with Python 3.13 |
