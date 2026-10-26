@@ -50,7 +50,7 @@ canonical core directly in the library. The agreed sequence is:
    browsing. Neither integration is a prerequisite for specifying the example.
 
 Backwards compatibility is not a binding constraint on this design. Existing RK
-and Mark8 work can supply useful concepts and implementations without determining
+and legacy consumer work can supply useful concepts and implementations without determining
 the new boundaries.
 
 ## Agreed architectural direction

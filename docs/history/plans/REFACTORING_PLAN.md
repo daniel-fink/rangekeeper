@@ -3941,7 +3941,7 @@ Neither workbook was modified or recalculated. Capture small synthetic regressio
 cases from these equations; do not make tests depend on local attachments or
 distribute the workbooks as fixtures.
 
-**RLV workbook:** `25.1.24_RLV Model_1801 Tib_CF.xlsx`, `Cash Flow!Z13:Z28`, with
+**RLV workbook:** a consumer residual land value workbook, `Cash Flow!Z13:Z28`, with
 rate and funding parameters in `Model!M28:M34`.
 
 - Row 22 is opening senior debt, row 23 is the draw, row 24 is principal paydown,

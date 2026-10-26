@@ -12,22 +12,22 @@ Current contracts: source workflows (retired external procedure),
 
 ## Real source consumers
 
-Mandarin and both East Whisman scenarios now use outer workflow documents v2.
+The proving project and both scenarios of a second consumer project now use outer workflow documents v2.
 Their extraction policies retain their own versions. Former Features become
-property Values; every measurement has an owner-local key. Six Mandarin, two
+property Values; every measurement has an owner-local key. Six proving-project, two
 December, and 34 November unresolved measurements are now explicit, alongside
 preserved descriptive properties and findings. Zero remains distinct from missing.
 
 Business UUIDs, source checksums, reviewed decisions and calculation scopes remain.
-East Whisman keeps square-foot units and separate source scenarios. No tower
+The second project keeps square-foot units and separate source scenarios. No tower
 crosswalk, basement allocation, individual apartments or deletion from absence is
-inferred. Projects remains an environment-only repository with YAML interpretation
+inferred. The consumer projects repository remains environment-only, with YAML interpretation
 and thin notebooks. The reference graph enters only a separate comparator.
 
 Strict comparisons check canonical content, mapped Value identities, quantities,
 units, membership, relationship endpoints, source cells, decision records and check
 outcomes. Named representation changes are recorded, not broad ignored categories.
-Mandarin also retains its separate older SOM-reference comparison.
+The proving project also retains its separate older SOM-reference comparison.
 
 ## Earlier pinned-service observation
 
@@ -39,7 +39,7 @@ The independently recorded object pin is used for the live read acceptance.
 
 ## Earlier source-adapter migration
 
-Mandarin is the proving project. Its JLL and GFA/MGP adapters now feed RK Evidence
+A consumer project was the proving project. Its JLL and GFA/MGP adapters now feed RK Evidence
 into source review, graph composition and reconciliation. The duplicate Excel
 decoder was removed; review records are presentation views. A captured baseline
 checks source values, graph identities, topology, characteristics and review
