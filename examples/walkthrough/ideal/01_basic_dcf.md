@@ -1,0 +1,316 @@
+# Lesson 01: Basic discounted cash flow (ideal cells)
+
+Issue: [#203](https://github.com/daniel-fink/rangekeeper/issues/203). Plan:
+[ADR-020 §01](../../../docs/decisions/020-walkthrough-plan-v2.md#01-basic-discounted-cash-flow).
+API conventions and the gap list: [README](README.md).
+
+These are the cells that a reader types. They use the 1.0 API, not today's code. The
+rule check at the end names each gap from the [gap list](README.md#gap-list).
+
+## Goals box
+
+> **Question.** What is this income stream worth?
+>
+> **You will learn to:**
+>
+> 1. make dated Flows with units over yearly periods;
+> 2. grow an amount over periods;
+> 3. combine lines in a Stream, resample them and trim them to a holding span;
+> 4. capitalise the next year's net cash flow for the reversion;
+> 5. calculate present value, NPV and IRR on one date basis.
+>
+> **Before you start.** No earlier lesson. You know a spreadsheet DCF.
+>
+> **Time.** 45 minutes core, 15 minutes optional.
+>
+> **Not in this lesson.** Models, equations and solves (lesson 02). Market
+> uncertainty (lesson 04). This lesson uses known data only.
+>
+> **Source.** Table 1.1 in de Neufville and Geltner (2018), chapter 1, used with the
+> publisher's permission and with attribution. The numbers are the book's small
+> example, not the property of lessons 02–07.
+
+## 1. Set up
+
+Narrative: one import. The lesson also uses `datetime` for dates.
+
+```python
+# cell 1
+from datetime import date
+
+import rangekeeper as rk
+```
+
+## 2. Amounts with units
+
+Narrative: a Quantity is a number with units. Rangekeeper checks units in every
+operation, so an annual rent cannot be added to a monthly rent by mistake. `pa`
+means per annum. `%` is a dimensionless ratio.
+
+```python
+# cell 2
+rent = rk.units.q("1200 USD pa")
+rent.to("USD/month")
+```
+
+```python
+# cell 3
+growth = rk.units.q("2 %/year")
+growth * rk.units.q("1 year")          # 0.02, a dimensionless ratio
+```
+
+> **Under the hood.** `rk.units.q` is short for `rk.units.Quantity.parse`. The unit
+> registry is curated: an unknown or misspelt unit fails with a suggestion. `"pa"`
+> never becomes a picoyear ([ADR-016](../../../docs/decisions/016-safety-defaults.md)).
+
+## 3. Time: spans and periods
+
+Narrative: the holding period is 10 years from 1 January 2001. The forecast needs one
+more year, because the buyer at the end of year 10 pays for year 11's income. A Span
+is half-open: it includes its start and excludes its end.
+
+```python
+# cell 4
+holding = rk.duration.Span.years(start=date(2001, 1, 1), count=10, name="Holding")
+forecast = holding.extend(years=1)
+years = forecast.periods("year")
+years                                  # 11 Periods, 2001 to 2011
+```
+
+## 4. A Flow, by hand once
+
+Narrative: a Flow is an ordered series of amounts in one unit, one for each Period or
+date. Make the first two years of potential gross income by hand.
+
+```python
+# cell 5
+first_two = rk.flow.Flow({years[0]: 100, years[1]: 102}, units="USD")
+first_two.display()
+```
+
+## 5. Growth
+
+Narrative. **Predict:** what is the potential gross income in 2010, after nine years
+of 2 % growth? Then let the library do the compounding. The first Period holds the
+initial amount.
+
+```python
+# cell 6
+pgi = rk.finance.grow("100 USD", rate=growth, periods=years)
+pgi.display()
+```
+
+```python
+# cell 7
+pgi.at(date(2010, 1, 1))               # the amount of the Period that contains this date
+```
+
+> **Finance note.** Potential gross income (PGI) is the income if all the space is
+> let at the market rent.
+
+## 6. Lines of the pro forma
+
+Narrative: each operating line is a fraction of PGI. Multiply a Flow by a number to
+scale it. Name the lines in a Stream, and add them period by period with `sum()`.
+
+```python
+# cell 8
+operations = rk.flow.Stream({
+    "PGI": pgi,
+    "Vacancy": -0.05 * pgi,
+    "OPEX": -0.35 * pgi,
+})
+noi = operations.sum()
+noi.display()
+```
+
+```python
+# cell 9
+capex = -0.10 * pgi
+nacf = noi + capex                     # net annual cash flow
+```
+
+> **Finance note.** Effective gross income (EGI) is PGI less vacancy. Net operating
+> income (NOI) is EGI less operating expenses. Net annual cash flow (NACF) also
+> subtracts capital expenditure, which keeps the building competitive.
+
+## 7. The reversion, by hand once
+
+Narrative: at the end of year 10 the owner sells. A buyer pays for the income from
+year 11 onwards. Direct capitalisation divides year 11's net cash flow by the exit
+cap rate. Do it by hand, then with the library, and check that they agree.
+
+```python
+# cell 10
+exit_cap_rate = rk.units.q("5 %")
+year_11 = nacf.at(date(2011, 1, 1))
+by_hand = rk.flow.Flow({holding.periods("year")[-1]: year_11 / exit_cap_rate})
+by_hand.display()
+```
+
+```python
+# cell 11
+reversion = rk.finance.reversion(nacf, cap_rate=exit_cap_rate, at=holding)
+assert reversion == by_hand
+```
+
+## 8. Trim to the holding span
+
+Narrative: the forecast has 11 years, but the owner holds for 10. Add the lines to
+the Stream, trim it to the holding span and compare the table with Table 1.1.
+
+```python
+# cell 12
+table = (operations | {"NOI": noi, "CAPEX": capex, "NACF": nacf, "Reversion": reversion})
+table = table.trim(holding)
+table.display()                        # compare with Table 1.1
+```
+
+```python
+# cell 13
+cash_flows = table.select("NACF", "Reversion").sum()
+```
+
+## 9. Resample
+
+Narrative: rent is paid quarterly. Split each year into quarters, then add the
+quarters back into years. The round trip gives the same Flow.
+
+```python
+# cell 14
+quarterly = pgi.resample("quarter", method=rk.flow.ResampleMethod.SPLIT)
+assert quarterly.resample("year", method=rk.flow.ResampleMethod.SUM) == pgi
+```
+
+## 10. Present value, by hand once
+
+Narrative. **Predict:** which year contributes the most present value? Discount
+year 1 by hand. Payments come at the end of each year, so year 1 is discounted once.
+Then calculate the whole column.
+
+```python
+# cell 15
+cash_flows.at(date(2001, 1, 1)) / 1.07
+```
+
+```python
+# cell 16
+discount_rate = rk.units.q("7 %/year")
+present_values = rk.finance.pv(cash_flows, rate=discount_rate, on=holding.start)
+present_values.display()
+```
+
+## 11. NPV and IRR on one date basis
+
+Narrative: the value of the stream is the sum of its present values. If an investor
+pays exactly that value on 1 January 2001, the investment earns exactly the discount
+rate. This shows that NPV and IRR use the same dates.
+
+```python
+# cell 17
+value = rk.finance.npv(cash_flows, rate=discount_rate, on=holding.start)
+value
+```
+
+```python
+# cell 18
+purchase = rk.flow.Flow({holding.start: -value})
+investment = rk.flow.Stream({"Purchase": purchase, "Cash flows": cash_flows}).sum()
+rk.finance.irr(investment)             # 7 %/year
+```
+
+## 12. Change one input
+
+Narrative. **Predict:** if the exit cap rate rises from 5 % to 6 %, how much value
+does the owner lose? Change one input, then explain the result.
+
+```python
+# cell 19
+higher_cap = rk.finance.reversion(nacf, cap_rate="6 %", at=holding)
+flows_6 = (table | {"Reversion": higher_cap}).select("NACF", "Reversion").sum()
+rk.finance.npv(flows_6, rate=discount_rate, on=holding.start) - value
+```
+
+## Exercises
+
+**Try it 1: faster growth.** Change PGI growth to 3 %/year. Which lines change, and
+by how much does the value change?
+
+```python
+# solution
+pgi_3 = rk.finance.grow("100 USD", rate="3 %/year", periods=years)
+nacf_3 = (0.95 * pgi_3 - 0.35 * pgi_3 - 0.10 * pgi_3)
+flows_3 = rk.flow.Stream({
+    "NACF": nacf_3,
+    "Reversion": rk.finance.reversion(nacf_3, cap_rate=exit_cap_rate, at=holding),
+}).trim(holding).sum()
+value_3 = rk.finance.npv(flows_3, rate=discount_rate, on=holding.start)
+assert value_3 > value
+```
+
+**Try it 2: a seven-year hold.** Sell at the end of year 7. The reversion now
+capitalises year 8.
+
+```python
+# solution
+seven = rk.duration.Span.years(start=date(2001, 1, 1), count=7)
+flows_7 = rk.flow.Stream({
+    "NACF": nacf,
+    "Reversion": rk.finance.reversion(nacf, cap_rate=exit_cap_rate, at=seven),
+}).trim(seven).sum()
+value_7 = rk.finance.npv(flows_7, rate=discount_rate, on=seven.start)
+```
+
+**Try it 3: a price above value.** Pay 5 % more than `value`. Is the IRR above or
+below 7 %?
+
+```python
+# solution
+overpay = rk.flow.Stream({
+    "Purchase": rk.flow.Flow({holding.start: -1.05 * value}),
+    "Cash flows": cash_flows,
+}).sum()
+assert rk.finance.irr(overpay) < discount_rate
+```
+
+## Checks and recap
+
+```python
+# cell 20 (checks)
+assert table["NOI"] == table["PGI"] + table["Vacancy"] + table["OPEX"]
+assert reversion.total() == nacf.at(date(2011, 1, 1)) / exit_cap_rate
+assert rk.units.isclose(rk.finance.irr(investment), discount_rate)
+```
+
+**Recap.**
+
+1. A DCF is dated amounts with units. Grow them, combine them in a Stream and trim
+   them to the holding span.
+2. The reversion capitalises the next year's cash flow, so the forecast is one year
+   longer than the hold.
+3. PV, NPV and IRR use the same dates, so a price equal to the NPV earns the discount
+   rate.
+
+**Next.** Lesson 02 declares financial relations once and asks them two different
+questions.
+
+## Cell budget
+
+20 core code cells (budget 20–25) and 3 exercise solutions. The longest core cell has
+7 lines.
+
+## Rule check
+
+| Cell | Rules | Result |
+| --- | --- | --- |
+| 1 | 1 | Pass |
+| 2–3 | 5 | Needs `q` with `pa` and `%/year` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
+| 4 | 1, 11 | G01: `Span.years`, `extend`, `periods("year")` |
+| 5, 10, 18 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
+| 6 | 6 | Growth with an annual rate over Periods ([#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
+| 7, 10, 15 | 8 | G03: `Flow.at(date)` returns one Quantity |
+| 8–9, 12–13 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `Stream | mapping`, `select`, `sum()` |
+| 11 | 6 | G05: `rk.finance.reversion` |
+| 14 | 6 | `resample` with `ResampleMethod` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
+| 16–18 | 6 | `pv`, `npv`, `irr` on dates ([#167](https://github.com/daniel-fink/rangekeeper/issues/167), [#164](https://github.com/daniel-fink/rangekeeper/issues/164)) |
+| 11, 14, 20 | 5, 8 | G06: Flow value equality and `rk.units.isclose` |

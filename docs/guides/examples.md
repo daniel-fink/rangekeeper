@@ -23,6 +23,7 @@ Install the matching library and the extras each example needs.
 | Directory | Contents |
 | --- | --- |
 | [Draft walkthrough on `codex/walkthrough-acausal`](https://github.com/daniel-fink/rangekeeper/tree/codex/walkthrough-acausal/examples/walkthrough) | Draft notebook sources, book configuration and teaching resources; see [walkthroughs](walkthroughs.md) |
+| [`walkthrough/ideal/`](../../examples/walkthrough/ideal/README.md) | Ideal cells for the seven 1.0 lessons, written against the 1.0 API, with the decisions and the API gap list ([#201](https://github.com/daniel-fink/rangekeeper/issues/201)). They do not run |
 | [`rangekeeper_examples/`](../../examples/rangekeeper_examples) | Shared design and investment builders |
 | [`schema/`](../../examples/schema) | Complete wire documents and smaller syntax fragments, described below |
 | [`execution/`](../../examples/execution) | Forward and inverse valuation using the wire documents |

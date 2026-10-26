@@ -1,6 +1,6 @@
 # ADR-020: Walkthrough plan v2
 
-Status: accepted for 1.0; ideal cells and authoring pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; ideal cells recorded ([#201](https://github.com/daniel-fink/rangekeeper/issues/201)); authoring pending. Recorded: 2026-10-26.
 
 This record is the walkthrough plan for 1.0. It replaces the
 [ADR-006 curriculum](006-walkthrough-curriculum.md) and follows the direction in
@@ -530,8 +530,8 @@ The data package records its provenance (#210):
 
 | Decision | Needed before |
 | --- | --- |
-| Can lesson 03's cases reach the cash flows through the solve? Where do the funding account and commitment check live? | #201 for lesson 03 |
-| How an equation refers to a rollup result | #201 for lesson 06 |
+| Can lesson 03's cases reach the cash flows through the solve? Where do the funding account and commitment check live? | Resolved by #201: decisions D1 and D2 in the [ideal cells](../../examples/walkthrough/ideal/README.md#decisions) |
+| How an equation refers to a rollup result | Resolved by #201: decision D3 in the [ideal cells](../../examples/walkthrough/ideal/README.md#decisions) |
 | Generator parameters and correlations for the property's markets | Authoring lesson 04 |
 | Thresholds, latest dates and the site sale price rule | Authoring lesson 05 |
 | The hotel provision for Building B (cores, services, costs) and the expansion floors and premium | #214 and authoring lesson 07 |
