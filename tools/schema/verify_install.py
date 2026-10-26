@@ -1,6 +1,7 @@
 """Build an isolated wheel and test its record boundary outside the checkout.
 
-Run in the schema tool environment (setuptools>=77 and pip required). Only the
+Run in the schema tool environment (pip, setuptools>=77 and setuptools-scm>=9
+required, unless --wheel is given). Only the
 record boundary's dependencies are copied into a fresh venv; this is intentionally
 not acceptance of the rest of the distribution or its service integrations.
 """
@@ -53,7 +54,6 @@ with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
             "pyproject.toml",
             "README.md",
             "LICENSE",
-            "setup.py",
             "MANIFEST.in",
         ):
             shutil.copy2(ROOT / name, stage / name)
