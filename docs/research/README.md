@@ -39,6 +39,7 @@ for commands. [History](../history/README.md) explains the earlier sequencing.
 | [Graph read cost and exact record lookup — 2026-10-21](graph-read-cost-2026-10-21/README.md) | A bounded repair of graph read cost and exact record lookup for a 1,024-node, 1,024-Relationship consumer target, with the retained performance limits. |
 | [Guarded semantic export experiment — 2026-10-21](graph-semantic-export-2026-10-21/README.md) | A bounded copy-elimination experiment for semantic export. It was not cleared for delivery. |
 | [Bundle opening cost — 2026-10-22](bundle-open-cost-2026-10-22/README.md) | The Bundle Reader validated each retained document three times. It now validates each document once and reuses one slot table per kind. Measured on a 1,024-node, 1,024-Relationship consumer growth fixture. |
+| [Decimal money cost — 2026-10-27](decimal-money-2026-10-27/README.md) | The cost of Decimal currency amounts against float64 records for ADR-023: a Flow of 120 movements, the example Model and Parquet encodings. The script is in the folder. |
 
 Add new dated evidence as a new folder with its own README. Do not rewrite
 archived evidence.
