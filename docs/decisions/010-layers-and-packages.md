@@ -43,7 +43,7 @@ contracts in the test suite enforce this rule.
 | 3 | `duration` | Frequency, Period, Span and calendar rules |
 | 4 | `profile` | Profiles: how an amount develops over Periods. Growth profiles (constant, linear, compounding) start from an initial amount; distribution profiles (uniform, S-curve) divide a total |
 | 5 | `flow` | Movement, Flow, Stream, their options, `Flow.from_profile`, table display and the private calculation engine |
-| 6 | `finance` | Calculations on known data: present value, NPV, IRR, payments, accounts and path generators ([ADR-014](014-market-paths.md)) |
+| 6 | `finance` | Calculations on known data: present value, NPV, IRR, payments, interest and path generators ([ADR-014](014-market-paths.md)). An account balance is a cumulative sum of Flows, not a `finance` class (#201, decision D2) |
 | 7 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
 | 8 | `specification` | The Specification document, composition, roles and policy declarations |
 | 9 | `run` | The Run document and the validation of its evidence |

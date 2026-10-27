@@ -199,7 +199,7 @@ npv.probability(below="0 AUD"), shortfall.probability(above="0 AUD")
 ```python
 # cell 16
 worst = outcomes.case(key=npv.quantile_member(level=0.05))
-helpers.plot_funding(outcome=worst, account="funding")
+helpers.plot_flows(outcome=worst, keys=["cash", "headroom", "committed"])
 ```
 
 ## 9. Optional: correlated use markets

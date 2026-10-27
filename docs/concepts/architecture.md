@@ -58,7 +58,7 @@ contracts enforce the rule.
 | 3 | `duration` | Frequency, Period, Span and calendar rules |
 | 4 | `profile` | Growth and distribution profiles: how an amount develops over Periods |
 | 5 | `flow` | Movement, Flow, Stream, their options and table display, and the private engine |
-| 6 | `finance` | Calculations on known values: PV, NPV, IRR, payments, accounts, and path generators |
+| 6 | `finance` | Calculations on known values: PV, NPV, IRR, payments, interest, and path generators |
 | 7 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
 | 8 | `specification` | The Specification document, composition, roles and policy declarations |
 | 9 | `run` | The Run document and evidence validation |

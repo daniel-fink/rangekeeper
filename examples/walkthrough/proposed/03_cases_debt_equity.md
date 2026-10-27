@@ -6,8 +6,8 @@ API conventions and the gap list: [README](README.md).
 
 Decisions used here (recorded in the [README](README.md#decisions)): the cases
 reach the cash flows through the solve (D1); `irr`, `min` and `max` are evaluated
-after the affine stage, and a fixed IRR becomes an affine row (D4); the funding
-account is a Model relation and a `finance` class (D2).
+after the affine stage, and a fixed IRR becomes an affine row (D4); funding is
+composed from `cumulative()`, with no account object (D2).
 
 ## Goals box
 
@@ -366,22 +366,34 @@ headroom_2027 = closing_2027 + plan["bridge_limit"]
 closing_2027, headroom_2027
 ```
 
+Narrative: now every year at once. The closing balance is the equity plus the
+running total of the payments; the opening balance is the closing balance less that
+year's payments. This is the spreadsheet corkscrew, built from one Flow method,
+`cumulative()`, which the loan already used.
+
 ```python
 # cell 18
-account = rk.finance.Account(opening=plan["equity"], limit=plan["bridge_limit"])
-cash = account.with_transactions(transactions=outcome["land"] + outcome["works"])
-assert cash.closing.at(on=date(2027, 1, 1)) == closing_2027
-cash.display()  # opening, transactions, closing and headroom by year
+payments = outcome["land"] + outcome["works"]
+closing = plan["equity"] + payments.cumulative()
+opening = closing - payments
+headroom = closing + plan["bridge_limit"]
+assert closing.at(on=date(2027, 1, 1)) == closing_2027
+rk.flow.Stream(
+    flows={
+        "Opening": opening,
+        "Payments": payments,
+        "Closing": closing,
+        "Headroom": headroom,
+    }
+).display()
 ```
 
 ## 10. Funding in the Model
 
-Narrative: the same account as a relation, so that every case and every later
-lesson reports it. Building A's income helps to pay for Building B, so the account
-includes operating cash flow. A package's remaining payments become committed when
-it starts.
-The commitment gap is the largest amount by which committed but unpaid payments
-exceed the headroom.
+Narrative: the same relations in the Model, so that every case and every later
+lesson reports them. Building A's income helps to pay for Building B, so the cash
+includes the operating cash flow. They form one named group, "Funding". There is no
+account object: an account is equations.
 
 ```python
 # cell 19
@@ -389,27 +401,29 @@ draft = model.edit()
 site = draft.entity(code="property")
 site.value(key="equity", units="AUD")
 site.value(key="bridge_limit", units="AUD")
-site.account(
-    key="funding",
-    opening="equity",
-    limit="bridge_limit",
-    transactions="land + works + operating",
-    commitments={
-        "shared_works": "shared_start",
-        "a_works": "a_start",
-        "b_works": "b_start",
-    },
+site.equations(
+    "cash = equity + (land + works + operating).cumulative()",
+    "opening_cash = cash - (land + works + operating)",
+    "headroom = cash + bridge_limit",
+    "peak_shortfall = max(0 AUD, -headroom.min())",
+    formulation="Funding",
 )
 ```
 
-Narrative: two results for the table: the largest shortfall below the limit, and the
-largest commitment gap.
+Narrative: a package's remaining payments become committed when it starts. What is
+still to be paid is the running total less the whole total; `since` makes it zero
+before the start date. The commitment gap is the largest amount by which committed
+but unpaid payments exceed the headroom.
 
 ```python
 # cell 19b
 site.equations(
-    "peak_shortfall = max(0 AUD, -funding.headroom.min())",
-    "commitment_gap = max(0 AUD, (funding.committed - funding.headroom).max())",
+    "shared_unpaid = shared_works.cumulative() - shared_works.total()",
+    "a_unpaid = a_works.cumulative() - a_works.total()",
+    "b_unpaid = b_works.cumulative() - b_works.total()",
+    "committed = shared_unpaid.since(on=shared_start) + a_unpaid.since(on=a_start)"
+    " + b_unpaid.since(on=b_start)",
+    "commitment_gap = max(0 AUD, (committed - headroom).max())",
     formulation="Funding",
 )
 model = draft.commit()
@@ -428,8 +442,9 @@ summary.table(
 
 ```python
 # cell 21
-# balance, limit and committed payments
-helpers.plot_funding(outcome=summary.case(key="weak"), account="funding")
+helpers.plot_flows(
+    outcome=summary.case(key="weak"), keys=["cash", "headroom", "committed"]
+)
 ```
 
 > **Finance note.** The commitment gap uses only cash and facilities that exist at
@@ -498,7 +513,7 @@ assert (
 ```python
 # solution
 later = rk.execution.solve(specification=funded.fix(b_start=date(2031, 1, 1)))
-later["funding.headroom"].argmin()
+later["headroom"].argmin()
 ```
 
 ## Checks and recap
@@ -511,7 +526,7 @@ cash = target_outcome["equity_cash_flow"]
 target_npv = rk.finance.npv(flow=cash, rate="15 % pa", on=date(2027, 1, 1))
 assert rk.quantity.isclose(actual=target_npv, expected="0 AUD", abs="1 AUD")
 reference = summary.case(key="reference")
-assert reference["funding.headroom"].at(on=date(2027, 1, 1)) == headroom_2027
+assert reference["headroom"].at(on=date(2027, 1, 1)) == headroom_2027
 ```
 
 **Recap.**
@@ -528,7 +543,7 @@ assert reference["funding.headroom"].at(on=date(2027, 1, 1)) == headroom_2027
 ## Cell budget
 
 25 core code cells, 2 optional cells (section 11, one in a new kernel) and 1 check cell
-(budget 20–25), 3 exercise solutions. The longest cell has 16 lines (cell 19). Cells
+(budget 20–25), 3 exercise solutions. The longest cell has 15 lines (cells 5b and 9). Cells
 follow `ruff format` (D15).
 
 ## Rule check
@@ -547,9 +562,9 @@ follow `ruff format` (D15).
 | 14 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |
 | 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row |
 | 17 | 6 | By hand once |
-| 18 | 6 | G23: `rk.finance.Account` with `limit`; `with_transactions` returns a new Account whose balances (`opening`, `closing`, `headroom`) are Flows |
-| 19 | 2, 6 | G24: entity `account(key=, ..., commitments=)`; `min` and `max` in G09 |
-| 21 | 10 | Helper draws only |
+| 18 | 6 | `cumulative()` (G05); the corkscrew is composition, with no account class (D2) |
+| 19–19b | 2, 3, 6 | G05: `total()`, `cumulative()`, `since(on=)`, `min()`, `max()`; G09 evaluates `min` and `max` after the affine stage |
+| 21 | 10 | Helper draws named Flows only (`plot_flows`) |
 | 22–23 | 1, 4 | `execute` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126)); G25: `rk.execution.replay` and `store.find_runs(specification=name)` |
 | 24 | 5, 8 | G06 |
 

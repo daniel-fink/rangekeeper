@@ -314,6 +314,13 @@ extra = rk.model.Filter(classification="floor", labels={"phase": "expansion"})
 scope = {"over": "spatiallyContains", "root": "building_a", "contributors": extra}
 site.rollup(key="x_income", of="income", **scope)
 site.rollup(key="x_cost", of="build_cost", **scope)
+```
+
+Narrative: the expansion is built in one year from its date, and earns from the year
+after. Add both to the existing works and income.
+
+```python
+# cell 17b
 site.date(key="expansion_date")
 site.equations("x_open = expansion_date + 1 year")
 site.extend(
@@ -407,8 +414,8 @@ how-to guides.
 
 ## Cell budget
 
-18 core code cells, 3 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest core cell has 15 lines; optional cell 17 has 16. Cells follow
+18 core code cells, 4 optional cells and 1 check cell (budget 20–25), 3 exercise
+solutions. The longest cell has 15 lines (cell 6). Cells follow
 `ruff format` (D15).
 
 ## Rule check

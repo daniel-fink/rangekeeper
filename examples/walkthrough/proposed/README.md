@@ -22,7 +22,7 @@ when the library work lands.
 | 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 16 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 16 + 1 optional |
 | 06 Project structure | [06_project_structure.md](06_project_structure.md) | 25 + 1 optional |
-| 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 18 + 3 optional |
+| 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 18 + 4 optional |
 
 Each lesson file has the goals box, the narrative outline, the cells, the exercises
 with solutions, the checks and recap, the cell budget and a rule check. The rule
@@ -38,11 +38,11 @@ pass.
 | ID | Question | Decision | Used in |
 | --- | --- | --- | --- |
 | D1 | Can lesson 03's cases reach the cash flows through the solve? | Yes. The Model declares the DCF as Flow relations: growth with a rate, the terminal value, NPV at a rate. A case fixes the rates, so the solve stays affine. One Model answers lessons 02–05 | 03, 04, 05 |
-| D2 | Where do the funding account and the commitment check live? | Both places. `rk.finance.Account` calculates on known data (the "by hand once, then the library" cell). An entity's `account(...)` declares the balance, headroom and committed payments as relations, so cases, paths and rules can use them | 03, 05 |
+| D2 | Where do the funding account and the commitment check live? | Nowhere special: they are composition. A balance is a cumulative sum (`cash = equity + (land + works + operating).cumulative()`), headroom adds the limit, and committed but unpaid payments use `cumulative()`, `total()` and `since(on=)`. On known data, the same Flow methods in Python; in the Model, ordinary equations in a "Funding" formulation. There is no account class in `rk.finance` and no account declaration in the Model. Repeated use is served by a recipe in the how-to guides (#194), not by an API | 03, 05 |
 | D3 | How does an equation refer to a rollup result? | A rollup declares a Value. Equations refer to it by key, as to any other value. The solve traces through the rollup to its contributors | 06, 07 |
 | D4 | How does a batch report IRR, peak shortfall and other non-affine results? | Staged evaluation. `irr`, `min` and `max` are Model relations. The solve evaluates them after the affine stage, and verification checks them | 03, 04 |
 | D5 | When do the inverse rewrites land? | In 1.0. A fixed IRR becomes an NPV row at that rate, and a bound on a minimum becomes one row for each period. The target-IRR land price is a core cell of lesson 03 | 03 |
-| D6 | How is a Model made and changed? | One way each. `rk.Model(name=...)` makes an empty, immutable Model. `model.edit()` gives a `ModelDraft`; `commit()` checks it once and returns a new revision. There is no implicit entity: `draft.add_entity(code=, classification=)` makes one and `draft.entity(code=)` finds one. Values, Flows, equations, rollups and accounts are declared on the entity handle, and its equations use bare keys. Other entities use dotted paths, such as `funding.headroom`. `root=` keeps its meaning in rollups | 02–07 |
+| D6 | How is a Model made and changed? | One way each. `rk.Model(name=...)` makes an empty, immutable Model. `model.edit()` gives a `ModelDraft`; `commit()` checks it once and returns a new revision. There is no implicit entity: `draft.add_entity(code=, classification=)` makes one and `draft.entity(code=)` finds one. Values, Flows, equations and rollups are declared on the entity handle, and its equations use bare keys. Other entities use dotted paths, such as `building_a.income`. `root=` keeps its meaning in rollups | 02–07 |
 | D7 | Must every unknown be named with `free()`? | No. A value that is not fixed is free. `free()` releases a value that was fixed before. An underdetermined solve names the free unknowns | 02–07 |
 | D8 | Specification builder or chained calls? | Chained calls. `fix`, `free`, `cases`, `across` and `decide` each return a new immutable Specification, because each step is valid on its own. A Model change is often invalid until it is complete, so the Model uses a draft and `commit()` | 02–07 |
 | D9 | How does a policy change the plan? | If a value can change, it belongs in the Specification. If it is part of the modelling, it belongs in the Model. The Model declares the relations between dates (lesson 03). A rule **decides** one value: it fixes the value on the first review date on which its condition holds. "Decided" is a role beside fixed and free. There is no separate action concept | 03, 05, 07 |
@@ -57,8 +57,8 @@ pass.
 | D18 | Equations, expressions or constraints? | "Equation" is the reader's word: one relation that must hold, an equality or a bound. It is stored as a Constraint over Expressions; the glossary says so. `equations(..., formulation="Debt")` puts equations in a named Formulation, for display and traces; without it they join the entity's default Formulation | 02–07 |
 | D19 | Is the mortgage constant a library function? | No. `rk.finance.payment(principal=, rate=, term=, frequency=)` is the one general loan calculation, like a spreadsheet's PMT with units. The mortgage constant is derived in the open: the payment per year on one dollar of loan, `(payment / rk.Quantity(text="1 AUD")).to(units="% pa")` | 02, 06 |
 | D20 | Does a Model have a default timeline or unit system? | No. `rk.Model(name=, namespace=, description=)` takes neither. A Flow made from amounts by a profile or an event is declared with its `periods=`; every other Flow takes its Periods from its operands. The Model records the unit system in use (the curated registry, its version and any registered extensions) as a read-only `model.unit_system`; custom units go through the registry extension point | 03–07 |
-| D21 | How are functions named in equation strings? | As in Python, with the `rk.` namespace: `rk.profile.uniform(...)`, `rk.flow.event(...)`, `rk.finance.npv(...)`. Operations on one Flow are methods: `operating.at(on=...)`, `project_cash.trim(end=...)`, `loan_draws.cumulative()`, `funding.headroom.min()`. Only `max(a, b)` stays bare. Eight words are reserved: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false` | 03–07 |
-| D22 | How does a known-data Account take transactions? | `account.with_transactions(transactions=...)` returns a new Account, as `Stream.with_flows` returns a new Stream. Its balances (`opening`, `closing`, `headroom`) are Flows on it; there is no separate history type | 03 |
+| D21 | How are functions named in equation strings? | As in Python, with the `rk.` namespace: `rk.profile.uniform(...)`, `rk.flow.event(...)`, `rk.finance.npv(...)`. Operations on one Flow are methods: `operating.at(on=...)`, `project_cash.trim(end=...)`, `loan_draws.cumulative()`, `headroom.min()`. Only `max(a, b)` stays bare. Eight words are reserved: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false` | 03–07 |
+| D22 | ~~How does a known-data Account take transactions?~~ | Withdrawn with the Account (D2) | — |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -134,7 +134,6 @@ fees = rk.flow.Flow.from_profile(
 rk.finance.payment(
     principal="1 AUD", rate="6 % pa", term="20 years", frequency=monthly
 )  # #167: like PMT, with units
-rk.finance.Account(opening=..., limit=...).with_transactions(transactions=flow)  # G23
 rk.finance.MarketDynamics(trend="2 % pa", volatility="5 % pa").generate(
     periods=years, seed=2027, count=500
 )  # #135, #136, G29
@@ -173,13 +172,6 @@ site.rollup(
     root="property",
     contributors=rk.model.Filter(classification="floor"),
 )  # G44
-site.account(
-    key="funding",
-    opening="equity",
-    limit="bridge_limit",
-    transactions="land + works",
-    commitments={"a_works": "a_start"},
-)  # G24
 site.replace(key=key, equation=eq)
 site.extend(key=key, terms=terms)
 site.remove(key=key)  # G27
@@ -271,7 +263,7 @@ rk.execution.compare(
 
 ### Equation strings
 
-Equations use value keys, dotted paths (`funding.headroom`, `building_a.income`),
+Equations use value keys, dotted paths (`building_a.income`),
 keyed members (`rent[use]`), quantity literals (`0 AUD`, `2 years`), the operators
 `+ - * /`, the comparisons `= >= <= > <` and functions. Every function argument is
 named (D14). Functions are called as in Python, with their `rk.` namespace (D21):
@@ -283,7 +275,7 @@ named (D14). Functions are called as in Python, with their `rk.` namespace (D21)
 | `rk.flow.event(amount=, on=)` | A Flow with one amount on one date |
 | `rk.finance.npv(flow=, rate=, on=)`, `rk.finance.irr(flow=)` | Valuation on one date basis (D4, D5 for `irr`) |
 | `rk.finance.interest(balance=, rate=)`, `rk.finance.settle(balance=, on=)` | Interest on the opening balance, and repayment of a balance |
-| `x.at(on=)`, `x.trim(start=, end=)`, `x.shift(periods=)`, `x.cumulative()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date, the part inside a span, each period's amount `periods` away (`-1` gives the next period's; a rule cannot read a later amount, G53), running totals, and extremes (D4) |
+| `x.at(on=)`, `x.trim(start=, end=)`, `x.since(on=)`, `x.shift(periods=)`, `x.cumulative()`, `x.total()`, `x.first()`, `x.last()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date; the part inside a span; the same Periods with zero before a date; each period's amount `periods` away (`-1` gives the next period's; a rule cannot read a later amount, G53); running totals; the sum; the first and last amounts; and extremes (D4) |
 | `max(a, b)` | The larger of two values. Like Python's built-in, its arguments are not named |
 
 Each profile in `rk.profile` is also an equation function, under its own name in lower
@@ -317,7 +309,7 @@ use. **Issue** is filled in when the issue is filed.
 | 1 | — | Span conveniences: `years`, `extend`, `periods(frequency)` | G01 | `duration` | 01·4; 03·3 | #119 |
 | 2 | — | Flow and Stream construction, lookup and arithmetic | G02–G04 | `flow` | 01·5–13; 03·17 | #103, #162 |
 | 3 | — | Value equality and `rk.quantity.isclose` | G06 | `quantity`, `flow` | 01·12, 15, 21; 02·22 | #109, #117 |
-| 4 | — | `Flow.shift(periods=)` and `Flow.trim(period)` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |
+| 4 | — | Flow methods: `shift(periods=)`, `trim(span=)` with a Period, `cumulative()`, `total()`, `since(on=)`, `first()`, `last()`, `min()`, `max()` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
 | 7 | — | Function catalogue for equations, called as `rk.profile.*`, `rk.flow.*`, `rk.finance.*` and Flow methods, with the reserved words and the literal rule | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
@@ -338,8 +330,8 @@ use. **Issue** is filled in when the issue is filed.
 | 22 | — | `solve` resolves the documents that made the Specification | G12 | `execution` | 02·11 onwards | #126 |
 | 23 | — | `rk.execution.replay` and `Store.find_runs` | G25 | `execution`, `io` | 03·22–23 | #126, #176 |
 | 24 | — | One-call document IO: `rk.io.load` and `rk.io.save`; a loaded Specification brings the documents it pins, so `solve` can resolve them | G26 | `io` | 04·2, 9; 05·2; 06·2, 22; 07·2, 7 | #112 |
-| 25 | — | `rk.finance.Account` with a limit; `with_transactions` returns a new Account with balance and headroom Flows | G23 | `finance` | 03·18 | — |
-| 26 | — | An entity's `account(key=, ..., commitments=)` | G24 | `model` | 03·19; 05·9 | — |
+| 25 | — | ~~`rk.finance.Account` with a limit; `with_transactions` returns a new Account with balance and headroom Flows~~ Withdrawn: funding is composition (D2) | G23 | — | — | — |
+| 26 | — | ~~An entity's `account(key=, ..., commitments=)`~~ Withdrawn: funding is composition (D2) | G24 | — | — | — |
 | 27 | — | Outcome distributions | G31 | `execution` | 04·12–16; 05·16 | #127 |
 | 28 | — | Paired comparison of Outcomes | G56, G66, G68 | `execution` | 05·14–17; 07·9, 14–16 | #138, #213, #214 |
 | 29 | — | MarketPaths access and construction | G30, G33, G48, G69 | `finance` | 04·10, 19; 05·4; 07·16 | #137 |
@@ -352,6 +344,13 @@ use. **Issue** is filled in when the issue is filed.
 | 36 | — | Named formulations: `equations(..., formulation=)`, a default Formulation for each entity, and equations grouped by formulation in displays and traces | G72 | `model` | 03·6–8, 13, 19b | #141, #145 |
 
 Scope changes for existing issues:
+
+- [#194](https://github.com/daniel-fink/rangekeeper/issues/194) (how-to guides) gains a
+  recipe: a cash account with a facility limit, interest and commitments, composed
+  from `cumulative()`, `total()`, `since(on=)` and `rk.finance.interest` (D2).
+- [#94](https://github.com/daniel-fink/rangekeeper/issues/94) (rename map and codemod)
+  needs an entry: today's `calculations.account.Account` is not carried into 1.0.
+  Its uses become `cumulative()` and `rk.finance.interest`.
 
 - [#167](https://github.com/daniel-fink/rangekeeper/issues/167) provides NPV and a
   general `payment(principal=, rate=, term=, frequency=)`, like a spreadsheet's PMT
@@ -370,6 +369,12 @@ registry). Its tests must include:
   `rk.Quantity(text="0.5 dwelling per 100 sqm")` raises, and suggests
   `"0.005 dwelling per sqm"`. Stock Pint reads it as 0.005 dwelling × m².
 
+Later ideas, not for 1.0:
+
+- Include a saved Formulation as a fragment, with its keys mapped to the Model's keys,
+  so a team can reuse a block of equations (for example a funding account) without a
+  new API.
+
 Not filed as gaps:
 
 - **G07 (helpers).** The helpers load the data package with origins and draw
@@ -379,7 +384,7 @@ Not filed as gaps:
   `load_base_plan` (both return an object that displays a table and gives each
   Quantity by key, such as `plan["a_cost"]`), `load_fragment`, `data_path`,
   `path_count`, `show_equations`, `show_timeline`, `show_geometry`, `show_graph`,
-  `show_decisions`, `plot_paths`, `plot_cash_flows`, `plot_funding`,
+  `show_decisions`, `plot_paths`, `plot_cash_flows`, `plot_flows`,
   `plot_target_curve` and `plot_decisions`. Notes for that work:
   - **Drawing stack.** Plotly (plotly.js, with a local bundle and the shared light
     and dark theme) draws the charts, the timeline and the equation network.

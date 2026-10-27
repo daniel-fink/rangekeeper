@@ -153,14 +153,14 @@ except rk.errors.AvailabilityError as error:
 
 Narrative: decide Building B's start too. Start B when the index reaches 1.10 and
 the funding headroom covers B's whole budget. Building B's earliest date follows
-the start date, so the window starts there. The headroom comes from the funding
-account of lesson 03, with the decisions made so far.
+the start date, so the window starts there. The headroom comes from lesson 03's funding
+equations, with the decisions made so far.
 
 ```python
 # cell 9
 start_b = wait.decide(
     key="b_start",
-    when="rent_index >= 1.10 and funding.headroom >= b_cost",
+    when="rent_index >= 1.10 and headroom >= b_cost",
     review=yearly,
     window=("shared_start + 1 year", date(2033, 1, 1)),
     otherwise="never",
@@ -338,7 +338,7 @@ assert all(
     row.available_on <= row.decision_date for row in flex_out.decisions().observations()
 )
 starts = flex_out.decisions().where(value="b_start", result="decided")
-assert all(row.observed["funding.headroom"] >= row.observed["b_cost"] for row in starts)
+assert all(row.observed["headroom"] >= row.observed["b_cost"] for row in starts)
 assert flex_out.case(key=paths.keys[0]).run.policy_evidence.verified
 ```
 
@@ -381,7 +381,7 @@ solutions. The longest cell has 14 lines (cell 11). Cells follow `ruff format` (
 
 The design for sequential decisions must support:
 
-- **Observations.** A rule names Model values (`rent_index`, `funding.headroom`,
+- **Observations.** A rule names Model values (`rent_index`, `headroom`,
   `b_cost`) and earlier decided values (`b_start == never`). The value read is the
   latest one available on the review date.
 - **Availability.** Market path Flows carry availability dates (period end by
@@ -392,8 +392,8 @@ The design for sequential decisions must support:
   Model's relations and constraints move the dependent dates (cells 6, 9, 11).
 - **Windows.** Review dates from a start to an end, with bounds that can be
   expressions of earlier decisions (cell 9).
-- **Funding.** The rule observes the funding account under the decisions made so far,
-  so evaluation alternates review and solve in date order (cell 9).
+- **Funding.** The rule observes the funding values (`headroom`) under the decisions
+  made so far, so evaluation alternates review and solve in date order (cell 9).
 - **Traces.** For each case and review: date, decided value, observations with their
   availability dates, the rule's truth and the result (cells 7, 11).
 - **Paired comparison.** Two Outcomes on the same pinned `MarketPaths`, matched by

@@ -424,8 +424,9 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
    an argument. Compare quantities and dimensions, never unit strings. Use the
    curated aliases (`pa`, `sqm`).
 6. **The library does the finance.** NPV, IRR and PV use the same date basis.
-   Growth starts from a date. Payment and account balance are library calls; the
-   mortgage constant is derived from the payment (#201, decision D19). A new idea can be shown by hand once, checked, and then
+   Growth starts from a date. Payment is a library call, and the mortgage constant
+   is derived from it (#201, decision D19). An account balance is a cumulative sum
+   of its transactions (decision D2). A new idea can be shown by hand once, checked, and then
    replaced by the library call.
 7. **The library walks the graph.** Use views, filters, rollups and pivots.
    Cells never walk parents by hand.

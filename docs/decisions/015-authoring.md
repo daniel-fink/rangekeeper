@@ -26,8 +26,8 @@ lesson 03:
 - `model.edit()` returns a draft (`ModelDraft`), the builder for that revision.
 - The draft adds measures, classifications, entities, assemblies and
   relationships. `draft.add_entity(...)` makes an entity and returns its handle;
-  `draft.entity(code=...)` finds one. Values, Flows, equations, rollups and
-  accounts are declared on an entity handle. The draft refers to objects by handle
+  `draft.entity(code=...)` finds one. Values, Flows, equations and rollups are
+  declared on an entity handle. The draft refers to objects by handle
   or by code.
 - Amended 2026-10-26 by the walkthrough proposed cells (#201, decision D6): this
   replaces `Model.build()` and an implicit root entity.
