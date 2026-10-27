@@ -235,7 +235,6 @@ premiums = {
 }
 premium_cases = both.cases(cases=premiums).across(paths=use_paths, series=use_series)
 premium_outcome = rk.execution.solve(specification=premium_cases)
-premium_outcome.table("b_design", "start_date", "b_start")
 gain = rk.execution.compare(
     outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
@@ -245,10 +244,14 @@ gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
 ```
 
 If the 7.5 M AUD premium stops B on some paths, `breakeven` raises
-`DecisionsChangedError`, which lists those paths and keys. No separate method checks
-the decisions: the check belongs to the one call that depends on it (decision D36 of
-#201). The finance note of cell 14 then
-reads the premium from the table of cases, and it states the criterion.
+`DecisionsChangedError`, which lists those paths and keys.
+
+**Under review (#201, decision D36).** Lesson 07's proposed cells no longer call
+`breakeven`. They compose the mean-criterion premium from two runs (no premium and a
+test premium) with `Comparison.distribution(outcome=, key=)`, and check it with one
+more solve at that premium. The 5 % quantile criterion reads several premiums as
+cases. Whether the library keeps `breakeven`, or offers the search in another form,
+is open.
 
 ## Acceptance for #216
 

@@ -233,46 +233,68 @@ both_outcome.rollup(
 
 ## 6. The largest justified premium
 
-Narrative: the provision is paid at the start, from equity. If the rules do not
-depend on its cost, every dollar of provision lowers the equity NPV by its present
-value on every path. Then the largest justified premium under the mean criterion is
-the mean paired gain without the provision. **Check the "if"**: run the strategy at
-several provision costs. `breakeven` (cell 14) compares the decisions of every path
-across the premiums. If any decision differs, it raises `DecisionsChangedError` and
-lists the paths and keys, in place of a premium.
+Narrative: the provision is paid when the site is bought, from equity. If the rules do
+not depend on its cost, every dollar of provision lowers the equity NPV on each path
+by that dollar's present value. The paired gain is then a straight line in the
+premium. Two runs give the line: no premium, and one test premium. The largest
+justified premium under the mean criterion is where the mean gain reaches zero.
 
 ```python
 # cell 13
-premiums = {
-    "0 AUD": {"provision": "0 AUD"},
-    "2.5e6 AUD": {"provision": "2.5e6 AUD"},
-    "5e6 AUD": {"provision": "5e6 AUD"},
-    "7.5e6 AUD": {"provision": "7.5e6 AUD"},
-}
-premium_cases = (
-    strategies["both"].cases(cases=premiums).across(paths=use_paths, series=use_series)
+no_premium = strategies["both"].fix(provision="0 AUD")
+test_premium = strategies["both"].fix(provision="1e6 AUD")
+no_premium_outcome = rk.execution.solve(
+    specification=no_premium.across(paths=use_paths, series=use_series)
 )
-premium_outcome = rk.execution.solve(specification=premium_cases)
-premium_outcome.table(
-    "b_design", "start_date", "b_start"
-)  # one row per premium and path
+test_premium_outcome = rk.execution.solve(
+    specification=test_premium.across(paths=use_paths, series=use_series)
+)
+```
+
+```python
+# cell 13b
+gain = rk.execution.compare(
+    outcomes={
+        "No premium": no_premium_outcome,
+        "Test premium": test_premium_outcome,
+        "Timing": strategy_outcomes["timing"],
+    },
+    keys=["equity_npv"],
+    baseline="Timing",
+)
+gain_at_zero = gain.distribution(outcome="No premium", key="equity_npv")
+gain_at_test = gain.distribution(outcome="Test premium", key="equity_npv")
 ```
 
 ```python
 # cell 14
-gain = rk.execution.compare(
-    outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
+cost_per_aud = (gain_at_zero.mean - gain_at_test.mean) / rk.Quantity(text="1e6 AUD")
+largest_premium = gain_at_zero.mean / cost_per_aud  # the mean criterion
+largest_premium
+```
+
+Narrative. **Check the "if"**: at the largest premium, the mean paired gain is zero
+only if no decision changed with the premium. Solve once more at that premium.
+
+```python
+# cell 14b
+at_largest = strategies["both"].fix(provision=largest_premium)
+at_largest_outcome = rk.execution.solve(
+    specification=at_largest.across(paths=use_paths, series=use_series)
+)
+check = rk.execution.compare(
+    outcomes={"At largest": at_largest_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
     baseline="Timing",
-).by_case()
-gain.summary()
-gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
+)
+check.distribution(outcome="At largest", key="equity_npv").mean  # about 0 AUD
 ```
 
 > **Finance note.** The provision uses equity and loan capacity that Building B's
-> rule needs. If the decisions change with the premium, read the largest justified
-> premium from the cases, not from one run. State the criterion: a mean criterion
-> and a 5 % quantile criterion give different premiums.
+> rule needs. If the check is not zero, a decision changed with the premium: read
+> the largest justified premium from several premiums as cases, not from the line.
+> State the criterion: a mean criterion and a 5 % quantile criterion give different
+> premiums.
 
 ## 7. Choose on one path set, test on another
 
@@ -422,11 +444,26 @@ switch_vs_fixed.where(b_design="residential").summary()
 ```
 
 **Try it 2: a cautious criterion.** Find the largest justified premium under the 5 %
-quantile criterion.
+quantile criterion. The quantile is not a straight line in the premium, so test
+several premiums as cases and read where the 5 % quantile of the gain crosses zero.
 
 ```python
 # solution
-gain.breakeven(key="provision", criterion=rk.execution.Criterion.QUANTILE, level=0.05)
+premiums = {
+    "0 AUD": {"provision": "0 AUD"},
+    "2.5e6 AUD": {"provision": "2.5e6 AUD"},
+    "5e6 AUD": {"provision": "5e6 AUD"},
+    "7.5e6 AUD": {"provision": "7.5e6 AUD"},
+}
+premium_cases = strategies["both"].cases(cases=premiums)
+premium_outcome = rk.execution.solve(
+    specification=premium_cases.across(paths=use_paths, series=use_series)
+)
+rk.execution.compare(
+    outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
+    keys=["equity_npv"],
+    baseline="Timing",
+).by_case().summary()  # the 5 % quantile for each premium
 ```
 
 **Try it 3: the switch without timing flexibility.** Is the switch worth more with or
@@ -466,7 +503,7 @@ how-to guides.
 
 ## Cell budget
 
-20 core code cells, 5 optional cells and 1 check cell (budget 20–25), 3 exercise
+22 core code cells, 5 optional cells and 1 check cell (budget 20–25), 3 exercise
 solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 `ruff format` (D15).
 
@@ -485,8 +522,8 @@ solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 | 9–10 | 8 | G66: `rk.execution.compare(outcomes=, keys=, baseline=)` for several strategies |
 | 11 | 8 | G31: `distribution(key=).counts()` for a decided choice |
 | 12 | 7, 8 | G46 for batches: `Outcome.rollup(...)` over each case's realised Model |
-| 13 | 8 | G20: decided values in a batch table, one row for each case and path |
-| 14 | 8 | G67: `breakeven` checks that the decisions are the same across the cases and raises `DecisionsChangedError` if not; G68: `by_case().breakeven(key=, criterion=, level=)` and `best(criterion=)` with `rk.execution.Criterion` |
+| 13–14b | 6, 8 | The largest premium composed from two runs (D36): G79: `Comparison.distribution(outcome=, key=)` gives the paired differences of one Outcome as a Distribution (G31) |
+| 15b | 8 | G68: `best(criterion=)` with `rk.execution.Criterion` |
 | 15–15c | 2 | G57: several triggers as cases; G75: `Specification.case(key=)` (cell 16) |
 | 16 | 4, 6 | G69: `Paths.regenerate(seed=)` rebuilds the generator from the capture record |
 | 17–17c | 2, 3 | G61, G17; G27 (`add_to(key=, term=)` adds a term to one side of an equation) |

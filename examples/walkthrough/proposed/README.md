@@ -22,7 +22,7 @@ when the library work lands.
 | 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 17 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 18 + 2 optional |
 | 06 Project structure | [06_project_structure.md](06_project_structure.md) | 25 + 1 optional |
-| 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 20 + 5 optional |
+| 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 22 + 5 optional |
 
 Each lesson file has the goals box, the narrative outline, the cells, the exercises
 with solutions, the checks and recap, the cell budget and a rule check. The rule
@@ -72,7 +72,7 @@ pass.
 | D33 | How does a reader query a Model? | As in LINQ and SQL: a singular noun returns one item and raises on none or several (`model.entity(code=)`); a plural collection returns many through `.where(...)` (`model.entities.where(filter=)`, `model.equations.where(keys=, formulation=)`), and result tables use the same `.where(...)`. Not `find`, which returns one item in .NET and JavaScript; not `filter`, which would stutter beside `filter=`. `Filter`'s comparison argument is `condition=`, not `where=`. Equations have no direction, so `keys=` means direct use; there is no transitive form | 03, 05–07 |
 | D34 | What are a rule's numbers called, and how are several tried? | A **trigger** is the level an observed value must reach before a rule acts (`start_trigger=1.05`: rents 5 % above 2027). Every trigger is a named Specification value, declared with `parameters(...)` and read in the rule text, never a number written into the rule. Several triggers, or several premiums, are **cases**: a sensitivity analysis. The word "sweep" is not used. Variables name what they hold, not an event: `trigger_cases` (one case for each trigger), not `triggered_cases`, which would mean the cases where a rule acted | 05, 07 |
 | D35 | What is the root entity called? | `project`, as the variable and as the entity's code and classification (`project = draft.add_entity(code="project", classification="project")`). Not `site`, which the narrative uses for the land ("buy the site"), and not `property`, which shadows Python's built-in | 02–07 |
-| D36 | Does a check get its own method? | Not when one call depends on it. `breakeven` checks that the decisions are the same across the premium cases and raises `DecisionsChangedError` with the paths and keys; there is no `decisions().same_across_cases()`. The decided values are visible in the batch table (`outcome.table(...)`) | 07 |
+| D36 | Does a check or a search get its own method? | Not when plain composition shows the finance. Lesson 07 composes the largest justified premium from two runs (no premium and a test premium): the mean paired gain without the premium, divided by what each dollar of premium costs. A solve at that premium checks it: the mean gain is zero only if no decision changed. There is no `decisions().same_across_cases()`. Whether the library offers a search for the 5 % quantile criterion, and in what form, is open (G68) | 07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -274,9 +274,9 @@ outcome = rk.execution.solve(specification=spec)  # #126, G12
     outcome.distribution(key="b_design").counts(),
     outcome.mean(),
 )  # G31
-gain.breakeven(
-    key="provision", criterion=rk.execution.Criterion.QUANTILE, level=0.05
-)  # G68
+gain.distribution(
+    outcome="No premium", key="equity_npv"
+)  # G79: paired differences of one Outcome
 outcome.decisions().where(
     key="b_start", result=rk.execution.ReviewResult.DECIDED
 )  # G51
@@ -393,7 +393,7 @@ use. **Issue** is filled in when the issue is filed.
 | 25 | — | ~~`rk.finance.Account` with a limit; `with_transactions` returns a new Account with balance and headroom Flows~~ Withdrawn: funding is composition (D2) | G23 | — | — | — |
 | 26 | — | ~~An entity's `account(key=, ..., commitments=)`~~ Withdrawn: funding is composition (D2) | G24 | — | — | — |
 | 27 | — | Outcome distributions: `summary`, `quantile(level=)`, `probability`, `counts()`, `case(quantile=)`; `Outcome.mean()` for a batch | G31 | `execution` | 04·12–16; 05·16 | #127 |
-| 28 | — | One comparison call for two or more Outcomes: `rk.execution.compare(outcomes=, keys=, baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences paired by path, with `summary`, `by`, `by_case`, `where`, `select`, and `breakeven` and `best` with `criterion=rk.execution.Criterion` and `level=`; `breakeven` checks that the decisions are the same across the cases and raises `DecisionsChangedError` if not. No `Outcome.compare` and no `rk.execution.table` (G13 merged) | G13, G56, G66, G67, G68 | `execution` | 02·15; 03 Try it 1; 04·14; 05·14–17; 07·9, 14–18b | #138, #213, #214 |
+| 28 | — | One comparison call for two or more Outcomes: `rk.execution.compare(outcomes=, keys=, baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences paired by path, with `summary`, `by`, `by_case`, `where`, `select`, `distribution(outcome=, key=)` for the paired differences of one Outcome (G79), and `best` with `criterion=rk.execution.Criterion`. A library form for the largest justified premium (`breakeven`) is open (D36). No `Outcome.compare` and no `rk.execution.table` (G13 merged) | G13, G56, G66, G68, G79 | `execution` | 02·15; 03 Try it 1; 04·14; 05·14–17; 07·9, 14–18b | #138, #213, #214 |
 | 29 | — | `rk.market.Paths` access and construction; `regenerate(seed=)` | G30, G33, G48, G69 | `market` | 04·10, 19; 05·4; 07·16 | #137 |
 | 30 | — | `rk.market.Dynamics` parameters, and `rk.market.generate(dynamics={name: Dynamics}, periods=, seed=, count=)` for one named series or several, each independent; no correlation argument (D31); `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `market` | 04·5–7, 17–18 | #136 |
 | 31 | — | Rules that decide values: `decide(key=, when=, periods=, earliest=, latest=, timing=, otherwise=)`, traces, `decisions().where(key=, result=rk.execution.ReviewResult)`, availability errors with `key` | G49, G51, G53, G55, G64, G65 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
