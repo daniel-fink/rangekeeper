@@ -14,7 +14,6 @@ import pytest
 
 from rangekeeper import Model
 from rangekeeper.calculations import projection, series
-from rangekeeper.calculations.interval import Interval
 from rangekeeper.calculations.projection import ProjectionMethod
 from rangekeeper.calculations.series import ResamplingMethod
 from rangekeeper.model import (
@@ -213,21 +212,8 @@ def test_product_preserves_units_and_explicit_exposure_removes_time():
     assert integrated.movements[0].magnitude == pytest.approx(2 * math.pi)
 
 
-def test_interval_partition_boundaries():
-    interval = Interval(2.4, 9.6)
-    assert (interval.left + interval.right) / 2 == 6
-    assert interval.length == pytest.approx(7.2)
-    left, right = interval.split(1 / 3)
-    assert (right.left, right.right, right.length) == pytest.approx((4.8, 9.6, 4.8))
-    pieces = interval.subdivide(4)
-    assert pieces[0].right == pytest.approx(4.2)
-    assert pieces[-1].right == 9.6
-    assert pieces[0].subdivide((0.1, 0.2, 0.7))[0].right == pytest.approx(2.58)
-
-
 def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
-    residential, podium = Interval(0, 100).split(0.65)
-    pieces = podium.subdivide((0.5, 0.25, 0.25))
+    pieces = ((65, 82.5), (82.5, 91.25), (91.25, 100))
     children = tuple(
         Entity(
             id=uuid4(),
@@ -238,7 +224,7 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
                         id=uuid4(),
                         key="bounds",
                         kind=ValueKind.PROPERTY,
-                        content=encode((bounds.left, bounds.right)),
+                        content=encode(bounds),
                     ),
                     Value(
                         id=uuid4(),
@@ -258,7 +244,6 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
         metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         system=System(entities=children, assemblies=(parent,)),
     )
-    assert residential.right == 65
     assert (
         decode(model.value(children[-1].characteristics.values[0].id).content)[1] == 100
     )

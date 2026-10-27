@@ -13,7 +13,7 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 | `io/store.py` | `Document` union and `RecordStore` protocol: three typed reads plus `put(document) -> UUID`. |
 | `io/json.py`, `io/yaml.py` | Explicit-kind `loads`, `dumps`, `read`, and atomic create-only `write`. YAML is imported only when used. |
 | `io/memory.py`, `io/directory.py` | `MemoryStore()` and `DirectoryStore(root)` implement immutable revision storage. |
-| `io/_document.py`, `io/_atomic.py` | Small kind/envelope dispatch and filesystem publication helpers; no handwritten field schema. |
+| `io/_document.py`, `io/atomic.py` | Small kind/envelope dispatch and filesystem publication helpers; no handwritten field schema. |
 
 Methods and helpers have docstrings documenting validation, error, mutation, and IO
 boundaries. Generated records remain the only field authority. Root imports expose
@@ -180,9 +180,7 @@ it does not silently substitute an overwrite operation.
 
 IO failure after linking leaves a complete published record when directory sync
 fails. The internal publication error identifies the visible path; callers can
-inspect and retry idempotently. The same distinction applies to atomic pointer
-replacement: visibility can be established while durability remains unconfirmed.
-There is no multi-document transaction: execution publishes
+inspect and retry idempotently. There is no multi-document transaction: execution publishes
 outputs first, then its Run, and interruption can leave unreferenced complete outputs.
 Direct filesystem edits/deletion are outside the store's immutability contract. Loading a
 Run checks local consistency; explicit resolved validation can audit its references again.

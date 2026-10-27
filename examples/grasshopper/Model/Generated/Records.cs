@@ -1249,32 +1249,6 @@ public sealed class Measure : WireRecord
     }
 }
 
-/// <summary>Schema-derived Measurement wire record. Exports and nested reads are detached.</summary>
-public sealed class Measurement : WireRecord
-{
-    public Measurement() { }
-    public Measurement(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field id; missing and null remain distinct.</summary>
-    public Guid Id
-    {
-        get => Read<Guid>("id");
-        init => Write("id", value);
-    }
-    /// <summary>Wire field measure; missing and null remain distinct.</summary>
-    public Guid Measure
-    {
-        get => Read<Guid>("measure");
-        init => Write("measure", value);
-    }
-    /// <summary>Wire field quantity; missing and null remain distinct.</summary>
-    public Optional<Quantity> Quantity
-    {
-        get => ReadOptional<Quantity>("quantity");
-        init => WriteOptional("quantity", value);
-    }
-}
-
 /// <summary>Schema-derived Metadata wire record. Exports and nested reads are detached.</summary>
 public sealed class Metadata : WireRecord
 {
