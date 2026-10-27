@@ -10,7 +10,7 @@ Walkthrough lesson 05 asks when to buy the site, start Building B or stop
 ([ADR-020](020-walkthrough-plan-v2.md#05-when-to-commit)). Its proposed cells
 (#201) need three timing options on lesson 04's market paths:
 
-- **wait to start:** start when an observed market value passes a threshold;
+- **wait to start:** start when an observed market value reaches a trigger;
 - **conditional start of Building B:** start B only when the market and the
   funding allow it, before a latest date;
 - **abandon:** if B has not started by a date, sell B's share of the site.
@@ -75,7 +75,7 @@ Specification (decision D8 of #201). All arguments are named (D14).
 Three more Specification members support rules:
 
 - `parameters(**values)` declares named Specification values for rules, such as a
-  threshold. `fix` and cases change them like other values, and a rule can read
+  trigger. `fix` and cases change them like other values, and a rule can read
   them on every review date.
 - `rules` returns the rules in their order, as `Rule` records.
 - `with_rules(rules=...)` adds rules after the existing rules. A rule for a key
@@ -199,7 +199,7 @@ date, the decided values and the broken constraint (lesson 05, cell 7).
 - **Inverse solving.** A Specification with rules can have free inputs only when
   no observation depends on them. Each path then solves its free inputs with its
   final decisions. There is no target over a batch, such as a mean.
-- **Policy search** is not in the library. A sweep of rule parameters is a set of
+- **Policy search** is not in the library. Several values of a rule parameter are a set of
   cases, and cases multiply with paths. [ADR-022](022-design-alternatives.md)
   `best` selects only from the tested cases.
 
@@ -280,9 +280,9 @@ illustrative.
 start_reviews = rk.duration.Span(start=date(2027, 1, 1), end=date(2031, 1, 1)).periods(
     frequency=yearly
 )
-wait = fixed.parameters(start_threshold=1.05).decide(
+wait = fixed.parameters(start_trigger=1.05).decide(
     key="start_date",
-    when="rent_index >= start_threshold",
+    when="rent_index >= start_trigger",
     periods=start_reviews,
     otherwise=rk.duration.NEVER,
 )
@@ -314,9 +314,9 @@ period. `decide` raises `AvailabilityError` before any solve. The error has `cod
 b_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).periods(
     frequency=yearly
 )
-start_b = wait.decide(
+start_b = wait.parameters(b_start_trigger=1.10).decide(
     key="b_start",
-    when="rent_index >= 1.10 and equity_available + loan_available >= b_cost",
+    when="rent_index >= b_start_trigger and equity_available + loan_available >= b_cost",
     periods=b_reviews,
     earliest="shared_start + 1 year",
     otherwise=rk.duration.NEVER,
@@ -337,8 +337,8 @@ has passed, so it fixes `NEVER`. Then the sale rule runs. Its review Period, 203
 is open, and its condition is true. If the sale rule
 were written first, `decide` would reject it with `rule_order`.
 
-**A threshold sweep (cell 17).** The threshold is a Specification parameter from
-cell 6. `cases` make one case for each threshold, across every path. Each case key is a pair of the
+**Several triggers (cell 17).** The trigger is a Specification parameter from
+cell 6. `cases` make one case for each trigger, across every path. Each case key is a pair of the
 case name and the path member key ([ADR-014](014-market-paths.md)).
 
 ## Acceptance for #215

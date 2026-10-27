@@ -21,7 +21,7 @@ The lesson is not authored until #215 is verified (ADR-020).
 >
 > **You will learn to:**
 >
-> 1. write a decision rule with a threshold on an observed value;
+> 1. write a decision rule with a trigger on an observed value;
 > 2. use only the information available at the decision date;
 > 3. check funding before a commitment, and read a decision trace;
 > 4. compare the fixed plan with a strategy on the same paths, as paired differences;
@@ -29,7 +29,7 @@ The lesson is not authored until #215 is verified (ADR-020).
 >
 > **Before you start.** Lessons 03 and 04.
 >
-> **Time.** 60 minutes core, 30 minutes optional (threshold sweep).
+> **Time.** 60 minutes core, 30 minutes optional (several triggers).
 >
 > **Not in this lesson.** Changes to the design (lesson 07).
 >
@@ -87,7 +87,7 @@ fixed_stories_outcome.table("equity_npv", "peak_shortfall")
 Narrative: in place of a fixed start date, decide it. Each January from 2027 to
 2030, read the latest rent index. Start when it reaches 1.05. If it never does, do
 not buy the site. `decide` replaces the fixed start date with a rule. The reviews are
-a `Periods`: the rule looks on the first day of each Period. The threshold is a
+a `Periods`: the rule looks on the first day of each Period. The trigger, 1.05, is a
 value in the Specification, so you can change it later without rewriting the rule.
 `rk.duration.NEVER` means the event does not happen.
 
@@ -97,9 +97,9 @@ yearly = rk.duration.Frequency.YEAR
 start_reviews = rk.duration.Span(start=date(2027, 1, 1), end=date(2031, 1, 1)).periods(
     frequency=yearly
 )
-wait = fixed.parameters(start_threshold=1.05).decide(
+wait = fixed.parameters(start_trigger=1.05).decide(
     key="start_date",
-    when="rent_index >= start_threshold",
+    when="rent_index >= start_trigger",
     periods=start_reviews,
     otherwise=rk.duration.NEVER,
 )
@@ -153,7 +153,8 @@ except rk.errors.AvailabilityError as error:
 
 ## 5. Start Building B when the market and funding allow
 
-Narrative: decide Building B's start too. Start B when the index reaches 1.10 and
+Narrative: decide Building B's start too. Start B when the index reaches its own
+trigger, 1.10, and
 the available equity and the available loan cover B's whole budget. Both come from
 lesson 03's funding equations, with the decisions made so far. Building B cannot
 start before the shared works finish, so `earliest=` skips the reviews before that
@@ -164,9 +165,9 @@ date on each path.
 b_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).periods(
     frequency=yearly
 )
-start_b = wait.decide(
+start_b = wait.parameters(b_start_trigger=1.10).decide(
     key="b_start",
-    when="rent_index >= 1.10 and equity_available + loan_available >= b_cost",
+    when="rent_index >= b_start_trigger and equity_available + loan_available >= b_cost",
     periods=b_reviews,
     earliest="shared_start + 1 year",
     otherwise=rk.duration.NEVER,
@@ -264,7 +265,7 @@ helpers.plot_target_curve(
 
 ## 8. Rule parameters and realised decisions
 
-Narrative: the threshold 1.05 is a parameter of the rule. It is the same on every
+Narrative: the trigger 1.05 is a parameter of the rule. It is the same on every
 path. The start date is a realised decision: it differs from path to path. Read the
 realised start years, and the paired difference for each.
 
@@ -274,42 +275,42 @@ strategy_outcome.distribution(key="start_date").counts()
 difference.by(key="start_date").summary()  # where waiting gains, and where it costs
 ```
 
-## 9. Optional: a threshold sweep
+## 9. Optional: several triggers
 
-Narrative: the threshold is a value in the Specification (cell 6), so cases can sweep
-it like any other value. Cases and paths multiply: each threshold runs on every
-path.
+Narrative: the trigger is a value in the Specification (cell 6), so cases can test
+several triggers, like any other value: a sensitivity analysis of the rule. Cases
+and paths multiply: each trigger runs on every path.
 
 ```python
 # cell 17
-thresholds = {
-    "1.00": {"start_threshold": 1.00},
-    "1.02": {"start_threshold": 1.02},
-    "1.05": {"start_threshold": 1.05},
-    "1.08": {"start_threshold": 1.08},
+start_triggers = {
+    "1.00": {"start_trigger": 1.00},
+    "1.02": {"start_trigger": 1.02},
+    "1.05": {"start_trigger": 1.05},
+    "1.08": {"start_trigger": 1.08},
 }
 ```
 
 ```python
 # cell 17b
-swept = strategy.cases(cases=thresholds)
-sweep_outcome = rk.execution.solve(specification=swept.across(paths=paths))
-sweep_difference = rk.execution.compare(
-    outcomes={"Sweep": sweep_outcome, "Fixed plan": fixed_outcome},
+trigger_cases = strategy.cases(cases=start_triggers)
+trigger_outcome = rk.execution.solve(specification=trigger_cases.across(paths=paths))
+trigger_difference = rk.execution.compare(
+    outcomes={"Triggers": trigger_outcome, "Fixed plan": fixed_outcome},
     keys=["equity_npv"],
     baseline="Fixed plan",
 )
-sweep_difference.by_case().summary()
+trigger_difference.by_case().summary()
 ```
 
 ## Exercises
 
-**Try it 1: a lower threshold.** Start when the index reaches 1.02. How many paths
+**Try it 1: a lower trigger.** Start when the index reaches 1.02. How many paths
 start in 2027? Does the mean paired difference rise?
 
 ```python
 # solution
-early = strategy.fix(start_threshold=1.02)
+early = strategy.fix(start_trigger=1.02)
 early_outcome = rk.execution.solve(specification=early.across(paths=paths))
 early_outcome.distribution(key="start_date").counts()
 rk.execution.compare(
@@ -326,7 +327,7 @@ On how many paths does the commitment gap become positive?
 # solution
 reckless = strategy.decide(
     key="b_start",
-    when="rent_index >= 1.10",
+    when="rent_index >= b_start_trigger",
     periods=b_reviews,
     earliest="shared_start + 1 year",
     otherwise=rk.duration.NEVER,
@@ -388,7 +389,7 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G47: `equations.where(keys=, formulation=)` |
 | 4 | 10 | G48: `rk.market.Paths` from explicit Flows (the three histories are data, made once) |
-| 6 | 2, 6 | D1–D2 of the review: `rk.duration.Periods` from `Span.periods`; G49: `Specification.decide(key=, when=, periods=, earliest=, latest=, otherwise=)`, the "decided" role, rules as strings; G57: `parameters` for a rule's threshold |
+| 6 | 2, 6 | D1–D2 of the review: `rk.duration.Periods` from `Span.periods`; G49: `Specification.decide(key=, when=, periods=, earliest=, latest=, otherwise=)`, the "decided" role, rules as strings; G57: `parameters` for a rule's trigger |
 | 6, 11, 13 | 5 | G50: `rk.duration.NEVER` for date values, `NEVER` in rule text; functions treat a `NEVER` date as "no flow" |
 | 7–7b, 11b, 12 | 8, 9 | G51: `Outcome.trace()` and `Outcome.decisions()` tables; infeasible decided values name the constraint (G52) |
 | 8 | 9 | G53: `AvailabilityError` (with `key`) at Specification validation ([#139](https://github.com/daniel-fink/rangekeeper/issues/139)) |
@@ -397,7 +398,7 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | 10 | 2, 3 | G27 (`add_to(key=, term=)`); G17 (`at`, `rx.flow.event`) |
 | 13–16 | 8 | G56, G66: `rk.execution.compare(outcomes=, keys=, baseline=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
-| 17–17b, Try it 1 | 2 | G57: a rule's threshold fixed and swept like any Specification value; cases × paths |
+| 17–17b, Try it 1 | 2 | G57: a rule's trigger fixed and tested as cases like any Specification value; cases × paths |
 | 18 | 8 | G58: policy evidence in the Run (`policy_evidence.verified`), observations with `available_on`; `rk.execution.ReviewResult` |
 
 ## Cells for #213

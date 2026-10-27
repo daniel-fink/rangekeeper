@@ -130,7 +130,7 @@ The provision is paid from equity, so it reduces the available equity. A rule
 such as `equity_available + loan_available >= b_cost` can then decide differently
 as the premium rises. The library makes this visible and does not hide it:
 
-- **Sweep the premium as cases:** `cases(cases=premiums)`, with one case for each
+- **Test several premiums as cases:** `cases(cases=premiums)`, with one case for each
   premium written out (decision D24 of #201), across the paths.
 - **`outcome.decisions().same_across_cases()`** shows, for each path, if any decided
   value changes between the cases. It lists the paths and keys that change.
@@ -147,7 +147,7 @@ as the premium rises. The library makes this visible and does not hide it:
     line for each path from the cases and solves the criterion exactly. It runs
     no new solve.
   - A third case checks the lines. If a case is not on its line within tolerance,
-    `breakeven` raises `ValidationError` with the code `sweep_not_affine`. This
+    `breakeven` raises `ValidationError` with the code `breakeven_not_affine`. This
     happens when the compared key is not affine in the premium, for example a key
     that uses `max`.
 
@@ -156,9 +156,9 @@ as the premium rises. The library makes this visible and does not hide it:
 - A choice key cannot be free. The library has no objective over alternatives.
 - `by_case().best(criterion=)` returns the best tested case. The result says
   "best tested".
-- To test thresholds on new paths, `Paths.regenerate(seed=)` rebuilds the
+- To test triggers on new paths, `Paths.regenerate(seed=)` rebuilds the
   generator from the capture record (#201 gap G69). A new seed gives a test set. Nothing in
-  the library tunes a threshold.
+  the library tunes a trigger.
 
 ## Worked examples
 
@@ -170,10 +170,10 @@ These come from the proposed cells of lesson 07 (#201). Amounts are illustrative
 switch = (
     fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
     .fix(provision="2.5e6 AUD")
-    .parameters(switch_threshold=1.10)
+    .parameters(switch_trigger=1.10)
     .decide(
         key="b_design",
-        when='use_index["hotel"] >= switch_threshold * use_index["residential"]',
+        when='use_index["hotel"] >= switch_trigger * use_index["residential"]',
         periods=design_reviews,
         earliest="shared_start + 1 year",
         latest="b_start - 1 year",
@@ -235,8 +235,8 @@ premiums = {
     "5e6 AUD": {"provision": "5e6 AUD"},
     "7.5e6 AUD": {"provision": "7.5e6 AUD"},
 }
-premium_sweep = both.cases(cases=premiums).across(paths=use_paths, series=use_series)
-premium_outcome = rk.execution.solve(specification=premium_sweep)
+premium_cases = both.cases(cases=premiums).across(paths=use_paths, series=use_series)
+premium_outcome = rk.execution.solve(specification=premium_cases)
 premium_outcome.decisions().same_across_cases()
 gain = rk.execution.compare(
     outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
@@ -248,7 +248,7 @@ gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
 
 If the 7.5 M AUD premium stops B on some paths, `same_across_cases()` lists them
 and `breakeven` raises `DecisionsChangedError`. The finance note of cell 14 then
-reads the premium from the sweep table, and it states the criterion.
+reads the premium from the table of cases, and it states the criterion.
 
 ## Acceptance for #216
 
@@ -272,7 +272,7 @@ reads the premium from the sweep table, and it states the criterion.
    - invariant decisions give the exact premium, and it agrees with an
      independent calculation on known data;
    - changed decisions raise `decisions_changed`;
-   - a key that is not affine raises `sweep_not_affine`.
+   - a key that is not affine raises `breakeven_not_affine`.
 9. `best` returns a tested case only, and no function searches rule parameters.
 10. Lesson 07 cells 2 to 19 run on the CI path count.
 
@@ -285,7 +285,7 @@ reads the premium from the sweep table, and it states the criterion.
 - `DecisionTable.same_across_cases`.
 - `rk.errors.DecisionsChangedError`.
 - Diagnostic codes: `missing_alternative`, `alternative_mismatch`,
-  `decisions_changed` and `sweep_not_affine`.
+  `decisions_changed` and `breakeven_not_affine`.
 - Run record field: the realised alternative of each case.
 
 ## Alternatives and consequences

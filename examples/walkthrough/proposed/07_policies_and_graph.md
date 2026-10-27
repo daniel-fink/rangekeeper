@@ -10,7 +10,7 @@ API conventions and the gap list: [README](README.md).
 Decisions used here (D9 and D10 in the [README](README.md#decisions)): each design
 option is its own Model revision. A Specification lists the alternatives, and the
 choice between them is a decided value, like lesson 05's dates. A provision cost is a
-Specification value, so a sweep can change it.
+Specification value, so cases can change it.
 
 The lesson is not authored until #216 is verified (ADR-020).
 
@@ -26,7 +26,7 @@ The lesson is not authored until #216 is verified (ADR-020).
 >    the same paths, with the provision paid on every path;
 > 4. find the largest provision cost that a criterion justifies, and check that the
 >    rules do not change with it;
-> 5. choose a threshold on one path set and test it on another.
+> 5. choose a trigger on one path set and test it on another.
 >
 > **Before you start.** Lessons 05 and 06.
 >
@@ -154,7 +154,7 @@ timing  # lesson 05's three rules, as written there
 ```
 
 Narrative: the rule reads the Model's keyed index, one member for each use. The
-threshold is a value in the Specification, so section 7 can sweep it. Building B's
+trigger is a value in the Specification, so section 7 can test several triggers as cases. Building B's
 design is reviewed each January from 2028, from a year after the shared works start
 until the year before Building B starts.
 
@@ -163,10 +163,10 @@ until the year before Building B starts.
 switch = (
     fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
     .fix(provision="2.5e6 AUD")
-    .parameters(switch_threshold=1.10)
+    .parameters(switch_trigger=1.10)
     .decide(
         key="b_design",
-        when='use_index["hotel"] >= switch_threshold * use_index["residential"]',
+        when='use_index["hotel"] >= switch_trigger * use_index["residential"]',
         periods=design_reviews,
         earliest="shared_start + 1 year",
         latest="b_start - 1 year",
@@ -247,10 +247,10 @@ premiums = {
     "5e6 AUD": {"provision": "5e6 AUD"},
     "7.5e6 AUD": {"provision": "7.5e6 AUD"},
 }
-premium_sweep = (
+premium_cases = (
     strategies["both"].cases(cases=premiums).across(paths=use_paths, series=use_series)
 )
-premium_outcome = rk.execution.solve(specification=premium_sweep)
+premium_outcome = rk.execution.solve(specification=premium_cases)
 premium_outcome.decisions().same_across_cases()  # are the decisions the same at every premium?
 ```
 
@@ -267,47 +267,47 @@ gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
 
 > **Finance note.** The provision uses equity and loan capacity that Building B's
 > rule needs. If the decisions change with the premium, read the largest justified
-> premium from the sweep, not from one run. State the criterion: a mean criterion
+> premium from the cases, not from one run. State the criterion: a mean criterion
 > and a 5 % quantile criterion give different premiums.
 
 ## 7. Choose on one path set, test on another
 
-Narrative: a threshold chosen on the same paths that test it looks better than it is.
-Choose the switch threshold on lesson 04's paths, then test it on new paths from the
+Narrative: a trigger chosen on the same paths that test it looks better than it is.
+Choose the switch trigger on lesson 04's paths, then test it on new paths from the
 same generator with a new seed.
 
 ```python
 # cell 15
-thresholds = {
-    "1.00": {"switch_threshold": 1.00},
-    "1.05": {"switch_threshold": 1.05},
-    "1.10": {"switch_threshold": 1.10},
-    "1.20": {"switch_threshold": 1.20},
+switch_triggers = {
+    "1.00": {"switch_trigger": 1.00},
+    "1.05": {"switch_trigger": 1.05},
+    "1.10": {"switch_trigger": 1.10},
+    "1.20": {"switch_trigger": 1.20},
 }
 ```
 
 ```python
 # cell 15b
-threshold_sweep = strategies["both"].cases(cases=thresholds)
+trigger_cases = strategies["both"].cases(cases=switch_triggers)
 ```
 
 ```python
 # cell 15c
 train_outcome = rk.execution.solve(
-    specification=threshold_sweep.across(paths=use_paths, series=use_series)
+    specification=trigger_cases.across(paths=use_paths, series=use_series)
 )
-by_threshold = rk.execution.compare(
-    outcomes={"Thresholds": train_outcome, "Timing": strategy_outcomes["timing"]},
+by_trigger = rk.execution.compare(
+    outcomes={"Triggers": train_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
     baseline="Timing",
 ).by_case()
-best = by_threshold.best(criterion=rk.execution.Criterion.MEAN)
+best = by_trigger.best(criterion=rk.execution.Criterion.MEAN)
 ```
 
 ```python
 # cell 16
 fresh = use_paths.regenerate(seed=2)  # the same generator, periods and count
-chosen = threshold_sweep.case(key=best)
+chosen = trigger_cases.case(key=best)
 test_outcome = rk.execution.solve(
     specification=chosen.across(paths=fresh, series=use_series)
 )
@@ -381,9 +381,10 @@ expand = (
     strategies["both"]
     .alternatives(a_design={"base": residential, "expanded": expanded})
     .fix(a_provision="1.5e6 AUD")
+    .parameters(expansion_trigger=1.25)
     .decide(
         key="expansion_date",
-        when='use_index["residential"] >= 1.25',
+        when='use_index["residential"] >= expansion_trigger',
         periods=expansion_reviews,
         earliest="a_open + 3 years",
         otherwise=rk.duration.NEVER,
@@ -454,7 +455,7 @@ assert rk.model.diff(
 2. A rule chooses between alternatives in the same way that it chooses dates. The
    provision is paid on every path.
 3. A justified premium needs a stated criterion, a check that the rules do not
-   change with it, and a test on paths that did not choose the thresholds.
+   change with it, and a test on paths that did not choose the triggers.
 
 **Next.** The book ends here. The "Start here" page lists further reading and the
 how-to guides.
@@ -462,7 +463,7 @@ how-to guides.
 ## Cell budget
 
 20 core code cells, 5 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 16 lines (optional cell 18). Cells follow
+solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 `ruff format` (D15).
 
 ## Rule check
@@ -482,7 +483,7 @@ solutions. The longest cell has 16 lines (optional cell 18). Cells follow
 | 12 | 7, 8 | G46 for batches: `Outcome.rollup(...)` over each case's realised Model |
 | 13 | 8 | G67: `decisions().same_across_cases()` |
 | 14 | 8 | G68: `by_case().breakeven(key=, criterion=, level=)` and `best(criterion=)` with `rk.execution.Criterion` |
-| 15–15c | 2 | G57: the threshold swept as cases; G75: `Specification.case(key=)` (cell 16) |
+| 15–15c | 2 | G57: several triggers as cases; G75: `Specification.case(key=)` (cell 16) |
 | 16 | 4, 6 | G69: `Paths.regenerate(seed=)` rebuilds the generator from the capture record |
 | 17–17c | 2, 3 | G61, G17; G27 (`add_to(key=, term=)` adds a term to one side of an equation) |
 | 18 | 6 | G63 with two alternative keys at once; G50 (`rk.duration.NEVER`) |
@@ -508,5 +509,5 @@ The design for structural variants must support:
   Specification, and its cash flow is in every option's equations (cells 7, 13, 19).
 - **Paired evaluation.** All strategies on one pinned `rk.market.Paths`, compared by path
   against a named baseline (cells 9, 14, 16).
-- **Kept apart from optimisation.** Threshold and premium sweeps are cases. Nothing
+- **Kept apart from optimisation.** Several triggers or premiums are cases. Nothing
   searches the rule space (cells 13, 15).

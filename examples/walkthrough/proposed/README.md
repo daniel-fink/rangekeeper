@@ -70,6 +70,7 @@ pass.
 | D31 | How do use markets move together? | The author composes it. `rk.market.generate` makes independent named series; a structure such as a shared market index times a factor for each use is ordinary Flow arithmetic or a Model equation (`use_index = market_index * use_factor`). There is no correlation argument or correlated generator class: a correlation method embeds choices (which shocks correlate, shared crashes, missing pairs) that the author should make in view. Same reasoning as D2 and D23 | 04, 07 |
 | D32 | Text or Python for equations? | Both, in 1.0, from one registry of equation functions. Text is the form the lessons teach and the documents show; `rangekeeper.expressions`, imported as `rx`, is the Python form. Both use the same names (D21): an equation in text is the Python form inside a string, except `=` for `==`, `and`/`or`/`not` for `&`/`\|`/`~`, and unquoted unit literals (`2 % pa` for `"2 % pa"`). Handles carry the Flow methods; a declaration returns a handle and `site.ref(key=)` finds one. Each library function keeps one job: `rk.finance.npv` computes on values, `rx.finance.npv` builds an expression. The parser table, `rx` with typed stubs and the docs table are generated from the registry. Equivalence tests require text and `rx` to make identical records. Both forms are checked when written, with suggestions. Not a suffix such as `.symbols()` (poor completion, no form for methods), not a separate package | 02–07 |
 | D33 | How does a reader query a Model? | As in LINQ and SQL: a singular noun returns one item and raises on none or several (`model.entity(code=)`); a plural collection returns many through `.where(...)` (`model.entities.where(filter=)`, `model.equations.where(keys=, formulation=)`), and result tables use the same `.where(...)`. Not `find`, which returns one item in .NET and JavaScript; not `filter`, which would stutter beside `filter=`. `Filter`'s comparison argument is `condition=`, not `where=`. Equations have no direction, so `keys=` means direct use; there is no transitive form | 03, 05–07 |
+| D34 | What are a rule's numbers called, and how are several tried? | A **trigger** is the level an observed value must reach before a rule acts (`start_trigger=1.05`: rents 5 % above 2027). Every trigger is a named Specification value, declared with `parameters(...)` and read in the rule text, never a number written into the rule. Several triggers, or several premiums, are **cases**: a sensitivity analysis. The word "sweep" is not used. Variables name what they hold, not an event: `trigger_cases` (one case for each trigger), not `triggered_cases`, which would mean the cases where a rule acted | 05, 07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -232,9 +233,9 @@ spec.free("land_cost"), spec.roles, spec.on(model=new_model)  # G11, G21
 spec.cases(cases={"weak": {...}, "strong": {...}}), spec.case(key="weak")  # G20, G75
 spec.across(paths=paths)  # #138, G73: path series match Model values by key
 spec.across(paths=use_paths, series={"use_factor": {"hotel": "hotel_factor"}})  # G73
-spec.parameters(start_threshold=1.05).decide(
+spec.parameters(start_trigger=1.05).decide(
     key="start_date",
-    when="rent_index >= start_threshold",
+    when="rent_index >= start_trigger",
     periods=reviews,  # an rk.duration.Periods; reviewed on the first day of each
     earliest=None,  # or an expression, such as "shared_start + 1 year"
     latest=None,
@@ -242,7 +243,7 @@ spec.parameters(start_threshold=1.05).decide(
     otherwise=rk.duration.NEVER,
 )  # G49, G55, G57
 (
-    spec.fix(start_threshold=1.02),
+    spec.fix(start_trigger=1.02),
     spec.rules,
     spec.with_rules(rules=rules),
 )  # G57, G64, G65
@@ -392,7 +393,7 @@ use. **Issue** is filled in when the issue is filed.
 | 29 | — | `rk.market.Paths` access and construction; `regenerate(seed=)` | G30, G33, G48, G69 | `market` | 04·10, 19; 05·4; 07·16 | #137 |
 | 30 | — | `rk.market.Dynamics` parameters, and `rk.market.generate(dynamics={name: Dynamics}, periods=, seed=, count=)` for one named series or several, each independent; no correlation argument (D31); `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `market` | 04·5–7, 17–18 | #136 |
 | 31 | — | Rules that decide values: `decide(key=, when=, periods=, earliest=, latest=, timing=, otherwise=)`, traces, `decisions().where(key=, result=rk.execution.ReviewResult)`, availability errors with `key` | G49, G51, G53, G55, G64, G65, G67 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
-| 32 | — | Specification parameters for rule thresholds, fixed and swept like other values, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
+| 32 | — | Specification parameters for rule triggers, fixed and tested as cases like other values, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
 | 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
 | 35 | — | `rk.Quantity` at the root, text in the constructor, and the `rk.quantity` namespace | G71 | `quantity` | 01·2–3, 10, 17; 02·22; 03·24 | #148, #149, #150 |

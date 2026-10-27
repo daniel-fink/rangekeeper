@@ -299,12 +299,12 @@ outcome.distribution("equity_npv")
   does not change.
 - **Options.** Three timing options, with no graph change:
   - **wait to start:** delay the purchase and shared works until an observed
-    market value passes a threshold;
+    market value reaches a trigger;
   - **conditional start of Building B:** start Building B only when observed
     conditions and funding allow, with a latest start date;
   - **abandon:** if conditions stay weak past a date, stop and sell the site by
     an explicit price rule.
-- **Goals.** Write a decision rule with thresholds on observed values. Use only
+- **Goals.** Write a decision rule with triggers on observed values. Use only
   information available at the decision date. Check funding (from lesson 03)
   before an action. Read a decision trace. Compare the fixed plan with each
   strategy on the same paths, as paired differences. Include the cost of waiting
@@ -381,7 +381,7 @@ feasibility = feasibility_model.edit().fix_from(gfa_by_use).commit()
   flexibility, each provision, and the combination, on the same paths. Include
   the provision cost on every path, also where the option is never used. Find
   the largest justified premium under a stated criterion, and state whether the
-  policy stays fixed as the premium changes. Choose thresholds on one path set
+  policy stays fixed as the premium changes. Choose triggers on one path set
   and test them on another. Report the delivered projects (completion dates and
   use mix) as well as value.
 - **Prerequisites.** Lessons 05 and 06.
@@ -389,7 +389,7 @@ feasibility = feasibility_model.edit().fix_from(gfa_by_use).commit()
 - **Library shown.** Design variants, policies that select variants, rollups over
   realised structures and paired comparison.
 - **Finance taught.** Flexibility in projects and on projects, the cost of a
-  provision, the option premium, robustness and over-fitted thresholds. The
+  provision, the option premium, robustness and over-fitted triggers. The
   best strategy tested is not a global optimum.
 - **Depends on.** [#214](https://github.com/daniel-fink/rangekeeper/issues/214)
   (design), [#216](https://github.com/daniel-fink/rangekeeper/issues/216)
@@ -538,7 +538,7 @@ The data package records its provenance (#210):
 | Can lesson 03's cases reach the cash flows through the solve? Where do the funding account and commitment check live? | Resolved by #201: decisions D1 and D2 in the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
 | How an equation refers to a rollup result | Resolved by #201: decision D3 in the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
 | Generator parameters for the market index and the use factors | Authoring lesson 04 |
-| Thresholds, latest dates and the site sale price rule | Authoring lesson 05 |
+| Triggers, latest dates and the site sale price rule | Authoring lesson 05 |
 | The hotel provision for Building B (cores, services, costs) and the expansion floors and premium | #214 and authoring lesson 07 |
 
 ### Delivery
