@@ -1,0 +1,399 @@
+# Rename map for the 1.0.0a2 rename pass (draft for #93).
+#
+# The codemod in this folder reads this file. `render.py` writes the table in
+# docs/guides/upgrading.md from it; do not edit that table by hand.
+#
+# Each entry has a status:
+#   agreed  - the 1.0 name is in an accepted ADR (010, 012 or 018).
+#   draft   - the ADR gives the direction; this map proposes the exact name or
+#             location. #93 finalises it.
+#   pending - depends on a decision under review in #255 (the proposed
+#             walkthrough cells). The codemod does not apply it.
+#   open    - the 1.0 name is not decided. The codemod does not apply it.
+#
+# `requires` names work that the codemod cannot do alone:
+#   schema   - the field is generated from the LinkML schema; regenerate first.
+#   refactor - the change is more than a rename or a move (split, merge or
+#              new behaviour). The pass does it by hand.
+# By default the codemod applies agreed and draft entries with no `requires`.
+
+version: 1
+package: rangekeeper
+package_root: src/rangekeeper
+
+# Files and folders that the codemod never changes. Records of decisions and
+# history keep the names they were written with.
+exclude:
+  - .git/**
+  - .venv/**
+  - "**/__pycache__/**"
+  - tools/codemod/**
+  - docs/decisions/**
+  - docs/history/**
+  - docs/research/**
+  - docs/guides/upgrading.md
+  - CHANGELOG.md
+  - changelog.d/**
+  - examples/walkthrough/proposed/**
+  - walkthrough/**
+  - src/rangekeeper/schema/records.py
+  - src/rangekeeper/schema/enums.py
+  - src/rangekeeper/schema/manifest.json
+  - uv.lock
+
+# Module moves. A move applies to the module and to all its submodules. The
+# longest matching `old` wins.
+modules:
+  - old: rangekeeper.model.duration
+    new: rangekeeper.duration
+    status: agreed
+    source: ADR-010
+  - old: rangekeeper.model.flux
+    new: rangekeeper.flow
+    status: draft
+    source: ADR-010
+    note: Stream and the Flow re-exports become the `flow` package module.
+  - old: rangekeeper.model._flow_mapping
+    new: rangekeeper.flow._mapping
+    status: draft
+    source: ADR-010
+  - old: rangekeeper.calculations._batch
+    new: rangekeeper.flow._batch
+    status: draft
+    source: ADR-010
+    note: The private calculation engine.
+  - old: rangekeeper.calculations.series
+    new: rangekeeper.flow.series
+    status: draft
+    source: ADR-010
+    note: >-
+      Interim location. ADR-010 removes the module when Flow and Stream
+      methods replace its functions (see the removed names).
+  - old: rangekeeper.schema.behaviors.flow
+    new: rangekeeper.flow.behavior
+    status: draft
+    source: ADR-010
+    requires: [refactor]
+    note: >-
+      The generated Flow and Movement records load these behaviours, so the
+      schema runtime must find them in `flow` without an upward import.
+  - old: rangekeeper.calculations
+    new: rangekeeper.finance
+    status: agreed
+    source: ADR-010, ADR-012
+  - old: rangekeeper.calculations.projection
+    new: rangekeeper.finance.growth
+    status: pending
+    source: ADR-012
+    pending: "#255 D12: growth and distribution profiles move to `rangekeeper.profile`, applied by `Flow.from_profile`."
+  - old: rangekeeper.run.execution
+    new: rangekeeper.execution
+    status: agreed
+    source: ADR-010
+  - old: rangekeeper.specification.policy.evaluation
+    new: rangekeeper.execution.policy
+    status: draft
+    source: ADR-010
+    requires: [refactor]
+    note: The lazy exports of `specification.policy` load it by its short name.
+  - old: rangekeeper.shared.units
+    new: rangekeeper.units
+    status: pending
+    source: ADR-010
+    pending: "#255 D13: the namespace is `rangekeeper.quantity`, and `Quantity` is also at the root."
+  - old: rangekeeper.io.store
+    new: rangekeeper.shared.store
+    status: draft
+    source: ADR-010
+    requires: [refactor]
+    note: The protocol imports Model, Specification and Run; these imports must become type-only.
+  - old: rangekeeper.model.system.projection
+    new: rangekeeper.model.system.table
+    status: draft
+    source: ADR-012
+  - old: rangekeeper.model.scenario
+    new: rangekeeper.finance.paths
+    status: draft
+    source: ADR-010, ADR-014
+    requires: [refactor]
+    note: Path generators and the MarketPaths document replace the scenario plan.
+
+# Other file moves, relative to the repository root.
+paths:
+  - old: src/tests
+    new: tests
+    status: agreed
+    source: ADR-018
+    note: >-
+      The pass moves the suite to the top level. Sub-folders that mirror the
+      packages, and tests/contracts and tests/integration, follow in the pass.
+
+# Renames of module-level names: classes, functions and constants. `module` is
+# the defining module before the pass. `new_module` moves the name to another
+# module; the target must export it.
+symbols:
+  - module: rangekeeper.calculations.series
+    name: Aggregation
+    new_name: FlowAggregate
+    status: draft
+    source: ADR-012
+  - module: rangekeeper.model.system.reduction
+    name: Aggregation
+    new_name: RollupResult
+    status: draft
+    source: ADR-012
+  - module: rangekeeper.model.system.reduction
+    name: Reduction
+    new_name: QuantityRollup
+    status: draft
+    source: ADR-012
+    requires: [refactor]
+    note: The scalar and Flow modes split into QuantityRollup and FlowRollup, with one Reducer enum.
+  - module: rangekeeper.model.duration.calendar
+    name: measure
+    new_name: count_steps
+    status: draft
+    source: ADR-012
+  - module: rangekeeper.model.duration.period
+    name: align
+    new_name: containing_period
+    status: draft
+    source: ADR-012
+  - module: rangekeeper.model.measure
+    name: Quantity
+    new_module: rangekeeper.units
+    status: pending
+    source: ADR-010
+    pending: "#255 D13: `rangekeeper.Quantity` at the root, and the namespace `rangekeeper.quantity`."
+  - module: rangekeeper.shared.units
+    name: UnitSystem
+    new_module: rangekeeper.units
+    status: pending
+    source: ADR-010
+    pending: "#255 D13: `rangekeeper.quantity.UnitSystem`."
+  - module: rangekeeper.model.measure
+    name: Measure
+    new_module: rangekeeper.model
+    status: draft
+    source: ADR-012
+    requires: [refactor]
+    note: The `model.measure` shim is removed; `rangekeeper.model` re-exports the record.
+  - module: rangekeeper.model.measure
+    name: Measurement
+    new_module: rangekeeper.model
+    status: draft
+    source: ADR-012
+    requires: [refactor]
+  - module: rangekeeper.model.distribution
+    name: Distribution
+    new_module: rangekeeper.model
+    status: draft
+    source: ADR-012
+    requires: [refactor]
+    note: The `model.distribution` shim is removed.
+  - module: rangekeeper.model.distribution
+    name: DistributionFamily
+    new_module: rangekeeper.model
+    status: draft
+    source: ADR-012
+    requires: [refactor]
+  - module: rangekeeper.schema.behaviors.flow
+    name: MissingValueHandling
+    status: open
+    source: ADR-012
+    note: One persisted enum (MissingHandling) and one runtime enum with a distinct name.
+  - module: rangekeeper.calculations.financial
+    name: calculate_pv
+    new_name: pv
+    status: pending
+    source: ADR-012
+    pending: "#255 D14 and D19 with #167: `rangekeeper.finance.pv(flow=, rate=, on=)`."
+  - module: rangekeeper.calculations.financial
+    name: calculate_xnpv
+    new_name: npv
+    status: pending
+    source: ADR-012
+    pending: "#255 D19 with #167: `rangekeeper.finance.npv(flow=, rate=, on=)`."
+  - module: rangekeeper.calculations.financial
+    name: calculate_irr
+    new_name: irr
+    status: pending
+    source: ADR-012
+    pending: "#255 D4 with #164: `rangekeeper.finance.irr`, also an equation function."
+  - module: rangekeeper.calculations.projection
+    name: project_values
+    status: pending
+    source: ADR-012
+    pending: "#255 D12: `rangekeeper.flow.Flow.from_profile(profile=, periods=, initial=)` with `rangekeeper.profile` growth profiles."
+  - module: rangekeeper.calculations.projection
+    name: distribute
+    status: pending
+    source: ADR-012
+    pending: "#255 D12: `Flow.from_profile(profile=, periods=, total=)` with `rangekeeper.profile.Uniform` or `SCurve`."
+  - module: rangekeeper.calculations.projection
+    name: ProjectionMethod
+    status: pending
+    source: ADR-012
+    pending: "#255 D12: profile classes replace the method enum; the word projection is not used."
+  - module: rangekeeper.model.expression.authoring
+    name: sum
+    status: pending
+    source: ADR-012
+    pending: "#255 D6 and D18: equation strings on entity handles replace the expression builders. ADR-012 forbids public names that shadow builtins."
+  - module: rangekeeper.model.formulation.authoring
+    name: declare
+    status: pending
+    source: ADR-015
+    pending: "#255 D6 and D16: `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)` and `date(...)`."
+
+# Renames of attributes, methods and fields on one class. `apply: all`
+# renames every attribute access with this name in the files in scope. Use it
+# only when the old name is unique to the class. `apply: review` lists the
+# uses for the pass to change by hand.
+attributes:
+  - owner: rangekeeper.specification.specification.Specification
+    name: lock
+    new_name: fix
+    apply: all
+    status: agreed
+    source: ADR-012
+  - owner: rangekeeper.specification.specification.Specification
+    name: unlock
+    new_name: free
+    apply: all
+    status: agreed
+    source: ADR-012
+  - owner: rangekeeper.schema.records.Period
+    name: start_inclusive
+    new_name: start
+    apply: all
+    status: agreed
+    source: ADR-012
+    requires: [schema]
+    note: Also Span. Half-open; the end is excluded.
+  - owner: rangekeeper.schema.records.Period
+    name: end_exclusive
+    new_name: end
+    apply: all
+    status: agreed
+    source: ADR-012
+    requires: [schema]
+    note: Also Span.
+  - owner: rangekeeper.model.flux.Stream
+    name: labels
+    new_name: names
+    apply: review
+    status: draft
+    source: ADR-012
+    note: Classification `labels` keep their name.
+  - owner: "*"
+    name: findings
+    new_name: diagnostics
+    apply: review
+    status: draft
+    source: ADR-012
+  - owner: "*"
+    name: issues
+    new_name: diagnostics
+    apply: review
+    status: draft
+    source: ADR-012
+
+# Renames of keyword parameters. `callable: "*"` applies to every function and
+# call in scope; use it only for names that are unique to the concept.
+parameters:
+  - callable: "*"
+    name: start_inclusive
+    new_name: start
+    status: agreed
+    source: ADR-012
+    requires: [schema]
+  - callable: "*"
+    name: end_exclusive
+    new_name: end
+    status: agreed
+    source: ADR-012
+    requires: [schema]
+  - callable: rangekeeper.model.flux.Stream.select
+    name: labels
+    new_name: names
+    status: draft
+    source: ADR-012
+    requires: [refactor]
+  - callable: rangekeeper.model.flux.Stream.from_values
+    name: labels
+    new_name: names
+    status: draft
+    source: ADR-012
+    requires: [refactor]
+
+# Names removed with no direct replacement. The codemod does not change these
+# uses; it lists them with the replacement.
+removed:
+  - name: rangekeeper.calculations.series.align
+    replacement: Flow and Stream alignment methods
+    status: agreed
+    source: ADR-010
+  - name: rangekeeper.calculations.series.multiply
+    replacement: Flow arithmetic
+    status: draft
+    source: ADR-010
+  - name: rangekeeper.calculations.series.integrate
+    replacement: A Flow method
+    status: draft
+    source: ADR-010
+  - name: rangekeeper.calculations.series.resample
+    replacement: Flow.resample and Stream.resample
+    status: agreed
+    source: ADR-010
+  - name: rangekeeper.calculations.series.aggregate
+    replacement: Flow and Stream aggregation methods
+    status: agreed
+    source: ADR-010
+  - name: rangekeeper.model.characteristics
+    replacement: Value and Label access on the owner record; re-exports in rangekeeper.model
+    status: agreed
+    source: ADR-012
+  - name: rangekeeper.model.scenario.market.ScenarioPlan
+    replacement: Path generators and the MarketPaths document
+    status: agreed
+    source: ADR-012, ADR-014
+  - name: rangekeeper.model.scenario.market.sample
+    replacement: Path generators and the MarketPaths document
+    status: agreed
+    source: ADR-012, ADR-014
+  - name: rangekeeper.model.scenario.market.capture
+    replacement: Path generators and the MarketPaths document
+    status: agreed
+    source: ADR-012, ADR-014
+  - name: rangekeeper.model.scenario.market.realize
+    replacement: Path generators and the MarketPaths document
+    status: agreed
+    source: ADR-012, ADR-014
+  - name: rangekeeper.model.scenario.market.generate
+    replacement: Path generators and the MarketPaths document
+    status: agreed
+    source: ADR-012, ADR-014
+  - name: rangekeeper.model.scenario.view.Market
+    replacement: The MarketPaths document
+    status: agreed
+    source: ADR-012, ADR-014
+
+# Decisions under review in #255 that change API shapes, not names. They are
+# listed in the upgrade guide draft. The codemod does not apply them.
+notes:
+  - topic: Quantity text in API arguments
+    status: pending
+    pending: "#255 D13, D16 and D17: arguments take unit text such as `\"7 % pa\"`; `per` divides and `pa` means per year."
+  - topic: Keyword-only arguments
+    status: pending
+    pending: "#255 D14: every Rangekeeper call names its arguments."
+  - topic: Model authoring and builder names
+    status: pending
+    pending: "#255 D6, D16 and D18: `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles."
+  - topic: Specification calls
+    status: pending
+    pending: "#255 D7 and D8: `fix`, `free`, `cases`, `across` and `decide` each return a new Specification; unfixed values are free."
+  - topic: Loan payment
+    status: pending
+    pending: "#255 D19 with #167: `rangekeeper.finance.payment(principal=, rate=, term=, frequency=)`."

@@ -64,6 +64,7 @@ dev = [
     { include-group = "lint" },
     { include-group = "types" },
     { include-group = "notebook" },
+    { include-group = "codemod" },
     "pytest>=8.0",
     "numpy-financial>=1.0",
     "rangekeeper-examples",
@@ -72,6 +73,7 @@ lint = ["ruff>=0.17.2,<0.18"]
 changelog = ["towncrier>=26.9,<27"]
 types = ["mypy>=2.4,<3", "types-PyYAML>=6.0.12", "types-jsonschema>=4.26"]
 notebook = ["ipykernel>=7.3.0"]
+codemod = ["libcst>=1.8,<2", "PyYAML>=6.0.2,<7"]
 
 [tool.uv]
 # Rebuild the editable install when the git version changes (setuptools-scm).
@@ -213,5 +215,5 @@ namespaces = false
 "rangekeeper.schema" = ["*.json"]
 
 [tool.pytest.ini_options]
-testpaths = ["src/tests"]
+testpaths = ["src/tests", "tools/codemod/tests"]
 pythonpath = ["src"]
