@@ -253,8 +253,10 @@ premium_outcome.decisions().same_across_cases()  # are the decisions the same at
 
 ```python
 # cell 14
-gain = premium_outcome.compare(
-    other=strategy_outcomes["timing"], keys=["equity_npv"]
+gain = rk.execution.compare(
+    outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
+    keys=["equity_npv"],
+    baseline="Timing",
 ).by_case()
 gain.summary()
 gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
@@ -291,8 +293,10 @@ threshold_sweep = strategies["both"].cases(cases=thresholds)
 train_outcome = rk.execution.solve(
     specification=threshold_sweep.across(paths=use_paths, series=use_series)
 )
-by_threshold = train_outcome.compare(
-    other=strategy_outcomes["timing"], keys=["equity_npv"]
+by_threshold = rk.execution.compare(
+    outcomes={"Thresholds": train_outcome, "Timing": strategy_outcomes["timing"]},
+    keys=["equity_npv"],
+    baseline="Timing",
 ).by_case()
 best = by_threshold.best(criterion=rk.execution.Criterion.MEAN)
 ```
@@ -307,7 +311,11 @@ test_outcome = rk.execution.solve(
 timing_only = strategies["timing"].across(paths=fresh, series=use_series)
 baseline_outcome = rk.execution.solve(specification=timing_only)
 # usually less than in training
-test_outcome.compare(other=baseline_outcome, keys=["equity_npv"]).summary()
+rk.execution.compare(
+    outcomes={"Chosen": test_outcome, "Timing": baseline_outcome},
+    keys=["equity_npv"],
+    baseline="Timing",
+).summary()
 ```
 
 ## Optional: vertical expansion
@@ -385,7 +393,11 @@ expand = (
 expand_outcome = rk.execution.solve(
     specification=expand.across(paths=use_paths, series=use_series)
 )
-expand_outcome.compare(other=strategy_outcomes["both"], keys=["equity_npv"]).summary()
+rk.execution.compare(
+    outcomes={"Expand": expand_outcome, "Both": strategy_outcomes["both"]},
+    keys=["equity_npv"],
+    baseline="Both",
+).summary()
 ```
 
 ## Exercises
@@ -395,9 +407,9 @@ stay residential? What does the switch strategy lose on those paths?
 
 ```python
 # solution
-switch_vs_fixed = strategy_outcomes["switch"].compare(
-    other=strategy_outcomes["fixed"], keys=["equity_npv"]
-)
+switch_vs_fixed = rk.execution.compare(
+    outcomes=strategy_outcomes, keys=["equity_npv"], baseline="fixed"
+).select("switch")
 switch_vs_fixed.where(b_design="residential").summary()
 ```
 

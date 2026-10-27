@@ -66,6 +66,7 @@ pass.
 | D27 | How are results named in the cells? | A Specification is named for its question (`base`, `funded`, `strategy`); its result is the same name with `_outcome`, also for a batch; a dict of results ends in `_outcomes` | 03–07 |
 | D28 | What stays as it is? | `rk.execution.solve(specification=)` stays a function (a method would make `specification` depend on `execution`); amounts such as `"2.5e6 AUD"` keep `e` notation; `fix` takes a bare number for a ratio (`coverage=1.25`) | 02–07 |
 | D29 | How do path generators and relationships read? | Path generators are series maths, like profiles (D12), so they leave `finance` for `rk.market` (`Dynamics`, `Paths`). Correlations are given by name. Relationships have one snake_case name each (`contains`, `serves`); the other direction is `direction=rk.model.Direction.INCOMING`. The data package maps the source names | 04–07 |
+| D30 | How are Outcomes compared? | With one call whatever their number: `rk.execution.compare(outcomes={name: outcome}, keys=[...], baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences, paired by path when the Outcomes hold paths. There is no `Outcome.compare(other=)` and no `rk.execution.table`, so the call does not change between two Outcomes and more | 02–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -268,8 +269,7 @@ outcome = rk.execution.solve(specification=spec)  # #126, G12
     outcome.distribution(key="equity_npv").case(quantile=0.05),
     outcome.distribution(key="b_design").counts(),
     outcome.mean(),
-    outcome.compare(other=other, keys=["equity_npv"]),
-)  # G31, G56
+)  # G31
 gain.breakeven(
     key="provision", criterion=rk.execution.Criterion.QUANTILE, level=0.05
 )  # G68
@@ -283,10 +283,10 @@ outcome.status == rk.execution.Status.INFEASIBLE, error.code  # rk.errors.Code; 
     outcome.rollup(key="reference_income"),
     outcome.model,
 )  # G51, G46
-rk.execution.table(outcomes={"Front": a, "Back": b}, keys=["land_cost"])  # G13
+rk.execution.compare(outcomes={"Front": a, "Back": b}, keys=["land_cost"])  # G66
 rk.execution.compare(
     outcomes={"fixed": f, "both": c}, keys=["equity_npv"], baseline="fixed"
-)  # G66
+).summary()  # G56, G66: paired by path against the baseline
 (
     rk.execution.execute(specification=spec, store=store),
     rk.execution.replay(run=run, store=store),
@@ -364,14 +364,14 @@ use. **Issue** is filled in when the issue is filed.
 | 18 | — | Error and diagnostic fields: ambiguous lookups, non-affine unknowns, broken constraints | G14, G42, G52 | `errors`, `execution` | 02·20–21; 05·7; 06·16–17, 24 | #134, #154, #155, #156 |
 | 19 | — | Specification roles: unfixed values are free; `fix` input types; a later `fix` of a key replaces the earlier one; `roles` | G11 | `specification` | 02·10, 13; 03·exercises | #144 |
 | 20 | — | `Specification.on(model)`; it refuses a fixed value that the new revision does not declare, so a removed value is freed first | G21 | `specification` | 03·14, 20; 04·4; 05·11, 13 | #144 |
-| 21 | — | Cases and batch Outcomes: `cases(mapping)`, `Specification.case(key=)`, `Outcome.case`, `table`, `stream`, `rk.execution.table` | G13, G19, G20, G75 | `specification`, `execution` | 02·15; 03·10–14 | #127, #144 |
+| 21 | — | Cases and batch Outcomes: `cases(mapping)`, `Specification.case(key=)`, `Outcome.case`, `table`, `stream` | G19, G20, G75 | `specification`, `execution` | 02·15; 03·10–14 | #127, #144 |
 | 22 | — | `solve` resolves the documents that made the Specification | G12 | `execution` | 02·11 onwards | #126 |
 | 23 | — | `rk.execution.replay` and `Store.find_runs` | G25 | `execution`, `io` | 03·22–23 | #126, #176 |
 | 24 | — | One-call document IO: `rk.io.load` and `rk.io.save`; a loaded Specification brings the documents it pins, so `solve` can resolve them | G26 | `io` | 04·2, 9; 05·2; 06·2, 22; 07·2, 7 | #112 |
 | 25 | — | ~~`rk.finance.Account` with a limit; `with_transactions` returns a new Account with balance and headroom Flows~~ Withdrawn: funding is composition (D2) | G23 | — | — | — |
 | 26 | — | ~~An entity's `account(key=, ..., commitments=)`~~ Withdrawn: funding is composition (D2) | G24 | — | — | — |
 | 27 | — | Outcome distributions: `summary`, `quantile(level=)`, `probability`, `counts()`, `case(quantile=)`; `Outcome.mean()` for a batch | G31 | `execution` | 04·12–16; 05·16 | #127 |
-| 28 | — | Paired comparison of Outcomes; `breakeven` and `best` with `criterion=rk.execution.Criterion` and `level=` | G56, G66, G68 | `execution` | 05·14–17; 07·9, 14–16 | #138, #213, #214 |
+| 28 | — | One comparison call for two or more Outcomes: `rk.execution.compare(outcomes=, keys=, baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences paired by path, with `summary`, `by`, `by_case`, `where`, `select`, and `breakeven` and `best` with `criterion=rk.execution.Criterion` and `level=`. No `Outcome.compare` and no `rk.execution.table` (G13 merged) | G13, G56, G66, G68 | `execution` | 02·15; 03 Try it 1; 04·14; 05·14–17; 07·9, 14–18b | #138, #213, #214 |
 | 29 | — | `rk.market.Paths` access and construction; `regenerate(seed=)` | G30, G33, G48, G69 | `market` | 04·10, 19; 05·4; 07·16 | #137 |
 | 30 | — | `rk.market.Dynamics` parameters and correlated generators, with correlations given by name; `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `market` | 04·5–7, 17–18 | #136 |
 | 31 | — | Rules that decide values: `decide(key=, when=, periods=, earliest=, latest=, timing=, otherwise=)`, traces, `decisions().where(key=, result=rk.execution.ReviewResult)`, availability errors with `key` | G49, G51, G53, G55, G64, G65, G67 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |

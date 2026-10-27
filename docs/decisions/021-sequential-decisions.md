@@ -247,13 +247,15 @@ The new `Rule`, `Review` and `PolicyEvidence` records replace `Decision`,
 
 ### Paired comparison
 
-`outcome.compare(other=, keys=)` returns a `PairedComparison`:
+`rk.execution.compare(outcomes={name: outcome, ...}, keys=, baseline=None)` returns
+a `Comparison`. It is the one call for two Outcomes or more (decision D30 of #201):
 
-- Both Outcomes must pin the same `rk.market.Paths`. If not, `compare` raises
-  `ValidationError` with the code `different_market_paths`.
+- Without `baseline`, it shows the values of the keys side by side.
+- With `baseline`, all Outcomes that hold paths must pin the same `rk.market.Paths`.
+  If not, `compare` raises `ValidationError` with the code `different_market_paths`.
 - It pairs cases by path member key. If one Outcome has cases across paths and the
   other has only paths, it pairs each case with the same path in the other.
-- It gives the difference for each path and key. It has `summary()` (mean
+- It gives the difference from the baseline for each path and key. It has `summary()` (mean
   difference, share of paths better, worst loss and 5 % quantile), `by(key=)`,
   `by_case()` and `where(**values)`.
 - A failed case is not in the differences. `summary()` gives the count of failed
@@ -377,9 +379,9 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
 - `rk.duration.Periods` and `rk.duration.NEVER` (decisions D25 and D26 of #201).
 - `rk.execution.ReviewResult`.
 - `rk.execution.decide` and `rk.execution.Decisions` (stage).
-- `rk.execution.Outcome.decisions`, `Outcome.compare` and
-  `Outcome.case(key=...).trace`.
-- `rk.execution.PairedComparison` with `summary`, `by`, `by_case` and `where`.
+- `rk.execution.Outcome.decisions` and `Outcome.case(key=...).trace`.
+- `rk.execution.compare` (shared with [ADR-022](022-design-alternatives.md)).
+- `rk.execution.Comparison` with `summary`, `by`, `by_case`, `where` and `select`.
 - `rk.errors.AvailabilityError`.
 - Diagnostic codes: `rule_order`, `rule_reads_unknown`,
   `observation_unavailable`, `decision_changes_past`, `replay_mismatch` and

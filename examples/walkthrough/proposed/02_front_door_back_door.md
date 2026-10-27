@@ -270,7 +270,7 @@ helpers.show_equations(of=back)  # the same equations, with different markers
 
 ```python
 # cell 15
-rk.execution.table(
+rk.execution.compare(
     outcomes={"Front door": front_outcome, "Back door": back_outcome},
     keys=["land_cost", "rent_factor", "noi", "mortgage"],
 )
@@ -422,7 +422,7 @@ has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 | 9 | 6 | `rk.finance.payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)); the constant is derived from it (D19) |
 | 10, 13 | 2, 4 | `specify`, `fix`, `free` ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G11: unfixed values are free by default; `fix` takes strings, numbers and Quantities; `roles` table |
 | 11, 13 | 8 | `solve` and `Outcome` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126), [#127](https://github.com/daniel-fink/rangekeeper/issues/127)). G12: `solve` resolves the Model that made the Specification, with no resolver argument |
-| 15 | 8 | G13: `rk.execution.table(outcomes=, keys=)` for named Outcomes |
+| 15 | 8 | G66: `rk.execution.compare(outcomes=, keys=)` shows named Outcomes side by side; the same call takes `baseline=` in later lessons |
 | 18 | 9 | `underdetermined` ([#152](https://github.com/daniel-fink/rangekeeper/issues/152)) |
 | 19 | 9 | Fixed values that conflict are infeasible ([#153](https://github.com/daniel-fink/rangekeeper/issues/153)), with coded diagnostics ([#154](https://github.com/daniel-fink/rangekeeper/issues/154)) |
 | 20–21 | 9 | G14: `nonaffine_unknowns` diagnostic and `UnsupportedError` with `code` and `equation` |

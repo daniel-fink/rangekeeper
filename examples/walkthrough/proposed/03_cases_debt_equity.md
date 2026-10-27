@@ -494,12 +494,13 @@ cash flow causes the change?
 stress_outcome = rk.execution.solve(
     specification=funded.fix(rent_growth="0 % pa", exit_cap_rate="7 %")
 )
-rk.execution.table(
+rk.execution.compare(
     outcomes={
         "Reference": funded_outcome.case(key="reference"),
         "Stress": stress_outcome,
     },
     keys=["commitment_gap", "peak_shortfall", "equity_npv"],
+    baseline="Reference",
 )
 ```
 

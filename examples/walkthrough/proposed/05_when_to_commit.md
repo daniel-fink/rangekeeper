@@ -246,8 +246,10 @@ strategy_outcome = rk.execution.solve(specification=strategy.across(paths=paths)
 
 ```python
 # cell 14
-difference = strategy_outcome.compare(
-    other=fixed_outcome, keys=["equity_npv", "peak_shortfall"]
+difference = rk.execution.compare(
+    outcomes={"Strategy": strategy_outcome, "Fixed plan": fixed_outcome},
+    keys=["equity_npv", "peak_shortfall"],
+    baseline="Fixed plan",
 )
 difference.summary()  # mean difference, share of paths better, worst loss
 ```
@@ -292,7 +294,12 @@ thresholds = {
 # cell 17b
 swept = strategy.cases(cases=thresholds)
 sweep_outcome = rk.execution.solve(specification=swept.across(paths=paths))
-sweep_outcome.compare(other=fixed_outcome, keys=["equity_npv"]).by_case().summary()
+sweep_difference = rk.execution.compare(
+    outcomes={"Sweep": sweep_outcome, "Fixed plan": fixed_outcome},
+    keys=["equity_npv"],
+    baseline="Fixed plan",
+)
+sweep_difference.by_case().summary()
 ```
 
 ## Exercises
@@ -305,7 +312,11 @@ start in 2027? Does the mean paired difference rise?
 early = strategy.fix(start_threshold=1.02)
 early_outcome = rk.execution.solve(specification=early.across(paths=paths))
 early_outcome.distribution(key="start_date").counts()
-early_outcome.compare(other=fixed_outcome, keys=["equity_npv"]).summary()
+rk.execution.compare(
+    outcomes={"Early": early_outcome, "Fixed plan": fixed_outcome},
+    keys=["equity_npv"],
+    baseline="Fixed plan",
+).summary()
 ```
 
 **Try it 2: no funding check.** Remove the funding condition from Building B's rule.
@@ -332,7 +343,11 @@ the paired difference change on the paths where B never starts?
 # solution
 cheap_site = strategy.fix(b_land_share="25 %")
 cheap_site_outcome = rk.execution.solve(specification=cheap_site.across(paths=paths))
-cheap_difference = cheap_site_outcome.compare(other=fixed_outcome, keys=["equity_npv"])
+cheap_difference = rk.execution.compare(
+    outcomes={"Cheap site": cheap_site_outcome, "Fixed plan": fixed_outcome},
+    keys=["equity_npv"],
+    baseline="Fixed plan",
+)
 cheap_difference.where(b_start=rk.duration.NEVER).summary()
 ```
 
@@ -380,7 +395,7 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | 9 | 6 | G54: sequential solve: a rule observes solved values (funding) under the decisions so far ([#213](https://github.com/daniel-fink/rangekeeper/issues/213)) |
 | 9, 11 | 3 | G55: `earliest=` and `latest=` expression bounds on the reviews; rules that observe earlier decisions (`b_start == never`) |
 | 10 | 2, 3 | G27 (`add_to(key=, term=)`); G17 (`at`, `rk.flow.event`) |
-| 13–16 | 8 | G56: `Outcome.compare(other=, keys=)` paired by path, with `summary`, `by`, `by_case`, `where` |
+| 13–16 | 8 | G56, G66: `rk.execution.compare(outcomes=, keys=, baseline=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
 | 17–17b, Try it 1 | 2 | G57: a rule's threshold fixed and swept like any Specification value; cases × paths |
 | 18 | 8 | G58: policy evidence in the Run (`policy_evidence.verified`), observations with `available_on`; `rk.execution.ReviewResult` |

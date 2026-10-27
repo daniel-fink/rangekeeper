@@ -111,13 +111,14 @@ A rule decides a choice key in the same way that it decides a date (ADR-021):
 
 ### Paired comparison of strategies
 
-`rk.execution.compare(outcomes={name: outcome, ...}, keys=, baseline=)` returns a
-`StrategyComparison`:
+`rk.execution.compare(outcomes={name: outcome, ...}, keys=, baseline=)` returns the
+`Comparison` of [ADR-021](021-sequential-decisions.md). The same call compares two
+strategies or more (decision D30 of #201):
 
 - All Outcomes must pin the same `rk.market.Paths`. If not, it raises
   `different_market_paths`.
-- It pairs each strategy with the baseline by path member key, as
-  `Outcome.compare` does (ADR-021). Strategies can use different alternatives.
+- It pairs each strategy with the baseline by path member key. Strategies can use
+  different alternatives.
 - It has `summary()` and `select(*names)`.
 - A provision is a fixed value in every alternative of a strategy. Its cost is in
   every path, also where the option is never used. The comparison needs no special
@@ -237,8 +238,10 @@ premiums = {
 premium_sweep = both.cases(cases=premiums).across(paths=use_paths, series=use_series)
 premium_outcome = rk.execution.solve(specification=premium_sweep)
 premium_outcome.decisions().same_across_cases()
-gain = premium_outcome.compare(
-    other=strategy_outcomes["timing"], keys=["equity_npv"]
+gain = rk.execution.compare(
+    outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
+    keys=["equity_npv"],
+    baseline="Timing",
 ).by_case()
 gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
 ```
@@ -276,9 +279,8 @@ reads the premium from the sweep table, and it states the criterion.
 ## API names added
 
 - `rk.Specification.alternatives` (both forms).
-- `rk.execution.compare` and `rk.execution.StrategyComparison` with `summary` and
-  `select`.
-- `PairedComparison.by_case().breakeven` and `.best`.
+- `rk.execution.compare` and `rk.execution.Comparison` (shared with ADR-021).
+- `Comparison.by_case().breakeven` and `.best`.
 - `rk.execution.Outcome.rollup` over a batch, and `Outcome.case(key=...).model`.
 - `DecisionTable.same_across_cases`.
 - `rk.errors.DecisionsChangedError`.

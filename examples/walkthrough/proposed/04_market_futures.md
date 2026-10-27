@@ -205,9 +205,10 @@ larger for equity and for funding.
 
 ```python
 # cell 14
-rk.execution.table(
+rk.execution.compare(
     outcomes={"Average path": average_outcome, "Mean of paths": paths_outcome.mean()},
     keys=["unlevered_npv", "equity_npv", "peak_shortfall"],
+    baseline="Average path",
 )
 ```
 
@@ -351,7 +352,7 @@ solutions. The longest cell has 13 lines (cell 17). Cells follow `ruff format` (
 | 10 | 6 | G30: `Paths.mean(name)` gives one Flow |
 | 11 | 8 | `across` ([#138](https://github.com/daniel-fink/rangekeeper/issues/138)). G73: path series match Model values by key |
 | 12–15 | 8 | G31: `Outcome.distribution(key)` with `summary`, `mean`, `quantile(level=)`, `probability`, `case(quantile=)` |
-| 14 | 8 | G13; G31: `Outcome.mean()` gives the mean of a batch as one row for `rk.execution.table` |
+| 14 | 8 | G66; G31: `Outcome.mean()` gives the mean of a batch as one Outcome for `rk.execution.compare` |
 | 16 | 8 | G31: `Distribution.case(quantile=)` returns the case at a quantile |
 | 17–18 | 6 | G32: correlated generators with correlations by name, and `Paths.correlation()` |
 | 19 | 8 | G33: `Outcome.run.market_paths` pin; `Paths[key][name]`; G69: `Paths.regenerate(seed=)` (Try it 3) |
