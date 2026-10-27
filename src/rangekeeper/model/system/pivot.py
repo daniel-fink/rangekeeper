@@ -16,9 +16,9 @@ from rangekeeper.model.system.errors import AggregationError
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.reduction import (
     AggregateEntry,
-    Aggregation,
     Contributor,
     Coverage,
+    RollupResult,
 )
 from rangekeeper.schema.records import Flow, Quantity
 
@@ -38,7 +38,7 @@ class PivotColumn:
     classification: UUID | None
     parent: UUID | None
     depth: int
-    aggregation: Aggregation
+    aggregation: RollupResult
 
     def __post_init__(self) -> None:
         for name in ("classification", "parent"):
@@ -47,7 +47,7 @@ class PivotColumn:
                 raise TypeError(f"{name} must be a UUID or None")
         if type(self.depth) is not int or self.depth < 0:
             raise TypeError("depth must be a non-negative int")
-        if not isinstance(self.aggregation, Aggregation):
+        if not isinstance(self.aggregation, RollupResult):
             raise TypeError("aggregation must be an Aggregation")
         if (self.classification is None) != (self.depth == 0):
             raise AggregationError("only the All column has depth 0")

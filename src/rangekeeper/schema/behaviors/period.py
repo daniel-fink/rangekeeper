@@ -6,7 +6,7 @@ from datetime import date, timedelta
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from rangekeeper.model.duration.calendar import PeriodTiming
+    from rangekeeper.duration.calendar import PeriodTiming
     from rangekeeper.schema.records import Period
 
 
@@ -33,7 +33,7 @@ class PeriodBehavior:
     def check(self) -> Period:
         """Require a positive date interval [start_inclusive, end_exclusive)."""
         period = cast("Period", self)
-        from rangekeeper.model.duration.calendar import elapsed_days
+        from rangekeeper.duration.calendar import elapsed_days
 
         if elapsed_days(period.start_inclusive, period.end_exclusive) <= 0:
             raise ValueError("period end must follow start")
@@ -41,7 +41,7 @@ class PeriodBehavior:
 
     def resolve(self, *, timing: PeriodTiming) -> date:
         """Select the first included date, last included date or excluded boundary."""
-        from rangekeeper.model.duration.calendar import PeriodTiming
+        from rangekeeper.duration.calendar import PeriodTiming
 
         if not isinstance(timing, PeriodTiming):
             raise TypeError("timing must be a PeriodTiming")

@@ -261,7 +261,7 @@ A `Pivot` exposes:
 
 ## Table projection
 
-`model.system.projection.to_table(source, columns=...)` accepts a `View` or `Hierarchy`.
+`model.system.table.to_table(source, columns=...)` accepts a `View` or `Hierarchy`.
 A View keeps its entity order. A Hierarchy emits preorder rows and a reserved
 `parent_id` column. `FieldColumn` takes an `EntityField` enum member. Column names,
 units and optional Measure declarations are checked once before any cells are read,
@@ -285,7 +285,7 @@ Consumers interpret their source data and create Models through public RK APIs.
 
 ```python
 from rangekeeper.model.system import Reduction, Contributor
-from rangekeeper.calculations.series import ResamplingMethod
+from rangekeeper.flow.series import ResamplingMethod
 
 rollup = Reduction.flows(
     key="cashflow", periods=annual_periods,

@@ -1,6 +1,6 @@
 # Units
 
-A unit system parses, checks and converts unit text. `rangekeeper.shared.units`
+A unit system parses, checks and converts unit text. `rangekeeper.quantity`
 owns it. The registry is curated, as
 [ADR-016](../decisions/016-safety-defaults.md) records: it contains only the units
 on this page. Unknown and ambiguous text fails with suggestions.
@@ -74,7 +74,7 @@ without a minor unit, such as `XAU` or `XXX`, gives `None`.
 [ADR-023](../decisions/023-decimal-money.md) uses it for rounding.
 
 ```python
-from rangekeeper.shared.units import default_units
+from rangekeeper.quantity import default_units
 
 storeys = default_units.register("storey").alias("level", "storey")
 storeys.compatible("level", "storey")  # True
@@ -104,7 +104,7 @@ unit system:
 - `run.validate`, which uses the unit system of the root's input Model.
 
 Operations on records without a Model, such as `Flow.check`, `Flow.convert`,
-`calculations.series` and `Account`, use `default_units`.
+`flow.series` and `Account`, use `default_units`.
 
 Importing domain APIs does not import Pint. The first unit operation builds the
 private registry.

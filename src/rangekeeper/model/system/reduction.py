@@ -7,14 +7,14 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rangekeeper.calculations.series import (
+    from rangekeeper.duration import Period
+    from rangekeeper.flow import MissingValueHandling
+    from rangekeeper.flow.series import (
         AggregationMethod,
         AlignmentJoin,
         MeanWeighting,
         ResamplingMethod,
     )
-    from rangekeeper.model.duration import Period
-    from rangekeeper.model.flux import MissingValueHandling
     from rangekeeper.model.system.pivot import Pivot
 from dataclasses import dataclass, replace
 from enum import Enum, unique
@@ -26,8 +26,8 @@ from rangekeeper.model.system import reducers
 from rangekeeper.model.system.errors import AggregationError, SelectionError
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.selection import ValueSelector, _recorded_quantity
+from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import Flow
-from rangekeeper.shared.units import UnitSystem
 
 
 @unique
@@ -128,7 +128,7 @@ class AggregateEntry:
 
 
 @dataclass(frozen=True)
-class Aggregation:
+class RollupResult:
     """Immutable entries and selected Value identities, pinned to a Hierarchy."""
 
     hierarchy: Hierarchy
@@ -212,7 +212,7 @@ class Aggregation:
 
     def display(self, *, transpose: bool = False, precision: int = 2):
         """Display available Flow results; owner and period coverage remain inspectable."""
-        from rangekeeper.model.flux import Stream
+        from rangekeeper.flow import Stream
 
         flows = {}
         for index, identity in enumerate(self.hierarchy.preorder()):
@@ -353,7 +353,7 @@ class Reduction:
         elif self._flow is None:
             raise TypeError("scalar reductions require units")
 
-    def execute(self, hierarchy: Hierarchy) -> Aggregation:
+    def execute(self, hierarchy: Hierarchy) -> RollupResult:
         """Return a detached derived result; never revise, persist, or execute a Model.
 
         Selectors must return a Value actually owned by the supplied Entity in this
@@ -388,7 +388,7 @@ class Reduction:
                 _reduce_quantities(raw[id], self.reducer, self.units, self.unit_system),
                 coverage,
             )
-        return Aggregation(hierarchy, entries, value_ids, self.require_complete)
+        return RollupResult(hierarchy, entries, value_ids, self.require_complete)
 
     def pivot(
         self,
@@ -438,12 +438,12 @@ class Reduction:
         require_complete: bool = True,
     ) -> "Reduction":
         """Select owner-local Flow Values and combine original contributors per subtree."""
-        from rangekeeper.calculations.series import (
+        from rangekeeper.flow import MissingValueHandling
+        from rangekeeper.flow.series import (
             AggregationMethod,
             AlignmentJoin,
             ResamplingMethod,
         )
-        from rangekeeper.model.flux import MissingValueHandling
         from rangekeeper.model.system.selection import select_value
 
         if (periods is None) != (resampling is None):
@@ -522,7 +522,7 @@ class Reduction:
         return selected, populations
 
     def _execute_flows(self, hierarchy):
-        from rangekeeper.model.flux import Stream
+        from rangekeeper.flow import Stream
 
         selected, populations = self._flow_population(hierarchy)
         available = {
@@ -576,7 +576,7 @@ class Reduction:
                 Coverage(population, measured, missing),
                 () if result is None else result.coverage,
             )
-        return Aggregation(hierarchy, entries, value_ids, self.require_complete)
+        return RollupResult(hierarchy, entries, value_ids, self.require_complete)
 
     def formulate(
         self,
@@ -586,7 +586,7 @@ class Reduction:
         aggregates: Mapping[UUID, UUID],
     ):
         """Declare hierarchy sums over the same original structural contributors."""
-        from rangekeeper.calculations.series import AggregationMethod
+        from rangekeeper.flow.series import AggregationMethod
         from rangekeeper.model.formulation.hierarchy import formulate
 
         if self._flow is None or self._flow.aggregation is not AggregationMethod.SUM:
@@ -607,7 +607,7 @@ class Reduction:
 
 
 __all__ = [
-    "Aggregation",
+    "RollupResult",
     "AggregateEntry",
     "Coverage",
     "CoverageStatus",

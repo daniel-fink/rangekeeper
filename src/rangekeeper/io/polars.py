@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from rangekeeper.model.duration.period import PeriodTiming
-from rangekeeper.model.flux import Flow, Stream
+from rangekeeper.duration.period import PeriodTiming
+from rangekeeper.flow import Flow, Stream
 from rangekeeper.shared.optional import requires
 from rangekeeper.shared.table import Table
 
@@ -138,7 +138,7 @@ def stream_frame(stream) -> DataFrame:
     """Export numeric line columns and explicit coordinates, without mutable shared state."""
     from datetime import date
 
-    from rangekeeper.calculations._batch import polars
+    from rangekeeper.flow._batch import polars
 
     pl = polars()
     batch, grid, amounts, _ = stream_projection(stream)

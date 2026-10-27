@@ -210,9 +210,9 @@ jobs:
           uv pip install --python "$RUNNER_TEMP/venv" "rangekeeper[$extras] @ file://$wheel" \
             pytest numpy-financial ./examples
           # Outside the checkout, the tests import the installed package, not src/.
-          mkdir -p "$RUNNER_TEMP/wheel-tests/src"
-          cp -R src/tests "$RUNNER_TEMP/wheel-tests/src/tests"
+          mkdir -p "$RUNNER_TEMP/wheel-tests"
+          cp -R tests "$RUNNER_TEMP/wheel-tests/tests"
           cp -R examples "$RUNNER_TEMP/wheel-tests/examples"
           cd "$RUNNER_TEMP/wheel-tests"
           "$RUNNER_TEMP/venv/bin/python" -c "import rangekeeper, sys; assert 'site-packages' in rangekeeper.__file__, rangekeeper.__file__"
-          "$RUNNER_TEMP/venv/bin/python" -m pytest -q -rs -p no:cacheprovider src/tests
+          "$RUNNER_TEMP/venv/bin/python" -m pytest -q -rs -p no:cacheprovider tests

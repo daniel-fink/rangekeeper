@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from rangekeeper.model.scope import reference_key
+from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.diagnostics import ValidationReport
@@ -24,7 +25,6 @@ from rangekeeper.shared.errors import (
     ValidationError,
 )
 from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.units import UnitSystem
 from rangekeeper.shared.validation import (
     bounded,
     require,

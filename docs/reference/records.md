@@ -23,7 +23,7 @@ the shared record layer and its method ownership.
 | `rangekeeper/schema/behaviors/` | Handwritten methods for Flow, Movement, Period and Distribution; no field declarations |
 | `rangekeeper/schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
 | `model`, `specification`, `run` | Document-wide validation, references and revision rules |
-| `calculations` | Operations that combine records or require an explicit financial or temporal interpretation |
+| `flow`, `finance` | Operations that combine records or require an explicit financial or temporal interpretation |
 
 The generator explicitly attaches field-free behaviour mixins. It does not patch
 classes after import. Direct construction, `from_data`, `from_json` and nested
@@ -42,7 +42,7 @@ needs them. Polars loads when an alignment or resampling operation needs it.
 ```python
 from datetime import date
 from uuid import uuid4
-from rangekeeper.model.flux import Flow, Movement
+from rangekeeper.flow import Flow, Movement
 
 movement = Movement(id=uuid4(), key="delivery", date=date(2026, 1, 1))
 assert not movement.has_field("magnitude")

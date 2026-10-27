@@ -30,7 +30,7 @@ def _coordinate_label(coordinate):
 
 
 def _render(headers, rows, *, html: bool):
-    from rangekeeper.calculations._batch import polars
+    from rangekeeper.flow._batch import polars
 
     pl = polars()
     frame = pl.DataFrame(

@@ -112,7 +112,7 @@ convention = "pep257"
 # Immutable values: safe as argument defaults.
 extend-immutable-calls = [
     "typing.cast",
-    "rangekeeper.run.execution.acceptance.Tolerances",
+    "rangekeeper.execution.acceptance.Tolerances",
 ]
 
 [tool.ruff.lint.isort]
@@ -215,5 +215,5 @@ namespaces = false
 "rangekeeper.schema" = ["*.json"]
 
 [tool.pytest.ini_options]
-testpaths = ["src/tests", "tools/codemod/tests"]
+testpaths = ["tests", "tools/codemod/tests"]
 pythonpath = ["src"]

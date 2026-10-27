@@ -5,13 +5,13 @@ import platform
 from importlib.metadata import version
 from pathlib import Path
 
+from rangekeeper.quantity import default_units
 from rangekeeper.schema.records import CalculationProvenance, LibraryVersion
 from rangekeeper.shared.fingerprints import (
     import_closure,
     manifest_digest,
     semantic_digest,
 )
-from rangekeeper.shared.units import default_units
 
 NAME = "rangekeeper.scenarios.market"
 FORMAT = "scenario-calculation/v1"

@@ -9,7 +9,8 @@ from datetime import date
 from pathlib import Path
 from uuid import uuid4
 
-from rangekeeper.calculations import series
+from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.flow import series
 from rangekeeper.model import (
     Assembly,
     Characteristics,
@@ -21,7 +22,6 @@ from rangekeeper.model import (
     System,
     Value,
 )
-from rangekeeper.model.duration import Frequency, make_periods
 from rangekeeper.model.system import Hierarchy, View
 from rangekeeper.schema.behaviors.flow import MissingValueHandling as Missing
 from rangekeeper.schema.enums import ValueKind
@@ -134,7 +134,7 @@ def mixed_case(legacy):
         ]
         result = series.aggregate(parts, missing=Missing.SKIP).flow
     else:
-        from rangekeeper.model.flux import Stream
+        from rangekeeper.flow import Stream
 
         result = (
             Stream(flows, missing=Missing.SKIP)

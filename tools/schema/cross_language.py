@@ -5,10 +5,10 @@ from datetime import date
 from pathlib import Path
 from uuid import uuid4
 
+from rangekeeper.flow import Flow, Movement
 from rangekeeper.io import json as codec
 from rangekeeper.model import Model, System, Update, Value, ValueKind
 from rangekeeper.model.content import encode
-from rangekeeper.model.flux import Flow, Movement
 from rangekeeper_examples import design
 
 p = argparse.ArgumentParser()

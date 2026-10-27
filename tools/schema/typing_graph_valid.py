@@ -4,7 +4,7 @@ from uuid import UUID
 
 from rangekeeper import Model
 from rangekeeper.model import Entity, Quantity
-from rangekeeper.model.system import Aggregation, Hierarchy, Reduction, View, reducers
+from rangekeeper.model.system import Hierarchy, Reduction, RollupResult, View, reducers
 from rangekeeper.model.system.selection import select_value
 
 
@@ -15,7 +15,7 @@ def inspect(model: Model, id: UUID) -> Quantity | None:
     reduction = Reduction(
         select=select_value("net"), reducer=reducers.sum, units="m ** 2"
     )
-    result: Aggregation = reduction.execute(hierarchy)
+    result: RollupResult = reduction.execute(hierarchy)
     value = result.value(entity.id)
     assert value is None or isinstance(value, Quantity)
     return value

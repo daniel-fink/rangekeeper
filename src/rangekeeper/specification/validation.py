@@ -17,6 +17,7 @@ from rangekeeper.model.expression.validation import ExpressionAnalysis
 from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.model.scope import Scope, numerical_units, reference_key
 from rangekeeper.model.validation import check_model
+from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.runtime import Record
 from rangekeeper.schema.validation import document_version
@@ -29,7 +30,6 @@ from rangekeeper.shared.errors import (
     UnitError,
 )
 from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.units import UnitSystem
 from rangekeeper.shared.validation import (
     bounded,
     checked,

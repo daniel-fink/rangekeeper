@@ -16,8 +16,8 @@ from typing import cast
 import networkx as nx
 import plotly.graph_objects as go
 
-from rangekeeper.model.duration.period import PeriodTiming
-from rangekeeper.model.flux import Flow
+from rangekeeper.duration.period import PeriodTiming
+from rangekeeper.flow import Flow
 from rangekeeper.shared.errors import EncodingError
 from rangekeeper.shared.table import Table
 

@@ -1,0 +1,71 @@
+"""The mixed-use property data package records its licence and provenance."""
+
+import hashlib
+import json
+from pathlib import Path
+
+import pytest
+
+DATA = Path(__file__).resolve().parents[1] / "examples/data/mixed_use_property"
+UNLISTED = {"LICENSE", "README.md", "manifest.json"}
+ORIGINS = {"legacy-notebook", "book-method", "author", "derived"}
+
+
+def load(name):
+    return json.loads((DATA / name).read_text(encoding="utf-8"))
+
+
+def leaves(value, pointer=""):
+    if isinstance(value, dict):
+        for key, item in value.items():
+            yield from leaves(item, f"{pointer}/{key}")
+    else:
+        yield pointer
+
+
+def covers(pattern, pointer):
+    parts, target = pattern.split("/")[1:], pointer.split("/")[1:]
+    return len(parts) <= len(target) and all(
+        part in ("*", key) for part, key in zip(parts, target, strict=False)
+    )
+
+
+def test_manifest_lists_every_file_with_hash_origin_and_licence():
+    manifest = load("manifest.json")
+    assert manifest["licence"]["spdx"] == "CC-BY-4.0"
+    assert "Attribution 4.0 International" in (DATA / "LICENSE").read_text(
+        encoding="utf-8"
+    )
+    present = {path.name for path in DATA.iterdir()} - UNLISTED
+    assert set(manifest["files"]) == present
+    for name, entry in manifest["files"].items():
+        data = (DATA / name).read_bytes()
+        assert entry["bytes"] == len(data), name
+        assert entry["sha256"] == hashlib.sha256(data).hexdigest(), name
+        assert entry["origin"] in manifest["origin_vocabulary"], name
+        assert entry["licence"] == "CC-BY-4.0", name
+        assert entry["description"], name
+
+
+@pytest.mark.parametrize("name", ["assumptions.json", "development.json"])
+def test_each_teaching_assumption_names_its_origin(name):
+    origins = load("origins.json")
+    assert set(origins["origins_vocabulary"]) == ORIGINS
+    patterns = origins[name]
+    metadata = origins["metadata"][name]
+    for pointer in leaves(load(name)):
+        if any(covers(prefix, pointer) for prefix in metadata):
+            continue
+        matches = [pattern for pattern in patterns if covers(pattern, pointer)]
+        assert len(matches) == 1, (pointer, matches)
+    for pattern, origin in patterns.items():
+        assert origin["origin"] in ORIGINS, pattern
+        assert any(covers(pattern, pointer) for pointer in leaves(load(name))), pattern
+        if origin["origin"] == "legacy-notebook":
+            assert origin["cells"], pattern
+        elif origin["origin"] == "book-method":
+            assert origin["reference"], pattern
+        elif origin["origin"] == "derived":
+            assert origin["from"], pattern
+        else:
+            assert origin["note"], pattern

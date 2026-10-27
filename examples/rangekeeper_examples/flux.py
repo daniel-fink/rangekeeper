@@ -3,7 +3,10 @@
 from datetime import date
 from uuid import uuid4
 
-from rangekeeper.calculations.series import ResamplingMethod
+from rangekeeper.duration import Frequency, Span
+from rangekeeper.execution import Executor
+from rangekeeper.flow import Flow, Stream
+from rangekeeper.flow.series import ResamplingMethod
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
     Assembly,
@@ -17,11 +20,8 @@ from rangekeeper.model import (
     Update,
     Value,
 )
-from rangekeeper.model.duration import Frequency, Span
-from rangekeeper.model.flux import Flow, Stream
 from rangekeeper.model.formulation import flow
 from rangekeeper.model.system import Hierarchy, Reduction, View
-from rangekeeper.run.execution import Executor
 from rangekeeper.schema.enums import SolutionStatus, ValueKind
 from rangekeeper.specification import Specification, SpecificationRecord
 from rangekeeper.specification.targets import assign_flow, unknown_flow
@@ -153,13 +153,13 @@ def solve_example():
     )
     solved = store.load_model(forward.record.outputs[0])
     assert solved.value(ids["portfolio"]).flow.movements[0].number == 2760
-    reverse = forward_specification(solved, ids).lock(
+    reverse = forward_specification(solved, ids).fix(
         ids["portfolio"],
         Quantity(magnitude=2880, units="AUD"),
         id=uuid4(),
         model=solved,
     )
-    reverse = reverse.unlock(
+    reverse = reverse.free(
         ids["A_rent"],
         ids=(solved.value(ids["A_rent"]).flow.movements[-1].id,),
         id=uuid4(),
