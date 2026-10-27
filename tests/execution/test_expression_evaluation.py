@@ -9,10 +9,10 @@ import pytest
 
 from rangekeeper.execution.acceptance import _comparisons
 from rangekeeper.execution.errors import NumericalError, UnsupportedProblem
-from rangekeeper.model import Quantity, Reference
-from rangekeeper.model.expression import Expression, ExpressionKind, Operator
+from rangekeeper.model import Expression, Reference
+from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.model.expression.evaluation import evaluate as numerical
-from rangekeeper.quantity import default_units
+from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.shared.errors import UnitError
 from rangekeeper.specification.policy.predicate import evaluate as predicate
 

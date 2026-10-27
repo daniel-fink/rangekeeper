@@ -10,8 +10,9 @@ import yaml
 
 import rangekeeper.schema.index as index_module
 import rangekeeper.schema.records as records_module
-from rangekeeper.model import Entity, Metadata, Model, Quantity, System, Update
+from rangekeeper.model import Entity, Metadata, Model, System, Update
 from rangekeeper.model.content import encode
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.index import RecordIndex, RecordLocation, walk
 from rangekeeper.schema.records import Model as ModelRecord
 from rangekeeper.schema.runtime import Record

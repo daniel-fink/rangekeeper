@@ -1,9 +1,8 @@
-"""System records and lazy views over a complete pinned Model."""
+"""Lazy views over a complete pinned Model; `rangekeeper.model` exports the System records."""
 
-from importlib import import_module
 from typing import TYPE_CHECKING
 
-from rangekeeper.schema.records import Assembly, Entity, Relationship, System
+from rangekeeper.shared.exports import lazy as _lazy
 
 if TYPE_CHECKING:
     from .errors import (
@@ -62,19 +61,7 @@ _EXPORTS = {
     "AggregationError": "errors",
 }
 _MODULES = {"reduction", "table", "membership", "selection", "reducers", "pivot"}
-__all__ = ["System", "Entity", "Assembly", "Relationship", *_EXPORTS, *sorted(_MODULES)]
+__all__ = [*_EXPORTS, *sorted(_MODULES)]
 
 
-def __getattr__(name: str):
-    if name in _EXPORTS:
-        value = getattr(import_module(f".{_EXPORTS[name]}", __name__), name)
-    elif name in _MODULES:
-        value = import_module(f".{name}", __name__)
-    else:
-        raise AttributeError(name)
-    globals()[name] = value
-    return value
-
-
-def __dir__() -> list[str]:
-    return sorted({*globals(), *__all__})
+__getattr__, __dir__ = _lazy(__name__, names=_EXPORTS, modules=_MODULES)

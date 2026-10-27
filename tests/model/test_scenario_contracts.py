@@ -186,8 +186,8 @@ def test_manifest_uses_portable_paths_and_imported_source_dependencies(tmp_path)
     changed.write_text(kernel_source)
     # A module outside the import closure does not change the manifest.
     before = calculation_manifest(package=tmp_path, versions=versions)
-    assert "model/scenario/replay.py" not in before["sources"]
-    (tmp_path / "model/scenario/replay.py").write_text('raise RuntimeError("replay")')
+    assert "model/scenario/_replay.py" not in before["sources"]
+    (tmp_path / "model/scenario/_replay.py").write_text('raise RuntimeError("replay")')
     assert calculation_manifest(package=tmp_path, versions=versions) == before
     changed.unlink()
     with pytest.raises((FileNotFoundError, ModuleNotFoundError)):

@@ -7,8 +7,8 @@ from uuid import uuid4
 import pytest
 import yaml
 
-from rangekeeper.model import Formulation, Metadata, Model, Quantity, Value, ValueKind
-from rangekeeper.model.expression import Reference
+from rangekeeper.model import Formulation, Metadata, Model, Reference, Value, ValueKind
+from rangekeeper.quantity import Quantity
 from rangekeeper.shared.errors import (
     IdentityConflictError,
     MissingReferenceError,

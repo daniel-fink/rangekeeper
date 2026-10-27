@@ -214,9 +214,9 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
 def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancellation():
     from rangekeeper.execution.acceptance import _comparisons
     from rangekeeper.execution.errors import UnsupportedProblem
-    from rangekeeper.model import Quantity, Reference
-    from rangekeeper.model.expression import Expression, ExpressionKind, Operator
-    from rangekeeper.quantity import default_units
+    from rangekeeper.model import Expression, Reference
+    from rangekeeper.model.expression import ExpressionKind, Operator
+    from rangekeeper.quantity import Quantity, default_units
 
     target = uuid4()
     ref = Expression(
@@ -258,7 +258,8 @@ def test_shared_numerical_quantity_rejects_nonfinite_boolean_and_complex(number)
 def test_policy_result_normalizes_and_checks_outcomes():
     from dataclasses import FrozenInstanceError
 
-    from rangekeeper.model import Quantity, Reference
+    from rangekeeper.model import Reference
+    from rangekeeper.quantity import Quantity
     from rangekeeper.specification import Assignment
     from rangekeeper.specification.policy import DecisionOutcome, PolicyResult
 

@@ -1,29 +1,27 @@
 """Market scenarios with lazy runtime imports and lightweight contract access."""
 
-from importlib import import_module
+from typing import TYPE_CHECKING
 
+from rangekeeper.shared.exports import lazy as _lazy
+
+if TYPE_CHECKING:
+    from rangekeeper.model.scenario import market as market
+    from rangekeeper.model.scenario._replay import (
+        ReplayUnavailableError as ReplayUnavailableError,
+    )
+    from rangekeeper.model.scenario._replay import replay as replay
+    from rangekeeper.model.scenario.view import Market as Market
+
+_EXPORTS = {"Market": "view", "replay": "_replay", "ReplayUnavailableError": "_replay"}
+_MODULES = {"market"}
 __all__ = ["market", "Market", "replay", "ReplayUnavailableError"]
-
-
-def __getattr__(name):
-    if name == "market":
-        value = import_module(".market", __name__)
-    elif name == "Market":
-        value = getattr(import_module(".view", __name__), name)
-    elif name in {"replay", "ReplayUnavailableError"}:
-        value = getattr(import_module(".replay", __name__), name)
-    else:
-        raise AttributeError(name)
-    globals()[name] = value
-    return value
+__getattr__, __dir__ = _lazy(__name__, names=_EXPORTS, modules=_MODULES)
 
 
 """Schema-generated scenario declarations and provenance records."""
 
 from rangekeeper.schema.records import (
-    Binding,
     CalculationProvenance,
-    Distribution,
     LibraryVersion,
     ObservationAvailability,
     RandomStream,
@@ -33,12 +31,10 @@ from rangekeeper.schema.records import (
 )
 
 __all__ += [
-    "Distribution",
     "ScenarioParameter",
     "ScenarioPlan",
     "ScenarioRealization",
     "CalculationProvenance",
-    "Binding",
     "RandomStream",
     "LibraryVersion",
     "ObservationAvailability",

@@ -196,7 +196,7 @@ def test_aggregate_mapping_copy_and_subtree_ownership():
     "reduce", (reducers.sum, reducers.mean, reducers.min, reducers.max)
 )
 def test_reducers_have_independent_finite_results_and_empty_errors(reduce):
-    from rangekeeper.model import Quantity
+    from rangekeeper.quantity import Quantity
 
     values = tuple(Quantity(magnitude=n, units="m") for n in (1, 3, 8))
     expected = {reducers.sum: 12, reducers.mean: 4, reducers.min: 1, reducers.max: 8}

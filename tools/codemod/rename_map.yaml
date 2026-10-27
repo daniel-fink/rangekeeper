@@ -189,6 +189,90 @@ symbols:
     new_module: rangekeeper.model
     status: draft
     source: ADR-012
+  - module: rangekeeper.model.system
+    name: System
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.system
+    name: Entity
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.system
+    name: Assembly
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.system
+    name: Relationship
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.expression
+    name: Expression
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.expression
+    name: Reference
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.expression
+    name: Function
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.expression
+    name: Domain
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.expression
+    name: Constraint
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.formulation
+    name: Formulation
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.formulation
+    name: Binding
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.scenario
+    name: Binding
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.scenario
+    name: Distribution
+    new_module: rangekeeper.model
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
+  - module: rangekeeper.model
+    name: Quantity
+    new_module: rangekeeper.quantity
+    status: agreed
+    source: ADR-017, #269
+    note: One canonical path for each public name.
   - module: rangekeeper.schema.behaviors.flow
     name: MissingValueHandling
     status: open

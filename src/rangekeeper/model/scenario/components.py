@@ -8,9 +8,10 @@ peak-to-trough height; phase and period are measured in the plan's period steps.
 
 from typing import cast
 
-from rangekeeper.model import Quantity
-from rangekeeper.model.scenario import Distribution, ScenarioParameter
+from rangekeeper.model import Distribution
+from rangekeeper.model.scenario import ScenarioParameter
 from rangekeeper.model.scenario.contracts import DIRECT
+from rangekeeper.quantity import Quantity
 
 ParameterInput = float | Quantity | Distribution
 

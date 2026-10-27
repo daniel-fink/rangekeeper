@@ -9,6 +9,7 @@ from rangekeeper.duration import Frequency, make_periods
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model import (
     Definitions,
+    Distribution,
     Formulation,
     Measure,
     Metadata,
@@ -19,7 +20,7 @@ from rangekeeper.model import (
     Value,
     ValueKind,
 )
-from rangekeeper.model.scenario import Distribution, replay
+from rangekeeper.model.scenario import replay
 from rangekeeper.model.scenario.market import generate, make_plan
 from rangekeeper.schema.enums import DistributionFamily, SolutionStatus
 from rangekeeper.specification.policy import (

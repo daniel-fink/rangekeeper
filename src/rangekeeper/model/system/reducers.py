@@ -4,8 +4,8 @@ import builtins
 import math
 from collections.abc import Callable
 
-from rangekeeper.model import Quantity
 from rangekeeper.model.system.errors import AggregationError
+from rangekeeper.quantity import Quantity
 
 
 def _reduce(

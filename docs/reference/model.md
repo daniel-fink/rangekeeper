@@ -43,10 +43,8 @@ reused. No cache spans revisions or independent validation operations.
 ```python
 from uuid import uuid4
 from rangekeeper.schema import Metadata
-from rangekeeper.model import (
-    Model, Entity, System, Definitions, Measure, Quantity,
-    Characteristics, Value, ValueKind, Update,
-)
+from rangekeeper.model import Model, Entity, System, Definitions, Measure, Characteristics, Value, ValueKind, Update
+from rangekeeper.quantity import Quantity
 from rangekeeper.model import characteristics
 from rangekeeper.model.diff import between
 

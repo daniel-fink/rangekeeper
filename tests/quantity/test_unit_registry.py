@@ -16,7 +16,6 @@ from rangekeeper.model import (
     Measure,
     Metadata,
     Model,
-    Quantity,
     System,
     Update,
     Value,
@@ -26,7 +25,7 @@ from rangekeeper.model.system import View, reducers
 from rangekeeper.model.system.reduction import Reduction
 from rangekeeper.model.system.selection import select_value
 from rangekeeper.model.system.table import ValueColumn, to_table
-from rangekeeper.quantity import UnitSystem, default_units, minor_unit
+from rangekeeper.quantity import Quantity, UnitSystem, default_units, minor_unit
 from rangekeeper.shared.errors import UnitError, ValidationError
 
 ROOT = Path(__file__).resolve().parents[2]

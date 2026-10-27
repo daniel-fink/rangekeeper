@@ -17,9 +17,10 @@ from rangekeeper.flow import MeanWeighting as Weight
 from rangekeeper.flow import MissingValueHandling as Missing
 from rangekeeper.flow import ResamplingMethod as R
 from rangekeeper.io import MemoryStore
-from rangekeeper.model import Quantity, Reference, Update
+from rangekeeper.model import Reference, Update
 from rangekeeper.model.formulation import flow
 from rangekeeper.model.system import Hierarchy, Reduction, View
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import SolutionStatus
 from rangekeeper_examples.flux import (
     collection,

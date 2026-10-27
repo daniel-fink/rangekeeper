@@ -19,7 +19,7 @@ from rangekeeper.model import (
     Measure,
     Metadata,
     Model,
-    Quantity,
+    Reference,
     System,
     Update,
     Value,
@@ -28,7 +28,6 @@ from rangekeeper.model import (
 from rangekeeper.model.characteristics import value as local_value
 from rangekeeper.model.content import decode, encode
 from rangekeeper.model.definitions import find_classifications
-from rangekeeper.model.expression import Reference
 from rangekeeper.model.expression.authoring import (
     add,
     divide,
@@ -42,6 +41,7 @@ from rangekeeper.model.expression.authoring import (
     sum as expression_sum,
 )
 from rangekeeper.model.formulation import declare
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.records import Assignment
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.specification import Specification

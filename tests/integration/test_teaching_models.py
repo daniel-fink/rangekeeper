@@ -9,8 +9,7 @@ import pytest
 from rangekeeper.duration import Frequency, make_periods
 from rangekeeper.execution import Executor
 from rangekeeper.io import MemoryStore
-from rangekeeper.model import DistributionFamily, Metadata, Model
-from rangekeeper.model.scenario import Distribution
+from rangekeeper.model import Distribution, DistributionFamily, Metadata, Model
 from rangekeeper.model.scenario.market import generate, make_plan
 from rangekeeper.run import validate
 from rangekeeper.schema.enums import SolutionStatus
