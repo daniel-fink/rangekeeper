@@ -5,9 +5,10 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rangekeeper.calculations.series import MeanWeighting, ResamplingMethod
+    from rangekeeper.flow.series import MeanWeighting, ResamplingMethod
 from uuid import UUID
 
+from rangekeeper.flow import Flow, MissingValueHandling, Movement, Stream
 from rangekeeper.model import Model
 from rangekeeper.model.expression.authoring import (
     add,
@@ -18,7 +19,6 @@ from rangekeeper.model.expression.authoring import (
 from rangekeeper.model.expression.authoring import (
     sum as expression_sum,
 )
-from rangekeeper.model.flux import Flow, MissingValueHandling, Movement, Stream
 from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.scope import target_value
 from rangekeeper.schema.enums import ValueKind
@@ -41,7 +41,7 @@ def aligned(
     shapes: Mapping[UUID, Flow] | None = None,
 ) -> list[tuple[Movement, tuple[Movement, ...]]]:
     """Match member coordinates in reference order; amounts and solve roles are unused."""
-    from rangekeeper.model._flow_mapping import alignment
+    from rangekeeper.flow._mapping import alignment
 
     prepared = dict(shapes or {})
     for identity in (*members, reference):
@@ -184,8 +184,8 @@ def accumulate(
 
 def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
     """Use fixed structural membership, never known-only numerical masks."""
-    from rangekeeper.calculations.series import MeanWeighting, ResamplingMethod
-    from rangekeeper.model._flow_mapping import period_indices, weights
+    from rangekeeper.flow._mapping import period_indices, weights
+    from rangekeeper.flow.series import MeanWeighting, ResamplingMethod
     from rangekeeper.model.expression.authoring import literal
 
     if not isinstance(method, ResamplingMethod):

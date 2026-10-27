@@ -11,10 +11,10 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from rangekeeper import Model, Specification
+from rangekeeper.execution import Executor
 from rangekeeper.io import DirectoryStore, yaml
 from rangekeeper.io import json as codec
 from rangekeeper.run import CompletionStatus, SolutionStatus, validate
-from rangekeeper.run.execution import Executor
 from rangekeeper.specification import SpecificationRecord
 
 

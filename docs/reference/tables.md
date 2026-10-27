@@ -37,12 +37,12 @@ applies a stricter immutable-value contract.
 
 ## Project a Model selection
 
-Use `rangekeeper.model.system.projection.to_table` with a pinned `View` or
+Use `rangekeeper.model.system.table.to_table` with a pinned `View` or
 `Hierarchy`. See [system views](system.md) for selection and hierarchy rules.
 
 ```python
 from rangekeeper.model.system import View
-from rangekeeper.model.system.projection import (
+from rangekeeper.model.system.table import (
     EntityField, FieldColumn, PropertyColumn, ValueColumn, to_table,
 )
 

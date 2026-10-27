@@ -6,10 +6,10 @@ revisions; a display name never resolves a document implicitly.
 
 Import the three facades from `rangekeeper`. Their capability packages follow
 their ownership: `model.system` owns graph views, `model.formulation` owns passive
-equation builders, `model.duration` owns calendar rules, and `model.scenario` owns
+equation builders, `duration` owns calendar rules, and `model.scenario` owns
 captured futures. Policy operations belong to `specification.policy`; numerical
-execution belongs to `run.execution`. Generated records and their runtime live in
-`schema`, while reusable tables, units and resolver contracts live in `shared`.
+execution belongs to `execution`. Generated records and their runtime live in
+`schema`, while reusable tables, units live in `quantity`, and reusable tables and resolver contracts live in `shared`.
 
 ## Model
 

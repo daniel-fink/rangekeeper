@@ -37,7 +37,7 @@ def import_all() -> dict[str, str]:
 
 def check_core() -> None:
     """Check core operations that need no extra."""
-    from rangekeeper.model.duration import DayCount, year_fraction
+    from rangekeeper.duration import DayCount, year_fraction
 
     fraction = year_fraction(
         date(2020, 1, 1), date(2021, 1, 1), convention=DayCount.ACTUAL_ACTUAL
@@ -58,9 +58,9 @@ def check_calculations() -> None:
     """Check a PyXIRR valuation and a Polars projection."""
     from uuid import uuid4
 
-    from rangekeeper.calculations.financial import calculate_xnpv
+    from rangekeeper.finance.financial import calculate_xnpv
+    from rangekeeper.flow import Flow
     from rangekeeper.io.polars import to_frame
-    from rangekeeper.model.flux import Flow
     from rangekeeper.schema.records import Movement
 
     flow = Flow(
@@ -84,7 +84,7 @@ def check_execution() -> None:
         "remaining": 30.0,
     }
     output = subprocess.run(
-        [sys.executable, "-m", "rangekeeper.run.execution.backends._worker"],
+        [sys.executable, "-m", "rangekeeper.execution.backends._worker"],
         input=json.dumps(request),
         capture_output=True,
         text=True,

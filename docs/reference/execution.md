@@ -1,6 +1,6 @@
 # Scalar execution with Pyomo and HiGHS
 
-The execution package implements **actual affine feasibility execution** in `rangekeeper.run.execution`.
+The execution package implements **actual affine feasibility execution** in `rangekeeper.execution`.
 The executor reads the canonical Model and an additive Specification composition,
 lowers declared mathematics, solves in a separate process, independently evaluates
 the original expressions on serialized candidate quantities, and publishes accepted
@@ -10,7 +10,7 @@ Model revisions followed by finalized Runs. LinkML remains the field authority.
 
 Install the `execution` extra; YAML fixtures also need the `yaml` extra. See the
 [installation guide](../guides/installation.md). Importing `rangekeeper` or
-`rangekeeper.run.execution` does not load Pyomo or HiGHS. They load in the solve
+`rangekeeper.execution` does not load Pyomo or HiGHS. They load in the solve
 worker. `pyproject.toml` declares the supported version ranges. The worker does
 not refuse other versions; the Run evidence records the Pyomo and HiGHS versions
 that it found.
@@ -148,7 +148,7 @@ contracts. See [verification](../contributing/verification.md) for current check
 
 ## Implementation identity
 
-`run.execution.implementation` records distinct compiler and evaluator fingerprints.
+`execution.implementation` records distinct compiler and evaluator fingerprints.
 Each manifest includes its semantic Python sources, packaged schema resources,
 and relevant library versions. The sources are the static import closure of the
 role's entry modules in `rangekeeper`: `shared.fingerprints.import_closure` reads

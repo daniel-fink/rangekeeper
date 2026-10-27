@@ -137,7 +137,7 @@ The current CI workflow is described in [continuous integration](README.md#conti
 
 ## Bundle candidate verification
 
-With the `bundle` extra installed, run `python -m pytest -q src/tests/test_bundle.py`
+With the `bundle` extra installed, run `python -m pytest -q tests/test_bundle.py`
 from the root. Full schema generation and C# checks also apply because Model schema
 changed. See the [Bundle contract](../reference/bundle.md) and the acceptance
 matrix in [ADR-008](../decisions/008-rangekeeper-bundle-contract.md). Do not infer provider or host acceptance

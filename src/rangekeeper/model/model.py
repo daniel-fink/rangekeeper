@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from uuid import UUID, uuid4
 
 from rangekeeper.model.update import Update
+from rangekeeper.quantity import UnitSystem, default_units
 from rangekeeper.schema.index import RecordIndex, RecordLocation, record_at
 from rangekeeper.schema.records import (
     Assembly,
@@ -31,7 +32,6 @@ from rangekeeper.schema.runtime import UNSET, Record, Unset
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.arguments import optional_text, require_uuid
 from rangekeeper.shared.errors import UnsupportedVersionError
-from rangekeeper.shared.units import UnitSystem, default_units
 
 
 @dataclass(frozen=True, init=False, eq=False)

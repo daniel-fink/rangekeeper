@@ -3,10 +3,10 @@
 from datetime import date
 from uuid import uuid4
 
-from rangekeeper.calculations.series import Aggregation, AggregationMethod, align
+from rangekeeper.flow import Flow, Movement
+from rangekeeper.flow.series import AggregationMethod, FlowAggregate, align
 from rangekeeper.model import ValueKind
 from rangekeeper.model.distribution import Distribution
-from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.schema.records import Assembly, Span, Value
 
 flow: Flow = Flow.from_events([date(2026, 1, 1)], [1], units="m").check()
@@ -18,7 +18,7 @@ value: Value = Value(
 )
 if value.flow is not None:
     copied: Flow = value.flow.replace(movements=(movement,)).check(resolved=True)
-result: Aggregation = align([flow, flow]).reduce(method=AggregationMethod.MAX)
+result: FlowAggregate = align([flow, flow]).reduce(method=AggregationMethod.MAX)
 probabilities: tuple[float, ...] = Distribution.pert().cdf([0.0, 1.0])
 assembly: Assembly = Assembly(id=uuid4()).replace(name="Group")
 span: Span = Span(
