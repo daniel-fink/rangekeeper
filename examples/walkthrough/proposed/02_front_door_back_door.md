@@ -120,13 +120,13 @@ means 10 % higher. Parking earns no rent.
 ```python
 # cell 6
 site.value(key="hotel_area", units="sqm")
-site.value(key="hotel_rent", units="AUD/sqm pa")
+site.value(key="hotel_rent", units="AUD per sqm pa")
 site.value(key="hotel_vacancy", units="ratio")
 site.value(key="residential_area", units="sqm")
-site.value(key="residential_rent", units="AUD/sqm pa")
+site.value(key="residential_rent", units="AUD per sqm pa")
 site.value(key="residential_vacancy", units="ratio")
 site.value(key="retail_area", units="sqm")
-site.value(key="retail_rent", units="AUD/sqm pa")
+site.value(key="retail_rent", units="AUD per sqm pa")
 site.value(key="retail_vacancy", units="ratio")
 ```
 

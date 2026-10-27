@@ -47,12 +47,12 @@ Narrative: a Quantity is a number with units. Make one from text, or from a numb
 and a unit string. Rangekeeper checks units in every operation, so an annual rent
 cannot be added to a monthly rent by mistake. `pa` means per annum. `%` is a
 dimensionless ratio, so a rate per year, such as a growth or discount rate, is
-`% pa`.
+`% pa`. `per` divides, as in `"750 AUD per sqm pa"`.
 
 ```python
 # cell 2
 rent = rk.Quantity(text="1200 USD pa")
-rent.to(units="USD/month")
+rent.to(units="USD per month")
 ```
 
 ```python

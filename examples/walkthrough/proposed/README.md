@@ -53,6 +53,7 @@ pass.
 | D14 | Are arguments named? | Yes. Every Rangekeeper call and every function in an equation string names its arguments, and the API makes them keyword-only. Exceptions: lists of any length (`select`, `free`, `table`, `stream`, `equations`, `involving`), `min` and `max` in equations, Python built-ins, `datetime.date` and Polars calls | 01–07 |
 | D15 | How are cells formatted? | With the project's `ruff format` (Black style): 88 columns, and a trailing comma after the last argument puts one argument per line. The pre-commit hook formats the lesson notebooks the same way, so the cell budgets count formatted lines. A cell split for length keeps its number with a letter (4, 4b). A long equation string is wrapped in parentheses | 01–07 |
 | D16 | How are values declared, and how is a rate per year written? | One call for each value, naming its key and units: `site.value(key="land_cost", units="AUD")`, `site.flow(key="rent_index", units="ratio")`, `site.date(key="start_date")`. Keyed and timeline variants add `by=` and `periods=`. `units=` always means units; a date has none. A rate per year is `"% pa"`, for example `"7 % pa"`, not `"1/year"` | 01–07 |
+| D17 | How is unit text written? | `per` divides (`"5 per sqm"`, `"750 AUD per sqm pa"`), `pa` means per year, and a count has a named unit (`"0.02 dwelling per sqm"`). A unit expression contains no numbers: Pint reads `"per 100 sqm"` as "÷ 100 × sqm", so the registry rejects it with a suggestion | 01–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -149,7 +150,7 @@ draft = model.edit(name=None)  # #141
 site = draft.add_entity(code="property", classification="property")  # G08
 site = draft.entity(code="property")  # find, in an edit
 site.value(key="land_cost", units="AUD")  # G08
-site.value(key="rent", units="AUD/sqm pa", by="use")  # G43
+site.value(key="rent", units="AUD per sqm pa", by="use")  # G43
 site.flow(key="rent_index", units="ratio")  # G08
 site.flow(key="use_index", units="ratio", by="use")  # G43
 site.date(key="start_date")  # G15
@@ -202,7 +203,7 @@ rk.model.diff(before=a, after=b), rk.model.namespace(name="...")  # G62, #147
 
 ```python
 spec = model.specify(name="Front door").fix(
-    land_cost="20e6 AUD", rent={"hotel": "750 AUD/sqm pa"}
+    land_cost="20e6 AUD", rent={"hotel": "750 AUD per sqm pa"}
 )  # #144, G11, G45
 spec.free("land_cost"), spec.roles, spec.on(model=new_model)  # G11, G21
 spec.cases(cases={"weak": {...}, "strong": {...}})  # G20
@@ -332,6 +333,18 @@ use. **Issue** is filled in when the issue is filed.
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
 | 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
 | 35 | — | `rk.Quantity` at the root, text in the constructor, and the `rk.quantity` namespace | G71 | `quantity` | 01·2–3, 10, 17; 02·22; 03·24 | #148, #149, #150 |
+
+Acceptance tests for existing issues. These cells depend on
+[#149](https://github.com/daniel-fink/rangekeeper/issues/149) (the curated unit
+registry). Its tests must include:
+
+- `rk.Quantity(text="7 % pa") == rk.Quantity(magnitude=0.07, units="1/year")`. With
+  Pint's stock registry, `pa` is a picoyear, so this fails today.
+- `per` is division: `rk.Quantity(text="750 AUD per sqm pa")` has the dimension
+  currency / area / time.
+- A number inside a unit expression fails with a suggestion:
+  `rk.Quantity(text="0.5 dwelling per 100 sqm")` raises, and suggests
+  `"0.005 dwelling per sqm"`. Stock Pint reads it as 0.005 dwelling × m².
 
 Not filed as gaps:
 

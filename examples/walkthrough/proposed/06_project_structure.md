@@ -226,7 +226,7 @@ to every floor.
 ```python
 # cell 19
 site.value(key="efficiency", units="ratio", by="use")
-site.value(key="rent", units="AUD/sqm pa", by="use")
+site.value(key="rent", units="AUD per sqm pa", by="use")
 site.value(key="vacancy", units="ratio", by="use")
 draft.equations_for(
     filter=rk.model.Filter(classification="floor"),
