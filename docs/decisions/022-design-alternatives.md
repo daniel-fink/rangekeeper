@@ -2,7 +2,9 @@
 
 Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27. Amended
 2026-10-27 by #201 decisions D2, D24, D25 and D26 (reviews as `Periods`, `NEVER`,
-enums, keyed members in rule text, the equity-first funding names).
+enums, keyed members in rule text, the equity-first funding names). Amended
+2026-10-28 by [ADR-024](024-search-as-query.md): the premium question and "best
+tested" are queries; `breakeven`, `best` and `same_across_cases` are removed.
 
 ## Problem
 
@@ -132,31 +134,25 @@ as the premium rises. The library makes this visible and does not hide it:
 
 - **Test several premiums as cases:** `cases(cases=premiums)`, with one case for each
   premium written out (decision D24 of #201), across the paths.
-- **`comparison.by_case().breakeven(key="provision", criterion=...)`** gives the
-  largest premium at which the criterion of the paired gains is zero or more.
-  `criterion` is `rk.execution.Criterion.MEAN`, or `Criterion.QUANTILE` with
-  `level=` (decision D26 of #201).
-  - It needs at least two cases that differ only in `key`.
-  - If a decided value changes on any path between the cases, it raises
-    `DecisionsChangedError` with the code `decisions_changed`. The error lists the
-    paths and keys. The reader then reads `by_case().summary()`.
-  - If no decided value changes, each path's gain is affine in the premium,
-    because the solve is affine and the decisions are fixed. `breakeven` fits a
-    line for each path from the cases and solves the criterion exactly. It runs
-    no new solve.
-  - A third case checks the lines. If a case is not on its line within tolerance,
-    `breakeven` raises `ValidationError` with the code `breakeven_not_affine`. This
-    happens when the compared key is not affine in the premium, for example a key
-    that uses `max`.
+- **Ask for the largest justified premium as a query**
+  ([ADR-024](024-search-as-query.md)). The criterion is a condition, for example
+  `"equity_npv.quantile(level=0.05) >= 0 AUD"`. Over listed premiums,
+  `by_case().where(condition=...).max(key="provision")` gives the largest tested
+  premium. Over a `Range` of `provision`, the same query searches: it is exact
+  when no decision changes and the gains are linear in the premium, and bracketed
+  otherwise. If the condition changes more than once, the result says that the
+  answer may not be unique.
 
 ### Kept apart from optimisation
 
 - A choice key cannot be free. The library has no objective over alternatives.
-- `by_case().best(criterion=)` returns the best tested case. The result says
-  "best tested".
+- "Best tested" is a query over listed cases:
+  `by_case().order_by(key="equity_npv.mean()", descending=True).first()`
+  ([ADR-024](024-search-as-query.md)).
 - To test triggers on new paths, `Paths.regenerate(seed=)` rebuilds the
   generator from the capture record (#201 gap G69). A new seed gives a test set. Nothing in
-  the library tunes a trigger.
+  the library tunes a trigger: a range cannot vary a value that a rule reads
+  (ADR-024).
 
 ## Worked examples
 
@@ -224,34 +220,31 @@ expand = (both.alternatives(keys=("b_design", "a_design"), models={
                   otherwise=rk.duration.NEVER))
 ```
 
-**The largest justified premium (cells 13 and 14).**
+**The largest justified premium (cells 13 to 14b, and exercise 2).** The cells
+compose the mean premium from two runs, to teach the finance: the mean paired gain
+without the premium, divided by what each dollar of premium costs, and one more solve
+at that premium to check it. Exercise 2 asks for the 5 % quantile criterion as a
+query over a range:
 
 ```python
-premiums = {
-    "0 AUD": {"provision": "0 AUD"},
-    "2.5e6 AUD": {"provision": "2.5e6 AUD"},
-    "5e6 AUD": {"provision": "5e6 AUD"},
-    "7.5e6 AUD": {"provision": "7.5e6 AUD"},
-}
-premium_cases = both.cases(cases=premiums).across(paths=use_paths, series=use_series)
-premium_outcome = rk.execution.solve(specification=premium_cases)
-gain = rk.execution.compare(
+cautious = "equity_npv.quantile(level=0.05) >= 0 AUD"
+premiums = both.cases(
+    cases=rk.specification.Range(key="provision", first="0 AUD", last="10e6 AUD")
+)
+premium_outcome = rk.execution.solve(
+    specification=premiums.across(paths=use_paths, series=use_series)
+)
+gains = rk.execution.compare(
     outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
     baseline="Timing",
 ).by_case()
-gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
+largest = gains.where(condition=cautious).max(key="provision", tolerance="50e3 AUD")
+largest.value, largest.method, largest.bracket
 ```
 
-If the 7.5 M AUD premium stops B on some paths, `breakeven` raises
-`DecisionsChangedError`, which lists those paths and keys.
-
-**Under review (#201, decision D36).** Lesson 07's proposed cells no longer call
-`breakeven`. They compose the mean-criterion premium from two runs (no premium and a
-test premium) with `Comparison.distribution(outcome=, key=)`, and check it with one
-more solve at that premium. The 5 % quantile criterion reads several premiums as
-cases. Whether the library keeps `breakeven`, or offers the search in another form,
-is open.
+If the premium changes a decision on some paths, the plan is bracketed, and
+`largest.tested` shows each tested premium.
 
 ## Acceptance for #216
 
@@ -271,23 +264,20 @@ is open.
 7. `rk.execution.compare` pairs by path, rejects different paths and counts failed
    cases. The provision is negative on every path of `switch` and `both`
    (cell 19).
-8. `breakeven` passes these tests:
-   - invariant decisions give the exact premium, and it agrees with an
-     independent calculation on known data;
-   - changed decisions raise `decisions_changed`;
-   - a key that is not affine raises `breakeven_not_affine`.
-9. `best` returns a tested case only, and no function searches rule parameters.
+8. The premium queries of [ADR-024](024-search-as-query.md) pass its tests: the
+   exact plan agrees with an independent calculation on known data, and a changed
+   decision gives a bracketed plan.
+9. "Best tested" returns a tested case only, and a range over a rule's input is
+   refused.
 10. Lesson 07 cells 2 to 19 run on the CI path count.
 
 ## API names added
 
 - `rk.Specification.alternatives` (both forms).
 - `rk.execution.compare` and `rk.execution.Comparison` (shared with ADR-021).
-- `Comparison.by_case().breakeven` and `.best`.
+- The by-case table and its queries ([ADR-024](024-search-as-query.md)).
 - `rk.execution.Outcome.rollup` over a batch, and `Outcome.case(key=...).model`.
-- `rk.errors.DecisionsChangedError`.
-- Diagnostic codes: `missing_alternative`, `alternative_mismatch`,
-  `decisions_changed` and `breakeven_not_affine`.
+- Diagnostic codes: `missing_alternative` and `alternative_mismatch`.
 - Run record field: the realised alternative of each case.
 
 ## Alternatives and consequences
@@ -300,15 +290,14 @@ is open.
   maintainer chose explicit combined Models.
 - **Compose options as diffs from a common base.** It scales better, but it needs
   a diff application and a merge-conflict rule.
-- **`breakeven` interpolates when decisions change.** It gives a number in all
-  cases, but the number hides a changed policy. The maintainer chose to raise.
-- **Solve for the premium as a target over the batch.** This is a search over a
-  function that bends where decisions change. It mixes inverse solving with rules.
+- **A `breakeven` method.** It interpolated between premiums and raised when
+  decisions changed. [ADR-024](024-search-as-query.md) replaces it with a query,
+  which is exact when decisions do not change and bracketed when they do.
 
 The Specification format changes to pin several Model revisions. This is inside the
 1.0.0 format reset ([ADR-017](017-api-and-formats.md)). Lesson 07's proposed cells
 change in three places: cells 7 and 15 add `then="hotel"`; cell 18 uses the combined
-form; cell 14 states that `breakeven` raises when decisions change.
+form; cells 13 to 14b compose the premium, and exercise 2 queries it (ADR-024).
 
 ## Sources and related decisions
 

@@ -199,9 +199,12 @@ date, the decided values and the broken constraint (lesson 05, cell 7).
 - **Inverse solving.** A Specification with rules can have free inputs only when
   no observation depends on them. Each path then solves its free inputs with its
   final decisions. There is no target over a batch, such as a mean.
-- **Policy search** is not in the library. Several values of a rule parameter are a set of
-  cases, and cases multiply with paths. [ADR-022](022-design-alternatives.md)
-  `best` selects only from the tested cases.
+- **Search over a range of one value** is a query over a range of cases
+  ([ADR-024](024-search-as-query.md)). A range cannot vary a value that a rule
+  reads.
+- **Policy search** is not in the library. Several values of a rule parameter are a
+  set of listed cases, and cases multiply with paths. "Best tested" is a query over
+  those cases (ADR-024).
 
 ### Decision traces in the Run
 

@@ -300,7 +300,8 @@ check.distribution(outcome="At largest", key="equity_npv").mean  # about 0 AUD
 
 Narrative: a trigger chosen on the same paths that test it looks better than it is.
 Choose the switch trigger on lesson 04's paths, then test it on new paths from the
-same generator with a new seed.
+same generator with a new seed. The library tests listed triggers only: a search over a range of a
+trigger is refused, because it would tune the rule on these paths (ADR-024).
 
 ```python
 # cell 15
@@ -327,7 +328,7 @@ by_trigger = rk.execution.compare(
     keys=["equity_npv"],
     baseline="Timing",
 ).by_case()
-best = by_trigger.best(criterion=rk.execution.Criterion.MEAN)
+best = by_trigger.order_by(key="equity_npv.mean()", descending=True).first().case
 ```
 
 ```python
@@ -444,27 +445,29 @@ switch_vs_fixed.where(b_design="residential").summary()
 ```
 
 **Try it 2: a cautious criterion.** Find the largest justified premium under the 5 %
-quantile criterion. The quantile is not a straight line in the premium, so test
-several premiums as cases and read where the 5 % quantile of the gain crosses zero.
+quantile criterion. Write the criterion once, as a condition. Then ask for the
+largest premium in a range that meets it: the query searches the range.
 
 ```python
 # solution
-premiums = {
-    "0 AUD": {"provision": "0 AUD"},
-    "2.5e6 AUD": {"provision": "2.5e6 AUD"},
-    "5e6 AUD": {"provision": "5e6 AUD"},
-    "7.5e6 AUD": {"provision": "7.5e6 AUD"},
-}
-premium_cases = strategies["both"].cases(cases=premiums)
-premium_outcome = rk.execution.solve(
-    specification=premium_cases.across(paths=use_paths, series=use_series)
+cautious = "equity_npv.quantile(level=0.05) >= 0 AUD"
+premiums = strategies["both"].cases(
+    cases=rk.specification.Range(key="provision", first="0 AUD", last="10e6 AUD")
 )
-rk.execution.compare(
+premium_outcome = rk.execution.solve(
+    specification=premiums.across(paths=use_paths, series=use_series)
+)
+gains = rk.execution.compare(
     outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
     baseline="Timing",
-).by_case().summary()  # the 5 % quantile for each premium
+).by_case()
+largest = gains.where(condition=cautious).max(key="provision", tolerance="50e3 AUD")
+largest.value, largest.method, largest.bracket
 ```
+
+The same query over listed premiums gives the largest *tested* premium. Over a range,
+it is exact when no decision changes with the premium, and bracketed otherwise.
 
 **Try it 3: the switch without timing flexibility.** Is the switch worth more with or
 without lesson 05's rules?
@@ -523,12 +526,13 @@ solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 | 11 | 8 | G31: `distribution(key=).counts()` for a decided choice |
 | 12 | 7, 8 | G46 for batches: `Outcome.rollup(...)` over each case's realised Model |
 | 13–14b | 6, 8 | The largest premium composed from two runs (D36): G79: `Comparison.distribution(outcome=, key=)` gives the paired differences of one Outcome as a Distribution (G31) |
-| 15b | 8 | G68: `best(criterion=)` with `rk.execution.Criterion` |
+| 15c | 8 | G80: "best tested" as a query: `by_case().order_by(key=, descending=)` and `first()` |
 | 15–15c | 2 | G57: several triggers as cases; G75: `Specification.case(key=)` (cell 16) |
 | 16 | 4, 6 | G69: `Paths.regenerate(seed=)` rebuilds the generator from the capture record |
 | 17–17c | 2, 3 | G61, G17; G27 (`add_to(key=, term=)` adds a term to one side of an equation) |
 | 18 | 6 | G63 with two alternative keys at once; G50 (`rk.duration.NEVER`) |
 | 19 | 8 | G62, G33 |
+| Try it 2 | 6, 8 | G80: a `Range` of cases, a deferred Outcome, `where(condition=)` and `max(key=, tolerance=)`; the result's `value`, `method` and `bracket` (ADR-024) |
 
 ## Cells for #214
 
