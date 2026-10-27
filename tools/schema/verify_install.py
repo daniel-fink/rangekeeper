@@ -192,7 +192,7 @@ assert 'py-moneyed/3.0' in UnitSystem.implementation
 for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extrapolation', 'projection',
              'formula', 'dynamics', 'segmentation', 'policy', 'format', 'space',
              '_schema', '_records', '_record_index', '_revision', '_behaviors',
-             'graph', 'formulations', 'duration', 'scenarios', 'policies', 'execution',
+             'graph', 'formulations', 'scenarios', 'policies',
              'evidence', 'operation', 'account', 'metadata', 'table', 'units',
              'references', 'diagnostics', 'errors', 'validate', '_validation',
              '_encoding', '_structured', '_yaml', '_implementation'):
