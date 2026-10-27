@@ -23,14 +23,15 @@ from rangekeeper.duration import (
 from rangekeeper.duration.calendar import elapsed_days
 from rangekeeper.finance import projection
 from rangekeeper.finance.projection import ProjectionMethod
-from rangekeeper.flow import Flow, MissingValueHandling, Stream, series
-from rangekeeper.flow.series import ResamplingMethod
+from rangekeeper.flow import Flow, MissingValueHandling, ResamplingMethod, Stream
 from rangekeeper.model import (
     Assembly,
     Characteristics,
     Classification,
     Definitions,
+    Distribution,
     Entity,
+    Measure,
     Metadata,
     System,
     Taxonomy,
@@ -38,9 +39,8 @@ from rangekeeper.model import (
     ValueKind,
 )
 from rangekeeper.model.content import decode, encode
-from rangekeeper.model.distribution import Distribution
-from rangekeeper.model.measure import Measure
 from rangekeeper.quantity import Quantity
+from tests.streams import lines
 
 
 def amounts(flow):
@@ -92,9 +92,9 @@ def test_allocation_and_annual_resampling_preserve_total():
     flow = projection.distribute(Quantity(magnitude=100, units="AUD"), periods=periods)
     assert amounts(flow) == pytest.approx((4,) * 25)
     years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
-    reduced = series.resample(flow.negate(), periods=years, method=ResamplingMethod.SUM)
-    assert amounts(reduced.flow) == pytest.approx((-48, -48, -4))
-    assert reduced.flow.total().magnitude == pytest.approx(-100)
+    reduced = flow.negate().resample(years, method=ResamplingMethod.SUM)
+    assert amounts(reduced) == pytest.approx((-48, -48, -4))
+    assert reduced.total().magnitude == pytest.approx(-100)
 
 
 @pytest.mark.parametrize("frequency", ["day", "month", "quarter", "year"])
@@ -108,14 +108,11 @@ def test_resampling_uses_declared_calendar_bins(frequency):
     periods = make_periods(
         date(2020, 1, 1), frequency=Frequency(frequency), count=count
     )
-    result = series.resample(
-        source,
-        periods=periods,
-        method=ResamplingMethod.SUM,
-        missing=MissingValueHandling.ZERO,
+    result = source.resample(
+        periods, method=ResamplingMethod.SUM, missing=MissingValueHandling.ZERO
     )
-    assert result.flow.total().magnitude == 6
-    assert tuple(m.period for m in result.flow.movements) == periods
+    assert result.total().magnitude == 6
+    assert tuple(m.period for m in result.movements) == periods
 
 
 def test_sampling_is_explicit_before_allocation():
@@ -170,11 +167,8 @@ def test_stream_selection_and_mixed_frequency_totals():
     # Weekly coverage can cross a calendar-year boundary. Select payment timing
     # explicitly; a bounded coverage interval must not be assigned by accident.
     with pytest.raises(ValueError, match="crosses"):
-        series.resample(
-            flows[1],
-            periods=years,
-            method=ResamplingMethod.SUM,
-            missing=MissingValueHandling.ZERO,
+        flows[1].resample(
+            years, method=ResamplingMethod.SUM, missing=MissingValueHandling.ZERO
         )
     payments = tuple(
         Flow.from_events(
@@ -185,15 +179,12 @@ def test_stream_selection_and_mixed_frequency_totals():
         for value in stream.values
     )
     annual = tuple(
-        series.resample(
-            flow,
-            periods=years,
-            method=ResamplingMethod.SUM,
-            missing=MissingValueHandling.ZERO,
-        ).flow
+        flow.resample(
+            years, method=ResamplingMethod.SUM, missing=MissingValueHandling.ZERO
+        )
         for flow in payments
     )
-    assert series.aggregate(annual).flow.total().magnitude == pytest.approx(
+    assert lines(annual).aggregate().flow.total().magnitude == pytest.approx(
         0, abs=1e-12
     )
 
@@ -202,12 +193,12 @@ def test_product_preserves_units_and_explicit_exposure_removes_time():
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=1)
     rate = Flow.from_periods(periods, (math.pi,), units="AUD/meter**2/month")
     factor = Flow.from_periods(periods, (2,), units="dimensionless")
-    product = series.multiply((rate, factor))
+    product = rate.multiply(factor)
     assert product.convert(units="AUD/meter**2/month").movements[
         0
     ].magnitude == pytest.approx(2 * math.pi)
-    integrated = series.integrate(
-        product, exposures=(Quantity(magnitude=1, units="month"),), units="AUD/meter**2"
+    integrated = product.integrate(
+        exposures=(Quantity(magnitude=1, units="month"),), units="AUD/meter**2"
     )
     assert integrated.movements[0].magnitude == pytest.approx(2 * math.pi)
 

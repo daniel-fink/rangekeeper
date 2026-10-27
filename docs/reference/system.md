@@ -285,7 +285,7 @@ Consumers interpret their source data and create Models through public RK APIs.
 
 ```python
 from rangekeeper.model.system import Reduction, Contributor
-from rangekeeper.flow.series import ResamplingMethod
+from rangekeeper.flow import ResamplingMethod
 
 rollup = Reduction.flows(
     key="cashflow", periods=annual_periods,

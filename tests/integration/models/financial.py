@@ -6,8 +6,9 @@ from datetime import date
 from rangekeeper.duration import Frequency, make_periods
 from rangekeeper.finance import account, projection
 from rangekeeper.finance.account import Account, CurrentInterest, InterestTreatment
-from rangekeeper.flow import Flow, MissingValueHandling, series
+from rangekeeper.flow import AlignmentJoin, Flow, MissingValueHandling
 from rangekeeper.quantity import Quantity
+from tests.streams import lines
 
 
 @dataclass(frozen=True)
@@ -35,22 +36,22 @@ def build_accounts(
     construction = projection.distribute(
         Quantity(magnitude=-costs, units="AUD"), periods=periods[:9]
     )
-    draws = series.aggregate(
-        (purchase, construction),
-        join=series.AlignmentJoin.UNION,
-        missing=MissingValueHandling.ZERO,
-    ).flow
+    draws = (
+        lines((purchase, construction))
+        .aggregate(join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO)
+        .flow
+    )
     receipts = projection.distribute(
         Quantity(magnitude=payments, units="AUD"), periods=periods[9:]
     )
     equity_account = Account.calculate(
         draws, starting=Quantity(magnitude=equity, units="AUD")
     )
-    debt = series.aggregate(
-        (equity_account.overdraft.negate(), receipts.negate()),
-        join=series.AlignmentJoin.UNION,
-        missing=MissingValueHandling.ZERO,
-    ).flow
+    debt = (
+        lines((equity_account.overdraft.negate(), receipts.negate()))
+        .aggregate(join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO)
+        .flow
+    )
     loan = Account.calculate(
         debt,
         starting=Quantity(magnitude=0, units="AUD"),

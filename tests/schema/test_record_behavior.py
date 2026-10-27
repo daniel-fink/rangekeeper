@@ -8,12 +8,10 @@ from uuid import UUID, uuid4
 import pytest
 
 from rangekeeper.duration import PeriodTiming
-from rangekeeper.flow import MissingValueHandling
-from rangekeeper.flow.series import (
+from rangekeeper.flow import (
     AggregationMethod,
     AlignmentJoin,
-    aggregate,
-    align,
+    MissingValueHandling,
 )
 from rangekeeper.model import ClaimKind, Model, ValueKind
 from rangekeeper.model.validation import validate
@@ -21,6 +19,7 @@ from rangekeeper.schema import records as r
 from rangekeeper.schema.index import RecordIndex
 from rangekeeper.schema.runtime import UNSET
 from rangekeeper.shared.errors import ValidationError
+from tests.streams import lines
 
 DAY = date(2026, 1, 1)
 
@@ -129,9 +128,9 @@ def test_reduction_shares_units_claims_and_coverage(reducer, expected):
             r.Movement(id=uuid4(), key="a", date=DAY, magnitude=200, claims=(b, a)),
         ),
     )
-    aligned = align([left, right])
-    result = aligned.reduce(method=AggregationMethod(reducer))
-    independent = aggregate([left, right], method=AggregationMethod(reducer))
+    aligned = lines([left, right]).align()
+    result = aligned.aggregate(method=AggregationMethod(reducer))
+    independent = lines([left, right]).aggregate(method=AggregationMethod(reducer))
     assert independent.coverage == result.coverage
     assert independent.flow.movements[0].id != result.flow.movements[0].id
     assert (
@@ -149,35 +148,26 @@ def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
     known = r.Flow.from_events([DAY], [2], units="m")
     unknown = r.Flow.from_events([DAY], [None], units="m")
     empty = r.Flow(units="m", movements=())
-    skipped = aggregate(
-        [known, unknown],
-        method=AggregationMethod(reducer),
-        missing=MissingValueHandling.SKIP,
+    skipped = lines([known, unknown]).aggregate(
+        method=AggregationMethod(reducer), missing=MissingValueHandling.SKIP
     )
     assert skipped.flow.movements[0].number == 2
     assert skipped.coverage == (0.5,)
     assert (
-        aggregate(
-            [unknown, unknown],
-            method=AggregationMethod(reducer),
-            missing=MissingValueHandling.SKIP,
-        )
+        lines([unknown, unknown])
+        .aggregate(method=AggregationMethod(reducer), missing=MissingValueHandling.SKIP)
         .flow.movements[0]
         .magnitude
         is None
     )
     assert (
-        aggregate(
-            [known, unknown],
-            method=AggregationMethod(reducer),
-            missing=MissingValueHandling.ZERO,
-        )
+        lines([known, unknown])
+        .aggregate(method=AggregationMethod(reducer), missing=MissingValueHandling.ZERO)
         .flow.movements[0]
         .magnitude
         is None
     )
-    filled = aggregate(
-        [known, empty],
+    filled = lines([known, empty]).aggregate(
         method=AggregationMethod(reducer),
         missing=MissingValueHandling.ZERO,
         join=AlignmentJoin.UNION,
@@ -185,7 +175,7 @@ def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
     assert filled.flow.movements[0].number == (0 if reducer == "min" else 2)
     assert filled.coverage == (0.5,)
     # Alignment must not add explicit null Claims to a present movement.
-    assert not align([known, known]).flows[0].movements[0].has_field("claims")
+    assert not lines([known, known]).align().flows[0].movements[0].has_field("claims")
 
 
 def test_model_builds_one_index_and_reuses_it_for_validation(monkeypatch):
@@ -219,14 +209,18 @@ def test_generated_classes_properties_and_replacement_have_documentation():
 def test_zero_filling_converts_to_target_units():
     first = r.Flow.from_events([DAY], [1], units="m")
     second = r.Flow.from_events([date(2026, 1, 2)], [1], units="ft")
-    result = aggregate(
-        [first, second], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
+    result = lines([first, second]).aggregate(
+        join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
     )
     assert [m.number for m in result.flow.movements] == pytest.approx([1.0, 0.3048])
     assert result.coverage == (0.5, 0.5)
-    independent = align(
-        [first, second], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
-    ).reduce()
+    independent = (
+        lines(
+            [first, second], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
+        )
+        .align()
+        .aggregate()
+    )
     assert independent.coverage == result.coverage
     assert [m.number for m in independent.flow.movements] == [
         m.number for m in result.flow.movements

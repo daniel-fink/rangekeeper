@@ -26,17 +26,19 @@ from rangekeeper.finance.account import (
     InterestTreatment,
 )
 from rangekeeper.finance.projection import PaddingMode, ProjectionMethod
-from rangekeeper.flow import Flow, MissingValueHandling, Stream, series
-from rangekeeper.flow.series import (
+from rangekeeper.flow import (
     AggregationMethod,
     AlignmentJoin,
+    Flow,
     MeanWeighting,
+    MissingValueHandling,
     ResamplingMethod,
+    Stream,
 )
 from rangekeeper.io import json as codec
 from rangekeeper.io.memory import MemoryStore
+from rangekeeper.model import Distribution
 from rangekeeper.model.content import ContentKind, decode, encode
-from rangekeeper.model.distribution import Distribution
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import DistributionFamily, ValueKind
 from rangekeeper.schema.records import (
@@ -49,6 +51,7 @@ from rangekeeper.schema.records import (
     System,
     Value,
 )
+from tests.streams import lines
 
 
 def annual(values, *, units="AUD"):
@@ -235,25 +238,26 @@ def test_duplicate_events_order_and_periods():
 def test_units_and_factor_product():
     rent = annual([100, 200], units="AUD/month")
     factor = annual([120, 50], units="percent")
-    result = series.multiply((rent, factor)).convert(units="AUD/month")
+    result = rent.multiply(factor).convert(units="AUD/month")
     assert [s.magnitude for s in result.movements] == [120, 100]
-    amount = series.integrate(
-        rent, exposures=(Quantity(magnitude=2, units="month"),) * 2, units="AUD"
+    amount = rent.integrate(
+        exposures=(Quantity(magnitude=2, units="month"),) * 2, units="AUD"
     )
     assert [s.magnitude for s in amount.movements] == [200, 400]
     # Summation preserves units; the model decides whether it is meaningful.
     assert rent.total().magnitude == 300
     assert rent.total().units == "AUD/month"
     with pytest.raises(ValueError):
-        series.aggregate((annual([1]), annual([1], units="USD")))
+        lines((annual([1]), annual([1], units="USD"))).aggregate()
     length = annual([1], units="m")
     assert (
-        series.aggregate((length, annual([100], units="cm")))
+        lines((length, annual([100], units="cm")))
+        .aggregate()
         .flow.movements[0]
         .magnitude
         == 2
     )
-    assert series.multiply((length, length)).units == "meter ** 2"
+    assert length.multiply(length).units == "meter ** 2"
 
 
 def test_explicit_calendar_integration():
@@ -261,8 +265,8 @@ def test_explicit_calendar_integration():
     rates = Flow.from_periods(periods, [3660, 3660], units="AUD/year")
     assert [
         s.magnitude
-        for s in series.integrate(
-            rates, day_count=DayCount.ACTUAL_ACTUAL, units="AUD"
+        for s in rates.integrate(
+            day_count=DayCount.ACTUAL_ACTUAL, units="AUD"
         ).movements
     ] == pytest.approx([310, 290])
 
@@ -271,32 +275,32 @@ def test_missing_alignment_and_coverage():
     a = annual([1, None, 0])
     b = annual([2, 3, 4])
     with pytest.raises(ValueError):
-        series.aggregate((a, b))
-    result = series.aggregate((a, b), missing=MissingValueHandling.PROPAGATE)
+        lines((a, b)).aggregate()
+    result = lines((a, b)).aggregate(missing=MissingValueHandling.PROPAGATE)
     assert [s.magnitude for s in result.flow.movements] == [
         3,
         None,
         4,
     ] and result.coverage == (1, 0.5, 1)
     assert (
-        series.aggregate((a, b), missing=MissingValueHandling.SKIP)
+        lines((a, b))
+        .aggregate(missing=MissingValueHandling.SKIP)
         .flow.movements[1]
         .magnitude
         == 3
     )
     assert (
-        series.aggregate(
-            (annual([None]), annual([None])), missing=MissingValueHandling.SKIP
-        )
+        lines((annual([None]), annual([None])))
+        .aggregate(missing=MissingValueHandling.SKIP)
         .flow.movements[0]
         .magnitude
         is None
     )
     with pytest.raises(ValueError):
-        series.align((a, annual([1])))
-    aligned = series.align(
+        lines((a, annual([1]))).align()
+    aligned = lines(
         (a, annual([1])), join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
-    )
+    ).align()
     assert (
         aligned.flows[0].movements[1].magnitude is None
         and aligned.flows[1].movements[1].magnitude == 0
@@ -311,32 +315,27 @@ def test_resample_complete_calendar_and_explicit_reduction():
     )
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
     with pytest.raises(ValueError):
-        series.resample(flow, periods=periods, method=ResamplingMethod.SUM)
-    result = series.resample(
-        flow,
-        periods=periods,
-        method=ResamplingMethod.SUM,
-        missing=MissingValueHandling.ZERO,
+        lines([flow]).resample(periods, method=ResamplingMethod.SUM)
+    result = lines([flow]).resample(
+        periods, method=ResamplingMethod.SUM, missing=MissingValueHandling.ZERO
     )
-    assert [s.magnitude for s in result.flow.movements] == [
+    assert [s.magnitude for s in result.flows[0].movements] == [
         30,
         0,
         40,
-    ] and result.coverage == (1, 0, 1)
-    assert result.flow.total().magnitude == 70
+    ] and result.coverage["0"] == (1, 0, 1)
+    assert result.flows[0].total().magnitude == 70
     stocks = Flow.from_events(
         [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="dwelling"
     )
     assert (
-        series.resample(stocks, periods=periods[:1], method=ResamplingMethod.LAST)
-        .flow.movements[0]
+        stocks.resample(periods[:1], method=ResamplingMethod.LAST)
+        .movements[0]
         .magnitude
         == 20
     )
     assert (
-        series.resample(stocks, periods=periods[:1], method=ResamplingMethod.SUM)
-        .flow.movements[0]
-        .magnitude
+        stocks.resample(periods[:1], method=ResamplingMethod.SUM).movements[0].magnitude
         == 30
     )
 
@@ -475,22 +474,16 @@ def test_weighted_rates_and_partial_period_helpers():
     rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
     target = (make_period(date(2020, 1, 1), date(2020, 3, 1)),)
     with pytest.raises(ValueError, match="weighting"):
-        series.resample(rates, periods=target, method=ResamplingMethod.MEAN)
-    result = series.resample(
-        rates,
-        periods=target,
-        method=ResamplingMethod.MEAN,
-        weighting=MeanWeighting.ELAPSED,
+        rates.resample(target, method=ResamplingMethod.MEAN)
+    result = rates.resample(
+        target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.ELAPSED
     )
-    assert result.flow.movements[0].magnitude == pytest.approx((31 * 10 + 29 * 20) / 60)
+    assert result.movements[0].magnitude == pytest.approx((31 * 10 + 29 * 20) / 60)
     assert (
-        series.resample(
-            rates,
-            periods=target,
-            method=ResamplingMethod.MEAN,
-            weighting=MeanWeighting.OBSERVATIONS,
+        rates.resample(
+            target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.OBSERVATIONS
         )
-        .flow.movements[0]
+        .movements[0]
         .magnitude
         == 15
     )
@@ -514,7 +507,8 @@ def test_weighted_rates_and_partial_period_helpers():
         3,
     ]
     assert (
-        series.aggregate((annual([1, 4]), annual([3, 2])), method=AggregationMethod.MIN)
+        lines((annual([1, 4]), annual([3, 2])))
+        .aggregate(method=AggregationMethod.MIN)
         .flow.movements[1]
         .magnitude
         == 2

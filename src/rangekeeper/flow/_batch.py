@@ -234,7 +234,7 @@ class Batch:
         )
 
     def grid(self, join):
-        from rangekeeper.flow.series import AlignmentJoin
+        from rangekeeper.flow._options import AlignmentJoin
 
         if not isinstance(join, AlignmentJoin):
             raise TypeError("join must be an AlignmentJoin")
@@ -264,6 +264,25 @@ class Batch:
             )
         )
 
+    def aligned(self, flows, coverage):
+        """Mark the original coverage of aligned Flows; a filled zero stays absent."""
+        pl = polars()
+        known = [known for row in coverage for known in row]
+        present = [
+            k or m.magnitude is None
+            for f, row in zip(flows, coverage, strict=True)
+            for m, k in zip(f.movements, row, strict=True)
+        ]
+        return Batch(
+            self.frame.with_columns(
+                pl.Series("known", known, dtype=pl.Boolean),
+                pl.Series("present", present, dtype=pl.Boolean),
+            ),
+            self.units,
+            self.coordinates,
+            self.metadata,
+        )
+
     def aggregate(self, *, method, units, missing, join):
         return self.aggregate_groups(
             (tuple(range(len(self.units))),),
@@ -275,7 +294,7 @@ class Batch:
 
     def aggregate_groups(self, groups, *, method, units, missing, join):
         """Convert inputs once and reduce all selected contributor groups in one batch."""
-        from rangekeeper.flow.series import (
+        from rangekeeper.flow._options import (
             AggregationMethod,
             AlignmentJoin,
             FlowAggregate,
@@ -418,7 +437,7 @@ class Batch:
         return tuple(results)
 
     def resample(self, periods, *, methods, weightings, missing):
-        from rangekeeper.flow.series import MeanWeighting, ResamplingMethod
+        from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
 
         if not isinstance(missing, Missing):
             raise TypeError("missing must be a MissingValueHandling")
@@ -567,3 +586,49 @@ class Batch:
             ),
             metadata,
         )
+
+
+def align(flows, *, join, missing):
+    """Align exact coordinates; fill only absent rows when ZERO is requested.
+
+    Return the aligned Flows and, for each Flow, the coordinates with a known value.
+    """
+    from rangekeeper.flow._options import AlignmentJoin
+
+    if not isinstance(missing, Missing) or not isinstance(join, AlignmentJoin):
+        raise TypeError("missing and join require their enum types")
+    batch = Batch.prepare(flows)
+    grid = batch.grid(join)
+    templates: dict[tuple, Movement] = {}
+    mappings = []
+    for flow in flows:
+        mapping = flow.coordinate_index()
+        mappings.append(mapping)
+        for key, movement in mapping.items():
+            templates.setdefault(key, movement)
+    aligned, coverages = [], []
+    for flow, mapping in zip(flows, mappings, strict=True):
+        movements, coverage = [], []
+        for index in grid:
+            key = batch.coordinates[index]
+            present = key in mapping
+            source = mapping.get(key, templates[key])
+            known = present and source.magnitude is not None
+            if not known and missing is Missing.ERROR:
+                raise ValueError("missing/unresolved movement")
+            magnitude = (
+                source.magnitude
+                if present
+                else 0.0
+                if missing is Missing.ZERO
+                else None
+            )
+            movements.append(
+                source
+                if present
+                else source.replace(id=uuid4(), magnitude=magnitude, claims=())
+            )
+            coverage.append(known)
+        aligned.append(flow.replace(movements=tuple(movements)))
+        coverages.append(tuple(coverage))
+    return tuple(aligned), tuple(coverages)

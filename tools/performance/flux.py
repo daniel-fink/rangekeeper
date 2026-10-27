@@ -8,8 +8,7 @@ from datetime import date
 from pathlib import Path
 
 from rangekeeper.duration import Frequency, make_periods
-from rangekeeper.flow import Flow, Stream
-from rangekeeper.flow.series import ResamplingMethod
+from rangekeeper.flow import Flow, ResamplingMethod, Stream
 
 
 def run(count, months):

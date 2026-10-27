@@ -4,7 +4,7 @@ from datetime import date
 from uuid import uuid4
 
 from rangekeeper.flow import Flow, Movement
-from rangekeeper.model.distribution import Distribution
+from rangekeeper.model import Distribution
 
 movement = Movement(id=uuid4(), key="event", date=date(2026, 1, 1))
 movement.replace(magnitude="wrong")

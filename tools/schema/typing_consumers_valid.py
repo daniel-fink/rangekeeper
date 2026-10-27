@@ -1,8 +1,7 @@
 """Statically checked Model projection and source workflow calls."""
 
 from rangekeeper import Model
-from rangekeeper.model import Value
-from rangekeeper.model.distribution import Distribution
+from rangekeeper.model import Distribution, Value
 from rangekeeper.model.scenario import Market
 from rangekeeper.model.system import Hierarchy, View
 from rangekeeper.model.system.table import ValueColumn, to_table

@@ -9,8 +9,7 @@ import numpy as np
 import pytest
 
 from rangekeeper.duration import Frequency, make_periods
-from rangekeeper.model import Binding, Metadata, Model
-from rangekeeper.model.distribution import Distribution
+from rangekeeper.model import Binding, Distribution, Metadata, Model
 from rangekeeper.model.scenario import Market, market
 from rangekeeper.schema.enums import DistributionFamily
 

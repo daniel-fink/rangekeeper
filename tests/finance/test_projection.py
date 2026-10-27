@@ -7,7 +7,7 @@ import pytest
 from rangekeeper.duration import Frequency, make_periods
 from rangekeeper.finance import projection
 from rangekeeper.finance.projection import PaddingMode, ProjectionMethod
-from rangekeeper.model.distribution import Distribution
+from rangekeeper.model import Distribution
 from rangekeeper.quantity import Quantity
 
 

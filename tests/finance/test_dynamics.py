@@ -12,7 +12,7 @@ from rangekeeper.finance.dynamics import (
     calculate_shock,
     calculate_trend,
 )
-from rangekeeper.model.distribution import Distribution, DistributionFamily
+from rangekeeper.model import Distribution, DistributionFamily
 
 
 def test_trend_preserves_explicit_initial_value_and_default_price_factor():

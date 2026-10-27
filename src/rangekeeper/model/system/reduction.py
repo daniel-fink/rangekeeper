@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from rangekeeper.duration import Period
     from rangekeeper.flow import MissingValueHandling
-    from rangekeeper.flow.series import (
+    from rangekeeper.flow._options import (
         AggregationMethod,
         AlignmentJoin,
         MeanWeighting,
@@ -439,7 +439,7 @@ class Reduction:
     ) -> "Reduction":
         """Select owner-local Flow Values and combine original contributors per subtree."""
         from rangekeeper.flow import MissingValueHandling
-        from rangekeeper.flow.series import (
+        from rangekeeper.flow._options import (
             AggregationMethod,
             AlignmentJoin,
             ResamplingMethod,
@@ -586,7 +586,7 @@ class Reduction:
         aggregates: Mapping[UUID, UUID],
     ):
         """Declare hierarchy sums over the same original structural contributors."""
-        from rangekeeper.flow.series import AggregationMethod
+        from rangekeeper.flow._options import AggregationMethod
         from rangekeeper.model.formulation.hierarchy import formulate
 
         if self._flow is None or self._flow.aggregation is not AggregationMethod.SUM:

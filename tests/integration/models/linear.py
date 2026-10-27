@@ -2,8 +2,9 @@
 
 from rangekeeper.duration import Frequency, PeriodTiming, make_periods, offset
 from rangekeeper.finance import financial, projection
-from rangekeeper.flow import Flow, MissingValueHandling, series
+from rangekeeper.flow import AlignmentJoin, Flow, MissingValueHandling
 from rangekeeper.quantity import Quantity
+from tests.streams import lines
 
 
 class Model:
@@ -24,22 +25,22 @@ class Model:
             rate=params["growth_rate"],
         )
         self.vacancy = self.pgi.scale(-params["vacancy_rate"])
-        self.egi = series.aggregate((self.pgi, self.vacancy)).flow
+        self.egi = lines((self.pgi, self.vacancy)).aggregate().flow
         self.opex = self.pgi.scale(-params["opex_pgi_ratio"])
-        self.noi = series.aggregate((self.egi, self.opex)).flow
+        self.noi = lines((self.egi, self.opex)).aggregate().flow
         self.capex = self.pgi.scale(-params["capex_pgi_ratio"])
-        projected_ncf = series.aggregate((self.noi, self.capex)).flow
+        projected_ncf = lines((self.noi, self.capex)).aggregate().flow
         self.ncf = Flow(units=units, movements=projected_ncf.movements[:-1])
         self.disposition = Flow.from_periods(
             periods[-2:-1],
             (projected_ncf.movements[-1].magnitude / params["cap_rate"],),
             units=units,
         )
-        self.ncf_disposition = series.aggregate(
-            (self.ncf, self.disposition),
-            join=series.AlignmentJoin.UNION,
-            missing=MissingValueHandling.ZERO,
-        ).flow
+        self.ncf_disposition = (
+            lines((self.ncf, self.disposition))
+            .aggregate(join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO)
+            .flow
+        )
         # All proceeds share one valuation origin; terminal proceeds are discounted
         # over the full holding period instead of restarting at their first sample.
         self.pv_sums = financial.calculate_pv(
@@ -51,11 +52,11 @@ class Model:
         self.acquisition = Flow.from_periods(
             acquisition_period, (-abs(params["acquisition_price"]),), units=units
         )
-        self.investment_cashflows = series.aggregate(
-            (self.acquisition, self.ncf_disposition),
-            join=series.AlignmentJoin.UNION,
-            missing=MissingValueHandling.ZERO,
-        ).flow
+        self.investment_cashflows = (
+            lines((self.acquisition, self.ncf_disposition))
+            .aggregate(join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO)
+            .flow
+        )
         self.irr = financial.calculate_irr(
             self.investment_cashflows, timing=PeriodTiming.LAST
         )
