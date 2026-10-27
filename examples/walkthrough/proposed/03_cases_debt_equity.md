@@ -75,10 +75,12 @@ the plan's total. The other packages follow the same rule.
 
 ```python
 # cell 4
-hard = sum(
-    plan.areas["building_a"][use] * plan.rates[use] for use in plan.areas["building_a"]
-)
-assert rk.quantity.isclose(actual=hard * 1.2, expected=plan["a_cost"])
+areas = plan.areas["building_a"]
+hard_costs = sum(areas[use] * plan.rates[use] for use in areas)
+soft_costs = 0.10 * hard_costs
+contingency = 0.10 * hard_costs
+budget = hard_costs + soft_costs + contingency
+assert rk.quantity.isclose(actual=budget, expected=plan["a_cost"])
 ```
 
 ## 3. The dated Model
