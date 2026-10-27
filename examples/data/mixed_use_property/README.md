@@ -27,4 +27,4 @@ The Rangekeeper code is licensed separately, under MPL-2.0.
 
 Do not edit the source capture or the derived files by hand. A change to a file
 in this folder needs a matching change to its manifest entry. The test
-`tests/test_example_data.py` checks the manifest and the origins.
+`tests/walkthrough/test_example_data.py` checks the manifest and the origins.

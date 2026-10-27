@@ -128,8 +128,9 @@ paths:
     status: agreed
     source: ADR-018
     note: >-
-      The pass moves the suite to the top level. Sub-folders that mirror the
-      packages, and tests/contracts and tests/integration, follow in the pass.
+      The pass moves the suite to the top level. #177 adds the sub-folders
+      that mirror the packages, and tests/contracts, tests/integration and
+      tests/walkthrough.
 
 # Renames of module-level names: classes, functions and constants. `module` is
 # the defining module before the pass. `new_module` moves the name to another
