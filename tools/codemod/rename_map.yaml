@@ -35,6 +35,8 @@ exclude:
   - CHANGELOG.md
   - changelog.d/**
   - examples/walkthrough/proposed/**
+  - tests/contracts/test_retirement.py
+  - tests/contracts/test_retired_system_names.py
   - walkthrough/**
   - src/rangekeeper/schema/records.py
   - src/rangekeeper/schema/enums.py
