@@ -13,20 +13,20 @@ from rangekeeper.finance.account import (
     CurrentInterest,
     InterestTreatment,
 )
-from rangekeeper.flow import Flow, MissingValueHandling, series
-from rangekeeper.flow.series import AlignmentJoin
+from rangekeeper.flow import AlignmentJoin, Flow, MissingValueHandling
 from rangekeeper.quantity import Quantity
 from tests.integration.models.financial import build_accounts
+from tests.streams import lines
 
 
 class TestFinancial:
     def test_simple_interest(self):
         example = build_accounts()
-        transactions = series.aggregate(
-            (example.draws, example.payments),
-            join=AlignmentJoin.UNION,
-            missing=MissingValueHandling.ZERO,
-        ).flow
+        transactions = (
+            lines((example.draws, example.payments))
+            .aggregate(join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO)
+            .flow
+        )
         result = Account.calculate(
             transactions, starting=Quantity(magnitude=0, units="AUD"), rate=0.05 / 12
         )
@@ -80,11 +80,11 @@ class TestFinancial:
     def test_balances(self):
         example = build_accounts(equity=176631.99)
         assert example.equity.closing.movements[2].magnitude == approx(9965.32)
-        profit = series.aggregate(
-            (example.equity.difference(), example.loan.overdraft.negate()),
-            join=AlignmentJoin.UNION,
-            missing=MissingValueHandling.ZERO,
-        ).flow
+        profit = (
+            lines((example.equity.difference(), example.loan.overdraft.negate()))
+            .aggregate(join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO)
+            .flow
+        )
         assert profit.total().magnitude == approx(495337.17)
 
 

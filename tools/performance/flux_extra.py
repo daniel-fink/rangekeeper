@@ -10,7 +10,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from rangekeeper.duration import Frequency, make_periods
-from rangekeeper.flow import series
+from rangekeeper.flow import ResamplingMethod, Stream
 from rangekeeper.model import (
     Assembly,
     Characteristics,
@@ -70,11 +70,9 @@ def hierarchy_case(legacy):
     if legacy:
         # Explicit baseline composition: original contributor flows, one temporal
         # resampling per contributor, then an aggregate for each requested subtree.
-        method = getattr(series, "Resampling" + "Reduction").SUM
+        method = ResamplingMethod.SUM
         selected = {
-            e.id: series.resample(
-                e.characteristics.values[0].flow, periods=years, **{"reduction": method}
-            ).flow
+            e.id: e.characteristics.values[0].flow.resample(years, method=method)
             for e in entities
         }
         populations = {}
@@ -85,14 +83,14 @@ def hierarchy_case(legacy):
                 f for child in children for f in populations[child]
             ]
             populations[owner] = population
-            results[owner] = series.aggregate(population).flow
+            results[owner] = Stream({str(i): f for i, f in enumerate(population)}).sum()
         total = results[root.id]
         first = results[buildings[0].id]
     else:
         from rangekeeper.model.system import Reduction
 
         result = Reduction.flows(
-            key="cashflow", periods=years, resampling=series.ResamplingMethod.SUM
+            key="cashflow", periods=years, resampling=ResamplingMethod.SUM
         ).execute(hierarchy)
         total = result.root_value
         first = result.value(buildings[0].id)
@@ -125,20 +123,18 @@ def mixed_case(legacy):
     )
     start = time.perf_counter()
     if legacy:
-        method = getattr(series, "Resampling" + "Reduction").SUM
+        method = ResamplingMethod.SUM
         parts = [
-            series.resample(
-                f, periods=annual, missing=Missing.SKIP, **{"reduction": method}
-            ).flow
+            f.resample(annual, method=method, missing=Missing.SKIP)
             for f in flows.values()
         ]
-        result = series.aggregate(parts, missing=Missing.SKIP).flow
+        result = Stream({str(i): f for i, f in enumerate(parts)}).sum(
+            missing=Missing.SKIP
+        )
     else:
-        from rangekeeper.flow import Stream
-
         result = (
             Stream(flows, missing=Missing.SKIP)
-            .resample(annual, method=series.ResamplingMethod.SUM)
+            .resample(annual, method=ResamplingMethod.SUM)
             .sum()
         )
     elapsed = time.perf_counter() - start

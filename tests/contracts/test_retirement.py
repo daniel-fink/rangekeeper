@@ -82,3 +82,17 @@ for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system
     assert not any(m == name or m.startswith(name + '.') for m in sys.modules), name
 """
     subprocess.run([sys.executable, "-c", script], check=True, capture_output=True)
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "rangekeeper.flow.series",
+        "rangekeeper.calculations",
+        "rangekeeper.model.measure",
+        "rangekeeper.model.distribution",
+        "rangekeeper.io.migration",
+    ],
+)
+def test_removed_1_0_modules_are_absent(name):
+    assert importlib.util.find_spec(name) is None

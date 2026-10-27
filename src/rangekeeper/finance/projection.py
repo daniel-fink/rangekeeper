@@ -8,8 +8,8 @@ from enum import Enum, unique
 
 from rangekeeper.duration import Period
 from rangekeeper.flow import Flow
-from rangekeeper.model.distribution import Distribution
 from rangekeeper.quantity import Quantity
+from rangekeeper.schema.records import Distribution
 
 
 @unique

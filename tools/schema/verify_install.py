@@ -451,7 +451,7 @@ assert polars.dates(flow)['date'].to_list() == [date(2026, 1, 1)]
 assert '&lt;Cash&gt; [AUD]' in flow.display(name='<Cash>')._repr_html_()
 assert 'Flow [AUD]' in flow._repr_html_()
 from rangekeeper.flow import Stream
-from rangekeeper.flow.series import AlignmentJoin
+from rangekeeper.flow import AlignmentJoin
 sparse = Flow.from_events([date(2026, 1, 1), date(2026, 1, 2)], [0, None], units='AUD')
 full = Flow.from_events([date(2026, 1, day) for day in range(1, 13)], [1234.567] * 12, units='AUD')
 display_stream = Stream({'Receipts': sparse, 'Balance': full}, join=AlignmentJoin.UNION)

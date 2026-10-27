@@ -11,11 +11,11 @@ import pytest
 
 from rangekeeper.duration import Frequency, Span, make_periods
 from rangekeeper.execution import Executor
+from rangekeeper.flow import AlignmentJoin as Join
 from rangekeeper.flow import Flow, Stream
+from rangekeeper.flow import MeanWeighting as Weight
 from rangekeeper.flow import MissingValueHandling as Missing
-from rangekeeper.flow.series import AlignmentJoin as Join
-from rangekeeper.flow.series import MeanWeighting as Weight
-from rangekeeper.flow.series import ResamplingMethod as R
+from rangekeeper.flow import ResamplingMethod as R
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import Quantity, Reference, Update
 from rangekeeper.model.formulation import flow

@@ -7,6 +7,13 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
+from rangekeeper.flow._options import (
+    AggregationMethod,
+    AlignmentJoin,
+    FlowAggregate,
+    MeanWeighting,
+    ResamplingMethod,
+)
 from rangekeeper.schema.behaviors.flow import MissingValueHandling
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.records import Flow, Movement, Value
@@ -14,18 +21,21 @@ from rangekeeper.schema.records import Flow, Movement, Value
 if TYPE_CHECKING:
     from polars import DataFrame
 
-    from rangekeeper.duration import Period, Span
+    from rangekeeper.duration import Period
     from rangekeeper.flow._batch import Batch
-    from rangekeeper.flow.series import (
-        AggregationMethod,
-        AlignmentJoin,
-        FlowAggregate,
-        MeanWeighting,
-        ResamplingMethod,
-    )
     from rangekeeper.model.model import Model
 
-__all__ = ["Flow", "Movement", "Stream", "MissingValueHandling"]
+__all__ = [
+    "Flow",
+    "Movement",
+    "Stream",
+    "FlowAggregate",
+    "AlignmentJoin",
+    "AggregationMethod",
+    "ResamplingMethod",
+    "MeanWeighting",
+    "MissingValueHandling",
+]
 
 
 @dataclass(frozen=True, init=False, eq=False)
@@ -53,8 +63,6 @@ class Stream:
         missing: MissingValueHandling = MissingValueHandling.ERROR,
         join: AlignmentJoin | None = None,
     ):
-        from rangekeeper.flow.series import AlignmentJoin
-
         if not isinstance(flows, Mapping):
             raise TypeError(
                 "Stream requires a name-to-Flow mapping; use from_values for a Model selection"
@@ -82,8 +90,6 @@ class Stream:
         batch,
         symbolic,
     ):
-        from rangekeeper.flow.series import AlignmentJoin
-
         if any(
             not isinstance(label, str) or not label.strip() for label in names
         ) or len(set(names)) != len(names):
@@ -121,8 +127,6 @@ class Stream:
         join: AlignmentJoin | None = None,
     ) -> Stream:
         """Pin original Values; duplicate identities or ambiguous names are errors."""
-        from rangekeeper.flow.series import AlignmentJoin
-
         ids = tuple(value_ids)
         if len(set(ids)) != len(ids):
             raise ValueError("Stream cannot count the same Value twice")
@@ -262,13 +266,24 @@ class Stream:
                 ids.append(other.value_ids[i])
         return self._derive(names=names, flows=tuple(flows), ids=ids)
 
-    def trim(self, span: Span) -> Stream:
+    def align(self) -> Stream:
+        """Put every line on common coordinates with the join and missing policies.
+
+        An absent coordinate becomes zero with ``ZERO`` and unresolved otherwise.
+        Coverage and aggregation keep the original known values, so a filled zero
+        stays absent.
+        """
+        from rangekeeper.flow._batch import Batch, align
+
+        flows, coverage = align(self.flows, join=self.join, missing=self.missing)
+        batch = Batch.prepare(flows).aligned(flows, coverage)
+        return self._derive(flows=flows, batch=batch, symbolic=False)
+
+    def trim(self, span: Period) -> Stream:
         """Select whole periods or dates inside an extent without allocating amounts."""
         if self._batch is None:
             span.check()
-            return self._derive(
-                flows=tuple(f.trim(start=span.start, end=span.end) for f in self.flows)
-            )
+            return self._derive(flows=tuple(f.trim(span) for f in self.flows))
         return self._derive(batch=self._batch.trim(span))
 
     def resample(
@@ -280,8 +295,6 @@ class Stream:
         missing: MissingValueHandling | None = None,
     ) -> Stream:
         """Group each line onto explicit periods; declare all line-specific methods."""
-        from rangekeeper.flow.series import ResamplingMethod
-
         if isinstance(method, Mapping):
             if set(method) != set(self.names):
                 raise ValueError("method mapping must cover every label exactly")
@@ -340,8 +353,6 @@ class Stream:
         join: AlignmentJoin | None = None,
     ) -> FlowAggregate:
         """Combine compatible line items at matching coordinates and report known coverage."""
-        from rangekeeper.flow.series import AggregationMethod
-
         return self._prepared().aggregate(
             method=AggregationMethod.SUM if method is None else method,
             units=units,
@@ -357,8 +368,6 @@ class Stream:
         join: AlignmentJoin | None = None,
     ) -> Flow:
         """Return the elementwise sum; use aggregate for coverage details."""
-        from rangekeeper.flow.series import AggregationMethod
-
         return self.aggregate(
             method=AggregationMethod.SUM, units=units, missing=missing, join=join
         ).flow
@@ -371,8 +380,6 @@ class Stream:
         join: AlignmentJoin | None = None,
     ) -> Flow:
         """Return the elementwise minimum; use aggregate for coverage details."""
-        from rangekeeper.flow.series import AggregationMethod
-
         return self.aggregate(
             method=AggregationMethod.MIN, units=units, missing=missing, join=join
         ).flow
@@ -385,8 +392,6 @@ class Stream:
         join: AlignmentJoin | None = None,
     ) -> Flow:
         """Return the elementwise maximum; use aggregate for coverage details."""
-        from rangekeeper.flow.series import AggregationMethod
-
         return self.aggregate(
             method=AggregationMethod.MAX, units=units, missing=missing, join=join
         ).flow

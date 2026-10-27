@@ -24,6 +24,9 @@ from rangekeeper.schema.records import (
     Definitions as Definitions,
 )
 from rangekeeper.schema.records import (
+    Distribution as Distribution,
+)
+from rangekeeper.schema.records import (
     Domain as Domain,
 )
 from rangekeeper.schema.records import (
@@ -108,6 +111,7 @@ __all__ = [
     "Taxonomy",
     "Classification",
     "Function",
+    "Distribution",
     "Domain",
     "Formulation",
     "Binding",
@@ -124,6 +128,11 @@ __all__ = [
     "Fact",
 ]
 
-from rangekeeper.schema.enums import ClaimKind, ReconciliationStatus, ValueKind
+from rangekeeper.schema.enums import (
+    ClaimKind,
+    DistributionFamily,
+    ReconciliationStatus,
+    ValueKind,
+)
 
-__all__ += ["ValueKind", "ClaimKind", "ReconciliationStatus"]
+__all__ += ["ValueKind", "ClaimKind", "ReconciliationStatus", "DistributionFamily"]

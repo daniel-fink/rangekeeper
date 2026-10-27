@@ -92,7 +92,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.flux` | `rangekeeper.flow` | draft | Stream and the Flow re-exports become the `flow` package module. |
 | `rangekeeper.model._flow_mapping` | `rangekeeper.flow._mapping` | draft |  |
 | `rangekeeper.calculations._batch` | `rangekeeper.flow._batch` | draft | The private calculation engine. |
-| `rangekeeper.calculations.series` | `rangekeeper.flow.series` | draft | Interim location. ADR-010 removes the module when Flow and Stream methods replace its functions (see the removed names). |
+| `rangekeeper.calculations.series` | `rangekeeper.flow` | agreed | The module is removed (#103). Its options and FlowAggregate are in `rangekeeper.flow`; Flow and Stream methods replace its functions (see the removed names). |
 | `rangekeeper.schema.behaviors.flow` | `rangekeeper.flow.behavior` | draft (needs refactor) | The generated Flow and Movement records load these behaviours, so the schema runtime must find them in `flow` without an upward import. |
 | `rangekeeper.calculations` | `rangekeeper.finance` | agreed |  |
 | `rangekeeper.calculations.projection` | `rangekeeper.finance.growth` | pending | #255 D12: growth and distribution profiles move to `rangekeeper.profile`, applied by `Flow.from_profile`. |
@@ -114,9 +114,9 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.duration.calendar.measure` | `count_steps` | draft |  |
 | `rangekeeper.model.duration.period.align` | `containing_period` | draft |  |
 | `rangekeeper.model.measure.Quantity` | `rangekeeper.quantity.Quantity` | draft | `rangekeeper.Quantity` at the root also gives the record. |
-| `rangekeeper.model.measure.Measure` | `rangekeeper.model.Measure` | draft (needs refactor) | The `model.measure` shim is removed; `rangekeeper.model` re-exports the record. |
-| `rangekeeper.model.distribution.Distribution` | `rangekeeper.model.Distribution` | draft (needs refactor) | The `model.distribution` shim is removed. |
-| `rangekeeper.model.distribution.DistributionFamily` | `rangekeeper.model.DistributionFamily` | draft (needs refactor) |  |
+| `rangekeeper.model.measure.Measure` | `rangekeeper.model.Measure` | draft | The `model.measure` shim is removed; `rangekeeper.model` re-exports the record. |
+| `rangekeeper.model.distribution.Distribution` | `rangekeeper.model.Distribution` | draft | The `model.distribution` shim is removed. |
+| `rangekeeper.model.distribution.DistributionFamily` | `rangekeeper.model.DistributionFamily` | draft |  |
 | `rangekeeper.schema.behaviors.flow.MissingValueHandling` | — | open | One persisted enum (MissingHandling) and one runtime enum with a distinct name. |
 | `rangekeeper.calculations.financial.calculate_pv` | `pv` | pending | #255 D14 and D19 with #167: `rangekeeper.finance.pv(flow=, rate=, on=)`. |
 | `rangekeeper.calculations.financial.calculate_xnpv` | `npv` | pending | #255 D19 with #167: `rangekeeper.finance.npv(flow=, rate=, on=)`. |
@@ -142,11 +142,12 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 
 | Current | Use instead | Status |
 | --- | --- | --- |
-| `rangekeeper.calculations.series.align` | Flow and Stream alignment methods | agreed |
-| `rangekeeper.calculations.series.multiply` | Flow arithmetic | draft |
-| `rangekeeper.calculations.series.integrate` | A Flow method | draft |
-| `rangekeeper.calculations.series.resample` | Flow.resample and Stream.resample | agreed |
-| `rangekeeper.calculations.series.aggregate` | Flow and Stream aggregation methods | agreed |
+| `rangekeeper.calculations.series.align` | Stream(flows, join=, missing=).align() | agreed |
+| `rangekeeper.calculations.series.multiply` | Flow.multiply(*others) | agreed |
+| `rangekeeper.calculations.series.integrate` | Flow.integrate(exposures=, day_count=, units=) | agreed |
+| `rangekeeper.calculations.series.resample` | Flow.resample(periods, method=) and Stream.resample(periods, method=) | agreed |
+| `rangekeeper.calculations.series.aggregate` | Stream.aggregate(method=), Stream.sum(), Stream.min() and Stream.max() | agreed |
+| `rangekeeper.calculations.series.Alignment` | The Stream that Stream.align() returns; Stream.aggregate() replaces Alignment.reduce() | agreed |
 | `rangekeeper.model.characteristics` | Value and Label access on the owner record; re-exports in rangekeeper.model | agreed |
 | `rangekeeper.model.scenario.market.ScenarioPlan` | Path generators and the MarketPaths document | agreed |
 | `rangekeeper.model.scenario.market.sample` | Path generators and the MarketPaths document | agreed |

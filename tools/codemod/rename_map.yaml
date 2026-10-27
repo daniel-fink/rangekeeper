@@ -63,12 +63,13 @@ modules:
     source: ADR-010
     note: The private calculation engine.
   - old: rangekeeper.calculations.series
-    new: rangekeeper.flow.series
-    status: draft
+    new: rangekeeper.flow
+    status: agreed
     source: ADR-010
     note: >-
-      Interim location. ADR-010 removes the module when Flow and Stream
-      methods replace its functions (see the removed names).
+      The module is removed (#103). Its options and FlowAggregate are in
+      `rangekeeper.flow`; Flow and Stream methods replace its functions (see
+      the removed names).
   - old: rangekeeper.schema.behaviors.flow
     new: rangekeeper.flow.behavior
     status: draft
@@ -174,21 +175,18 @@ symbols:
     new_module: rangekeeper.model
     status: draft
     source: ADR-012
-    requires: [refactor]
     note: The `model.measure` shim is removed; `rangekeeper.model` re-exports the record.
   - module: rangekeeper.model.distribution
     name: Distribution
     new_module: rangekeeper.model
     status: draft
     source: ADR-012
-    requires: [refactor]
     note: The `model.distribution` shim is removed.
   - module: rangekeeper.model.distribution
     name: DistributionFamily
     new_module: rangekeeper.model
     status: draft
     source: ADR-012
-    requires: [refactor]
   - module: rangekeeper.schema.behaviors.flow
     name: MissingValueHandling
     status: open
@@ -321,23 +319,27 @@ parameters:
 # uses; it lists them with the replacement.
 removed:
   - name: rangekeeper.calculations.series.align
-    replacement: Flow and Stream alignment methods
+    replacement: Stream(flows, join=, missing=).align()
     status: agreed
     source: ADR-010
   - name: rangekeeper.calculations.series.multiply
-    replacement: Flow arithmetic
-    status: draft
+    replacement: Flow.multiply(*others)
+    status: agreed
     source: ADR-010
   - name: rangekeeper.calculations.series.integrate
-    replacement: A Flow method
-    status: draft
+    replacement: Flow.integrate(exposures=, day_count=, units=)
+    status: agreed
     source: ADR-010
   - name: rangekeeper.calculations.series.resample
-    replacement: Flow.resample and Stream.resample
+    replacement: Flow.resample(periods, method=) and Stream.resample(periods, method=)
     status: agreed
     source: ADR-010
   - name: rangekeeper.calculations.series.aggregate
-    replacement: Flow and Stream aggregation methods
+    replacement: Stream.aggregate(method=), Stream.sum(), Stream.min() and Stream.max()
+    status: agreed
+    source: ADR-010
+  - name: rangekeeper.calculations.series.Alignment
+    replacement: The Stream that Stream.align() returns; Stream.aggregate() replaces Alignment.reduce()
     status: agreed
     source: ADR-010
   - name: rangekeeper.model.characteristics

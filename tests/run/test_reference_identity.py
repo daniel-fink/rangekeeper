@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from rangekeeper.flow import Flow, MissingValueHandling, Movement, series
+from rangekeeper.flow import AlignmentJoin, Flow, MissingValueHandling, Movement
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
     Characteristics,
@@ -30,6 +30,7 @@ from rangekeeper.shared.errors import (
 )
 from rangekeeper.specification import Specification
 from tests.run.test_run import inputs, load
+from tests.streams import lines
 
 
 def example(flow=None):
@@ -157,9 +158,9 @@ def test_alignment_uses_coordinates_while_results_have_independent_ids():
     left = Flow.from_events([day, day], [1, 2], units="AUD", keys=["a", "b"])
     right = Flow.from_events([day, day], [3, 4], units="AUD", keys=["a", "b"])
     original_ids = {m.id for f in (left, right) for m in f.movements}
-    aligned = series.align([left, right])
+    aligned = lines([left, right]).align()
     assert [f.to_data() for f in aligned.flows] == [left.to_data(), right.to_data()]
-    result = aligned.reduce().flow
+    result = aligned.aggregate().flow
     assert [m.number for m in result.movements] == [4, 6]
     assert not original_ids.intersection(m.id for m in result.movements)
     assert [m.id for m in left.convert(units="AUD").movements] == [
@@ -169,11 +170,9 @@ def test_alignment_uses_coordinates_while_results_have_independent_ids():
         with pytest.raises(ValueError, match="repeated event"):
             Flow.from_events([day, day], [1, 2], units="AUD", keys=keys)
     later = Flow.from_events([date(2027, 2, 1)], [3], units="AUD")
-    union = series.align(
-        [left, later],
-        join=series.AlignmentJoin.UNION,
-        missing=MissingValueHandling.ZERO,
-    )
+    union = lines(
+        [left, later], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
+    ).align()
     assert union.flows[0].movements[-1].id != later.movements[0].id
     assert union.flows[0].movements[0].id == left.movements[0].id
 

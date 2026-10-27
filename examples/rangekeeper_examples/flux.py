@@ -5,8 +5,7 @@ from uuid import uuid4
 
 from rangekeeper.duration import Frequency, Span
 from rangekeeper.execution import Executor
-from rangekeeper.flow import Flow, Stream
-from rangekeeper.flow.series import ResamplingMethod
+from rangekeeper.flow import Flow, ResamplingMethod, Stream
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
     Assembly,

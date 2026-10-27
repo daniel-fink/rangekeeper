@@ -28,11 +28,12 @@ assert flow.check(resolved=True).movements[0].number == 100.0
 assert flow.scale(2).total().magnitude == 200
 ```
 
-A Flow owns conversion, scaling, negation, totals, trimming, differences, collapse
-and extent. Multi-Flow operations live in `flow.series`: `align`, `aggregate`,
-`multiply`, resampling and integration. `Alignment` owns aligned reduction;
-`Aggregation` returns its Flow with contribution metadata. Join and missing-data
-policies are explicit. A coordinate absent from one input is distinct from a
+A Flow owns conversion, scaling, negation, totals, `trim(span)`,
+`resample(periods, *, method, ...)`, `integrate`, `multiply`, differences, collapse
+and extent. A Stream owns the operations on several Flows: `align`, `trim`,
+`resample`, `aggregate`, `sum`, `min` and `max`. `trim` and `resample` take the
+same arguments on Flow and Stream. `FlowAggregate` returns the reduced Flow with
+its coverage. Join and missing-data policies are explicit. A coordinate absent from one input is distinct from a
 movement whose magnitude is unresolved. A requested absent zero stays zero in the
 destination unit.
 
@@ -52,7 +53,7 @@ selection order; `merge` requires compatible policies and exact Model revisions.
 ```python
 from rangekeeper.flow import Stream
 from rangekeeper.duration import Span, Frequency
-from rangekeeper.flow.series import ResamplingMethod
+from rangekeeper.flow import ResamplingMethod
 
 span = Span.from_duration(
     name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1,
@@ -106,7 +107,7 @@ numeric sequence helper used by extrapolation and dynamics.
 | `Period.check()` / `.resolve()` | Valid coverage and a declared representative date |
 | `Distribution` | Canonical parameters and intrinsic `check`, `sample`, `cdf`, `mass` |
 | `finance.projection` | Project a known Quantity over explicit periods |
-| `flow.series` | Align and combine several Flows with explicit policies |
+| `flow.Stream` | Align and combine several Flows with explicit policies |
 | `finance.account.Account.calculate` | Interest, overdraft and balance recurrence |
 | `finance.financial` | PV, XNPV, IRR and day counts using PyXIRR |
 | `finance.dynamics` | Deterministic kernels over supplied shocks or samples |
@@ -146,10 +147,11 @@ Flow before placing an independent copy under a second Value.
 
 ## Alignment and reduction
 
-`series.align(flows, join=..., missing=...)` returns `Alignment`, which retains
-aligned Flows, original known-value coverage and the selected missing policy.
-`Alignment.reduce(method=AggregationMethod.SUM, units=...)` shares unit conversion,
-Claim collection and coverage calculation. `series.aggregate(...)` uses the same bulk reduction backend. Each reduction returns `Aggregation(flow, coverage)`.
+`Stream(flows, join=..., missing=...).align()` returns a Stream whose lines share
+coordinates. It keeps the original known-value coverage and the missing policy.
+`Stream.aggregate(method=AggregationMethod.SUM, units=...)` shares unit conversion,
+Claim collection and coverage calculation, on an aligned or an unaligned Stream.
+Each aggregation returns `FlowAggregate(flow, coverage)`.
 
 `AlignmentJoin.EXACT` is the default. `UNION` and `INTERSECTION` are explicit.
 Missing choices use `MissingValueHandling`; reducer choices use `AggregationMethod`. Zero filling
@@ -157,7 +159,8 @@ applies to absent coordinates; an explicitly unresolved movement remains unresol
 Skip can reduce a partly known group; an entirely unknown group remains unresolved.
 Coverage reports the original known fraction, including after zero filling.
 
-`series.multiply`, `integrate` and `resample` retain explicit calculation contracts.
+`Flow.multiply`, `Flow.integrate` and `Flow.resample` keep explicit calculation
+contracts. `Stream.resample` also reports the coverage of each line.
 `Account.calculate(...)` returns opening, closing, overdraft and interest Flows.
 Financial valuation remains in `finance.financial`, with explicit timing and
 PyXIRR conventions. Calendar grids remain in `duration.period`.
@@ -206,18 +209,17 @@ original Flow when individual payment facts are required.
 
 Rate-to-amount conversion needs an exposure. Multiplying `AUD/year` by a
 dimensionless factor leaves `AUD/year`; multiplying two rates retains both time
-dimensions. `series.integrate` accepts explicit exposure Quantities or a `DayCount`
+dimensions. `Flow.integrate` accepts explicit exposure Quantities or a `DayCount`
 member for bounded periods:
 
 ```python
 from datetime import date
 from rangekeeper.duration import DayCount, Frequency, make_periods
 from rangekeeper.flow import Flow
-from rangekeeper.flow import series
 
 periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
 rates = Flow.from_periods(periods, (120, 120, 120), units="AUD/year")
-amounts = series.integrate(rates, day_count=DayCount.ACTUAL_365, units="AUD")
+amounts = rates.integrate(day_count=DayCount.ACTUAL_365, units="AUD")
 assert abs(amounts.total().magnitude - 120 * 90 / 365) < 1e-9
 ```
 

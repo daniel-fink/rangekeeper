@@ -1,4 +1,4 @@
-"""Intrinsic Flow and Movement operations; multi-Flow alignment lives in calculations."""
+"""Intrinsic Flow and Movement operations; Stream coordinates several Flows."""
 
 from __future__ import annotations
 
@@ -12,7 +12,9 @@ from uuid import UUID, uuid4
 from rangekeeper.schema.runtime import UNSET
 
 if TYPE_CHECKING:
+    from rangekeeper.duration.calendar import DayCount
     from rangekeeper.duration.period import PeriodTiming
+    from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
     from rangekeeper.model.display import StreamTable
     from rangekeeper.quantity import UnitSystem
     from rangekeeper.schema.records import Flow, Movement, Period, Quantity
@@ -358,18 +360,20 @@ class FlowBehavior:
                 return None
         return Quantity(magnitude=math.fsum(values), units=flow.units)
 
-    def trim(self, *, start: date, end: date) -> Flow:
-        """Select dates in [start, end) or whole periods contained in that interval.
+    def trim(self, span: Period) -> Flow:
+        """Select dates in [start, end) of a Period or Span, or whole periods inside it.
 
         Partial period overlap raises ValueError; trimming must not silently allocate
         a period quantity or substitute an assumed payment date for its coverage.
         """
         flow = cast("Flow", self)
-        from rangekeeper.duration.calendar import elapsed_days
+        from rangekeeper.schema.records import Period
 
+        if not isinstance(span, Period):
+            raise TypeError("span must be a Period or Span")
+        span.check()
+        start, end = span.start, span.end
         flow.check()
-        if elapsed_days(start, end) < 0:
-            raise ValueError("trim end precedes start")
         selected = []
         for movement in flow.movements:
             if movement.period is None:
@@ -385,6 +389,127 @@ class FlowBehavior:
                     )
                 selected.append(movement)
         return flow.replace(movements=tuple(selected)).check()
+
+    def resample(
+        self,
+        periods: Sequence[Period],
+        *,
+        method: ResamplingMethod,
+        weighting: MeanWeighting | None = None,
+        missing: MissingValueHandling = MissingValueHandling.ERROR,
+    ) -> Flow:
+        """Group whole movements onto explicit periods; a mean needs an explicit weighting.
+
+        ``Stream.resample`` takes the same arguments and also reports coverage.
+        """
+        flow = cast("Flow", self)
+        from rangekeeper.flow._batch import Batch
+
+        return (
+            Batch.prepare((flow,))
+            .resample(
+                periods, methods=(method,), weightings=(weighting,), missing=missing
+            )
+            .flows()[0]
+        )
+
+    def integrate(
+        self,
+        *,
+        exposures: Sequence[Quantity] | None = None,
+        day_count: DayCount | None = None,
+        units: str | None = None,
+    ) -> Flow:
+        """Multiply entries by supplied exposures or declared period year fractions.
+
+        Explicit exposures support calendar-month conventions and non-time exposures.
+        A day-count convention uses period boundaries and a quantity measured in years.
+        Calling this operation supplies the integration rule; the Flow has no rate kind.
+        """
+        flow = cast("Flow", self)
+        from rangekeeper.duration.calendar import DayCount, year_fraction
+        from rangekeeper.quantity import default_units
+        from rangekeeper.schema.records import Quantity
+
+        flow.check()
+        if day_count is not None and not isinstance(day_count, DayCount):
+            raise TypeError("day_count must be a DayCount")
+        if (exposures is None) == (day_count is None):
+            raise ValueError("supply exactly one of exposures or day_count")
+        if exposures is None:
+            assert day_count is not None
+            if any(s.period is None for s in flow.movements):
+                raise ValueError("day-count integration requires bounded periods")
+            exposures = tuple(
+                Quantity(
+                    magnitude=year_fraction(
+                        s.period.start, s.period.end, convention=day_count
+                    ),
+                    units="year",
+                )
+                for s in flow.movements
+                if s.period is not None
+            )
+        if len(exposures) != len(flow.movements):
+            raise ValueError("exposure count differs from movement count")
+        output_units = units or (
+            default_units.multiply(flow.units, exposures[0].units)
+            if exposures
+            else None
+        )
+        if output_units is None:
+            raise ValueError("empty integration requires explicit output units")
+        movements = []
+        for movement, exposure in zip(flow.movements, exposures, strict=True):
+            product_unit = default_units.multiply(flow.units, exposure.units)
+            magnitude = (
+                None
+                if movement.magnitude is None
+                else default_units.convert(
+                    Quantity(
+                        magnitude=movement.magnitude * exposure.magnitude,
+                        units=product_unit,
+                    ),
+                    to=output_units,
+                ).magnitude
+            )
+            movements.append(movement.replace(id=uuid4(), magnitude=magnitude))
+        return flow.replace(movements=tuple(movements), units=output_units).check()
+
+    def multiply(self, *others: Flow) -> Flow:
+        """Multiply known movements at exact common coordinates, with their units.
+
+        Dimensionless scales such as percent become ratios first. Physical dimensions,
+        including time, remain in the result. The calling model determines the
+        meaning of the product; no semantic classification is inferred.
+        """
+        from rangekeeper.flow._batch import align
+        from rangekeeper.flow._options import AlignmentJoin
+        from rangekeeper.quantity import default_units
+
+        flows = tuple(
+            (
+                flow.convert(units="dimensionless")
+                if default_units.compatible(flow.units, "dimensionless")
+                else flow
+            )
+            for flow in (cast("Flow", self), *others)
+        )
+        aligned, _ = align(
+            flows, join=AlignmentJoin.EXACT, missing=MissingValueHandling.ERROR
+        )
+        unit = "dimensionless"
+        for flow in flows:
+            unit = default_units.multiply(unit, flow.units)
+        movements = [
+            group[0].replace(
+                id=uuid4(),
+                magnitude=math.prod(s.number for s in group),
+                claims=tuple(dict.fromkeys(c for s in group for c in s.claims or ())),
+            )
+            for group in zip(*(flow.movements for flow in aligned), strict=True)
+        ]
+        return flows[0].replace(movements=tuple(movements), units=unit).check()
 
     def clean(self, *, remove_zeroes: bool = False) -> Flow:
         """Explicitly remove unresolved movements, and optionally zeroes; do not impute data."""
