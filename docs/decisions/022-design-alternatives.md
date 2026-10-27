@@ -132,8 +132,6 @@ as the premium rises. The library makes this visible and does not hide it:
 
 - **Test several premiums as cases:** `cases(cases=premiums)`, with one case for each
   premium written out (decision D24 of #201), across the paths.
-- **`outcome.decisions().same_across_cases()`** shows, for each path, if any decided
-  value changes between the cases. It lists the paths and keys that change.
 - **`comparison.by_case().breakeven(key="provision", criterion=...)`** gives the
   largest premium at which the criterion of the paired gains is zero or more.
   `criterion` is `rk.execution.Criterion.MEAN`, or `Criterion.QUANTILE` with
@@ -237,7 +235,7 @@ premiums = {
 }
 premium_cases = both.cases(cases=premiums).across(paths=use_paths, series=use_series)
 premium_outcome = rk.execution.solve(specification=premium_cases)
-premium_outcome.decisions().same_across_cases()
+premium_outcome.table("b_design", "start_date", "b_start")
 gain = rk.execution.compare(
     outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
@@ -246,8 +244,10 @@ gain = rk.execution.compare(
 gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
 ```
 
-If the 7.5 M AUD premium stops B on some paths, `same_across_cases()` lists them
-and `breakeven` raises `DecisionsChangedError`. The finance note of cell 14 then
+If the 7.5 M AUD premium stops B on some paths, `breakeven` raises
+`DecisionsChangedError`, which lists those paths and keys. No separate method checks
+the decisions: the check belongs to the one call that depends on it (decision D36 of
+#201). The finance note of cell 14 then
 reads the premium from the table of cases, and it states the criterion.
 
 ## Acceptance for #216
@@ -268,7 +268,7 @@ reads the premium from the table of cases, and it states the criterion.
 7. `rk.execution.compare` pairs by path, rejects different paths and counts failed
    cases. The provision is negative on every path of `switch` and `both`
    (cell 19).
-8. `same_across_cases` and `breakeven` pass these tests:
+8. `breakeven` passes these tests:
    - invariant decisions give the exact premium, and it agrees with an
      independent calculation on known data;
    - changed decisions raise `decisions_changed`;
@@ -282,7 +282,6 @@ reads the premium from the table of cases, and it states the criterion.
 - `rk.execution.compare` and `rk.execution.Comparison` (shared with ADR-021).
 - `Comparison.by_case().breakeven` and `.best`.
 - `rk.execution.Outcome.rollup` over a batch, and `Outcome.case(key=...).model`.
-- `DecisionTable.same_across_cases`.
 - `rk.errors.DecisionsChangedError`.
 - Diagnostic codes: `missing_alternative`, `alternative_mismatch`,
   `decisions_changed` and `breakeven_not_affine`.

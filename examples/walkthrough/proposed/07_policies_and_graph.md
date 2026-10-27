@@ -236,8 +236,10 @@ both_outcome.rollup(
 Narrative: the provision is paid at the start, from equity. If the rules do not
 depend on its cost, every dollar of provision lowers the equity NPV by its present
 value on every path. Then the largest justified premium under the mean criterion is
-the mean paired gain without the provision. **Check the "if" first**: run the
-strategy at several provision costs and confirm that the decisions are the same.
+the mean paired gain without the provision. **Check the "if"**: run the strategy at
+several provision costs. `breakeven` (cell 14) compares the decisions of every path
+across the premiums. If any decision differs, it raises `DecisionsChangedError` and
+lists the paths and keys, in place of a premium.
 
 ```python
 # cell 13
@@ -251,7 +253,9 @@ premium_cases = (
     strategies["both"].cases(cases=premiums).across(paths=use_paths, series=use_series)
 )
 premium_outcome = rk.execution.solve(specification=premium_cases)
-premium_outcome.decisions().same_across_cases()  # are the decisions the same at every premium?
+premium_outcome.table(
+    "b_design", "start_date", "b_start"
+)  # one row per premium and path
 ```
 
 ```python
@@ -481,8 +485,8 @@ solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 | 9–10 | 8 | G66: `rk.execution.compare(outcomes=, keys=, baseline=)` for several strategies |
 | 11 | 8 | G31: `distribution(key=).counts()` for a decided choice |
 | 12 | 7, 8 | G46 for batches: `Outcome.rollup(...)` over each case's realised Model |
-| 13 | 8 | G67: `decisions().same_across_cases()` |
-| 14 | 8 | G68: `by_case().breakeven(key=, criterion=, level=)` and `best(criterion=)` with `rk.execution.Criterion` |
+| 13 | 8 | G20: decided values in a batch table, one row for each case and path |
+| 14 | 8 | G67: `breakeven` checks that the decisions are the same across the cases and raises `DecisionsChangedError` if not; G68: `by_case().breakeven(key=, criterion=, level=)` and `best(criterion=)` with `rk.execution.Criterion` |
 | 15–15c | 2 | G57: several triggers as cases; G75: `Specification.case(key=)` (cell 16) |
 | 16 | 4, 6 | G69: `Paths.regenerate(seed=)` rebuilds the generator from the capture record |
 | 17–17c | 2, 3 | G61, G17; G27 (`add_to(key=, term=)` adds a term to one side of an equation) |
