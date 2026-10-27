@@ -228,7 +228,7 @@ npv.probability(below="0 AUD"), shortfall.probability(above="0 AUD")
 ```python
 # cell 16
 worst = npv.case(quantile=0.05)  # the path at the 5 % quantile of the NPV
-helpers.plot_flows(outcome=worst, keys=["cash", "headroom", "committed"])
+helpers.plot_flows(outcome=worst, keys=["equity_left", "loan_undrawn", "committed"])
 ```
 
 ## 9. Optional: correlated use markets

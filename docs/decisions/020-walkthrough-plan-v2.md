@@ -225,20 +225,22 @@ back = front.fix(rent_factor=1).free("land_cost")
   from the base case. Declare three named market cases (weak, reference, strong)
   as cases of one batch Specification. Solve the batch and compare the cases in
   one table. For each case, report unlevered NPV, equity NPV and equity IRR at
-  one fixed leverage. Then compare leverage levels on the reference case. Test
-  construction funding: cash balance, headroom and the commitment gap.
+  one equity level, with equity drawn first and a loan after it. Then compare equity
+  levels on the reference case. Test construction funding: the loan balance, the
+  shortfall and the commitment gap.
 - **Prerequisites.** Lessons 01 and 02.
-- **Time.** 60 minutes core, 25 optional (amortisation schedule, more leverage
+- **Time.** 60 minutes core, 25 optional (amortisation schedule, more equity
   levels).
 - **Library shown.** Specification cases and batch solves, batch results in
-  `Outcome`, growth from an opening date, NPV and IRR on dates, an account for
-  the funding balance. Under the hood: `execute` into a store, the Run as
+  `Outcome`, growth from an opening date, NPV and IRR on dates, the funding
+  cascade as equations (equity first, then the loan). Under the hood: `execute` into a store, the Run as
   evidence, replay in a fresh kernel and deterministic IDs.
 - **Finance taught.** Base plan and base case, development budget (hard costs,
   soft costs, contingency), opening dates, unlevered and levered cash flows,
-  loan-to-value, equity NPV, IRR and its failure cases, construction facility,
-  headroom, committed but unpaid costs, and the do-nothing baseline.
-- **By hand once.** One year of the funding balance, then the library account.
+  loan-to-value, equity NPV, IRR and its failure cases, equity first, then the
+  construction loan, the undrawn loan, committed but unpaid costs, and the do-nothing baseline.
+- **By hand once.** One year's split between equity and the loan, then the cascade in
+  the Model.
 - **Depends on.** #144 (cases), #127, #167, #168, #147 (deterministic builds,
   aside) and two open questions for #201. First, can the cases reach the cash
   flows through the solve? That needs the DCF to be declared in the Model as

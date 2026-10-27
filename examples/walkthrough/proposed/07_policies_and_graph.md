@@ -259,7 +259,7 @@ gain.summary()
 gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
 ```
 
-> **Finance note.** The provision uses equity and funding headroom that Building B's
+> **Finance note.** The provision uses equity and loan capacity that Building B's
 > rule needs. If the decisions change with the premium, read the largest justified
 > premium from the sweep, not from one run. State the criterion: a mean criterion
 > and a 5 % quantile criterion give different premiums.

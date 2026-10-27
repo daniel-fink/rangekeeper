@@ -38,7 +38,7 @@ pass.
 | ID | Question | Decision | Used in |
 | --- | --- | --- | --- |
 | D1 | Can lesson 03's cases reach the cash flows through the solve? | Yes. The Model declares the DCF as Flow equations: growth with a rate, the terminal value, NPV at a rate. A case fixes the rates, so the solve stays affine. One Model answers lessons 02–05 | 03, 04, 05 |
-| D2 | Where do the funding account and the commitment check live? | Nowhere special: they are composition. A balance is a cumulative sum (`cash = equity + (land + works + operating).cumulative()`), headroom adds the limit, and committed but unpaid payments use `cumulative()`, `total()` and `since(on=)`. On known data, the same Flow methods in Python; in the Model, ordinary equations in a "Funding" formulation. There is no account class in `rk.finance` and no account declaration in the Model. Repeated use is served by a recipe in the how-to guides (#194), not by an API | 03, 05 |
+| D2 | Where do the funding accounts and the commitment check live? | Nowhere special: they are composition, in the rk 0.8 pattern of one account's overdraft drawing on the next. Equity is drawn as needed and spent first; the loan takes what the equity cannot cover: `funding_need = -(net_cash_flow + loan_interest).cumulative()`, `loan_balance = max(0 AUD, funding_need - equity)`, `loan_draws = loan_balance.change()`, and `equity_cash_flow = net_cash_flow + loan_interest + loan_draws`. Income and the sale repay the loan first. What is left is `equity_left` and `loan_undrawn`; a loan balance above the limit is a `shortfall`; committed but unpaid payments use `cumulative()`, `total()` and `since(on=)`. The word "headroom" is not used. There is no account class in `rk.finance` and no account declaration in the Model. Repeated use is served by a recipe in the how-to guides (#194), not by an API. Revised 2026-10-27: the bridge facility and the pro-rata loan are replaced by the cascade | 03, 04, 05, 07 |
 | D3 | How does an equation refer to a rollup result? | A rollup declares a Value. Equations refer to it by key, as to any other value. The solve traces through the rollup to its contributors | 06, 07 |
 | D4 | How does a batch report IRR, peak shortfall and other non-affine results? | Staged evaluation. `irr`, `min` and `max` are Model equations. The solve evaluates them after the affine stage, and verification checks them | 03, 04 |
 | D5 | When do the inverse rewrites land? | In 1.0. A fixed IRR becomes an NPV row at that rate, and a bound on a minimum becomes one row for each period. The target-IRR land price is a core cell of lesson 03 | 03 |
@@ -57,7 +57,7 @@ pass.
 | D18 | Equations, expressions or constraints? | "Equation" is the reader's word: one relation that must hold, an equality or a bound. It is stored as a Constraint over Expressions; the glossary says so. `equations(..., formulation="Debt")` puts equations in a named Formulation, for display and traces; without it they join the entity's default Formulation | 02–07 |
 | D19 | Is the mortgage constant a library function? | No. `rk.finance.payment(principal=, rate=, term=, frequency=)` is the one general loan calculation, like a spreadsheet's PMT with units. The mortgage constant is derived in the open: the payment per year on one dollar of loan, `(payment / rk.Quantity(text="1 AUD")).to(units="% pa")` | 02, 06 |
 | D20 | Does a Model have a default timeline or unit system? | No. `rk.Model(name=, namespace=, description=)` takes neither. A Flow made from amounts by a profile or an event is declared with its `periods=`; every other Flow takes its Periods from its operands. The Model records the unit system in use (the curated registry, its version and any registered extensions) as a read-only `model.unit_system`; custom units go through the registry extension point | 03–07 |
-| D21 | How are functions named in equation strings? | As in Python, with the `rk.` namespace: `rk.profile.uniform(...)`, `rk.flow.event(...)`, `rk.finance.npv(...)`. Operations on one Flow are methods: `operating.at(on=...)`, `project_cash.trim(end=...)`, `loan_draws.cumulative()`, `headroom.min()`. Only `max(a, b)` stays bare. Eight words are reserved: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false` | 03–07 |
+| D21 | How are functions named in equation strings? | As in Python, with the `rk.` namespace: `rk.profile.uniform(...)`, `rk.flow.event(...)`, `rk.finance.npv(...)`. Operations on one Flow are methods: `operating.at(on=...)`, `project_cash.trim(end=...)`, `loan_draws.cumulative()`, `loan_undrawn.min()`. Only `max(a, b)` stays bare. Eight words are reserved: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false` | 03–07 |
 | D22 | ~~How does a known-data Account take transactions?~~ | Withdrawn with the Account (D2) | — |
 | D23 | When is something a library function, and when is it composition? | Compose when it is plain arithmetic on Flows: a balance is `cumulative()`, a repayment at sale is `rk.flow.event(amount=loan_balance.at(on=sale_date), on=sale_date)`, a terminal value is `shift`, divide and `trim`. Keep a library function when it carries a real convention: `rk.finance.interest(..., method=)` (compounding, day count), `npv`, `irr`, `payment`, profiles. So there is no `settle`, no account and no reversion helper | 01–07 |
 | D24 | How much Python may a cell use? | Plain Python only. Cells use no `**` unpacking, no comprehensions or generator expressions, and no f-strings that build keys. A `for` loop may repeat a calculation, a display or a check over a short list; it never declares values (D16). Where a few cases differ, write each one out by key. A helper takes the batch it draws (`plot_target_curve(outcomes=, key=)`), so the cell does not build a mapping for it | 01–07 |
@@ -72,8 +72,9 @@ Two choices in the cells are open for review. They do not change the API shape:
 - **Unit inference (G16).** Lesson 02 declares every value. From lesson 03, only
   inputs are declared, and the draft infers the units of the other values. Without
   inference, lesson 03 needs about 15 more lines of declarations.
-- **Funding structure.** Lesson 03 uses equity and an overdraft-style bridge limit.
-  `development.json` also has a fixed draw schedule. Authoring picks one.
+- **Equity timing.** Equity is drawn as needed and spent before the loan (D2). A
+  pro-rata structure after a minimum equity tranche is the common alternative; it
+  changes only the `loan_balance` equation.
 
 ## Target API at a glance
 
@@ -311,7 +312,7 @@ named (D14). Functions are called as in Python, with their `rk.` namespace (D21)
 | `rk.flow.event(amount=, on=)` | A Flow with one amount on one date |
 | `rk.finance.npv(flow=, rate=, on=)`, `rk.finance.irr(flow=)` | Valuation on one date basis (D4, D5 for `irr`) |
 | `rk.finance.interest(balance=, rate=, method=)` | Interest on a balance under a stated convention (compounding, day count, opening or average balance) |
-| `x.at(on=)`, `x.trim(start=, end=)`, `x.since(on=)`, `x.shift(by=)`, `x.cumulative()`, `x.total()`, `x.first()`, `x.last()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date; the part inside a span; the same Periods with zero before a date; each period's amount `by` periods away (`-1` gives the next period's; a rule cannot read a later amount, G53); running totals; the sum; the first and last amounts; and extremes (D4) |
+| `x.at(on=)`, `x.trim(start=, end=)`, `x.since(on=)`, `x.shift(by=)`, `x.cumulative()`, `x.change()`, `x.total()`, `x.first()`, `x.last()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date; the part inside a span; the same Periods with zero before a date; each period's amount `by` periods away (`-1` gives the next period's; a rule cannot read a later amount, G53); running totals; each period's change in a running total (the reverse of `cumulative()`); the sum; the first and last amounts; and extremes (D4) |
 | `max(a, b)` | The larger of two values. Like Python's built-in, its arguments are not named |
 
 Each profile in `rk.profile` is also an equation function, under its own name in lower
@@ -346,7 +347,7 @@ use. **Issue** is filled in when the issue is filed.
 | 1 | — | `rk.duration.Periods` and Span conveniences: `years`, `extend`, `periods(frequency)` returning a `Periods` with `start`, `end`, `span`, `frequency`, `len`, indexing, `trim`, `extend(count=)`, `containing(on=)`, value equality and a compact document form | G01 | `duration` | 01·4; 03·3; 04·3; 05·6, 9–11; 07·7, 18 | #119 |
 | 2 | — | Flow and Stream construction, lookup and arithmetic | G02–G04 | `flow` | 01·5–13; 03·17 | #103, #162 |
 | 3 | — | Value equality and `rk.quantity.isclose` | G06 | `quantity`, `flow` | 01·12, 15, 21; 02·22 | #109, #117 |
-| 4 | — | Flow methods: `shift(by=)`, `trim(span=)` with a Period, `cumulative()`, `total()`, `since(on=)`, `first()`, `last()`, `min()`, `max()` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |
+| 4 | — | Flow methods: `shift(by=)`, `trim(span=)` with a Period, `cumulative()`, `change()`, `total()`, `since(on=)`, `first()`, `last()`, `min()`, `max()` | G05 | `flow` | 01·11–12, 20; 03·13; 05·8 | #103, #162 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
 | 7 | — | Function catalogue for equations, called as `rk.profile.*`, `rk.flow.*`, `rk.finance.*` and Flow methods, with the reserved words and the literal rule | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
@@ -381,12 +382,14 @@ use. **Issue** is filled in when the issue is filed.
 | 36 | — | Named formulations: `equations(..., formulation=)`, a default Formulation for each entity, and equations grouped by formulation in displays and traces | G72 | `model` | 03·6–8, 13, 19b | #141, #145 |
 | 37 | — | `across` matching: each path series fixes the Model value with the same key. `series=` maps a value whose key differs, or the members of a keyed value, to path series. A series that matches no value, a value that `series=` names but the paths lack, or a value with two sources raises an error that lists the path series and the Model keys | G73 | `specification` | 04·11; 05·5; 07·3b | #138 |
 | 38 | — | Enums for the words rangekeeper defines: `rk.specification.Role`, `rk.execution.Criterion`, `rk.execution.ReviewResult`, `rk.execution.Status`, `rk.errors.Code`; `rk.model.Direction` made public (D26) | G76 | `specification`, `execution`, `errors`, `model` | 02·18–21; 05·8, 18; 06·13; 07·14 | #134, #154 |
+| 39 | — | Piecewise equations with a free value: the solve picks the active side of each `max` or `min` (for example the equity-first cascade), solves the affine problem and verifies the choice; a wrong choice is reported, not hidden | G77 | `execution` | 03·16 | #125, #152, #164 |
 
 Scope changes for existing issues:
 
 - [#194](https://github.com/daniel-fink/rangekeeper/issues/194) (how-to guides) gains a
-  recipe: a cash account with a facility limit, interest and commitments, composed
-  from `cumulative()`, `total()`, `since(on=)` and `rk.finance.interest` (D2).
+  recipe: a funding cascade (equity first, then a loan with a limit, interest and
+  commitments), composed from `cumulative()`, `change()`, `max`, `total()`,
+  `since(on=)` and `rk.finance.interest` (D2).
 - [#94](https://github.com/daniel-fink/rangekeeper/issues/94) (rename map and codemod)
   needs an entry: today's `calculations.account.Account` is not carried into 1.0.
   Its uses become `cumulative()` and `rk.finance.interest`.
@@ -472,6 +475,8 @@ These are inputs for authoring, not API gaps:
   `04_rent_index.paths.json`, `04_use_indices.paths.json` and
   `05_strategy.specification.json`. `07_property_plan.model.json` joins the graph of
   lesson 06 with the dated plan of lessons 03–05.
+- The base plan gives `equity` and `loan_limit` (in place of `bridge_limit`) for lesson
+  03's funding cascade (D2).
 - Lesson 05 needs the three readable histories (`05_histories.paths.json`).
 - Lesson 07 needs the Building B hotel fragment and the Building A expansion fragment
   ([#214](https://github.com/daniel-fink/rangekeeper/issues/214)). If the fragments

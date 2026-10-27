@@ -6,8 +6,9 @@ API conventions and the gap list: [README](README.md).
 
 Decisions used here (recorded in the [README](README.md#decisions)): the cases
 reach the cash flows through the solve (D1); `irr`, `min` and `max` are evaluated
-after the affine stage, and a fixed IRR becomes an affine row (D4); funding is
-composed from `cumulative()`, with no account object (D2).
+after the affine stage, and a fixed IRR becomes an affine row (D4); funding is an
+equity-first cascade composed from `cumulative()`, `change()` and `max`, with no
+account object (D2).
 
 ## Goals box
 
@@ -18,14 +19,14 @@ composed from `cumulative()`, with no account object (D2).
 >
 > 1. build dated cash flows from a base plan, and tell the base plan from the base case;
 > 2. declare named market cases and solve them in one batch;
-> 3. report unlevered NPV, equity NPV and equity IRR for each case, and compare
->    leverage levels;
+> 3. fund the plan with equity first, then a loan, and report unlevered NPV, equity
+>    NPV and equity IRR for each case and equity level;
 > 4. find the land price that gives a target equity IRR;
-> 5. test construction funding: cash balance, headroom and the commitment gap.
+> 5. test construction funding: the loan balance, the shortfall and the commitment gap.
 >
 > **Before you start.** Lessons 01 and 02.
 >
-> **Time.** 60 minutes core, 25 minutes optional (more leverage levels, the Run as
+> **Time.** 60 minutes core, 25 minutes optional (more equity levels, the Run as
 > evidence).
 >
 > **Not in this lesson.** Many market futures (lesson 04). Changing the plan's dates
@@ -272,38 +273,43 @@ cases_outcome.table("unlevered_npv")
 > overrides the base's fixed values by key. The solve builds the shared affine
 > structure once and solves each case.
 
-## 6. Debt and equity
+## 6. Debt and equity: equity first, then the loan
 
-Narrative: a loan funds a fixed share of each development payment. The owner pays
-interest each year and repays the balance from the sale. The equity investor's cash
-flow is what remains. Add the equations to a new revision of the Model, then pin the
-Specification to that revision.
+Narrative: the owner commits 50 million AUD of equity and pays it in as costs fall
+due. Lenders usually require the equity to be spent first. When the equity is used
+up, a construction loan pays the rest, up to its limit. Income and the sale repay the
+loan first; the rest goes to equity. The funding need is the running total that the
+project has not paid from its own cash; the loan balance is the part of it that the
+equity cannot cover. Add the equations to a new revision of the Model.
 
 ```python
 # cell 13
 draft = model.edit()
 site = draft.entity(code="property")
-site.value(key="leverage", units="ratio")
+site.value(key="equity", units="AUD")
+site.value(key="loan_limit", units="AUD")
 site.value(key="loan_rate", units="% pa")
 site.value(key="equity_rate", units="% pa")
 site.equations(
-    "loan_draws = -leverage * (land + works)",
-    "loan_balance = loan_draws.cumulative()",
+    "funding_need = -(net_cash_flow + loan_interest).cumulative()",
+    "loan_balance = max(0 AUD, funding_need - equity)",
+    "loan_draws = loan_balance.change()",
     "loan_interest = -rk.finance.interest(balance=loan_balance, rate=loan_rate)",
-    "repayment = -rk.flow.event(amount=loan_balance.at(on=sale_date), on=sale_date)",
-    formulation="Debt",
+    formulation="Funding",
 )
 ```
 
-Narrative: the equity investor's cash flow is what remains after the loan.
+Narrative: equity receives whatever the project pays that does not go to or come from
+the loan. Its cash flow is negative while it pays costs, zero while the loan pays,
+and positive once the loan is repaid.
 
 ```python
 # cell 13b
 site.equations(
-    "equity_cash_flow = net_cash_flow + loan_draws + loan_interest + repayment",
+    "equity_cash_flow = net_cash_flow + loan_interest + loan_draws",
     "equity_npv = rk.finance.npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
     "equity_irr = rk.finance.irr(flow=equity_cash_flow)",
-    formulation="Debt",
+    formulation="Funding",
 )
 model = draft.commit()
 ```
@@ -311,31 +317,34 @@ model = draft.commit()
 ```python
 # cell 14
 levered = base.on(model=model).fix(
-    leverage="65 %", loan_rate="6 % pa", equity_rate="12 % pa"
+    equity=plan["equity"],
+    loan_limit=plan["loan_limit"],
+    loan_rate="6 % pa",
+    equity_rate="12 % pa",
 )
 levered_outcome = rk.execution.solve(specification=levered.cases(cases=cases))
 levered_outcome.table("unlevered_npv", "equity_npv", "equity_irr")
 ```
 
 > **Finance note.** Debt makes the equity's results larger in both directions. When
-> the property earns more than the loan rate, leverage raises the equity IRR. IRR has
+> the property earns more than the loan rate, debt raises the equity IRR. IRR has
 > failure cases: a cash flow with more than one change of sign can have more than one
 > IRR, and the solve then reports `irr_not_unique`.
 
-## 7. Leverage levels
+## 7. Equity levels
 
-Narrative. **Predict:** in the reference case, does the equity NPV rise with
-leverage? Compare three levels in one batch.
+Narrative. **Predict:** in the reference case, does the equity NPV rise when the
+owner commits less equity and borrows more? Compare three levels in one batch.
 
 ```python
 # cell 15
 levels = {
-    "no debt": {"leverage": 0},
-    "50 %": {"leverage": "50 %"},
-    "65 %": {"leverage": "65 %"},
+    "80 m equity": {"equity": "80e6 AUD"},
+    "50 m equity": {"equity": "50e6 AUD"},
+    "30 m equity": {"equity": "30e6 AUD"},
 }
 rk.execution.solve(specification=levered.cases(cases=levels)).table(
-    "equity_npv", "equity_irr"
+    "equity_npv", "equity_irr", "loan_balance"
 )
 ```
 
@@ -344,6 +353,8 @@ rk.execution.solve(specification=levered.cases(cases=levels)).table(
 Narrative: the back door again, now on dated cash flows. The investor needs a 15 %
 equity IRR. What land price gives it? Fix the IRR and free the land cost. With the
 IRR fixed, the IRR equation becomes "NPV at 15 % is zero", which is an affine row.
+The cascade's `max` has two sides; the solve finds which side applies in each period
+and checks it after the solve.
 
 ```python
 # cell 16
@@ -354,60 +365,48 @@ target_outcome["land_cost"]
 
 ## 9. Can we pay the bills? By hand once
 
-Narrative: a positive NPV does not pay a construction invoice. The owner has 50
-million AUD of equity and a bridge facility of 65 million AUD. Payments come at the
-end of each year. Calculate the first year's closing balance and headroom by hand.
+Narrative: a positive NPV does not pay a construction invoice. Payments come at the
+end of each year. Split the first year's payments by hand: equity pays first, and the
+loan pays what the equity cannot.
 
 ```python
 # cell 17
-paid_2027 = outcome["land"].at(on=date(2027, 1, 1)) + outcome["works"].at(
-    on=date(2027, 1, 1)
+paid_2027 = -(
+    outcome["land"].at(on=date(2027, 1, 1)) + outcome["works"].at(on=date(2027, 1, 1))
 )
-closing_2027 = plan["equity"] + paid_2027
-headroom_2027 = closing_2027 + plan["bridge_limit"]
-closing_2027, headroom_2027
+from_equity = min(paid_2027, plan["equity"])
+from_loan = paid_2027 - from_equity
+from_equity, from_loan
 ```
 
-Narrative: now every year at once. The closing balance is the equity plus the
-running total of the payments; the opening balance is the closing balance less that
-year's payments. This is the spreadsheet corkscrew, built from one Flow method,
-`cumulative()`, which the loan already used.
+Narrative: the Model makes the same split every year. Read the reference case from
+the batch. This is the spreadsheet corkscrew: the running total of the need, and the
+loan's part of it.
 
 ```python
 # cell 18
-payments = outcome["land"] + outcome["works"]
-closing = plan["equity"] + payments.cumulative()
-opening = closing - payments
-headroom = closing + plan["bridge_limit"]
-assert closing.at(on=date(2027, 1, 1)) == closing_2027
-rk.flow.Stream(
-    flows={
-        "Opening": opening,
-        "Payments": payments,
-        "Closing": closing,
-        "Headroom": headroom,
-    }
+reference_outcome = levered_outcome.case(key="reference")
+assert reference_outcome["loan_balance"].at(on=date(2027, 1, 1)) == from_loan
+reference_outcome.stream(
+    "net_cash_flow", "funding_need", "loan_draws", "loan_balance", "equity_cash_flow"
 ).display()
 ```
 
-## 10. Funding in the Model
+## 10. Commitments
 
-Narrative: the same equations in the Model, so that every case and every later
-lesson reports them. Building A's income helps to pay for Building B, so the cash
-includes the operating cash flow. They form one named group, "Funding". There is no
-account object: an account is equations.
+Narrative: what is left is the unspent equity and the undrawn loan. A shortfall is a
+loan balance above the limit. Building A's income helps to pay for Building B, so the
+need includes the operating cash flow.
 
 ```python
 # cell 19
 draft = model.edit()
 site = draft.entity(code="property")
-site.value(key="equity", units="AUD")
-site.value(key="bridge_limit", units="AUD")
 site.equations(
-    "cash = equity + (land + works + operating).cumulative()",
-    "opening_cash = cash - (land + works + operating)",
-    "headroom = cash + bridge_limit",
-    "peak_shortfall = max(0 AUD, -headroom.min())",
+    "equity_left = max(0 AUD, equity - funding_need)",
+    "loan_undrawn = loan_limit - loan_balance",
+    "shortfall = max(0 AUD, -loan_undrawn)",
+    "peak_shortfall = shortfall.max()",
     formulation="Funding",
 )
 ```
@@ -415,7 +414,7 @@ site.equations(
 Narrative: a package's remaining payments become committed when it starts. What is
 still to be paid is the running total less the whole total; `since` makes it zero
 before the start date. The commitment gap is the largest amount by which committed
-but unpaid payments exceed the headroom.
+but unpaid payments exceed the unspent equity and the undrawn loan.
 
 ```python
 # cell 19b
@@ -425,7 +424,7 @@ site.equations(
     "b_unpaid = b_works.cumulative() - b_works.total()",
     "committed = shared_unpaid.since(on=shared_start) + a_unpaid.since(on=a_start)"
     " + b_unpaid.since(on=b_start)",
-    "commitment_gap = max(0 AUD, (committed - headroom).max())",
+    "commitment_gap = max(0 AUD, (committed - equity_left - loan_undrawn).max())",
     formulation="Funding",
 )
 model = draft.commit()
@@ -433,9 +432,7 @@ model = draft.commit()
 
 ```python
 # cell 20
-funded = levered.on(model=model).fix(
-    equity=plan["equity"], bridge_limit=plan["bridge_limit"]
-)
+funded = levered.on(model=model)
 funded_outcome = rk.execution.solve(specification=funded.cases(cases=cases))
 funded_outcome.table(
     "unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall", "commitment_gap"
@@ -445,13 +442,15 @@ funded_outcome.table(
 ```python
 # cell 21
 helpers.plot_flows(
-    outcome=funded_outcome.case(key="weak"), keys=["cash", "headroom", "committed"]
+    outcome=funded_outcome.case(key="weak"),
+    keys=["equity_left", "loan_undrawn", "committed"],
 )
 ```
 
-> **Finance note.** The commitment gap uses only cash and facilities that exist at
+> **Finance note.** The commitment gap uses only the equity and the loan that exist at
 > each date. It assumes no future sale or refinance. When Building B starts, its
 > whole budget is committed, even though the payments come over two years.
+
 
 ## 11. Optional, under the hood: the Run as evidence
 
@@ -518,12 +517,13 @@ weak_target_outcome = rk.execution.solve(
 assert weak_target_outcome["land_cost"] < target_outcome["land_cost"]
 ```
 
-**Try it 3: start Building B a year later.** Which year has the least headroom now?
+**Try it 3: start Building B a year later.** In which year is the undrawn loan
+smallest now?
 
 ```python
 # solution
 later_outcome = rk.execution.solve(specification=funded.fix(b_start=date(2031, 1, 1)))
-later_outcome["headroom"].argmin()
+later_outcome["loan_undrawn"].argmin()
 ```
 
 ## Checks and recap
@@ -536,7 +536,7 @@ cash = target_outcome["equity_cash_flow"]
 target_npv = rk.finance.npv(flow=cash, rate="15 % pa", on=date(2027, 1, 1))
 assert rk.quantity.isclose(actual=target_npv, expected="0 AUD", abs="1 AUD")
 reference_outcome = funded_outcome.case(key="reference")
-assert reference_outcome["headroom"].at(on=date(2027, 1, 1)) == headroom_2027
+assert reference_outcome["loan_balance"].at(on=date(2027, 1, 1)) == from_loan
 ```
 
 **Recap.**
@@ -568,12 +568,12 @@ follow `ruff format` (D15).
 | 9 | 2, 8 | G11, G12 |
 | 10 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
 | 11, 14 | 8 | Cases ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G20: `cases(mapping)` overrides by key; `Outcome.case`, `Outcome.table` with a case column |
-| 13 | 3, 6 | G17 (`cumulative()`, `at()`, `rk.flow.event`, `rk.finance.interest`, `rk.finance.irr`); G09: `irr` is evaluated after the affine stage |
+| 13–13b | 3, 6 | The equity-first cascade as equations (D2): G05 (`cumulative()`, `change()`), G17 (`rk.finance.interest`, `rk.finance.irr`, period-by-period `max`); G09: `max` and `irr` are evaluated in period order after the affine stage |
 | 14 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |
-| 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row |
+| 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row; G77: with a free value, the solve picks the active side of each `max` and checks it after the solve |
 | 17 | 6 | By hand once |
-| 18 | 6 | `cumulative()` (G05); the corkscrew is composition, with no account class (D2) |
-| 19–19b | 2, 3, 6 | G05: `total()`, `cumulative()`, `since(on=)`, `min()`, `max()`; G09 evaluates `min` and `max` after the affine stage |
+| 18 | 6, 8 | G19, G20: the corkscrew read from a case of the batch; composition, with no account class (D2) |
+| 19–19b | 2, 3, 6 | G05: `total()`, `cumulative()`, `since(on=)`, `max()`; G09 evaluates `max` after the affine stage |
 | 21 | 10 | Helper draws named Flows only (`plot_flows`) |
 | 22–23 | 1, 4 | `execute` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126)); G25: `rk.execution.replay` and `store.find_runs(specification=name)` |
 | 24 | 5, 8 | G06 |
@@ -583,6 +583,6 @@ follow `ruff format` (D15).
 - **Unit inference (G16).** Lesson 02 declares every value. From lesson 03, only
   inputs are declared. The alternative is to declare every Flow, which adds about
   15 lines to cells 6–8.
-- **Funding structure.** The cells use equity plus an overdraft-style bridge limit.
-  `development.json` also has a fixed draw schedule. Authoring picks one; the API is
-  the same.
+- **Equity timing.** Equity is drawn as needed and spent before the loan (D2), as
+  construction lenders usually require. A pro-rata structure after a minimum equity
+  tranche is the common alternative; it changes only the `loan_balance` equation.
