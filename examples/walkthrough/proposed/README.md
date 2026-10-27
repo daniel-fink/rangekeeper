@@ -82,7 +82,7 @@ span.extend(years=1).periods("year")
 flow = rk.flow.Flow({period: 100, date(2001, 1, 1): -50}, units="USD")              # G02
 flow.at(date(2010, 1, 1)), flow.total(), -0.05 * flow + other_flow                  # G03, G04
 flow.shift(periods=-1), flow.trim(period)                                            # G05
-stream = rk.flow.Stream({"PGI": pgi, "OPEX": opex}) | {"NOI": noi}                   # G04
+stream = rk.flow.Stream({"PGI": pgi, "OPEX": opex}).with_flows({"NOI": noi})         # G04
 stream.select("PGI", "OPEX").sum(), stream.trim(span), stream.display()
 flow.resample("quarter", method=rk.flow.ResampleMethod.SPLIT)                       # #103
 growth = rk.profile.Compounding(rate="2 %/year")                                     # G70

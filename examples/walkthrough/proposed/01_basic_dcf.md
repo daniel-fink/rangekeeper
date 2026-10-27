@@ -180,12 +180,14 @@ assert terminal_value.total() == nacf.at(date(2011, 1, 1)) / exit_cap_rate
 
 ## 8. Trim to the holding span
 
-Narrative: the forecast has 11 years, but the owner holds for 10. Add the lines to
-the Stream, trim it to the holding span and compare the table with Table 1.1.
+Narrative: the forecast has 11 years, but the owner holds for 10. `with_flows` gives
+a new Stream with more named Flows; a name that is already in the Stream gets the new
+Flow. Trim the table to the holding span and compare it with Table 1.1.
 
 ```python
 # cell 13
-table = (operations | {"NOI": noi, "CAPEX": capex, "NACF": nacf, "Terminal value": terminal_value})
+table = operations.with_flows({"NOI": noi, "CAPEX": capex, "NACF": nacf,
+                               "Terminal value": terminal_value})
 table = table.trim(holding)
 table.display()                        # compare with Table 1.1
 ```
@@ -251,7 +253,7 @@ does the owner lose? Change one input, then explain the result.
 ```python
 # cell 20
 exit_6 = (nacf.shift(periods=-1) / rk.Quantity("6 %")).trim(sale_year)
-flows_6 = (table | {"Terminal value": exit_6}).select("NACF", "Terminal value").sum()
+flows_6 = table.with_flows({"Terminal value": exit_6}).select("NACF", "Terminal value").sum()
 rk.finance.npv(flows_6, rate=discount_rate, on=holding.start) - value
 ```
 
@@ -334,7 +336,7 @@ questions.
 | 5, 19 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
 | 6 | 1, 6 | G70: `rk.profile` and `Flow.from_profile` with `initial=` or `total=` (D12; absorbs [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 7, 10, 12, 16 | 8 | G03: `Flow.at(date)` returns one Quantity |
-| 8–9, 13–14 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `Stream | mapping`, `select`, `sum()` |
+| 8–9, 13–14 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `with_flows(mapping)`, `select`, `sum()` |
 | 11–12, 20 | 6 | G05: `Flow.shift(periods=)` and `Flow.trim(period)`; no domain helper for the terminal value |
 | 15 | 6 | `resample` with `ResampleMethod` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
 | 17–19 | 6 | `pv`, `npv`, `irr` on dates ([#167](https://github.com/daniel-fink/rangekeeper/issues/167), [#164](https://github.com/daniel-fink/rangekeeper/issues/164)) |
