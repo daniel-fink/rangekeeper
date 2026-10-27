@@ -581,3 +581,39 @@ def test_crlf_files_get_the_same_changes(project: Path):
     assert "def count_steps(start, end):" in lf("src/pkg/duration/calendar.py")
     assert "from pkg.flow.series import FlowAggregate" in lf("src/pkg/flow/__init__.py")
     assert not Codemod(project, _map()).run().changed
+
+
+def test_shipped_index_upgrades_1_0_0a1_consumer_code(tmp_path: Path):
+    root = Path(__file__).resolve().parents[3]
+    index = root / "tools/codemod/indexes/rangekeeper-1.0.0a1.json"
+    project = tmp_path / "consumer"
+    project.mkdir()
+    (project / "app.py").write_text(
+        textwrap.dedent(
+            """\
+            from rangekeeper.calculations.series import ResamplingMethod
+            from rangekeeper.model.duration import Frequency
+            from rangekeeper.model.flux import Stream
+            from rangekeeper.shared.units import UnitSystem
+
+
+            def run(spec, period):
+                return spec.lock(values={}), period.start_inclusive
+            """
+        )
+    )
+    arguments = ["--consumer", "--index", str(index), "--root", str(project)]
+    assert main([*arguments, "--apply"]) == 0
+    assert (project / "app.py").read_text() == textwrap.dedent(
+        """\
+        from rangekeeper.flow import ResamplingMethod
+        from rangekeeper.duration import Frequency
+        from rangekeeper.flow import Stream
+        from rangekeeper.quantity import UnitSystem
+
+
+        def run(spec, period):
+            return spec.fix(values={}), period.start
+        """
+    )
+    assert main([*arguments, "--check"]) == 0
