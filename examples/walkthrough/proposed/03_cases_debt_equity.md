@@ -148,8 +148,8 @@ solve; it organises the display and the trace.
 The plan's sequence is a relation too. The site is bought and the shared works start
 on the start date. Building A follows a year later, and each building
 takes two years to build. Building B cannot start before the shared works finish.
-Development payments are negative; `uniform` divides an amount evenly over the years
-from a start date.
+Development payments are negative; `rk.profile.uniform` divides an amount evenly
+over the years from a start date.
 
 ```python
 # cell 6
@@ -159,10 +159,10 @@ site.equations(
     "a_open = a_start + 2 years",
     "b_open = b_start + 2 years",
     "b_start >= shared_start + 1 year",
-    "land = -event(amount=land_cost, on=start_date)",
-    "shared_works = -uniform(total=shared_cost, start=shared_start, years=1)",
-    "a_works = -uniform(total=a_cost, start=a_start, years=2)",
-    "b_works = -uniform(total=b_cost, start=b_start, years=2)",
+    "land = -rk.flow.event(amount=land_cost, on=start_date)",
+    "shared_works = -rk.profile.uniform(total=shared_cost, start=shared_start, years=1)",
+    "a_works = -rk.profile.uniform(total=a_cost, start=a_start, years=2)",
+    "b_works = -rk.profile.uniform(total=b_cost, start=b_start, years=2)",
     "works = shared_works + a_works + b_works",
     formulation="Development",
 )
@@ -174,10 +174,10 @@ earns nothing until it opens. Renewals come every five years after opening.
 ```python
 # cell 7
 site.equations(
-    "a_rent = compounding(initial=a_income, rate=rent_growth, start=a_open)",
-    "b_rent = compounding(initial=b_income, rate=rent_growth, start=b_open)",
-    "a_costs = compounding(initial=a_opex, rate=opex_growth, start=a_open)",
-    "b_costs = compounding(initial=b_opex, rate=opex_growth, start=b_open)",
+    "a_rent = rk.profile.compounding(initial=a_income, rate=rent_growth, start=a_open)",
+    "b_rent = rk.profile.compounding(initial=b_income, rate=rent_growth, start=b_open)",
+    "a_costs = rk.profile.compounding(initial=a_opex, rate=opex_growth, start=a_open)",
+    "b_costs = rk.profile.compounding(initial=b_opex, rate=opex_growth, start=b_open)",
     "income = a_rent + b_rent",
     "opex = -(a_costs + b_costs)",
     formulation="Operations",
@@ -191,11 +191,11 @@ grow from 2027.
 # cell 7b
 site.equations(
     (
-        "a_renewals = compounding(initial=a_renewal, rate=opex_growth,"
+        "a_renewals = rk.profile.compounding(initial=a_renewal, rate=opex_growth,"
         " start=a_open + 5 years, every=5 years)"
     ),
     (
-        "b_renewals = compounding(initial=b_renewal, rate=opex_growth,"
+        "b_renewals = rk.profile.compounding(initial=b_renewal, rate=opex_growth,"
         " start=b_open + 5 years, every=5 years)"
     ),
     "renewals = -(a_renewals + b_renewals)",
@@ -209,11 +209,11 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as relations
 ```python
 # cell 8
 site.equations(
-    "exit_value = at(flow=operating, on=sale_date + 1 year) / exit_cap_rate",
-    "sale = event(amount=exit_value, on=sale_date)",
+    "exit_value = operating.at(on=sale_date + 1 year) / exit_cap_rate",
+    "sale = rk.flow.event(amount=exit_value, on=sale_date)",
     "project_cash = land + works + operating + sale",
-    "net_cash_flow = trim(flow=project_cash, end=sale_date)",
-    "unlevered_npv = npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
+    "net_cash_flow = project_cash.trim(end=sale_date)",
+    "unlevered_npv = rk.finance.npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
     formulation="Sale and value",
 )
 model = draft.commit()
@@ -286,9 +286,9 @@ site.value(key="loan_rate", units="% pa")
 site.value(key="equity_rate", units="% pa")
 site.equations(
     "loan_draws = -leverage * (land + works)",
-    "loan_balance = cumulative(flow=loan_draws)",
-    "loan_interest = -interest(balance=loan_balance, rate=loan_rate)",
-    "repayment = -settle(balance=loan_balance, on=sale_date)",
+    "loan_balance = loan_draws.cumulative()",
+    "loan_interest = -rk.finance.interest(balance=loan_balance, rate=loan_rate)",
+    "repayment = -rk.finance.settle(balance=loan_balance, on=sale_date)",
     formulation="Debt",
 )
 ```
@@ -299,8 +299,8 @@ Narrative: the equity investor's cash flow is what remains after the loan.
 # cell 13b
 site.equations(
     "equity_cash_flow = net_cash_flow + loan_draws + loan_interest + repayment",
-    "equity_npv = npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
-    "equity_irr = irr(flow=equity_cash_flow)",
+    "equity_npv = rk.finance.npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
+    "equity_irr = rk.finance.irr(flow=equity_cash_flow)",
     formulation="Debt",
 )
 model = draft.commit()
@@ -408,8 +408,8 @@ largest commitment gap.
 ```python
 # cell 19b
 site.equations(
-    "peak_shortfall = max(0 AUD, -min(funding.headroom))",
-    "commitment_gap = max(0 AUD, max(funding.committed - funding.headroom))",
+    "peak_shortfall = max(0 AUD, -funding.headroom.min())",
+    "commitment_gap = max(0 AUD, (funding.committed - funding.headroom).max())",
     formulation="Funding",
 )
 model = draft.commit()
@@ -538,12 +538,12 @@ follow `ruff format` (D15).
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
 | 5–5c | 2, 5 | G08 (entity handles); G15: date-valued Values; G16: Flows made from amounts declare their Periods, other values take units and shape from their equations |
-| 6–8 | 3, 6 | G72: `formulation=` groups; G17: Function catalogue for equations (`event`, `at`, `uniform`, `compounding`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
+| 6–8 | 3, 6 | G72: `formulation=` groups; G17: functions in equations (`rk.flow.event`, `rk.profile.uniform`, `rk.profile.compounding`, `rk.finance.npv`, and the methods `at` and `trim`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
 | 10 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
 | 11, 14 | 8 | Cases ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G20: `cases(mapping)` overrides by key; `Outcome.case`, `Outcome.table` with a case column |
-| 13 | 3, 6 | G17 (`cumulative`, `interest`, `settle`, `irr`); G09: `irr` is evaluated after the affine stage |
+| 13 | 3, 6 | G17 (`cumulative()`, `rk.finance.interest`, `rk.finance.settle`, `rk.finance.irr`); G09: `irr` is evaluated after the affine stage |
 | 14 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |
 | 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row |
 | 17 | 6 | By hand once |

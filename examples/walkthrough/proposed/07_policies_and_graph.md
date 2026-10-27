@@ -316,10 +316,13 @@ site.rollup(key="x_income", of="income", **scope)
 site.rollup(key="x_cost", of="build_cost", **scope)
 site.date(key="expansion_date")
 site.equations("x_open = expansion_date + 1 year")
-site.extend(key="works", terms="- uniform(total=x_cost, start=expansion_date, years=1)")
+site.extend(
+    key="works",
+    terms="- rk.profile.uniform(total=x_cost, start=expansion_date, years=1)",
+)
 site.extend(
     key="income",
-    terms="+ compounding(initial=x_income, rate=rent_growth, start=x_open)",
+    terms="+ rk.profile.compounding(initial=x_income, rate=rent_growth, start=x_open)",
 )
 expanded = draft.commit()
 ```

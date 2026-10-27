@@ -137,7 +137,7 @@ made, before any solve.
 try:
     fixed.decide(
         key="start_date",
-        when="shift(flow=rent_index, periods=-1) >= 1.05",
+        when="rent_index.shift(periods=-1) >= 1.05",
         review=yearly,
         window=(date(2027, 1, 1), date(2031, 1, 1)),
         otherwise="never",
@@ -185,8 +185,8 @@ site.value(key="b_land_share", units="ratio")
 site.date(key="b_sale_date")
 site.flow(key="b_site_sale", units="AUD", periods=years)
 site.equations(
-    "b_site_value = b_land_share * land_cost * at(flow=rent_index, on=b_sale_date)",
-    "b_site_sale = event(amount=b_site_value, on=b_sale_date)",
+    "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
+    "b_site_sale = rk.flow.event(amount=b_site_value, on=b_sale_date)",
 )
 site.extend(key="project_cash", terms="+ b_site_sale")
 model = draft.commit()
@@ -371,7 +371,7 @@ solutions. The longest cell has 14 lines (cell 11). Cells follow `ruff format` (
 | 8 | 9 | G53: `AvailabilityError` at Specification validation ([#139](https://github.com/daniel-fink/rangekeeper/issues/139)) |
 | 9 | 6 | G54: sequential solve: a rule observes solved values (funding) under the decisions so far ([#213](https://github.com/daniel-fink/rangekeeper/issues/213)) |
 | 9, 11 | 3 | G55: decision windows with expression bounds; rules that observe earlier decisions (`b_start == never`) |
-| 10 | 2, 3 | G27 (`extend`); G17 (`at`, `event`) |
+| 10 | 2, 3 | G27 (`extend`); G17 (`at`, `rk.flow.event`) |
 | 13–16 | 8 | G56: `Outcome.compare(other=, keys=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
 | 17 | 2 | G57: Specification parameters for rules, and cases × paths |

@@ -57,6 +57,7 @@ pass.
 | D18 | Equations, expressions or constraints? | "Equation" is the reader's word: one relation that must hold, an equality or a bound. It is stored as a Constraint over Expressions; the glossary says so. `equations(..., formulation="Debt")` puts equations in a named Formulation, for display and traces; without it they join the entity's default Formulation | 02–07 |
 | D19 | Is the mortgage constant a library function? | No. `rk.finance.payment(principal=, rate=, term=, frequency=)` is the one general loan calculation, like a spreadsheet's PMT with units. The mortgage constant is derived in the open: the payment per year on one dollar of loan, `(payment / rk.Quantity(text="1 AUD")).to(units="% pa")` | 02, 06 |
 | D20 | Does a Model have a default timeline or unit system? | No. `rk.Model(name=, namespace=, description=)` takes neither. A Flow made from amounts by a profile or an event is declared with its `periods=`; every other Flow takes its Periods from its operands. The Model records the unit system in use (the curated registry, its version and any registered extensions) as a read-only `model.unit_system`; custom units go through the registry extension point | 03–07 |
+| D21 | How are functions named in equation strings? | As in Python, with the `rk.` namespace: `rk.profile.uniform(...)`, `rk.flow.event(...)`, `rk.finance.npv(...)`. Operations on one Flow are methods: `operating.at(on=...)`, `project_cash.trim(end=...)`, `loan_draws.cumulative()`, `funding.headroom.min()`. Only `max(a, b)` stays bare. Eight words are reserved: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false` | 03–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -269,32 +270,40 @@ rk.execution.compare(
 
 ### Equation strings
 
-Equations use value keys, dotted paths (`funding.headroom`), keyed members
-(`rent[use]`), quantity literals (`0 AUD`, `2 years`), the operators `+ - * /`, the
-comparisons `= >= <= > <` and the functions in G17. Every function argument is named,
-as in Python calls (D14). Each profile in `rk.profile` is also an equation function,
-under its own name in lower case: `Compounding` is `compounding(...)`, `SCurve` is
-`scurve(...)`. A growth profile takes `initial=`; a distribution profile takes
-`total=`. A profile registered through the extension point is an equation function
-too. The other functions use the same names and keywords as `rk.flow` and
-`rk.finance`:
+Equations use value keys, dotted paths (`funding.headroom`, `building_a.income`),
+keyed members (`rent[use]`), quantity literals (`0 AUD`, `2 years`), the operators
+`+ - * /`, the comparisons `= >= <= > <` and functions. Every function argument is
+named (D14). Functions are called as in Python, with their `rk.` namespace (D21):
 
-| Function | Meaning |
+| Form | Meaning |
 | --- | --- |
-| `compounding(initial=, rate=, start=, every=, base=)`, `linear(initial=, ...)`, `constant(initial=, ...)` | Growth profiles over the Periods of the Flow they make; zero before `start`; `every` for periodic amounts. `base=` is the date of the initial amount; it defaults to the first of those Periods |
-| `uniform(total=, start=, years=)`, `scurve(total=, start=, years=)` | Distribution profiles: a total divided over the years from a start date |
-| `event(amount=, on=)` | One amount on one date |
-| `at(flow=, on=)` | The amount of the period that contains a date |
-| `trim(flow=, start=, end=)` | The part of a Flow inside a span |
-| `cumulative(flow=)`, `interest(balance=, rate=)`, `settle(balance=, on=)` | Balances, interest on the opening balance, and repayment of a balance |
-| `npv(flow=, rate=, on=)`, `irr(flow=)` | Valuation on one date basis (D4, D5 for `irr`) |
-| `min(...)`, `max(...)` | Extremes of a Flow or of several values (D4). Like Python's built-ins, their arguments are not named |
-| `shift(flow=, periods=)` | Each period takes the amount `periods` away; `-1` gives the next period's amount. A rule cannot read a later amount (G53) |
+| `rk.profile.compounding(initial=, rate=, start=, every=, base=)`, `rk.profile.linear(initial=, ...)`, `rk.profile.constant(initial=, ...)` | A Flow made by a growth profile, over the Periods of the Flow it defines; zero before `start`; `every` for periodic amounts. `base=` is the date of the initial amount; it defaults to the first of those Periods |
+| `rk.profile.uniform(total=, start=, years=)`, `rk.profile.scurve(total=, start=, years=)` | A Flow made by a distribution profile: a total divided over the years from a start date |
+| `rk.flow.event(amount=, on=)` | A Flow with one amount on one date |
+| `rk.finance.npv(flow=, rate=, on=)`, `rk.finance.irr(flow=)` | Valuation on one date basis (D4, D5 for `irr`) |
+| `rk.finance.interest(balance=, rate=)`, `rk.finance.settle(balance=, on=)` | Interest on the opening balance, and repayment of a balance |
+| `x.at(on=)`, `x.trim(start=, end=)`, `x.shift(periods=)`, `x.cumulative()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date, the part inside a span, each period's amount `periods` away (`-1` gives the next period's; a rule cannot read a later amount, G53), running totals, and extremes (D4) |
+| `max(a, b)` | The larger of two values. Like Python's built-in, its arguments are not named |
+
+Each profile in `rk.profile` is also an equation function, under its own name in lower
+case: `Compounding` is `rk.profile.compounding(...)`. A profile registered through the
+extension point is an equation function too.
+
+**Reserved words.** These cannot be value keys or entity codes; `commit()` rejects
+them by name: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false`. Other words
+are free, because their position decides what they mean: a unit word follows a number,
+a method name follows a Flow, an argument name is inside a call, and a label key is
+inside brackets.
+
+**Quantity literals.** A literal is a number followed by unit words, joined only by
+spaces and `per`: `1 year`, `0 AUD`, `0.02 dwelling per sqm`. `*` and `/` are never
+part of a literal, so `1 year * rate` means `(1 year) * rate`. Put a complex unit in
+brackets: `(750 AUD per sqm pa)`.
 
 A Flow-valued equation applies period by period. A Flow made from amounts by a profile
 or an event takes its Periods from its declaration; every other Flow takes them from
-its operands, and Flows with different Periods do not combine. A scalar
-term applies to every period (G18).
+its operands, and Flows with different Periods do not combine. A scalar term applies
+to every period (G18).
 
 ## Gap list
 
@@ -310,7 +319,7 @@ use. **Issue** is filled in when the issue is filed.
 | 4 | — | `Flow.shift(periods=)` and `Flow.trim(period)` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
-| 7 | — | Function catalogue for equations, named as in `rk.profile`, `rk.flow` and `rk.finance` | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
+| 7 | — | Function catalogue for equations, called as `rk.profile.*`, `rk.flow.*`, `rk.finance.*` and Flow methods, with the reserved words and the literal rule | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
 | 8 | — | Flow-valued string equations, with Periods from declarations and operands | G18 | `model` | 03·6–8 | #145, #163 |
 | 9 | — | Date values, date arithmetic and `never` | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
 | 10 | — | `rk.Model(name=, namespace=, description=)`, read-only `model.unit_system`, `ModelDraft` with `add_entity` and `entity`, entity handles with `value(key=, units=)`, `flow(key=, units=)` and `date(key=)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
