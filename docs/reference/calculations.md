@@ -77,8 +77,10 @@ coverage is a separate result. Source records remain unchanged.
 The private backend prepares compact coordinate and line columns once, retains
 immutable identity/evidence metadata, and reuses columns through selection,
 trimming, resampling and display. Native Polars operations handle bulk grouping,
-unit conversion and masks. Cancellation-sensitive sums use an `math.fsum` repair
-selected by a numerical risk check. Intermediate resampling does not reconstruct
+unit conversion and masks. Cancellation-sensitive sums use an `math.fsum` repair.
+A group gets the repair when the error bound of its native sum,
+`n * eps * sum(|x|) / |sum(x)|`, is more than `1e-8`. Groups with no cancellation
+stay native below about 45 million rows. Intermediate resampling does not reconstruct
 Flow records. Explicit `.flows` access materializes current content.
 
 Known-data operations do not create equations. Use an original Model selection
