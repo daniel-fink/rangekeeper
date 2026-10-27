@@ -123,7 +123,7 @@ def stream_projection(stream):
     try:
         grid = batch.grid(stream.join)
     except ValueError as error:
-        raise ValueError(f"{error}; lines: {', '.join(stream.labels)}") from error
+        raise ValueError(f"{error}; lines: {', '.join(stream.names)}") from error
     amounts = {}
     present = set()
     for line, coordinate, magnitude in batch.frame.select(
@@ -143,9 +143,9 @@ def stream_frame(stream) -> DataFrame:
     pl = polars()
     batch, grid, amounts, _ = stream_projection(stream)
     reserved = {"date", "period_start", "period_end", "key"}
-    if reserved & set(stream.labels):
+    if reserved & set(stream.names):
         raise ValueError(
-            "line labels conflict with coordinate column names; select explicit labels"
+            "line names conflict with coordinate column names; select explicit names"
         )
     coordinates = [batch.coordinates[i] for i in grid]
     frame = pl.DataFrame(
@@ -186,7 +186,7 @@ def stream_frame(stream) -> DataFrame:
     return frame.with_columns(
         [
             pl.Series(label, [amounts.get((line, c)) for c in grid], dtype=pl.Float64)
-            for line, label in enumerate(stream.labels)
+            for line, label in enumerate(stream.names)
         ]
     ).clone()
 

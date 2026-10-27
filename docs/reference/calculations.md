@@ -43,10 +43,10 @@ contribution boundaries. See [record methods](records.md).
 
 ## Coordinate flows with Stream
 
-`flow.Stream` accepts an ordered label-to-Flow mapping. It retains default
+`flow.Stream` accepts an ordered name-to-Flow mapping. It retains default
 `missing` and `join` policies. Model-backed selections use
-`Stream.from_values(model, value_ids, labels=None)`. Duplicate source IDs and
-ambiguous labels are errors. `select(labels)` or `select(value_ids=...)` retains
+`Stream.from_values(model, value_ids, names=None)`. Duplicate source IDs and
+ambiguous names are errors. `select(names)` or `select(value_ids=...)` retains
 selection order; `merge` requires compatible policies and exact Model revisions.
 
 ```python

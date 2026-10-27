@@ -55,7 +55,7 @@ def test_minimal_import_and_immutable_stream():
     subprocess.run([sys.executable, "-c", code], check=True)
     stream = Stream({})
     with pytest.raises(AttributeError):
-        stream.labels = ("edited",)
+        stream.names = ("edited",)
 
 
 def test_display_needs_no_chart_or_graph_dependency():

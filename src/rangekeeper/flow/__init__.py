@@ -37,7 +37,7 @@ class Stream:
     their magnitudes. Resampling must be declared separately for symbolic use.
     """
 
-    labels: tuple[str, ...]
+    names: tuple[str, ...]
     model: Model | None
     value_ids: tuple[UUID, ...]
     missing: MissingValueHandling
@@ -57,11 +57,11 @@ class Stream:
 
         if not isinstance(flows, Mapping):
             raise TypeError(
-                "Stream requires a label-to-Flow mapping; use from_values for a Model selection"
+                "Stream requires a name-to-Flow mapping; use from_values for a Model selection"
             )
-        labels = tuple(flows)
+        names = tuple(flows)
         self._initialize(
-            labels,
+            names,
             tuple(flows.values()),
             None,
             (),
@@ -73,7 +73,7 @@ class Stream:
 
     def _initialize(
         self,
-        labels,
+        names,
         flows,
         model,
         value_ids,
@@ -85,10 +85,10 @@ class Stream:
         from rangekeeper.flow.series import AlignmentJoin
 
         if any(
-            not isinstance(label, str) or not label.strip() for label in labels
-        ) or len(set(labels)) != len(labels):
+            not isinstance(label, str) or not label.strip() for label in names
+        ) or len(set(names)) != len(names):
             raise ValueError(
-                "Stream labels must be nonempty and unique; supply explicit labels"
+                "Stream names must be nonempty and unique; supply explicit names"
             )
         if not isinstance(missing, MissingValueHandling) or not isinstance(
             join, AlignmentJoin
@@ -99,7 +99,7 @@ class Stream:
         ):
             raise TypeError("Stream members must be Flows")
         for name, value in (
-            ("labels", tuple(labels)),
+            ("names", tuple(names)),
             ("_flows", flows),
             ("model", model),
             ("value_ids", tuple(value_ids)),
@@ -116,11 +116,11 @@ class Stream:
         model: Model,
         value_ids: Iterable[UUID],
         *,
-        labels: Sequence[str] | None = None,
+        names: Sequence[str] | None = None,
         missing: MissingValueHandling = MissingValueHandling.ERROR,
         join: AlignmentJoin | None = None,
     ) -> Stream:
-        """Pin original Values; duplicate identities or ambiguous labels are errors."""
+        """Pin original Values; duplicate identities or ambiguous names are errors."""
         from rangekeeper.flow.series import AlignmentJoin
 
         ids = tuple(value_ids)
@@ -129,12 +129,12 @@ class Stream:
         values = tuple(model.value(i) for i in ids)
         if any(v.kind is not ValueKind.FLOW for v in values):
             raise ValueError("Stream target is not a Flow Value")
-        labels = tuple(labels) if labels is not None else tuple(v.key for v in values)
-        if len(labels) != len(ids):
+        names = tuple(names) if names is not None else tuple(v.key for v in values)
+        if len(names) != len(ids):
             raise ValueError("one label is required per Value")
         result = object.__new__(cls)
         result._initialize(
-            labels,
+            names,
             tuple(v.flow for v in values),
             model,
             ids,
@@ -183,10 +183,10 @@ class Stream:
             object.__setattr__(self, "_batch", Batch.prepare(self.flows))
         return self._batch
 
-    def _derive(self, *, labels=None, flows=None, batch=None, ids=None, symbolic=None):
+    def _derive(self, *, names=None, flows=None, batch=None, ids=None, symbolic=None):
         result = object.__new__(type(self))
         result._initialize(
-            self.labels if labels is None else labels,
+            self.names if names is None else names,
             flows,
             self.model,
             self.value_ids if ids is None else ids,
@@ -199,22 +199,22 @@ class Stream:
 
     def select(
         self,
-        labels: Iterable[str] | None = None,
+        names: Iterable[str] | None = None,
         *,
         value_ids: Iterable[UUID] | None = None,
     ) -> Stream:
-        """Select lines in requested order by labels or original Value IDs."""
-        if (labels is None) == (value_ids is None):
-            raise ValueError("supply labels or value_ids")
-        requested = tuple(labels if labels is not None else (value_ids or ()))
-        available = self.labels if labels is not None else self.value_ids
+        """Select lines in requested order by names or original Value IDs."""
+        if (names is None) == (value_ids is None):
+            raise ValueError("supply names or value_ids")
+        requested = tuple(names if names is not None else (value_ids or ()))
+        available = self.names if names is not None else self.value_ids
         if len(set(requested)) != len(requested):
             raise ValueError("duplicate selection")
         if any(i not in available for i in requested):
             raise KeyError("selection contains a member outside this Stream")
         indices = tuple(available.index(i) for i in requested)
         return self._derive(
-            labels=tuple(self.labels[i] for i in indices),
+            names=tuple(self.names[i] for i in indices),
             flows=(
                 None if self._flows is None else tuple(self._flows[i] for i in indices)
             ),
@@ -223,7 +223,7 @@ class Stream:
         )
 
     def merge(self, other: Stream) -> Stream:
-        """Union compatible selections; conflicting labels or revisions require resolution."""
+        """Union compatible selections; conflicting names or revisions require resolution."""
         if not isinstance(other, Stream):
             raise TypeError("other must be a Stream")
         if self.missing is not other.missing or self.join is not other.join:
@@ -240,27 +240,27 @@ class Stream:
                 raise ValueError(
                     "merge transformed model selections only after explicit materialization as labelled flows"
                 )
-        labels = list(self.labels)
+        names = list(self.names)
         flows = list(self._flows if self._flows is not None else self.flows)
         other_flows = other._flows if other._flows is not None else other.flows
         ids = list(self.value_ids)
-        for i, label in enumerate(other.labels):
+        for i, label in enumerate(other.names):
             if ids and other.value_ids[i] in ids:
                 position = ids.index(other.value_ids[i])
-                if labels[position] != label or flows[position] != other_flows[i]:
+                if names[position] != label or flows[position] != other_flows[i]:
                     raise ValueError(
                         "duplicate Value has conflicting label or selection"
                     )
                 continue
-            if label in labels:
-                if self.model is None and flows[labels.index(label)] == other_flows[i]:
+            if label in names:
+                if self.model is None and flows[names.index(label)] == other_flows[i]:
                     continue
                 raise ValueError(f"conflicting Stream label: {label}")
-            labels.append(label)
+            names.append(label)
             flows.append(other_flows[i])
             if other.value_ids:
                 ids.append(other.value_ids[i])
-        return self._derive(labels=labels, flows=tuple(flows), ids=ids)
+        return self._derive(names=names, flows=tuple(flows), ids=ids)
 
     def trim(self, span: Span) -> Stream:
         """Select whole periods or dates inside an extent without allocating amounts."""
@@ -286,20 +286,22 @@ class Stream:
         from rangekeeper.flow.series import ResamplingMethod
 
         if isinstance(method, Mapping):
-            if set(method) != set(self.labels):
+            if set(method) != set(self.names):
                 raise ValueError("method mapping must cover every label exactly")
-            methods = tuple(method[label] for label in self.labels)
+            methods = tuple(method[label] for label in self.names)
         else:
-            methods = (method,) * len(self.labels)
+            methods = (method,) * len(self.names)
         if isinstance(weighting, Mapping):
             mean_labels = {
                 label
-                for label, m in zip(self.labels, methods, strict=True)
+                for label, m in zip(self.names, methods, strict=True)
                 if m is ResamplingMethod.MEAN
             }
             if set(weighting) != mean_labels:
-                raise ValueError("weighting mapping must cover exactly the mean labels")
-            weightings = tuple(weighting.get(label) for label in self.labels)
+                raise ValueError(
+                    "weighting mapping must cover exactly the lines with a mean method"
+                )
+            weightings = tuple(weighting.get(label) for label in self.names)
         else:
             weightings = tuple(
                 weighting if m is ResamplingMethod.MEAN else None for m in methods
@@ -325,12 +327,12 @@ class Stream:
 
         batch = self._prepared()
         column = "coverage" if "coverage" in batch.frame.columns else "known"
-        values: list[list[float]] = [[] for _ in self.labels]
+        values: list[list[float]] = [[] for _ in self.names]
         for line, value in (
             batch.frame.sort("line", "order").select("line", column).iter_rows()
         ):
             values[line].append(float(value))
-        return MappingProxyType(dict(zip(self.labels, map(tuple, values), strict=True)))
+        return MappingProxyType(dict(zip(self.names, map(tuple, values), strict=True)))
 
     def aggregate(
         self,
@@ -399,7 +401,7 @@ class Stream:
         return stream_frame(self)
 
     def display(self, *, transpose: bool = False, precision: int = 2):
-        """Return an HTML/text table with line labels, units and explicit missing states."""
+        """Return an HTML/text table with line names, units and explicit missing states."""
         from rangekeeper.model.display import StreamTable
 
         return StreamTable(self, transpose=transpose, precision=precision)
@@ -408,4 +410,4 @@ class Stream:
         return self.display()._repr_html_()
 
     def __repr__(self):
-        return f"Stream(labels={self.labels!r})"
+        return f"Stream(names={self.names!r})"

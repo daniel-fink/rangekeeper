@@ -115,13 +115,13 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed (needs schema) | Also Span. Half-open; the end is excluded. |
 | `rangekeeper.schema.records.Period.end_exclusive` | `end` | agreed (needs schema) | Also Span. |
-| `rangekeeper.model.flux.Stream.labels` | `names` | draft | Each use needs review. Classification `labels` keep their name. |
+| `rangekeeper.model.flux.Stream.labels` | `names` | draft | Each use needs review. Classification `labels` keep their name. The package pass renamed the Stream field by hand; the consumer pass lists the uses to check. |
 | `findings` | `diagnostics` | draft | Each use needs review. |
 | `issues` | `diagnostics` | draft | Each use needs review. |
 | Any call: `start_inclusive=` | `start=` | agreed (needs schema) |  |
 | Any call: `end_exclusive=` | `end=` | agreed (needs schema) |  |
-| `rangekeeper.model.flux.Stream.select`: `labels=` | `names=` | draft (needs refactor) |  |
-| `rangekeeper.model.flux.Stream.from_values`: `labels=` | `names=` | draft (needs refactor) |  |
+| `rangekeeper.model.flux.Stream.select`: `labels=` | `names=` | draft |  |
+| `rangekeeper.model.flux.Stream.from_values`: `labels=` | `names=` | draft |  |
 
 ### Removed names
 

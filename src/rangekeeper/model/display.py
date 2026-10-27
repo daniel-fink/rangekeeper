@@ -79,7 +79,7 @@ class StreamTable:
         periods = [_coordinate_label(batch.coordinates[c]) for c in grid]
         lines = [
             f"{label} [{unit}]"
-            for label, unit in zip(self.stream.labels, batch.units, strict=True)
+            for label, unit in zip(self.stream.names, batch.units, strict=True)
         ]
         values = []
         for line in range(len(lines)):

@@ -276,7 +276,9 @@ attributes:
     apply: review
     status: draft
     source: ADR-012
-    note: Classification `labels` keep their name.
+    note: >-
+      Classification `labels` keep their name. The package pass renamed the
+      Stream field by hand; the consumer pass lists the uses to check.
   - owner: "*"
     name: findings
     new_name: diagnostics
@@ -310,13 +312,11 @@ parameters:
     new_name: names
     status: draft
     source: ADR-012
-    requires: [refactor]
   - callable: rangekeeper.model.flux.Stream.from_values
     name: labels
     new_name: names
     status: draft
     source: ADR-012
-    requires: [refactor]
 
 # Names removed with no direct replacement. The codemod does not change these
 # uses; it lists them with the replacement.

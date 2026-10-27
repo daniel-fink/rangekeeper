@@ -182,6 +182,6 @@ if __name__ == "__main__":
         Stream.from_values(
             result,
             [ids["A_annual"], ids["B_annual"], ids["portfolio"]],
-            labels=["Building A", "Building B", "Portfolio"],
+            names=["Building A", "Building B", "Portfolio"],
         ).display()
     )
