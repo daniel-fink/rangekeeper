@@ -80,7 +80,7 @@ This record approves the stable release of Bundle format 1, which ADR-008 left o
 - Rounding follows explicit rules, with currency minor units.
 
 The implementation design chooses the JSON and Parquet encodings. They must
-round-trip exactly.
+round-trip exactly. [ADR-023](023-decimal-money.md) gives the design.
 
 ## Alternatives and consequences
 
