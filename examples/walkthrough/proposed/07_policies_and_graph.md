@@ -473,7 +473,7 @@ solutions. The longest cell has 15 lines (cell 6). Cells follow
 The design for structural variants must support:
 
 - **Alternatives as Model revisions.** `edit()`, `relabel`, `include` and `commit`
-  make each option (cell 4). The options share the property entity and the relations; they
+  make each option (cell 4). The options share the property entity and the equations; they
   differ in structure.
 - **A bounded choice in the Specification.** `alternatives(key={name: Model})` pins
   each option's revision. The choice is a decided value with a window and a default
@@ -485,7 +485,7 @@ The design for structural variants must support:
   Building B as built on one path. The proposed cells do not show it yet; add it
   when the fragment data exists.
 - **Provision on every path.** The provision is an ordinary fixed value in the
-  Specification, and its cash flow is in every option's relations (cells 7, 13, 19).
+  Specification, and its cash flow is in every option's equations (cells 7, 13, 19).
 - **Paired evaluation.** All strategies on one pinned `MarketPaths`, compared by path
   against a named baseline (cells 9, 14, 16).
 - **Kept apart from optimisation.** Threshold and premium sweeps are cases. Nothing

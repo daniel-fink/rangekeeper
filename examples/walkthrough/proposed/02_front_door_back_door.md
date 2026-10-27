@@ -62,7 +62,7 @@ helpers.show_geometry(name="mixed_use_property")
 Narrative: a spreadsheet calculates in one direction. Start from the cost and
 calculate the income that a lender needs. Do it once in plain Python. Then ask the
 reverse question: what land price does a given income support? The spreadsheet needs
-new formulas. The relations did not change; only the question did.
+new formulas. The equations did not change; only the question did.
 
 ```python
 # cell 3
@@ -72,7 +72,7 @@ required_noi = 1.25 * debt_service
 required_noi  # AUD per year, calculated from cost to income
 ```
 
-## 3. Declare the relations once
+## 3. Declare the equations once
 
 Narrative: a Model describes things, called entities, with their values and the
 equations between them. Here it describes one entity: the property. An equation does
@@ -393,7 +393,7 @@ assert back.model_id == front.model_id == model.id
 
 **Recap.**
 
-1. A Model declares relations once. An equation has no calculation direction.
+1. A Model declares its equations once. An equation has no calculation direction.
 2. A Specification asks the question: fix what you know, and the solve finds the
    rest. The back door changes two roles, not the Model.
 3. A solve can be underdetermined, infeasible or unsupported. Each status names its

@@ -9,7 +9,7 @@ API conventions and the gap list: [README](README.md).
 
 Decision used here (D9 in the [README](README.md#decisions)): if a value can change,
 it belongs in the Specification; if it is part of the modelling, it belongs in the
-Model. The Model declares the date relations (lesson 03). A policy rule **decides**
+Model. The Model declares the date equations (lesson 03). A policy rule **decides**
 one value: it fixes the value on the first review date on which its condition holds.
 "Decided" is a role beside fixed and free. There is no separate action concept.
 
@@ -41,7 +41,7 @@ The lesson is not authored until #215 is verified (ADR-020).
 
 Narrative: start from lesson 04's Model and paths. The plan's dates are related:
 the shared works start on the start date, Building A follows a year later, and
-Building B cannot start before the shared works finish. These relations are part of
+Building B cannot start before the shared works finish. These equations are part of
 the Model. Only two dates are inputs: the start date and Building B's start.
 
 ```python
@@ -394,7 +394,7 @@ The design for sequential decisions must support:
   when they depend only on Movements up to that date. Validation rejects a rule that
   reads a later value (cell 8).
 - **Decided values.** A date value, or "never". The decision fixes the value; the
-  Model's relations and constraints move the dependent dates (cells 6, 9, 11).
+  Model's equations, equalities and bounds, move the dependent dates (cells 6, 9, 11).
 - **Windows.** Review dates from a start to an end, with bounds that can be
   expressions of earlier decisions (cell 9).
 - **Funding.** The rule observes the funding values (`headroom`) under the decisions

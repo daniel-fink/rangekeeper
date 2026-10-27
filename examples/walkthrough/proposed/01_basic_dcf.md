@@ -337,7 +337,7 @@ assert rk.quantity.isclose(
 3. PV, NPV and IRR use the same dates, so a price equal to the NPV earns the discount
    rate.
 
-**Next.** Lesson 02 declares financial relations once and asks them two different
+**Next.** Lesson 02 declares financial equations once and asks them two different
 questions.
 
 ## Cell budget

@@ -147,7 +147,7 @@ Narrative: equations can be grouped in named formulations, like the sections of 
 pro forma: development, operations, sale and debt. A group changes nothing in the
 solve; it organises the display and the trace.
 
-The plan's sequence is a relation too. The site is bought and the shared works start
+The plan's sequence is a set of equations too. The site is bought and the shared works start
 on the start date. Building A follows a year later, and each building
 takes two years to build. Building B cannot start before the shared works finish.
 Development payments are negative; `rk.profile.uniform` divides an amount evenly
@@ -206,7 +206,7 @@ site.equations(
 )
 ```
 
-Narrative: the sale and the value. These are lesson 01's ideas, now as relations.
+Narrative: the sale and the value. These are lesson 01's ideas, now as equations.
 
 ```python
 # cell 8
@@ -276,7 +276,7 @@ outcomes.table("unlevered_npv")
 
 Narrative: a loan funds a fixed share of each development payment. The owner pays
 interest each year and repays the balance from the sale. The equity investor's cash
-flow is what remains. Add the relations to a new revision of the Model, then pin the
+flow is what remains. Add the equations to a new revision of the Model, then pin the
 Specification to that revision.
 
 ```python
@@ -343,7 +343,7 @@ rk.execution.solve(specification=levered.cases(cases=levels)).table(
 
 Narrative: the back door again, now on dated cash flows. The investor needs a 15 %
 equity IRR. What land price gives it? Fix the IRR and free the land cost. With the
-IRR fixed, the IRR relation becomes "NPV at 15 % is zero", which is an affine row.
+IRR fixed, the IRR equation becomes "NPV at 15 % is zero", which is an affine row.
 
 ```python
 # cell 16
@@ -392,7 +392,7 @@ rk.flow.Stream(
 
 ## 10. Funding in the Model
 
-Narrative: the same relations in the Model, so that every case and every later
+Narrative: the same equations in the Model, so that every case and every later
 lesson reports them. Building A's income helps to pay for Building B, so the cash
 includes the operating cash flow. They form one named group, "Funding". There is no
 account object: an account is equations.

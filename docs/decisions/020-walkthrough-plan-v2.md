@@ -14,7 +14,7 @@ are separate work.
 
 - **The lessons follow the library's history, not its ideas.** ADR-006 teaches
   the property graph before the first solve. The main idea of the library,
-  "declare a relation once and ask it different questions", appears in lesson 03.
+  "declare an equation once and ask it different questions", appears in lesson 03.
 - **The lessons do not say who they are for.** There are no reader types,
   book outcomes, prerequisites or time estimates.
 - **The code hides the library.** Lesson 03 writes equations as nested
@@ -49,7 +49,7 @@ It has two buildings over a shared basement plinth with shared services.
 | Lesson | Principle | Project question | Replaces in ADR-006 |
 | --- | --- | --- | --- |
 | 01 Basic discounted cash flow | A DCF is dated amounts that are grown, combined and discounted | What is this income stream worth? | 01 |
-| 02 Front door, back door | Declare a relation once. The Specification asks the question | What rent must the property earn, and what land price can its rent support? | 03 §4–6 |
+| 02 Front door, back door | Declare an equation once. The Specification asks the question | What rent must the property earn, and what land price can its rent support? | 03 §4–6 |
 | 03 Cases, debt and equity | One Model, many questions: a batch of named cases gives comparable results | How does the base plan perform in weak, reference and strong markets, with and without debt? Can we pay the bills on time? | 03 §1–3, §7–8 and legacy deterministic scenarios |
 | 04 Many market futures | Market futures are captured, replayable inputs | How does the same plan perform across many possible market histories? | 04 |
 | 05 When to commit | A policy uses only what is known at its date. Flexibility has value that we can compare | When should we buy the site, start Building B or stop? | 05 (timing) |
@@ -88,7 +88,7 @@ After the whole book, a reader can:
 
 1. Build a dated pro forma from Flows and Streams, and value it with NPV and IRR
    on the same date basis.
-2. Declare financial relations once, and answer forward and inverse questions by
+2. Declare financial equations once, and answer forward and inverse questions by
    changing which values are fixed and which are free.
 3. Tell an underdetermined, infeasible or unsupported solve from a solved one,
    and explain each from its diagnostics.
@@ -242,7 +242,7 @@ back = front.fix(rent_factor=1).free("land_cost")
 - **Depends on.** #144 (cases), #127, #167, #168, #147 (deterministic builds,
   aside) and two open questions for #201. First, can the cases reach the cash
   flows through the solve? That needs the DCF to be declared in the Model as
-  relations, for example growth with a fixed rate. Second, the funding account
+  equations, for example growth with a fixed rate. Second, the funding account
   and the commitment check need a library home.
 
 ```python

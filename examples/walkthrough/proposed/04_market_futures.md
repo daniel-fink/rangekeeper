@@ -46,14 +46,14 @@ import helpers
 ```python
 # cell 2
 model = rk.io.load(path=helpers.data_path(name="03_base_plan.model.json"))
-model.equations  # the relations from lesson 03
+model.equations  # the equations from lesson 03
 ```
 
 ## 2. One market driver
 
 Narrative: lesson 03 grew rents at a fixed rate in each case. Here, one property-wide
 rent index carries the market, trend included. Add the index as a driver Flow and use
-it in the income relation.
+it in the income equation.
 
 ```python
 # cell 3

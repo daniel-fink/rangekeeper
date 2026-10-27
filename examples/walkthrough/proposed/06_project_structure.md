@@ -192,7 +192,7 @@ except rk.errors.MissingReferenceError as error:
 ## 9. Lesson 02's income from the floors
 
 Narrative: in lesson 02 the reference income came from totals by use. Now declare
-it on each floor and roll it up. First, the same six relations as lesson 02, word
+it on each floor and roll it up. First, the same six equations as lesson 02, word
 for word.
 
 ```python
@@ -372,7 +372,7 @@ assert served.coverage.shared == {"plinth_plant"}
    grouping.
 2. A total is a rollup over chosen relationships and contributors. It counts shared
    items once, and its coverage shows what was missing.
-3. A rollup declares a value, so the relations of lesson 02 work unchanged, and the
+3. A rollup declares a value, so the equations of lesson 02 work unchanged, and the
    answer now traces to floors.
 
 **Next.** Lesson 07 lets policies change the graph itself.
