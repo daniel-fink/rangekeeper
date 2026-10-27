@@ -27,9 +27,6 @@ if TYPE_CHECKING:
         PivotColumn as PivotColumn,
     )
     from .reduction import (
-        Aggregation as Aggregation,
-    )
-    from .reduction import (
         Contributor as Contributor,
     )
     from .reduction import (
@@ -41,6 +38,7 @@ if TYPE_CHECKING:
     from .reduction import (
         Reduction as Reduction,
     )
+    from .reduction import RollupResult as RollupResult
     from .reduction import (
         classified as classified,
     )
@@ -52,7 +50,7 @@ _EXPORTS = {
     "HierarchyKind": "hierarchy",
     "Reduction": "reduction",
     "Contributor": "reduction",
-    "Aggregation": "reduction",
+    "RollupResult": "reduction",
     "Coverage": "reduction",
     "CoverageStatus": "reduction",
     "classified": "reduction",
@@ -63,7 +61,7 @@ _EXPORTS = {
     "HierarchyError": "errors",
     "AggregationError": "errors",
 }
-_MODULES = {"reduction", "projection", "membership", "selection", "reducers", "pivot"}
+_MODULES = {"reduction", "table", "membership", "selection", "reducers", "pivot"}
 __all__ = ["System", "Entity", "Assembly", "Relationship", *_EXPORTS, *sorted(_MODULES)]
 
 

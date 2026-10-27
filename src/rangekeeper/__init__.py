@@ -5,6 +5,7 @@ from importlib import metadata as _metadata
 from types import ModuleType
 
 from .model import Model
+from .quantity import Quantity
 from .run import Run
 from .specification import Specification
 
@@ -15,11 +16,22 @@ _LAZY_MODULES = frozenset(
         "model",
         "specification",
         "run",
-        "calculations",
+        "finance",
         "io",
+        "duration",
+        "execution",
+        "flow",
+        "quantity",
     }
 )
-__all__ = ["Model", "Specification", "Run", "__version__", *sorted(_LAZY_MODULES)]
+__all__ = [
+    "Model",
+    "Specification",
+    "Run",
+    "Quantity",
+    "__version__",
+    *sorted(_LAZY_MODULES),
+]
 
 try:
     __version__ = _metadata.version("rangekeeper")

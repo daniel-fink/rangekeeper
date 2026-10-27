@@ -83,7 +83,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.projection` | `rangekeeper.finance.growth` | pending | #255 D12: growth and distribution profiles move to `rangekeeper.profile`, applied by `Flow.from_profile`. |
 | `rangekeeper.run.execution` | `rangekeeper.execution` | agreed |  |
 | `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.policy` | draft (needs refactor) | The lazy exports of `specification.policy` load it by its short name. |
-| `rangekeeper.shared.units` | `rangekeeper.units` | pending | #255 D13: the namespace is `rangekeeper.quantity`, and `Quantity` is also at the root. |
+| `rangekeeper.shared.units` | `rangekeeper.quantity` | draft | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
 | `rangekeeper.io.store` | `rangekeeper.shared.store` | draft (needs refactor) | The protocol imports Model, Specification and Run; these imports must become type-only. |
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
 | `rangekeeper.model.scenario` | `rangekeeper.finance.paths` | draft (needs refactor) | Path generators and the MarketPaths document replace the scenario plan. |
@@ -98,8 +98,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.system.reduction.Reduction` | `QuantityRollup` | draft (needs refactor) | The scalar and Flow modes split into QuantityRollup and FlowRollup, with one Reducer enum. |
 | `rangekeeper.model.duration.calendar.measure` | `count_steps` | draft |  |
 | `rangekeeper.model.duration.period.align` | `containing_period` | draft |  |
-| `rangekeeper.model.measure.Quantity` | `rangekeeper.units.Quantity` | pending | #255 D13: `rangekeeper.Quantity` at the root, and the namespace `rangekeeper.quantity`. |
-| `rangekeeper.shared.units.UnitSystem` | `rangekeeper.units.UnitSystem` | pending | #255 D13: `rangekeeper.quantity.UnitSystem`. |
+| `rangekeeper.model.measure.Quantity` | `rangekeeper.quantity.Quantity` | draft | `rangekeeper.Quantity` at the root also gives the record. |
 | `rangekeeper.model.measure.Measure` | `rangekeeper.model.Measure` | draft (needs refactor) | The `model.measure` shim is removed; `rangekeeper.model` re-exports the record. |
 | `rangekeeper.model.distribution.Distribution` | `rangekeeper.model.Distribution` | draft (needs refactor) | The `model.distribution` shim is removed. |
 | `rangekeeper.model.distribution.DistributionFamily` | `rangekeeper.model.DistributionFamily` | draft (needs refactor) |  |
@@ -116,13 +115,13 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed (needs schema) | Also Span. Half-open; the end is excluded. |
 | `rangekeeper.schema.records.Period.end_exclusive` | `end` | agreed (needs schema) | Also Span. |
-| `rangekeeper.model.flux.Stream.labels` | `names` | draft | Each use needs review. Classification `labels` keep their name. |
+| `rangekeeper.model.flux.Stream.labels` | `names` | draft | Each use needs review. Classification `labels` keep their name. The package pass renamed the Stream field by hand; the consumer pass lists the uses to check. |
 | `findings` | `diagnostics` | draft | Each use needs review. |
 | `issues` | `diagnostics` | draft | Each use needs review. |
 | Any call: `start_inclusive=` | `start=` | agreed (needs schema) |  |
 | Any call: `end_exclusive=` | `end=` | agreed (needs schema) |  |
-| `rangekeeper.model.flux.Stream.select`: `labels=` | `names=` | draft (needs refactor) |  |
-| `rangekeeper.model.flux.Stream.from_values`: `labels=` | `names=` | draft (needs refactor) |  |
+| `rangekeeper.model.flux.Stream.select`: `labels=` | `names=` | draft |  |
+| `rangekeeper.model.flux.Stream.from_values`: `labels=` | `names=` | draft |  |
 
 ### Removed names
 

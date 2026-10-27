@@ -47,7 +47,7 @@ for other operations:
 ```python
 from rangekeeper import Model, Specification, Run
 from rangekeeper.model import formulation
-from rangekeeper.run import execution
+from rangekeeper import execution
 from rangekeeper.shared.table import Table, Row
 ```
 

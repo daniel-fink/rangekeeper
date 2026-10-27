@@ -5,7 +5,7 @@ from rangekeeper.model import Value
 from rangekeeper.model.distribution import Distribution
 from rangekeeper.model.scenario import Market
 from rangekeeper.model.system import Hierarchy, View
-from rangekeeper.model.system.projection import ValueColumn, to_table
+from rangekeeper.model.system.table import ValueColumn, to_table
 from rangekeeper.shared.table import Table
 from rangekeeper.specification.policy import PolicyResult
 

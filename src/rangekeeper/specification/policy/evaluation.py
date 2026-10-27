@@ -5,6 +5,7 @@ from uuid import UUID
 
 from rangekeeper.model import Model
 from rangekeeper.model.scope import scope_for_model
+from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import (
     ActionKind,
     Assignment,
@@ -13,7 +14,6 @@ from rangekeeper.schema.records import (
     Quantity,
 )
 from rangekeeper.shared.errors import ContractError
-from rangekeeper.shared.units import UnitSystem
 from rangekeeper.specification.policy._availability import evidence_dates
 from rangekeeper.specification.policy.observation import PolicyCapabilityError, _observe
 from rangekeeper.specification.policy.predicate import evaluate as evaluate_expression

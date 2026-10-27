@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from rangekeeper.calculations.account import (
+from rangekeeper.finance.account import (
     Balance,
     CurrentInterest,
     InterestTreatment,

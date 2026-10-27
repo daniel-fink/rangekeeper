@@ -21,7 +21,7 @@ zero. These operations have different purposes and never repair content silently
 
 ```python
 from datetime import date
-from rangekeeper.model.flux import Flow
+from rangekeeper.flow import Flow
 
 flow = Flow.from_events([date(2026, 1, 1)], [100], units="AUD")
 assert flow.check(resolved=True).movements[0].number == 100.0
@@ -29,7 +29,7 @@ assert flow.scale(2).total().magnitude == 200
 ```
 
 A Flow owns conversion, scaling, negation, totals, trimming, differences, collapse
-and extent. Multi-Flow operations live in `calculations.series`: `align`, `aggregate`,
+and extent. Multi-Flow operations live in `flow.series`: `align`, `aggregate`,
 `multiply`, resampling and integration. `Alignment` owns aligned reduction;
 `Aggregation` returns its Flow with contribution metadata. Join and missing-data
 policies are explicit. A coordinate absent from one input is distinct from a
@@ -43,16 +43,16 @@ contribution boundaries. See [record methods](records.md).
 
 ## Coordinate flows with Stream
 
-`model.flux.Stream` accepts an ordered label-to-Flow mapping. It retains default
+`flow.Stream` accepts an ordered name-to-Flow mapping. It retains default
 `missing` and `join` policies. Model-backed selections use
-`Stream.from_values(model, value_ids, labels=None)`. Duplicate source IDs and
-ambiguous labels are errors. `select(labels)` or `select(value_ids=...)` retains
+`Stream.from_values(model, value_ids, names=None)`. Duplicate source IDs and
+ambiguous names are errors. `select(names)` or `select(value_ids=...)` retains
 selection order; `merge` requires compatible policies and exact Model revisions.
 
 ```python
-from rangekeeper.model.flux import Stream
-from rangekeeper.model.duration import Span, Frequency
-from rangekeeper.calculations.series import ResamplingMethod
+from rangekeeper.flow import Stream
+from rangekeeper.duration import Span, Frequency
+from rangekeeper.flow.series import ResamplingMethod
 
 span = Span.from_duration(
     name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1,
@@ -102,14 +102,14 @@ numeric sequence helper used by extrapolation and dynamics.
 
 | Owner | Responsibility |
 | --- | --- |
-| `model.duration` | Native Gregorian dates, Period coverage, explicit frequencies and timing |
+| `duration` | Native Gregorian dates, Period coverage, explicit frequencies and timing |
 | `Period.check()` / `.resolve()` | Valid coverage and a declared representative date |
 | `Distribution` | Canonical parameters and intrinsic `check`, `sample`, `cdf`, `mass` |
-| `calculations.projection` | Project a known Quantity over explicit periods |
-| `calculations.series` | Align and combine several Flows with explicit policies |
-| `calculations.account.Account.calculate` | Interest, overdraft and balance recurrence |
-| `calculations.financial` | PV, XNPV, IRR and day counts using PyXIRR |
-| `calculations.dynamics` | Deterministic kernels over supplied shocks or samples |
+| `finance.projection` | Project a known Quantity over explicit periods |
+| `flow.series` | Align and combine several Flows with explicit policies |
+| `finance.account.Account.calculate` | Interest, overdraft and balance recurrence |
+| `finance.financial` | PV, XNPV, IRR and day counts using PyXIRR |
+| `finance.dynamics` | Deterministic kernels over supplied shocks or samples |
 | `model.formulation` | Build declared equations for forward and inverse investigations |
 
 Dates are calendar values, never implicit timestamps. Periods are half-open:
@@ -159,13 +159,13 @@ Coverage reports the original known fraction, including after zero filling.
 
 `series.multiply`, `integrate` and `resample` retain explicit calculation contracts.
 `Account.calculate(...)` returns opening, closing, overdraft and interest Flows.
-Financial valuation remains in `calculations.financial`, with explicit timing and
-PyXIRR conventions. Calendar grids remain in `model.duration.period`.
+Financial valuation remains in `finance.financial`, with explicit timing and
+PyXIRR conventions. Calendar grids remain in `duration.period`.
 
 ## Composed account conventions
 
 Import `Balance`, `CurrentInterest` and `InterestTreatment` from
-`rangekeeper.calculations.account`. The numerical calculation and passive schedule use the same
+`rangekeeper.finance.account`. The numerical calculation and passive schedule use the same
 three choices. `Balance.OPENING` selects the signed debt before transactions;
 `CLOSING` selects it after transactions. `CurrentInterest.EXCLUDED` charges the
 positive selected principal at the per-step rate. `INCLUDED` solves the charge as
@@ -188,7 +188,7 @@ remain unsupported. `account.interest` handles explicitly selected principal onl
 
 ## Calendar choices
 
-`Frequency` owns the ten supported steps. `model.duration.offset`, `measure`, `align`,
+`Frequency` owns the ten supported steps. `duration.offset`, `measure`, `align`,
 `cover`, `make_period`, `make_periods` and `periods_between` use native dates.
 Month offsets default to `MonthRoll.PRESERVE_END`; `CLAMP` is explicit. These rules
 are independent of the Period wire-field migration. `DayCount` owns supported
@@ -211,9 +211,9 @@ member for bounded periods:
 
 ```python
 from datetime import date
-from rangekeeper.model.duration import DayCount, Frequency, make_periods
-from rangekeeper.model.flux import Flow
-from rangekeeper.calculations import series
+from rangekeeper.duration import DayCount, Frequency, make_periods
+from rangekeeper.flow import Flow
+from rangekeeper.flow import series
 
 periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
 rates = Flow.from_periods(periods, (120, 120, 120), units="AUD/year")

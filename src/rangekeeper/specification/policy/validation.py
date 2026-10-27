@@ -11,7 +11,7 @@ from rangekeeper.model.scope import (
     reference_key,
     resolve_reference,
 )
-from rangekeeper.shared.units import default_units
+from rangekeeper.quantity import default_units
 from rangekeeper.shared.validation import require
 from rangekeeper.specification.policy._availability import available_on, evidence_dates
 

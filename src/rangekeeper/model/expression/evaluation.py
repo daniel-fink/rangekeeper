@@ -4,8 +4,8 @@ import math
 from collections.abc import Mapping
 from uuid import UUID
 
+from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
-from rangekeeper.shared.units import UnitSystem
 
 
 class UnsupportedExpression(ValueError):

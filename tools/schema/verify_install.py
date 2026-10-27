@@ -157,7 +157,7 @@ from uuid import uuid4
 from datetime import date
 import rangekeeper
 from rangekeeper.schema.records import Model, Metadata, Runtime, Period, Flow, Movement, Source
-from rangekeeper.model.duration import PeriodTiming
+from rangekeeper.duration import PeriodTiming
 from rangekeeper.model.validation import validate
 period = Period(start_inclusive=date(2026, 1, 1), end_exclusive=date(2026, 2, 1))
 movement = Movement(id=uuid4(), key="january", period=period)
@@ -170,9 +170,9 @@ assert flow.movements[0].replace(magnitude=3).number == 3.0
 assert not flow.replace().movements[0].has_field("magnitude")
 assert period.check().resolve(timing=PeriodTiming.LAST) == date(2026, 1, 31)
 assert Movement.__doc__ and Movement.magnitude.__doc__
-for removed in ("rangekeeper.calculations._flow", "rangekeeper.calculations.distribution", "rangekeeper.model.flow"):
+for removed in ("rangekeeper.finance._flow", "rangekeeper.finance.distribution", "rangekeeper.model.flow"):
     assert importlib.util.find_spec(removed) is None, removed
-import rangekeeper.model.flux as flow_api
+import rangekeeper.flow as flow_api
 assert flow_api.Movement is Movement and not hasattr(flow_api, "FlowSample")
 assert not hasattr(flow, "basis") and not hasattr(flow, "kind")
 assert type(Period.from_data(period.to_data()).start_inclusive) is date
@@ -187,12 +187,12 @@ assert 'site-packages' in rangekeeper.__file__
 assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.7.0'))).valid
 assert files('rangekeeper').joinpath('py.typed').is_file()
 assert not files('rangekeeper').joinpath('_currencies.json').is_file()
-from rangekeeper.shared.units import UnitSystem
+from rangekeeper.quantity import UnitSystem
 assert 'py-moneyed/3.0' in UnitSystem.implementation
 for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extrapolation', 'projection',
              'formula', 'dynamics', 'segmentation', 'policy', 'format', 'space',
              '_schema', '_records', '_record_index', '_revision', '_behaviors',
-             'graph', 'formulations', 'duration', 'scenarios', 'policies', 'execution',
+             'graph', 'formulations', 'scenarios', 'policies',
              'evidence', 'operation', 'account', 'metadata', 'table', 'units',
              'references', 'diagnostics', 'errors', 'validate', '_validation',
              '_encoding', '_structured', '_yaml', '_implementation'):
@@ -272,7 +272,7 @@ assert view.entity(entity.id) is domain.entity(entity.id)
 assert Hierarchy.from_relationships(view).preorder() == (entity.id,)
 for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
-from rangekeeper.model.system.projection import to_table
+from rangekeeper.model.system.table import to_table
 from rangekeeper.shared.table import Table
 assert to_table(view).column('model_id') == (domain.id,)
 assert to_table(Hierarchy.from_relationships(view)).column('parent_id') == (None,)
@@ -322,7 +322,7 @@ for store in (MemoryStore(), DirectoryStore(Path('revisions'))):
         assert validate(store.load_run(run.id), resolver=store).valid
     spec = yaml.read(examples / 'specification-composed-forward.yaml', kind=rk.Specification)
     assert spec.compose(resolver=store).validate(resolver=store).valid
-    from rangekeeper.run.execution import Executor
+    from rangekeeper.execution import Executor
     unavailable = Executor(store).execute(spec)
     assert unavailable.report.status.completion is CompletionStatus.FAILED
     assert unavailable.report.status.solution is SolutionStatus.NOT_ASSESSED
@@ -360,14 +360,14 @@ print('Installed wheel: canonical membership, explicit Value reduction, coverage
             cwd=temp,
             check=True,
         )
-        script = """from rangekeeper.model.flux import Flow
+        script = """from rangekeeper.flow import Flow
 
 from datetime import date
 import math, sys
 import pyxirr
-from rangekeeper.calculations.financial import calculate_pv, calculate_xnpv, calculate_irr
+from rangekeeper.finance.financial import calculate_pv, calculate_xnpv, calculate_irr
 
-from rangekeeper.model.duration import make_periods, Frequency, PeriodTiming
+from rangekeeper.duration import make_periods, Frequency, PeriodTiming
 flow = Flow.from_events([date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units='AUD')
 assert abs(calculate_xnpv(flow, rate=.1, valuation_date=date(2026, 1, 1)).magnitude) < 1e-9
 result = calculate_irr(flow)
@@ -398,7 +398,7 @@ from uuid import UUID, uuid4
 import sys
 import rangekeeper as rk
 from rangekeeper.io import yaml, DirectoryStore
-from rangekeeper.run.execution import Executor
+from rangekeeper.execution import Executor
 from rangekeeper.run import validate, CompletionStatus, SolutionStatus
 for prefix in ('pyomo', 'highspy', 'numpy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
@@ -440,7 +440,7 @@ from datetime import date
 from pathlib import Path
 from uuid import uuid4
 import polars as pl
-from rangekeeper.model.flux import Flow
+from rangekeeper.flow import Flow
 from rangekeeper.shared.table import Table
 from rangekeeper.io import polars
 assert importlib.util.find_spec('pandas') is None
@@ -450,8 +450,8 @@ assert polars.from_frame(polars.to_frame(flow), units='AUD') == flow
 assert polars.dates(flow)['date'].to_list() == [date(2026, 1, 1)]
 assert '&lt;Cash&gt; [AUD]' in flow.display(name='<Cash>')._repr_html_()
 assert 'Flow [AUD]' in flow._repr_html_()
-from rangekeeper.model.flux import Stream
-from rangekeeper.calculations.series import AlignmentJoin
+from rangekeeper.flow import Stream
+from rangekeeper.flow.series import AlignmentJoin
 sparse = Flow.from_events([date(2026, 1, 1), date(2026, 1, 2)], [0, None], units='AUD')
 full = Flow.from_events([date(2026, 1, day) for day in range(1, 13)], [1234.567] * 12, units='AUD')
 display_stream = Stream({'Receipts': sparse, 'Balance': full}, join=AlignmentJoin.UNION)
@@ -464,9 +464,9 @@ with pl.Config(tbl_rows=2, tbl_cols=1, float_precision=0):
             assert 'shape:' not in rendered
     assert pl.Config.state() == config
 assert display_stream.to_frame()['Receipts'].to_list() == [0, None] + [None] * 10
-from rangekeeper.model.duration import Span, Frequency
-from rangekeeper.model.measure import Quantity
-from rangekeeper.calculations import projection
+from rangekeeper.duration import Span, Frequency
+from rangekeeper.quantity import Quantity
+from rangekeeper.finance import projection
 periods = Span.from_duration(name='Forecast', start=date(2026, 1, 1), frequency=Frequency.YEAR, count=2).periods(frequency=Frequency.YEAR)
 assert [m.number for m in projection.extrapolate(initial=Quantity(magnitude=100, units='AUD'), periods=periods, method=projection.ProjectionMethod.COMPOUND, rate=0.02).movements] == [100, 102]
 assert projection.distribute(quantity=Quantity(magnitude=100, units='AUD'), periods=periods, weights=(0.25, 0.75)).total().magnitude == 100

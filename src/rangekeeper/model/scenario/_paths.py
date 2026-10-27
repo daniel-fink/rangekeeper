@@ -2,7 +2,7 @@
 
 import math
 
-from rangekeeper.calculations.dynamics import (
+from rangekeeper.finance.dynamics import (
     accumulate_volatility,
     calculate_autoregression,
     calculate_cycle,

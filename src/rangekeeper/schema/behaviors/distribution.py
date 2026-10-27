@@ -22,7 +22,7 @@ class DistributionBehavior:
     def check(self) -> Distribution:
         """Reject invalid support, modes, weights and units; leave the record unchanged."""
         distribution = cast("Distribution", self)
-        from rangekeeper.shared.units import default_units
+        from rangekeeper.quantity import default_units
 
         numbers = [distribution.lower, distribution.upper]
         if distribution.mode is not None:

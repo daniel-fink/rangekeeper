@@ -6,7 +6,7 @@ from datetime import date
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from rangekeeper.model.duration.calendar import Frequency, MonthRoll
+    from rangekeeper.duration.calendar import Frequency, MonthRoll
     from rangekeeper.schema.records import Period, Span
 
 
@@ -26,7 +26,7 @@ class SpanBehavior:
         month_roll: MonthRoll | None = None,
     ) -> Span:
         """Create a positive named extent from anchored calendar steps."""
-        from rangekeeper.model.duration.calendar import MonthRoll, offset
+        from rangekeeper.duration.calendar import MonthRoll, offset
 
         if type(count) is not int or count <= 0:
             raise ValueError("span count must be a positive integer")
@@ -52,8 +52,8 @@ class SpanBehavior:
         month_roll: MonthRoll | None = None,
     ) -> tuple[Period, ...]:
         """Partition this extent; a partial final period requires explicit permission."""
-        from rangekeeper.model.duration.calendar import MonthRoll
-        from rangekeeper.model.duration.period import periods_between
+        from rangekeeper.duration.calendar import MonthRoll
+        from rangekeeper.duration.period import periods_between
 
         span = cast("Span", self)
         span.check()

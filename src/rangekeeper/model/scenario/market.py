@@ -11,6 +11,8 @@ from importlib.metadata import version
 from typing import Any, cast
 from uuid import UUID, uuid5
 
+from rangekeeper.duration import PeriodTiming
+from rangekeeper.flow import Flow, Movement
 from rangekeeper.model import (
     Definitions,
     Formulation,
@@ -23,8 +25,6 @@ from rangekeeper.model import (
     Update,
     Value,
 )
-from rangekeeper.model.duration import PeriodTiming
-from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.scenario import (
     Binding,
     Distribution,

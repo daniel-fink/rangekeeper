@@ -7,6 +7,7 @@ from uuid import UUID
 from rangekeeper.model.model import Model
 from rangekeeper.model.scope import resolve_reference
 from rangekeeper.model.validation import check_model
+from rangekeeper.quantity import UnitSystem, default_units
 from rangekeeper.run.outputs import validate_outputs
 from rangekeeper.run.report import (
     completion_for,
@@ -27,7 +28,6 @@ from rangekeeper.shared.errors import (
     UnitError,
 )
 from rangekeeper.shared.references import DocumentResolver
-from rangekeeper.shared.units import UnitSystem, default_units
 from rangekeeper.shared.validation import bounded, checked, require, require_acyclic
 from rangekeeper.specification.composition import (
     compose_specification,

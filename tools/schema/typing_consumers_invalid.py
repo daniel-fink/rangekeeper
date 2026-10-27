@@ -1,7 +1,7 @@
 """Three deliberate static rejections across the consumer boundary."""
 
 from rangekeeper import Model, Specification
-from rangekeeper.model.system.projection import ValueColumn, to_table
+from rangekeeper.model.system.table import ValueColumn, to_table
 
 
 def invalid(model: Model, specification: Specification) -> None:

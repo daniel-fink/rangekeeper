@@ -8,7 +8,7 @@ import pytest
 from helpers import plot, theme
 from IPython.display import IFrame
 
-from rangekeeper.model.flux import Flow
+from rangekeeper.flow import Flow
 
 
 def read(frame):

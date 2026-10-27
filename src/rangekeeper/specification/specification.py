@@ -128,7 +128,7 @@ class Specification:
         check_revision(self._record, replacement)
         return type(self)(replacement)
 
-    def lock(
+    def fix(
         self,
         target: "UUID | Reference",
         quantity: "Quantity | Mapping[UUID, Quantity] | None" = None,
@@ -184,7 +184,7 @@ class Specification:
             resolver=resolver,
         )
 
-    def unlock(
+    def free(
         self,
         target: "UUID | Reference",
         *,

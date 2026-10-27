@@ -11,7 +11,7 @@ from rangekeeper.model.system.errors import HierarchyError, SelectionError
 from rangekeeper.model.system.membership import _assembly
 
 if TYPE_CHECKING:
-    from rangekeeper.model.system.reduction import Aggregation, Reduction
+    from rangekeeper.model.system.reduction import Reduction, RollupResult
 
 
 @dataclass(frozen=True, init=False)
@@ -228,7 +228,7 @@ class View:
         ids = {edge.target for edge in self.relationships if edge.source == id}
         return tuple(item for item in self.entities if item.id in ids)
 
-    def aggregate(self, reduction: "Reduction") -> "Aggregation":
+    def aggregate(self, reduction: "Reduction") -> "RollupResult":
         """Reduce recorded quantities over this View's relationship hierarchy."""
         from rangekeeper.model.system.hierarchy import Hierarchy
         from rangekeeper.model.system.reduction import Reduction

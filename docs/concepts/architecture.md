@@ -9,8 +9,8 @@ Applications use the public APIs to build their own services and interfaces.
 
 This page has three parts:
 - the **principles** that apply now;
-- the **accepted 1.0 target**, which is not implemented yet;
-- the **current package map**, which applies until the 1.0.0a2 rename pass.
+- the **1.0 layers**, which the 1.0.0a2 rename pass puts in place;
+- the **package map**, with the moves that are not complete.
 
 The [glossary](glossary.md) defines the terms.
 
@@ -39,11 +39,12 @@ They are not required to import or use Rangekeeper. A caller creates Models
 through the public APIs. It keeps the source context that explains its decisions.
 See [source interpretation](source-workflows.md).
 
-## Accepted 1.0 target
+## 1.0 layers
 
-Status: accepted on 2026-10-26; implementation pending. The scripted rename
-pass at milestone 1.0.0a2 makes this the package map
-([ADR-012](../decisions/012-naming-and-glossary.md)).
+Status: accepted on 2026-10-26. The scripted rename pass at milestone 1.0.0a2
+moved the packages into these layers
+([ADR-012](../decisions/012-naming-and-glossary.md)). The
+[package map](#package-map) lists the moves that are not complete.
 
 ### Layers
 
@@ -54,7 +55,7 @@ contracts enforce the rule.
 | --- | --- | --- |
 | 1 | `shared` (internal) | Errors and diagnostics, resolver and store protocols, the extension registry, fingerprints |
 | 2 | `schema` (internal) | Data-only generated records, enums and JSON; the record runtime; the kind registry; structural validation |
-| — | `units` | `Quantity` and `UnitSystem`, with the curated unit registry |
+| — | `quantity` | `Quantity` (also at the root) and `UnitSystem`, with the curated unit registry |
 | 3 | `duration` | Frequency, Period, Span and calendar rules |
 | 4 | `flow` | Movement, Flow, Stream, their options and table display, and the private engine |
 | 5 | `finance` | Calculations on known values: PV, NPV, IRR, payments, growth, accounts, and path generators |
@@ -64,8 +65,8 @@ contracts enforce the rule.
 | 9 | `execution` | Case resolution, role binding, problem building, backends, verification, policy evaluation and publication |
 | 10 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
-`units` sits beside `shared`, below `duration`. Users import from `rangekeeper`,
-`units`, `duration`, `flow`, `finance`, `model`, `specification`, `execution`,
+`quantity` sits beside `shared`, below `duration`. Users import from `rangekeeper`,
+`quantity`, `duration`, `flow`, `finance`, `model`, `specification`, `execution`,
 `io` and `errors`. `schema` and `shared` are internal. Owners re-export the
 records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
 and [ADR-017](../decisions/017-api-and-formats.md).
@@ -122,19 +123,26 @@ Validation runs at commit points ([ADR-011](../decisions/011-records-and-validat
 - A Bundle delivers a set of documents with their exact dependencies.
 - Polars tables are detached from the evidence.
 
-## Current package map
+## Package map
 
-This map applies until the 1.0.0a2 rename pass.
+The packages of `src/rangekeeper` follow the [1.0 layers](#10-layers). Some
+contents are not yet in their 1.0 owner:
 
-| Package | Responsibility |
-| --- | --- |
-| `model` | Immutable Model records, Geometry pins, provenance, equations, graph operations, Flow and Stream with their table display, calendar rules and captured scenarios. |
-| `specification` | Investigation choices over exact document revisions, and policy declarations and evaluation. |
-| `run` | Finalized execution evidence, storage and numerical execution. |
-| `calculations` | Known-data financial and time-series calculations. |
-| `io` | Native serialization, stores, Polars conversion and optional Bundle IO. |
-| `shared` | Shared record, identity, unit and table support. |
-| `schema` | Generated records, enums, the record runtime and structural validation. |
+| Package | Contents now | Moves that follow |
+| --- | --- | --- |
+| `shared` | Errors, diagnostics, validation helpers, encoding, references, tables and fingerprints | The store and resolver protocols arrive from `io` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
+| `schema` | Generated records, enums, the record runtime, structural validation and record behaviours | The Flow and Movement behaviours move to `flow` ([#106](https://github.com/daniel-fink/rangekeeper/issues/106)) |
+| `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
+| `duration` | Frequency, Period, Span and calendar rules | — |
+| `flow` | Stream, the Flow re-exports, table display and the private engine | `flow.series` is removed; Flow and Stream methods replace it ([#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
+| `finance` | Financial valuation, projection, accounts and deterministic dynamics | Path generators arrive from `model.scenario` ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)) |
+| `model` | The Model document, definitions, the system graph and rollups, equations, provenance, geometry and captured scenarios | `model.scenario` moves to `finance` and the MarketPaths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)) |
+| `specification` | The Specification document, composition, roles, and policy declarations and evaluation | Policy evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
+| `run` | The Run document, its report and outputs, and evidence validation | — |
+| `execution` | Preparation, compilation, backends, acceptance and publication | Policy evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
+| `io` | JSON and YAML codecs, stores, Bundle, Polars export and migration | The store protocol moves to `shared` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
+
+Import-linter contracts that enforce the layer order follow in [#97](https://github.com/daniel-fink/rangekeeper/issues/97).
 
 These folders are outside the package and its wheel:
 

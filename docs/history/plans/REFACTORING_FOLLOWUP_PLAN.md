@@ -212,7 +212,7 @@ IDs across implementations or substitute an old fingerprint to satisfy a test.
 
 | Manifest | Required coordination |
 | --- | --- |
-| [Execution](../../../src/rangekeeper/run/execution/implementation.py) | Remove `_coordinates.py`, `model/_scenario.py`, `model/formulation/traversal.py` and `execution/evaluator.py`; retain their final owners in the correct common/compiler/evaluator groups |
+| [Execution](../../../src/rangekeeper/execution/implementation.py) | Remove `_coordinates.py`, `model/_scenario.py`, `model/formulation/traversal.py` and `execution/evaluator.py`; retain their final owners in the correct common/compiler/evaluator groups |
 | [Scenario](../../../src/rangekeeper/model/scenario/implementation.py) | Remove `model/_scenario.py`; keep `scenarios/contracts.py` and Flow behavior. Replace the four deterministic dynamics paths with `calculations/dynamics.py`. Moving the coordinate helper into Flow changes an already included file. Sampling remains outside replay mathematics |
 | [Workflow](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/implementation.py) | Remove stale `_artifacts.py` and adapter-error path rules; include moved provenance/computation. Preserve full installed-code audit separately from computation identity and presentation exclusions |
 
@@ -223,7 +223,7 @@ Do not edit source while fingerprint-dependent acceptance is running.
 
 ## RF-024 Specification and execution preparation
 
-**Problem and evidence.** [Planning](../../../src/rangekeeper/run/execution/planning.py)
+**Problem and evidence.** [Planning](../../../src/rangekeeper/execution/planning.py)
 collects and exports resolved Specifications, but
 [composition](../../../src/rangekeeper/specification/composition.py) exports the entire
 supplied document set again for each leaf despite receiving its catalogue. The
@@ -241,7 +241,7 @@ inventory/check operation in composition; complete validation adds scope, unit,
 estimate, policy and completeness rules.
 
 Remove unread `Prepared.values`, its Model scan and local-Value accumulation from
-[execution preparation](../../../src/rangekeeper/run/execution/preparation.py). Keep
+[execution preparation](../../../src/rangekeeper/execution/preparation.py). Keep
 `model_values`, which enforces Model-owned publication. Move `walk_formulations`
 into its sole consumer, existing `model/formulation/preparation.py`, retaining
 original paths. Remove the unused scope/observation unit arguments as specified
@@ -506,7 +506,7 @@ paths pass without skips. Coordinate IO fault tests with RF-030.
 
 ## RF-032 Execution acceptance ownership
 
-**Problem and evidence.** [`execution/evaluator.py`](../../../src/rangekeeper/run/execution/acceptance.py)
+**Problem and evidence.** [`execution/evaluator.py`](../../../src/rangekeeper/execution/acceptance.py)
 defines only `comparisons`, used by acceptance. Publication imports `quantity`
 through the evaluator's incidental import, although shared arithmetic already
 belongs to `model.expression.evaluation`.

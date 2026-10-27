@@ -12,10 +12,10 @@ from uuid import UUID, uuid4
 from rangekeeper.schema.runtime import UNSET
 
 if TYPE_CHECKING:
+    from rangekeeper.duration.period import PeriodTiming
     from rangekeeper.model.display import StreamTable
-    from rangekeeper.model.duration.period import PeriodTiming
+    from rangekeeper.quantity import UnitSystem
     from rangekeeper.schema.records import Flow, Movement, Period, Quantity
-    from rangekeeper.shared.units import UnitSystem
 
 
 @unique
@@ -64,7 +64,7 @@ class MovementBehavior:
         changed, and payment outside its coverage period is permitted.
         """
         movement = cast("Movement", self)
-        from rangekeeper.model.duration.calendar import PeriodTiming, require_date
+        from rangekeeper.duration.calendar import PeriodTiming, require_date
 
         if timing is not None and not isinstance(timing, PeriodTiming):
             raise TypeError("timing must be a PeriodTiming")
@@ -94,7 +94,7 @@ class FlowBehavior:
         The name is a display label only. Rendering preserves the Flow's units,
         coordinates, unresolved amounts and canonical content.
         """
-        from rangekeeper.model.flux import Stream
+        from rangekeeper.flow import Stream
 
         return Stream({"Flow" if name is None else name: cast("Flow", self)}).display(
             transpose=transpose,
@@ -131,8 +131,8 @@ class FlowBehavior:
         """
         flow = cast("Flow", self)
 
-        from rangekeeper.model.duration.calendar import require_date
-        from rangekeeper.shared.units import default_units
+        from rangekeeper.duration.calendar import require_date
+        from rangekeeper.quantity import default_units
 
         units = default_units if units is None else units
         units.compatible(flow.units, flow.units)
@@ -191,7 +191,7 @@ class FlowBehavior:
     ) -> Flow:
         """Construct dated entries with supplied or fresh IDs; repeated dates need distinct keys."""
         factory = cast("type[Flow]", cls)
-        from rangekeeper.model.duration.calendar import require_date
+        from rangekeeper.duration.calendar import require_date
         from rangekeeper.schema.records import Movement
 
         if (
@@ -244,7 +244,7 @@ class FlowBehavior:
         Omitted IDs are generated. Omitted matching keys remain absent.
         """
         factory = cast("type[Flow]", cls)
-        from rangekeeper.model.duration.calendar import require_date
+        from rangekeeper.duration.calendar import require_date
         from rangekeeper.schema.records import Movement
 
         if (
@@ -290,8 +290,8 @@ class FlowBehavior:
     def convert(self, *, units: str, unit_system: UnitSystem | None = None) -> Flow:
         """Convert all known movements together; retain unresolved movements and evidence."""
         flow = cast("Flow", self)
+        from rangekeeper.quantity import default_units
         from rangekeeper.schema.records import Quantity
-        from rangekeeper.shared.units import default_units
 
         unit_system = default_units if unit_system is None else unit_system
         if not unit_system.compatible(flow.units, units):
@@ -368,7 +368,7 @@ class FlowBehavior:
         a period quantity or substitute an assumed payment date for its coverage.
         """
         flow = cast("Flow", self)
-        from rangekeeper.model.duration.calendar import elapsed_days
+        from rangekeeper.duration.calendar import elapsed_days
 
         flow.check()
         if elapsed_days(start, end) < 0:
@@ -433,7 +433,7 @@ class FlowBehavior:
         the source Flow. Empty input is returned unchanged.
         """
         flow = cast("Flow", self)
-        from rangekeeper.model.duration.calendar import PeriodTiming, require_date
+        from rangekeeper.duration.calendar import PeriodTiming, require_date
         from rangekeeper.schema.records import Movement
 
         if timing is not None and not isinstance(timing, PeriodTiming):

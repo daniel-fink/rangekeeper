@@ -4,7 +4,7 @@ prune .github
 prune docs
 prune examples
 prune schema
-prune src/tests
+prune tests
 prune tools
 prune walkthrough
 exclude .git-blame-ignore-revs .gitattributes .gitignore AGENTS.md CONTRIBUTING.md SECURITY.md uv.lock
