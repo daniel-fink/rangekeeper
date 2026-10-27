@@ -85,15 +85,12 @@ assert rk.quantity.isclose(actual=budget, expected=plan["a_cost"])
 
 ## 3. The dated Model
 
-Narrative: as in lesson 02, start an empty Model and edit it, now with a yearly
-timeline for its Flows. Declare the inputs with their units. From this lesson on,
-declare only the inputs: the draft infers the units and shape of every other value
-from the equations, and `commit()` names any value that it cannot infer. Dates are
-values too, so a later lesson can change them.
+Narrative: as in lesson 02, start an empty Model and edit it. Declare the inputs
+with their units. Dates are values too, so a later lesson can change them.
 
 ```python
 # cell 5
-model = rk.Model(name="Mixed-use base plan", timeline=years)
+model = rk.Model(name="Mixed-use base plan")
 draft = model.edit()
 site = draft.add_entity(code="property", classification="property")
 site.date(key="base_date")
@@ -124,10 +121,32 @@ site.value(key="exit_cap_rate", units="ratio")
 site.value(key="discount_rate", units="% pa")
 ```
 
+Narrative: some Flows are made from amounts, by a profile or an event. Nothing in
+their equations says which Periods they cover, so declare them here, each with its
+Periods. Every other value takes its units and Periods from its equation: a sum of
+yearly Flows is yearly, and `commit()` names any value that it cannot work out.
+
+```python
+# cell 5c
+site.flow(key="land", units="AUD", periods=years)
+site.flow(key="shared_works", units="AUD", periods=years)
+site.flow(key="a_works", units="AUD", periods=years)
+site.flow(key="b_works", units="AUD", periods=years)
+site.flow(key="a_rent", units="AUD", periods=years)
+site.flow(key="b_rent", units="AUD", periods=years)
+site.flow(key="a_costs", units="AUD", periods=years)
+site.flow(key="b_costs", units="AUD", periods=years)
+site.flow(key="a_renewals", units="AUD", periods=years)
+site.flow(key="b_renewals", units="AUD", periods=years)
+site.flow(key="sale", units="AUD", periods=years)
+```
+
 Narrative: equations can be grouped in named formulations, like the sections of a
 pro forma: development, operations, sale and debt. A group changes nothing in the
-solve; it organises the display and the trace. The plan's sequence is a relation too. The site is bought and the shared
-works start on the start date. Building A follows a year later, and each building
+solve; it organises the display and the trace.
+
+The plan's sequence is a relation too. The site is bought and the shared works start
+on the start date. Building A follows a year later, and each building
 takes two years to build. Building B cannot start before the shared works finish.
 Development payments are negative; `uniform` divides an amount evenly over the years
 from a start date.
@@ -246,10 +265,6 @@ outcomes = rk.execution.solve(specification=base.cases(cases=cases))
 outcomes.table("unlevered_npv")
 ```
 
-```python
-# cell 12
-outcomes.case(key="weak").stream("income", "sale").display()
-```
 
 > **Under the hood.** `base.cases(...)` makes one batch Specification. Each case
 > overrides the base's fixed values by key. The solve builds the shared affine
@@ -448,7 +463,7 @@ rk.execution.replay(run=run, store=store).raise_for_status()
 >
 > ```python
 > ns = rk.model.namespace(name="rangekeeper-walkthrough/03")
-> model = rk.Model(name="Mixed-use base plan", timeline=years, namespace=ns)
+> model = rk.Model(name="Mixed-use base plan", namespace=ns)
 > ```
 
 ## Exercises
@@ -522,11 +537,11 @@ follow `ruff format` (D15).
 | --- | --- | --- |
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
-| 5 | 2, 5 | G08 (`rk.Model(timeline=)`, entity handles); G15: date-valued Values; G16: infer units and shapes of other values |
+| 5–5c | 2, 5 | G08 (entity handles); G15: date-valued Values; G16: Flows made from amounts declare their Periods, other values take units and shape from their equations |
 | 6–8 | 3, 6 | G72: `formulation=` groups; G17: Function catalogue for equations (`event`, `at`, `uniform`, `compounding`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
-| 10, 12 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
+| 10 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
 | 11, 14 | 8 | Cases ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G20: `cases(mapping)` overrides by key; `Outcome.case`, `Outcome.table` with a case column |
 | 13 | 3, 6 | G17 (`cumulative`, `interest`, `settle`, `irr`); G09: `irr` is evaluated after the affine stage |
 | 14 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |

@@ -62,6 +62,9 @@ model.equations.involving("start_date", "b_start")
 ```python
 # cell 3
 yearly = rk.duration.Frequency.YEAR
+years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
+    frequency=yearly
+)
 base = rk.io.load(path=helpers.data_path(name="03_base_case.specification.json"))
 fixed = base.on(model=model).fix(rent_growth="0 % pa")
 fixed.roles  # lesson 03's plan: start in 2027, Building B in 2030
@@ -180,6 +183,7 @@ draft = model.edit()
 site = draft.entity(code="property")
 site.value(key="b_land_share", units="ratio")
 site.date(key="b_sale_date")
+site.flow(key="b_site_sale", units="AUD", periods=years)
 site.equations(
     "b_site_value = b_land_share * land_cost * at(flow=rent_index, on=b_sale_date)",
     "b_site_sale = event(amount=b_site_value, on=b_sale_date)",

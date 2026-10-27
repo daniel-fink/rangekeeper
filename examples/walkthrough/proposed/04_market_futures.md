@@ -58,9 +58,13 @@ income relation. Fix rent growth at zero.
 
 ```python
 # cell 3
+yearly = rk.duration.Frequency.YEAR
+years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
+    frequency=yearly
+)
 draft = model.edit()
 site = draft.entity(code="property")
-site.flow(key="rent_index", units="ratio")
+site.flow(key="rent_index", units="ratio", periods=years)
 site.replace(key="income", equation="income = rent_index * (a_rent + b_rent)")
 model = draft.commit()
 ```
@@ -83,10 +87,6 @@ After each step, **predict** the shape and then draw it.
 
 ```python
 # cell 5
-yearly = rk.duration.Frequency.YEAR
-years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
-    frequency=yearly
-)
 trend = rk.finance.MarketDynamics(trend="2 % pa")
 helpers.plot_paths(
     paths=trend.generate(periods=years, seed=2027, count=1), names=["rent_index"]
@@ -293,14 +293,14 @@ known at each date.
 ## Cell budget
 
 16 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 10 lines (cell 17). Cells follow `ruff format` (D15).
+solutions. The longest cell has 10 lines (cells 3 and 17). Cells follow `ruff format` (D15).
 
 ## Rule check
 
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26: `rk.io.load` and `rk.io.save` for any document kind; `model.equations` display ([G10](README.md#gap-list)) |
-| 3 | 2, 3 | G27: equation keys and entity `replace(key=, equation=)`; G28: entity `flow(key=, units=)` on the timeline |
+| 3 | 2, 3 | G27: equation keys and entity `replace(key=, equation=)`; G28: entity `flow(key=, units=, periods=)` |
 | 5–7 | 6, 11 | `MarketDynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)` |
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
 | 8–9 | 4, 6 | `MarketPaths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |

@@ -56,6 +56,7 @@ pass.
 | D17 | How is unit text written? | `per` divides (`"5 per sqm"`, `"750 AUD per sqm pa"`), `pa` means per year, and a count has a named unit (`"0.02 dwelling per sqm"`). A unit expression contains no numbers: Pint reads `"per 100 sqm"` as "÷ 100 × sqm", so the registry rejects it with a suggestion | 01–07 |
 | D18 | Equations, expressions or constraints? | "Equation" is the reader's word: one relation that must hold, an equality or a bound. It is stored as a Constraint over Expressions; the glossary says so. `equations(..., formulation="Debt")` puts equations in a named Formulation, for display and traces; without it they join the entity's default Formulation | 02–07 |
 | D19 | Is the mortgage constant a library function? | No. `rk.finance.payment(principal=, rate=, term=, frequency=)` is the one general loan calculation, like a spreadsheet's PMT with units. The mortgage constant is derived in the open: the payment per year on one dollar of loan, `(payment / rk.Quantity(text="1 AUD")).to(units="% pa")` | 02, 06 |
+| D20 | Does a Model have a default timeline or unit system? | No. `rk.Model(name=, namespace=, description=)` takes neither. A Flow made from amounts by a profile or an event is declared with its `periods=`; every other Flow takes its Periods from its operands. The Model records the unit system in use (the curated registry, its version and any registered extensions) as a read-only `model.unit_system`; custom units go through the registry extension point | 03–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -147,14 +148,15 @@ rk.finance.MarketDynamics.correlated(generators={...}, correlation=[[...]])  # G
 ### Model
 
 ```python
-model = rk.Model(name="...", timeline=years, namespace=None)  # G08
+model = rk.Model(name="...", namespace=None, description=None)  # G08
+model.unit_system  # recorded automatically; read-only
 draft = model.edit(name=None)  # #141
 site = draft.add_entity(code="property", classification="property")  # G08
 site = draft.entity(code="property")  # find, in an edit
 site.value(key="land_cost", units="AUD")  # G08
 site.value(key="rent", units="AUD per sqm pa", by="use")  # G43
-site.flow(key="rent_index", units="ratio")  # G08
-site.flow(key="use_index", units="ratio", by="use")  # G43
+site.flow(key="rent_index", units="ratio", periods=years)  # G08
+site.flow(key="use_index", units="ratio", periods=years, by="use")  # G43
 site.date(key="start_date")  # G15
 site.equation(equation="total_cost = land_cost + works_cost")
 site.equations("...", "...", formulation="Debt")  # #145, G18, G72
@@ -279,7 +281,7 @@ too. The other functions use the same names and keywords as `rk.flow` and
 
 | Function | Meaning |
 | --- | --- |
-| `compounding(initial=, rate=, start=, every=, base=)`, `linear(initial=, ...)`, `constant(initial=, ...)` | Growth profiles on the Model timeline; zero before `start`; `every` for periodic amounts. `base=` is the date of the initial amount; it defaults to the first Period of the timeline |
+| `compounding(initial=, rate=, start=, every=, base=)`, `linear(initial=, ...)`, `constant(initial=, ...)` | Growth profiles over the Periods of the Flow they make; zero before `start`; `every` for periodic amounts. `base=` is the date of the initial amount; it defaults to the first of those Periods |
 | `uniform(total=, start=, years=)`, `scurve(total=, start=, years=)` | Distribution profiles: a total divided over the years from a start date |
 | `event(amount=, on=)` | One amount on one date |
 | `at(flow=, on=)` | The amount of the period that contains a date |
@@ -289,7 +291,9 @@ too. The other functions use the same names and keywords as `rk.flow` and
 | `min(...)`, `max(...)` | Extremes of a Flow or of several values (D4). Like Python's built-ins, their arguments are not named |
 | `shift(flow=, periods=)` | Each period takes the amount `periods` away; `-1` gives the next period's amount. A rule cannot read a later amount (G53) |
 
-A Flow-valued equation applies period by period on the Model timeline. A scalar
+A Flow-valued equation applies period by period. A Flow made from amounts by a profile
+or an event takes its Periods from its declaration; every other Flow takes them from
+its operands, and Flows with different Periods do not combine. A scalar
 term applies to every period (G18).
 
 ## Gap list
@@ -307,9 +311,9 @@ use. **Issue** is filled in when the issue is filed.
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
 | 7 | — | Function catalogue for equations, named as in `rk.profile`, `rk.flow` and `rk.finance` | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
-| 8 | — | Flow-valued string equations on the Model timeline | G18 | `model` | 03·6–8 | #145, #163 |
+| 8 | — | Flow-valued string equations, with Periods from declarations and operands | G18 | `model` | 03·6–8 | #145, #163 |
 | 9 | — | Date values, date arithmetic and `never` | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
-| 10 | — | `rk.Model(name=, timeline=)`, `ModelDraft` with `add_entity` and `entity`, entity handles with `value(key=, units=)`, `flow(key=, units=)` and `date(key=)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
+| 10 | — | `rk.Model(name=, namespace=, description=)`, read-only `model.unit_system`, `ModelDraft` with `add_entity` and `entity`, entity handles with `value(key=, units=)`, `flow(key=, units=)` and `date(key=)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
 | 12 | — | Equation keys, `replace`, `remove`, `extend`, `Equation.text`, `equations.involving` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
 | 13 | — | Keyed values, label indexing and `equations_for` | G43, G45, G60 | `model`, `specification` | 06·19, 21; 07·3 | #121, #138, #141 |

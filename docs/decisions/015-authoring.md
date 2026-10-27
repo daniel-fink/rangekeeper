@@ -18,8 +18,11 @@ lesson 03:
 
 ### Builders on documents
 
-- `rk.Model(*, name, timeline=None, namespace=None)` makes an empty, immutable
-  Model. There is no second way to make one.
+- `rk.Model(*, name, namespace=None, description=None)` makes an empty, immutable
+  Model. There is no second way to make one. It has no default timeline: a Flow
+  that a profile or an event makes from amounts is declared with its Periods, and
+  other Flows take their Periods from their operands. The Model records the unit
+  system in use; it is not an argument (#201, decision D20).
 - `model.edit()` returns a draft (`ModelDraft`), the builder for that revision.
 - The draft adds measures, classifications, entities, assemblies and
   relationships. `draft.add_entity(...)` makes an entity and returns its handle;
