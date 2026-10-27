@@ -361,11 +361,28 @@ Not filed as gaps:
 - **G07 (helpers).** The helpers load the data package with origins and draw
   charts, graphs, timelines and geometry. This is helper work for
   [#87](https://github.com/daniel-fink/rangekeeper/issues/87) and
-  [#88](https://github.com/daniel-fink/rangekeeper/issues/88): `load_property`,
+  [#88](https://github.com/daniel-fink/rangekeeper/issues/88): `load_property` and
   `load_base_plan` (both return an object that displays a table and gives each
-  Quantity by key, such as `plan["a_cost"]`), `load_fragment`, `data_path`, `path_count`, `show_equations`,
-  `show_timeline`, `show_geometry`, `show_graph`, `show_decisions`, `plot_paths`,
-  `plot_cash_flows`, `plot_funding`, `plot_target_curve`, `plot_decisions`.
+  Quantity by key, such as `plan["a_cost"]`), `load_fragment`, `data_path`,
+  `path_count`, `show_equations`, `show_timeline`, `show_geometry`, `show_graph`,
+  `show_decisions`, `plot_paths`, `plot_cash_flows`, `plot_funding`,
+  `plot_target_curve` and `plot_decisions`. Notes for that work:
+  - **Drawing stack.** Plotly (plotly.js, with a local bundle and the shared light
+    and dark theme) draws the charts, the timeline and the equation network.
+    vis-network (through PyVis, which leaves the library under ADR-010) draws the
+    project graph. The Speckle viewer draws geometry.
+  - **Signatures follow the 1.0 API.** Today's drafts on `develop` take today's
+    records and a `path=`: `show_timeline(phases=, path=)` and
+    `show_relations(formulation=, names=, specifications=, path=)`. The proposed
+    cells call `show_timeline(plan=)` or `show_timeline(outcome=)` (the solved dates
+    of one case, for lessons 03 and 05), and `show_equations(of=)` with a Model, a
+    Specification or an Outcome. The helpers choose their own file paths.
+  - **The docs site.** The helpers show local HTML files in iframes, served by a
+    local server (`LocalDisplay`). A static Zensical page has no server, so the site
+    build needs inline notebook output (for example Plotly's notebook renderer) or
+    copies of the HTML files published with the pages
+    ([#191](https://github.com/daniel-fink/rangekeeper/issues/191),
+    [#187](https://github.com/daniel-fink/rangekeeper/issues/187)).
 - **G54 (sequential solve with solved observations)** and **G58 (policy evidence)**.
   These are the core of [#213](https://github.com/daniel-fink/rangekeeper/issues/213)
   and [#215](https://github.com/daniel-fink/rangekeeper/issues/215).
