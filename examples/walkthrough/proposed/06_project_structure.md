@@ -136,7 +136,7 @@ a_gfa.value, a_gfa.coverage
 gfa = model.rollup(
     of="gfa",
     over="contains",
-    root="property",
+    root="project",
     contributors=floors,
 )
 gfa.pivot(rows="building", columns="use")
@@ -209,19 +209,19 @@ for word.
 ```python
 # cell 18
 draft = model.edit()
-site = draft.entity(code="property")
-site.value(key="land_cost", units="AUD")
-site.value(key="works_cost", units="AUD")
-site.value(key="leverage", units="ratio")
-site.value(key="mortgage_constant", units="% pa")
-site.value(key="coverage", units="ratio")
-site.value(key="operating_cost", units="AUD pa")
-site.value(key="rent_factor", units="ratio")
+project = draft.entity(code="project")
+project.value(key="land_cost", units="AUD")
+project.value(key="works_cost", units="AUD")
+project.value(key="leverage", units="ratio")
+project.value(key="mortgage_constant", units="% pa")
+project.value(key="coverage", units="ratio")
+project.value(key="operating_cost", units="AUD pa")
+project.value(key="rent_factor", units="ratio")
 ```
 
 ```python
 # cell 18b
-site.equations(
+project.equations(
     "total_cost = land_cost + works_cost",
     "mortgage = leverage * total_cost",
     "debt_service = mortgage_constant * mortgage",
@@ -237,9 +237,9 @@ to every floor.
 
 ```python
 # cell 19
-site.value(key="efficiency", units="ratio", by="use")
-site.value(key="rent", units="AUD per sqm pa", by="use")
-site.value(key="vacancy", units="ratio", by="use")
+project.value(key="efficiency", units="ratio", by="use")
+project.value(key="rent", units="AUD per sqm pa", by="use")
+project.value(key="vacancy", units="ratio", by="use")
 draft.equations_for(
     filter=floors,
     equations=[
@@ -254,11 +254,11 @@ declares a value; lesson 02's equation uses it by key.
 
 ```python
 # cell 20
-site.rollup(
+project.rollup(
     key="reference_income",
     of="income",
     over="contains",
-    root="property",
+    root="project",
     contributors=floors,
 )
 model = draft.commit()
@@ -333,7 +333,7 @@ model by building and use. Which use has the most area in Building B?
 nla = back_outcome.model.rollup(
     of="nla",
     over="contains",
-    root="property",
+    root="project",
     contributors=floors,
 )
 nla.pivot(rows="building", columns="use")
@@ -349,7 +349,7 @@ for use in ("hotel", "residential", "retail"):
     income = back_outcome.model.rollup(
         of="income",
         over="contains",
-        root="property",
+        root="project",
         contributors=rk.model.Filter(classification="floor", labels={"use": use}),
     )
     print(use, income.value)
@@ -424,7 +424,8 @@ solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (
 ## Data preparation (not API gaps)
 
 - Entities need readable, unique codes (for example `a_hotel_floor_1`) and `use`
-  labels on floors in the 1.0 data package ([#210](https://github.com/daniel-fink/rangekeeper/issues/210)).
+  labels on floors in the 1.0 data package ([#210](https://github.com/daniel-fink/rangekeeper/issues/210)). The root
+  entity's code is `project` (D35).
 - The data package maps `spatiallyContains` to `contains` and `servedBy` to `serves`
   read in the other direction (D29).
 - The data package needs `02_feasibility.model.json` and `03_base_plan.model.json`.

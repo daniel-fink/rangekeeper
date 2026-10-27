@@ -189,15 +189,15 @@ years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
     frequency=yearly
 )
 draft = model.edit()
-site = draft.entity(code="property")
-site.value(key="b_land_share", units="ratio")
-site.date(key="b_sale_date")
-site.flow(key="b_site_sale", units="AUD", periods=years)
-site.equations(
+project = draft.entity(code="project")
+project.value(key="b_land_share", units="ratio")
+project.date(key="b_sale_date")
+project.flow(key="b_site_sale", units="AUD", periods=years)
+project.equations(
     "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
     "b_site_sale = rx.flow.event(amount=b_site_value, on=b_sale_date)",
 )
-site.add_to(key="project_cash", term="b_site_sale")
+project.add_to(key="project_cash", term="b_site_sale")
 model = draft.commit()
 ```
 

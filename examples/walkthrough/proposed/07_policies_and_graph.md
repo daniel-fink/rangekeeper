@@ -226,7 +226,7 @@ floors = rk.model.Filter(classification="floor")
 both_outcome.rollup(
     of="nla",
     over="contains",
-    root="property",
+    root="project",
     contributors=floors,
 ).pivot(columns="use").describe()
 ```
@@ -332,7 +332,7 @@ too, because they match the same filter. A rule decides the expansion date.
 ```python
 # cell 17
 draft = residential.edit(name="Building A expanded")
-site = draft.entity(code="property")
+project = draft.entity(code="project")
 draft.include(fragment=helpers.load_fragment(name="building_a_extra_floors"))
 extra = rk.model.Filter(classification="floor", labels={"phase": "expansion"})
 ```
@@ -341,14 +341,14 @@ Narrative: the new floors have their own income and cost, rolled up under Buildi
 
 ```python
 # cell 17b
-site.rollup(
+project.rollup(
     key="x_income",
     of="income",
     over="contains",
     root="building_a",
     contributors=extra,
 )
-site.rollup(
+project.rollup(
     key="x_cost",
     of="build_cost",
     over="contains",
@@ -362,13 +362,13 @@ after. Add both to the existing works and income.
 
 ```python
 # cell 17c
-site.date(key="expansion_date")
-site.equations("x_open = expansion_date + 1 year")
-site.add_to(
+project.date(key="expansion_date")
+project.equations("x_open = expansion_date + 1 year")
+project.add_to(
     key="works",
     term="-rx.profile.uniform(total=x_cost, start=expansion_date, years=1)",
 )
-site.add_to(key="income", term="rx.profile.constant(initial=x_income, start=x_open)")
+project.add_to(key="income", term="rx.profile.constant(initial=x_income, start=x_open)")
 expanded = draft.commit()
 ```
 
@@ -494,7 +494,7 @@ solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 The design for structural variants must support:
 
 - **Alternatives as Model revisions.** `edit()`, `relabel`, `include` and `commit`
-  make each option (cell 4). The options share the property entity and the equations; they
+  make each option (cell 4). The options share the project entity and the equations; they
   differ in structure.
 - **A bounded choice in the Specification.** `alternatives(key={name: Model})` pins
   each option's revision. The choice is a decided value with review Periods, bounds and a

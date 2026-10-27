@@ -62,9 +62,9 @@ years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
     frequency=yearly
 )
 draft = model.edit()
-site = draft.entity(code="property")
-site.flow(key="rent_index", units="ratio", periods=years)
-site.replace(key="income", equation="income = rent_index * (a_rent + b_rent)")
+project = draft.entity(code="project")
+project.flow(key="rent_index", units="ratio", periods=years)
+project.replace(key="income", equation="income = rent_index * (a_rent + b_rent)")
 ```
 
 Narrative: lesson 03's rents compound at `rent_growth`. Now the index carries all
@@ -74,15 +74,15 @@ set a rate to zero.
 
 ```python
 # cell 3b
-site.replace(
+project.replace(
     key="a_rent",
     equation="a_rent = rx.profile.constant(initial=a_income, start=a_open)",
 )
-site.replace(
+project.replace(
     key="b_rent",
     equation="b_rent = rx.profile.constant(initial=b_income, start=b_open)",
 )
-site.remove(key="rent_growth")
+project.remove(key="rent_growth")
 model = draft.commit()
 ```
 
@@ -300,8 +300,8 @@ Why is this wrong?
 ```python
 # solution
 draft = model.edit()
-site = draft.entity(code="property")
-site.replace(
+project = draft.entity(code="project")
+project.replace(
     key="a_rent",
     equation="a_rent = rx.profile.compounding(initial=a_income, rate=2 % pa, start=a_open)",
 )

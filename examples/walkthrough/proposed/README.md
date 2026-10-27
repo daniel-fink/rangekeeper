@@ -52,7 +52,7 @@ pass.
 | D13 | How does a reader make a Quantity? | `rk.Quantity("5 %")` or `rk.Quantity(0.05, "ratio")`, at the root beside the three documents: every layer uses it. The namespace that holds the unit system, the registry and `isclose` is `rk.quantity`, not `rk.units`, so "units" keeps one meaning: a unit string. `q()` and `Quantity.parse` are not added | 01–07 |
 | D14 | Are arguments named? | Yes. Every Rangekeeper call and every function in an equation string names its arguments, and the API makes them keyword-only. Exceptions: lists of any length (`select`, `free`, `table`, `stream`, `equations`), `min` and `max` in equations, Python built-ins, `datetime.date` and Polars calls | 01–07 |
 | D15 | How are cells formatted? | With the project's `ruff format` (Black style): 88 columns, and a trailing comma after the last argument puts one argument per line. The pre-commit hook formats the lesson notebooks the same way, so the cell budgets count formatted lines. A cell split for length keeps its number with a letter (4, 4b). A long equation string is wrapped in parentheses | 01–07 |
-| D16 | How are values declared, and how is a rate per year written? | One call for each value, naming its key and units: `site.value(key="land_cost", units="AUD")`, `site.flow(key="rent_index", units="ratio")`, `site.date(key="start_date")`. Keyed and timeline variants add `by=` and `periods=`. `units=` always means units; a date has none. A rate per year is `"% pa"`, for example `"7 % pa"`, not `"1/year"` | 01–07 |
+| D16 | How are values declared, and how is a rate per year written? | One call for each value, naming its key and units: `project.value(key="land_cost", units="AUD")`, `project.flow(key="rent_index", units="ratio")`, `project.date(key="start_date")`. Keyed and timeline variants add `by=` and `periods=`. `units=` always means units; a date has none. A rate per year is `"% pa"`, for example `"7 % pa"`, not `"1/year"` | 01–07 |
 | D17 | How is unit text written? | `per` divides (`"5 per sqm"`, `"750 AUD per sqm pa"`), `pa` means per year, and a count has a named unit (`"0.02 dwelling per sqm"`). A unit expression contains no numbers: Pint reads `"per 100 sqm"` as "÷ 100 × sqm", so the registry rejects it with a suggestion | 01–07 |
 | D18 | Equations, expressions or constraints? | "Equation" is the reader's word: one relation that must hold, an equality or a bound. It is stored as a Constraint over Expressions; the glossary says so. `equations(..., formulation="Debt")` puts equations in a named Formulation, for display and traces; without it they join the entity's default Formulation | 02–07 |
 | D19 | Is the mortgage constant a library function? | No. `rk.finance.payment(principal=, rate=, term=, frequency=)` is the one general loan calculation, like a spreadsheet's PMT with units. The mortgage constant is derived in the open: the payment per year on one dollar of loan, `(payment / rk.Quantity(text="1 AUD")).to(units="% pa")` | 02, 06 |
@@ -68,9 +68,10 @@ pass.
 | D29 | How do path generators and relationships read? | Path generators are series maths, like profiles (D12), so they leave `finance` for `rk.market` (`Dynamics`, `Paths`). Correlations are given by name. Relationships have one snake_case name each (`contains`, `serves`); the other direction is `direction=rk.model.Direction.INCOMING`. The data package maps the source names | 04–07 |
 | D30 | How are Outcomes compared? | With one call whatever their number: `rk.execution.compare(outcomes={name: outcome}, keys=[...], baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences, paired by path when the Outcomes hold paths. There is no `Outcome.compare(other=)` and no `rk.execution.table`, so the call does not change between two Outcomes and more | 02–07 |
 | D31 | How do use markets move together? | The author composes it. `rk.market.generate` makes independent named series; a structure such as a shared market index times a factor for each use is ordinary Flow arithmetic or a Model equation (`use_index = market_index * use_factor`). There is no correlation argument or correlated generator class: a correlation method embeds choices (which shocks correlate, shared crashes, missing pairs) that the author should make in view. Same reasoning as D2 and D23 | 04, 07 |
-| D32 | Text or Python for equations? | Both, in 1.0, from one registry of equation functions. Text is the form the lessons teach and the documents show; `rangekeeper.expressions`, imported as `rx`, is the Python form. Both use the same names (D21): an equation in text is the Python form inside a string, except `=` for `==`, `and`/`or`/`not` for `&`/`\|`/`~`, and unquoted unit literals (`2 % pa` for `"2 % pa"`). Handles carry the Flow methods; a declaration returns a handle and `site.ref(key=)` finds one. Each library function keeps one job: `rk.finance.npv` computes on values, `rx.finance.npv` builds an expression. The parser table, `rx` with typed stubs and the docs table are generated from the registry. Equivalence tests require text and `rx` to make identical records. Both forms are checked when written, with suggestions. Not a suffix such as `.symbols()` (poor completion, no form for methods), not a separate package | 02–07 |
+| D32 | Text or Python for equations? | Both, in 1.0, from one registry of equation functions. Text is the form the lessons teach and the documents show; `rangekeeper.expressions`, imported as `rx`, is the Python form. Both use the same names (D21): an equation in text is the Python form inside a string, except `=` for `==`, `and`/`or`/`not` for `&`/`\|`/`~`, and unquoted unit literals (`2 % pa` for `"2 % pa"`). Handles carry the Flow methods; a declaration returns a handle and `project.ref(key=)` finds one. Each library function keeps one job: `rk.finance.npv` computes on values, `rx.finance.npv` builds an expression. The parser table, `rx` with typed stubs and the docs table are generated from the registry. Equivalence tests require text and `rx` to make identical records. Both forms are checked when written, with suggestions. Not a suffix such as `.symbols()` (poor completion, no form for methods), not a separate package | 02–07 |
 | D33 | How does a reader query a Model? | As in LINQ and SQL: a singular noun returns one item and raises on none or several (`model.entity(code=)`); a plural collection returns many through `.where(...)` (`model.entities.where(filter=)`, `model.equations.where(keys=, formulation=)`), and result tables use the same `.where(...)`. Not `find`, which returns one item in .NET and JavaScript; not `filter`, which would stutter beside `filter=`. `Filter`'s comparison argument is `condition=`, not `where=`. Equations have no direction, so `keys=` means direct use; there is no transitive form | 03, 05–07 |
 | D34 | What are a rule's numbers called, and how are several tried? | A **trigger** is the level an observed value must reach before a rule acts (`start_trigger=1.05`: rents 5 % above 2027). Every trigger is a named Specification value, declared with `parameters(...)` and read in the rule text, never a number written into the rule. Several triggers, or several premiums, are **cases**: a sensitivity analysis. The word "sweep" is not used. Variables name what they hold, not an event: `trigger_cases` (one case for each trigger), not `triggered_cases`, which would mean the cases where a rule acted | 05, 07 |
+| D35 | What is the root entity called? | `project`, as the variable and as the entity's code and classification (`project = draft.add_entity(code="project", classification="project")`). Not `site`, which the narrative uses for the land ("buy the site"), and not `property`, which shadows Python's built-in | 02–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -172,29 +173,29 @@ paths = rk.market.generate(
 model = rk.Model(name="...", namespace=None, description=None)  # G08
 model.unit_system  # recorded automatically; read-only
 draft = model.edit(name=None)  # #141
-site = draft.add_entity(code="property", classification="property")  # G08
-site = draft.entity(code="property")  # find, in an edit
-site.value(key="land_cost", units="AUD")  # G08
-site.value(key="rent", units="AUD per sqm pa", by="use")  # G43
-site.flow(key="rent_index", units="ratio", periods=years)  # G08
-site.flow(key="use_index", units="ratio", periods=years, by="use")  # G43
-site.date(key="start_date")  # G15
-site.equation(equation="total_cost = land_cost + works_cost")
-site.equations("...", "...", formulation="Debt")  # #145, G18, G72
+project = draft.add_entity(code="project", classification="project")  # G08
+project = draft.entity(code="project")  # find, in an edit
+project.value(key="land_cost", units="AUD")  # G08
+project.value(key="rent", units="AUD per sqm pa", by="use")  # G43
+project.flow(key="rent_index", units="ratio", periods=years)  # G08
+project.flow(key="use_index", units="ratio", periods=years, by="use")  # G43
+project.date(key="start_date")  # G15
+project.equation(equation="total_cost = land_cost + works_cost")
+project.equations("...", "...", formulation="Debt")  # #145, G18, G72
 draft.equations_for(
     filter=rk.model.Filter(classification="floor"),
     equations=["income = nla * rent[use]"],
 )  # G43
-site.rollup(
+project.rollup(
     key="reference_income",
     of="income",
     over="contains",
-    root="property",
+    root="project",
     contributors=floors,
 )  # G44
-site.replace(key=key, equation=eq)
-site.add_to(key=key, term="b_site_sale")
-site.remove(key=key)  # G27
+project.replace(key=key, equation=eq)
+project.add_to(key=key, term="b_site_sale")
+project.remove(key=key)  # G27
 draft.relabel(filter=filter, use="hotel")
 draft.include(fragment=fragment)
 draft.remove(entity=code)  # G61
@@ -206,7 +207,7 @@ model.equations.where(formulation="Dates")  # G47
     model.entities.where(filter=rk.model.Filter(condition="gfa >= 1500 sqm")),
     model.view(over="serves"),
 )  # #156, #160, G37
-model.rollup(of="gfa", over="contains", root="property", contributors=floors)  # #158
+model.rollup(of="gfa", over="contains", root="project", contributors=floors)  # #158
 model.rollup(
     of="volume",
     over="serves",
@@ -305,13 +306,15 @@ rk.execution.compare(
 ```python
 import rangekeeper.expressions as rx  # G78, D32
 
-a_income = site.value(key="a_income", units="AUD pa")  # a declaration returns a handle
-a_open = site.date(key="a_open")
-a_rent = site.flow(key="a_rent", units="AUD", periods=years)
-site.equation(
+a_income = project.value(
+    key="a_income", units="AUD pa"
+)  # a declaration returns a handle
+a_open = project.date(key="a_open")
+a_rent = project.flow(key="a_rent", units="AUD", periods=years)
+project.equation(
     a_rent == rx.profile.compounding(initial=a_income, rate="2 % pa", start=a_open)
 )
-noi = site.ref(key="noi")  # the handle of a value declared earlier
+noi = project.ref(key="noi")  # the handle of a value declared earlier
 (noi == coverage * debt_service).text  # "noi = coverage * debt_service"
 rx.max(a, b), (a >= b) & (c >= d), loan_principal.diff()
 ```
@@ -401,7 +404,7 @@ use. **Issue** is filled in when the issue is filed.
 | 37 | — | `across` matching: each path series fixes the Model value with the same key. `series=` maps a value whose key differs, or the members of a keyed value, to path series. A series that matches no value, a value that `series=` names but the paths lack, or a value with two sources raises an error that lists the path series and the Model keys | G73 | `specification` | 04·11; 05·5; 07·3b | #138 |
 | 38 | — | Enums for the words rangekeeper defines: `rk.specification.Role`, `rk.execution.Criterion`, `rk.execution.ReviewResult`, `rk.execution.Status`, `rk.errors.Code`; `rk.model.Direction` made public (D26) | G76 | `specification`, `execution`, `errors`, `model` | 02·18–21; 05·8, 18; 06·13; 07·14 | #134, #154 |
 | 39 | — | Piecewise equations with a free value: the solve picks the active side of each `max` or `min` (for example the equity-first cascade), solves the affine problem and verifies the choice; a wrong choice is reported, not hidden | G77 | `execution` | 03·16 | #125, #152, #164 |
-| 40 | — | One registry of equation functions (name, named parameters with kinds and units, result, evaluation stage, availability rule, the value function it mirrors); the parser table, `rangekeeper.expressions` (`rx`) with typed stubs, and the docs function table generated from it; handles from declarations and `site.ref(key=)`; operators, `rx.max`, `&`, `\|`, `~`; Flow methods on handles; checks when an equation is written, with suggestions; equivalence tests (text and `rx` give identical records, text round-trips, a symbolic function on fixed data equals its value function) | G78 | `model` | 02 aside | #143, #145, #163 |
+| 40 | — | One registry of equation functions (name, named parameters with kinds and units, result, evaluation stage, availability rule, the value function it mirrors); the parser table, `rangekeeper.expressions` (`rx`) with typed stubs, and the docs function table generated from it; handles from declarations and `project.ref(key=)`; operators, `rx.max`, `&`, `\|`, `~`; Flow methods on handles; checks when an equation is written, with suggestions; equivalence tests (text and `rx` give identical records, text round-trips, a symbolic function on fixed data equals its value function) | G78 | `model` | 02 aside | #143, #145, #163 |
 
 Scope changes for existing issues:
 
@@ -495,6 +498,8 @@ These are inputs for authoring, not API gaps:
   `05_strategy.specification.json`. `07_property_plan.model.json` joins the graph of
   lesson 06 with the dated plan of lessons 03–05, and declares `market_index`, the
   keyed `use_factor` and `use_index = market_index * use_factor` (D31).
+- The root entity of the project has the code and classification `project` (D35), in the
+  1.0 data package and in every Model the lessons build.
 - The base plan gives `equity` and `loan_limit` (in place of `bridge_limit`) for lesson
   03's funding cascade (D2).
 - Lesson 05 needs the three readable histories (`05_histories.paths.json`).
@@ -515,7 +520,7 @@ The sketches in ADR-020 were not binding. The cells differ from them here:
   `finance`.
 - Quantities are `rk.Quantity("20e6 AUD")`, not `rk.units.q(...)`, and the namespace is
   `rk.quantity` (D13).
-- Values are declared one call each, `site.value(key=, units=)` (D16), not as
+- Values are declared one call each, `project.value(key=, units=)` (D16), not as
   `values(land_cost="AUD", ...)`, and rates per year are `"% pa"`, not `"%/year"`.
 - Policies use `Specification.decide(key, ...)` (D9), not `base.policy(...).when(..., do=...)`.
 - Lesson 06 declares the rollup as a Value (D3), not `edit().fix_from(...)`.

@@ -75,7 +75,8 @@ required_noi  # AUD per year, calculated from cost to income
 ## 3. Declare the equations once
 
 Narrative: a Model describes things, called entities, with their values and the
-equations between them. Here it describes one entity: the property. An equation does
+equations between them. Here it describes one entity: the project, the whole
+property as one asset. An equation does
 not say which side is known.
 
 A Model never changes. To change one, `edit()` gives a draft. The draft collects the
@@ -87,31 +88,31 @@ and its equations.
 # cell 4
 model = rk.Model(name="Mixed-use feasibility")
 draft = model.edit()
-site = draft.add_entity(code="property", classification="property")
-site.value(key="land_cost", units="AUD")
-site.value(key="works_cost", units="AUD")
-site.value(key="total_cost", units="AUD")
-site.value(key="leverage", units="ratio")
-site.value(key="mortgage", units="AUD")
-site.value(key="mortgage_constant", units="% pa")
-site.value(key="debt_service", units="AUD pa")
+project = draft.add_entity(code="project", classification="project")
+project.value(key="land_cost", units="AUD")
+project.value(key="works_cost", units="AUD")
+project.value(key="total_cost", units="AUD")
+project.value(key="leverage", units="ratio")
+project.value(key="mortgage", units="AUD")
+project.value(key="mortgage_constant", units="% pa")
+project.value(key="debt_service", units="AUD pa")
 ```
 
 Narrative: the cost and loan values are declared. Now the income values.
 
 ```python
 # cell 4b
-site.value(key="coverage", units="ratio")
-site.value(key="noi", units="AUD pa")
-site.value(key="operating_cost", units="AUD pa")
-site.value(key="effective_income", units="AUD pa")
-site.value(key="rent_factor", units="ratio")
-site.value(key="reference_income", units="AUD pa")
+project.value(key="coverage", units="ratio")
+project.value(key="noi", units="AUD pa")
+project.value(key="operating_cost", units="AUD pa")
+project.value(key="effective_income", units="AUD pa")
+project.value(key="rent_factor", units="ratio")
+project.value(key="reference_income", units="AUD pa")
 ```
 
 ```python
 # cell 5
-site.equations(
+project.equations(
     "total_cost = land_cost + works_cost",
     "mortgage = leverage * total_cost",
     "debt_service = mortgage_constant * mortgage",
@@ -127,20 +128,20 @@ means 10 % higher. Parking earns no rent.
 
 ```python
 # cell 6
-site.value(key="hotel_area", units="sqm")
-site.value(key="hotel_rent", units="AUD per sqm pa")
-site.value(key="hotel_vacancy", units="ratio")
-site.value(key="residential_area", units="sqm")
-site.value(key="residential_rent", units="AUD per sqm pa")
-site.value(key="residential_vacancy", units="ratio")
-site.value(key="retail_area", units="sqm")
-site.value(key="retail_rent", units="AUD per sqm pa")
-site.value(key="retail_vacancy", units="ratio")
+project.value(key="hotel_area", units="sqm")
+project.value(key="hotel_rent", units="AUD per sqm pa")
+project.value(key="hotel_vacancy", units="ratio")
+project.value(key="residential_area", units="sqm")
+project.value(key="residential_rent", units="AUD per sqm pa")
+project.value(key="residential_vacancy", units="ratio")
+project.value(key="retail_area", units="sqm")
+project.value(key="retail_rent", units="AUD per sqm pa")
+project.value(key="retail_vacancy", units="ratio")
 ```
 
 ```python
 # cell 6b
-site.equation(
+project.equation(
     equation=(
         "reference_income = hotel_area * hotel_rent * (1 - hotel_vacancy)"
         " + residential_area * residential_rent * (1 - residential_vacancy)"
@@ -157,17 +158,17 @@ helpers.show_equations(of=model)  # a diagram with no input or output arrows
 
 > **Under the hood: the same equation in Python.** `rangekeeper.expressions`, imported
 > as `rx`, writes equations with Python operators. A declaration returns a handle, and
-> `site.ref(key=)` finds the handle of a value declared earlier. Text and Python make
+> `project.ref(key=)` finds the handle of a value declared earlier. Text and Python make
 > the same records, and `.text` prints the text form. Both forms use the same
 > names, such as `rx.profile.compounding(...)` (D21, D32).
 >
 > ```python
 > import rangekeeper.expressions as rx
 >
-> site = model.edit().entity(code="property")
-> noi = site.ref(key="noi")
-> coverage = site.ref(key="coverage")
-> debt_service = site.ref(key="debt_service")
+> project = model.edit().entity(code="project")
+> noi = project.ref(key="noi")
+> coverage = project.ref(key="coverage")
+> debt_service = project.ref(key="debt_service")
 > assert (noi == coverage * debt_service).text == "noi = coverage * debt_service"
 > ```
 
@@ -426,7 +427,7 @@ has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 | 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `value(key=, units=)` and `equations` (D6, D16) |
 | 6, 11 | 6 | G09: staged solve. `reference_income` is a product of fixed values, then `rent_factor * reference_income` is affine |
 | 7, 14 | 10 | Helper draws the equations and their values, with role markers for a Specification ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
-| aside | 3 | G78: `rangekeeper.expressions` (`rx`), `site.ref(key=)` and operators on handles ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)); G10: `Equation.text` gives canonical text |
+| aside | 3 | G78: `rangekeeper.expressions` (`rx`), `project.ref(key=)` and operators on handles ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)); G10: `Equation.text` gives canonical text |
 | 9 | 6 | `rk.finance.payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)); the constant is derived from it (D19) |
 | 10, 13 | 2, 4 | `specify`, `fix`, `free` ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G11: unfixed values are free by default; `fix` takes strings, numbers and Quantities; `roles` table |
 | 11, 13 | 8 | `solve` and `Outcome` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126), [#127](https://github.com/daniel-fink/rangekeeper/issues/127)). G12: `solve` resolves the Model that made the Specification, with no resolver argument |

@@ -100,12 +100,12 @@ solve; it organises the display and the trace. The date equations form "Dates".
 # cell 5
 model = rk.Model(name="Mixed-use base plan")
 draft = model.edit()
-site = draft.add_entity(code="property", classification="property")
-site.date(key="base_date")
-site.date(key="sale_date")
-site.date(key="start_date")
-site.date(key="b_start")
-site.equations(
+project = draft.add_entity(code="project", classification="project")
+project.date(key="base_date")
+project.date(key="sale_date")
+project.date(key="start_date")
+project.date(key="b_start")
+project.equations(
     "shared_start = start_date",
     "a_start = shared_start + 1 year",
     "a_open = a_start + 2 years",
@@ -121,20 +121,20 @@ the rates.
 
 ```python
 # cell 5b
-site.value(key="land_cost", units="AUD")
-site.value(key="shared_cost", units="AUD")
-site.value(key="a_cost", units="AUD")
-site.value(key="b_cost", units="AUD")
-site.value(key="a_income", units="AUD pa")
-site.value(key="b_income", units="AUD pa")
-site.value(key="a_opex", units="AUD pa")
-site.value(key="b_opex", units="AUD pa")
-site.value(key="a_renewal", units="AUD")
-site.value(key="b_renewal", units="AUD")
-site.value(key="rent_growth", units="% pa")
-site.value(key="opex_growth", units="% pa")
-site.value(key="exit_cap_rate", units="ratio")
-site.value(key="discount_rate", units="% pa")
+project.value(key="land_cost", units="AUD")
+project.value(key="shared_cost", units="AUD")
+project.value(key="a_cost", units="AUD")
+project.value(key="b_cost", units="AUD")
+project.value(key="a_income", units="AUD pa")
+project.value(key="b_income", units="AUD pa")
+project.value(key="a_opex", units="AUD pa")
+project.value(key="b_opex", units="AUD pa")
+project.value(key="a_renewal", units="AUD")
+project.value(key="b_renewal", units="AUD")
+project.value(key="rent_growth", units="% pa")
+project.value(key="opex_growth", units="% pa")
+project.value(key="exit_cap_rate", units="ratio")
+project.value(key="discount_rate", units="% pa")
 ```
 
 Narrative: some Flows are made from amounts, by a profile or an event. Nothing in
@@ -144,17 +144,17 @@ yearly Flows is yearly, and `commit()` names any value that it cannot work out.
 
 ```python
 # cell 5c
-site.flow(key="land", units="AUD", periods=years)
-site.flow(key="shared_works", units="AUD", periods=years)
-site.flow(key="a_works", units="AUD", periods=years)
-site.flow(key="b_works", units="AUD", periods=years)
-site.flow(key="a_rent", units="AUD", periods=years)
-site.flow(key="b_rent", units="AUD", periods=years)
-site.flow(key="a_costs", units="AUD", periods=years)
-site.flow(key="b_costs", units="AUD", periods=years)
-site.flow(key="a_renewals", units="AUD", periods=years)
-site.flow(key="b_renewals", units="AUD", periods=years)
-site.flow(key="sale", units="AUD", periods=years)
+project.flow(key="land", units="AUD", periods=years)
+project.flow(key="shared_works", units="AUD", periods=years)
+project.flow(key="a_works", units="AUD", periods=years)
+project.flow(key="b_works", units="AUD", periods=years)
+project.flow(key="a_rent", units="AUD", periods=years)
+project.flow(key="b_rent", units="AUD", periods=years)
+project.flow(key="a_costs", units="AUD", periods=years)
+project.flow(key="b_costs", units="AUD", periods=years)
+project.flow(key="a_renewals", units="AUD", periods=years)
+project.flow(key="b_renewals", units="AUD", periods=years)
+project.flow(key="sale", units="AUD", periods=years)
 ```
 
 Narrative: development, the next group. The site is bought on the start date.
@@ -165,7 +165,7 @@ solve uses.
 
 ```python
 # cell 6
-site.equations(
+project.equations(
     "land = -rx.flow.event(amount=land_cost, on=start_date)",
     "shared_works = -rx.profile.uniform(total=shared_cost, start=shared_start, years=1)",
     "a_works = -rx.profile.uniform(total=a_cost, start=a_start, years=2)",
@@ -180,7 +180,7 @@ earns nothing until it opens. Renewals come every five years after opening.
 
 ```python
 # cell 7
-site.equations(
+project.equations(
     "a_rent = rx.profile.compounding(initial=a_income, rate=rent_growth, start=a_open)",
     "b_rent = rx.profile.compounding(initial=b_income, rate=rent_growth, start=b_open)",
     "a_costs = rx.profile.compounding(initial=a_opex, rate=opex_growth, start=a_open)",
@@ -196,7 +196,7 @@ grow from 2027.
 
 ```python
 # cell 7b
-site.equations(
+project.equations(
     (
         "a_renewals = rx.profile.compounding(initial=a_renewal, rate=opex_growth,"
         " start=a_open + 5 years, every=5 years)"
@@ -215,7 +215,7 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as equations
 
 ```python
 # cell 8
-site.equations(
+project.equations(
     "exit_value = operating.at(on=sale_date + 1 year) / exit_cap_rate",
     "sale = rx.flow.event(amount=exit_value, on=sale_date)",
     "project_cash = land + works + operating + sale",
@@ -289,12 +289,12 @@ equity cannot cover. Add the equations to a new revision of the Model.
 ```python
 # cell 13
 draft = model.edit()
-site = draft.entity(code="property")
-site.value(key="equity", units="AUD")
-site.value(key="loan_limit", units="AUD")
-site.value(key="loan_rate", units="% pa")
-site.value(key="equity_rate", units="% pa")
-site.equations(
+project = draft.entity(code="project")
+project.value(key="equity", units="AUD")
+project.value(key="loan_limit", units="AUD")
+project.value(key="loan_rate", units="% pa")
+project.value(key="equity_rate", units="% pa")
+project.equations(
     "funding_need = -(net_cash_flow + loan_interest).cumulative()",
     "loan_principal = rx.max(0 AUD, funding_need - equity)",
     "loan_draws = loan_principal.diff()",
@@ -309,7 +309,7 @@ and positive once the loan is repaid.
 
 ```python
 # cell 13b
-site.equations(
+project.equations(
     "equity_cash_flow = net_cash_flow + loan_interest + loan_draws",
     "equity_npv = rx.finance.npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
     "equity_irr = rx.finance.irr(flow=equity_cash_flow)",
@@ -406,8 +406,8 @@ Building B, so the need includes the operating cash flow.
 ```python
 # cell 19
 draft = model.edit()
-site = draft.entity(code="property")
-site.equations(
+project = draft.entity(code="project")
+project.equations(
     "equity_available = rx.max(0 AUD, equity - funding_need)",
     "loan_available = loan_limit - loan_principal",
     "shortfall = rx.max(0 AUD, -loan_available)",
@@ -423,7 +423,7 @@ but unpaid payments exceed the available equity and the available loan.
 
 ```python
 # cell 19b
-site.equations(
+project.equations(
     "shared_unpaid = shared_works.cumulative() - shared_works.total()",
     "a_unpaid = a_works.cumulative() - a_works.total()",
     "b_unpaid = b_works.cumulative() - b_works.total()",
