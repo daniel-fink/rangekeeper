@@ -13,7 +13,7 @@ from rangekeeper.model.system.selection import _local_value, select_value
 from rangekeeper.model.system.view import View
 from rangekeeper.shared.arguments import require_text
 from rangekeeper.shared.table import Row, Table, TableError, _validate_names
-from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.units import UnitSystem
 
 
 @unique
@@ -102,13 +102,14 @@ def to_table(
     source: View | Hierarchy,
     *,
     columns: Iterable[Column] = DEFAULT_COLUMNS,
-    units: UnitSystem = default_units,
+    units: UnitSystem | None = None,
 ) -> Table:
     """Return selected canonical Entities once, in View order, without I/O.
 
     Row identity is the Entity UUID. Include model_id when rows leave the pinned
     View context. Columns are explicit, unique names; unsupported column objects
     raise TypeError. A Table is a projection and cannot reload a Model.
+    Without ``units``, conversion uses the unit system of the View's Model.
     """
     if not isinstance(source, (View, Hierarchy)):
         raise TypeError("source must be a Model-backed View or Hierarchy")
@@ -116,6 +117,7 @@ def to_table(
         hierarchy, view = source, source.view
     else:
         hierarchy, view = None, source
+    units = view.model.unit_system if units is None else units
     columns = tuple(columns)
     if any(
         not isinstance(c, (FieldColumn, ValueColumn, LabelColumn, PropertyColumn))

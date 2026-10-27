@@ -204,16 +204,16 @@ class View:
 
         Missing Values and unavailable quantities remain missing contributors.
         Real zero remains a measured quantity. No completeness policy is applied.
+        Conversion uses the Model's unit system.
         """
         from rangekeeper.model.system.reduction import _collect_quantities
         from rangekeeper.model.system.selection import select_value
-        from rangekeeper.shared.units import default_units
 
         select = select_value(key, measure=measure)
         return _collect_quantities(
             ((entity, select(self.model, entity)) for entity in self.entities),
             units,
-            default_units,
+            self.model.unit_system,
         )
 
     def predecessors(self, id: UUID) -> tuple[Entity, ...]:

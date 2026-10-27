@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -54,11 +55,18 @@ def claims(metadata):
     return tuple(dict.fromkeys(c for row in metadata for c in (row.claims or ())))
 
 
+# Relative error accepted from a native sum before the fsum repair.
+SUM_TOLERANCE = 1e-8
+
+
 def stable_reduce(frame, keys, method):
     """Native reductions, with fsum repair only for cancellation-sensitive groups.
 
-    Polars computes masks and risk bounds in bulk. The uncommon ill-conditioned
-    sums use the same independent summation contract as intrinsic Flow.total.
+    Polars computes masks and risk bounds in bulk. A native sum of n values has a
+    relative error of at most n * eps * sum(|x|) / |sum(x)|. Groups where this
+    bound exceeds SUM_TOLERANCE use the same independent summation contract as
+    intrinsic Flow.total. A group without cancellation has sum(|x|) = |sum(x)|,
+    so it stays native below 1 / (SUM_TOLERANCE * eps), about 45 million rows.
     No Python row UDF participates in the dataframe expression.
     """
     pl = polars()
@@ -73,8 +81,8 @@ def stable_reduce(frame, keys, method):
     if method == "sum" and result.height:
         suspect = result.filter(
             (
-                pl.col("absolute") * pl.col("size") * 2.22e-16
-                > pl.col("result").abs() * 1e-14
+                pl.col("absolute") * pl.col("size") * sys.float_info.epsilon
+                > pl.col("result").abs() * SUM_TOLERANCE
             )
             & (pl.col("absolute") > 0)
         ).select(keys)

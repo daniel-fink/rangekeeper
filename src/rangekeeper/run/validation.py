@@ -109,9 +109,12 @@ def validate(
     run: "Run",
     *,
     resolver: "DocumentResolver",
-    units: UnitSystem = default_units,
+    units: UnitSystem | None = None,
 ) -> ValidationReport:
     """Check a finalized tree and published outputs against exact resolved revisions.
+
+    Without ``units``, the check uses the unit system of the root's input Model,
+    or the default unit system when the root has no input Model.
 
     The supplied Run need not be stored yet. Resolution performs only the reads
     provided by the resolver. References must resolve even for failed attempts;
@@ -130,7 +133,10 @@ def validate(
     if not isinstance(run, Run):
         raise TypeError("run must be a Run; use validate_records for raw catalogues")
     try:
-        runs, specifications, models = collect_documents(run, resolver)
+        found = _documents(run, resolver)
+        runs, specifications, models = _catalogues(found)
+        if units is None:
+            units = _input_unit_system(run, found)
         return validate_records(
             run.record,
             runs=runs,
@@ -156,6 +162,20 @@ def collect_documents(
     resolver: DocumentResolver,
 ) -> tuple[dict, dict, dict]:
     """Cache each resolved revision; leave cycle/ownership decisions to validation.
+
+    Return the Run, Specification and Model records, keyed by revision text.
+    """
+    return _catalogues(_documents(root, resolver))
+
+
+def _input_unit_system(root: "Run", found: dict) -> UnitSystem:
+    specification = found[root.record.specification]
+    model = found.get(specification.record.model)
+    return model.unit_system if isinstance(model, Model) else default_units
+
+
+def _documents(root: "Run", resolver: DocumentResolver) -> dict:
+    """Resolve each revision once; leave cycle/ownership decisions to validation.
 
     The root is supplied in memory, allowing validation before its first store write.
     Includes, cases, spawns, outputs, Model pins and scoped report documents resolve.
@@ -221,6 +241,12 @@ def collect_documents(
                 resolve(spec_record.model, Model)
             for identity in (*(spec_record.includes or ()), *(spec_record.cases or ())):
                 resolve(identity, Specification)
+
+    return found
+
+
+def _catalogues(found: dict) -> tuple[dict, dict, dict]:
+    from rangekeeper.run.run import Run
 
     def catalogue(kind):
         return {

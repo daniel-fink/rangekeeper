@@ -36,7 +36,7 @@ See [calendar and account contracts](calculations.md).
 | `model.formulation.account` | Explicit principal `interest` and coordinated passive `schedule` |
 | `model.scenario.contracts` | Immutable method, parameter, input and output inventories; captured-record conformance without random generation |
 | `model.scenario.market` | `make_plan`, `validate`, `sample`, `capture`, `realize` and `generate` |
-| `model.scenario.implementation` | Calculation provenance and its declared source/dependency manifest |
+| `model.scenario.implementation` | Calculation provenance and its source/dependency manifest, from the import closure of the calculation |
 | `model.scenario.replay` | Check saved paths against captured inputs and the available calculation |
 | `specification.policy` | Generated declarations/outcomes, `evaluate`, `observe` and derived results |
 | `specification.policy._availability` | Pure date rule, shared by runtime observation and stored-evidence checks |
@@ -117,8 +117,8 @@ from `rangekeeper.specification.policy`. `Policy.decisions` contains dated decla
 `Report.outcomes` contains evidence. Each outcome's `decision` identifies its
 declaration. There is no public `decide` or `DecisionHistory` wrapper.
 
-`evaluate(policy, model=..., units=...)` prepares the scope and availability index
-once, then applies the first true rule or the explicit fallback. Actions assign
+`evaluate(policy, model=..., units=None)` prepares the scope and availability index
+once; without `units` it uses `Model.unit_system`. It then applies the first true rule or the explicit fallback. Actions assign
 controls and may terminate. `observe` accepts only named quantities available by
 the decision date. Earlier outcomes can supply later observations; a recorded
 control value cannot substitute for an earlier decision. Declared availability can

@@ -57,7 +57,14 @@ class RevisionConflictError(ValueError):
 
 
 class UnitError(ValueError):
-    """Units are unknown, malformed, incompatible, or produce a non-finite result."""
+    """Units are unknown, malformed, incompatible, or produce a non-finite result.
+
+    ``suggestions`` gives the spellings to try instead, when the registry knows any.
+    """
+
+    def __init__(self, message: str, *, suggestions: tuple[str, ...] = ()) -> None:
+        super().__init__(message)
+        self.suggestions = tuple(suggestions)
 
 
 class DecodeError(ValueError):

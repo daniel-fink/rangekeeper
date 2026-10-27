@@ -733,7 +733,9 @@ class Reader(_Documents):
                     result[key] = value
                 return result
 
-            self.manifest = json.loads(marker.read_text(), object_pairs_hook=unique)
+            self.manifest = json.loads(
+                marker.read_text(encoding="utf-8"), object_pairs_hook=unique
+            )
         else:
             self.manifest = _manifest
         m = self.manifest

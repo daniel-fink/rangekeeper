@@ -1684,10 +1684,6 @@
             {
               "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
               "type": "string"
-            },
-            {
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-              "type": "string"
             }
           ],
           "description": "The actual graph object or characteristic being supported, referenced by its stable UUID."
@@ -2258,39 +2254,6 @@
         "units"
       ],
       "title": "Measure",
-      "type": "object"
-    },
-    "Measurement": {
-      "additionalProperties": false,
-      "description": "An identified measurable property with a Measure and an optional Quantity.",
-      "properties": {
-        "id": {
-          "description": "Stable identity of the Measurement, used by provenance Facts.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "measure": {
-          "description": "Measure defining meaning and canonical units, referenced by its stable UUID.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "quantity": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Quantity"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Optional recorded numerical content. Its units must be compatible with the Measure's canonical units. Omission or null denotes unresolved content."
-        }
-      },
-      "required": [
-        "measure",
-        "id"
-      ],
-      "title": "Measurement",
       "type": "object"
     },
     "Metadata": {

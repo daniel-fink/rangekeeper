@@ -117,6 +117,14 @@ class Model:
         return self.metadata.id
 
     @property
+    def unit_system(self) -> UnitSystem:
+        """The unit system that validated this revision; derived operations use it by default.
+
+        A revision keeps the unit system of its predecessor.
+        """
+        return self._units
+
+    @property
     def metadata(self) -> Metadata:
         """Immutable revision identity, lineage and description."""
         return self._record.metadata

@@ -127,8 +127,9 @@ def calculate_irr(
     The library selects the root; a guess is not a search bound or a guarantee of
     the nearest root. Multiple roots can exist. Reject absent/nonfinite results
     and residuals above 1e-8 of gross movements (with a one-unit scale floor).
-    Same-day payments cannot determine an IRR. Undated periods require timing.
-    valuation_date controls residual reporting; it does not change the solver.
+    The check uses the residual at the earliest payment. Same-day payments cannot
+    determine an IRR. Undated periods require timing. valuation_date controls
+    residual reporting; it does not change the solver or the acceptance check.
     """
     with requires("calculations"):
         import pyxirr
@@ -154,15 +155,26 @@ def calculate_irr(
     )
     if root <= -1:
         raise ValueError("IRR must be greater than -1")
-    residual = calculate_xnpv(
+    # Accept the root at the earliest payment. Moving the residual to a distant
+    # valuation date scales it by (1 + root) ** t, but not the tolerance.
+    anchored = calculate_xnpv(
         flow,
         rate=root,
-        valuation_date=valuation_date or min(dates),
+        valuation_date=min(dates),
         day_count=day_count,
         timing=timing,
     )
-    if abs(residual.magnitude) > 1e-8 * max(
+    if abs(anchored.magnitude) > 1e-8 * max(
         1.0, math.fsum(abs(amount) for amount in amounts)
     ):
         raise ValueError("IRR residual exceeds acceptance tolerance")
+    if valuation_date is None or valuation_date == min(dates):
+        return IrrResult(root, anchored, guess)
+    residual = calculate_xnpv(
+        flow,
+        rate=root,
+        valuation_date=valuation_date,
+        day_count=day_count,
+        timing=timing,
+    )
     return IrrResult(root, residual, guess)

@@ -6,44 +6,29 @@ from importlib.metadata import version
 from pathlib import Path
 
 from rangekeeper.schema.records import CalculationProvenance, LibraryVersion
-from rangekeeper.shared.fingerprints import manifest_digest, semantic_digest
+from rangekeeper.shared.fingerprints import (
+    import_closure,
+    manifest_digest,
+    semantic_digest,
+)
 from rangekeeper.shared.units import default_units
 
 NAME = "rangekeeper.scenarios.market"
 FORMAT = "scenario-calculation/v1"
-# Include calculation, normalization and record construction. random.py samples
-# inputs only; view.py presents saved outputs. Neither participates in replay math.
-SOURCE_PATHS = (
-    "model/scenario/contracts.py",
-    "model/scenario/market.py",
-    "model/scenario/_paths.py",
-    "model/scenario/implementation.py",
-    "calculations/projection.py",
-    "calculations/dynamics.py",
-    "model/model.py",
-    "model/update.py",
-    "model/validation.py",
-    "model/provenance.py",
-    "shared/validation.py",
-    "model/scope.py",
-    "schema/behaviors/flow.py",
-    "schema/behaviors/period.py",
-    "schema/behaviors/distribution.py",
-    "model/duration/calendar.py",
-    "schema/records.py",
-    "schema/enums.py",
-    "schema/validation.py",
-    "shared/fingerprints.py",
-    "schema/runtime.py",
-    "schema/revision.py",
-    "schema/index.py",
-    "shared/units.py",
-)
+# The sources are the import closure of these entry modules: calculation,
+# normalization and record construction, with every module that they import.
+ENTRY_PATHS = ("model/scenario/implementation.py", "model/scenario/market.py")
 RESOURCE_PATHS = ("schema/schema.json", "schema/slots.json")
 
 
+def source_paths(*, package: Path | None = None) -> tuple[str, ...]:
+    """Return the package sources that the scenario calculation imports."""
+    package = package or Path(__file__).resolve().parents[2]
+    return import_closure(ENTRY_PATHS, package=package)
+
+
 def calculation_manifest(*, package: Path | None = None, versions=None) -> dict:
-    """Build the exact portable manifest; every declared input must be present."""
+    """Build the exact portable manifest; every imported source must be present."""
     package = package or Path(__file__).resolve().parents[2]
     if versions is None:
         versions = [
@@ -61,7 +46,7 @@ def calculation_manifest(*, package: Path | None = None, versions=None) -> dict:
         "name": NAME,
         "sources": {
             name: semantic_digest((package / name).read_text())
-            for name in sorted(SOURCE_PATHS)
+            for name in source_paths(package=package)
         },
         "resources": {
             name: hashlib.sha256((package / name).read_bytes()).hexdigest()
