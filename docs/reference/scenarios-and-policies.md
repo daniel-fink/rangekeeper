@@ -36,7 +36,7 @@ See [calendar and account contracts](calculations.md).
 | `model.formulation.account` | Explicit principal `interest` and coordinated passive `schedule` |
 | `model.scenario.contracts` | Immutable method, parameter, input and output inventories; captured-record conformance without random generation |
 | `model.scenario.market` | `make_plan`, `validate`, `sample`, `capture`, `realize` and `generate` |
-| `model.scenario.implementation` | Calculation provenance and its declared source/dependency manifest |
+| `model.scenario.implementation` | Calculation provenance and its source/dependency manifest, from the import closure of the calculation |
 | `model.scenario.replay` | Check saved paths against captured inputs and the available calculation |
 | `specification.policy` | Generated declarations/outcomes, `evaluate`, `observe` and derived results |
 | `specification.policy._availability` | Pure date rule, shared by runtime observation and stored-evidence checks |
