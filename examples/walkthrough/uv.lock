@@ -1379,11 +1379,17 @@ provides-extras = ["bundle", "calculations", "execution", "yaml"]
 
 [package.metadata.requires-dev]
 changelog = [{ name = "towncrier", specifier = ">=26.9,<27" }]
+codemod = [
+    { name = "libcst", specifier = ">=1.8,<2" },
+    { name = "pyyaml", specifier = ">=6.0.2,<7" },
+]
 dev = [
     { name = "ipykernel", specifier = ">=7.3.0" },
+    { name = "libcst", specifier = ">=1.8,<2" },
     { name = "mypy", specifier = ">=2.4,<3" },
     { name = "numpy-financial", specifier = ">=1.0" },
     { name = "pytest", specifier = ">=8.0" },
+    { name = "pyyaml", specifier = ">=6.0.2,<7" },
     { name = "rangekeeper-examples", editable = "../" },
     { name = "ruff", specifier = ">=0.17.2,<0.18" },
     { name = "towncrier", specifier = ">=26.9,<27" },

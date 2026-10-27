@@ -101,7 +101,6 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.measure.Quantity` | `rangekeeper.units.Quantity` | pending | #255 D13: `rangekeeper.Quantity` at the root, and the namespace `rangekeeper.quantity`. |
 | `rangekeeper.shared.units.UnitSystem` | `rangekeeper.units.UnitSystem` | pending | #255 D13: `rangekeeper.quantity.UnitSystem`. |
 | `rangekeeper.model.measure.Measure` | `rangekeeper.model.Measure` | draft (needs refactor) | The `model.measure` shim is removed; `rangekeeper.model` re-exports the record. |
-| `rangekeeper.model.measure.Measurement` | `rangekeeper.model.Measurement` | draft (needs refactor) |  |
 | `rangekeeper.model.distribution.Distribution` | `rangekeeper.model.Distribution` | draft (needs refactor) | The `model.distribution` shim is removed. |
 | `rangekeeper.model.distribution.DistributionFamily` | `rangekeeper.model.DistributionFamily` | draft (needs refactor) |  |
 | `rangekeeper.schema.behaviors.flow.MissingValueHandling` | — | open | One persisted enum (MissingHandling) and one runtime enum with a distinct name. |

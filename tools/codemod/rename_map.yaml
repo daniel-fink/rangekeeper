@@ -178,12 +178,6 @@ symbols:
     source: ADR-012
     requires: [refactor]
     note: The `model.measure` shim is removed; `rangekeeper.model` re-exports the record.
-  - module: rangekeeper.model.measure
-    name: Measurement
-    new_module: rangekeeper.model
-    status: draft
-    source: ADR-012
-    requires: [refactor]
   - module: rangekeeper.model.distribution
     name: Distribution
     new_module: rangekeeper.model
