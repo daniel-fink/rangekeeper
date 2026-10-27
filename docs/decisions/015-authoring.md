@@ -67,9 +67,9 @@ table, `rx` with typed stubs, and the function table in the docs are generated f
 it. A library function keeps one job: `rk.finance.npv` computes on values, and
 `rx.finance.npv` builds an expression. Neither checks which kind of argument it has.
 
-**Checked when written.** `equations` (one call for one equation or several) parses and checks each equation
-at once against the declared keys, units and reserved words, with suggestions for a
-near miss. `commit()` checks the whole draft again.
+**Checked when written.** `equations`, one call for one equation or several, parses
+and checks each equation at once against the declared keys, units and reserved
+words, with suggestions for a near miss. `commit()` checks the whole draft again.
 
 **Equivalence tests.** For each registry entry, text and `rx` make identical records
 and the same canonical text; text round-trips through records; and a symbolic
