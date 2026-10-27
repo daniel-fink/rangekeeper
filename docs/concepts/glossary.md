@@ -70,9 +70,9 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Composition | The effective investigation after included Specifications are combined | `specification` | — |
 | Case | One entry in a batch Specification, for example one market path | `specification` | — |
 | Policy | The rules of a Specification, in order. Each rule uses only information available at its review date | `specification` (declarations), `execution` (evaluation) | `specification.policy` |
-| Rule | A declaration that decides one value during the solve: `decide(key, when=, review=, window=, otherwise=)` ([ADR-021](../decisions/021-sequential-decisions.md)) | `specification` | `Decision`, `Rule` and `Action` records |
+| Rule | A declaration that decides one value during the solve: `decide(key=, when=, periods=, earliest=, latest=, otherwise=)` ([ADR-021](../decisions/021-sequential-decisions.md)) | `specification` | `Decision`, `Rule` and `Action` records |
 | Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | Policy control |
-| Review date, window | A date on which a rule tests its condition; the half-open range that contains them | `specification` | Decision date |
+| Review date | A date on which a rule tests its condition: the first day of each of its `Periods`, between optional `earliest` and `latest` bounds | `specification` | Decision date, window |
 | Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | — |
 | Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | — |
 | Availability | The earliest date at which a value can be observed | `specification` | — |

@@ -221,9 +221,9 @@ The Run report has a `policy_evidence` section. For each case it records:
 
 The `Outcome` reads the trace:
 
-- `outcome.decisions()` returns a table with one row for each case and review. It
-  has `where(key=, result=)` and `observations()`.
-- `outcome.case(key=...).trace()` shows the reviews of one case.
+- `outcome.decisions` returns a table with one row for each case and review. It
+  has `where(key=, result=)` and `observations`.
+- `outcome.case(key=...).trace` shows the reviews of one case.
 - Decided values appear in `outcome.table(...)` like other values.
 
 The new `Rule`, `Review` and `PolicyEvidence` records replace `Decision`,
@@ -255,12 +255,12 @@ a `Comparison`. It is the one call for two Outcomes or more (decision D30 of #20
 
 - Without `baseline`, it shows the values of the keys side by side.
 - With `baseline`, all Outcomes that hold paths must pin the same `rk.market.Paths`.
-  If not, `compare` raises `ValidationError` with the code `different_market_paths`.
+  If not, `compare` raises `ValidationError` with the code `different_paths`.
 - It pairs cases by path member key. If one Outcome has cases across paths and the
   other has only paths, it pairs each case with the same path in the other.
 - It gives the difference from the baseline for each path and key. It has `summary()` (mean
   difference, share of paths better, worst loss and 5 % quantile), `by(key=)`,
-  `by_case()` and `where(**values)`.
+  `by_case` and `where(**values)`.
 - A failed case is not in the differences. `summary()` gives the count of failed
   cases.
 
@@ -366,7 +366,7 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
    `available_on <= decision_date` (cell 18). A changed trace fails the check.
 7. Replay gives the same trace. Replay against changed path data gives
    `replay_mismatch`.
-8. `compare` raises `different_market_paths` for different paths. It pairs
+8. `compare` raises `different_paths` for different paths. It pairs
    cases across paths, and `summary()` counts failed cases.
 9. Lesson 05 cells 5 to 18 run on the three histories and on the CI path count.
    On the three histories, the decisions and equity NPVs agree with an
@@ -388,7 +388,7 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
 - `rk.errors.AvailabilityError`.
 - Diagnostic codes: `rule_order`, `rule_reads_unknown`,
   `observation_unavailable`, `decision_changes_past`, `replay_mismatch` and
-  `different_market_paths`.
+  `different_paths`.
 - Run records: `PolicyEvidence`, `Review` and `Observation`.
 
 ## Alternatives and consequences

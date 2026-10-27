@@ -61,11 +61,11 @@ rate = rk.Quantity(text="2 % pa")
 rate * rk.Quantity(text="1 year")  # 0.02, a dimensionless ratio
 ```
 
-> **Under the hood.** `rk.Quantity("5 %")` and `rk.Quantity(0.05, "ratio")` make the
-> same Quantity. Most functions also accept the text directly, for example
+> **Under the hood.** `rk.Quantity(text="5 %")` and
+> `rk.Quantity(magnitude=0.05, units="ratio")` make the same Quantity. Most functions also accept the text directly, for example
 > `rate="2 % pa"`. The `rk.quantity` namespace holds the unit system and its
 > registry. The registry is curated: an unknown or misspelt unit fails with a
-> suggestion. `"pa"` never becomes a picoyear ([ADR-016](../../../docs/decisions/016-safety-defaults.md)).
+> suggestion. `"pa"` never becomes a picoyear.
 
 ## 3. Time: spans and periods
 
@@ -77,8 +77,8 @@ use, and use the name after that.
 
 ```python
 # cell 4
-holding = rk.duration.Span.years(start=date(2001, 1, 1), count=10, name="Holding")
-forecast = holding.extend(years=1)
+holding = rk.duration.Span(start=date(2001, 1, 1), length="10 years", name="Holding")
+forecast = holding.extend(by="1 year")
 yearly = rk.duration.Frequency.YEAR
 years = forecast.periods(frequency=yearly)
 years  # 11 Periods, 2001 to 2011
@@ -92,7 +92,7 @@ date. Make the first two years of potential gross income by hand.
 ```python
 # cell 5
 first_two = rk.flow.Flow(amounts={years[0]: 100, years[1]: 102}, units="USD")
-first_two.display()
+first_two
 ```
 
 ## 5. Growth
@@ -107,7 +107,7 @@ holds the initial amount.
 # cell 6
 growth = rk.profile.Compounding(rate=rate)
 pgi = rk.flow.Flow.from_profile(profile=growth, periods=years, initial="100 USD")
-pgi.display()
+pgi
 ```
 
 ```python
@@ -138,7 +138,7 @@ operations = rk.flow.Stream(
     }
 )
 noi = operations.sum()
-noi.display()
+noi
 ```
 
 ```python
@@ -170,7 +170,7 @@ nacf.at(on=date(2011, 1, 1)) / exit_cap_rate  # the price at the end of year 10,
 # cell 11
 # each year: next year's NACF / cap rate
 exit_values = nacf.shift(by=-1) / exit_cap_rate
-exit_values.display()
+exit_values
 ```
 
 ```python
@@ -197,7 +197,7 @@ table = operations.with_flows(
     flows={"NOI": noi, "CAPEX": capex, "NACF": nacf, "Terminal value": terminal_value}
 )
 table = table.trim(span=holding)
-table.display()  # compare with Table 1.1
+table  # compare with Table 1.1
 ```
 
 ```python
@@ -233,7 +233,7 @@ cash_flows.at(on=date(2001, 1, 1)) / 1.07
 # cell 17
 discount_rate = rk.Quantity(text="7 % pa")
 present_values = rk.finance.pv(flow=cash_flows, rate=discount_rate, on=holding.start)
-present_values.display()
+present_values
 ```
 
 ## 11. NPV and IRR on one date basis
@@ -295,7 +295,7 @@ assert value_3 > value
 
 ```python
 # solution
-seven = rk.duration.Span.years(start=date(2001, 1, 1), count=7)
+seven = rk.duration.Span(start=date(2001, 1, 1), length="7 years")
 terminal_7 = exit_values.trim(span=seven.periods(frequency=yearly)[-1])
 flows_7 = rk.flow.Stream(flows={"NACF": nacf, "Terminal value": terminal_7})
 cash_7 = flows_7.trim(span=seven).sum()
@@ -350,12 +350,12 @@ cell has 10 lines (cell 8). Cells follow `ruff format` (D15).
 | --- | --- | --- |
 | 1 | 1 | Pass |
 | 2–3 | 1, 5 | G71: `rk.Quantity(text)` at the root and the `rk.quantity` namespace (D13); `pa` and `% pa` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
-| 4 | 1, 11 | G01: `Span.years`, `extend`, `periods(yearly)` |
+| 4 | 1, 11 | G01: `Span(start=, length=)`, `extend(by=)`, `periods(frequency=)` returning `Periods` |
 | 5, 19 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
 | 6 | 1, 6 | G70: `rk.profile` and `Flow.from_profile` with `initial=` or `total=` (D12; absorbs [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 7, 10, 12, 16 | 8 | G03: `Flow.at(date)` returns one Quantity |
 | 8–9, 13–14 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `with_flows(mapping)`, `select`, `sum()` |
-| 11–12, 20 | 6 | G05: `Flow.shift(by=)` and `Flow.trim(period)`; no domain helper for the terminal value |
+| 11–12, 20 | 6 | G05: `Flow.shift(by=)` and `Flow.trim(span=)`, where a Period counts as a one-step Span; no domain helper for the terminal value |
 | 15 | 6 | `resample` with `ResampleMethod` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
 | 17–19 | 6 | `pv`, `npv`, `irr` on dates ([#167](https://github.com/daniel-fink/rangekeeper/issues/167), [#164](https://github.com/daniel-fink/rangekeeper/issues/164)) |
 | 12, 15, 21 | 5, 8 | G06: Flow value equality and `rk.quantity.isclose` |

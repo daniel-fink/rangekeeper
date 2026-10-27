@@ -49,12 +49,12 @@ Records stay public. They are for reading results and for full control.
 There are two ways to write an equation, both in 1.0. Both are first-class: each is
 fully supported, documented and tested, and both produce the same expression records.
 
-- **Text,** for example `project.equation(equation="value = noi / cap_rate")`. A parser
+- **Text,** for example `project.equations("value = noi / cap_rate")`. A parser
   resolves names against value keys and functions against the registry below.
 - **Python,** through `rangekeeper.expressions`, imported as `rx`. A declaration
   returns a handle, and `project.ref(key=)` finds one. Operators on handles build
   expressions; `==` makes an equality and `>=` or `<=` a bound, for example
-  `project.equation(value == noi / cap_rate)`. Text and Python use the same function
+  `project.equations(value == noi / cap_rate)`. Text and Python use the same function
   names, such as `rx.profile.compounding(...)` and `rx.max(a, b)`. An equation in text
   is the Python form inside a string, except `=` for `==`, `and`, `or` and `not` for
   `&`, `|` and `~`, and unquoted unit literals. `rk.` always computes on values; text
@@ -67,7 +67,7 @@ table, `rx` with typed stubs, and the function table in the docs are generated f
 it. A library function keeps one job: `rk.finance.npv` computes on values, and
 `rx.finance.npv` builds an expression. Neither checks which kind of argument it has.
 
-**Checked when written.** `equation` and `equations` parse and check each equation
+**Checked when written.** `equations` (one call for one equation or several) parses and checks each equation
 at once against the declared keys, units and reserved words, with suggestions for a
 near miss. `commit()` checks the whole draft again.
 

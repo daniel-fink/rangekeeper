@@ -31,6 +31,8 @@ Value, and equations refer to it by key.
 Narrative: in lessons 02–05 the property was one asset with totals. Lesson 02 showed
 its design as one picture. Here is the same property as a graph: 50 objects, with
 spatial, service and grouping relationships. Each object has its own geometry.
+`rk.io.load` reads a saved document, and `helpers.data_path` finds one in the data
+package.
 
 ```python
 # cell 1
@@ -46,7 +48,7 @@ model.summary()  # counts of entities, relationships and classifications
 
 ```python
 # cell 3
-helpers.show_geometry(model=model, color_by="classification")
+helpers.show_geometry(of=model, color_by="classification")
 ```
 
 ## 2. Entities, values and relationships
@@ -67,7 +69,9 @@ floor.values  # gfa, perimeter, floor-to-floor height, level
 
 ```python
 # cell 6
-model.relationships(entity=floor)  # contained by its space; served by cores and plant
+model.relationships.where(
+    entity=floor
+)  # contained by its space; served by cores and plant
 ```
 
 ## 3. One graph, three views
@@ -79,13 +83,13 @@ question. A service link is not a cost allocation.
 ```python
 # cell 7
 spatial = model.view(over="contains")
-helpers.show_graph(view=spatial)
+helpers.show_graph(of=spatial)
 ```
 
 ```python
 # cell 8
 services = model.view(over="serves")
-helpers.show_graph(view=services)
+helpers.show_graph(of=services)
 ```
 
 ## 4. Select with a filter
@@ -100,7 +104,7 @@ that a filter selects, coloured by their `use` label.
 floors = rk.model.Filter(classification="floor")
 floor_entities = model.entities.where(filter=floors)
 # 33 floors, coloured by use
-helpers.show_geometry(model=model, highlight=floor_entities, color_by="use")
+helpers.show_geometry(of=model, highlight=floor_entities, color_by="use")
 ```
 
 ```python
@@ -157,12 +161,12 @@ served = model.rollup(
     roots=["building_a", "building_b"],
 )
 # each building includes the plant; the total does not repeat it
-served.by_root(), served.value
+served.by_root, served.value
 ```
 
 ```python
 # cell 14
-assert served.by_root().sum() > served.value
+assert served.by_root.sum() > served.value
 served.coverage.shared  # contributors reached from more than one root
 ```
 
@@ -240,12 +244,9 @@ to every floor.
 project.value(key="efficiency", units="ratio", by="use")
 project.value(key="rent", units="AUD per sqm pa", by="use")
 project.value(key="vacancy", units="ratio", by="use")
-draft.equations_for(
-    filter=floors,
-    equations=[
-        "nla = efficiency[use] * gfa",
-        "income = nla * rent[use] * (1 - vacancy[use])",
-    ],
+draft.entities.where(filter=floors).equations(
+    "nla = efficiency[use] * gfa",
+    "income = nla * rent[use] * (1 - vacancy[use])",
 )
 ```
 
@@ -404,16 +405,16 @@ solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G35: `Model.summary()` |
-| 3, 7–9 | 10 | Helpers draw. `show_geometry(model=, highlight=, color_by=)` draws the objects that a filter selects ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
+| 3, 7–9 | 10 | Helpers draw. `show_geometry(of=, highlight=, color_by=)` draws the objects that a filter selects ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | 4–6 | 4, 7 | Lookups by code ([#156](https://github.com/daniel-fink/rangekeeper/issues/156), [#160](https://github.com/daniel-fink/rangekeeper/issues/160)). G36: `entities` (a collection with `where(filter=)`), `Entity.values`, `relationships(entity)` tables |
 | 7–8 | 7 | G37: `Model.view(relationship_classification)` |
 | 9–10 | 7 | `Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). G38: `condition=` string comparisons with units; `entities.where(filter=)` |
 | 11–12 | 7, 8 | Rollups ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)), pivots ([#159](https://github.com/daniel-fink/rangekeeper/issues/159)). G39: `Model.rollup(of=, over=, roots=, contributors=)` facade, with `roots=` a list for one root or several (D38); pivot rows by ancestor classification |
-| 13–14 | 7 | G40: several roots, `direction=rk.model.Direction.INCOMING`, `by_root()`, `coverage.shared` |
+| 13–14 | 7 | G40: several roots, `direction=rk.model.Direction.INCOMING`, `by_root`, `coverage.shared` |
 | 15 | 7 | G41: `RollupResult.trace(roots=)` |
 | 16–17 | 4, 9 | G42: `AmbiguousReferenceError`; error fields `requested`, `candidates` ([#156](https://github.com/daniel-fink/rangekeeper/issues/156)) |
 | 18 | 3 | Lesson 02's strings, unchanged |
-| 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `equations_for(filter=, equations=)` |
+| 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `entities.where(filter=).equations(...)` declares equations on each selected entity |
 | 20 | 2, 7 | G44: entity `rollup(key=, ...)` declares a Value (decision D3) |
 | 21 | 2, 5 | G45: `fix` takes keyed values as mappings |
 | 22 | 8 | G26 |

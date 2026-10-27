@@ -28,7 +28,8 @@ The lesson is not authored until #216 is verified (ADR-020).
 >    rules do not change with it;
 > 5. choose a trigger on one path set and test it on another.
 >
-> **Before you start.** Lessons 05 and 06.
+> **Before you start.** Lessons 05 and 06, and lesson 04's optional section (use
+> markets that move together).
 >
 > **Time.** 60 minutes core, 30 minutes optional (vertical expansion).
 >
@@ -58,7 +59,7 @@ import helpers
 residential = rk.io.load(path=helpers.data_path(name="07_property_plan.model.json"))
 use_paths = rk.io.load(path=helpers.data_path(name="04_use_factors.paths.json"))
 plan = helpers.load_base_plan()
-residential.rollups()  # key, value rolled up, relationship, root and contributors
+residential.rollups  # key, value rolled up, relationship, root and contributors
 ```
 
 Narrative: start from lesson 04's Specification. It fixed each building's income,
@@ -128,7 +129,7 @@ over both structures.
 # one row for each of Building B's totals, one column for each design
 rk.model.compare(
     models={"Residential": residential, "Hotel": hotel},
-    rollups=["b_income", "b_opex", "b_cost"],
+    keys=["b_income", "b_opex", "b_cost"],
 )
 ```
 
@@ -268,8 +269,8 @@ gain_at_test = gain.distribution(outcome="Test premium", key="equity_npv")
 
 ```python
 # cell 14
-cost_per_aud = (gain_at_zero.mean - gain_at_test.mean) / rk.Quantity(text="1e6 AUD")
-largest_premium = gain_at_zero.mean / cost_per_aud  # the mean criterion
+cost_per_aud = (gain_at_zero.mean() - gain_at_test.mean()) / rk.Quantity(text="1e6 AUD")
+largest_premium = gain_at_zero.mean() / cost_per_aud  # the mean criterion
 largest_premium
 ```
 
@@ -287,7 +288,7 @@ check = rk.execution.compare(
     keys=["equity_npv"],
     baseline="Timing",
 )
-check.distribution(outcome="At largest", key="equity_npv").mean  # about 0 AUD
+check.distribution(outcome="At largest", key="equity_npv").mean()  # about 0 AUD
 ```
 
 > **Finance note.** The provision uses equity and loan capacity that Building B's
@@ -327,7 +328,7 @@ by_trigger = rk.execution.compare(
     outcomes={"Triggers": train_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
     baseline="Timing",
-).by_case()
+).by_case
 best = by_trigger.order_by(key="equity_npv.mean()", descending=True).first().case
 ```
 
@@ -393,7 +394,7 @@ project.date(key="expansion_date")
 project.equations("x_open = expansion_date + 1 year")
 project.add_to(
     key="works",
-    term="-rx.profile.uniform(total=x_cost, start=expansion_date, years=1)",
+    term="-rx.profile.uniform(total=x_cost, start=expansion_date, length=1 year)",
 )
 project.add_to(key="income", term="rx.profile.constant(initial=x_income, start=x_open)")
 expanded = draft.commit()
@@ -461,7 +462,7 @@ gains = rk.execution.compare(
     outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
     baseline="Timing",
-).by_case()
+).by_case
 largest = gains.where(condition=cautious).max(key="provision", tolerance="50e3 AUD")
 largest.value, largest.method, largest.bracket
 ```
@@ -482,7 +483,7 @@ comparison.select("switch", "both").summary()
 ```python
 # cell 19 (checks)
 for outcome in strategy_outcomes.values():
-    assert outcome.run.market_paths == use_paths.id  # the same paths
+    assert outcome.run.paths == use_paths.id  # the same paths
 provision_paid = both_outcome.table("provision_cost")["provision_cost"]
 assert (provision_paid < 0).all()  # paid on every path
 first = use_paths.keys[0]
@@ -514,11 +515,11 @@ solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 
 | Cell | Rules | Result |
 | --- | --- | --- |
-| 2 | 1, 10 | G26; G59: `Model.rollups()` table |
+| 2 | 1, 10 | G26; G59: `Model.rollups` table |
 | 3–3b | 2, 4 | G43 (keyed values, and a keyed equation `use_index = market_index * use_factor`); G60, G73: `series=` maps a keyed Flow value to several path series (D31) |
 | 4 | 2, 7 | G61: `edit(name=)`, `relabel(filter, **labels)`, `include(fragment)`; `Filter(within=)` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)) |
 | 5 | 7 | G62: `rk.model.diff(a, b)` with typed parts |
-| 6 | 7, 8 | G74: `rk.model.compare(models=, rollups=)` gives one table of declared rollups by design |
+| 6 | 7, 8 | G74: `rk.model.compare(models=, keys=)` gives one table of declared rollups by design |
 | 7b | 2, 6 | G63: `Specification.alternatives(key={name: Model})` and a decided Model choice with `then=` (ADR-022); G49 (`periods=`), G55 (`earliest=`, `latest=`), G57 (`parameters`); keyed members in rule text (`use_index["hotel"]`) |
 | 7 | 1, 10 | G64: `Specification.rules` reads the rules of a saved Specification, so lesson 05's rules are loaded as a document, not from a helper |
 | 8 | 2 | G65: `Specification.with_rules(rules)` |
@@ -526,7 +527,7 @@ solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 | 11 | 8 | G31: `distribution(key=).counts()` for a decided choice |
 | 12 | 7, 8 | G46 for batches: `Outcome.rollup(...)` over each case's realised Model |
 | 13–14b | 6, 8 | The largest premium composed from two runs (D36): G79: `Comparison.distribution(outcome=, key=)` gives the paired differences of one Outcome as a Distribution (G31) |
-| 15c | 8 | G80: "best tested" as a query: `by_case().order_by(key=, descending=)` and `first()` |
+| 15c | 8 | G80: "best tested" as a query: `by_case.order_by(key=, descending=)` and `first()` |
 | 15–15c | 2 | G57: several triggers as cases; G75: `Specification.case(key=)` (cell 16) |
 | 16 | 4, 6 | G69: `Paths.regenerate(seed=)` rebuilds the generator from the capture record |
 | 17–17c | 2, 3 | G61, G17; G27 (`add_to(key=, term=)` adds a term to one side of an equation) |
@@ -547,7 +548,7 @@ The design for structural variants must support:
 - **Realised structure per path.** Each case's Outcome carries the realised Model, so
   rollups and pivots work per path and across the batch (cells 11–12).
 - **Geometry of each option.** The hotel fragment carries geometry, so that
-  `helpers.show_geometry(model=both_outcome.case(key=...).model, color_by="use")` can show
+  `helpers.show_geometry(of=both_outcome.case(key=...).model, color_by="use")` can show
   Building B as built on one path. The proposed cells do not show it yet; add it
   when the fragment data exists.
 - **Provision on every path.** The provision is an ordinary fixed value in the

@@ -117,7 +117,7 @@ constraint. The rule for Building B must follow the rule for the start.
 ```python
 # cell 7
 downturn = wait_outcome.case(key="long downturn")
-downturn.trace()  # each review: date, observed value, when it was known, result
+downturn.trace  # each review: date, observed value, when it was known, result
 ```
 
 ```python
@@ -173,7 +173,7 @@ start_b = wait.parameters(b_start_trigger=1.10).decide(
     otherwise=rk.duration.NEVER,
 )
 # the decided values, their rules and their review Periods
-helpers.show_decisions(specification=start_b)
+helpers.show_decisions(of=start_b)
 ```
 
 ## 6. Stop and sell Building B's site
@@ -221,13 +221,13 @@ strategy = (
 ```python
 # cell 11b
 stories_outcome = rk.execution.solve(specification=strategy.across(paths=stories))
-stories_outcome.decisions()  # one row for each case and review
+stories_outcome.decisions  # one row for each case and review
 ```
 
 ```python
 # cell 12
 # each history and its decisions
-helpers.plot_decisions(outcome=stories_outcome, name="rent_index")
+helpers.plot_decisions(outcome=stories_outcome, key="rent_index")
 ```
 
 ## 7. All paths: paired comparison
@@ -300,7 +300,7 @@ trigger_difference = rk.execution.compare(
     keys=["equity_npv"],
     baseline="Fixed plan",
 )
-trigger_difference.by_case().summary()
+trigger_difference.by_case.summary()
 ```
 
 ## Exercises
@@ -321,7 +321,9 @@ rk.execution.compare(
 ```
 
 **Try it 2: no funding check.** Remove the funding condition from Building B's rule.
-On how many paths does the commitment gap become positive?
+On how many paths does the commitment gap become positive? The commitment gap is the
+largest amount by which committed but unpaid costs exceed the available equity and
+loan (lesson 03, optional section 11).
 
 ```python
 # solution
@@ -356,11 +358,11 @@ cheap_difference.where(b_start=rk.duration.NEVER).summary()
 
 ```python
 # cell 18 (checks)
-assert strategy_outcome.run.market_paths == fixed_outcome.run.market_paths == paths.id
-for row in strategy_outcome.decisions().observations():
+assert strategy_outcome.run.paths == fixed_outcome.run.paths == paths.id
+for row in strategy_outcome.decisions.observations:
     assert row.available_on <= row.decision_date
 decided = rk.execution.ReviewResult.DECIDED
-for row in strategy_outcome.decisions().where(key="b_start", result=decided):
+for row in strategy_outcome.decisions.where(key="b_start", result=decided):
     available = row.observed["equity_available"] + row.observed["loan_available"]
     assert available >= row.observed["b_cost"]
 assert strategy_outcome.case(key=paths.keys[0]).run.policy_evidence.verified
@@ -391,7 +393,7 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | 4 | 10 | G48: `rk.market.Paths` from explicit Flows (the three histories are data, made once) |
 | 6 | 2, 6 | D1–D2 of the review: `rk.duration.Periods` from `Span.periods`; G49: `Specification.decide(key=, when=, periods=, earliest=, latest=, otherwise=)`, the "decided" role, rules as strings; G57: `parameters` for a rule's trigger |
 | 6, 11, 13 | 5 | G50: `rk.duration.NEVER` for date values, `NEVER` in rule text; functions treat a `NEVER` date as "no flow" |
-| 7–7b, 11b, 12 | 8, 9 | G51: `Outcome.trace()` and `Outcome.decisions()` tables; infeasible decided values name the constraint (G52) |
+| 7–7b, 11b, 12 | 8, 9 | G51: `Outcome.trace` and `Outcome.decisions` tables; infeasible decided values name the constraint (G52) |
 | 8 | 9 | G53: `AvailabilityError` (with `key`) at Specification validation ([#139](https://github.com/daniel-fink/rangekeeper/issues/139)) |
 | 9 | 6 | G54: sequential solve: a rule observes solved values (funding) under the decisions so far ([#213](https://github.com/daniel-fink/rangekeeper/issues/213)) |
 | 9, 11 | 3 | G55: `earliest=` and `latest=` expression bounds on the reviews; rules that observe earlier decisions (`b_start == never`) |

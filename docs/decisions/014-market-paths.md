@@ -1,6 +1,9 @@
 # ADR-014: Market paths and path generators
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; implementation pending. Recorded: 2026-10-26. Amended
+2026-10-28 by #201 decisions D29 and D31 and gap G73: generators and paths move to
+`rk.market` (`Dynamics`, `generate`, `Paths`), and `across` matches path series to
+Model values by key.
 
 ## Problem
 
@@ -30,14 +33,14 @@ Market futures are inputs to an investigation.
 | Term | Meaning | Class |
 | --- | --- | --- |
 | Path | One possible history of external conditions: named Flows, and the date each value becomes known | `MarketPath` |
-| Market paths | A captured, replayable set of paths | `MarketPaths` |
-| Path generator | A registered method that makes market paths | `PathGenerator` (protocol); `MarketDynamics` (built-in) |
+| Market paths | A captured, replayable set of paths | `rk.market.Paths` |
+| Path generator | A registered method that makes market paths | `PathGenerator` (protocol); `rk.market.Dynamics` with `rk.market.generate` (built-in) |
 
 The class names avoid a clash with `pathlib.Path` and `typing.Generator`.
 
 ### Generators
 
-`PathGenerator` lives in `finance` ([ADR-010](010-layers-and-packages.md)). It
+`PathGenerator` lives in `market` ([ADR-010](010-layers-and-packages.md)). It
 has three members:
 - declared parameters: constants or distributions;
 - `generate(periods, *, seed, count) -> MarketPaths`;
@@ -45,7 +48,9 @@ has three members:
 
 Generators use the registry pattern in [ADR-013](013-execution-and-extensions.md).
 There are two built-ins:
-- `MarketDynamics`, with trend, volatility, cycle, noise and shock components;
+- `rk.market.Dynamics`, with trend, volatility, cycle, noise and shock components;
+  `rk.market.generate(dynamics={name: Dynamics}, periods=, seed=, count=)` makes
+  independent named series, and needs a seed only when the dynamics are random;
 - an independent-paths generator.
 
 Output names, such as space-market price factors, belong to the generator and
@@ -70,8 +75,9 @@ document.
 - **The project Model declares each external driver once,** for example a rent
   index Flow with its shape and units. Its equations use the driver. The Model
   does not store generated paths.
-- **`Specification.across(paths, assign={...})`** makes a batch Specification
-  with one case for each path. Each case fixes the driver Flows from its path.
+- **`Specification.across(paths=)`** makes a batch Specification with one case
+  for each path. Each case fixes each Model value from the path series with the same
+  key; `series=` maps a value whose key differs, or the members of a keyed value.
   Each case carries the availability dates that policies use.
 - **To compare strategies,** run each strategy's Specification across the same
   pinned `MarketPaths`. The Runs show that the strategies used the same futures.

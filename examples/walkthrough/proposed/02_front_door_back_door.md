@@ -81,7 +81,7 @@ not say which side is known.
 
 A Model never changes. To change one, `edit()` gives a draft. The draft collects the
 changes; `commit()` checks them all once, including the units of every equation, and
-returns a new Model. The first Model is empty; the draft adds the property, its values
+returns a new Model. The first Model is empty; the draft adds the project, its values
 and its equations.
 
 ```python
@@ -141,12 +141,10 @@ project.value(key="retail_vacancy", units="ratio")
 
 ```python
 # cell 6b
-project.equation(
-    equation=(
-        "reference_income = hotel_area * hotel_rent * (1 - hotel_vacancy)"
-        " + residential_area * residential_rent * (1 - residential_vacancy)"
-        " + retail_area * retail_rent * (1 - retail_vacancy)"
-    )
+project.equations(
+    "reference_income = hotel_area * hotel_rent * (1 - hotel_vacancy)"
+    " + residential_area * residential_rent * (1 - residential_vacancy)"
+    " + retail_area * retail_rent * (1 - retail_vacancy)"
 )
 model = draft.commit()
 ```
@@ -160,7 +158,7 @@ helpers.show_equations(of=model)  # a diagram with no input or output arrows
 > as `rx`, writes equations with Python operators. A declaration returns a handle, and
 > `project.ref(key=)` finds the handle of a value declared earlier. Text and Python make
 > the same records, and `.text` prints the text form. Both forms use the same
-> names, such as `rx.profile.compounding(...)` (D21, D32).
+> names.
 >
 > ```python
 > import rangekeeper.expressions as rx
@@ -307,8 +305,9 @@ land price rise or fall? Change one fixed value.
 
 ```python
 # cell 17
-lower_leverage = rk.execution.solve(specification=back.fix(leverage="50 %"))
-lower_leverage["land_cost"] - back_outcome["land_cost"]
+lower_leverage = back.fix(leverage="50 %")
+lower_leverage_outcome = rk.execution.solve(specification=lower_leverage)
+lower_leverage_outcome["land_cost"] - back_outcome["land_cost"]
 ```
 
 ## 9. Optional: when the question is not well posed
@@ -320,16 +319,24 @@ and a diagnostic that names the values or equations by key.
 
 ```python
 # cell 18
-loose = rk.execution.solve(specification=back.free("rent_factor"))
-loose.status, loose.free_unknowns  # UNDERDETERMINED, ('land_cost', 'rent_factor')
+loose = back.free("rent_factor")
+loose_outcome = rk.execution.solve(specification=loose)
+(
+    loose_outcome.status,
+    loose_outcome.free_unknowns,
+)  # UNDERDETERMINED, ('land_cost', 'rent_factor')
 ```
 
 **Too many fixed values that disagree.** Fix both the land cost and the rent factor.
 
 ```python
 # cell 19
-tight = rk.execution.solve(specification=front.fix(rent_factor=1))
-tight.status, tight.diagnostics  # INFEASIBLE; the diagnostic names the equations
+tight = front.fix(rent_factor=1)
+tight_outcome = rk.execution.solve(specification=tight)
+(
+    tight_outcome.status,
+    tight_outcome.diagnostics,
+)  # INFEASIBLE; the diagnostic names the equations
 ```
 
 **A product of two unknowns.** Ask for leverage and coverage together.
@@ -337,15 +344,15 @@ tight.status, tight.diagnostics  # INFEASIBLE; the diagnostic names the equation
 ```python
 # cell 20
 both_free = back.fix(land_cost="20e6 AUD").free("leverage", "coverage")
-product = rk.execution.solve(specification=both_free)
-product.status, product.diagnostics
+both_free_outcome = rk.execution.solve(specification=both_free)
+both_free_outcome.status, both_free_outcome.diagnostics
 # UNSUPPORTED: nonaffine_unknowns in "noi = coverage * debt_service"
 ```
 
 ```python
 # cell 21
 try:
-    product.raise_for_status()
+    both_free_outcome.raise_for_status()
 except rk.errors.UnsupportedError as error:
     print(error.code, error.equation)
 ```
@@ -381,8 +388,9 @@ land price could they support? Predict the change before you solve.
 
 ```python
 # solution
-stronger = rk.execution.solve(specification=back.fix(rent_factor=1.1))["land_cost"]
-assert stronger > back_outcome["land_cost"]
+stronger = back.fix(rent_factor=1.1)
+stronger_outcome = rk.execution.solve(specification=stronger)
+assert stronger_outcome["land_cost"] > back_outcome["land_cost"]
 ```
 
 ## Checks and recap

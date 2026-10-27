@@ -11,7 +11,7 @@ paired gain across the market paths. A forward solve cannot answer this, and
 [ADR-021](021-sequential-decisions.md) keeps a target over a batch out of inverse
 solving.
 
-ADR-022 designed `breakeven`, `best` and `decisions().same_across_cases()` for this.
+ADR-022 designed `breakeven`, `best` and `decisions.same_across_cases()` for this.
 They are special methods with their own errors. The review of the proposed cells
 (#201) prefers composition, in the style of LINQ and SQL, to special functions
 (decisions D30, D33 and D36). The maintainer wants a search in 1.0.
@@ -44,13 +44,13 @@ gains = rk.execution.compare(
     outcomes={"Premiums": premium_outcome, "Timing": timing_outcome},
     keys=["equity_npv"],
     baseline="Timing",
-).by_case()
+).by_case
 largest = gains.where(condition=cautious).max(key="provision", tolerance="50e3 AUD")
 ```
 
 - **`cases=` takes a mapping or a `Range`.** A mapping gives named cases. A
   `Range(key=, first=, last=)` gives the cases of one value between two bounds; each
-  case is named by its value. There is one `cases` call, and `by_case()` works in the
+  case is named by its value. There is one `cases` call, and `by_case` works in the
   same way for both.
 - **A range is deferred.** `solve` on a range returns an Outcome that has no solved
   rows yet. A final operation (`max`, `min`, `first`) runs the solves that it needs,
@@ -64,7 +64,7 @@ largest = gains.where(condition=cautious).max(key="provision", tolerance="50e3 A
 
 ### The by-case table is a query
 
-`by_case()` returns a table with one row for each case: the case's values (for
+`by_case` returns a table with one row for each case: the case's values (for
 example `provision`) and the statistics of each compared key. It has these
 operations:
 
@@ -123,7 +123,7 @@ Listed cases of such a value stay allowed.
   second way to ask the question that a query asks, and its arguments hide the
   criterion inside a call. The maintainer prefers composition.
 - **A range as its own method, such as `spec.vary(...)`.** A reader already knows
-  cases and `by_case()`. A range is another source of cases, so it is an argument
+  cases and `by_case`. A range is another source of cases, so it is an argument
   of `cases`.
 - **`breakeven` with a straight-line fit.** It gives an exact premium only when
   decisions do not change, and it needs its own error class. The plan's exact step

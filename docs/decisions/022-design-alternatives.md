@@ -118,7 +118,7 @@ A rule decides a choice key in the same way that it decides a date (ADR-021):
 strategies or more (decision D30 of #201):
 
 - All Outcomes must pin the same `rk.market.Paths`. If not, it raises
-  `different_market_paths`.
+  `different_paths`.
 - It pairs each strategy with the baseline by path member key. Strategies can use
   different alternatives.
 - It has `summary()` and `select(*names)`.
@@ -137,7 +137,7 @@ as the premium rises. The library makes this visible and does not hide it:
 - **Ask for the largest justified premium as a query**
   ([ADR-024](024-search-as-query.md)). The criterion is a condition, for example
   `"equity_npv.quantile(level=0.05) >= 0 AUD"`. Over listed premiums,
-  `by_case().where(condition=...).max(key="provision")` gives the largest tested
+  `by_case.where(condition=...).max(key="provision")` gives the largest tested
   premium. Over a `Range` of `provision`, the same query searches: it is exact
   when no decision changes and the gains are linear in the premium, and bracketed
   otherwise. If the condition changes more than once, the result says that the
@@ -147,7 +147,7 @@ as the premium rises. The library makes this visible and does not hide it:
 
 - A choice key cannot be free. The library has no objective over alternatives.
 - "Best tested" is a query over listed cases:
-  `by_case().order_by(key="equity_npv.mean()", descending=True).first()`
+  `by_case.order_by(key="equity_npv.mean()", descending=True).first()`
   ([ADR-024](024-search-as-query.md)).
 - To test triggers on new paths, `Paths.regenerate(seed=)` rebuilds the
   generator from the capture record (#201 gap G69). A new seed gives a test set. Nothing in
@@ -238,7 +238,7 @@ gains = rk.execution.compare(
     outcomes={"Premiums": premium_outcome, "Timing": strategy_outcomes["timing"]},
     keys=["equity_npv"],
     baseline="Timing",
-).by_case()
+).by_case
 largest = gains.where(condition=cautious).max(key="provision", tolerance="50e3 AUD")
 largest.value, largest.method, largest.bracket
 ```

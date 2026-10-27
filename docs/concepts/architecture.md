@@ -108,8 +108,9 @@ Validation runs at commit points ([ADR-011](../decisions/011-records-and-validat
 
 **Work with market paths** ([ADR-014](../decisions/014-market-paths.md))
 1. Choose a path generator and its parameters.
-2. Generate `MarketPaths` with a seed.
-3. Use `Specification.across(paths, assign=...)` to make one case for each path.
+2. Generate market paths (`rk.market.Paths`) with a seed.
+3. Use `Specification.across(paths=)` to make one case for each path. Path series
+   fix the Model values with the same key; `series=` maps any others.
 4. Execute the batch. To compare strategies, run each Specification across the
    same pinned paths.
 

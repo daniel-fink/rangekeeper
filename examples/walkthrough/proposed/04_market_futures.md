@@ -149,7 +149,7 @@ library versions. Replay uses the captured values and draws no new random number
 
 ```python
 # cell 8
-count = helpers.path_count(default=500)  # RK_PATH_COUNT: 4 in CI, full locally
+count = 500  # this cell is tagged "parameters": CI runs the lesson with fewer paths
 paths = rk.market.generate(
     dynamics={"rent_index": dynamics}, periods=years, seed=1, count=count
 )
@@ -309,7 +309,7 @@ twice_model = draft.commit()
 twice_outcome = rk.execution.solve(
     specification=base.on(model=twice_model).across(paths=paths)
 )
-twice_outcome.distribution(key="unlevered_npv").mean - npv.mean
+twice_outcome.distribution(key="unlevered_npv").mean() - npv.mean()
 ```
 
 The mean NPV rises, but the market did not change. The index already contains the
@@ -322,7 +322,7 @@ the mean NPV move? What does this say about the path count?
 # solution
 other = paths.regenerate(seed=2)  # the same generator, periods and count
 reseeded_outcome = rk.execution.solve(specification=base.across(paths=other))
-reseeded_outcome.distribution(key="unlevered_npv").mean - npv.mean
+reseeded_outcome.distribution(key="unlevered_npv").mean() - npv.mean()
 ```
 
 ## Checks and recap
@@ -330,8 +330,8 @@ reseeded_outcome.distribution(key="unlevered_npv").mean - npv.mean
 ```python
 # cell 19 (checks)
 assert len(paths_outcome.cases) == count
-assert paths_outcome.run.market_paths == paths.id  # the Run pins the paths
-assert npv.mean != average_outcome["unlevered_npv"]  # the flaw of averages
+assert paths_outcome.run.paths == paths.id  # the Run pins the paths
+assert npv.mean() != average_outcome["unlevered_npv"]  # the flaw of averages
 first = paths.keys[0]
 assert paths_outcome.case(key=first)["rent_index"] == paths[first]["rent_index"]
 ```
@@ -369,5 +369,5 @@ solutions. The longest cell has 12 lines (cell 17). Cells follow `ruff format` (
 | 14 | 8 | G66; G31: `Outcome.mean()` gives the mean of a batch as one Outcome for `rk.execution.compare` |
 | 16 | 8 | G31: `Distribution.case(quantile=)` returns the case at a quantile |
 | 17–18 | 6, 10 | G32: `rk.market.generate(dynamics={name: Dynamics})` makes independent named series; co-movement is composed by the author with Flow arithmetic, not declared (D31). The helper draws only |
-| 19 | 8 | G33: `Outcome.run.market_paths` pin; `Paths[key][name]`; G69: `Paths.regenerate(seed=)` (Try it 3) |
+| 19 | 8 | G33: `Outcome.run.paths` pin; `Paths[key][name]`; G69: `Paths.regenerate(seed=)` (Try it 3) |
 | — | — | Run time across 500 paths needs the reusable worker ([#130](https://github.com/daniel-fink/rangekeeper/issues/130)) and one structure for all cases (G20) |
