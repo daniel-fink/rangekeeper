@@ -21,7 +21,7 @@ when the library work lands.
 | 03 Cases, debt and equity | [03_cases_debt_equity.md](03_cases_debt_equity.md) | 25 + 2 optional |
 | 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 16 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 16 + 1 optional |
-| 06 Project structure | [06_project_structure.md](06_project_structure.md) | 24 + 1 optional |
+| 06 Project structure | [06_project_structure.md](06_project_structure.md) | 25 + 1 optional |
 | 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 18 + 3 optional |
 
 Each lesson file has the goals box, the narrative outline, the cells, the exercises
@@ -55,6 +55,7 @@ pass.
 | D16 | How are values declared, and how is a rate per year written? | One call for each value, naming its key and units: `site.value(key="land_cost", units="AUD")`, `site.flow(key="rent_index", units="ratio")`, `site.date(key="start_date")`. Keyed and timeline variants add `by=` and `periods=`. `units=` always means units; a date has none. A rate per year is `"% pa"`, for example `"7 % pa"`, not `"1/year"` | 01–07 |
 | D17 | How is unit text written? | `per` divides (`"5 per sqm"`, `"750 AUD per sqm pa"`), `pa` means per year, and a count has a named unit (`"0.02 dwelling per sqm"`). A unit expression contains no numbers: Pint reads `"per 100 sqm"` as "÷ 100 × sqm", so the registry rejects it with a suggestion | 01–07 |
 | D18 | Equations, expressions or constraints? | "Equation" is the reader's word: one relation that must hold, an equality or a bound. It is stored as a Constraint over Expressions; the glossary says so. `equations(..., formulation="Debt")` puts equations in a named Formulation, for display and traces; without it they join the entity's default Formulation | 02–07 |
+| D19 | Is the mortgage constant a library function? | No. `rk.finance.payment(principal=, rate=, term=, frequency=)` is the one general loan calculation, like a spreadsheet's PMT with units. The mortgage constant is derived in the open: the payment per year on one dollar of loan, `(payment / rk.Quantity(text="1 AUD")).to(units="% pa")` | 02, 06 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -127,9 +128,9 @@ fees = rk.flow.Flow.from_profile(
     rk.finance.pv(flow=flow, rate="7 % pa", on=date),
     rk.finance.npv(flow=flow, rate="7 % pa", on=date),
 )  # #167, #164
-rk.finance.mortgage_constant(
-    rate="6 % pa", term="20 years", payments_per_year=12
-)  # #167
+rk.finance.payment(
+    principal="1 AUD", rate="6 % pa", term="20 years", frequency=monthly
+)  # #167: like PMT, with units
 rk.finance.Account(opening=..., limit=...).post(transactions=transactions)  # G23
 rk.finance.MarketDynamics(trend="2 % pa", volatility="5 % pa").generate(
     periods=years, seed=2027, count=500
@@ -335,6 +336,13 @@ use. **Issue** is filled in when the issue is filed.
 | 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
 | 35 | — | `rk.Quantity` at the root, text in the constructor, and the `rk.quantity` namespace | G71 | `quantity` | 01·2–3, 10, 17; 02·22; 03·24 | #148, #149, #150 |
 | 36 | — | Named formulations: `equations(..., formulation=)`, a default Formulation for each entity, and equations grouped by formulation in displays and traces | G72 | `model` | 03·6–8, 13, 19b | #141, #145 |
+
+Scope changes for existing issues:
+
+- [#167](https://github.com/daniel-fink/rangekeeper/issues/167) provides NPV and a
+  general `payment(principal=, rate=, term=, frequency=)`, like a spreadsheet's PMT
+  with units. It has no separate mortgage-constant helper: the cells derive the
+  constant as the payment per year on one dollar of loan (D19).
 
 Acceptance tests for existing issues. These cells depend on
 [#149](https://github.com/daniel-fink/rangekeeper/issues/149) (the curated unit

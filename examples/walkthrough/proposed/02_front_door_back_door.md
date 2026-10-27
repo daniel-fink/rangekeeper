@@ -166,12 +166,19 @@ r, n = 0.06 / 12, 20 * 12
 12 * r / (1 - (1 + r) ** -n)  # 0.0860 per year
 ```
 
+Narrative: the library has one general loan calculation: the payment, like a
+spreadsheet's PMT, but with units. The mortgage constant is the payment on one dollar
+of loan, per year. Check that it agrees with the calculation by hand.
+
 ```python
 # cell 9
-constant = rk.finance.mortgage_constant(
-    rate="6 % pa", term="20 years", payments_per_year=12
+monthly = rk.duration.Frequency.MONTH
+payment = rk.finance.payment(
+    principal="1 AUD", rate="6 % pa", term="20 years", frequency=monthly
 )
-constant
+payment  # the monthly payment on each dollar of loan
+constant = (payment / rk.Quantity(text="1 AUD")).to(units="% pa")
+constant  # 8.60 % pa
 ```
 
 > **Finance note.** Loan-to-value (leverage) limits the loan to a share of value. SFFA
@@ -320,10 +327,11 @@ does the front door need?
 
 ```python
 # solution
-longer = rk.finance.mortgage_constant(
-    rate="6 % pa", term="25 years", payments_per_year=12
+longer = rk.finance.payment(
+    principal="1 AUD", rate="6 % pa", term="25 years", frequency=monthly
 )
-longer_outcome = rk.execution.solve(specification=front.fix(mortgage_constant=longer))
+longer_constant = (longer / rk.Quantity(text="1 AUD")).to(units="% pa")
+longer_outcome = rk.execution.solve(specification=front.fix(mortgage_constant=longer_constant))
 assert longer_outcome["rent_factor"] < factor
 ```
 
@@ -378,7 +386,7 @@ has 11 lines (cell 4). Cells follow `ruff format` (D15).
 | 6, 11 | 6 | G09: staged solve. `reference_income` is a product of fixed values, then `rent_factor * reference_income` is affine |
 | 7, 14 | 10 | Helper draws the equations and their values, with role markers for a Specification ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | aside | 3 | Operator form ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)). G10: `Equation.text` gives canonical text |
-| 9 | 6 | `mortgage_constant` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
+| 9 | 6 | `rk.finance.payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)); the constant is derived from it (D19) |
 | 10, 13 | 2, 4 | `specify`, `fix`, `free` ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G11: unfixed values are free by default; `fix` takes strings, numbers and Quantities; `roles` table |
 | 11, 13 | 8 | `solve` and `Outcome` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126), [#127](https://github.com/daniel-fink/rangekeeper/issues/127)). G12: `solve` resolves the Model that made the Specification, with no resolver argument |
 | 15 | 8 | G13: `rk.execution.table(outcomes=, keys=)` for named Outcomes |

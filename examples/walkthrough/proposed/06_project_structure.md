@@ -255,16 +255,22 @@ model = draft.commit()
 ## 10. The back door again
 
 Narrative. **Predict:** does the supportable land price change? Fix the same
-inputs as lesson 02, with the rates by use in place of the totals.
+inputs as lesson 02, with the rates by use in place of the totals. The mortgage
+constant comes from the loan payment, as in lesson 02.
+
+```python
+# cell 20b
+monthly = rk.duration.Frequency.MONTH
+payment = rk.finance.payment(
+    principal="1 AUD", rate="6 % pa", term="20 years", frequency=monthly
+)
+constant = (payment / rk.Quantity(text="1 AUD")).to(units="% pa")
+```
 
 ```python
 # cell 21
 data = helpers.load_property(snapshot=2032)
-lending = {
-    "leverage": "65 %",
-    "coverage": 1.25,
-    "mortgage_constant": rk.finance.mortgage_constant(rate="6 % pa", term="20 years"),
-}
+lending = {"leverage": "65 %", "coverage": 1.25, "mortgage_constant": constant}
 back = model.specify(name="Back door from floors").fix(
     **data.inputs.select("works_cost", "operating_cost"),
     **data.use_rates,
@@ -375,7 +381,7 @@ assert served.coverage.shared == {"plinth_plant"}
 
 ## Cell budget
 
-24 core code cells, 1 optional cell and 1 check cell (budget 20–25), 3 exercise
+25 core code cells, 1 optional cell and 1 check cell (budget 20–25), 3 exercise
 solutions. The longest cell has 15 lines (cell 21). Cells follow `ruff format` (D15).
 
 ## Rule check
