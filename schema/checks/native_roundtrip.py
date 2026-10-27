@@ -63,7 +63,6 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
         "Classification",
         "Taxonomy",
         "Measure",
-        "Measurement",
         "Entity",
         "Relationship",
         "Assembly",
@@ -78,7 +77,6 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
         ("Label", "classifications", "Classification"),
         ("Classification", "parent", "Classification"),
         ("Value", "measure", "Measure"),
-        ("Measurement", "measure", "Measure"),
         ("Relationship", "source", "Entity"),
         ("Relationship", "target", "Entity"),
         ("Assembly", "entities", "Entity"),
@@ -95,7 +93,6 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
         "Relationship",
         "Label",
         "Value",
-        "Measurement",
     }
     assert all(field.inlined is False for field in fact_targets)
     upstream = view.induced_slot("sources", "Claim").any_of
@@ -126,11 +123,11 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
         measurement = {
             "id": fixture["entities"][0]["characteristics"]["values"][0]["id"],
             "measure": fixture["definitions"]["measures"][0]["id"],
+            "key": "area",
+            "kind": "measurement",
             "quantity": content,
         }
-        record = json_loader.loads(
-            json.dumps(measurement), target_class=module.Measurement
-        )
+        record = json_loader.loads(json.dumps(measurement), target_class=module.Value)
         encoded = json.loads(json_dumper.dumps(record, inject_type=False))
         assert encoded.get("quantity") == content
         if content is not None:

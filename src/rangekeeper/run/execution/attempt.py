@@ -60,7 +60,7 @@ class Attempt:
         self,
         store: RecordStore,
         backend: Backend,
-        units: UnitSystem,
+        units: UnitSystem | None,
         tolerances: acceptance.Tolerances,
         specification: Specification,
         view: Composition | ValidationError,
@@ -394,7 +394,8 @@ class Attempt:
             if self.output is None
             else publication.CandidateResolver(self.output, self.store)
         )
-        validate_run(run, resolver=resolver, units=self.units).raise_if_invalid()
+        units = self.units if self.prepared is None else self.prepared.units
+        validate_run(run, resolver=resolver, units=units).raise_if_invalid()
         if self.output is not None:
             self.store.put(self.output)
         self.store.put(run)

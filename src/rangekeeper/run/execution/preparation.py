@@ -20,7 +20,7 @@ from rangekeeper.schema.records import (
     Value,
 )
 from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.units import UnitSystem
 from rangekeeper.specification import Composition
 from rangekeeper.specification.validation import prepare as validate_prepared
 
@@ -53,7 +53,7 @@ def prepare(
     composition: Composition,
     *,
     resolver: SpecificationResolver,
-    units: UnitSystem = default_units,
+    units: UnitSystem | None = None,
     checkpoint: Callable[[], None] = lambda: None,
 ) -> Prepared:
     """Validate an existing composition and normalize assignments to Measure units.
@@ -69,6 +69,7 @@ def prepare(
     assert composition.model_id is not None
     model = validated.model
     assert model is not None
+    units = model.unit_system if units is None else units
     requirements = composition.requirements
     if requirements.objectives:
         raise UnsupportedProblem(

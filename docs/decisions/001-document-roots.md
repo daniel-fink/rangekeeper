@@ -37,4 +37,4 @@ separate from a mathematical Specification.
 - [ADR-002: records and identity](002-records-and-identity.md).
 - [ADR-003: computation and evidence](003-computation-and-evidence.md).
 
-Supersedes: no earlier ADR identifier was assigned. Superseded by: none. Amended by: [ADR-014](014-market-paths.md) adds the MarketPaths document kind.
+Supersedes: no earlier ADR identifier was assigned. Superseded by: none. Amended by: [ADR-014](014-market-paths.md) adds the MarketPaths document kind. [ADR-022](022-design-alternatives.md) lets a Specification pin several Model revisions as design alternatives.

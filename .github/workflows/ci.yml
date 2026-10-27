@@ -14,8 +14,6 @@ permissions:
   contents: read
 
 env:
-  # Plots render off screen; no test needs a display.
-  MPLBACKEND: Agg
   UV_PYTHON_PREFERENCE: only-managed
 
 jobs:
@@ -64,9 +62,36 @@ jobs:
       - run: .schema-env/bin/python tools/schema/generate_csharp.py --check
       - run: .schema-env/bin/python tools/schema/verify_native.py
       - run: .schema-env/bin/python tools/schema/typecheck.py
-      - run: python3 tools/geometry/check_manifest.py
-      # TODO(#90): build and test the .NET example after src/grasshopper moves:
-      #   dotnet build -p:Version=$(python tools/version.py --dotnet)
+
+  dotnet:
+    name: dotnet
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # tools/version.py reads the setuptools-scm version.
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: "8.0.x"
+      # The Model library and the fixture runner build without Rhino. The
+      # Components project needs the Rhino assemblies and is not built here.
+      - run: dotnet restore examples/grasshopper/Tests/Tests.csproj --locked-mode
+      - run: |
+          uv sync --locked --all-extras
+          version=$(uv run --locked --no-sync python tools/version.py --dotnet)
+          dotnet build examples/grasshopper/Tests/Tests.csproj --no-restore -p:Version="$version"
+      - name: Round trip the cross-language fixtures through C#
+        run: |
+          uv run --locked --no-sync python tools/schema/cross_language.py prepare "$RUNNER_TEMP/cross-language"
+          dotnet examples/grasshopper/Tests/bin/Debug/net8.0/Tests.dll \
+            "$RUNNER_TEMP/cross-language/python.json" "$RUNNER_TEMP/cross-language/csharp.json"
+          uv run --locked --no-sync python tools/schema/cross_language.py check "$RUNNER_TEMP/cross-language"
 
   docs:
     name: docs
@@ -91,6 +116,7 @@ jobs:
           python-version: "3.13"
           enable-cache: true
       - run: uv sync --project examples/walkthrough --locked --no-default-groups --group test
+      - run: python3 examples/walkthrough/viewer/check_manifest.py
       # Helper tests, lesson checks and each lesson in a fresh kernel, then its
       # conversion for the docs site. Fixture design data and few market paths.
       - run: uv run --project examples/walkthrough --locked --no-sync pytest examples/walkthrough -q -rs
@@ -116,7 +142,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           enable-cache: true
-      # All extras: the suite imports Matplotlib, Polars, Pyomo/HiGHS and Bundle IO.
+      # All extras: the suite imports Polars, Pyomo/HiGHS and Bundle IO.
       - run: uv sync --locked --all-extras
       - run: uv run --locked pytest -q -rs
 
@@ -127,7 +153,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        extra: [core, bundle, calculations, execution, visualisation, yaml]
+        extra: [core, bundle, calculations, execution, yaml]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -179,7 +205,7 @@ jobs:
       - name: Run the tests against the installed wheel
         run: |
           wheel=$(ls "$PWD"/dist/*.whl)
-          extras=bundle,calculations,execution,visualisation,yaml
+          extras=bundle,calculations,execution,yaml
           uv venv "$RUNNER_TEMP/venv"
           uv pip install --python "$RUNNER_TEMP/venv" "rangekeeper[$extras] @ file://$wheel" \
             pytest numpy-financial ./examples

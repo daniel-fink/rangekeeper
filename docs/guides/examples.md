@@ -4,7 +4,7 @@ Maintained examples live in [`examples/`](../../examples). Install the library
 and the example builders from the same checkout. From the repository root:
 
 ```sh
-python -m pip install '.[calculations,execution,visualisation]' ./examples
+python -m pip install '.[calculations,execution]' ./examples
 ```
 
 The `rangekeeper-examples` distribution supplies `rangekeeper_examples`. It is a
@@ -28,7 +28,7 @@ Install the matching library and the extras each example needs.
 | [`rangekeeper_examples/`](../../examples/rangekeeper_examples) | Shared design and investment builders |
 | [`schema/`](../../examples/schema) | Complete wire documents and smaller syntax fragments, described below |
 | [`execution/`](../../examples/execution) | Forward and inverse valuation using the wire documents |
-| [`grasshopper/`](../../examples/grasshopper) | Rhino source and Grasshopper definitions; see [Grasshopper](grasshopper.md) |
+| [`grasshopper/`](../../examples/grasshopper/README.md) | The unsupported C# Model library and Grasshopper components, with Rhino source and definitions |
 
 ## Run standalone examples
 

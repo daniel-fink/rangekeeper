@@ -152,7 +152,7 @@ RK owns the standalone Speckle viewer used by its walkthrough notebooks, includi
 source, npm build, third-party notices and packaged assets. Source lives in
 `tools/geometry`. Python installation uses the prepared RK assets; it does not run
 npm or fetch an unpinned bundle. This amends the earlier asset-build ownership in
-the table above. See [the build procedure](../../tools/geometry/README.md).
+the table above. See [the build procedure](../../examples/walkthrough/viewer/README.md).
 
 RK owns canonical Bundle/schema rules and its Parquet mapping/reader, with optional
 storage adapters. [ADR-008](008-rangekeeper-bundle-contract.md) owns canonical conformance.
@@ -386,7 +386,7 @@ by approval of this plan alone.
 - [Walkthrough curriculum](006-walkthrough-curriculum.md)
 - [Prepared property source](../guides/mixed-use-project.md)
 - [Notebook 03 local acceptance](../research/notebook-03-2026-10-13/README.md)
-- [Windows acceptance](../contributing/windows-acceptance.md)
+- [Windows acceptance](../history/windows-acceptance.md)
 - [Documentation lifecycle](../contributing/documentation.md)
 
 ## Implementation record
@@ -395,7 +395,7 @@ See [local validation and deviations](../research/three-repository-refactor-2026
 and its artifact manifest. These retain recorded local results; external host and
 product acceptance gates remain separate.
 
-See the [current architecture](../concepts/architecture.md), [upgrade guide](../guides/upgrading.md), [verification guide](../contributing/verification.md) and [Windows acceptance](../contributing/windows-acceptance.md).
+See the [current architecture](../concepts/architecture.md), [upgrade guide](../guides/upgrading.md), [verification guide](../contributing/verification.md) and [Windows acceptance](../history/windows-acceptance.md).
 
 Supersedes: none. Superseded by: none.
 Amended by: [ADR-010](010-layers-and-packages.md), accepted 2026-10-26. Local display adapters move to the walkthrough helpers; the Grasshopper solution moves to `examples/grasshopper`.

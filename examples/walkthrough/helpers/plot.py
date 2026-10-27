@@ -16,10 +16,10 @@ from IPython.display import IFrame
 
 from rangekeeper.model.characteristics import value
 from rangekeeper.model.content import decode
-from rangekeeper.visualisation.chart import plot_flows, plot_partition
-from rangekeeper.visualisation.graph import graph_html
-from rangekeeper.visualisation.local import LocalDisplay
 
+from .chart import plot_flows, plot_partition
+from .graph import graph_html
+from .local import LocalDisplay
 from .theme import CONFIG, FONT, MODES, PACKAGE_COLORS, USE_COLORS, apply_theme
 
 LESSONS = Path(__file__).resolve().parents[1]
@@ -42,7 +42,7 @@ def _iframe(path, height, *, root=None):
 
 def show_geometry(view="context", height=650):
     """Write the local geometry viewer for the property and display one view."""
-    from rangekeeper.visualisation import geometry
+    from . import geometry
 
     if view not in {"context", "property", "floors", "utilities"}:
         raise ValueError("Unknown geometry view")

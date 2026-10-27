@@ -34,7 +34,7 @@ and extent. Multi-Flow operations live in `calculations.series`: `align`, `aggre
 `Aggregation` returns its Flow with contribution metadata. Join and missing-data
 policies are explicit. A coordinate absent from one input is distinct from a
 movement whose magnitude is unresolved. A requested absent zero stays zero in the
-destination unit, including conversion between affine units.
+destination unit.
 
 Dimensional compatibility is necessary but does not prove the intended economics.
 The caller chooses additive totals, weighted means, integration or compounding.
@@ -77,8 +77,10 @@ coverage is a separate result. Source records remain unchanged.
 The private backend prepares compact coordinate and line columns once, retains
 immutable identity/evidence metadata, and reuses columns through selection,
 trimming, resampling and display. Native Polars operations handle bulk grouping,
-unit conversion and masks. Cancellation-sensitive sums use an `math.fsum` repair
-selected by a numerical risk check. Intermediate resampling does not reconstruct
+unit conversion and masks. Cancellation-sensitive sums use an `math.fsum` repair.
+A group gets the repair when the error bound of its native sum,
+`n * eps * sum(|x|) / |sum(x)|`, is more than `1e-8`. Groups with no cancellation
+stay native below about 45 million rows. Intermediate resampling does not reconstruct
 Flow records. Explicit `.flows` access materializes current content.
 
 Known-data operations do not create equations. Use an original Model selection
@@ -231,5 +233,7 @@ returns one PyXIRR root and its residual. Both require `timing=` for period-only
 movements. `IrrResult` contains `rate`, `residual`, `guess` and
 `method="pyxirr.xirr"`. A guess is neither a bound nor proof of root uniqueness.
 Failed or nonfinite library results raise `ValueError`. An IRR residual greater
-than `1e-8 * max(gross_movements, 1)` also fails. Empty Flows have zero XNPV but no
-IRR. There is no bounded-solver fallback.
+than `1e-8 * max(gross_movements, 1)` also fails. This check uses the residual at
+the earliest payment, so a distant `valuation_date` does not reject a valid root;
+`IrrResult.residual` is the residual at `valuation_date`. Empty Flows have zero XNPV
+but no IRR. There is no bounded-solver fallback.

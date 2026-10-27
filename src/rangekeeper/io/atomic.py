@@ -1,7 +1,6 @@
 """Publish complete UTF-8 files atomically without overwriting existing names."""
 
 import errno
-import json
 import os
 import tempfile
 from pathlib import Path
@@ -42,24 +41,6 @@ def write_new(path: Path, text: str) -> Path:
     the complete final file visible.
     Callers may safely inspect/retry, but no cross-file transaction is promised.
     """
-    return _write(path, text, replace=False)
-
-
-def replace(path: Path, text: str) -> Path:
-    """Replace a complete file; PublishedFileError means replacement occurred.
-
-    A pre-publication failure preserves the old file. Never retry or roll back a
-    published replacement without accounting for a possible subsequent writer.
-    """
-    return _write(path, text, replace=True)
-
-
-def replace_json(path: Path, value: object) -> Path:
-    """Replace JSON with the review encoding and retain publication/durability errors."""
-    return replace(path, json.dumps(value, ensure_ascii=False, indent=2) + "\n")
-
-
-def _write(path: Path, text: str, *, replace: bool) -> Path:
     path = Path(path)
     descriptor, temporary = tempfile.mkstemp(
         prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
@@ -73,10 +54,7 @@ def _write(path: Path, text: str, *, replace: bool) -> Path:
                 stream.flush()
                 os.fsync(stream.fileno())
             # link fails if a concurrent writer published this name first.
-            if replace:
-                os.replace(temporary_path, path)
-            else:
-                os.link(temporary_path, path)
+            os.link(temporary_path, path)
             published = True
         finally:
             temporary_path.unlink(missing_ok=True)

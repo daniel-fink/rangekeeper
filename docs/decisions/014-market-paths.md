@@ -78,6 +78,25 @@ document.
 - **For known-data analysis of one path,** use `flow` and `finance` operations
   on the Flows of a `MarketPath`.
 
+### Availability and member references
+
+[ADR-021](021-sequential-decisions.md) confirms the two open points (#139):
+
+- **Availability.** Each output name in a `MarketPaths` document has an
+  availability lag. The default is zero. A period Movement is available at the
+  period's `end` plus the lag. A dated Movement is available at its date plus the
+  lag. A generator declares the lag of each output. Paths made from data take a
+  `lag=` argument. The capture record stores the lags, so replay derives the same
+  dates.
+- **Member references.** `across` makes one case for each member. The case
+  refers to the member by the `MarketPaths` UUID and the member key. It does not
+  copy the amounts. The resolve-cases stage expands the member's Flows into
+  assignments, and each assigned Movement carries its availability date.
+- **Other values.** A value that `fix` supplies is available on every review date.
+- **Cases across paths.** `cases(...)` with `across(...)` makes one case for each
+  pair. Its key has two parts: the case name and the member key.
+- **Runs** record the member key of each case.
+
 ### Removal
 
 - **Removed:** `ScenarioPlan`, `ScenarioRealization`, `sample`, `capture`,
@@ -95,10 +114,8 @@ document.
 - **Embed paths in each Specification.** This makes Specifications large, and
   strategies that share futures would duplicate the data.
 
-The sequential-decision design for walkthrough lessons 05 and 06 must confirm
-two details:
-- how availability dates attach to case assignments;
-- how a case refers to a path member.
+[ADR-021](021-sequential-decisions.md) confirms how availability attaches to case
+assignments and how a case refers to a path member.
 
 The [scenario reference](../reference/scenarios-and-policies.md) changes when
 the implementation lands.
@@ -109,4 +126,4 @@ the implementation lands.
 - [ADR-013: execution and extension points](013-execution-and-extensions.md).
 - [ADR-019: walkthrough direction](019-walkthrough-direction.md).
 
-Supersedes: none. Amends: ADR-001. Superseded by: none.
+Supersedes: none. Amends: ADR-001. Superseded by: none. Amended by: [ADR-021](021-sequential-decisions.md) confirms availability and member references.

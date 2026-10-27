@@ -594,3 +594,48 @@ def test_role_edit_rejects_policy_control_without_changing_the_specification():
     with pytest.raises(ValueError, match="policy-controlled"):
         controlled.unlock(Reference(target=ids["initial"]), id=uuid4(), model=model)
     assert controlled.to_data() == before
+
+
+def _counted_reduce(monkeypatch, values_by_group):
+    import types
+
+    import polars as pl
+
+    from rangekeeper.calculations import _batch
+
+    repaired = []
+
+    def fsum(values):
+        repaired.append(len(values))
+        return math.fsum(values)
+
+    monkeypatch.setattr(_batch, "math", types.SimpleNamespace(fsum=fsum))
+    groups = [g for g, values in values_by_group.items() for _ in values]
+    magnitudes = [float(v) for values in values_by_group.values() for v in values]
+    frame = pl.DataFrame(
+        {"group": groups, "magnitude": magnitudes, "known": [True] * len(groups)}
+    )
+    result = _batch.stable_reduce(frame, ["group"], "sum")
+    return dict(zip(result["group"], result["result"], strict=True)), repaired
+
+
+@pytest.mark.parametrize("width", [46, 1_000, 100_000])
+@pytest.mark.parametrize("sign", [1, -1])
+def test_wide_groups_without_cancellation_stay_native(monkeypatch, width, sign):
+    values = {0: [sign * (1 + i % 7) for i in range(width)], 1: [sign * 0.1] * width}
+    sums, repaired = _counted_reduce(monkeypatch, values)
+    assert repaired == []
+    for group, group_values in values.items():
+        assert sums[group] == pytest.approx(math.fsum(group_values), rel=1e-12)
+
+
+def test_cancelling_groups_are_still_repaired(monkeypatch):
+    values = {
+        0: [1e16, 1, -1e16],
+        1: [1e10, *[0.1] * 1_000, -1e10],
+        2: [1.0, 2.0, 3.0],
+    }
+    sums, repaired = _counted_reduce(monkeypatch, values)
+    assert sorted(repaired) == [3, 1_002]
+    for group, group_values in values.items():
+        assert sums[group] == math.fsum(group_values)

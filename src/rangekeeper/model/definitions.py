@@ -93,16 +93,6 @@ def find_measures(items: Definitions | None, *, code: str) -> tuple[Measure, ...
     )
 
 
-def find_taxonomies(items: Definitions | None, *, code: str) -> tuple[Taxonomy, ...]:
-    """Search exact Taxonomy codes without interpreting them as identities."""
-    require_text(code, "code")
-    return (
-        tuple(item for item in (items.taxonomies or ()) if item.code == code)
-        if items
-        else ()
-    )
-
-
 def find_classifications(
     items: Definitions | None,
     *,
@@ -122,16 +112,6 @@ def find_classifications(
     )
 
 
-def find_functions(items: Definitions | None, *, code: str) -> tuple[Function, ...]:
-    """Search declared Function codes; this does not resolve executable implementations."""
-    require_text(code, "code")
-    return (
-        tuple(item for item in (items.functions or ()) if item.code == code)
-        if items
-        else ()
-    )
-
-
 __all__ = [
     "Definitions",
     "Taxonomy",
@@ -144,9 +124,7 @@ __all__ = [
     "descendants",
     "function",
     "find_measures",
-    "find_taxonomies",
     "find_classifications",
-    "find_functions",
 ]
 
 

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from rangekeeper.model.duration import Period
     from rangekeeper.model.flux import MissingValueHandling
     from rangekeeper.model.system.pivot import Pivot
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum, unique
 from types import MappingProxyType
 from uuid import UUID
@@ -27,7 +27,7 @@ from rangekeeper.model.system.errors import AggregationError, SelectionError
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.selection import ValueSelector, _recorded_quantity
 from rangekeeper.schema.records import Flow
-from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.units import UnitSystem
 
 
 @unique
@@ -313,6 +313,7 @@ class Reduction:
     Supply contributors to select leaves or a classification when parent values
     represent totals. Nothing infers physical population or additive semantics.
     Callbacks must be pure; all records supplied to them are immutable.
+    Without ``unit_system``, ``execute`` uses the unit system of the hierarchy's Model.
     """
 
     select: ValueSelector
@@ -320,7 +321,7 @@ class Reduction:
     units: str | None
     contributors: Contributor | Callable[[Entity], bool] | None = None
     require_complete: bool = True
-    unit_system: UnitSystem = default_units
+    unit_system: UnitSystem | None = None
     _flow: _FlowRule | None = None
 
     def __post_init__(self) -> None:
@@ -338,13 +339,17 @@ class Reduction:
             raise TypeError("contributors must be callable")
         if not isinstance(self.require_complete, bool):
             raise TypeError("require_complete must be a bool")
-        if not isinstance(self.unit_system, UnitSystem):
+        if self.unit_system is not None and not isinstance(
+            self.unit_system, UnitSystem
+        ):
             raise TypeError("unit_system must be a UnitSystem")
         if self.reducer is reducers.count:
             if self.units is not None:
                 raise TypeError("count reductions take no units")
         elif self.units is not None:
-            self.unit_system.validate_units(self.units)
+            # Without a unit system, execute checks units against the Model's.
+            if self.unit_system is not None:
+                self.unit_system.validate_units(self.units)
         elif self._flow is None:
             raise TypeError("scalar reductions require units")
 
@@ -358,6 +363,10 @@ class Reduction:
         """
         if not isinstance(hierarchy, Hierarchy):
             raise TypeError("hierarchy must be a Hierarchy")
+        if self.unit_system is None:
+            return replace(self, unit_system=hierarchy.view.model.unit_system).execute(
+                hierarchy
+            )
         if self._flow is not None:
             return self._execute_flows(hierarchy)
         raw: dict[UUID, tuple[Quantity, ...]] = {}
@@ -405,10 +414,13 @@ class Reduction:
         )
 
     def _contribution(self, model, entity, *, leaf=True) -> QuantityPopulation:
+        unit_system = (
+            model.unit_system if self.unit_system is None else self.unit_system
+        )
         if not self._eligible(entity, leaf=leaf):
-            return _collect_quantities((), self.units, self.unit_system)
+            return _collect_quantities((), self.units, unit_system)
         selected = self._selection(model, entity)
-        return _collect_quantities(((entity, selected),), self.units, self.unit_system)
+        return _collect_quantities(((entity, selected),), self.units, unit_system)
 
     @classmethod
     def flows(

@@ -47,8 +47,8 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
 | Quantity | A magnitude with units; `rk.Quantity` at the root | `quantity` | `model.measure.Quantity` |
-| Units | A unit string, such as `AUD/year` | `quantity` | — |
-| Unit system | The policy that parses, checks and converts units | `quantity` | Sometimes also called `units` |
+| Units | A unit string, such as `AUD per year` | `quantity` | — |
+| Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `quantity` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | `start_inclusive`, `end_exclusive` |
 | Span | A named half-open range of time | `duration` | — |
@@ -67,7 +67,12 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |
 | Composition | The effective investigation after included Specifications are combined | `specification` | — |
 | Case | One entry in a batch Specification, for example one market path | `specification` | — |
-| Policy | Decision rules that use only information available at each date | `specification` (declarations), `execution` (evaluation) | `specification.policy` |
+| Policy | The rules of a Specification, in order. Each rule uses only information available at its review date | `specification` (declarations), `execution` (evaluation) | `specification.policy` |
+| Rule | A declaration that decides one value during the solve: `decide(key, when=, review=, window=, otherwise=)` ([ADR-021](../decisions/021-sequential-decisions.md)) | `specification` | `Decision`, `Rule` and `Action` records |
+| Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | Policy control |
+| Review date, window | A date on which a rule tests its condition; the half-open range that contains them | `specification` | Decision date |
+| Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | — |
+| Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | — |
 | Availability | The earliest date at which a value can be observed | `specification` | — |
 | Solve | Calculate an `Outcome` without writing to a store | `execution` | Part of `Executor.execute` |
 | Execute | Solve and then publish to a store | `execution` | `Executor.execute` |
@@ -77,7 +82,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Verification | Independent check of a candidate against the original equations | `execution` | Acceptance |
 | Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | — |
 | Underdetermined | A result with free unknowns that the equations do not fix | `execution` | Feasible with a warning |
-| Report | Diagnostics, trace, settings, fingerprints and policy outcomes in a Run | `run` | — |
+| Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | Policy outcomes |
 | Diagnostic | One coded finding with structured fields | `shared` | Also `findings` and `issues` |
 | Fingerprint | A digest that identifies an implementation and its import closure | `shared` | — |
 

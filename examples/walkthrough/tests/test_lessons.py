@@ -14,7 +14,7 @@ LESSONS = Path(__file__).resolve().parents[1]
 TOOL = LESSONS.parents[1] / "tools" / "docs" / "notebooks.py"
 
 # CI runs the routine checks: fixture design data and a few market paths.
-ROUTINE = {"MPLBACKEND": "Agg", "RK_DESIGN_MODE": "fixture", "RK_PATH_COUNT": "4"}
+ROUTINE = {"RK_DESIGN_MODE": "fixture", "RK_PATH_COUNT": "4"}
 
 
 @pytest.fixture(autouse=True)

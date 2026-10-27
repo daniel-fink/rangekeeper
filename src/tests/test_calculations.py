@@ -17,7 +17,6 @@ from rangekeeper.calculations.account import (
     CurrentInterest,
     InterestTreatment,
 )
-from rangekeeper.calculations.interval import Interval
 from rangekeeper.calculations.projection import PaddingMode, ProjectionMethod
 from rangekeeper.calculations.series import (
     AggregationMethod,
@@ -310,7 +309,7 @@ def test_resample_complete_calendar_and_explicit_reduction():
     flow = Flow.from_events(
         [date(2020, 1, 1), date(2020, 1, 31), date(2020, 3, 1)],
         [10, 20, 40],
-        units="kWh",
+        units="dwelling",
     )
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
     with pytest.raises(ValueError):
@@ -328,7 +327,7 @@ def test_resample_complete_calendar_and_explicit_reduction():
     ] and result.coverage == (1, 0, 1)
     assert result.flow.total().magnitude == 70
     stocks = Flow.from_events(
-        [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="kWh"
+        [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="dwelling"
     )
     assert (
         series.resample(stocks, periods=periods[:1], method=ResamplingMethod.LAST)
@@ -374,15 +373,11 @@ def test_projection_and_partition_invariants():
     ) == (1, 2, 3, 3, 3)
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=7)
     flow = projection.distribute(
-        Quantity(magnitude=100, units="kg"),
+        Quantity(magnitude=100, units="sqm"),
         periods=periods,
         distribution=Distribution.pert(),
     )
     assert flow.total().magnitude == pytest.approx(100)
-    pieces = Interval(3, 13).subdivide((0.2, 0.3, 0.5))
-    assert sum(p.length for p in pieces) == 10 and pieces[0].right == pieces[1].left
-    with pytest.raises(ValueError):
-        Interval(0, 1).subdivide(0)
 
 
 def test_financial_independent_examples():

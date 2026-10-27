@@ -185,26 +185,22 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
     from pathlib import Path
 
     import rangekeeper
-    from rangekeeper.run.execution.implementation import (
-        _COMMON,
-        _GROUPS,
-        _RESOURCES,
-        fingerprint,
-    )
+    from rangekeeper.run.execution.implementation import _ENTRIES, fingerprint, sources
 
     source = Path(rangekeeper.__file__).parent
-    paths = {*_COMMON, *_RESOURCES, "run/execution/implementation.py"}
-    for group in _GROUPS.values():
-        paths.update(group)
-    for name in paths:
-        target = tmp_path / name
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source / name, target)
-    before = {role: fingerprint(role, package=tmp_path) for role in _GROUPS}
+    shutil.copytree(
+        source, tmp_path, dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.pyc")
+    )
+    before = {role: fingerprint(role, package=tmp_path) for role in _ENTRIES}
+    # Shared arithmetic is in the import closure of both roles.
+    assert all(
+        "model/expression/evaluation.py" in sources(role, package=tmp_path)
+        for role in _ENTRIES
+    )
     arithmetic = tmp_path / "model/expression/evaluation.py"
     text = arithmetic.read_text()
     arithmetic.write_text(text + "\n# Presentation-only comment.\n")
-    assert {role: fingerprint(role, package=tmp_path) for role in _GROUPS} == before
+    assert {role: fingerprint(role, package=tmp_path) for role in _ENTRIES} == before
     arithmetic.write_text(text + "\nIMPLEMENTATION_TEST_CHANGE = 1\n")
     assert all(
         fingerprint(role, package=tmp_path) != original

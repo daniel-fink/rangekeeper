@@ -13,9 +13,8 @@ from rangekeeper.model import Metadata, Model, Provenance, Update
 from rangekeeper.model.duration import Frequency, make_periods
 from rangekeeper.model.scenario import ReplayUnavailableError, market, replay
 from rangekeeper.model.scenario.implementation import (
-    RESOURCE_PATHS,
-    SOURCE_PATHS,
     calculation_manifest,
+    source_paths,
 )
 from rangekeeper.shared.fingerprints import manifest_digest
 
@@ -131,7 +130,11 @@ def test_replay_unavailable_does_not_prevent_current_model_reading():
         replay(historical)
 
 
-def test_manifest_uses_portable_paths_and_explicit_source_dependencies(tmp_path):
+def test_manifest_uses_portable_paths_and_imported_source_dependencies(tmp_path):
+    import shutil
+
+    import rangekeeper
+
     kernels = (
         "calculate_trend",
         "calculate_cycle",
@@ -139,58 +142,55 @@ def test_manifest_uses_portable_paths_and_explicit_source_dependencies(tmp_path)
         "accumulate_volatility",
         "calculate_shock",
     )
-    for name in SOURCE_PATHS:
-        path = tmp_path / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text('"""ignored documentation"""\ndef value():\n    return 1\n')
-    for name in RESOURCE_PATHS:
-        path = tmp_path / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("{}")
-    changed = tmp_path / "calculations/dynamics.py"
-    kernel_source = "\n\n".join(f"def {name}():\n    return 1" for name in kernels)
-    changed.write_text(kernel_source)
+    shutil.copytree(
+        Path(rangekeeper.__file__).parent,
+        tmp_path,
+        dirs_exist_ok=True,
+        ignore=shutil.ignore_patterns("*.pyc"),
+    )
     versions = [{"name": "python", "version": "fixture"}]
     original = calculation_manifest(package=tmp_path, versions=versions)
     assert all(not Path(name).is_absolute() for name in original["sources"])
+    assert set(original["sources"]) == set(source_paths(package=tmp_path))
     assert {
+        "calculations/dynamics.py",
         "schema/records.py",
         "schema/enums.py",
         "schema/validation.py",
     } <= original["sources"].keys()
-    assert "_coordinates.py" not in original["sources"]
-    assert "model/duration/period.py" not in original["sources"]
     # Record construction and typed enum decoding affect the calculated wire result.
     for name in ("schema/records.py", "schema/enums.py", "schema/validation.py"):
         source = tmp_path / name
         before_source = source.read_text()
-        source.write_text("def value():\n    return 2\n")
+        source.write_text(before_source + "\nIMPLEMENTATION_TEST_CHANGE = 1\n")
         assert calculation_manifest(package=tmp_path, versions=versions) != original
         source.write_text(before_source)
     assert manifest_digest(original) == manifest_digest(
         calculation_manifest(package=tmp_path, versions=versions)
     )
+    changed = tmp_path / "calculations/dynamics.py"
+    kernel_source = changed.read_text()
+    assert kernel_source.startswith('"""')
     changed.write_text(
-        '"""different documentation"""\n# ignored comment\n' + kernel_source
+        '# ignored comment\n"""Different documentation.' + kernel_source[3:]
     )
     assert calculation_manifest(package=tmp_path, versions=versions) == original
     for name in kernels:
+        assert f"def {name}(" in kernel_source, name
         changed.write_text(
-            kernel_source.replace(
-                f"def {name}():\n    return 1", f"def {name}():\n    return 2"
-            )
+            kernel_source.replace(f"def {name}(", f"def {name}_changed(", 1)
         )
         assert manifest_digest(
             calculation_manifest(package=tmp_path, versions=versions)
         ) != manifest_digest(original), name
     changed.write_text(kernel_source)
-    # Sampling and display files are deliberately outside calculation provenance.
+    # A module outside the import closure does not change the manifest.
     before = calculation_manifest(package=tmp_path, versions=versions)
-    (tmp_path / "model/scenario/random.py").write_text('raise RuntimeError("sampling")')
-    (tmp_path / "model/scenario/view.py").write_text('raise RuntimeError("display")')
+    assert "model/scenario/replay.py" not in before["sources"]
+    (tmp_path / "model/scenario/replay.py").write_text('raise RuntimeError("replay")')
     assert calculation_manifest(package=tmp_path, versions=versions) == before
     changed.unlink()
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises((FileNotFoundError, ModuleNotFoundError)):
         calculation_manifest(package=tmp_path, versions=versions)
 
 

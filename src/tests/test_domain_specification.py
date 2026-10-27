@@ -240,7 +240,7 @@ def test_specification_local_recorded_quantity_units_are_checked_after_compositi
         key="local",
         kind=ValueKind.MEASUREMENT,
         measure=measure.id,
-        quantity=Quantity(magnitude=1, units="kelvin"),
+        quantity=Quantity(magnitude=1, units="dwelling"),
     )
     data["formulations"] = [Formulation(id=uuid4(), values=(value,)).to_data()]
     local = Specification.from_data(data)

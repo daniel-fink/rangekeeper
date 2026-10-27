@@ -77,7 +77,7 @@ def test_day_count_boundaries_and_reversed_dates():
 @pytest.mark.parametrize("first_period", [-1, 0, 1, 3])
 def test_pv_keeps_records_and_non_currency_units(first_period):
     source = Flow(
-        units="kg",
+        units="sqm",
         movements=(
             Movement(
                 id=uuid4(),
@@ -91,7 +91,7 @@ def test_pv_keeps_records_and_non_currency_units(first_period):
     )
     before = source.to_data()
     result = calculate_pv(source, rate=0.1, first_period=first_period)
-    assert source.to_data() == before and result.units == "kg"
+    assert source.to_data() == before and result.units == "sqm"
     for i, (original, discounted) in enumerate(
         zip(source.movements, result.movements, strict=True)
     ):
@@ -190,3 +190,41 @@ def test_unresolved_content_is_not_financial_input():
     ):
         with pytest.raises(ValueError, match="unresolved/nonfinite movement"):
             operation()
+
+
+@pytest.mark.parametrize(
+    "valuation_date",
+    [date(1800, 1, 1), date(2020, 1, 1), date(2100, 1, 1), date(2400, 1, 1)],
+)
+def test_distant_valuation_date_does_not_reject_a_valid_root(valuation_date):
+    dates = [date(2020, 1, 1), date(2021, 1, 1), date(2022, 1, 1), date(2023, 6, 1)]
+    flow = Flow.from_events(dates, [-1e6, 3e5, 4e5, 7.7e5], units="AUD")
+    anchored = calculate_irr(flow)
+    result = calculate_irr(flow, valuation_date=valuation_date)
+    assert result.rate == anchored.rate
+    # The reported residual moves to valuation_date; the accepted root does not.
+    expected = calculate_xnpv(flow, rate=anchored.rate, valuation_date=valuation_date)
+    assert result.residual.magnitude == expected.magnitude
+
+
+@pytest.mark.parametrize("valuation_date", [None, date(2400, 1, 1)])
+def test_distant_valuation_keeps_root_selection_and_no_root_errors(valuation_date):
+    dates = [date(2021, 1, 1), date(2022, 1, 1), date(2023, 1, 1)]
+    flow = Flow.from_events(dates, [-100, 230, -132], units="AUD")
+    for guess, rate in ((0.05, 0.1), (0.3, 0.2)):
+        result = calculate_irr(flow, guess=guess, valuation_date=valuation_date)
+        assert result.rate == pytest.approx(rate)
+    no_root = Flow.from_events(dates, [-100, 200, -150], units="AUD")
+    with pytest.raises(ValueError, match="finite result"):
+        calculate_irr(no_root, valuation_date=valuation_date)
+
+
+def test_distant_valuation_still_rejects_an_inaccurate_root(monkeypatch):
+    import pyxirr
+
+    flow = Flow.from_events(
+        [date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units="AUD"
+    )
+    monkeypatch.setattr(pyxirr, "xirr", lambda *args, **kwargs: 0.1 + 1e-6)
+    with pytest.raises(ValueError, match="acceptance tolerance"):
+        calculate_irr(flow, valuation_date=date(1800, 1, 1))

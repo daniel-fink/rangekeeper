@@ -6,9 +6,9 @@ record fresh results for the checkout under review.
 
 Developers and agents run these checks explicitly before delivering a change.
 The [CI workflow](README.md#continuous-integration) runs the lint, type,
-changelog, generated-file, documentation, test, extra and wheel checks on pull
-requests. It does not build the .NET example, execute notebooks or build the
-book; run those procedures locally. Follow
+changelog, generated-file, .NET, documentation, walkthrough, test, extra and
+wheel checks on pull requests. It does not build the Grasshopper components or
+the docs site; run those procedures locally. Follow
 [the verification decision](../decisions/004-package-and-project-ownership.md#verification-ownership)
 and record the actual environment: local acceptance does not establish Linux,
 Windows or service acceptance on a different host.
@@ -22,7 +22,7 @@ the repository root:
 uv run --locked ruff check .
 uv run --locked ruff format --check .
 uv run --locked mypy
-MPLBACKEND=Agg uv run --locked pytest -q
+uv run --locked pytest -q
 ```
 
 To check an installed wheel with no extra or with one extra, install it in a
@@ -32,11 +32,10 @@ separate environment and run, outside the checkout's `src` folder:
 python tools/ci/check_extra.py core
 ```
 
-Replace `core` with `bundle`, `calculations`, `execution`, `visualisation` or `yaml`.
+Replace `core` with `bundle`, `calculations`, `execution` or `yaml`.
 
 Record optional dependency skips separately from passed checks. Mathematical
-execution uses the Pyomo/HiGHS backend; Run evidence records the installed versions. Local tests do not close the
-[Windows gate](windows-acceptance.md).
+execution uses the Pyomo/HiGHS backend; Run evidence records the installed versions.
 
 Do not edit package source while a workflow verification run is active.
 Implementation fingerprints read the source; a concurrent edit can change the
@@ -93,15 +92,14 @@ projects and build caches have not entered the Python runtime package.
 ## Local display and native projects
 
 For changes to the notebook Geometry viewer, follow the
-[viewer build procedure](../../tools/geometry/README.md). Inspect the generated
-assets and their manifest; `python tools/geometry/check_manifest.py` compares
+[viewer build procedure](../../examples/walkthrough/viewer/README.md). Inspect the generated
+assets and their manifest; `python examples/walkthrough/viewer/check_manifest.py` compares
 the packaged assets and the viewer sources with the manifest hashes. Browser smoke checks need a local browser runtime;
 geometry tests alone do not establish rendered interaction.
 
-Follow [Grasshopper](../guides/grasshopper.md#build-and-round-trip) for .NET builds
-and Python/C# fixture round trips. Follow [Windows acceptance](windows-acceptance.md)
-for Rhino loading and the official connector's publication/receive gate. A portable
-build or offline JSON pass cannot substitute for actual host acceptance.
+Follow the [Grasshopper example](../../examples/grasshopper/README.md#build-and-round-trip)
+for .NET builds and Python/C# fixture round trips; the `dotnet` CI job runs both.
+A portable build or offline JSON pass is not a Rhino host check.
 
 ## Examples and documentation
 

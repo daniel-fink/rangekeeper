@@ -21,7 +21,8 @@ the sections and the Status line; the Status column below uses the same words.
 
 ## Accepted for 1.0
 
-These records were accepted on 2026-10-26. Their implementation is pending. The
+ADR-010 to ADR-020 were accepted on 2026-10-26, and ADR-023 on 2026-10-27.
+Their implementation is pending. The
 [Rangekeeper project](https://github.com/users/daniel-fink/projects/8) tracks the
 implementation as epics with sub-issues, milestones 0.8.72 to 1.0.0 and
 blocked-by links. The
@@ -30,7 +31,7 @@ blocked-by links. The
 
 | Decision | Status | Scope |
 | --- | --- | --- |
-| [ADR-010: Layers, packages and public namespaces](010-layers-and-packages.md) | Accepted for 1.0; implementation pending | Library boundary, layer order, ownership rules, public namespaces and the move map |
+| [ADR-010: Layers, packages and public namespaces](010-layers-and-packages.md) | Accepted for 1.0; library boundary implemented, layers pending | Library boundary, layer order, ownership rules, public namespaces and the move map |
 | [ADR-011: Records, behaviour and validation](011-records-and-validation.md) | Accepted for 1.0; implementation pending | Data-only generated records, owner subclasses, document facades, generated runtime and validation tiers |
 | [ADR-012: Naming convention, glossary and rename pass](012-naming-and-glossary.md) | Accepted for 1.0; implementation pending | Naming rules, agreed renames, initial rename map and the single 1.0.0a2 codemod pass |
 | [ADR-013: Execution pipeline and extension points](013-execution-and-extensions.md) | Accepted for 1.0; implementation pending | Pure `solve`, `execute`, `Outcome`, backend contract, worker, registry pattern and fingerprints |
@@ -41,6 +42,7 @@ blocked-by links. The
 | [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted for 1.0; implementation pending | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
 | [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, proposed cells first, helpers, CI execution and sources |
 | [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; proposed cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
+| [ADR-023: Decimal currency amounts](023-decimal-money.md) | Accepted for 1.0; implementation pending | Currency amounts as Decimal, float64 calculation boundaries, JSON, YAML and Parquet encodings, solver evidence and tolerances, and minor-unit rounding; the design of ADR-017's Money section |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
@@ -53,6 +55,17 @@ current. ADR-006's [notebook 02 outline](../history/plans/006-notebook-02-outlin
 and [notebook 03 outline](../history/plans/006-notebook-03-outline.md) are archived
 as source material. Notebooks 02 and 03 were authored and locally reviewed on the
 interim API; all lessons are rebuilt for 1.x.
+
+## Executor designs for lessons 05 and 07
+
+These records design the executor features that walkthrough lessons 05 and 07
+need ([ADR-019](019-walkthrough-direction.md)). They were accepted on 2026-10-27.
+#215 and #216 implement them.
+
+| Decision | Status | Scope |
+| --- | --- | --- |
+| [ADR-021: Decide values by rules over market paths](021-sequential-decisions.md) | Accepted for 1.0; implementation pending | Rules that decide one value, observations and availability, evaluation order, staged solves for each path, decision traces, replay and paired comparison; amends ADR-013 and ADR-014 |
+| [ADR-022: Choose between design alternatives with rules](022-design-alternatives.md) | Accepted for 1.0; implementation pending | Alternatives as Model revisions, choice keys, realised structure for each path, strategy comparison and the premium question; amends ADR-001 |
 
 ## Implementation history
 
@@ -68,8 +81,9 @@ interim API; all lessons are rebuilt for 1.x.
 ## Work that remains explicit
 
 - The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). [Walkthrough plan v2](020-walkthrough-plan-v2.md) replaces the earlier curriculum with seven lessons. It owns the teaching sequence, preparation decisions and capability dependencies. All lessons need proposed cells, authoring and CI execution on the 1.x API.
-- [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
-  open. The [retirement guide](../contributing/legacy-retirement.md) records removed
+- The [Windows/Rhino/connector gate](../history/windows-acceptance.md) is retired:
+  the envelope is a walkthrough helper and the Grasshopper solution is an
+  unsupported example ([ADR-010](010-layers-and-packages.md)). The [retirement guide](../contributing/legacy-retirement.md) records removed
   APIs; their removal does not establish platform support.
 - [Verification](../contributing/verification.md) is run explicitly by developers
   and agents. The [Tests workflow](../contributing/README.md#continuous-integration)

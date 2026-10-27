@@ -1,9 +1,9 @@
 {
   "artifacts": {
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "records.py": "1534a3b3d2e5bb3b2e07026e77069a44ac25540c6406742cc46034dd22388f5c",
-    "schema.json": "0556785eeb9feb50dec695034ac40240ad925cd9747a2b76875c42a3e3b8f53f",
-    "slots.json": "3498c18d14eb13d24a2f0bbac667605096b7af1b41edcc14846602096d75b308"
+    "records.py": "8701b7cee3609f836745204dd7b2950c6b599394835b607222715e0d4f4a6f3a",
+    "schema.json": "12edbdacdc4901f3826493d3b5b0837fb89d00dcc29de9c109bcc32a4cc5a647",
+    "slots.json": "3703a25d7ec86f520daa43c276925cf62a9bdcee434030b4d02096e48a105f30"
   },
   "classes": [
     "Action",
@@ -44,7 +44,6 @@
     "LibraryVersion",
     "Location",
     "Measure",
-    "Measurement",
     "Metadata",
     "Method",
     "Model",
@@ -116,10 +115,10 @@
     "schema/formulation.yaml": "c5a2cc0adbbdb20c673635ce9d220f1799b46e9b59c1b859dd525856b28c0cd0",
     "schema/function.yaml": "334bf0ff3faac228a0e7a7739980373e5503c8f9662a40492889c57b358437aa",
     "schema/geometry.yaml": "45f117ca4977f1657980102e9717c9f089524d56123753c000df86478ef84630",
-    "schema/measure.yaml": "6f438b7731824cbbc7115a2225af442c162692b32b6b897302fd4beb2e80c996",
+    "schema/measure.yaml": "23eb3cb8895510f60199721312b7e36bee4de7793bc7f7bce9f6f37c05f4204f",
     "schema/model.yaml": "2fb942afeb05ac6146e097b37e29b0d345d90104aced257b6738bbd8c04075d8",
     "schema/policy.yaml": "70c6b88ba25174ab3a077e9d4d61b3512d24121d5e3eb366b46d4e2ee156ff30",
-    "schema/provenance.yaml": "c15a16cf5c5c90725efb9590adf086ec26532ff56f1ddf7989560c138fa75a67",
+    "schema/provenance.yaml": "0f74de0535bdb7f9bac7c7d2b017a4b817b8c112d6a92171e94c8c44322e8bd5",
     "schema/query.yaml": "d63026f3082110e141872a7fcb628388faf3fff0dc47b42c55522a91b4944747",
     "schema/reference.yaml": "961d3e1f5e35302aef45f732c08c6ea2471b4b17196ae125ff0bbeb334a71153",
     "schema/relationship.yaml": "da2c4f2389b72bdc7bfb5bf6bf5d6f3f31b790b567de50481f307963a825e406",

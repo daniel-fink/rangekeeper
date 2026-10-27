@@ -4,7 +4,6 @@ prune .github
 prune docs
 prune examples
 prune schema
-prune src/grasshopper
 prune src/tests
 prune tools
 prune walkthrough

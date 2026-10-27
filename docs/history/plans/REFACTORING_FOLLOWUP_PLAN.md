@@ -5,7 +5,7 @@ Archived on 2026-10-08. Implementation and local acceptance were recorded at
 below. Current contracts are linked from the [documentation index](../../README.md)
 and [decision index](../../decisions/README.md).
 
-Carried-forward work: [Windows/Rhino/connector acceptance](../../contributing/windows-acceptance.md),
+Carried-forward work: [Windows/Rhino/connector acceptance](../windows-acceptance.md),
 [legacy retirement](../../contributing/legacy-retirement.md), and any unrun remote
 checks under [verification](../../contributing/verification.md). Archiving this
 implemented plan does not close those gates.

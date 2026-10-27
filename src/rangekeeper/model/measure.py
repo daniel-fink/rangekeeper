@@ -4,10 +4,7 @@ from rangekeeper.schema.records import (
     Measure as Measure,
 )
 from rangekeeper.schema.records import (
-    Measurement as Measurement,
-)
-from rangekeeper.schema.records import (
     Quantity as Quantity,
 )
 
-__all__ = ["Measure", "Quantity", "Measurement"]
+__all__ = ["Measure", "Quantity"]

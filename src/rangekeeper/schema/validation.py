@@ -18,7 +18,7 @@ from rangekeeper.shared.diagnostics import Issue, ValidationReport
 def _artifacts():
     root = files(__package__)
     return tuple(
-        json.loads(root.joinpath(name).read_text())
+        json.loads(root.joinpath(name).read_text(encoding="utf-8"))
         for name in ("schema.json", "slots.json", "manifest.json")
     )
 

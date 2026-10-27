@@ -154,7 +154,7 @@ establish macOS, Windows, Rhino or service acceptance.
 - [Architecture and import map](../concepts/architecture.md).
 - [RF-034 package structure](../history/plans/REFACTORING_FOLLOWUP_PLAN.md#rf-034-agreed-module-hierarchy-and-import-migration).
 - [Repository and documentation implementation](../history/plans/DOCUMENTATION_PLAN.md).
-- [Grasshopper build](../guides/grasshopper.md) and [Windows acceptance](../contributing/windows-acceptance.md).
+- [Grasshopper build](../../examples/grasshopper/README.md) and [Windows acceptance](../history/windows-acceptance.md).
 - [Documentation upkeep](../contributing/documentation.md).
 
 Supersedes: the temporary repository-level Grasshopper placement and the
