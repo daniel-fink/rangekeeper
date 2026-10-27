@@ -76,7 +76,7 @@ def test_replacement_checks_types_and_copies_mutable_content():
 
 
 def test_decoded_records_keep_methods_and_schema_inheritance():
-    period = r.Period(start_inclusive=DAY, end_exclusive=date(2026, 2, 1))
+    period = r.Period(start=DAY, end=date(2026, 2, 1))
     flow = r.Flow.from_periods([period], [2], units="m")
     value = r.Value(
         id=uuid4(), key="area", kind=ValueKind.FLOW, measure=uuid4(), flow=flow
@@ -90,8 +90,8 @@ def test_decoded_records_keep_methods_and_schema_inheritance():
     assert decoded.movements[0].resolve(timing=PeriodTiming.LAST) == date(2026, 1, 31)
     assert decoded.movements[0].replace(magnitude=3).number == 3.0
     span = r.Span(
-        start_inclusive=period.start_inclusive,
-        end_exclusive=period.end_exclusive,
+        start=period.start,
+        end=period.end,
         name="January",
     )
     assert isinstance(span, r.Period)
@@ -197,7 +197,7 @@ def test_model_builds_one_index_and_reuses_it_for_validation(monkeypatch):
         return build(record)
 
     monkeypatch.setattr(RecordIndex, "build", counted)
-    model = Model.create(metadata=r.Metadata(id=uuid4(), schema_version="0.7.0"))
+    model = Model.create(metadata=r.Metadata(id=uuid4(), schema_version="1.0.0"))
     assert len(calls) == 1
     validate(model).raise_if_invalid()
     assert len(calls) == 1

@@ -1,6 +1,6 @@
 metadata:
   id: d4a6ba9f-d79b-5e7d-8df6-8694f8176527
-  schema_version: 0.4.0
+  schema_version: 1.0.0
   name: Synthetic batch Run
   description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
     this record; historical Runs are unchanged.

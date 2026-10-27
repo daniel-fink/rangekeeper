@@ -33,8 +33,8 @@ class SpanBehavior:
         factory = cast("type[Span]", cls)
         span = factory(
             name=name,
-            start_inclusive=start,
-            end_exclusive=offset(
+            start=start,
+            end=offset(
                 start,
                 frequency=frequency,
                 count=count,
@@ -58,8 +58,8 @@ class SpanBehavior:
         span = cast("Span", self)
         span.check()
         return periods_between(
-            span.start_inclusive,
-            span.end_exclusive,
+            span.start,
+            span.end,
             frequency=frequency,
             include_partial=include_partial,
             month_roll=MonthRoll.PRESERVE_END if month_roll is None else month_roll,

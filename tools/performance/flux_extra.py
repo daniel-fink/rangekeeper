@@ -60,7 +60,7 @@ def hierarchy_case(legacy):
         id=uuid4(), name="Portfolio", entities=tuple(b.id for b in buildings)
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=entities, assemblies=(*buildings, root)),
     )

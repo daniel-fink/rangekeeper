@@ -1,6 +1,6 @@
 metadata:
   id: e4950588-d622-57ea-92b9-2d40dbbbb8ee
-  schema_version: 0.7.0
+  schema_version: 1.0.0
   name: Bounded valuation
   description: Maximize capital value with a rent ceiling imposed only by this Specification.
     The input Model remains unchanged. No solver has been run.

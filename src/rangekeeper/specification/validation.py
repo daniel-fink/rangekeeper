@@ -20,7 +20,7 @@ from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.runtime import Record
-from rangekeeper.schema.validation import document_version
+from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -205,7 +205,7 @@ def _validate_concrete(
         check_model(model, model_schema_version)
     metadata = specification["metadata"]
     require(
-        metadata["schema_version"] == schema_version,
+        supports_version(metadata["schema_version"], schema_version),
         "unsupported Specification schema version",
     )
     require(

@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/definitions
 name: rangekeeper_definitions
 title: Rangekeeper Definitions
-version: 0.2.0
+version: 1.0.0
 description: Scoped catalogues of reusable Taxonomies, Measures, and Functions.
 prefixes:
   linkml: https://w3id.org/linkml/

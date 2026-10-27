@@ -1,7 +1,7 @@
 {
   "metadata": {
     "id": "bce1e752-588a-4c52-a22a-43d4f87cfc9b",
-    "schema_version": "0.7.0"
+    "schema_version": "1.0.0"
   },
   "definitions": {
     "taxonomies": [

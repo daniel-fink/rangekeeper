@@ -61,7 +61,7 @@ def fixture_model():
 def specification(**fields):
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"), **fields
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"), **fields
         )
     )
 
@@ -75,7 +75,7 @@ def test_batch_preparation_exports_and_resolves_each_revision_once(
 
     from rangekeeper.execution.planning import Plan
 
-    model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
+    model = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     common = specification(model=model.id)
     leaves = tuple(specification(includes=(common.id,)) for _ in range(leaf_count))
     root = specification(cases=tuple(leaf.id for leaf in leaves))
@@ -129,7 +129,7 @@ def test_assembly_lookup_is_typed_and_preserves_entity_lookup():
 
     ordinary, assembly = Entity(id=uuid4()), Assembly(id=uuid4())
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(entities=(ordinary,), assemblies=(assembly,)),
     )
     assert model.assembly(assembly.id) == model.entity(assembly.id)
@@ -239,7 +239,7 @@ def test_query_domain_acceptance_at_actual_consumer_boundaries(kinds, consumer):
     if consumer == "predicate":
         formulation["constraints"] = [dict(id=str(uuid4()), predicate=expression["id"])]
     data = dict(
-        metadata=dict(id=str(uuid4()), schema_version="0.7.0"),
+        metadata=dict(id=str(uuid4()), schema_version="1.0.0"),
         definitions=dict(
             measures=[dict(id=measure, code="area", name="Area", units="m^2")],
             functions=[
@@ -348,7 +348,7 @@ def test_existing_composition_is_not_recomposed_and_keeps_the_exact_model(monkey
 
 
 def test_composed_constraint_failure_reports_original_document_and_path():
-    model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
+    model = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     expression = Expression(
         id=uuid4(),
         kind=ExpressionKind.QUANTITY,
@@ -439,9 +439,9 @@ def test_model_raw_preparation_checks_structure_once_and_preserves_history_error
         return original(kind, value)
 
     monkeypatch.setattr(structure, "_validate_json", counted)
-    assert validate(dict(metadata=dict(id=str(uuid4()), schema_version="0.7.0"))).valid
+    assert validate(dict(metadata=dict(id=str(uuid4()), schema_version="1.0.0"))).valid
     assert calls.count("Model") == 1
-    report = validate({"metadata": {}}, history=[{"schema_version": "0.7.0"}])
+    report = validate({"metadata": {}}, history=[{"schema_version": "1.0.0"}])
     assert any(issue.path.startswith("/history/0") for issue in report.issues)
 
 
@@ -458,7 +458,7 @@ def test_preparation_rechecks_model_units_under_a_different_caller_context():
         quantity=Quantity(magnitude=2, units="USD"),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(currency,)),
         system=System(formulations=(Formulation(id=uuid4(), values=(value,)),)),
     )
@@ -518,7 +518,7 @@ def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
     reference = dict(target=control)
     amount = dict(magnitude=1, units="m")
     data = dict(
-        metadata=dict(id=str(uuid4()), schema_version="0.7.0"),
+        metadata=dict(id=str(uuid4()), schema_version="1.0.0"),
         definitions=dict(
             measures=[dict(id=measure, code="length", name="Length", units="m")]
         ),
@@ -602,7 +602,7 @@ def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
     for document in (model, spec):
         store.put(document)
     raw = dict(
-        metadata=dict(id=str(uuid4()), schema_version="0.4.0"),
+        metadata=dict(id=str(uuid4()), schema_version="1.0.0"),
         specification=str(spec.id),
         report=dict(
             status=dict(
@@ -619,7 +619,7 @@ def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
     if published:
         output = deepcopy(data)
         output["metadata"] = dict(
-            id=str(uuid4()), previous=str(model.id), schema_version="0.7.0"
+            id=str(uuid4()), previous=str(model.id), schema_version="1.0.0"
         )
         output["system"]["formulations"][0]["values"][1]["quantity"] = amount
         output_model = Model.from_data(output)

@@ -131,7 +131,7 @@ def author(
     base = (
         scenario.model
         if scenario
-        else Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
+        else Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     )
     if scenario and tuple(scenario.realization.plan.periods) != periods:
         raise ValueError("scenario periods must match the complete investment horizon")
@@ -403,7 +403,7 @@ def specify(
     )
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(assignments),
             unknowns=unknowns,
@@ -449,7 +449,7 @@ def report(model: Model) -> InvestmentReport:
     sale_date = sale[0].resolve()
     first_period = _flow(v["total"]).movements[0].period
     assert first_period is not None
-    first = first_period.start_inclusive
+    first = first_period.start
     from datetime import timedelta
 
     purchase = Movement(
@@ -604,7 +604,7 @@ def horizon_returns(model: Model) -> Flow:
     v = values(model)
     first_period = _flow(v["total"]).movements[0].period
     assert first_period is not None
-    first = first_period.start_inclusive
+    first = first_period.start
     purchase = Movement(
         id=uuid4(),
         key="acquisition",

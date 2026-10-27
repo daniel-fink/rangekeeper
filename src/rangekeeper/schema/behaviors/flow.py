@@ -49,8 +49,8 @@ class MovementBehavior:
         if movement.period is not None:
             return (
                 "period",
-                movement.period.start_inclusive.isoformat(),
-                movement.period.end_exclusive.isoformat(),
+                movement.period.start.isoformat(),
+                movement.period.end.isoformat(),
                 None if movement.date is None else movement.date.isoformat(),
             )
         if movement.date is None:
@@ -155,12 +155,9 @@ class FlowBehavior:
             mode = period_mode
             if movement.period is not None:
                 movement.period.check()
-                if (
-                    previous_end is not None
-                    and movement.period.start_inclusive < previous_end
-                ):
+                if previous_end is not None and movement.period.start < previous_end:
                     raise ValueError("Flow periods overlap or are out of order")
-                previous_end = movement.period.end_exclusive
+                previous_end = movement.period.end
             else:
                 assert movement.date is not None
                 if previous is not None and movement.date < previous:
@@ -380,9 +377,9 @@ class FlowBehavior:
                     selected.append(movement)
             else:
                 period = movement.period
-                if period.end_exclusive <= start or period.start_inclusive >= end:
+                if period.end <= start or period.start >= end:
                     continue
-                if period.start_inclusive < start or period.end_exclusive > end:
+                if period.start < start or period.end > end:
                     raise ValueError(
                         "trim crosses a movement period; allocate explicitly"
                     )
@@ -481,7 +478,7 @@ class FlowBehavior:
             return None
         first, last = selected[0], selected[-1]
         if first.period is not None and last.period is not None:
-            return first.period.start_inclusive, last.period.end_exclusive
+            return first.period.start, last.period.end
         return first.resolve(), last.resolve()
 
     def trim_empty(self) -> Flow:

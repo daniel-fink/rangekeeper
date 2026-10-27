@@ -21,7 +21,7 @@ from rangekeeper.schema.records import (
     Model as ModelRecord,
 )
 from rangekeeper.schema.runtime import Record
-from rangekeeper.schema.validation import document_version
+from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import UnitError
 from rangekeeper.shared.validation import (
@@ -152,12 +152,8 @@ def check_model(model, schema_version, history=(), *, index=None):
     """Check Model domains and optional revision history without reconstruction."""
     metadata = model["metadata"]
     require(
-        metadata["schema_version"] in ("0.7.0", schema_version),
+        supports_version(metadata["schema_version"], schema_version),
         "unsupported schema version",
-    )
-    require(
-        metadata["schema_version"] != "0.7.0" or "geometry" not in model,
-        "Geometry requires Model schema 0.8.0",
     )
     from rangekeeper.model.geometry import check_geometry
 

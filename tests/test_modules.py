@@ -70,8 +70,8 @@ def test_month_end_is_explicit_and_period_end_is_exclusive():
         month_roll=MonthRoll.PRESERVE_END,
     ) == date(2020, 5, 31)
     period = make_period(date(2020, 2, 1), date(2020, 3, 1))
-    assert period.end_exclusive - timedelta(days=1) == date(2020, 2, 29)
-    assert elapsed_days(period.start_inclusive, period.end_exclusive) == 29
+    assert period.end - timedelta(days=1) == date(2020, 2, 29)
+    assert elapsed_days(period.start, period.end) == 29
 
 
 def test_flow_construction_detachment_and_negation():
@@ -160,7 +160,7 @@ def test_stream_selection_and_mixed_frequency_totals():
     )
     owner = Entity(id=uuid4(), characteristics=Characteristics(values=values))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(owner,)),
     )
@@ -242,7 +242,7 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
     )
     parent = Assembly(id=uuid4(), name="Podium", entities=tuple(c.id for c in children))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(entities=children, assemblies=(parent,)),
     )
     assert (
@@ -273,7 +273,7 @@ def test_type_ancestry_uses_canonical_classification_references():
         classifications=(grandparent, parent, child, *leaves),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(taxonomies=(taxonomy,)),
     )
     records = {c.id: c for c in model.definitions.taxonomies[0].classifications}

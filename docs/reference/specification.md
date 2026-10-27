@@ -40,11 +40,11 @@ from rangekeeper.specification import Specification, SpecificationRecord
 from rangekeeper.model.expression import Reference
 
 shared = Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+    metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
     model=model.id, unknowns=(Reference(target=gross.id),),
 ))
 investigation = Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.7.0"), includes=(shared.id,),
+    metadata=Metadata(id=uuid4(), schema_version="1.0.0"), includes=(shared.id,),
 ))
 
 class Inputs:

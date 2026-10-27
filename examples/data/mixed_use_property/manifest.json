@@ -9,11 +9,11 @@
       "sha256": "8b0e9c0f2914d9dc54d077cdfac3114d73b68b685d9e5cad20fc400540804411"
     },
     "assumptions.json": {
-      "bytes": 3096,
+      "bytes": 3056,
       "description": "Legacy teaching assumptions for the property. origins.json gives the origin of each value.",
       "licence": "CC-BY-4.0",
       "origin": "teaching-assumptions",
-      "sha256": "d8c5d38345baab913e07e1c46b445e026e8d7c2f9a618749b1d034c82a65a879"
+      "sha256": "23ad7fc529db239453b4e432e0b8e8d77f9c03a57a60c49049d21f1105f651bc"
     },
     "audit.json": {
       "bytes": 8060,
@@ -48,7 +48,7 @@
       "description": "The canonical Rangekeeper Model converted from transport.json.gz with mapping.json. It keeps the source content IDs.",
       "licence": "CC-BY-4.0",
       "origin": "derived",
-      "sha256": "a59ac9522d2c16aede7cdc1a77c0a7efe34ec978f5b307e29d87100ba954f200"
+      "sha256": "d1caf8d8aced2c5e22c9895e76c15ef2a0c377a80c197a6f35d05059367a3fab"
     },
     "origins.json": {
       "bytes": 8852,

@@ -43,7 +43,7 @@ def example(flow=None):
     )
     owner = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(owner,)),
     )
@@ -205,7 +205,7 @@ def test_diagnostic_participants_require_one_valid_input_scope(kind):
     data = load("run-batch" if kind == "batch" else "run-failed")
     if kind == "missing_input":
         spec = Specification.from_data(
-            {"metadata": {"id": str(uuid4()), "schema_version": "0.7.0"}}
+            {"metadata": {"id": str(uuid4()), "schema_version": "1.0.0"}}
         )
         store.put(spec)
         data["specification"] = str(spec.id)
@@ -230,7 +230,7 @@ def test_constraint_subject_and_participant_scope_are_separate():
     expression, constraint, local = uuid4(), uuid4(), uuid4()
     spec = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "model": str(model.id),
             "formulations": [
                 {

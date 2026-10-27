@@ -7,7 +7,7 @@ remain separate from the implemented canonical reader and writer.
 
 ## Canonical Geometry
 
-Model schema `0.8.0` adds optional `Geometry`. Specification remains `0.7.0` and Run remains `0.4.0`.
+The Model, Specification and Run formats are `1.0.0` ([ADR-017](../decisions/017-api-and-formats.md)). A Model has an optional `Geometry`.
 The authority is [geometry.yaml](../../schema/geometry.yaml), imported by
 [model.yaml](../../schema/model.yaml). Python/C#/JSON Schema and slot metadata are
 generated from that authority. Geometry contains one exact pin and zero or more
@@ -23,11 +23,9 @@ ambiguous identities, structural groups, representations and required assets.
 RK contains no Speckle SDK or provider catalogue. Other providers require an
 explicit, independently tested adapter.
 
-Reading an existing Model with schema 0.7.0 preserves it. Such a Model cannot
-contain Geometry. `rangekeeper.io.migration.model_07_to_08(model, id=...)` explicitly
-creates a new Model UUID, retains `previous`, and changes the schema version. It
-does not modify the old artifact. Changing Geometry, mappings or canonical content
-requires a new Model. DirectoryStore rejects changed content under an existing UUID.
+Changing Geometry, mappings or canonical content requires a new Model.
+DirectoryStore rejects changed content under an existing UUID. The reader does not
+read 0.x documents; see [upgrading](../guides/upgrading.md).
 
 ## Investigation contents and dependency closure
 

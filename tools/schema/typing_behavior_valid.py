@@ -21,6 +21,4 @@ if value.flow is not None:
 result: FlowAggregate = align([flow, flow]).reduce(method=AggregationMethod.MAX)
 probabilities: tuple[float, ...] = Distribution.pert().cdf([0.0, 1.0])
 assembly: Assembly = Assembly(id=uuid4()).replace(name="Group")
-span: Span = Span(
-    start_inclusive=date(2026, 1, 1), end_exclusive=date(2027, 1, 1)
-).replace(name="Year")
+span: Span = Span(start=date(2026, 1, 1), end=date(2027, 1, 1)).replace(name="Year")

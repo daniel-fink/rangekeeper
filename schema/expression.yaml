@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/expression
 name: rangekeeper_expression
 title: Rangekeeper Expressions
-version: 0.6.0
+version: 1.0.0
 description: Symbolic expressions composing literals, Value references, operators, function calls, selections, and
   graph queries.
 prefixes:

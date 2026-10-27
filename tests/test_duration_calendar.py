@@ -175,19 +175,19 @@ def test_derived_period_dates_do_not_become_stored_fields():
     p = make_period(date(2024, 2, 29), date(2024, 3, 1))
     assert p.first == p.last == date(2024, 2, 29)
     assert p.end == date(2024, 3, 1)
-    assert set(p.to_data()) == {"start_inclusive", "end_exclusive"}
-    with pytest.raises(KeyError):
-        p.has_field("end")
+    assert set(p.to_data()) == {"start", "end"}
+    for derived in ("first", "last"):
+        with pytest.raises(KeyError):
+            p.has_field(derived)
     assert Period.from_data(p.to_data()) == p
-    assert (
-        Span(start_inclusive=p.first, end_exclusive=p.end, name="leap").last == p.last
-    )
+    assert Span(start=p.first, end=p.end, name="leap").last == p.last
     flow = Flow.from_periods([p], [None], units="m", dates=[date(2024, 3, 5)])
     assert flow.movements[0].resolve(timing=PeriodTiming.FIRST) == date(2024, 3, 5)
     with pytest.raises(TypeError):
         flow.movements[0].resolve(timing="first")
     with pytest.raises(TypeError):
-        p.replace(end=date(2024, 3, 2))
+        p.replace(last=date(2024, 3, 2))
+    assert p.replace(end=date(2024, 3, 2)).last == date(2024, 3, 1)
 
 
 @pytest.mark.parametrize(

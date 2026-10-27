@@ -92,7 +92,7 @@ def unit_model():
         entity("u6", None, 100000),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(
             measures=(measure,),
             taxonomies=(
@@ -229,7 +229,7 @@ def test_deep_taxonomy_descendants_do_not_use_the_call_stack():
     leaf = Entity(id=uuid4(), code="leaf", classification=chain[f"c{depth - 1}"].id)
     other = Entity(id=uuid4(), code="other", classification=chain["c0"].id)
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(
             taxonomies=(
                 Taxonomy(

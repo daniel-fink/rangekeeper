@@ -58,7 +58,7 @@ def oracle():
             )
         )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(
             measures=(
                 Measure(id=money, code="money", name="Money", units="AUD"),
@@ -105,7 +105,7 @@ def investigate(model, ids, *, inverse=False):
     unknown = "initial" if inverse else "pv"
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=(
                 Assignment(
@@ -175,7 +175,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
             unknown_flow(model, ids["cash"], ids=selected)
     specification = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=(
                 Assignment(
@@ -250,9 +250,7 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
         Movement(
             id=uuid4(),
             key="inserted",
-            period=Period(
-                start_inclusive=date(2026, 1, 1), end_exclusive=date(2027, 1, 1)
-            ),
+            period=Period(start=date(2026, 1, 1), end=date(2027, 1, 1)),
         ).to_data(),
     )
     changed = model.revise(Update(system=System.from_data(data)))
@@ -482,7 +480,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
     )
     spec = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(assigned),
             unknowns=tuple(

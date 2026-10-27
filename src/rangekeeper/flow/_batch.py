@@ -36,8 +36,8 @@ class Derived:
             return self.template.coordinate
         return (
             "period",
-            self.template.start_inclusive.isoformat(),
-            self.template.end_exclusive.isoformat(),
+            self.template.start.isoformat(),
+            self.template.end.isoformat(),
             None,
         )
 
@@ -199,10 +199,10 @@ class Batch:
             start = date.fromisoformat(c[1])
             end = date.fromisoformat(c[2]) if c[0] == "period" else None
             if end is None:
-                if span.start_inclusive <= start < span.end_exclusive:
+                if span.start <= start < span.end:
                     keep.append(i)
-            elif end > span.start_inclusive and start < span.end_exclusive:
-                if start < span.start_inclusive or end > span.end_exclusive:
+            elif end > span.start and start < span.end:
+                if start < span.start or end > span.end:
                     raise ValueError(
                         "trim crosses a movement period; allocate explicitly"
                     )
@@ -559,8 +559,8 @@ class Batch:
             tuple(
                 (
                     "period",
-                    p.start_inclusive.isoformat(),
-                    p.end_exclusive.isoformat(),
+                    p.start.isoformat(),
+                    p.end.isoformat(),
                     None,
                 )
                 for p in periods

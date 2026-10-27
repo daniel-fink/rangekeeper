@@ -125,7 +125,7 @@ def project(*, missing=()):
         entities=tuple(item.id for item in levels.values()),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(measure,), taxonomies=(units, aspects)),
         system=System(
             entities=tuple(entities), assemblies=(building, *levels.values())

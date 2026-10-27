@@ -155,7 +155,7 @@ def validate_outcomes(policy, outcomes, *, scope, provenance=None, units=default
                         else None
                     ),
                     period_end=(
-                        date.fromisoformat(movement["period"]["end_exclusive"])
+                        date.fromisoformat(movement["period"]["end"])
                         if movement and movement.get("period")
                         else None
                     ),

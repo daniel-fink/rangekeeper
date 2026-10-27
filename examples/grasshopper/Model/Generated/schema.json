@@ -2366,7 +2366,7 @@
               "type": "null"
             }
           ],
-          "description": "Optional exact Geometry pin and Entity mappings. Requires Model schema 0.8.0."
+          "description": "Optional exact Geometry pin and Entity mappings."
         },
         "metadata": {
           "$ref": "#/$defs/Metadata",
@@ -2639,20 +2639,20 @@
     },
     "Period": {
       "additionalProperties": false,
-      "description": "Half-open interval [start_inclusive, end_exclusive). Date boundaries use the Gregorian calendar; start must precede end.",
+      "description": "Half-open interval [start, end), which includes start and excludes end. Date boundaries use the Gregorian calendar; start must precede end.",
       "properties": {
-        "end_exclusive": {
+        "end": {
           "format": "date",
           "type": "string"
         },
-        "start_inclusive": {
+        "start": {
           "format": "date",
           "type": "string"
         }
       },
       "required": [
-        "start_inclusive",
-        "end_exclusive"
+        "start",
+        "end"
       ],
       "title": "Period",
       "type": "object"
@@ -3727,7 +3727,7 @@
       "additionalProperties": false,
       "description": "Named extent, using the same half-open boundary convention as Period.",
       "properties": {
-        "end_exclusive": {
+        "end": {
           "format": "date",
           "type": "string"
         },
@@ -3737,14 +3737,14 @@
             "null"
           ]
         },
-        "start_inclusive": {
+        "start": {
           "format": "date",
           "type": "string"
         }
       },
       "required": [
-        "start_inclusive",
-        "end_exclusive"
+        "start",
+        "end"
       ],
       "title": "Span",
       "type": "object"

@@ -7,7 +7,7 @@ from uuid import UUID
 from rangekeeper.run.report import validate_local
 from rangekeeper.schema.records import Metadata, Report
 from rangekeeper.schema.records import Run as RunRecord
-from rangekeeper.schema.validation import document_version
+from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.errors import UnsupportedVersionError
 from rangekeeper.shared.validation import bounded
 
@@ -29,7 +29,7 @@ class Run:
         if not isinstance(record, RunRecord):
             raise TypeError("record must be a generated Run record")
         version = document_version("Run")
-        if record.metadata.schema_version != version:
+        if not supports_version(record.metadata.schema_version, version):
             raise UnsupportedVersionError(record.metadata.schema_version)
         data = record.to_data()
         bounded(

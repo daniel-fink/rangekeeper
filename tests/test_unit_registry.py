@@ -316,7 +316,7 @@ def model_with(units: UnitSystem, *, unit: str = "storey") -> Model:
         id=uuid4(), code="A", characteristics=Characteristics(values=(value,))
     )
     return Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(entity,)),
         units=units,

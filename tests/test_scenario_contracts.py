@@ -20,7 +20,7 @@ from rangekeeper.shared.fingerprints import manifest_digest
 
 
 def base():
-    return Model.create(metadata=Metadata(id=UUID(int=10000), schema_version="0.7.0"))
+    return Model.create(metadata=Metadata(id=UUID(int=10000), schema_version="1.0.0"))
 
 
 def plan(**kwargs):

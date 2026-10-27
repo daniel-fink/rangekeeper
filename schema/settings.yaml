@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/settings
 name: rangekeeper_settings
 title: Rangekeeper Numerical Settings
-version: 0.2.0
+version: 1.0.0
 description: Shared numerical settings content for requested and effective execution settings.
 prefixes:
   linkml: https://w3id.org/linkml/

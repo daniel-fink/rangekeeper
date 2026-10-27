@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/classification
 name: rangekeeper_classification
 title: Rangekeeper Classification
-version: 0.1.0
+version: 1.0.0
 description: A Classification is a named definition node in a taxonomy hierarchy. Classifications are
   named by codes within a Taxonomy and retain UUID identity.
 prefixes:

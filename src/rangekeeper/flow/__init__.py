@@ -267,10 +267,7 @@ class Stream:
         if self._batch is None:
             span.check()
             return self._derive(
-                flows=tuple(
-                    f.trim(start=span.start_inclusive, end=span.end_exclusive)
-                    for f in self.flows
-                )
+                flows=tuple(f.trim(start=span.start, end=span.end) for f in self.flows)
             )
         return self._derive(batch=self._batch.trim(span))
 

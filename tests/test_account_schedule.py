@@ -81,7 +81,7 @@ def fixture(*, flow_rate=False, reverse_rate=False):
             )
         )
     model = Model.create(
-        metadata=Metadata(id=u(200), schema_version="0.7.0"),
+        metadata=Metadata(id=u(200), schema_version="1.0.0"),
         definitions=Definitions(
             measures=(
                 Measure(id=u(100), code="money", name="Money", units="AUD"),
@@ -352,7 +352,7 @@ def execute_schedule(
         unknowns += (Reference(target=ids["rate"]),)
     spec = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(assignments),
             unknowns=unknowns,

@@ -25,7 +25,7 @@ RENAMES = {
 
 
 def root():
-    return Model.create(metadata=Metadata(id=UUID(int=17), schema_version="0.7.0"))
+    return Model.create(metadata=Metadata(id=UUID(int=17), schema_version="1.0.0"))
 
 
 def plan(**kwargs):

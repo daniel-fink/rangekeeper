@@ -260,15 +260,15 @@ attributes:
     apply: all
     status: agreed
     source: ADR-012
-    requires: [schema]
-    note: Also Span. Half-open; the end is excluded.
+    note: >-
+      Also Span. Half-open; the end is excluded. The package pass changed the
+      schema in 1.0.0a2 (#119), so the consumer pass applies this entry.
   - owner: rangekeeper.schema.records.Period
     name: end_exclusive
     new_name: end
     apply: all
     status: agreed
     source: ADR-012
-    requires: [schema]
     note: Also Span.
   - owner: rangekeeper.model.flux.Stream
     name: labels
@@ -300,13 +300,11 @@ parameters:
     new_name: start
     status: agreed
     source: ADR-012
-    requires: [schema]
   - callable: "*"
     name: end_exclusive
     new_name: end
     status: agreed
     source: ADR-012
-    requires: [schema]
   - callable: rangekeeper.model.flux.Stream.select
     name: labels
     new_name: names

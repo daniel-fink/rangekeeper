@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/run
 name: rangekeeper_run
 title: Rangekeeper Runs
-version: 0.4.0
+version: 1.0.0
 description: Finalized immutable execution records, spawned executions, accepted Model outputs, and supporting
   reports.
 prefixes:

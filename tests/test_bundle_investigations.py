@@ -119,7 +119,7 @@ def test_batch_includes_actual_failed_attempt_and_outputs(tmp_path):
     store.put(bad)
     batch = Specification.from_data(
         dict(
-            metadata=dict(id=str(uuid4()), schema_version="0.7.0"),
+            metadata=dict(id=str(uuid4()), schema_version="1.0.0"),
             cases=[str(spec.id), str(bad.id)],
         )
     )

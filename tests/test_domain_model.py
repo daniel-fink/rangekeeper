@@ -68,7 +68,7 @@ def simple():
     formulation = Formulation(id=uuid4(), formulations=(child,))
     assembly = Assembly(id=uuid4(), code="group", entities=(entity.id,))
     return Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(
             entities=(entity,), assemblies=(assembly,), formulations=(formulation,)
@@ -173,7 +173,7 @@ def test_revision_noop_lineage_version_and_empty_sections():
     with pytest.raises(RevisionConflictError):
         before.revise(Update())
     with pytest.raises(RevisionConflictError):
-        before.revise(Update(metadata=Metadata(id=uuid4(), schema_version="0.7.0")))
+        before.revise(Update(metadata=Metadata(id=uuid4(), schema_version="1.0.0")))
     with pytest.raises(UnsupportedVersionError):
         before.revise(
             Update(
@@ -184,7 +184,7 @@ def test_revision_noop_lineage_version_and_empty_sections():
     assert after.system.to_data() == {} and before.find_entities()
     with pytest.raises(MissingReferenceError):
         after.entity(before.find_entities()[0].id)
-    minimal = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
+    minimal = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     # Explicit empty and omitted sections remain distinct revision content.
     assert minimal.revise(Update(system=System())).to_data()["system"] == {}
     with pytest.raises(TypeError):
@@ -194,7 +194,7 @@ def test_revision_noop_lineage_version_and_empty_sections():
 def test_explicit_metadata_and_descriptive_revision():
     model = simple()
     metadata = Metadata(
-        id=uuid4(), schema_version="0.7.0", previous=model.id, name="named"
+        id=uuid4(), schema_version="1.0.0", previous=model.id, name="named"
     )
     revised = model.revise(Update(metadata=metadata))
     assert revised.metadata == metadata
@@ -205,7 +205,7 @@ def test_explicit_metadata_and_descriptive_revision():
                 metadata=Metadata(
                     id=model.id,
                     previous=revised.id,
-                    schema_version="0.7.0",
+                    schema_version="1.0.0",
                     name="reuse",
                 )
             )
@@ -330,7 +330,7 @@ def test_ordered_mathematics_is_not_sorted_for_revision_comparison():
     )
     formulation = Formulation(id=uuid4(), expressions=(expression,))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(formulations=(formulation,)),
     )
     data = model.system.to_data()
