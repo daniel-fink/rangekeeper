@@ -22,7 +22,7 @@ when the library work lands.
 | 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 17 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 18 + 2 optional |
 | 06 Project structure | [06_project_structure.md](06_project_structure.md) | 25 + 1 optional |
-| 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 22 + 5 optional |
+| 07 Rules and design options | [07_policies_and_graph.md](07_policies_and_graph.md) | 22 + 5 optional |
 
 Each lesson file has the goals box, the narrative outline, the cells, the exercises
 with solutions, the checks and recap, the cell budget and a rule check. The rule
@@ -45,7 +45,7 @@ pass.
 | D6 | How is a Model made and changed? | One way each. `rk.Model(name=...)` makes an empty, immutable Model. `model.edit()` gives a `ModelDraft`; `commit()` checks it once and returns a new revision. There is no implicit entity: `draft.add_entity(code=, classification=)` makes one and `draft.entity(code=)` finds one. Values, Flows, equations and rollups are declared on the entity handle, and its equations use bare keys. Other entities use dotted paths, such as `building_a.income`. `roots=` keeps its meaning in rollups (D38) | 02–07 |
 | D7 | Must every unknown be named with `free()`? | No. A value that is not fixed is free. `free()` releases a value that was fixed before. An underdetermined solve names the free unknowns | 02–07 |
 | D8 | Specification builder or chained calls? | Chained calls. `fix`, `free`, `cases`, `across` and `decide` each return a new immutable Specification, because each step is valid on its own. A Model change is often invalid until it is complete, so the Model uses a draft and `commit()` | 02–07 |
-| D9 | How does a policy change the plan? | If a value can change, it belongs in the Specification. If it is part of the modelling, it belongs in the Model. The Model declares the equations between dates (lesson 03). A rule **decides** one value: it fixes the value on the first review date on which its condition holds. "Decided" is a role beside fixed and free. There is no separate action concept | 03, 05, 07 |
+| D9 | How does a rule change the plan? | If a value can change, it belongs in the Specification. If it is part of the modelling, it belongs in the Model. The Model declares the equations between dates (lesson 03). A rule **decides** one value: it fixes the value on the first review date on which its condition holds. "Decided" is a role beside fixed and free. There is no separate action concept | 03, 05, 07 |
 | D10 | How is a design variant declared? | Each option is its own Model revision. The Specification lists the alternatives, and the choice between them is a decided value. A provision cost is a fixed value in the Specification | 07 |
 | D11 | Rates by use on each floor (lesson 06) | Keyed values (`by="use"`) and floor equations (`draft.entities.where(condition=).equations(...)`). The reference income is a rollup of floor income, so income traces to floors | 06, 07 |
 | D12 | Where does growth live, and what replaces "projection"? | A **profile** says how an amount develops over Periods. Profiles live in a new public namespace, `rk.profile`: growth profiles (`Constant`, `Linear`, `Compounding`) take an `initial=` amount; distribution profiles (`Uniform`, `SCurve`) take a `total=` amount. `rk.flow.Flow.from_profile(profile, periods=, initial= or total=)` makes the Flow. Growth is series maths, not finance, so it is not in `rk.finance` | 01, 03 |
@@ -77,6 +77,7 @@ pass.
 | D38 | Rollup or aggregate, and one root or several? | `rollup`: totals over a hierarchy, as ADR-012 named it. `aggregate` stays the word for combining Flows (`Stream.aggregate`), and in LINQ it means a fold. A rollup takes `roots=[...]`, a list for one root or several, so the call does not change with the count; `trace(roots=)` follows. `result.value` counts shared contributors once; `result.by_root` gives each root's part | 06, 07 |
 | D39 | Does `rollup` declare or compute? | It computes: `model.rollup(...)` and `outcome.rollup(...)` return a result now. A declared rollup is a value: `project.value(key=, units=, rollup=rk.model.Rollup(of=, over=, roots=, contributors=))`, with the definition built once and injected. A declared rollup's result is read from a collection, `outcome.rollups[key]` or `model.rollups[key]`; its value is `outcome[key]` like any value | 06, 07 |
 | D40 | What does `where` take? | Two forms, alone or together (both must hold). Named arguments match columns: `column=value` means equals, `column=[a, b]` means any of, and a column that holds several values matches when it contains the value (`model.equations.where(keys="use_index")`, `outcome.decisions.where(key="b_start", result=...)`, `model.entities.where(classification="floor")`). `condition=` takes condition text, an `rx` condition, or for entities a reusable `Filter` (`model.entities.where(condition=floors)`). An equation's `key` names it (by default, the value on its left side); its `keys` are every value key that appears in it, on either side, so `where(keys=...)` finds the equations that contain a value. Not `uses`, `mentions`, `term`, `variable` or `name`: equations have no direction, `term=` is an expression in `add_to`, a variable suggests an unknown, and names belong to entities and path series | 05–07 |
+| D41 | Policy or rule? | Rule. A rule decides one value (`decide`); all of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. "Policy" is not used: not in reader text, and not in the API (`run.rule_evidence`, `RuleEvidence`). It matches de Neufville and Geltner's decision rules. Lesson 07 is "Rules and design options"; its file names stay until the lesson is authored (#244) | 05–07 |
 
 One choice in the cells is open for review. It does not change the API shape:
 
@@ -482,7 +483,7 @@ Not filed as gaps:
     copies of the HTML files published with the pages
     ([#191](https://github.com/daniel-fink/rangekeeper/issues/191),
     [#187](https://github.com/daniel-fink/rangekeeper/issues/187)).
-- **G54 (sequential solve with solved observations)** and **G58 (policy evidence)**.
+- **G54 (sequential solve with solved observations)** and **G58 (rule evidence)**.
   These are the core of [#213](https://github.com/daniel-fink/rangekeeper/issues/213)
   and [#215](https://github.com/daniel-fink/rangekeeper/issues/215).
 - **G34** was merged into G61.
@@ -512,6 +513,8 @@ These are inputs for authoring, not API gaps:
   1.0 data package and in every Model the lessons build.
 - The base plan gives `equity` and `loan_limit` (in place of `bridge_limit`) for lesson
   03's funding cascade (D2).
+- Lesson 07's notebook keeps the file name `07_policies_and_graph.ipynb` for now; rename
+  it and its heading to "Rules and design options" when #244 authors the lesson (D41).
 - Lesson 05 needs the three readable histories (`05_histories.paths.json`).
 - Lesson 07 needs the Building B hotel fragment and the Building A expansion fragment
   ([#214](https://github.com/daniel-fink/rangekeeper/issues/214)). If the fragments
@@ -532,7 +535,7 @@ The sketches in ADR-020 were not binding. The cells differ from them here:
   `rk.quantity` (D13).
 - Values are declared one call each, `project.value(key=, units=)` (D16), not as
   `values(land_cost="AUD", ...)`, and rates per year are `"% pa"`, not `"%/year"`.
-- Policies use `Specification.decide(key, ...)` (D9), not `base.policy(...).when(..., do=...)`.
+- Rules use `Specification.decide(key=, ...)` (D9), not `base.policy(...).when(..., do=...)`.
 - Lesson 06 declares the rollup as a Value (D3), not `edit().fix_from(...)`.
 - Lesson 07 uses separate Model revisions for options (D10), not
   `edit().variant(...)`.

@@ -9,7 +9,7 @@ API conventions and the gap list: [README](README.md).
 
 Decision used here (D9 in the [README](README.md#decisions)): if a value can change,
 it belongs in the Specification; if it is part of the modelling, it belongs in the
-Model. The Model declares the date equations (lesson 03). A policy rule **decides**
+Model. The Model declares the date equations (lesson 03). A rule **decides**
 one value: it fixes the value on the first review date on which its condition holds.
 "Decided" is a role beside fixed and free. There is no separate action concept.
 
@@ -365,7 +365,7 @@ decided = rk.execution.ReviewResult.DECIDED
 for row in strategy_outcome.decisions.where(key="b_start", result=decided):
     available = row.observed["equity_available"] + row.observed["loan_available"]
     assert available >= row.observed["b_cost"]
-assert strategy_outcome.case(key=paths.keys[0]).run.policy_evidence.verified
+assert strategy_outcome.case(key=paths.keys[0]).run.rule_evidence.verified
 ```
 
 **Recap.**
@@ -401,7 +401,7 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | 13–16 | 8 | G56, G66: `rk.execution.compare(outcomes=, keys=, baseline=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
 | 17–17b, Try it 1 | 2 | G57: a rule's trigger fixed and tested as cases like any Specification value; cases × paths |
-| 18 | 8 | G58: policy evidence in the Run (`policy_evidence.verified`), observations with `available_on`; `rk.execution.ReviewResult` |
+| 18 | 8 | G58: rule evidence in the Run (`rule_evidence.verified`), observations with `available_on`; `rk.execution.ReviewResult` |
 
 ## Cells for #213
 

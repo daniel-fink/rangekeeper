@@ -2,7 +2,7 @@
 
 Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27. Amended
 2026-10-27 by #201 decisions D2, D25 and D26 (reviews as `Periods`, `NEVER`, the
-equity-first funding names).
+equity-first funding names), and 2026-10-28 by decision D41 (rules, not policies).
 
 ## Problem
 
@@ -29,7 +29,7 @@ The current library cannot do this:
   assignments, and how a case refers to a path member.
 
 The design must keep the solve pure ([ADR-013](013-execution-and-extensions.md))
-and the backend affine. It must keep simulation, inverse solving and policy search
+and the backend affine. It must keep simulation, inverse solving and rule tuning
 apart.
 
 ## Choice
@@ -44,8 +44,8 @@ apart.
 | Reviews | The `rk.duration.Periods` of a rule, with optional `earliest` and `latest` bounds | `periods=`, `earliest=`, `latest=` |
 | Decision date | The date on which a rule fixed its value | `decision_date` |
 | Observation | A value that a rule reads, with the date it became available | `Observation` |
-| Decision trace | The record of each review and its result, in the Run | `policy_evidence` |
-| Policy | All the rules of one Specification, in order | `Specification.rules` |
+| Decision trace | The record of each review and its result, in the Run | `rule_evidence` |
+| Rules | All the rules of one Specification, in order; a Specification with rules is a strategy | `Specification.rules` |
 
 ### Declare a rule
 
@@ -202,13 +202,13 @@ date, the decided values and the broken constraint (lesson 05, cell 7).
 - **Search over a range of one value** is a query over a range of cases
   ([ADR-024](024-search-as-query.md)). A range cannot vary a value that a rule
   reads.
-- **Policy search** is not in the library. Several values of a rule parameter are a
+- **Rule tuning** is not in the library. Several values of a rule parameter are a
   set of listed cases, and cases multiply with paths. "Best tested" is a query over
   those cases (ADR-024).
 
 ### Decision traces in the Run
 
-The Run report has a `policy_evidence` section. For each case it records:
+The Run report has a `rule_evidence` section. For each case it records:
 
 - **`reviews`:** one record for each review and each `otherwise`. A record has
   the rule key, the date, the observations, the condition result (true, false or
@@ -226,7 +226,7 @@ The `Outcome` reads the trace:
 - `outcome.case(key=...).trace` shows the reviews of one case.
 - Decided values appear in `outcome.table(...)` like other values.
 
-The new `Rule`, `Review` and `PolicyEvidence` records replace `Decision`,
+The new `Rule`, `Review` and `RuleEvidence` records replace `Decision`,
 `Action` and `DecisionOutcome`. `ObservedQuantity` stays.
 
 ### Verification and replay
@@ -389,7 +389,7 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
 - Diagnostic codes: `rule_order`, `rule_reads_unknown`,
   `observation_unavailable`, `decision_changes_past`, `replay_mismatch` and
   `different_paths`.
-- Run records: `PolicyEvidence`, `Review` and `Observation`.
+- Run records: `RuleEvidence`, `Review` and `Observation`.
 
 ## Alternatives and consequences
 

@@ -43,7 +43,7 @@ It has two buildings over a shared basement plinth with shared services.
   do not show its graph.
 - **Lesson 06 reveals the graph.** It shows that the totals in lessons 02–05 are
   rollups over the project's objects and relationships.
-- **Lesson 07 changes the graph.** Policies select design variants that change
+- **Lesson 07 changes the graph.** Rules select design variants that change
   the project's structure.
 
 | Lesson | Principle | Project question | Replaces in ADR-006 |
@@ -52,9 +52,9 @@ It has two buildings over a shared basement plinth with shared services.
 | 02 Front door, back door | Declare an equation once. The Specification asks the question | What rent must the property earn, and what land price can its rent support? | 03 §4–6 |
 | 03 Cases, debt and equity | One Model, many questions: a batch of named cases gives comparable results | How does the base plan perform in weak, reference and strong markets, with and without debt? Can we pay the bills on time? | 03 §1–3, §7–8 and legacy deterministic scenarios |
 | 04 Many market futures | Market futures are captured, replayable inputs | How does the same plan perform across many possible market histories? | 04 |
-| 05 When to commit | A policy uses only what is known at its date. Flexibility has value that we can compare | When should we buy the site, start Building B or stop? | 05 (timing) |
+| 05 When to commit | A rule uses only what is known at its date. Flexibility has value that we can compare | When should we buy the site, start Building B or stop? | 05 (timing) |
 | 06 Project structure | The project is a graph. Totals are rollups over chosen relationships | Where do the income, costs and value of lessons 02–05 come from? | 02 |
-| 07 Policies and the model graph | Policies can change the project's structure through bounded design variants | Which design provisions are worth paying for now? | 05 (phasing) and 06 |
+| 07 Rules and design options | Rules can change the project's structure through bounded design variants | Which design provisions are worth paying for now? | 05 (phasing) and 06 |
 
 A short book introduction (not a lesson) defines the terms below. It also has a
 "Start here" page with a suggested route for each reader type.
@@ -313,7 +313,7 @@ outcome.distribution("equity_npv")
   downturn, short recovery then decline). Then use the full path set.
 - **Prerequisites.** Lessons 03 and 04.
 - **Time.** 60 minutes core, 30 optional.
-- **Library shown.** Policies with dated observations, availability, feasible
+- **Library shown.** Rules with dated observations, availability, feasible
   actions and commitments; decision traces in the Run report; paired
   comparison across one `MarketPaths`.
 - **Finance taught.** Real options in projects, option value as the difference
@@ -365,7 +365,7 @@ gfa.pivot(rows="building", columns="use")
 feasibility = feasibility_model.edit().fix_from(gfa_by_use).commit()
 ```
 
-#### 07 Policies and the model graph
+#### 07 Rules and design options
 
 - **Question.** Which design provisions are worth paying for now?
 - **Project.** The property graph from lesson 06, with lesson 05's timing rules
@@ -381,12 +381,12 @@ feasibility = feasibility_model.edit().fix_from(gfa_by_use).commit()
   flexibility, each provision, and the combination, on the same paths. Include
   the provision cost on every path, also where the option is never used. Find
   the largest justified premium under a stated criterion, and state whether the
-  policy stays fixed as the premium changes. Choose triggers on one path set
+  decisions stay the same as the premium changes. Choose triggers on one path set
   and test them on another. Report the delivered projects (completion dates and
   use mix) as well as value.
 - **Prerequisites.** Lessons 05 and 06.
 - **Time.** 60 minutes core, 30 optional.
-- **Library shown.** Design variants, policies that select variants, rollups over
+- **Library shown.** Design variants, rules that select variants, rollups over
   realised structures and paired comparison.
 - **Finance taught.** Flexibility in projects and on projects, the cost of a
   provision, the option premium, robustness and over-fitted triggers. The
@@ -470,7 +470,7 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
 - checks tied to claims: shared costs counted once, inverse values that
   reproduce a target, decisions that respect availability, and commitments that
   fit funding;
-- optional sections for derivations, stochastic detail and policy searches;
+- optional sections for derivations, stochastic detail and tests of several triggers;
 - a common starting state, horizon and valuation convention for each comparison,
   with a do-nothing baseline and no double-counted terminal value;
 - the source identities of the property, and separate spatial, service and

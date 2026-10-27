@@ -391,7 +391,7 @@ assert served.coverage.shared == {"plinth_plant"}
 3. A rollup declares a value, so the equations of lesson 02 work unchanged, and the
    answer now traces to floors.
 
-**Next.** Lesson 07 lets policies change the graph itself.
+**Next.** Lesson 07 lets rules choose between designs that change the graph itself.
 
 ## Cell budget
 

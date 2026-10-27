@@ -1,7 +1,7 @@
-# Lesson 07: Policies and the model graph (proposed cells)
+# Lesson 07: Rules and design options (proposed cells)
 
 Issue: [#244](https://github.com/daniel-fink/rangekeeper/issues/244). Plan:
-[ADR-020 §07](../../../docs/decisions/020-walkthrough-plan-v2.md#07-policies-and-the-model-graph).
+[ADR-020 §07](../../../docs/decisions/020-walkthrough-plan-v2.md#07-rules-and-design-options).
 Design: [#214](https://github.com/daniel-fink/rangekeeper/issues/214) (design
 variants). Implementation: [#216](https://github.com/daniel-fink/rangekeeper/issues/216)
 and [#215](https://github.com/daniel-fink/rangekeeper/issues/215).
@@ -12,7 +12,8 @@ option is its own Model revision. A Specification lists the alternatives, and th
 choice between them is a decided value, like lesson 05's dates. A provision cost is a
 Specification value, so cases can change it.
 
-The lesson is not authored until #216 is verified (ADR-020).
+The lesson is not authored until #216 is verified (ADR-020). When it is authored, rename
+the notebook `07_policies_and_graph.ipynb` and its heading to match the title (D41).
 
 ## Goals box
 

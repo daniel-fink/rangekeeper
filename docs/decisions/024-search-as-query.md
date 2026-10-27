@@ -128,7 +128,7 @@ Listed cases of such a value stay allowed.
 - **`breakeven` with a straight-line fit.** It gives an exact premium only when
   decisions do not change, and it needs its own error class. The plan's exact step
   does the same work inside the query.
-- **Allow a range over a trigger.** This would make policy search easy and
+- **Allow a range over a trigger.** This would make rule tuning easy and
   over-fitting likely. The refusal names the alternative: listed cases and new paths.
 - **Interpolate between listed cases.** The query over listed cases answers from the
   tested rows only, as "best tested" did in ADR-022.
@@ -142,7 +142,7 @@ the plan and the refusal, with tests for each step of the plan and for replay.
 
 - [ADR-021: decide values by rules](021-sequential-decisions.md), amended: a
   search over a range of one Specification value joins simulation and inverse
-  solving; policy search stays out.
+  solving; rule tuning stays out.
 - [ADR-022: design alternatives](022-design-alternatives.md), amended: the premium
   question and "best tested" become queries.
 - [ADR-015: authoring](015-authoring.md#equations), for condition text and `rx`.

@@ -2,7 +2,7 @@
 
 Rangekeeper is a standalone modelling library. It has three jobs:
 - declare a property project as an explicit, immutable set of facts and equations;
-- investigate the project with forward and inverse questions, market paths and policies;
+- investigate the project with forward and inverse questions, market paths and rules;
 - keep exact evidence of each result.
 
 Applications use the public APIs to build their own services and interfaces.
@@ -62,9 +62,9 @@ contracts enforce the rule.
 | 6 | `market` | Path generators (`Dynamics`) and the market paths document (`Paths`) |
 | 7 | `finance` | Calculations on known values: PV, NPV, IRR, payments and interest |
 | 8 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
-| 9 | `specification` | The Specification document, composition, roles and policy declarations |
+| 9 | `specification` | The Specification document, composition, roles and rule declarations |
 | 10 | `run` | The Run document and evidence validation |
-| 11 | `execution` | Case resolution, role binding, problem building, backends, verification, policy evaluation and publication |
+| 11 | `execution` | Case resolution, role binding, problem building, backends, verification, rule evaluation and publication |
 | 12 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
 `quantity` sits beside `shared`, below `duration`. Users import from `rangekeeper`,

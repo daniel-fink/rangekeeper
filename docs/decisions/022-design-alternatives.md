@@ -9,7 +9,7 @@ tested" are queries; `breakeven`, `best` and `same_across_cases` are removed.
 ## Problem
 
 Walkthrough lesson 07 asks which design provisions are worth paying for now
-([ADR-020](020-walkthrough-plan-v2.md#07-policies-and-the-model-graph)). Its
+([ADR-020](020-walkthrough-plan-v2.md#07-rules-and-design-options)). Its
 proposed cells (#201) use two provisions:
 
 - **Building B use switch:** a paid provision lets B open as a hotel in place of
