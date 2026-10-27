@@ -57,7 +57,7 @@ Specification (decision D8 of #201). All arguments are named (D14).
   Its role becomes decided. `decide` replaces an earlier fix of the same key. If
   the key already has a rule, `decide` replaces that rule in the same position.
 - **`when`** is a condition in the equation language. It can use comparisons,
-  `and`, `or`, `not` and `never`. Its names are Model values, Specification
+  `and`, `or`, `not` and `NEVER`. Its names are Model values, Specification
   parameters and values that earlier rules decide.
 - **`periods`** is an `rk.duration.Periods` (decision D25 of #201). The review
   dates are the first day of each Period; `timing=rk.duration.PeriodTiming.LAST`
@@ -69,7 +69,7 @@ Specification (decision D8 of #201). All arguments are named (D14).
   date value, the default is the review date. For any other value, `then` is
   required.
 - **`otherwise`** is the value when no review is true. For a date value it can be
-  `rk.duration.NEVER`, written `never` in condition text (#201 gap G50, decision
+  `rk.duration.NEVER`, written `NEVER` in condition text (#201 gap G50, decision
   D26).
 
 Three more Specification members support rules:
@@ -101,7 +101,7 @@ Movement before it.
 Two rules apply to undecided values:
 
 - **A direct reference to an undecided value is unknown.** For example,
-  `b_start == never` is unknown until B's rule decides. A review fixes its value
+  `b_start == NEVER` is unknown until B's rule decides. A review fixes its value
   only when the condition is true; unknown is not true. The trace records the
   observation as undecided.
 - **A solved value uses the current state.** Undecided values take their
@@ -331,7 +331,7 @@ first review of B solves again, and later reviews reuse that solution until a
 decision changes the state. On 2031-01-01 the rule reads both at the end of the
 2030 period.
 
-**Abandon (cell 11).** The rule for `b_sale_date` reads `b_start == never`.
+**Abandon (cell 11).** The rule for `b_sale_date` reads `b_start == NEVER`.
 `b_start` is written first. On 2033-01-01, B's rule runs first: its last review
 has passed, so it fixes `NEVER`. Then the sale rule runs. Its review Period, 2033,
 is open, and its condition is true. If the sale rule

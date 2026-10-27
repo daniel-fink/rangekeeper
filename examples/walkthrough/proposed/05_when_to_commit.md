@@ -194,7 +194,7 @@ site.date(key="b_sale_date")
 site.flow(key="b_site_sale", units="AUD", periods=years)
 site.equations(
     "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
-    "b_site_sale = rk.flow.event(amount=b_site_value, on=b_sale_date)",
+    "b_site_sale = rx.flow.event(amount=b_site_value, on=b_sale_date)",
 )
 site.add_to(key="project_cash", term="b_site_sale")
 model = draft.commit()
@@ -210,7 +210,7 @@ strategy = (
     .fix(b_land_share="40 %")
     .decide(
         key="b_sale_date",
-        when="b_start == never",
+        when="b_start == NEVER",
         periods=sale_reviews,
         otherwise=rk.duration.NEVER,
     )
@@ -389,12 +389,12 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | 2 | 1, 10 | G26; G47: `equations.involving(keys)` |
 | 4 | 10 | G48: `rk.market.Paths` from explicit Flows (the three histories are data, made once) |
 | 6 | 2, 6 | D1–D2 of the review: `rk.duration.Periods` from `Span.periods`; G49: `Specification.decide(key=, when=, periods=, earliest=, latest=, otherwise=)`, the "decided" role, rules as strings; G57: `parameters` for a rule's threshold |
-| 6, 11, 13 | 5 | G50: `rk.duration.NEVER` for date values, `never` in rule text; functions treat a `NEVER` date as "no flow" |
+| 6, 11, 13 | 5 | G50: `rk.duration.NEVER` for date values, `NEVER` in rule text; functions treat a `NEVER` date as "no flow" |
 | 7–7b, 11b, 12 | 8, 9 | G51: `Outcome.trace()` and `Outcome.decisions()` tables; infeasible decided values name the constraint (G52) |
 | 8 | 9 | G53: `AvailabilityError` (with `key`) at Specification validation ([#139](https://github.com/daniel-fink/rangekeeper/issues/139)) |
 | 9 | 6 | G54: sequential solve: a rule observes solved values (funding) under the decisions so far ([#213](https://github.com/daniel-fink/rangekeeper/issues/213)) |
 | 9, 11 | 3 | G55: `earliest=` and `latest=` expression bounds on the reviews; rules that observe earlier decisions (`b_start == never`) |
-| 10 | 2, 3 | G27 (`add_to(key=, term=)`); G17 (`at`, `rk.flow.event`) |
+| 10 | 2, 3 | G27 (`add_to(key=, term=)`); G17 (`at`, `rx.flow.event`) |
 | 13–16 | 8 | G56, G66: `rk.execution.compare(outcomes=, keys=, baseline=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
 | 17–17b, Try it 1 | 2 | G57: a rule's threshold fixed and swept like any Specification value; cases × paths |
@@ -406,7 +406,7 @@ The design for sequential decisions must support:
 
 - **Observations.** A rule names Model values (`rent_index`, `equity_available`,
   `loan_available`,
-  `b_cost`) and earlier decided values (`b_start == never`). The value read is the
+  `b_cost`) and earlier decided values (`b_start == NEVER`). The value read is the
   latest one available on the review date.
 - **Availability.** Market path Flows carry availability dates (period end by
   default). Solved values, such as the available loan, are available on the review date

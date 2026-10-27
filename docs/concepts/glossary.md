@@ -53,7 +53,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Period | One half-open time interval with `start` and `end` | `duration` | — |
 | Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | `tuple[Period, ...]`; `PeriodIndex` in 0.8 |
 | Span | A named half-open range of time | `duration` | — |
-| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; `never` in equation text. Not `None`, which means missing | `duration` | `"never"` string |
+| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | `"never"` string |
 | Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | `calculations.projection` (`Extrapolation`, `Distribution` projections) |
 | Movement | One dated or period-based amount | `flow` | — |
 | Flow | An ordered series of Movements in one unit | `flow` | `model.flux.Flow` |

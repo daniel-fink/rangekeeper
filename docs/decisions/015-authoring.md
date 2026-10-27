@@ -54,10 +54,11 @@ fully supported, documented and tested, and both produce the same expression rec
 - **Python,** through `rangekeeper.expressions`, imported as `rx`. A declaration
   returns a handle, and `site.ref(key=)` finds one. Operators on handles build
   expressions; `==` makes an equality and `>=` or `<=` a bound, for example
-  `site.equation(value == noi / cap_rate)`. Functions mirror the text names:
-  `rx.profile.compounding(...)` where text writes `rk.profile.compounding(...)`.
-  Python's limits are named once: `rx.max(a, b)`, and `&`, `|` and `~` for `and`,
-  `or` and `not`.
+  `site.equation(value == noi / cap_rate)`. Text and Python use the same function
+  names, such as `rx.profile.compounding(...)` and `rx.max(a, b)`. An equation in text
+  is the Python form inside a string, except `=` for `==`, `and`, `or` and `not` for
+  `&`, `|` and `~`, and unquoted unit literals. `rk.` always computes on values; text
+  that writes `rk.` gets an error that suggests `rx.`.
 
 **One registry.** Each equation function is declared once: its name, its named
 parameters with their kinds and units, its result, its evaluation stage, its

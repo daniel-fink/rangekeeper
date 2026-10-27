@@ -158,8 +158,8 @@ helpers.show_equations(of=model)  # a diagram with no input or output arrows
 > **Under the hood: the same equation in Python.** `rangekeeper.expressions`, imported
 > as `rx`, writes equations with Python operators. A declaration returns a handle, and
 > `site.ref(key=)` finds the handle of a value declared earlier. Text and Python make
-> the same records, and `.text` prints the text form. A function that text writes as
-> `rk.profile.compounding(...)` is `rx.profile.compounding(...)` in Python (D32).
+> the same records, and `.text` prints the text form. Both forms use the same
+> names, such as `rx.profile.compounding(...)` (D21, D32).
 >
 > ```python
 > import rangekeeper.expressions as rx

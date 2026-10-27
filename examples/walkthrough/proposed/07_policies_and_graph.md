@@ -366,9 +366,9 @@ site.date(key="expansion_date")
 site.equations("x_open = expansion_date + 1 year")
 site.add_to(
     key="works",
-    term="-rk.profile.uniform(total=x_cost, start=expansion_date, years=1)",
+    term="-rx.profile.uniform(total=x_cost, start=expansion_date, years=1)",
 )
-site.add_to(key="income", term="rk.profile.constant(initial=x_income, start=x_open)")
+site.add_to(key="income", term="rx.profile.constant(initial=x_income, start=x_open)")
 expanded = draft.commit()
 ```
 

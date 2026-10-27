@@ -76,11 +76,11 @@ set a rate to zero.
 # cell 3b
 site.replace(
     key="a_rent",
-    equation="a_rent = rk.profile.constant(initial=a_income, start=a_open)",
+    equation="a_rent = rx.profile.constant(initial=a_income, start=a_open)",
 )
 site.replace(
     key="b_rent",
-    equation="b_rent = rk.profile.constant(initial=b_income, start=b_open)",
+    equation="b_rent = rx.profile.constant(initial=b_income, start=b_open)",
 )
 site.remove(key="rent_growth")
 model = draft.commit()
@@ -303,7 +303,7 @@ draft = model.edit()
 site = draft.entity(code="property")
 site.replace(
     key="a_rent",
-    equation="a_rent = rk.profile.compounding(initial=a_income, rate=2 % pa, start=a_open)",
+    equation="a_rent = rx.profile.compounding(initial=a_income, rate=2 % pa, start=a_open)",
 )
 twice_model = draft.commit()
 twice_outcome = rk.execution.solve(

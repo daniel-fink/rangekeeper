@@ -151,8 +151,10 @@ solve; it organises the display and the trace.
 The plan's sequence is a set of equations too. The site is bought and the shared works start
 on the start date. Building A follows a year later, and each building
 takes two years to build. Building B cannot start before the shared works finish.
-Development payments are negative; `rk.profile.uniform` divides an amount evenly
-over the years from a start date.
+Development payments are negative; `rx.profile.uniform` divides an amount evenly
+over the years from a start date. In lesson 01, `rk.` functions calculated a result
+at once. In an equation, functions start with `rx.`: they write a relation that the
+solve uses.
 
 ```python
 # cell 6
@@ -162,10 +164,10 @@ site.equations(
     "a_open = a_start + 2 years",
     "b_open = b_start + 2 years",
     "b_start >= shared_start + 1 year",
-    "land = -rk.flow.event(amount=land_cost, on=start_date)",
-    "shared_works = -rk.profile.uniform(total=shared_cost, start=shared_start, years=1)",
-    "a_works = -rk.profile.uniform(total=a_cost, start=a_start, years=2)",
-    "b_works = -rk.profile.uniform(total=b_cost, start=b_start, years=2)",
+    "land = -rx.flow.event(amount=land_cost, on=start_date)",
+    "shared_works = -rx.profile.uniform(total=shared_cost, start=shared_start, years=1)",
+    "a_works = -rx.profile.uniform(total=a_cost, start=a_start, years=2)",
+    "b_works = -rx.profile.uniform(total=b_cost, start=b_start, years=2)",
     "works = shared_works + a_works + b_works",
     formulation="Development",
 )
@@ -177,10 +179,10 @@ earns nothing until it opens. Renewals come every five years after opening.
 ```python
 # cell 7
 site.equations(
-    "a_rent = rk.profile.compounding(initial=a_income, rate=rent_growth, start=a_open)",
-    "b_rent = rk.profile.compounding(initial=b_income, rate=rent_growth, start=b_open)",
-    "a_costs = rk.profile.compounding(initial=a_opex, rate=opex_growth, start=a_open)",
-    "b_costs = rk.profile.compounding(initial=b_opex, rate=opex_growth, start=b_open)",
+    "a_rent = rx.profile.compounding(initial=a_income, rate=rent_growth, start=a_open)",
+    "b_rent = rx.profile.compounding(initial=b_income, rate=rent_growth, start=b_open)",
+    "a_costs = rx.profile.compounding(initial=a_opex, rate=opex_growth, start=a_open)",
+    "b_costs = rx.profile.compounding(initial=b_opex, rate=opex_growth, start=b_open)",
     "income = a_rent + b_rent",
     "opex = -(a_costs + b_costs)",
     formulation="Operations",
@@ -194,11 +196,11 @@ grow from 2027.
 # cell 7b
 site.equations(
     (
-        "a_renewals = rk.profile.compounding(initial=a_renewal, rate=opex_growth,"
+        "a_renewals = rx.profile.compounding(initial=a_renewal, rate=opex_growth,"
         " start=a_open + 5 years, every=5 years)"
     ),
     (
-        "b_renewals = rk.profile.compounding(initial=b_renewal, rate=opex_growth,"
+        "b_renewals = rx.profile.compounding(initial=b_renewal, rate=opex_growth,"
         " start=b_open + 5 years, every=5 years)"
     ),
     "renewals = -(a_renewals + b_renewals)",
@@ -213,10 +215,10 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as equations
 # cell 8
 site.equations(
     "exit_value = operating.at(on=sale_date + 1 year) / exit_cap_rate",
-    "sale = rk.flow.event(amount=exit_value, on=sale_date)",
+    "sale = rx.flow.event(amount=exit_value, on=sale_date)",
     "project_cash = land + works + operating + sale",
     "net_cash_flow = project_cash.trim(end=sale_date)",
-    "unlevered_npv = rk.finance.npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
+    "unlevered_npv = rx.finance.npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
     formulation="Sale and value",
 )
 model = draft.commit()
@@ -292,9 +294,9 @@ site.value(key="loan_rate", units="% pa")
 site.value(key="equity_rate", units="% pa")
 site.equations(
     "funding_need = -(net_cash_flow + loan_interest).cumulative()",
-    "loan_principal = max(0 AUD, funding_need - equity)",
+    "loan_principal = rx.max(0 AUD, funding_need - equity)",
     "loan_draws = loan_principal.diff()",
-    "loan_interest = -rk.finance.interest(balance=loan_principal, rate=loan_rate)",
+    "loan_interest = -rx.finance.interest(balance=loan_principal, rate=loan_rate)",
     formulation="Funding",
 )
 ```
@@ -307,8 +309,8 @@ and positive once the loan is repaid.
 # cell 13b
 site.equations(
     "equity_cash_flow = net_cash_flow + loan_interest + loan_draws",
-    "equity_npv = rk.finance.npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
-    "equity_irr = rk.finance.irr(flow=equity_cash_flow)",
+    "equity_npv = rx.finance.npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
+    "equity_irr = rx.finance.irr(flow=equity_cash_flow)",
     formulation="Funding",
 )
 model = draft.commit()
@@ -404,9 +406,9 @@ Building B, so the need includes the operating cash flow.
 draft = model.edit()
 site = draft.entity(code="property")
 site.equations(
-    "equity_available = max(0 AUD, equity - funding_need)",
+    "equity_available = rx.max(0 AUD, equity - funding_need)",
     "loan_available = loan_limit - loan_principal",
-    "shortfall = max(0 AUD, -loan_available)",
+    "shortfall = rx.max(0 AUD, -loan_available)",
     "peak_shortfall = shortfall.max()",
     formulation="Funding",
 )
@@ -425,7 +427,7 @@ site.equations(
     "b_unpaid = b_works.cumulative() - b_works.total()",
     "committed = shared_unpaid.since(on=shared_start) + a_unpaid.since(on=a_start)"
     " + b_unpaid.since(on=b_start)",
-    "commitment_gap = max(0 AUD, (committed - equity_available - loan_available).max())",
+    "commitment_gap = rx.max(0 AUD, (committed - equity_available - loan_available).max())",
     formulation="Funding",
 )
 model = draft.commit()
@@ -565,12 +567,12 @@ follow `ruff format` (D15).
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
 | 5–5c | 2, 5 | G08 (entity handles); G15: date-valued Values; G16: Flows made from amounts declare their Periods, other values take units and shape from their equations |
-| 6–8 | 3, 6 | G72: `formulation=` groups; G17: functions in equations (`rk.flow.event`, `rk.profile.uniform`, `rk.profile.compounding`, `rk.finance.npv`, and the methods `at` and `trim`); G18: Flow-valued string equations; date arithmetic in G15 |
+| 6–8 | 3, 6 | G72: `formulation=` groups; G17: functions in equations (`rx.flow.event`, `rx.profile.uniform`, `rx.profile.compounding`, `rk.finance.npv`, and the methods `at` and `trim`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
 | 10 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
 | 11, 14 | 8 | Cases ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G20: `cases(mapping)` overrides by key; `Outcome.case`, `Outcome.table` with a case column |
-| 13–13b | 3, 6 | The equity-first cascade as equations (D2): G05 (`cumulative()`, `diff()`), G17 (`rk.finance.interest`, `rk.finance.irr`, period-by-period `max`); G09: `max` and `irr` are evaluated in period order after the affine stage |
+| 13–13b | 3, 6 | The equity-first cascade as equations (D2): G05 (`cumulative()`, `diff()`), G17 (`rx.finance.interest`, `rx.finance.irr`, period-by-period `max`); G09: `max` and `irr` are evaluated in period order after the affine stage |
 | 14 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |
 | 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row; G77: with a free value, the solve picks the active side of each `max` and checks it after the solve |
 | 17 | 6 | By hand once |
