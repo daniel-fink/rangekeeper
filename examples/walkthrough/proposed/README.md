@@ -42,7 +42,7 @@ pass.
 | D3 | How does an equation refer to a rollup result? | A rollup declares a Value. Equations refer to it by key, as to any other value. The solve traces through the rollup to its contributors | 06, 07 |
 | D4 | How does a batch report IRR, peak shortfall and other non-affine results? | Staged evaluation. `irr`, `min` and `max` are Model equations. The solve evaluates them after the affine stage, and verification checks them | 03, 04 |
 | D5 | When do the inverse rewrites land? | In 1.0. A fixed IRR becomes an NPV row at that rate, and a bound on a minimum becomes one row for each period. The target-IRR land price is a core cell of lesson 03 | 03 |
-| D6 | How is a Model made and changed? | One way each. `rk.Model(name=...)` makes an empty, immutable Model. `model.edit()` gives a `ModelDraft`; `commit()` checks it once and returns a new revision. There is no implicit entity: `draft.add_entity(code=, classification=)` makes one and `draft.entity(code=)` finds one. Values, Flows, equations and rollups are declared on the entity handle, and its equations use bare keys. Other entities use dotted paths, such as `building_a.income`. `root=` keeps its meaning in rollups | 02–07 |
+| D6 | How is a Model made and changed? | One way each. `rk.Model(name=...)` makes an empty, immutable Model. `model.edit()` gives a `ModelDraft`; `commit()` checks it once and returns a new revision. There is no implicit entity: `draft.add_entity(code=, classification=)` makes one and `draft.entity(code=)` finds one. Values, Flows, equations and rollups are declared on the entity handle, and its equations use bare keys. Other entities use dotted paths, such as `building_a.income`. `roots=` keeps its meaning in rollups (D38) | 02–07 |
 | D7 | Must every unknown be named with `free()`? | No. A value that is not fixed is free. `free()` releases a value that was fixed before. An underdetermined solve names the free unknowns | 02–07 |
 | D8 | Specification builder or chained calls? | Chained calls. `fix`, `free`, `cases`, `across` and `decide` each return a new immutable Specification, because each step is valid on its own. A Model change is often invalid until it is complete, so the Model uses a draft and `commit()` | 02–07 |
 | D9 | How does a policy change the plan? | If a value can change, it belongs in the Specification. If it is part of the modelling, it belongs in the Model. The Model declares the equations between dates (lesson 03). A rule **decides** one value: it fixes the value on the first review date on which its condition holds. "Decided" is a role beside fixed and free. There is no separate action concept | 03, 05, 07 |
@@ -74,6 +74,7 @@ pass.
 | D35 | What is the root entity called? | `project`, as the variable and as the entity's code and classification (`project = draft.add_entity(code="project", classification="project")`). Not `site`, which the narrative uses for the land ("buy the site"), and not `property`, which shadows Python's built-in | 02–07 |
 | D36 | Does a check or a search get its own method? | Not when plain composition shows the finance. Lesson 07 composes the largest justified premium from two runs (no premium and a test premium): the mean paired gain without the premium, divided by what each dollar of premium costs. A solve at that premium checks it: the mean gain is zero only if no decision changed. There is no `decisions().same_across_cases()`. Whether the library offers a search for the 5 % quantile criterion, and in what form, is open (G68) | 07 |
 | D37 | How is a search written? | As a query over cases ([ADR-024](../../../docs/decisions/024-search-as-query.md)). `cases=` takes a mapping of listed cases or a `rk.specification.Range(key=, first=, last=)` of one value. The criterion is a condition built once and injected (`"equity_npv.quantile(level=0.05) >= 0 AUD"`, or the same in `rx`). The by-case table is a query: `where(condition=)`, `order_by(key=)`, `first()`, `max(key=, tolerance=)`, `explain()`. Over a range the Outcome is deferred and the engine plans the solves: exact when no decision changes and the values are linear, bracketed otherwise, with the evidence in the result and the Run. A range cannot vary a value that a rule reads. `breakeven`, `best`, `same_across_cases` and `rk.execution.Criterion` are removed | 07 |
+| D38 | Rollup or aggregate, and one root or several? | `rollup`: totals over a hierarchy, as ADR-012 named it. `aggregate` stays the word for combining Flows (`Stream.aggregate`), and in LINQ it means a fold. A rollup takes `roots=[...]`, a list for one root or several, so the call does not change with the count; `trace(roots=)` follows. `result.value` counts shared contributors once; `result.by_root()` gives each root's part | 06, 07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -192,7 +193,7 @@ project.rollup(
     key="reference_income",
     of="income",
     over="contains",
-    root="project",
+    roots=["project"],
     contributors=floors,
 )  # G44
 project.replace(key=key, equation=eq)
@@ -209,7 +210,7 @@ model.equations.where(formulation="Dates")  # G47
     model.entities.where(filter=rk.model.Filter(condition="gfa >= 1500 sqm")),
     model.view(over="serves"),
 )  # #156, #160, G37
-model.rollup(of="gfa", over="contains", root="project", contributors=floors)  # #158
+model.rollup(of="gfa", over="contains", roots=["project"], contributors=floors)  # #158
 model.rollup(
     of="volume",
     over="serves",
@@ -220,7 +221,7 @@ model.rollup(
     result.value,
     result.coverage,
     result.pivot(rows="building", columns="use"),
-    result.trace(root="building_b"),
+    result.trace(roots=["building_b"]),
 )  # #159, G41
 rk.model.diff(before=a, after=b), rk.model.namespace(name="...")  # G62, #147
 rk.model.compare(models={"Residential": a, "Hotel": b}, rollups=["b_cost"])  # G74
@@ -391,8 +392,8 @@ use. **Issue** is filled in when the issue is filed.
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
 | 12 | — | Equation keys, `replace`, `remove`, `add_to(key=, term=)`, `Equation.text`, `equations.where(keys=, formulation=)` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
 | 13 | — | Keyed values, label indexing (`rent[use]`), members by name in equation text (`use_index["hotel"]`) and `equations_for` | G43, G45, G60 | `model`, `specification` | 06·19, 21; 07·3 | #121, #138, #141 |
-| 14 | — | An entity's `rollup(key=, ...)` declares a Value; `Model.rollups()` | G44, G59 | `model` | 06·20; 07·2, 17 | #158 |
-| 15 | — | Rollup facade: several roots, `direction=rk.model.Direction`, pivots by ancestor, `trace`, Outcome rollups, and `rk.model.compare(models=, rollups=)` (G74) | G39–G41, G46, G74 | `model`, `execution` | 06·11–15, 23; 07·6, 12 | #157, #158, #159 |
+| 14 | — | An entity's `rollup(key=, of=, over=, roots=, contributors=)` declares a Value; `Model.rollups()` | G44, G59 | `model` | 06·20; 07·2, 17 | #158 |
+| 15 | — | Rollup facade: `roots=[...]`, one list argument for one root or several (D38), `direction=rk.model.Direction`, pivots by ancestor, `trace`, Outcome rollups, and `rk.model.compare(models=, rollups=)` (G74) | G39–G41, G46, G74 | `model`, `execution` | 06·11–15, 23; 07·6, 12 | #157, #158, #159 |
 | 16 | — | Model inspection: `summary`, `entities` (a collection), `relationships`, `view`, `diff`; one snake_case name per relationship (`contains`, `serves`) | G35–G37, G62 | `model` | 06·2–8; 07·5 | #160 |
 | 17 | — | Filter additions: `condition=`, `within=`, `has=`, `name=`; `model.entities.where(filter=)` | G38 | `model` | 06·10, 16; 07·4, 6 | #121 |
 | 18 | — | Error and diagnostic fields: ambiguous lookups, non-affine unknowns, broken constraints | G14, G42, G52 | `errors`, `execution` | 02·20–21; 05·7; 06·16–17, 24 | #134, #154, #155, #156 |

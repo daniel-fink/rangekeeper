@@ -226,7 +226,7 @@ floors = rk.model.Filter(classification="floor")
 both_outcome.rollup(
     of="nla",
     over="contains",
-    root="project",
+    roots=["project"],
     contributors=floors,
 ).pivot(columns="use").describe()
 ```
@@ -372,14 +372,14 @@ project.rollup(
     key="x_income",
     of="income",
     over="contains",
-    root="building_a",
+    roots=["building_a"],
     contributors=extra,
 )
 project.rollup(
     key="x_cost",
     of="build_cost",
     over="contains",
-    root="building_a",
+    roots=["building_a"],
     contributors=extra,
 )
 ```

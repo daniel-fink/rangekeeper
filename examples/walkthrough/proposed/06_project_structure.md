@@ -125,7 +125,7 @@ has a value and a coverage: which contributors had the value, and which did not.
 a_gfa = model.rollup(
     of="gfa",
     over="contains",
-    root="building_a",
+    roots=["building_a"],
     contributors=floors,
 )
 a_gfa.value, a_gfa.coverage
@@ -136,7 +136,7 @@ a_gfa.value, a_gfa.coverage
 gfa = model.rollup(
     of="gfa",
     over="contains",
-    root="project",
+    roots=["project"],
     contributors=floors,
 )
 gfa.pivot(rows="building", columns="use")
@@ -173,7 +173,7 @@ its floors, with the path from the root to each floor.
 
 ```python
 # cell 15
-gfa.trace(root="building_b")
+gfa.trace(roots=["building_b"])
 ```
 
 ## 8. Names repeat; identities do not
@@ -258,7 +258,7 @@ project.rollup(
     key="reference_income",
     of="income",
     over="contains",
-    root="project",
+    roots=["project"],
     contributors=floors,
 )
 model = draft.commit()
@@ -333,7 +333,7 @@ model by building and use. Which use has the most area in Building B?
 nla = back_outcome.model.rollup(
     of="nla",
     over="contains",
-    root="project",
+    roots=["project"],
     contributors=floors,
 )
 nla.pivot(rows="building", columns="use")
@@ -349,7 +349,7 @@ for use in ("hotel", "residential", "retail"):
     income = back_outcome.model.rollup(
         of="income",
         over="contains",
-        root="project",
+        roots=["project"],
         contributors=rk.model.Filter(classification="floor", labels={"use": use}),
     )
     print(use, income.value)
@@ -364,7 +364,7 @@ the rent factor. Then trace the required income to Building B's floors.
 # solution
 front = back.fix(land_cost="20e6 AUD").free("rent_factor")
 front_outcome = rk.execution.solve(specification=front)
-front_outcome.rollup(key="reference_income").trace(root="building_b")
+front_outcome.rollup(key="reference_income").trace(roots=["building_b"])
 ```
 
 ## Checks and recap
@@ -408,9 +408,9 @@ solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (
 | 4–6 | 4, 7 | Lookups by code ([#156](https://github.com/daniel-fink/rangekeeper/issues/156), [#160](https://github.com/daniel-fink/rangekeeper/issues/160)). G36: `entities` (a collection with `where(filter=)`), `Entity.values`, `relationships(entity)` tables |
 | 7–8 | 7 | G37: `Model.view(relationship_classification)` |
 | 9–10 | 7 | `Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). G38: `condition=` string comparisons with units; `entities.where(filter=)` |
-| 11–12 | 7, 8 | Rollups ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)), pivots ([#159](https://github.com/daniel-fink/rangekeeper/issues/159)). G39: `Model.rollup(key, over=, root=, contributors=)` facade; pivot rows by ancestor classification |
+| 11–12 | 7, 8 | Rollups ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)), pivots ([#159](https://github.com/daniel-fink/rangekeeper/issues/159)). G39: `Model.rollup(of=, over=, roots=, contributors=)` facade, with `roots=` a list for one root or several (D38); pivot rows by ancestor classification |
 | 13–14 | 7 | G40: several roots, `direction=rk.model.Direction.INCOMING`, `by_root()`, `coverage.shared` |
-| 15 | 7 | G41: `RollupResult.trace(root)` |
+| 15 | 7 | G41: `RollupResult.trace(roots=)` |
 | 16–17 | 4, 9 | G42: `AmbiguousReferenceError`; error fields `requested`, `candidates` ([#156](https://github.com/daniel-fink/rangekeeper/issues/156)) |
 | 18 | 3 | Lesson 02's strings, unchanged |
 | 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `equations_for(filter=, equations=)` |
