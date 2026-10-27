@@ -394,9 +394,10 @@ reference_outcome.stream(
 
 ## 10. Commitments
 
-Narrative: what is left is the unspent equity and the undrawn loan. A shortfall is a
-loan balance above the limit. Building A's income helps to pay for Building B, so the
-need includes the operating cash flow.
+Narrative: what can still be spent is the remaining equity and the remaining loan.
+`loan_remaining` is what can still be drawn, not what is owed (`loan_balance`). A
+shortfall is a loan balance above the limit. Building A's income helps to pay for
+Building B, so the need includes the operating cash flow.
 
 ```python
 # cell 19
@@ -404,8 +405,8 @@ draft = model.edit()
 site = draft.entity(code="property")
 site.equations(
     "equity_remaining = max(0 AUD, equity - funding_need)",
-    "loan_undrawn = loan_limit - loan_balance",
-    "shortfall = max(0 AUD, -loan_undrawn)",
+    "loan_remaining = loan_limit - loan_balance",
+    "shortfall = max(0 AUD, -loan_remaining)",
     "peak_shortfall = shortfall.max()",
     formulation="Funding",
 )
@@ -414,7 +415,7 @@ site.equations(
 Narrative: a package's remaining payments become committed when it starts. What is
 still to be paid is the running total less the whole total; `since` makes it zero
 before the start date. The commitment gap is the largest amount by which committed
-but unpaid payments exceed the unspent equity and the undrawn loan.
+but unpaid payments exceed the remaining equity and the remaining loan.
 
 ```python
 # cell 19b
@@ -424,7 +425,7 @@ site.equations(
     "b_unpaid = b_works.cumulative() - b_works.total()",
     "committed = shared_unpaid.since(on=shared_start) + a_unpaid.since(on=a_start)"
     " + b_unpaid.since(on=b_start)",
-    "commitment_gap = max(0 AUD, (committed - equity_remaining - loan_undrawn).max())",
+    "commitment_gap = max(0 AUD, (committed - equity_remaining - loan_remaining).max())",
     formulation="Funding",
 )
 model = draft.commit()
@@ -443,7 +444,7 @@ funded_outcome.table(
 # cell 21
 helpers.plot_flows(
     outcome=funded_outcome.case(key="weak"),
-    keys=["equity_remaining", "loan_undrawn", "committed"],
+    keys=["equity_remaining", "loan_remaining", "committed"],
 )
 ```
 
@@ -517,13 +518,13 @@ weak_target_outcome = rk.execution.solve(
 assert weak_target_outcome["land_cost"] < target_outcome["land_cost"]
 ```
 
-**Try it 3: start Building B a year later.** In which year is the undrawn loan
+**Try it 3: start Building B a year later.** In which year is the remaining loan
 smallest now?
 
 ```python
 # solution
 later_outcome = rk.execution.solve(specification=funded.fix(b_start=date(2031, 1, 1)))
-later_outcome["loan_undrawn"].argmin()
+later_outcome["loan_remaining"].argmin()
 ```
 
 ## Checks and recap

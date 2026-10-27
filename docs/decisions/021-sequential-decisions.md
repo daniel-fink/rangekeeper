@@ -1,6 +1,8 @@
 # ADR-021: Decide values by rules over market paths
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27.
+Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27. Amended
+2026-10-27 by #201 decisions D2, D25 and D26 (reviews as `Periods`, `NEVER`, the
+equity-first funding names).
 
 ## Problem
 
@@ -17,7 +19,7 @@ The current library cannot do this:
 
 - **The policy slice is exogenous.** `specification.policy.evaluate` runs once,
   before compilation, on recorded values. It rejects a solved observation, such as
-  funding headroom ([scenarios and policies](../reference/scenarios-and-policies.md)).
+  the remaining loan ([scenarios and policies](../reference/scenarios-and-policies.md)).
 - **It has an action concept.** Decision D9 of #201 removes it: if a value can
   change, it belongs in the Specification; if it is part of the modelling, it
   belongs in the Model. A rule decides one value. There is no action.
@@ -37,9 +39,9 @@ apart.
 | Term | Meaning | Name |
 | --- | --- | --- |
 | Rule | A Specification declaration that decides one value during the solve | `Rule` |
-| Decided | A role beside fixed and free. A rule fixes the value on a date | role `decided` |
-| Review date | A date on which a rule tests its condition | — |
-| Window | The half-open range `[start, end)` that contains the review dates | `window=` |
+| Decided | A role beside fixed and free. A rule fixes the value on a date | `rk.specification.Role.DECIDED` |
+| Review date | A date on which a rule tests its condition: the first day of each of its Periods | — |
+| Reviews | The `rk.duration.Periods` of a rule, with optional `earliest` and `latest` bounds | `periods=`, `earliest=`, `latest=` |
 | Decision date | The date on which a rule fixed its value | `decision_date` |
 | Observation | A value that a rule reads, with the date it became available | `Observation` |
 | Decision trace | The record of each review and its result, in the Run | `policy_evidence` |
@@ -47,8 +49,9 @@ apart.
 
 ### Declare a rule
 
-`Specification.decide(key, *, when, review, window, otherwise, then=None)` returns
-a new, immutable Specification (decision D8 of #201).
+`Specification.decide(*, key, when, periods, earliest=None, latest=None,
+timing=PeriodTiming.FIRST, then=None, otherwise)` returns a new, immutable
+Specification (decision D8 of #201). All arguments are named (D14).
 
 - **`key`** names a Model value, or a choice key ([ADR-022](022-design-alternatives.md)).
   Its role becomes decided. `decide` replaces an earlier fix of the same key. If
@@ -56,21 +59,24 @@ a new, immutable Specification (decision D8 of #201).
 - **`when`** is a condition in the equation language. It can use comparisons,
   `and`, `or`, `not` and `never`. Its names are Model values, Specification
   parameters and values that earlier rules decide.
-- **`review`** is a `Frequency`. Review dates start at the window start and step
-  by the frequency.
-- **`window=(start, end)`** is half-open, like a Period: the end is not a review
-  date. Each bound is a date or an expression, such as `"shared_start + 1 year"`
-  or `"b_start"`.
+- **`periods`** is an `rk.duration.Periods` (decision D25 of #201). The review
+  dates are the first day of each Period; `timing=rk.duration.PeriodTiming.LAST`
+  moves them to the last day.
+- **`earliest` and `latest`** are optional, inclusive bounds on the review dates.
+  Each is a date or an expression, such as `"shared_start + 1 year"` or
+  `"b_start - 1 year"`. A review date outside them is skipped.
 - **`then`** is the value that the rule fixes when the condition is true. For a
   date value, the default is the review date. For any other value, `then` is
   required.
 - **`otherwise`** is the value when no review is true. For a date value it can be
-  `never` (#201 gap G50).
+  `rk.duration.NEVER`, written `never` in condition text (#201 gap G50, decision
+  D26).
 
 Three more Specification members support rules:
 
-- `parameters(**values)` declares named rule parameters, such as a threshold.
-  Cases can change them, and a rule can read them on every review date.
+- `parameters(**values)` declares named Specification values for rules, such as a
+  threshold. `fix` and cases change them like other values, and a rule can read
+  them on every review date.
 - `rules` returns the rules in their order, as `Rule` records.
 - `with_rules(rules=...)` adds rules after the existing rules. A rule for a key
   that already has a rule replaces it in the same position.
@@ -81,15 +87,15 @@ its rule.
 ### What a rule can observe
 
 A rule reads the value that is available on the review date. A Flow name in a
-condition reads the latest available Movement. `shift(flow=x, periods=1)` reads
-the Movement before it.
+condition reads the latest available Movement. `x.shift(by=1)` reads the
+Movement before it.
 
 | Source | Available on the review date when |
 | --- | --- |
 | A path Flow that `across` assigns | Its availability date is on or before the review date. A period Movement is available at the period's `end` plus the output's lag; a dated Movement at its date plus the lag ([ADR-014](014-market-paths.md)) |
 | A fixed value or a rule parameter | Always |
 | A value that an earlier rule decided | Its decision date is on or before the review date |
-| A solved Flow, such as `funding.headroom` | Its Movement is in a period that ends on or before the review date |
+| A solved Flow, such as `loan_remaining` | Its Movement is in a period that ends on or before the review date |
 | A solved scalar, such as `b_cost` | It does not depend on a free input, on a value that a later rule decides, or on a Movement that is not yet available |
 
 Two rules apply to undecided values:
@@ -105,7 +111,7 @@ Two rules apply to undecided values:
 Validation rejects a rule that reads the future. It checks in two places:
 
 1. **When the Specification is made.** `decide` rejects a look-ahead in the
-   condition text, such as `shift(flow=rent_index, periods=-1)`, with
+   condition text, such as `rent_index.shift(by=-1)`, with
    `AvailabilityError`. It also rejects these conditions:
    - a condition that refers to a value that a later rule decides, or reads a
      solved scalar that depends on one (code `rule_order`);
@@ -123,36 +129,38 @@ Validation rejects a rule that reads the future. It checks in two places:
 - **Decisions are final.** A rule decides once. Nothing reverses a decision.
   Abandonment is a separate decided value that the Model relates to the plan,
   such as `b_sale_date`.
-- **Commitments belong to the Model.** An account declares them, for example
-  `commitments={"b_works": "b_start"}` (decision D2 of #201). When a rule decides
-  `b_start`, the account's committed amount includes B's budget from that date.
-  The executor adds no commitment of its own.
+- **Commitments belong to the Model.** Equations compose them from `cumulative()`,
+  `total()` and `since(on=b_start)` (decision D2 of #201). When a rule decides
+  `b_start`, `committed` includes B's budget from that date. The executor adds no
+  commitment of its own.
 - **Funding feasibility is part of the condition.** The author writes it, for
-  example `funding.headroom >= b_cost`. The executor does not block a decision
+  example `equity_remaining + loan_remaining >= b_cost`. The executor does not block a decision
   that makes the commitment gap positive. The commitment gap is a Model value, and
   the Outcome reports it (lesson 05, exercise 2).
 
 ### Evaluation order
 
-The executor evaluates each path on its own. It processes each review date and
-each known window end, in date order:
+The executor evaluates each path on its own. It processes each review date, and
+the date after each rule's last review, in date order:
 
 1. **Rules run in the order they are written.** Each rule sees the state at the
    moment it runs. This includes decisions by earlier rules on the same date.
-2. **A window is open** when its start is decided and on or before the date, and
-   its end is undecided or after the date. A start that refers to an undecided
-   value is closed. An end that refers to an undecided value is open.
+2. **A review date is open** when its `earliest` bound is decided and on or before
+   the date, and its `latest` bound is undecided or on or after the date. An
+   `earliest` bound that refers to an undecided value keeps reviews closed. A
+   `latest` bound that refers to an undecided value keeps them open.
 3. **When a rule runs:**
-   - if its window end is on or before the date, it fixes `otherwise` on this date;
-   - if its window is open and the date is a review date, it tests the condition.
-     If the condition is true, it fixes `then` (or the date) on this date.
+   - if its last review has passed (its Periods have ended, or its `latest` bound
+     is before the date), it fixes `otherwise` on this date;
+   - if the date is an open review date, it tests the condition. If the condition
+     is true, it fixes `then` (or the date) on this date.
 4. **Before a rule reads a solved value,** the executor solves the provisional
    problem again if the state changed since the last solve.
-5. **After all rules on the date,** each undecided rule whose window end is now on
-   or before the date fixes `otherwise` on this date. A start bound that becomes
-   `never` also closes the window.
-6. **At the end of the Model timeline,** each undecided rule fixes `otherwise` on
-   that date.
+5. **After all rules on the date,** each undecided rule whose last review has now
+   passed fixes `otherwise` on this date. An `earliest` bound that becomes `NEVER`
+   also closes the reviews.
+6. **At the end of its last Period,** each undecided rule fixes `otherwise` on that
+   date. (A Model has no timeline of its own, decision D20 of #201.)
 7. **Finally,** the executor solves once with every decided value fixed. Then it
    makes the candidate, verifies it and assembles the Outcome.
 
@@ -200,8 +208,9 @@ date, the decided values and the broken constraint (lesson 05, cell 7).
 The Run report has a `policy_evidence` section. For each case it records:
 
 - **`reviews`:** one record for each review and each `otherwise`. A record has
-  the rule key, the date, the kind (review or otherwise), the observations, the
-  condition result (true, false or unknown) and the decided value.
+  the rule key, the date, the observations, the condition result (true, false or
+  unknown), the result as an `rk.execution.ReviewResult` (decided, not met,
+  skipped or otherwise) and the decided value.
 - **Observations:** name, reference, quantity, availability date and source (path,
   fixed, parameter, decided or solved).
 - **`decided`:** for each key, the value, the decision date and the rule.
@@ -210,7 +219,7 @@ The Run report has a `policy_evidence` section. For each case it records:
 The `Outcome` reads the trace:
 
 - `outcome.decisions()` returns a table with one row for each case and review. It
-  has `where(**values)` and `observations()`.
+  has `where(key=, result=)` and `observations()`.
 - `outcome.case(key=...).trace()` shows the reviews of one case.
 - Decided values appear in `outcome.table(...)` like other values.
 
@@ -222,7 +231,8 @@ The new `Rule`, `Review` and `PolicyEvidence` records replace `Decision`,
 - **The trace check** is the independent verification of rules
   ([ADR-003](003-computation-and-evidence.md)). It runs after each solve, and on a
   stored Run without a solve. It checks:
-  - the dates, the windows, the written order and each observation's availability;
+  - the dates, the review Periods and bounds, the written order and each
+    observation's availability;
   - that each condition result follows from the recorded observations;
   - that each value is fixed on the first true review, or `otherwise` on the
     correct date;
@@ -230,7 +240,7 @@ The new `Rule`, `Review` and `PolicyEvidence` records replace `Decision`,
   - that path observations equal the path data;
   - that solved Flow observations equal the candidate's Movements.
 - **Replay.** `rk.execution.replay(run=, store=)` solves again from the pinned
-  Specification and MarketPaths. It compares the new trace with the stored trace.
+  Specification and market paths (`rk.market.Paths`). It compares the new trace with the stored trace.
   The decisions and dates must be the same, and the values must agree within
   tolerance. A difference gives the diagnostic `replay_mismatch`, which names the
   first review that differs.
@@ -239,7 +249,7 @@ The new `Rule`, `Review` and `PolicyEvidence` records replace `Decision`,
 
 `outcome.compare(other=, keys=)` returns a `PairedComparison`:
 
-- Both Outcomes must pin the same `MarketPaths`. If not, `compare` raises
+- Both Outcomes must pin the same `rk.market.Paths`. If not, `compare` raises
   `ValidationError` with the code `different_market_paths`.
 - It pairs cases by path member key. If one Outcome has cases across paths and the
   other has only paths, it pairs each case with the same path in the other.
@@ -265,8 +275,15 @@ illustrative.
 **Wait to start (cell 6).**
 
 ```python
-wait = fixed.decide(key="start_date", when="rent_index >= 1.05", review=yearly,
-                    window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
+start_reviews = rk.duration.Span(start=date(2027, 1, 1), end=date(2031, 1, 1)).periods(
+    frequency=yearly
+)
+wait = fixed.parameters(start_threshold=1.05).decide(
+    key="start_date",
+    when="rent_index >= start_threshold",
+    periods=start_reviews,
+    otherwise=rk.duration.NEVER,
+)
 ```
 
 | Date | Kind | Period read | `rent_index` | Condition | Result |
@@ -282,35 +299,43 @@ review fails with `observation_unavailable`. The rule reads only a path Flow, so
 each path has one solve. On this path, B's
 fixed start in 2030 is before the shared works finish. The case fails, and the
 diagnostic names the constraint `b_start >= shared_start + 1 year` (cell 7). On a
-path that never passes 1.05, the 2031-01-01 window end fixes `never`.
+path that never passes 1.05, the end of the last review Period (2031-01-01) fixes
+`NEVER`.
 
-**A look-ahead (cell 8).** `when="shift(flow=rent_index, periods=-1) >= 1.05"`
-reads the next period. `decide` raises `AvailabilityError` before any solve. The
-error has `code`, `value`, `available_on` and `decision_date`.
+**A look-ahead (cell 8).** `when="rent_index.shift(by=-1) >= 1.05"` reads the next
+period. `decide` raises `AvailabilityError` before any solve. The error has `code`,
+`key`, `available_on` and `decision_date`.
 
 **Start Building B with a funding check (cell 9).**
 
 ```python
-start_b = wait.decide(key="b_start", when="rent_index >= 1.10 and funding.headroom >= b_cost",
-                      review=yearly, window=("shared_start + 1 year", date(2033, 1, 1)),
-                      otherwise="never")
+b_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).periods(
+    frequency=yearly
+)
+start_b = wait.decide(
+    key="b_start",
+    when="rent_index >= 1.10 and equity_remaining + loan_remaining >= b_cost",
+    periods=b_reviews,
+    earliest="shared_start + 1 year",
+    otherwise=rk.duration.NEVER,
+)
 ```
 
-The window stays closed until `start_date` is decided. `funding.headroom` is a
-solved Flow. On each review, the executor uses the provisional solution with
+The reviews stay closed until `start_date` is decided, because `earliest` refers to
+it. `equity_remaining` and `loan_remaining` are solved Flows. On each review, the executor uses the provisional solution with
 `start_date` fixed and `b_start` at `never`. After `start_date` is decided, the
 first review of B solves again, and later reviews reuse that solution until a
-decision changes the state. The headroom on 2031-01-01 is the balance at the end of
-the 2030 period.
+decision changes the state. On 2031-01-01 the rule reads both at the end of the
+2030 period.
 
 **Abandon (cell 11).** The rule for `b_sale_date` reads `b_start == never`.
-`b_start` is written first. On 2033-01-01, B's rule runs first: its window has
-ended, so it fixes `never`. Then the sale rule runs. Its window
-`[2033-01-01, 2034-01-01)` is open, and its condition is true. If the sale rule
+`b_start` is written first. On 2033-01-01, B's rule runs first: its last review
+has passed, so it fixes `NEVER`. Then the sale rule runs. Its review Period, 2033,
+is open, and its condition is true. If the sale rule
 were written first, `decide` would reject it with `rule_order`.
 
-**A threshold sweep (cell 17).** `parameters(start_threshold=1.05)` and `cases`
-make one case for each threshold, across every path. Each case key is a pair of the
+**A threshold sweep (cell 17).** The threshold is a Specification parameter from
+cell 6. `cases` make one case for each threshold, across every path. Each case key is a pair of the
 case name and the path member key ([ADR-014](014-market-paths.md)).
 
 ## Acceptance for #215
@@ -323,9 +348,9 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
 3. Unit tests with a fake backend, and no subprocess, cover each step of the
    evaluation order:
    - rules on the same date, and the written order;
-   - closing a window when the rule runs, and after the date;
-   - undecided window bounds and unknown comparisons;
-   - the end of the timeline.
+   - the last review passing when the rule runs, and after the date;
+   - undecided `earliest` and `latest` bounds and unknown comparisons;
+   - the end of the last Period.
 4. A rule set that reads only path values runs one solve for each path. A rule
    set with a funding observation stays within the stated solve bound. The Run
    report records the solve count for each case.
@@ -347,7 +372,9 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
 ## API names added
 
 - `rk.Specification.decide`, `.parameters`, `.rules` and `.with_rules`.
-- `rk.specification.Rule`.
+- `rk.specification.Rule` and `rk.specification.Role`.
+- `rk.duration.Periods` and `rk.duration.NEVER` (decisions D25 and D26 of #201).
+- `rk.execution.ReviewResult`.
 - `rk.execution.decide` and `rk.execution.Decisions` (stage).
 - `rk.execution.Outcome.decisions`, `Outcome.compare` and
   `Outcome.case(key=...).trace`.
@@ -370,8 +397,11 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
 - **Let the executor sort rules by their references.** The order would not show in
   the Specification. Lesson 07's design and start rules make a cycle that the
   executor would have to reject.
-- **Inclusive windows.** They read like "from 2027 to 2030", but they break the
-  half-open time rule of [ADR-012](012-naming-and-glossary.md).
+- **A window tuple with a review frequency** (`review=yearly, window=(start,
+  end)`). The reader must remember the order and that the end is excluded.
+  `Periods` replace it (decision D25 of #201): the Span stays half-open, as
+  [ADR-012](012-naming-and-glossary.md) requires, and the review dates are the
+  first days of its Periods.
 - **Block decisions that the funding cannot cover.** This hides a modelling choice
   in the executor. Lesson 05 shows the commitment gap when the check is missing.
 - **Keep the action concept.** Decision D9 of #201 removes it. A rule decides one
@@ -379,7 +409,7 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
 
 The rule API replaces the current policy API. This is a breaking change inside the
 1.0.0 format reset ([ADR-017](017-api-and-formats.md)). Lesson 05's proposed cells
-keep their half-open windows. The rename pass
+review their rules over `Periods` made from half-open Spans. The rename pass
 ([ADR-012](012-naming-and-glossary.md)) does not change these names.
 
 ## Sources and related decisions
@@ -391,7 +421,7 @@ keep their half-open windows. The rename pass
 - [ADR-022: design alternatives](022-design-alternatives.md), which uses these
   rules to choose a design.
 - [ADR-020: walkthrough plan v2](020-walkthrough-plan-v2.md), lesson 05.
-- Proposed cells for lesson 05 and decisions D2, D8 and D9:
+- Proposed cells for lesson 05 and decisions D2, D8, D9, D25 and D26:
   `examples/walkthrough/proposed/` (#201,
   [#255](https://github.com/daniel-fink/rangekeeper/pull/255)).
 - [Scenarios and policies reference](../reference/scenarios-and-policies.md), which

@@ -154,7 +154,7 @@ except rk.errors.AvailabilityError as error:
 ## 5. Start Building B when the market and funding allow
 
 Narrative: decide Building B's start too. Start B when the index reaches 1.10 and
-the unspent equity and the undrawn loan cover B's whole budget. Both come from
+the remaining equity and the remaining loan cover B's whole budget. Both come from
 lesson 03's funding equations, with the decisions made so far. Building B cannot
 start before the shared works finish, so `earliest=` skips the reviews before that
 date on each path.
@@ -166,7 +166,7 @@ b_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).perio
 )
 start_b = wait.decide(
     key="b_start",
-    when="rent_index >= 1.10 and equity_remaining + loan_undrawn >= b_cost",
+    when="rent_index >= 1.10 and equity_remaining + loan_remaining >= b_cost",
     periods=b_reviews,
     earliest="shared_start + 1 year",
     otherwise=rk.duration.NEVER,
@@ -345,7 +345,7 @@ for row in strategy_outcome.decisions().observations():
     assert row.available_on <= row.decision_date
 decided = rk.execution.ReviewResult.DECIDED
 for row in strategy_outcome.decisions().where(key="b_start", result=decided):
-    available = row.observed["equity_remaining"] + row.observed["loan_undrawn"]
+    available = row.observed["equity_remaining"] + row.observed["loan_remaining"]
     assert available >= row.observed["b_cost"]
 assert strategy_outcome.case(key=paths.keys[0]).run.policy_evidence.verified
 ```
@@ -390,11 +390,11 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 The design for sequential decisions must support:
 
 - **Observations.** A rule names Model values (`rent_index`, `equity_remaining`,
-  `loan_undrawn`,
+  `loan_remaining`,
   `b_cost`) and earlier decided values (`b_start == never`). The value read is the
   latest one available on the review date.
 - **Availability.** Market path Flows carry availability dates (period end by
-  default). Solved values, such as the undrawn loan, are available on the review date
+  default). Solved values, such as the remaining loan, are available on the review date
   when they depend only on Movements up to that date. Validation rejects a rule that
   reads a later value (cell 8).
 - **Decided values.** A date value, or `rk.duration.NEVER`. The decision fixes the
@@ -404,7 +404,7 @@ The design for sequential decisions must support:
   `earliest=` and `latest=` skip reviews outside bounds that are expressions of
   earlier decisions (cell 9).
 - **Funding.** The rule observes the funding values (`equity_remaining`,
-  `loan_undrawn`) under the decisions made so far, so evaluation alternates review
+  `loan_remaining`) under the decisions made so far, so evaluation alternates review
   and solve in date order (cell 9).
 - **Traces.** For each case and review: date, decided value, observations with their
   availability dates, the rule's truth and the result (cells 7, 11).

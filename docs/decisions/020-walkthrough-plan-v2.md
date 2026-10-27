@@ -238,7 +238,8 @@ back = front.fix(rent_factor=1).free("land_cost")
 - **Finance taught.** Base plan and base case, development budget (hard costs,
   soft costs, contingency), opening dates, unlevered and levered cash flows,
   loan-to-value, equity NPV, IRR and its failure cases, equity first, then the
-  construction loan, the undrawn loan, committed but unpaid costs, and the do-nothing baseline.
+  construction loan, the remaining equity and loan, committed but unpaid costs, and
+  the do-nothing baseline.
 - **By hand once.** One year's split between equity and the loan, then the cascade in
   the Model.
 - **Depends on.** #144 (cases), #127, #167, #168, #147 (deterministic builds,

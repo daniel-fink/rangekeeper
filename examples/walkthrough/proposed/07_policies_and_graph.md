@@ -167,6 +167,7 @@ switch = (
         periods=design_reviews,
         earliest="shared_start + 1 year",
         latest="b_start - 1 year",
+        then="hotel",
         otherwise="residential",
     )
 )
@@ -458,7 +459,7 @@ solutions. The longest cell has 16 lines (optional cell 18). Cells follow
 | 4 | 2, 7 | G61: `edit(name=)`, `relabel(filter, **labels)`, `include(fragment)`; `Filter(within=)` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)) |
 | 5 | 7 | G62: `rk.model.diff(a, b)` with typed parts |
 | 6 | 7, 8 | G74: `rk.model.compare(models=, rollups=)` gives one table of declared rollups by design |
-| 7b | 2, 6 | G63: `Specification.alternatives(key={name: Model})` and a decided Model choice; G49 (`periods=`), G55 (`earliest=`, `latest=`), G57 (`parameters`); keyed members in rule text (`use_index["hotel"]`) |
+| 7b | 2, 6 | G63: `Specification.alternatives(key={name: Model})` and a decided Model choice with `then=` (ADR-022); G49 (`periods=`), G55 (`earliest=`, `latest=`), G57 (`parameters`); keyed members in rule text (`use_index["hotel"]`) |
 | 7 | 1, 10 | G64: `Specification.rules` reads the rules of a saved Specification, so lesson 05's rules are loaded as a document, not from a helper |
 | 8 | 2 | G65: `Specification.with_rules(rules)` |
 | 9–10 | 8 | G66: `rk.execution.compare(outcomes=, keys=, baseline=)` for several strategies |

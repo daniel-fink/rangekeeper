@@ -1,6 +1,8 @@
 # ADR-022: Choose between design alternatives with rules
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27.
+Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27. Amended
+2026-10-27 by #201 decisions D2, D24, D25 and D26 (reviews as `Periods`, `NEVER`,
+enums, keyed members in rule text, the equity-first funding names).
 
 ## Problem
 
@@ -103,7 +105,7 @@ A rule decides a choice key in the same way that it decides a date (ADR-021):
   `pivot(...)` and `describe()`.
 - **`outcome.table("b_design", ...)`** shows the chosen option name for each case.
 - **Limit.** An entity whose delivery depends on a decided date, such as an
-  expansion floor when `expansion_date` is `never`, is still in the realised
+  expansion floor when `expansion_date` is `NEVER`, is still in the realised
   Model. Report its delivery through its dated Flows and the decided date. A
   rollup that knows about delivery dates is not in 1.0.
 
@@ -112,7 +114,7 @@ A rule decides a choice key in the same way that it decides a date (ADR-021):
 `rk.execution.compare(outcomes={name: outcome, ...}, keys=, baseline=)` returns a
 `StrategyComparison`:
 
-- All Outcomes must pin the same `MarketPaths`. If not, it raises
+- All Outcomes must pin the same `rk.market.Paths`. If not, it raises
   `different_market_paths`.
 - It pairs each strategy with the baseline by path member key, as
   `Outcome.compare` does (ADR-021). Strategies can use different alternatives.
@@ -123,17 +125,18 @@ A rule decides a choice key in the same way that it decides a date (ADR-021):
 
 ### The premium question
 
-The provision is paid from equity, so it reduces the funding headroom. A rule
-such as `funding.headroom >= b_cost` can then decide differently as the premium
-rises. The library makes this visible and does not hide it:
+The provision is paid from equity, so it reduces the remaining equity. A rule
+such as `equity_remaining + loan_remaining >= b_cost` can then decide differently
+as the premium rises. The library makes this visible and does not hide it:
 
-- **Sweep the premium as cases:** `cases(cases={p: {"provision": p} for p in ...})`
-  across the paths.
+- **Sweep the premium as cases:** `cases(cases=premiums)`, with one case for each
+  premium written out (decision D24 of #201), across the paths.
 - **`outcome.decisions().same_across_cases()`** shows, for each path, if any decided
   value changes between the cases. It lists the paths and keys that change.
 - **`comparison.by_case().breakeven(key="provision", criterion=...)`** gives the
   largest premium at which the criterion of the paired gains is zero or more.
-  `criterion` is `"mean"` or `("quantile", q)`.
+  `criterion` is `rk.execution.Criterion.MEAN`, or `Criterion.QUANTILE` with
+  `level=` (decision D26 of #201).
   - It needs at least two cases that differ only in `key`.
   - If a decided value changes on any path between the cases, it raises
     `DecisionsChangedError` with the code `decisions_changed`. The error lists the
@@ -152,8 +155,8 @@ rises. The library makes this visible and does not hide it:
 - A choice key cannot be free. The library has no objective over alternatives.
 - `by_case().best(criterion=)` returns the best tested case. The result says
   "best tested".
-- To test thresholds on new paths, `MarketPaths.generator` rebuilds the generator
-  from the capture record (#201 gap G69). A new seed gives a test set. Nothing in
+- To test thresholds on new paths, `Paths.regenerate(seed=)` rebuilds the
+  generator from the capture record (#201 gap G69). A new seed gives a test set. Nothing in
   the library tunes a threshold.
 
 ## Worked examples
@@ -163,31 +166,44 @@ These come from the proposed cells of lesson 07 (#201). Amounts are illustrative
 **A rule chooses the design (cell 7, with `then`).**
 
 ```python
-switch = (fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
-          .fix(provision="2.5e6 AUD")
-          .decide(key="b_design", when="hotel_index >= 1.10 * residential_index",
-                  review=yearly, window=("shared_start + 1 year", "b_start"),
-                  then="hotel", otherwise="residential"))
-both = switch.with_rules(rules=timing)    # start_date, b_start, b_sale_date follow
+switch = (
+    fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
+    .fix(provision="2.5e6 AUD")
+    .parameters(switch_threshold=1.10)
+    .decide(
+        key="b_design",
+        when='use_index["hotel"] >= switch_threshold * use_index["residential"]',
+        periods=design_reviews,
+        earliest="shared_start + 1 year",
+        latest="b_start - 1 year",
+        then="hotel",
+        otherwise="residential",
+    )
+)
+both = switch.with_rules(rules=timing)  # start_date, b_start, b_sale_date follow
 ```
+
+`design_reviews` and, below, `expansion_reviews` are `rk.duration.Periods`, as in
+lesson 07. A rule reads one member of the keyed `use_index` by name.
 
 **The design before the start, on one date.** In `both`, the design rule is
 written first. In January 2030 on one path:
 
 | Observed | Value |
 | --- | --- |
-| `hotel_index >= 1.10 * residential_index` | true |
+| `use_index["hotel"] >= 1.10 * use_index["residential"]` | true |
 | `rent_index >= 1.10` | true |
-| `funding.headroom` | 40 M AUD |
+| `equity_remaining + loan_remaining` | 40 M AUD |
 | `b_cost` as residential, as hotel | 35 M AUD, 42 M AUD |
 
-1. The design rule runs. Its window ends at `b_start`, which is undecided, so the
-   window is open. The condition is true: `b_design = "hotel"`.
+1. The design rule runs. Its `latest` bound refers to `b_start`, which is
+   undecided, so the review is open. The condition is true: `b_design = "hotel"`.
 2. B's rule runs. The state changed, so the executor solves again with the hotel
-   Model. `b_cost` is 42 M AUD, more than the headroom. B does not start.
+   Model. `b_cost` is 42 M AUD, more than the remaining equity and loan. B does
+   not start.
 
 If the design condition were false, B's rule would read the residential cost of
-35 M AUD and start B. The design rule's window would then end on that date, and
+35 M AUD and start B. The design rule's `latest` bound would then have passed, and
 `otherwise` would fix `"residential"`. If the timing rules came first, `decide`
 would reject the Specification: B's rule reads `b_cost`, which a later rule's
 choice can change.
@@ -204,18 +220,27 @@ expand = (both.alternatives(keys=("b_design", "a_design"), models={
               ("residential", "expanded"): add_expansion(residential),
               ("hotel", "expanded"): add_expansion(hotel)})
           .fix(a_design="expanded", a_provision="1.5e6 AUD")
-          .decide(key="expansion_date", when="residential_index >= 1.25", review=yearly,
-                  window=("a_open + 3 years", date(2035, 1, 1)), otherwise="never"))
+          .decide(key="expansion_date", when='use_index["residential"] >= 1.25',
+                  periods=expansion_reviews, earliest="a_open + 3 years",
+                  otherwise=rk.duration.NEVER))
 ```
 
 **The largest justified premium (cells 13 and 14).**
 
 ```python
-premiums = {p: {"provision": p} for p in ("0 AUD", "2.5e6 AUD", "5e6 AUD", "7.5e6 AUD")}
-sweep = rk.execution.solve(specification=both.cases(cases=premiums).across(paths=use_paths, assign=assign))
-sweep.decisions().same_across_cases()
-gain = sweep.compare(other=outcomes["timing"], keys=["equity_npv"]).by_case()
-gain.breakeven(key="provision", criterion="mean")
+premiums = {
+    "0 AUD": {"provision": "0 AUD"},
+    "2.5e6 AUD": {"provision": "2.5e6 AUD"},
+    "5e6 AUD": {"provision": "5e6 AUD"},
+    "7.5e6 AUD": {"provision": "7.5e6 AUD"},
+}
+premium_sweep = both.cases(cases=premiums).across(paths=use_paths, series=use_series)
+premium_outcome = rk.execution.solve(specification=premium_sweep)
+premium_outcome.decisions().same_across_cases()
+gain = premium_outcome.compare(
+    other=strategy_outcomes["timing"], keys=["equity_npv"]
+).by_case()
+gain.breakeven(key="provision", criterion=rk.execution.Criterion.MEAN)
 ```
 
 If the 7.5 M AUD premium stops B on some paths, `same_across_cases()` lists them
