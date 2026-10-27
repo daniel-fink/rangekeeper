@@ -41,7 +41,7 @@ import helpers
 ```python
 # cell 2
 graph = rk.io.load(path=helpers.data_path(name="mixed_use_property.model.json"))
-graph.summary()                        # counts of entities, relationships and classifications
+graph.summary()  # counts of entities, relationships and classifications
 ```
 
 ```python
@@ -56,18 +56,18 @@ classification and its own values. Look up one floor by its code.
 
 ```python
 # cell 4
-graph.entities()                       # code, name, classification and labels
+graph.entities()  # code, name, classification and labels
 ```
 
 ```python
 # cell 5
 floor = graph.entity(code="a_hotel_floor_1")
-floor.values                           # gfa, perimeter, floor-to-floor height, level
+floor.values  # gfa, perimeter, floor-to-floor height, level
 ```
 
 ```python
 # cell 6
-graph.relationships(entity=floor)      # contained by its space; served by cores and plant
+graph.relationships(entity=floor)  # contained by its space; served by cores and plant
 ```
 
 ## 3. One graph, three views
@@ -96,13 +96,16 @@ and values with units. A missing value never passes a test.
 ```python
 # cell 9
 floors = graph.find(filter=rk.model.Filter(classification="floor"))
-len(floors)                            # 33
+len(floors)  # 33
 ```
 
 ```python
 # cell 10
-graph.find(filter=rk.model.Filter(classification="floor", labels={"use": "residential"},
-                           where="gfa >= 1500 sqm"))
+graph.find(
+    filter=rk.model.Filter(
+        classification="floor", labels={"use": "residential"}, where="gfa >= 1500 sqm"
+    )
+)
 ```
 
 ## 5. Roll up, one building first
@@ -113,15 +116,23 @@ has a value and a coverage: which contributors had the value, and which did not.
 
 ```python
 # cell 11
-a_gfa = graph.rollup(of="gfa", over="spatiallyContains", root="building_a",
-                     contributors=rk.model.Filter(classification="floor"))
+a_gfa = graph.rollup(
+    of="gfa",
+    over="spatiallyContains",
+    root="building_a",
+    contributors=rk.model.Filter(classification="floor"),
+)
 a_gfa.value, a_gfa.coverage
 ```
 
 ```python
 # cell 12
-gfa = graph.rollup(of="gfa", over="spatiallyContains", root="property",
-                   contributors=rk.model.Filter(classification="floor"))
+gfa = graph.rollup(
+    of="gfa",
+    over="spatiallyContains",
+    root="property",
+    contributors=rk.model.Filter(classification="floor"),
+)
 gfa.pivot(rows="building", columns="use")
 ```
 
@@ -141,7 +152,7 @@ served.by_root(), served.value
 ```python
 # cell 14
 assert served.by_root().sum() > served.value
-served.coverage.shared                 # contributors reached from more than one root
+served.coverage.shared  # contributors reached from more than one root
 ```
 
 ## 7. Trace a total
@@ -170,7 +181,10 @@ graph.find(filter=rk.model.Filter(name="buildingAretail")).table("code", "name",
 for request in ({"name": "buildingAretail"}, {"code": "building_c"}):
     try:
         graph.entity(**request)
-    except (rk.errors.AmbiguousReferenceError, rk.errors.MissingReferenceError) as error:
+    except (
+        rk.errors.AmbiguousReferenceError,
+        rk.errors.MissingReferenceError,
+    ) as error:
         print(type(error).__name__, error.requested, error.candidates)
 ```
 
@@ -184,8 +198,19 @@ for word.
 # cell 18
 draft = graph.edit()
 site = draft.entity(code="property")
-site.values(land_cost="AUD", works_cost="AUD", leverage="ratio", mortgage_constant="1/year",
-            coverage="ratio", operating_cost="AUD pa", rent_factor="ratio")
+site.values(
+    land_cost="AUD",
+    works_cost="AUD",
+    leverage="ratio",
+    mortgage_constant="1/year",
+    coverage="ratio",
+    operating_cost="AUD pa",
+    rent_factor="ratio",
+)
+```
+
+```python
+# cell 18b
 site.equations(
     "total_cost = land_cost + works_cost",
     "mortgage = leverage * total_cost",
@@ -205,8 +230,10 @@ to every floor.
 site.values(efficiency="ratio", rent="AUD/sqm pa", vacancy="ratio", by="use")
 draft.equations_for(
     filter=rk.model.Filter(classification="floor"),
-    equations=["nla = efficiency[use] * gfa",
-                   "income = nla * rent[use] * (1 - vacancy[use])"],
+    equations=[
+        "nla = efficiency[use] * gfa",
+        "income = nla * rent[use] * (1 - vacancy[use])",
+    ],
 )
 ```
 
@@ -215,8 +242,13 @@ declares a value; lesson 02's equation uses it by key.
 
 ```python
 # cell 20
-site.rollup(key="reference_income", of="income", over="spatiallyContains", root="property",
-            contributors=rk.model.Filter(classification="floor"))
+site.rollup(
+    key="reference_income",
+    of="income",
+    over="spatiallyContains",
+    root="property",
+    contributors=rk.model.Filter(classification="floor"),
+)
 model = draft.commit()
 ```
 
@@ -228,11 +260,17 @@ inputs as lesson 02, with the rates by use in place of the totals.
 ```python
 # cell 21
 data = helpers.load_property(snapshot=2032)
-lending = {"leverage": "65 %", "coverage": 1.25,
-           "mortgage_constant": rk.finance.mortgage_constant(rate="6 %/year", term="20 years")}
+lending = {
+    "leverage": "65 %",
+    "coverage": 1.25,
+    "mortgage_constant": rk.finance.mortgage_constant(rate="6 %/year", term="20 years"),
+}
 back = model.specify(name="Back door from floors").fix(
-    **data.inputs.select("works_cost", "operating_cost"), **data.use_rates, **lending,
-    rent_factor=1)
+    **data.inputs.select("works_cost", "operating_cost"),
+    **data.use_rates,
+    **lending,
+    rent_factor=1,
+)
 outcome = rk.execution.solve(specification=back)
 outcome["land_cost"]
 ```
@@ -240,7 +278,9 @@ outcome["land_cost"]
 ```python
 # cell 22
 lesson_02 = rk.io.load(path=helpers.data_path(name="02_feasibility.model.json"))
-lesson_02_back = lesson_02.specify(name="Back door").fix(**data.inputs, **lending, rent_factor=1)
+lesson_02_back = lesson_02.specify(name="Back door").fix(
+    **data.inputs, **lending, rent_factor=1
+)
 before = rk.execution.solve(specification=lesson_02_back)
 assert rk.quantity.isclose(actual=outcome["land_cost"], expected=before["land_cost"])
 ```
@@ -272,8 +312,12 @@ model by building and use. Which use has the most area in Building B?
 
 ```python
 # solution
-nla = outcome.model.rollup(of="nla", over="spatiallyContains", root="property",
-                           contributors=rk.model.Filter(classification="floor"))
+nla = outcome.model.rollup(
+    of="nla",
+    over="spatiallyContains",
+    root="property",
+    contributors=rk.model.Filter(classification="floor"),
+)
 nla.pivot(rows="building", columns="use")
 ```
 
@@ -282,11 +326,18 @@ three uses add up to the total.
 
 ```python
 # solution
-by_use = {use: outcome.model.rollup(of="income", over="spatiallyContains", root="property",
-                                    contributors=rk.model.Filter(classification="floor",
-                                                                 labels={"use": use})).value
-          for use in ("hotel", "residential", "retail")}
-assert rk.quantity.isclose(actual=sum(by_use.values()), expected=outcome["reference_income"])
+by_use = {
+    use: outcome.model.rollup(
+        of="income",
+        over="spatiallyContains",
+        root="property",
+        contributors=rk.model.Filter(classification="floor", labels={"use": use}),
+    ).value
+    for use in ("hotel", "residential", "retail")
+}
+assert rk.quantity.isclose(
+    actual=sum(by_use.values()), expected=outcome["reference_income"]
+)
 ```
 
 **Try it 3: the rent that Building B needs.** Fix the land at 20 million AUD and free
@@ -295,7 +346,9 @@ the rent factor. Then trace the required income to Building B's floors.
 ```python
 # solution
 front = back.fix(land_cost="20e6 AUD").free("rent_factor")
-rk.execution.solve(specification=front).rollup(key="reference_income").trace(root="building_b")
+rk.execution.solve(specification=front).rollup(key="reference_income").trace(
+    root="building_b"
+)
 ```
 
 ## Checks and recap
@@ -303,7 +356,9 @@ rk.execution.solve(specification=front).rollup(key="reference_income").trace(roo
 ```python
 # cell 25 (checks)
 assert len(floors) == 33 and gfa.coverage.complete
-assert rk.quantity.isclose(actual=gfa.value, expected=sum(gfa.pivot(rows="building").values()))
+assert rk.quantity.isclose(
+    actual=gfa.value, expected=sum(gfa.pivot(rows="building").values())
+)
 assert served.coverage.shared == {"plinth_plant"}
 ```
 
@@ -320,8 +375,8 @@ assert served.coverage.shared == {"plinth_plant"}
 
 ## Cell budget
 
-23 core code cells, 1 optional cell and 1 check cell (budget 20–25), 3 exercise
-solutions. Cell 18 has 12 lines.
+24 core code cells, 1 optional cell and 1 check cell (budget 20–25), 3 exercise
+solutions. The longest cell has 15 lines (cell 21). Cells follow `ruff format` (D15).
 
 ## Rule check
 

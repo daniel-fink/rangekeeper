@@ -46,7 +46,7 @@ import helpers
 ```python
 # cell 2
 data = helpers.load_property(snapshot=2032)
-data.inputs                            # key, quantity and origin of each total
+data.inputs  # key, quantity and origin of each total
 ```
 
 ## 2. A calculation has a direction
@@ -61,7 +61,7 @@ new formulas. The relations did not change; only the question did.
 total_cost = 20e6 + data.inputs["works_cost"].magnitude
 debt_service = 0.0860 * 0.65 * total_cost
 required_noi = 1.25 * debt_service
-required_noi                          # AUD per year, calculated from cost to income
+required_noi  # AUD per year, calculated from cost to income
 ```
 
 ## 3. Declare the relations once
@@ -81,11 +81,27 @@ model = rk.Model(name="Mixed-use feasibility")
 draft = model.edit()
 site = draft.add_entity(code="property", classification="property")
 site.values(
-    land_cost="AUD", works_cost="AUD", total_cost="AUD",
-    leverage="ratio", mortgage="AUD", mortgage_constant="1/year",
-    debt_service="AUD pa", coverage="ratio", noi="AUD pa",
-    operating_cost="AUD pa", effective_income="AUD pa",
-    rent_factor="ratio", reference_income="AUD pa",
+    land_cost="AUD",
+    works_cost="AUD",
+    total_cost="AUD",
+    leverage="ratio",
+    mortgage="AUD",
+    mortgage_constant="1/year",
+    debt_service="AUD pa",
+)
+```
+
+Narrative: the cost and loan values are declared. Now the income values.
+
+```python
+# cell 4b
+site.values(
+    coverage="ratio",
+    noi="AUD pa",
+    operating_cost="AUD pa",
+    effective_income="AUD pa",
+    rent_factor="ratio",
+    reference_income="AUD pa",
 )
 ```
 
@@ -107,20 +123,34 @@ means 10 % higher. Parking earns no rent.
 
 ```python
 # cell 6
-site.values(hotel_area="sqm", hotel_rent="AUD/sqm pa", hotel_vacancy="ratio",
-            residential_area="sqm", residential_rent="AUD/sqm pa", residential_vacancy="ratio",
-            retail_area="sqm", retail_rent="AUD/sqm pa", retail_vacancy="ratio")
+site.values(
+    hotel_area="sqm",
+    hotel_rent="AUD/sqm pa",
+    hotel_vacancy="ratio",
+    residential_area="sqm",
+    residential_rent="AUD/sqm pa",
+    residential_vacancy="ratio",
+    retail_area="sqm",
+    retail_rent="AUD/sqm pa",
+    retail_vacancy="ratio",
+)
+```
+
+```python
+# cell 6b
 site.equation(
-    equation="reference_income = hotel_area * hotel_rent * (1 - hotel_vacancy)"
-             " + residential_area * residential_rent * (1 - residential_vacancy)"
-             " + retail_area * retail_rent * (1 - retail_vacancy)"
+    equation=(
+        "reference_income = hotel_area * hotel_rent * (1 - hotel_vacancy)"
+        " + residential_area * residential_rent * (1 - residential_vacancy)"
+        " + retail_area * retail_rent * (1 - retail_vacancy)"
+    )
 )
 model = draft.commit()
 ```
 
 ```python
 # cell 7
-helpers.show_relations(of=model)          # a diagram with no input or output arrows
+helpers.show_relations(of=model)  # a diagram with no input or output arrows
 ```
 
 > **Under the hood: the operator form.** The same equation can use Python operators
@@ -139,12 +169,14 @@ not the interest rate. With monthly payments over 20 years at 6 % a year:
 ```python
 # cell 8
 r, n = 0.06 / 12, 20 * 12
-12 * r / (1 - (1 + r) ** -n)           # 0.0860 per year
+12 * r / (1 - (1 + r) ** -n)  # 0.0860 per year
 ```
 
 ```python
 # cell 9
-constant = rk.finance.mortgage_constant(rate="6 %/year", term="20 years", payments_per_year=12)
+constant = rk.finance.mortgage_constant(
+    rate="6 %/year", term="20 years", payments_per_year=12
+)
 constant
 ```
 
@@ -161,8 +193,10 @@ Every value that it does not fix is free: the solve finds it.
 ```python
 # cell 10
 lending = {"leverage": "65 %", "coverage": 1.25, "mortgage_constant": constant}
-front = model.specify(name="Front door").fix(**data.inputs, **lending, land_cost="20e6 AUD")
-front.roles                            # fixed values, and the free values the solve finds
+front = model.specify(name="Front door").fix(
+    **data.inputs, **lending, land_cost="20e6 AUD"
+)
+front.roles  # fixed values, and the free values the solve finds
 ```
 
 ```python
@@ -196,13 +230,15 @@ back_outcome["land_cost"]
 
 ```python
 # cell 14
-helpers.show_relations(of=back)           # the same equations, with different markers
+helpers.show_relations(of=back)  # the same equations, with different markers
 ```
 
 ```python
 # cell 15
-rk.execution.table(outcomes={"Front door": front_outcome, "Back door": back_outcome},
-                   keys=["land_cost", "rent_factor", "noi", "mortgage"])
+rk.execution.table(
+    outcomes={"Front door": front_outcome, "Back door": back_outcome},
+    keys=["land_cost", "rent_factor", "noi", "mortgage"],
+)
 ```
 
 > **Finance note.** A negative supportable land price is a shortfall under these
@@ -217,7 +253,7 @@ back the land cost that we started with.
 ```python
 # cell 16
 round_trip = back.fix(rent_factor=front_outcome["rent_factor"])
-rk.execution.solve(specification=round_trip)["land_cost"]          # 20e6 AUD
+rk.execution.solve(specification=round_trip)["land_cost"]  # 20e6 AUD
 ```
 
 ## 8. Change one input
@@ -241,7 +277,7 @@ and a diagnostic that names the values or equations by key.
 ```python
 # cell 18
 loose = rk.execution.solve(specification=back.free("rent_factor"))
-loose.status, loose.free_unknowns      # UNDERDETERMINED, ('land_cost', 'rent_factor')
+loose.status, loose.free_unknowns  # UNDERDETERMINED, ('land_cost', 'rent_factor')
 ```
 
 **Too many fixed values that disagree.** Fix both the land cost and the rent factor.
@@ -249,7 +285,7 @@ loose.status, loose.free_unknowns      # UNDERDETERMINED, ('land_cost', 'rent_fa
 ```python
 # cell 19
 tight = rk.execution.solve(specification=front.fix(rent_factor=1))
-tight.status, tight.diagnostics        # INFEASIBLE; the diagnostic names the equations
+tight.status, tight.diagnostics  # INFEASIBLE; the diagnostic names the equations
 ```
 
 **A product of two unknowns.** Ask for leverage and coverage together.
@@ -277,8 +313,11 @@ what is the highest leverage the income supports?
 
 ```python
 # solution
-max_leverage = model.specify(name="Largest loan").fix(
-    **data.inputs, **lending, land_cost="20e6 AUD", rent_factor=1).free("leverage")
+max_leverage = (
+    model.specify(name="Largest loan")
+    .fix(**data.inputs, **lending, land_cost="20e6 AUD", rent_factor=1)
+    .free("leverage")
+)
 rk.execution.solve(specification=max_leverage)["leverage"]
 ```
 
@@ -287,7 +326,9 @@ does the front door need?
 
 ```python
 # solution
-longer = rk.finance.mortgage_constant(rate="6 %/year", term="25 years", payments_per_year=12)
+longer = rk.finance.mortgage_constant(
+    rate="6 %/year", term="25 years", payments_per_year=12
+)
 longer_outcome = rk.execution.solve(specification=front.fix(mortgage_constant=longer))
 assert longer_outcome["rent_factor"] < factor
 ```
@@ -305,10 +346,14 @@ assert stronger > back_outcome["land_cost"]
 
 ```python
 # cell 22 (checks)
-assert rk.quantity.isclose(actual=rk.execution.solve(specification=round_trip)["land_cost"],
-                           expected=rk.Quantity(text="20e6 AUD"))
-assert rk.quantity.isclose(actual=front_outcome["effective_income"],
-                        expected=factor * front_outcome["reference_income"])
+assert rk.quantity.isclose(
+    actual=rk.execution.solve(specification=round_trip)["land_cost"],
+    expected=rk.Quantity(text="20e6 AUD"),
+)
+assert rk.quantity.isclose(
+    actual=front_outcome["effective_income"],
+    expected=factor * front_outcome["reference_income"],
+)
 assert back.model_id == front.model_id == model.id
 ```
 
@@ -325,8 +370,8 @@ adds debt, equity and funding.
 
 ## Cell budget
 
-17 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest
-cell has 9 lines (cell 4).
+19 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest cell
+has 13 lines (cell 4). Cells follow `ruff format` (D15).
 
 ## Rule check
 

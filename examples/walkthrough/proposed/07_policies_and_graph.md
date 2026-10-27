@@ -57,19 +57,35 @@ import helpers
 residential = rk.io.load(path=helpers.data_path(name="07_property_plan.model.json"))
 use_paths = rk.io.load(path=helpers.data_path(name="04_use_indices.paths.json"))
 plan = helpers.load_base_plan()
-residential.rollups()                  # key, value rolled up, relationship, root and contributors
+residential.rollups()  # key, value rolled up, relationship, root and contributors
 ```
 
 ```python
 # cell 3
-assumptions = {"discount_rate": "7 %/year", "opex_growth": "3.5 %/year",
-               "exit_cap_rate": "5 %", "rent_growth": "0 %/year", "b_land_share": "40 %"}
 yearly = rk.duration.Frequency.YEAR
+assumptions = {
+    "discount_rate": "7 %/year",
+    "opex_growth": "3.5 %/year",
+    "exit_cap_rate": "5 %",
+    "rent_growth": "0 %/year",
+    "b_land_share": "40 %",
+}
 debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
-assign = {"use_index": {"hotel": "hotel_index", "residential": "residential_index",
-                        "retail": "retail_index"}}
-fixed = residential.specify(name="Fixed design").fix(**plan.inputs, **plan.use_rates,
-                                                **assumptions, **debt, provision="0 AUD")
+```
+
+Narrative: each use has its own market index. The keyed value `use_index` takes one
+path Flow for each use.
+
+```python
+# cell 3b
+uses = {
+    "hotel": "hotel_index",
+    "residential": "residential_index",
+    "retail": "retail_index",
+}
+assign = {"use_index": uses}
+inputs = {**plan.inputs, **plan.use_rates, **assumptions, **debt}
+fixed = residential.specify(name="Fixed design").fix(**inputs, provision="0 AUD")
 ```
 
 ## 2. A design alternative
@@ -82,7 +98,9 @@ join Building B. Make it as a new revision of the same Model.
 ```python
 # cell 4
 draft = residential.edit(name="Building B as hotel")
-draft.relabel(filter=rk.model.Filter(classification="floor", within="building_b"), use="hotel")
+draft.relabel(
+    filter=rk.model.Filter(classification="floor", within="building_b"), use="hotel"
+)
 # cores and plant, with their costs
 draft.include(fragment=helpers.load_fragment(name="building_b_hotel_services"))
 hotel = draft.commit()
@@ -100,10 +118,18 @@ over both structures.
 ```python
 # cell 6
 for design in (residential, hotel):
-    nla = design.rollup(of="nla", over="spatiallyContains", root="building_b",
-                        contributors=rk.model.Filter(classification="floor"))
-    cost = design.rollup(of="build_cost", over="spatiallyContains", root="building_b",
-                         contributors=rk.model.Filter(has="build_cost"))
+    nla = design.rollup(
+        of="nla",
+        over="spatiallyContains",
+        root="building_b",
+        contributors=rk.model.Filter(classification="floor"),
+    )
+    cost = design.rollup(
+        of="build_cost",
+        over="spatiallyContains",
+        root="building_b",
+        contributors=rk.model.Filter(has="build_cost"),
+    )
     print(design.name, nla.pivot(columns="use"), cost.value)
 ```
 
@@ -122,11 +148,18 @@ Otherwise build residential. The provision is paid when the site is bought.
 ```python
 # cell 7
 timing = rk.io.load(path=helpers.data_path(name="05_strategy.specification.json")).rules
-timing                                 # lesson 05's three rules, as written there
-switch = (fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
-          .fix(provision="2.5e6 AUD")
-          .decide(key="b_design", when="hotel_index >= 1.10 * residential_index", review=yearly,
-                  window=("shared_start + 1 year", "b_start"), otherwise="residential"))
+timing  # lesson 05's three rules, as written there
+switch = (
+    fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
+    .fix(provision="2.5e6 AUD")
+    .decide(
+        key="b_design",
+        when="hotel_index >= 1.10 * residential_index",
+        review=yearly,
+        window=("shared_start + 1 year", "b_start"),
+        otherwise="residential",
+    )
+)
 ```
 
 ```python
@@ -137,8 +170,10 @@ strategies = {
     "switch": switch,
     "both": switch.with_rules(rules=timing),
 }
-outcomes = {name: rk.execution.solve(specification=spec.across(paths=use_paths, assign=assign))
-            for name, spec in strategies.items()}
+outcomes = {
+    name: rk.execution.solve(specification=spec.across(paths=use_paths, assign=assign))
+    for name, spec in strategies.items()
+}
 ```
 
 ## 4. Paired comparison of four strategies
@@ -149,15 +184,20 @@ where Building B stays residential.
 
 ```python
 # cell 9
-comparison = rk.execution.compare(outcomes=outcomes, keys=["equity_npv", "peak_shortfall"],
-                                  baseline="fixed")
-comparison.summary()                   # mean difference, share better, 5 % quantile
+comparison = rk.execution.compare(
+    outcomes=outcomes, keys=["equity_npv", "peak_shortfall"], baseline="fixed"
+)
+comparison.summary()  # mean difference, share better, 5 % quantile
 ```
 
 ```python
 # cell 10
-helpers.plot_target_curve(distributions={name: outcome.distribution(key="equity_npv")
-                                         for name, outcome in outcomes.items()})
+helpers.plot_target_curve(
+    distributions={
+        name: outcome.distribution(key="equity_npv")
+        for name, outcome in outcomes.items()
+    }
+)
 ```
 
 ## 5. What gets built
@@ -173,8 +213,12 @@ both.table("b_design", "start_date", "b_open").group_by("b_design").len()
 
 ```python
 # cell 12
-both.rollup(of="nla", over="spatiallyContains", root="property",
-            contributors=rk.model.Filter(classification="floor")).pivot(columns="use").describe()
+both.rollup(
+    of="nla",
+    over="spatiallyContains",
+    root="property",
+    contributors=rk.model.Filter(classification="floor"),
+).pivot(columns="use").describe()
 ```
 
 ## 6. The largest justified premium
@@ -188,9 +232,11 @@ strategy at several provision costs and confirm that the decisions are the same.
 ```python
 # cell 13
 premiums = {p: {"provision": p} for p in ("0 AUD", "2.5e6 AUD", "5e6 AUD", "7.5e6 AUD")}
-premium_sweep = strategies["both"].cases(cases=premiums).across(paths=use_paths, assign=assign)
+premium_sweep = (
+    strategies["both"].cases(cases=premiums).across(paths=use_paths, assign=assign)
+)
 sweep = rk.execution.solve(specification=premium_sweep)
-sweep.decisions().same_across_cases()   # are the decisions the same at every premium?
+sweep.decisions().same_across_cases()  # are the decisions the same at every premium?
 ```
 
 ```python
@@ -214,10 +260,22 @@ same generator with a new seed.
 ```python
 # cell 15
 thresholds = {t: {"switch_threshold": t} for t in (1.00, 1.05, 1.10, 1.20)}
-tunable = (strategies["both"].parameters(switch_threshold=1.10)
-           .decide(key="b_design", when="hotel_index >= switch_threshold * residential_index",
-                   review=yearly, window=("shared_start + 1 year", "b_start"),
-                   otherwise="residential").cases(cases=thresholds))
+tunable = (
+    strategies["both"]
+    .parameters(switch_threshold=1.10)
+    .decide(
+        key="b_design",
+        when="hotel_index >= switch_threshold * residential_index",
+        review=yearly,
+        window=("shared_start + 1 year", "b_start"),
+        otherwise="residential",
+    )
+    .cases(cases=thresholds)
+)
+```
+
+```python
+# cell 15b
 train = rk.execution.solve(specification=tunable.across(paths=use_paths, assign=assign))
 by_threshold = train.compare(other=outcomes["timing"], keys=["equity_npv"]).by_case()
 best = by_threshold.best(criterion="mean")
@@ -225,12 +283,16 @@ best = by_threshold.best(criterion="mean")
 
 ```python
 # cell 16
-fresh = use_paths.generator.generate(periods=use_paths.periods, seed=2028, count=len(use_paths))
+fresh = use_paths.generator.generate(
+    periods=use_paths.periods, seed=2028, count=len(use_paths)
+)
 chosen = tunable.cases(cases={best: thresholds[best]})
 test = rk.execution.solve(specification=chosen.across(paths=fresh, assign=assign))
 timing_only = strategies["timing"].across(paths=fresh, assign=assign)
 baseline = rk.execution.solve(specification=timing_only)
-test.compare(other=baseline, keys=["equity_npv"]).summary()   # usually less than in training
+test.compare(
+    other=baseline, keys=["equity_npv"]
+).summary()  # usually less than in training
 ```
 
 ## Optional: vertical expansion
@@ -247,24 +309,40 @@ draft = residential.edit(name="Building A expanded")
 site = draft.entity(code="property")
 draft.include(fragment=helpers.load_fragment(name="building_a_extra_floors"))
 extra = rk.model.Filter(classification="floor", labels={"phase": "expansion"})
-site.rollup(key="x_income", of="income", over="spatiallyContains", root="building_a",
-            contributors=extra)
-site.rollup(key="x_cost", of="build_cost", over="spatiallyContains", root="building_a",
-            contributors=extra)
+scope = {"over": "spatiallyContains", "root": "building_a", "contributors": extra}
+site.rollup(key="x_income", of="income", **scope)
+site.rollup(key="x_cost", of="build_cost", **scope)
 site.values(expansion_date="date")
+site.equations("x_open = expansion_date + 1 year")
 site.extend(key="works", terms="- uniform(total=x_cost, start=expansion_date, years=1)")
-site.extend(key="income", terms="+ compounding(initial=x_income, rate=rent_growth, base=base_date,"
-                                " start=expansion_date + 1 year)")
+site.extend(
+    key="income",
+    terms="+ compounding(initial=x_income, rate=rent_growth, start=x_open)",
+)
 expanded = draft.commit()
 ```
 
 ```python
 # cell 18
-expand = (strategies["both"].alternatives(a_design={"base": residential, "expanded": expanded})
-          .fix(a_provision="1.5e6 AUD")
-          .decide(key="expansion_date", when="residential_index >= 1.25", review=yearly,
-                  window=("a_open + 3 years", date(2035, 1, 1)), otherwise="never"))
-expanded_out = rk.execution.solve(specification=expand.across(paths=use_paths, assign=assign))
+expand = (
+    strategies["both"]
+    .alternatives(a_design={"base": residential, "expanded": expanded})
+    .fix(a_provision="1.5e6 AUD")
+    .decide(
+        key="expansion_date",
+        when="residential_index >= 1.25",
+        review=yearly,
+        window=("a_open + 3 years", date(2035, 1, 1)),
+        otherwise="never",
+    )
+)
+```
+
+```python
+# cell 18b
+expanded_out = rk.execution.solve(
+    specification=expand.across(paths=use_paths, assign=assign)
+)
 expanded_out.compare(other=outcomes["both"], keys=["equity_npv"]).summary()
 ```
 
@@ -275,7 +353,9 @@ stay residential? What does the switch strategy lose on those paths?
 
 ```python
 # solution
-switch_vs_fixed = outcomes["switch"].compare(other=outcomes["fixed"], keys=["equity_npv"])
+switch_vs_fixed = outcomes["switch"].compare(
+    other=outcomes["fixed"], keys=["equity_npv"]
+)
 switch_vs_fixed.where(b_design="residential").summary()
 ```
 
@@ -299,11 +379,13 @@ comparison.select("switch", "both").summary()
 
 ```python
 # cell 19 (checks)
-assert len({o.run.market_paths for o in outcomes.values()}) == 1      # the same paths
+assert len({o.run.market_paths for o in outcomes.values()}) == 1  # the same paths
 provision_paid = both.table("provision_cost")["provision_cost"]
-assert (provision_paid < 0).all()                                     # paid on every path
+assert (provision_paid < 0).all()  # paid on every path
 assert both.case(key=use_paths.keys[0]).model.id in {residential.id, hotel.id}
-assert rk.model.diff(before=residential, after=hotel).added_entities   # a structural change
+assert rk.model.diff(
+    before=residential, after=hotel
+).added_entities  # a structural change
 ```
 
 **Recap.**
@@ -320,8 +402,9 @@ how-to guides.
 
 ## Cell budget
 
-16 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. Cell 15 has 9 lines.
+18 core code cells, 3 optional cells and 1 check cell (budget 20–25), 3 exercise
+solutions. The longest core cell has 15 lines; optional cell 17 has 16. Cells follow
+`ruff format` (D15).
 
 ## Rule check
 

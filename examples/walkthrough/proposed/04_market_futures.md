@@ -47,7 +47,7 @@ import helpers
 # cell 2
 model = rk.io.load(path=helpers.data_path(name="03_base_plan.model.json"))
 plan = helpers.load_base_plan()
-model.equations                        # the relations from lesson 03
+model.equations  # the relations from lesson 03
 ```
 
 ## 2. One market driver
@@ -62,19 +62,22 @@ income relation. Fix rent growth at zero.
 draft = model.edit()
 site = draft.entity(code="property")
 site.flows(rent_index="ratio")
-site.replace(key="income",
-             equation="income = rent_index * ("
-                      "compounding(initial=a_income, rate=rent_growth, base=base_date, start=a_open)"
-                      " + compounding(initial=b_income, rate=rent_growth, base=base_date, start=b_open))")
+site.replace(key="income", equation="income = rent_index * (a_rent + b_rent)")
 model = draft.commit()
 ```
 
 ```python
 # cell 4
-assumptions = {"discount_rate": "7 %/year", "opex_growth": "3.5 %/year",
-               "exit_cap_rate": "5 %", "rent_growth": "0 %/year"}
+assumptions = {
+    "discount_rate": "7 %/year",
+    "opex_growth": "3.5 %/year",
+    "exit_cap_rate": "5 %",
+    "rent_growth": "0 %/year",
+}
 debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
-base = model.specify(name="Base plan on paths").fix(**plan.inputs, **assumptions, **debt)
+base = model.specify(name="Base plan on paths").fix(
+    **plan.inputs, **assumptions, **debt
+)
 ```
 
 > **Finance note.** Market growth applied twice is a common error. If the index
@@ -89,23 +92,31 @@ After each step, **predict** the shape and then draw it.
 ```python
 # cell 5
 yearly = rk.duration.Frequency.YEAR
-years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(frequency=yearly)
+years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
+    frequency=yearly
+)
 trend = rk.finance.MarketDynamics(trend="2 %/year")
-helpers.plot_paths(paths=trend.generate(periods=years, seed=2027, count=1), names=["rent_index"])
+helpers.plot_paths(
+    paths=trend.generate(periods=years, seed=2027, count=1), names=["rent_index"]
+)
 ```
 
 ```python
 # cell 6
 cycle = trend.replace(cycle_period="10 years", cycle_amplitude="10 %")
-helpers.plot_paths(paths=cycle.generate(periods=years, seed=2027, count=1), names=["rent_index"])
+helpers.plot_paths(
+    paths=cycle.generate(periods=years, seed=2027, count=1), names=["rent_index"]
+)
 ```
 
 ```python
 # cell 7
-dynamics = cycle.replace(volatility="5 %/year", noise="2 %",
-                         shock_probability="2 %/year", shock_size="-25 %")
-helpers.plot_paths(paths=dynamics.generate(periods=years, seed=2027, count=5),
-                   names=["rent_index"])
+dynamics = cycle.replace(
+    volatility="5 %/year", noise="2 %", shock_probability="2 %/year", shock_size="-25 %"
+)
+helpers.plot_paths(
+    paths=dynamics.generate(periods=years, seed=2027, count=5), names=["rent_index"]
+)
 ```
 
 > **Finance note.** Real-estate markets cycle, revert to a trend and suffer rare
@@ -119,9 +130,9 @@ library versions. Replay uses the captured values and draws no new random number
 
 ```python
 # cell 8
-count = helpers.path_count(default=500)          # RK_PATH_COUNT: 4 in CI, full locally
+count = helpers.path_count(default=500)  # RK_PATH_COUNT: 4 in CI, full locally
 paths = dynamics.generate(periods=years, seed=2027, count=count)
-paths.capture                                     # generator, parameters, seed, versions
+paths.capture  # generator, parameters, seed, versions
 ```
 
 ```python
@@ -138,7 +149,9 @@ across paths? First, value the plan on the average rent index.
 
 ```python
 # cell 10
-average = rk.execution.solve(specification=base.fix(rent_index=paths.mean(name="rent_index")))
+average = rk.execution.solve(
+    specification=base.fix(rent_index=paths.mean(name="rent_index"))
+)
 average["unlevered_npv"], average["equity_npv"]
 ```
 
@@ -157,7 +170,7 @@ outcomes.table("unlevered_npv", "equity_npv", "peak_shortfall").head()
 ```python
 # cell 12
 npv = outcomes.distribution(key="unlevered_npv")
-npv.summary()                          # mean, standard deviation, 5 % and 95 % quantiles
+npv.summary()  # mean, standard deviation, 5 % and 95 % quantiles
 ```
 
 ```python
@@ -206,8 +219,11 @@ the income of its use.
 ```python
 # cell 17
 uses = rk.finance.MarketDynamics.correlated(
-    generators={"hotel_index": dynamics.replace(volatility="8 %/year"),
-     "residential_index": dynamics, "retail_index": dynamics.replace(trend="1 %/year")},
+    generators={
+        "hotel_index": dynamics.replace(volatility="8 %/year"),
+        "residential_index": dynamics,
+        "retail_index": dynamics.replace(trend="1 %/year"),
+    },
     correlation=[[1, 0.5, 0.3], [0.5, 1, 0.4], [0.3, 0.4, 1]],
 )
 use_paths = uses.generate(periods=years, seed=2027, count=count)
@@ -215,9 +231,10 @@ use_paths = uses.generate(periods=years, seed=2027, count=count)
 
 ```python
 # cell 18
-helpers.plot_paths(paths=use_paths, names=["hotel_index", "residential_index", "retail_index"],
-                   count=3)
-use_paths.correlation()                # sample correlation of the period changes
+helpers.plot_paths(
+    paths=use_paths, names=["hotel_index", "residential_index", "retail_index"], count=3
+)
+use_paths.correlation()  # sample correlation of the period changes
 ```
 
 ## Exercises
@@ -227,9 +244,13 @@ the NPV change? How does the mean change?
 
 ```python
 # solution
-volatile = dynamics.replace(volatility="10 %/year").generate(periods=years, seed=2027, count=count)
+volatile = dynamics.replace(volatility="10 %/year").generate(
+    periods=years, seed=2027, count=count
+)
 wide = rk.execution.solve(specification=base.across(paths=volatile, assign=assign))
-assert wide.distribution(key="unlevered_npv").quantile(level=0.05) < npv.quantile(level=0.05)
+assert wide.distribution(key="unlevered_npv").quantile(level=0.05) < npv.quantile(
+    level=0.05
+)
 ```
 
 **Try it 2: growth applied twice.** Fix rent growth at 2 %/year as well as the
@@ -237,8 +258,9 @@ index. How much does the mean NPV rise? Why is this wrong?
 
 ```python
 # solution
-twice = rk.execution.solve(specification=base.fix(rent_growth="2 %/year")
-                           .across(paths=paths, assign=assign))
+twice = rk.execution.solve(
+    specification=base.fix(rent_growth="2 %/year").across(paths=paths, assign=assign)
+)
 twice.distribution(key="unlevered_npv").mean - npv.mean
 ```
 
@@ -257,9 +279,11 @@ moved.distribution(key="unlevered_npv").mean - npv.mean
 ```python
 # cell 19 (checks)
 assert len(outcomes.cases) == count
-assert outcomes.run.market_paths == paths.id                   # the Run pins the paths
-assert npv.mean != average["unlevered_npv"]                    # the flaw of averages
-assert outcomes.case(key=paths.keys[0])["rent_index"] == paths[paths.keys[0]]["rent_index"]
+assert outcomes.run.market_paths == paths.id  # the Run pins the paths
+assert npv.mean != average["unlevered_npv"]  # the flaw of averages
+assert (
+    outcomes.case(key=paths.keys[0])["rent_index"] == paths[paths.keys[0]]["rent_index"]
+)
 ```
 
 **Recap.**
@@ -277,7 +301,7 @@ known at each date.
 ## Cell budget
 
 16 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 7 lines.
+solutions. The longest cell has 11 lines (cell 4). Cells follow `ruff format` (D15).
 
 ## Rule check
 

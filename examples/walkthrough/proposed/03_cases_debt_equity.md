@@ -52,14 +52,16 @@ import helpers
 ```python
 # cell 2
 plan = helpers.load_base_plan()
-plan.inputs                            # dates, budgets, incomes and funding, with origins
+plan.inputs  # dates, budgets, incomes and funding, with origins
 ```
 
 ```python
 # cell 3
 helpers.show_timeline(plan=plan)
 yearly = rk.duration.Frequency.YEAR
-years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(frequency=yearly)
+years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
+    frequency=yearly
+)
 ```
 
 > **Finance note.** A development budget has hard costs (construction), soft costs
@@ -73,7 +75,9 @@ the plan's total. The other packages follow the same rule.
 
 ```python
 # cell 4
-hard = sum(plan.areas["building_a"][use] * plan.rates[use] for use in plan.areas["building_a"])
+hard = sum(
+    plan.areas["building_a"][use] * plan.rates[use] for use in plan.areas["building_a"]
+)
 assert rk.quantity.isclose(actual=hard * 1.2, expected=plan.inputs["a_cost"])
 ```
 
@@ -90,12 +94,37 @@ values too, so a later lesson can change them.
 model = rk.Model(name="Mixed-use base plan", timeline=years)
 draft = model.edit()
 site = draft.add_entity(code="property", classification="property")
+site.values(base_date="date", sale_date="date", start_date="date", b_start="date")
+```
+
+Narrative: the amounts. Incomes and operating costs are annual amounts at 2027
+prices; budgets and renewals are totals.
+
+```python
+# cell 5b
 site.values(
-    base_date="date", sale_date="date", start_date="date", b_start="date",
-    land_cost="AUD", shared_cost="AUD", a_cost="AUD", b_cost="AUD",
-    a_income="AUD pa", b_income="AUD pa", a_opex="AUD pa", b_opex="AUD pa",
-    a_renewal="AUD", b_renewal="AUD",
-    rent_growth="1/year", opex_growth="1/year", exit_cap_rate="ratio", discount_rate="1/year",
+    land_cost="AUD",
+    shared_cost="AUD",
+    a_cost="AUD",
+    b_cost="AUD",
+    a_income="AUD pa",
+    b_income="AUD pa",
+    a_opex="AUD pa",
+    b_opex="AUD pa",
+    a_renewal="AUD",
+    b_renewal="AUD",
+)
+```
+
+Narrative: the rates. The cases in section 5 change two of them.
+
+```python
+# cell 5c
+site.values(
+    rent_growth="1/year",
+    opex_growth="1/year",
+    exit_cap_rate="ratio",
+    discount_rate="1/year",
 )
 ```
 
@@ -127,14 +156,30 @@ earns nothing until it opens. Renewals come every five years after opening.
 ```python
 # cell 7
 site.equations(
-    "income = compounding(initial=a_income, rate=rent_growth, base=base_date, start=a_open)"
-    " + compounding(initial=b_income, rate=rent_growth, base=base_date, start=b_open)",
-    "opex = -compounding(initial=a_opex, rate=opex_growth, base=base_date, start=a_open)"
-    " - compounding(initial=b_opex, rate=opex_growth, base=base_date, start=b_open)",
-    "renewals = -compounding(initial=a_renewal, rate=opex_growth, base=base_date,"
-    "                        start=a_open + 5 years, every=5 years)"
-    " - compounding(initial=b_renewal, rate=opex_growth, base=base_date,"
-    "               start=b_open + 5 years, every=5 years)",
+    "a_rent = compounding(initial=a_income, rate=rent_growth, start=a_open)",
+    "b_rent = compounding(initial=b_income, rate=rent_growth, start=b_open)",
+    "a_costs = compounding(initial=a_opex, rate=opex_growth, start=a_open)",
+    "b_costs = compounding(initial=b_opex, rate=opex_growth, start=b_open)",
+    "income = a_rent + b_rent",
+    "opex = -(a_costs + b_costs)",
+)
+```
+
+Narrative: renewals come every five years after each building opens, at costs that
+grow from 2027.
+
+```python
+# cell 7b
+site.equations(
+    (
+        "a_renewals = compounding(initial=a_renewal, rate=opex_growth,"
+        " start=a_open + 5 years, every=5 years)"
+    ),
+    (
+        "b_renewals = compounding(initial=b_renewal, rate=opex_growth,"
+        " start=b_open + 5 years, every=5 years)"
+    ),
+    "renewals = -(a_renewals + b_renewals)",
     "operating = income + opex + renewals",
 )
 ```
@@ -144,8 +189,10 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as relations
 ```python
 # cell 8
 site.equations(
-    "sale = event(amount=at(flow=operating, on=sale_date + 1 year) / exit_cap_rate, on=sale_date)",
-    "net_cash_flow = trim(flow=land + works + operating + sale, end=sale_date)",
+    "exit_value = at(flow=operating, on=sale_date + 1 year) / exit_cap_rate",
+    "sale = event(amount=exit_value, on=sale_date)",
+    "project_cash = land + works + operating + sale",
+    "net_cash_flow = trim(flow=project_cash, end=sale_date)",
     "unlevered_npv = npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
 )
 model = draft.commit()
@@ -241,8 +288,14 @@ leverage? Compare three levels in one batch.
 
 ```python
 # cell 15
-levels = {"no debt": {"leverage": 0}, "50 %": {"leverage": "50 %"}, "65 %": {"leverage": "65 %"}}
-rk.execution.solve(specification=levered.cases(cases=levels)).table("equity_npv", "equity_irr")
+levels = {
+    "no debt": {"leverage": 0},
+    "50 %": {"leverage": "50 %"},
+    "65 %": {"leverage": "65 %"},
+}
+rk.execution.solve(specification=levered.cases(cases=levels)).table(
+    "equity_npv", "equity_irr"
+)
 ```
 
 ## 8. A target equity IRR
@@ -266,7 +319,9 @@ end of each year. Calculate the first year's closing balance and headroom by han
 
 ```python
 # cell 17
-paid_2027 = outcome["land"].at(on=date(2027, 1, 1)) + outcome["works"].at(on=date(2027, 1, 1))
+paid_2027 = outcome["land"].at(on=date(2027, 1, 1)) + outcome["works"].at(
+    on=date(2027, 1, 1)
+)
 closing_2027 = plan.inputs["equity"] + paid_2027
 headroom_2027 = closing_2027 + plan.inputs["bridge_limit"]
 closing_2027, headroom_2027
@@ -274,10 +329,12 @@ closing_2027, headroom_2027
 
 ```python
 # cell 18
-account = rk.finance.Account(opening=plan.inputs["equity"], limit=plan.inputs["bridge_limit"])
+account = rk.finance.Account(
+    opening=plan.inputs["equity"], limit=plan.inputs["bridge_limit"]
+)
 history = account.post(transactions=outcome["land"] + outcome["works"])
 assert history.closing.at(on=date(2027, 1, 1)) == closing_2027
-history.display()                      # opening, transactions, closing and headroom by year
+history.display()  # opening, transactions, closing and headroom by year
 ```
 
 ## 10. Funding in the Model
@@ -294,9 +351,24 @@ exceed the headroom.
 draft = model.edit()
 site = draft.entity(code="property")
 site.values(equity="AUD", bridge_limit="AUD")
-site.account(key="funding", opening="equity", limit="bridge_limit",
-             transactions="land + works + operating",
-             commitments={"shared_works": "shared_start", "a_works": "a_start", "b_works": "b_start"})
+site.account(
+    key="funding",
+    opening="equity",
+    limit="bridge_limit",
+    transactions="land + works + operating",
+    commitments={
+        "shared_works": "shared_start",
+        "a_works": "a_start",
+        "b_works": "b_start",
+    },
+)
+```
+
+Narrative: two results for the table: the largest shortfall below the limit, and the
+largest commitment gap.
+
+```python
+# cell 19b
 site.equations(
     "peak_shortfall = max(0 AUD, -min(funding.headroom))",
     "commitment_gap = max(0 AUD, max(funding.committed - funding.headroom))",
@@ -308,7 +380,9 @@ model = draft.commit()
 # cell 20
 funded = levered.on(model=model)
 summary = rk.execution.solve(specification=funded.cases(cases=cases))
-summary.table("unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall", "commitment_gap")
+summary.table(
+    "unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall", "commitment_gap"
+)
 ```
 
 ```python
@@ -321,7 +395,7 @@ helpers.plot_funding(outcome=summary.case(key="weak"), account="funding")
 > each date. It assumes no future sale or refinance. When Building B starts, its
 > whole budget is committed, even though the payments come over two years.
 
-## 11. Under the hood: the Run as evidence
+## 11. Optional, under the hood: the Run as evidence
 
 Narrative: `solve` keeps everything in memory. `execute` also publishes the outputs
 and a Run to a store. A Run records the Specification, the Model revision, the
@@ -362,7 +436,8 @@ with_stress = {**cases, "stress": {"rent_growth": "0 %/year", "exit_cap_rate": "
 stress = rk.execution.solve(specification=funded.cases(cases=with_stress))
 gap = {key: stress.case(key=key)["commitment_gap"] for key in ("stress", "reference")}
 assert gap["stress"] >= gap["reference"]
-# Building A's lower income pays less of Building B's works. The exit cap rate has no effect.
+# Building A's lower income pays less of Building B's works.
+# The exit cap rate has no effect.
 ```
 
 **Try it 2: the target IRR in the weak case.** What land price gives a 15 % equity
@@ -371,7 +446,10 @@ IRR in the weak market?
 ```python
 # solution
 weak_target = target.fix(**cases["weak"])
-assert rk.execution.solve(specification=weak_target)["land_cost"] < target_outcome["land_cost"]
+assert (
+    rk.execution.solve(specification=weak_target)["land_cost"]
+    < target_outcome["land_cost"]
+)
 ```
 
 **Try it 3: start Building B a year later.** Which year has the least headroom now?
@@ -386,14 +464,13 @@ later["funding.headroom"].argmin()
 
 ```python
 # cell 24 (checks)
-weak, ref, strong = (outcomes.case(key=key)["unlevered_npv"]
-                     for key in ("weak", "reference", "strong"))
-assert weak < ref < strong
-assert rk.quantity.isclose(
-    actual=rk.finance.npv(flow=target_outcome["equity_cash_flow"], rate="15 %/year",
-                          on=date(2027, 1, 1)),
-    expected=rk.Quantity(text="0 AUD"), abs="1 AUD")
-assert summary.case(key="reference")["funding.headroom"].at(on=date(2027, 1, 1)) == headroom_2027
+npvs = outcomes.table("unlevered_npv")["unlevered_npv"]
+assert npvs.is_sorted()  # weak < reference < strong
+cash = target_outcome["equity_cash_flow"]
+target_npv = rk.finance.npv(flow=cash, rate="15 %/year", on=date(2027, 1, 1))
+assert rk.quantity.isclose(actual=target_npv, expected="0 AUD", abs="1 AUD")
+reference = summary.case(key="reference")
+assert reference["funding.headroom"].at(on=date(2027, 1, 1)) == headroom_2027
 ```
 
 **Recap.**
@@ -409,8 +486,9 @@ assert summary.case(key="reference")["funding.headroom"].at(on=date(2027, 1, 1))
 
 ## Cell budget
 
-22 core code cells and 1 cell in a new kernel (budget 20–25), 3 exercise solutions.
-Cell 7 has 9 lines and cell 13 has 13; no cell has more than 15.
+25 core code cells, 2 optional cells (section 11, one in a new kernel) and 1 check cell
+(budget 20–25), 3 exercise solutions. The longest cell has 15 lines (cell 19). Cells
+follow `ruff format` (D15).
 
 ## Rule check
 
