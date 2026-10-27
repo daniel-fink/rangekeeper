@@ -369,9 +369,9 @@ closing_2027, headroom_2027
 ```python
 # cell 18
 account = rk.finance.Account(opening=plan["equity"], limit=plan["bridge_limit"])
-history = account.post(transactions=outcome["land"] + outcome["works"])
-assert history.closing.at(on=date(2027, 1, 1)) == closing_2027
-history.display()  # opening, transactions, closing and headroom by year
+cash = account.with_transactions(transactions=outcome["land"] + outcome["works"])
+assert cash.closing.at(on=date(2027, 1, 1)) == closing_2027
+cash.display()  # opening, transactions, closing and headroom by year
 ```
 
 ## 10. Funding in the Model
@@ -547,7 +547,7 @@ follow `ruff format` (D15).
 | 14 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |
 | 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row |
 | 17 | 6 | By hand once |
-| 18 | 6 | G23: `rk.finance.Account` with `limit`, `post`, `headroom` |
+| 18 | 6 | G23: `rk.finance.Account` with `limit`; `with_transactions` returns a new Account whose balances (`opening`, `closing`, `headroom`) are Flows |
 | 19 | 2, 6 | G24: entity `account(key=, ..., commitments=)`; `min` and `max` in G09 |
 | 21 | 10 | Helper draws only |
 | 22–23 | 1, 4 | `execute` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126)); G25: `rk.execution.replay` and `store.find_runs(specification=name)` |

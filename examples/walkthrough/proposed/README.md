@@ -58,6 +58,7 @@ pass.
 | D19 | Is the mortgage constant a library function? | No. `rk.finance.payment(principal=, rate=, term=, frequency=)` is the one general loan calculation, like a spreadsheet's PMT with units. The mortgage constant is derived in the open: the payment per year on one dollar of loan, `(payment / rk.Quantity(text="1 AUD")).to(units="% pa")` | 02, 06 |
 | D20 | Does a Model have a default timeline or unit system? | No. `rk.Model(name=, namespace=, description=)` takes neither. A Flow made from amounts by a profile or an event is declared with its `periods=`; every other Flow takes its Periods from its operands. The Model records the unit system in use (the curated registry, its version and any registered extensions) as a read-only `model.unit_system`; custom units go through the registry extension point | 03–07 |
 | D21 | How are functions named in equation strings? | As in Python, with the `rk.` namespace: `rk.profile.uniform(...)`, `rk.flow.event(...)`, `rk.finance.npv(...)`. Operations on one Flow are methods: `operating.at(on=...)`, `project_cash.trim(end=...)`, `loan_draws.cumulative()`, `funding.headroom.min()`. Only `max(a, b)` stays bare. Eight words are reserved: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false` | 03–07 |
+| D22 | How does a known-data Account take transactions? | `account.with_transactions(transactions=...)` returns a new Account, as `Stream.with_flows` returns a new Stream. Its balances (`opening`, `closing`, `headroom`) are Flows on it; there is no separate history type | 03 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -133,7 +134,7 @@ fees = rk.flow.Flow.from_profile(
 rk.finance.payment(
     principal="1 AUD", rate="6 % pa", term="20 years", frequency=monthly
 )  # #167: like PMT, with units
-rk.finance.Account(opening=..., limit=...).post(transactions=transactions)  # G23
+rk.finance.Account(opening=..., limit=...).with_transactions(transactions=flow)  # G23
 rk.finance.MarketDynamics(trend="2 % pa", volatility="5 % pa").generate(
     periods=years, seed=2027, count=500
 )  # #135, #136, G29
@@ -337,7 +338,7 @@ use. **Issue** is filled in when the issue is filed.
 | 22 | — | `solve` resolves the documents that made the Specification | G12 | `execution` | 02·11 onwards | #126 |
 | 23 | — | `rk.execution.replay` and `Store.find_runs` | G25 | `execution`, `io` | 03·22–23 | #126, #176 |
 | 24 | — | One-call document IO: `rk.io.load` and `rk.io.save`; a loaded Specification brings the documents it pins, so `solve` can resolve them | G26 | `io` | 04·2, 9; 05·2; 06·2, 22; 07·2, 7 | #112 |
-| 25 | — | `rk.finance.Account` with a limit and headroom | G23 | `finance` | 03·18 | — |
+| 25 | — | `rk.finance.Account` with a limit; `with_transactions` returns a new Account with balance and headroom Flows | G23 | `finance` | 03·18 | — |
 | 26 | — | An entity's `account(key=, ..., commitments=)` | G24 | `model` | 03·19; 05·9 | — |
 | 27 | — | Outcome distributions | G31 | `execution` | 04·12–16; 05·16 | #127 |
 | 28 | — | Paired comparison of Outcomes | G56, G66, G68 | `execution` | 05·14–17; 07·9, 14–16 | #138, #213, #214 |
