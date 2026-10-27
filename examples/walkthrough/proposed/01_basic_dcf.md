@@ -46,7 +46,8 @@ import rangekeeper as rk
 Narrative: a Quantity is a number with units. Make one from text, or from a number
 and a unit string. Rangekeeper checks units in every operation, so an annual rent
 cannot be added to a monthly rent by mistake. `pa` means per annum. `%` is a
-dimensionless ratio.
+dimensionless ratio, so a rate per year, such as a growth or discount rate, is
+`% pa`.
 
 ```python
 # cell 2
@@ -56,13 +57,13 @@ rent.to(units="USD/month")
 
 ```python
 # cell 3
-rate = rk.Quantity(text="2 %/year")
+rate = rk.Quantity(text="2 % pa")
 rate * rk.Quantity(text="1 year")  # 0.02, a dimensionless ratio
 ```
 
 > **Under the hood.** `rk.Quantity("5 %")` and `rk.Quantity(0.05, "ratio")` make the
 > same Quantity. Most functions also accept the text directly, for example
-> `rate="2 %/year"`. The `rk.quantity` namespace holds the unit system and its
+> `rate="2 % pa"`. The `rk.quantity` namespace holds the unit system and its
 > registry. The registry is curated: an unknown or misspelt unit fails with a
 > suggestion. `"pa"` never becomes a picoyear ([ADR-016](../../../docs/decisions/016-safety-defaults.md)).
 
@@ -231,7 +232,7 @@ cash_flows.at(on=date(2001, 1, 1)) / 1.07
 
 ```python
 # cell 17
-discount_rate = rk.Quantity(text="7 %/year")
+discount_rate = rk.Quantity(text="7 % pa")
 present_values = rk.finance.pv(flow=cash_flows, rate=discount_rate, on=holding.start)
 present_values.display()
 ```
@@ -254,7 +255,7 @@ purchase = rk.flow.Flow(amounts={holding.start: -value})
 investment = rk.flow.Stream(
     flows={"Purchase": purchase, "Cash flows": cash_flows}
 ).sum()
-rk.finance.irr(flow=investment)  # 7 %/year
+rk.finance.irr(flow=investment)  # 7 % pa
 ```
 
 ## 12. Change one input
@@ -275,12 +276,12 @@ rk.finance.npv(flow=flows_6, rate=discount_rate, on=holding.start) - value
 
 ## Exercises
 
-**Try it 1: faster growth.** Change PGI growth to 3 %/year. Which lines change, and
+**Try it 1: faster growth.** Change PGI growth to 3 % pa. Which lines change, and
 by how much does the value change?
 
 ```python
 # solution
-growth_3 = rk.profile.Compounding(rate="3 %/year")
+growth_3 = rk.profile.Compounding(rate="3 % pa")
 pgi_3 = rk.flow.Flow.from_profile(profile=growth_3, periods=years, initial="100 USD")
 nacf_3 = 0.95 * pgi_3 - 0.35 * pgi_3 - 0.10 * pgi_3
 terminal_3 = (nacf_3.shift(periods=-1) / exit_cap_rate).trim(span=sale_year)
@@ -349,7 +350,7 @@ cell has 10 lines (cell 8). Cells follow `ruff format` (D15).
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 1 | 1 | Pass |
-| 2–3 | 1, 5 | G71: `rk.Quantity(text)` at the root and the `rk.quantity` namespace (D13); `pa` and `%/year` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
+| 2–3 | 1, 5 | G71: `rk.Quantity(text)` at the root and the `rk.quantity` namespace (D13); `pa` and `% pa` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
 | 4 | 1, 11 | G01: `Span.years`, `extend`, `periods(yearly)` |
 | 5, 19 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
 | 6 | 1, 6 | G70: `rk.profile` and `Flow.from_profile` with `initial=` or `total=` (D12; absorbs [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |

@@ -198,15 +198,13 @@ for word.
 # cell 18
 draft = graph.edit()
 site = draft.entity(code="property")
-site.values(
-    land_cost="AUD",
-    works_cost="AUD",
-    leverage="ratio",
-    mortgage_constant="1/year",
-    coverage="ratio",
-    operating_cost="AUD pa",
-    rent_factor="ratio",
-)
+site.value(key="land_cost", units="AUD")
+site.value(key="works_cost", units="AUD")
+site.value(key="leverage", units="ratio")
+site.value(key="mortgage_constant", units="% pa")
+site.value(key="coverage", units="ratio")
+site.value(key="operating_cost", units="AUD pa")
+site.value(key="rent_factor", units="ratio")
 ```
 
 ```python
@@ -227,7 +225,9 @@ to every floor.
 
 ```python
 # cell 19
-site.values(efficiency="ratio", rent="AUD/sqm pa", vacancy="ratio", by="use")
+site.value(key="efficiency", units="ratio", by="use")
+site.value(key="rent", units="AUD/sqm pa", by="use")
+site.value(key="vacancy", units="ratio", by="use")
 draft.equations_for(
     filter=rk.model.Filter(classification="floor"),
     equations=[
@@ -263,7 +263,7 @@ data = helpers.load_property(snapshot=2032)
 lending = {
     "leverage": "65 %",
     "coverage": 1.25,
-    "mortgage_constant": rk.finance.mortgage_constant(rate="6 %/year", term="20 years"),
+    "mortgage_constant": rk.finance.mortgage_constant(rate="6 % pa", term="20 years"),
 }
 back = model.specify(name="Back door from floors").fix(
     **data.inputs.select("works_cost", "operating_cost"),

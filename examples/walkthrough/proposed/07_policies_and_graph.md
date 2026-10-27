@@ -64,13 +64,13 @@ residential.rollups()  # key, value rolled up, relationship, root and contributo
 # cell 3
 yearly = rk.duration.Frequency.YEAR
 assumptions = {
-    "discount_rate": "7 %/year",
-    "opex_growth": "3.5 %/year",
+    "discount_rate": "7 % pa",
+    "opex_growth": "3.5 % pa",
     "exit_cap_rate": "5 %",
-    "rent_growth": "0 %/year",
+    "rent_growth": "0 % pa",
     "b_land_share": "40 %",
 }
-debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
+debt = {"leverage": "65 %", "loan_rate": "6 % pa", "equity_rate": "12 % pa"}
 ```
 
 Narrative: each use has its own market index. The keyed value `use_index` takes one
@@ -312,7 +312,7 @@ extra = rk.model.Filter(classification="floor", labels={"phase": "expansion"})
 scope = {"over": "spatiallyContains", "root": "building_a", "contributors": extra}
 site.rollup(key="x_income", of="income", **scope)
 site.rollup(key="x_cost", of="build_cost", **scope)
-site.values(expansion_date="date")
+site.date(key="expansion_date")
 site.equations("x_open = expansion_date + 1 year")
 site.extend(key="works", terms="- uniform(total=x_cost, start=expansion_date, years=1)")
 site.extend(

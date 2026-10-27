@@ -94,38 +94,32 @@ values too, so a later lesson can change them.
 model = rk.Model(name="Mixed-use base plan", timeline=years)
 draft = model.edit()
 site = draft.add_entity(code="property", classification="property")
-site.values(base_date="date", sale_date="date", start_date="date", b_start="date")
+site.date(key="base_date")
+site.date(key="sale_date")
+site.date(key="start_date")
+site.date(key="b_start")
 ```
 
-Narrative: the amounts. Incomes and operating costs are annual amounts at 2027
-prices; budgets and renewals are totals.
+Narrative: the amounts and rates. Incomes and operating costs are annual amounts
+at 2027 prices; budgets and renewals are totals. The cases in section 5 change two of
+the rates.
 
 ```python
 # cell 5b
-site.values(
-    land_cost="AUD",
-    shared_cost="AUD",
-    a_cost="AUD",
-    b_cost="AUD",
-    a_income="AUD pa",
-    b_income="AUD pa",
-    a_opex="AUD pa",
-    b_opex="AUD pa",
-    a_renewal="AUD",
-    b_renewal="AUD",
-)
-```
-
-Narrative: the rates. The cases in section 5 change two of them.
-
-```python
-# cell 5c
-site.values(
-    rent_growth="1/year",
-    opex_growth="1/year",
-    exit_cap_rate="ratio",
-    discount_rate="1/year",
-)
+site.value(key="land_cost", units="AUD")
+site.value(key="shared_cost", units="AUD")
+site.value(key="a_cost", units="AUD")
+site.value(key="b_cost", units="AUD")
+site.value(key="a_income", units="AUD pa")
+site.value(key="b_income", units="AUD pa")
+site.value(key="a_opex", units="AUD pa")
+site.value(key="b_opex", units="AUD pa")
+site.value(key="a_renewal", units="AUD")
+site.value(key="b_renewal", units="AUD")
+site.value(key="rent_growth", units="% pa")
+site.value(key="opex_growth", units="% pa")
+site.value(key="exit_cap_rate", units="ratio")
+site.value(key="discount_rate", units="% pa")
 ```
 
 Narrative: the plan's sequence is a relation too. The site is bought and the shared
@@ -205,8 +199,8 @@ Fix the plan's inputs and the reference assumptions. Everything else is free.
 
 ```python
 # cell 9
-reference = {"rent_growth": "3 %/year", "exit_cap_rate": "5 %"}
-valuation = {"discount_rate": "7 %/year", "opex_growth": "3.5 %/year"}
+reference = {"rent_growth": "3 % pa", "exit_cap_rate": "5 %"}
+valuation = {"discount_rate": "7 % pa", "opex_growth": "3.5 % pa"}
 base = model.specify(name="Base case").fix(**plan.inputs, **valuation, **reference)
 outcome = rk.execution.solve(specification=base)
 outcome["unlevered_npv"]
@@ -227,9 +221,9 @@ same valuation conventions.
 ```python
 # cell 11
 cases = {
-    "weak": {"rent_growth": "1 %/year", "exit_cap_rate": "6 %"},
+    "weak": {"rent_growth": "1 % pa", "exit_cap_rate": "6 %"},
     "reference": reference,
-    "strong": {"rent_growth": "5 %/year", "exit_cap_rate": "4.5 %"},
+    "strong": {"rent_growth": "5 % pa", "exit_cap_rate": "4.5 %"},
 }
 outcomes = rk.execution.solve(specification=base.cases(cases=cases))
 outcomes.table("unlevered_npv")
@@ -255,12 +249,22 @@ Specification to that revision.
 # cell 13
 draft = model.edit()
 site = draft.entity(code="property")
-site.values(leverage="ratio", loan_rate="1/year", equity_rate="1/year")
+site.value(key="leverage", units="ratio")
+site.value(key="loan_rate", units="% pa")
+site.value(key="equity_rate", units="% pa")
 site.equations(
     "loan_draws = -leverage * (land + works)",
     "loan_balance = cumulative(flow=loan_draws)",
     "loan_interest = -interest(balance=loan_balance, rate=loan_rate)",
     "repayment = -settle(balance=loan_balance, on=sale_date)",
+)
+```
+
+Narrative: the equity investor's cash flow is what remains after the loan.
+
+```python
+# cell 13b
+site.equations(
     "equity_cash_flow = net_cash_flow + loan_draws + loan_interest + repayment",
     "equity_npv = npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
     "equity_irr = irr(flow=equity_cash_flow)",
@@ -270,7 +274,7 @@ model = draft.commit()
 
 ```python
 # cell 14
-debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
+debt = {"leverage": "65 %", "loan_rate": "6 % pa", "equity_rate": "12 % pa"}
 levered = base.on(model=model).fix(**debt)
 levered_outcomes = rk.execution.solve(specification=levered.cases(cases=cases))
 levered_outcomes.table("unlevered_npv", "equity_npv", "equity_irr")
@@ -306,7 +310,7 @@ IRR fixed, the IRR relation becomes "NPV at 15 % is zero", which is an affine ro
 
 ```python
 # cell 16
-target = levered.fix(equity_irr="15 %/year").free("land_cost")
+target = levered.fix(equity_irr="15 % pa").free("land_cost")
 target_outcome = rk.execution.solve(specification=target)
 target_outcome["land_cost"]
 ```
@@ -350,7 +354,8 @@ exceed the headroom.
 # cell 19
 draft = model.edit()
 site = draft.entity(code="property")
-site.values(equity="AUD", bridge_limit="AUD")
+site.value(key="equity", units="AUD")
+site.value(key="bridge_limit", units="AUD")
 site.account(
     key="funding",
     opening="equity",
@@ -432,7 +437,7 @@ Does the commitment gap change? Which cash flow causes the change?
 
 ```python
 # solution
-with_stress = {**cases, "stress": {"rent_growth": "0 %/year", "exit_cap_rate": "7 %"}}
+with_stress = {**cases, "stress": {"rent_growth": "0 % pa", "exit_cap_rate": "7 %"}}
 stress = rk.execution.solve(specification=funded.cases(cases=with_stress))
 gap = {key: stress.case(key=key)["commitment_gap"] for key in ("stress", "reference")}
 assert gap["stress"] >= gap["reference"]
@@ -467,7 +472,7 @@ later["funding.headroom"].argmin()
 npvs = outcomes.table("unlevered_npv")["unlevered_npv"]
 assert npvs.is_sorted()  # weak < reference < strong
 cash = target_outcome["equity_cash_flow"]
-target_npv = rk.finance.npv(flow=cash, rate="15 %/year", on=date(2027, 1, 1))
+target_npv = rk.finance.npv(flow=cash, rate="15 % pa", on=date(2027, 1, 1))
 assert rk.quantity.isclose(actual=target_npv, expected="0 AUD", abs="1 AUD")
 reference = summary.case(key="reference")
 assert reference["funding.headroom"].at(on=date(2027, 1, 1)) == headroom_2027
@@ -487,7 +492,7 @@ assert reference["funding.headroom"].at(on=date(2027, 1, 1)) == headroom_2027
 ## Cell budget
 
 25 core code cells, 2 optional cells (section 11, one in a new kernel) and 1 check cell
-(budget 20–25), 3 exercise solutions. The longest cell has 15 lines (cell 19). Cells
+(budget 20–25), 3 exercise solutions. The longest cell has 16 lines (cell 19). Cells
 follow `ruff format` (D15).
 
 ## Rule check

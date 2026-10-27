@@ -52,6 +52,7 @@ pass.
 | D13 | How does a reader make a Quantity? | `rk.Quantity("5 %")` or `rk.Quantity(0.05, "ratio")`, at the root beside the three documents: every layer uses it. The namespace that holds the unit system, the registry and `isclose` is `rk.quantity`, not `rk.units`, so "units" keeps one meaning: a unit string. `q()` and `Quantity.parse` are not added | 01–07 |
 | D14 | Are arguments named? | Yes. Every Rangekeeper call and every function in an equation string names its arguments, and the API makes them keyword-only. Exceptions: lists of any length (`select`, `free`, `table`, `stream`, `equations`, `involving`), `min` and `max` in equations, Python built-ins, `datetime.date` and Polars calls | 01–07 |
 | D15 | How are cells formatted? | With the project's `ruff format` (Black style): 88 columns, and a trailing comma after the last argument puts one argument per line. The pre-commit hook formats the lesson notebooks the same way, so the cell budgets count formatted lines. A cell split for length keeps its number with a letter (4, 4b). A long equation string is wrapped in parentheses | 01–07 |
+| D16 | How are values declared, and how is a rate per year written? | One call for each value, naming its key and units: `site.value(key="land_cost", units="AUD")`, `site.flow(key="rent_index", units="ratio")`, `site.date(key="start_date")`. Keyed and timeline variants add `by=` and `periods=`. `units=` always means units; a date has none. A rate per year is `"% pa"`, for example `"7 % pa"`, not `"1/year"` | 01–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -91,7 +92,7 @@ rk.Model, rk.Specification, rk.Run, rk.Quantity
 ```python
 (
     rk.Quantity(text="20e6 AUD"),
-    rk.Quantity(text="7 %/year"),
+    rk.Quantity(text="7 % pa"),
     rk.Quantity(magnitude=1697.45, units="sqm"),
 )  # #148, #149, G71
 rk.quantity.isclose(actual=a, expected=b, abs="1 AUD")  # G06
@@ -108,7 +109,7 @@ stream.select("PGI", "OPEX").sum(), stream.trim(span=span), stream.display()
 flow.resample(
     frequency=rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT
 )  # #103
-growth = rk.profile.Compounding(rate="2 %/year")  # G70
+growth = rk.profile.Compounding(rate="2 % pa")  # G70
 pgi = rk.flow.Flow.from_profile(
     profile=growth, periods=years, initial="100 USD", base=None, start=None, every=None
 )
@@ -121,14 +122,14 @@ fees = rk.flow.Flow.from_profile(
 
 ```python
 (
-    rk.finance.pv(flow=flow, rate="7 %/year", on=date),
-    rk.finance.npv(flow=flow, rate="7 %/year", on=date),
+    rk.finance.pv(flow=flow, rate="7 % pa", on=date),
+    rk.finance.npv(flow=flow, rate="7 % pa", on=date),
 )  # #167, #164
 rk.finance.mortgage_constant(
-    rate="6 %/year", term="20 years", payments_per_year=12
+    rate="6 % pa", term="20 years", payments_per_year=12
 )  # #167
 rk.finance.Account(opening=..., limit=...).post(transactions=transactions)  # G23
-rk.finance.MarketDynamics(trend="2 %/year", volatility="5 %/year").generate(
+rk.finance.MarketDynamics(trend="2 % pa", volatility="5 % pa").generate(
     periods=years, seed=2027, count=500
 )  # #135, #136, G29
 rk.finance.MarketDynamics.correlated(generators={...}, correlation=[[...]])  # G32
@@ -147,11 +148,11 @@ model = rk.Model(name="...", timeline=years, namespace=None)  # G08
 draft = model.edit(name=None)  # #141
 site = draft.add_entity(code="property", classification="property")  # G08
 site = draft.entity(code="property")  # find, in an edit
-(
-    site.values(land_cost="AUD", start_date="date"),
-    site.flows(rent_index="ratio"),
-)  # G08, G15
-site.values(rent="AUD/sqm pa", by="use")  # G43
+site.value(key="land_cost", units="AUD")  # G08
+site.value(key="rent", units="AUD/sqm pa", by="use")  # G43
+site.flow(key="rent_index", units="ratio")  # G08
+site.flow(key="use_index", units="ratio", by="use")  # G43
+site.date(key="start_date")  # G15
 site.equation(equation="total_cost = land_cost + works_cost")
 site.equations("...", "...")  # #145, G18
 draft.equations_for(
@@ -305,7 +306,7 @@ use. **Issue** is filled in when the issue is filed.
 | 7 | — | Function catalogue for equations, named as in `rk.profile`, `rk.flow` and `rk.finance` | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
 | 8 | — | Flow-valued string equations on the Model timeline | G18 | `model` | 03·6–8 | #145, #163 |
 | 9 | — | Date values, date arithmetic and `never` | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
-| 10 | — | `rk.Model(name=, timeline=)`, `ModelDraft` with `add_entity` and `entity`, entity handles with `values(**units)` and `flows(**units)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
+| 10 | — | `rk.Model(name=, timeline=)`, `ModelDraft` with `add_entity` and `entity`, entity handles with `value(key=, units=)`, `flow(key=, units=)` and `date(key=)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
 | 12 | — | Equation keys, `replace`, `remove`, `extend`, `Equation.text`, `equations.involving` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
 | 13 | — | Keyed values, label indexing and `equations_for` | G43, G45, G60 | `model`, `specification` | 06·19, 21; 07·3 | #121, #138, #141 |
@@ -374,6 +375,8 @@ The sketches in ADR-020 were not binding. The cells differ from them here:
   `finance`.
 - Quantities are `rk.Quantity("20e6 AUD")`, not `rk.units.q(...)`, and the namespace is
   `rk.quantity` (D13).
+- Values are declared one call each, `site.value(key=, units=)` (D16), not as
+  `values(land_cost="AUD", ...)`, and rates per year are `"% pa"`, not `"%/year"`.
 - Policies use `Specification.decide(key, ...)` (D9), not `base.policy(...).when(..., do=...)`.
 - Lesson 06 declares the rollup as a Value (D3), not `edit().fix_from(...)`.
 - Lesson 07 uses separate Model revisions for options (D10), not

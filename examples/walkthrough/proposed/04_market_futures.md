@@ -61,7 +61,7 @@ income relation. Fix rent growth at zero.
 # cell 3
 draft = model.edit()
 site = draft.entity(code="property")
-site.flows(rent_index="ratio")
+site.flow(key="rent_index", units="ratio")
 site.replace(key="income", equation="income = rent_index * (a_rent + b_rent)")
 model = draft.commit()
 ```
@@ -69,12 +69,12 @@ model = draft.commit()
 ```python
 # cell 4
 assumptions = {
-    "discount_rate": "7 %/year",
-    "opex_growth": "3.5 %/year",
+    "discount_rate": "7 % pa",
+    "opex_growth": "3.5 % pa",
     "exit_cap_rate": "5 %",
-    "rent_growth": "0 %/year",
+    "rent_growth": "0 % pa",
 }
-debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
+debt = {"leverage": "65 %", "loan_rate": "6 % pa", "equity_rate": "12 % pa"}
 base = model.specify(name="Base plan on paths").fix(
     **plan.inputs, **assumptions, **debt
 )
@@ -95,7 +95,7 @@ yearly = rk.duration.Frequency.YEAR
 years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
     frequency=yearly
 )
-trend = rk.finance.MarketDynamics(trend="2 %/year")
+trend = rk.finance.MarketDynamics(trend="2 % pa")
 helpers.plot_paths(
     paths=trend.generate(periods=years, seed=2027, count=1), names=["rent_index"]
 )
@@ -112,7 +112,7 @@ helpers.plot_paths(
 ```python
 # cell 7
 dynamics = cycle.replace(
-    volatility="5 %/year", noise="2 %", shock_probability="2 %/year", shock_size="-25 %"
+    volatility="5 % pa", noise="2 %", shock_probability="2 % pa", shock_size="-25 %"
 )
 helpers.plot_paths(
     paths=dynamics.generate(periods=years, seed=2027, count=5), names=["rent_index"]
@@ -220,9 +220,9 @@ the income of its use.
 # cell 17
 uses = rk.finance.MarketDynamics.correlated(
     generators={
-        "hotel_index": dynamics.replace(volatility="8 %/year"),
+        "hotel_index": dynamics.replace(volatility="8 % pa"),
         "residential_index": dynamics,
-        "retail_index": dynamics.replace(trend="1 %/year"),
+        "retail_index": dynamics.replace(trend="1 % pa"),
     },
     correlation=[[1, 0.5, 0.3], [0.5, 1, 0.4], [0.3, 0.4, 1]],
 )
@@ -244,7 +244,7 @@ the NPV change? How does the mean change?
 
 ```python
 # solution
-volatile = dynamics.replace(volatility="10 %/year").generate(
+volatile = dynamics.replace(volatility="10 % pa").generate(
     periods=years, seed=2027, count=count
 )
 wide = rk.execution.solve(specification=base.across(paths=volatile, assign=assign))
@@ -253,13 +253,13 @@ assert wide.distribution(key="unlevered_npv").quantile(level=0.05) < npv.quantil
 )
 ```
 
-**Try it 2: growth applied twice.** Fix rent growth at 2 %/year as well as the
+**Try it 2: growth applied twice.** Fix rent growth at 2 % pa as well as the
 index. How much does the mean NPV rise? Why is this wrong?
 
 ```python
 # solution
 twice = rk.execution.solve(
-    specification=base.fix(rent_growth="2 %/year").across(paths=paths, assign=assign)
+    specification=base.fix(rent_growth="2 % pa").across(paths=paths, assign=assign)
 )
 twice.distribution(key="unlevered_npv").mean - npv.mean
 ```
@@ -308,7 +308,7 @@ solutions. The longest cell has 11 lines (cell 4). Cells follow `ruff format` (D
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26: `rk.io.load` and `rk.io.save` for any document kind; `model.equations` display ([G10](README.md#gap-list)) |
-| 3 | 2, 3 | G27: equation keys and entity `replace(key=, equation=)`; G28: entity `flows(**units)` on the timeline |
+| 3 | 2, 3 | G27: equation keys and entity `replace(key=, equation=)`; G28: entity `flow(key=, units=)` on the timeline |
 | 5–7 | 6, 11 | `MarketDynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)` |
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
 | 8–9 | 4, 6 | `MarketPaths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |

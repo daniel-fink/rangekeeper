@@ -63,13 +63,13 @@ model.equations.involving("start_date", "b_start")
 ```python
 # cell 3
 assumptions = {
-    "discount_rate": "7 %/year",
-    "opex_growth": "3.5 %/year",
+    "discount_rate": "7 % pa",
+    "opex_growth": "3.5 % pa",
     "exit_cap_rate": "5 %",
-    "rent_growth": "0 %/year",
+    "rent_growth": "0 % pa",
 }
 yearly = rk.duration.Frequency.YEAR
-debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
+debt = {"leverage": "65 %", "loan_rate": "6 % pa", "equity_rate": "12 % pa"}
 fixed = model.specify(name="Fixed plan").fix(**plan.inputs, **assumptions, **debt)
 ```
 
@@ -184,7 +184,8 @@ decided value.
 # cell 10
 draft = model.edit()
 site = draft.entity(code="property")
-site.values(b_land_share="ratio", b_sale_date="date")
+site.value(key="b_land_share", units="ratio")
+site.date(key="b_sale_date")
 site.equations(
     "b_site_value = b_land_share * land_cost * at(flow=rent_index, on=b_sale_date)",
     "b_site_sale = event(amount=b_site_value, on=b_sale_date)",
@@ -398,4 +399,4 @@ The design for sequential decisions must support:
 - **Traces.** For each case and review: date, decided value, observations with their
   availability dates, the rule's truth and the result (cells 7, 11).
 - **Paired comparison.** Two Outcomes on the same pinned `MarketPaths`, matched by
-  path key (cells 13–16).
+ path key (cells 13–16).

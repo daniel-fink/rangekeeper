@@ -80,29 +80,25 @@ and its equations.
 model = rk.Model(name="Mixed-use feasibility")
 draft = model.edit()
 site = draft.add_entity(code="property", classification="property")
-site.values(
-    land_cost="AUD",
-    works_cost="AUD",
-    total_cost="AUD",
-    leverage="ratio",
-    mortgage="AUD",
-    mortgage_constant="1/year",
-    debt_service="AUD pa",
-)
+site.value(key="land_cost", units="AUD")
+site.value(key="works_cost", units="AUD")
+site.value(key="total_cost", units="AUD")
+site.value(key="leverage", units="ratio")
+site.value(key="mortgage", units="AUD")
+site.value(key="mortgage_constant", units="% pa")
+site.value(key="debt_service", units="AUD pa")
 ```
 
 Narrative: the cost and loan values are declared. Now the income values.
 
 ```python
 # cell 4b
-site.values(
-    coverage="ratio",
-    noi="AUD pa",
-    operating_cost="AUD pa",
-    effective_income="AUD pa",
-    rent_factor="ratio",
-    reference_income="AUD pa",
-)
+site.value(key="coverage", units="ratio")
+site.value(key="noi", units="AUD pa")
+site.value(key="operating_cost", units="AUD pa")
+site.value(key="effective_income", units="AUD pa")
+site.value(key="rent_factor", units="ratio")
+site.value(key="reference_income", units="AUD pa")
 ```
 
 ```python
@@ -123,17 +119,15 @@ means 10 % higher. Parking earns no rent.
 
 ```python
 # cell 6
-site.values(
-    hotel_area="sqm",
-    hotel_rent="AUD/sqm pa",
-    hotel_vacancy="ratio",
-    residential_area="sqm",
-    residential_rent="AUD/sqm pa",
-    residential_vacancy="ratio",
-    retail_area="sqm",
-    retail_rent="AUD/sqm pa",
-    retail_vacancy="ratio",
-)
+site.value(key="hotel_area", units="sqm")
+site.value(key="hotel_rent", units="AUD/sqm pa")
+site.value(key="hotel_vacancy", units="ratio")
+site.value(key="residential_area", units="sqm")
+site.value(key="residential_rent", units="AUD/sqm pa")
+site.value(key="residential_vacancy", units="ratio")
+site.value(key="retail_area", units="sqm")
+site.value(key="retail_rent", units="AUD/sqm pa")
+site.value(key="retail_vacancy", units="ratio")
 ```
 
 ```python
@@ -175,7 +169,7 @@ r, n = 0.06 / 12, 20 * 12
 ```python
 # cell 9
 constant = rk.finance.mortgage_constant(
-    rate="6 %/year", term="20 years", payments_per_year=12
+    rate="6 % pa", term="20 years", payments_per_year=12
 )
 constant
 ```
@@ -327,7 +321,7 @@ does the front door need?
 ```python
 # solution
 longer = rk.finance.mortgage_constant(
-    rate="6 %/year", term="25 years", payments_per_year=12
+    rate="6 % pa", term="25 years", payments_per_year=12
 )
 longer_outcome = rk.execution.solve(specification=front.fix(mortgage_constant=longer))
 assert longer_outcome["rent_factor"] < factor
@@ -371,7 +365,7 @@ adds debt, equity and funding.
 ## Cell budget
 
 19 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest cell
-has 13 lines (cell 4). Cells follow `ruff format` (D15).
+has 11 lines (cell 4). Cells follow `ruff format` (D15).
 
 ## Rule check
 
@@ -380,7 +374,7 @@ has 13 lines (cell 4). Cells follow `ruff format` (D15).
 | 1 | 1, 10 | Walkthrough helpers package ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | 2 | 10 | G07: helpers load totals with origins; they do not calculate |
 | 3 | 6 | By hand once; replaced in cells 9–11 |
-| 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `values(**units)` and `equations` (D6) |
+| 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `value(key=, units=)` and `equations` (D6, D16) |
 | 6, 11 | 6 | G09: staged solve. `reference_income` is a product of fixed values, then `rent_factor * reference_income` is affine |
 | 7, 14 | 10 | Helper draws the relations ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | aside | 3 | Operator form ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)). G10: `Equation.text` gives canonical text |
