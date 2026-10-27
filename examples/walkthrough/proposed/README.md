@@ -67,6 +67,7 @@ pass.
 | D28 | What stays as it is? | `rk.execution.solve(specification=)` stays a function (a method would make `specification` depend on `execution`); amounts such as `"2.5e6 AUD"` keep `e` notation; `fix` takes a bare number for a ratio (`coverage=1.25`) | 02–07 |
 | D29 | How do path generators and relationships read? | Path generators are series maths, like profiles (D12), so they leave `finance` for `rk.market` (`Dynamics`, `Paths`). Correlations are given by name. Relationships have one snake_case name each (`contains`, `serves`); the other direction is `direction=rk.model.Direction.INCOMING`. The data package maps the source names | 04–07 |
 | D30 | How are Outcomes compared? | With one call whatever their number: `rk.execution.compare(outcomes={name: outcome}, keys=[...], baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences, paired by path when the Outcomes hold paths. There is no `Outcome.compare(other=)` and no `rk.execution.table`, so the call does not change between two Outcomes and more | 02–07 |
+| D31 | How do use markets move together? | The author composes it. `rk.market.generate` makes independent named series; a structure such as a shared market index times a factor for each use is ordinary Flow arithmetic or a Model equation (`use_index = market_index * use_factor`). There is no correlation argument or correlated generator class: a correlation method embeds choices (which shocks correlate, shared crashes, missing pairs) that the author should make in view. Same reasoning as D2 and D23 | 04, 07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -150,13 +151,10 @@ rk.finance.payment(
 ### Market paths
 
 ```python
-paths = rk.market.Dynamics(trend="2 % pa", volatility="5 % pa").generate(
-    periods=years, seed=1, count=500
-)  # #135, #136, G29
-rk.market.Dynamics.correlated(
-    generators={"hotel_index": hotel, "residential_index": residential},
-    correlation={"hotel_index": {"residential_index": 0.5}},
-)  # G32
+dynamics = rk.market.Dynamics(trend="2 % pa", volatility="5 % pa")  # #135, #136, G29
+paths = rk.market.generate(
+    dynamics={"rent_index": dynamics}, periods=years, seed=1, count=500
+)  # G29, G32: one call for one series or several, each independent
 (
     paths.mean(name="rent_index"),
     paths[key]["rent_index"],
@@ -230,7 +228,7 @@ spec = model.specify(name="Front door").fix(
 spec.free("land_cost"), spec.roles, spec.on(model=new_model)  # G11, G21
 spec.cases(cases={"weak": {...}, "strong": {...}}), spec.case(key="weak")  # G20, G75
 spec.across(paths=paths)  # #138, G73: path series match Model values by key
-spec.across(paths=use_paths, series={"use_index": {"hotel": "hotel_index"}})  # G73
+spec.across(paths=use_paths, series={"use_factor": {"hotel": "hotel_factor"}})  # G73
 spec.parameters(start_threshold=1.05).decide(
     key="start_date",
     when="rent_index >= start_threshold",
@@ -373,7 +371,7 @@ use. **Issue** is filled in when the issue is filed.
 | 27 | — | Outcome distributions: `summary`, `quantile(level=)`, `probability`, `counts()`, `case(quantile=)`; `Outcome.mean()` for a batch | G31 | `execution` | 04·12–16; 05·16 | #127 |
 | 28 | — | One comparison call for two or more Outcomes: `rk.execution.compare(outcomes=, keys=, baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences paired by path, with `summary`, `by`, `by_case`, `where`, `select`, and `breakeven` and `best` with `criterion=rk.execution.Criterion` and `level=`. No `Outcome.compare` and no `rk.execution.table` (G13 merged) | G13, G56, G66, G68 | `execution` | 02·15; 03 Try it 1; 04·14; 05·14–17; 07·9, 14–18b | #138, #213, #214 |
 | 29 | — | `rk.market.Paths` access and construction; `regenerate(seed=)` | G30, G33, G48, G69 | `market` | 04·10, 19; 05·4; 07·16 | #137 |
-| 30 | — | `rk.market.Dynamics` parameters and correlated generators, with correlations given by name; `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `market` | 04·5–7, 17–18 | #136 |
+| 30 | — | `rk.market.Dynamics` parameters, and `rk.market.generate(dynamics={name: Dynamics}, periods=, seed=, count=)` for one named series or several, each independent; no correlation argument (D31); `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `market` | 04·5–7, 17–18 | #136 |
 | 31 | — | Rules that decide values: `decide(key=, when=, periods=, earliest=, latest=, timing=, otherwise=)`, traces, `decisions().where(key=, result=rk.execution.ReviewResult)`, availability errors with `key` | G49, G51, G53, G55, G64, G65, G67 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
 | 32 | — | Specification parameters for rule thresholds, fixed and swept like other values, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
@@ -472,9 +470,10 @@ These are inputs for authoring, not API gaps:
   `funded` Specification), `04_base_case.specification.json` (lesson 04's `base`, on
   the Model with the rent index),
   `03_base_plan.model.json`, `04_base_plan_on_paths.model.json`,
-  `04_rent_index.paths.json`, `04_use_indices.paths.json` and
+  `04_rent_index.paths.json`, `04_use_factors.paths.json` and
   `05_strategy.specification.json`. `07_property_plan.model.json` joins the graph of
-  lesson 06 with the dated plan of lessons 03–05.
+  lesson 06 with the dated plan of lessons 03–05, and declares `market_index`, the
+  keyed `use_factor` and `use_index = market_index * use_factor` (D31).
 - The base plan gives `equity` and `loan_limit` (in place of `bridge_limit`) for lesson
   03's funding cascade (D2).
 - Lesson 05 needs the three readable histories (`05_histories.paths.json`).
@@ -486,6 +485,8 @@ These are inputs for authoring, not API gaps:
 
 The sketches in ADR-020 were not binding. The cells differ from them here:
 
+- Use markets that move together are composed from a shared market index and a factor
+  for each use (D31), not generated by a correlated generator.
 - Growth is a profile, `rk.flow.Flow.from_profile(rk.profile.Compounding(...), ...)`,
   not `rk.flow.Flow.grow` (D12). This amends
   [ADR-010](../../../docs/decisions/010-layers-and-packages.md) and

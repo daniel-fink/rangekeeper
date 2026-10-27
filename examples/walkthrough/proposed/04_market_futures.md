@@ -22,7 +22,7 @@ API conventions and the gap list: [README](README.md).
 >
 > **Before you start.** Lesson 03.
 >
-> **Time.** 60 minutes core, 30 minutes optional (correlated use markets).
+> **Time.** 60 minutes core, 30 minutes optional (use markets that move together).
 >
 > **Not in this lesson.** Decisions that react to the market (lesson 05).
 >
@@ -105,18 +105,21 @@ base.roles  # lesson 03's plan, assumptions, debt and funding, by name
 
 Narrative: a path generator makes market paths from parameters. Start with a trend
 only. Then add a cycle, then volatility and noise, then a rare shock. After each
-step, **predict** the shape and then draw it.
+step, **predict** the shape and then draw it. `generate` takes the name of each
+series with its dynamics; here there is one series, `rent_index`.
 
 ```python
 # cell 5
 trend = rk.market.Dynamics(trend="2 % pa")
-helpers.plot_paths(paths=trend.generate(periods=years, count=1), names=["rent_index"])
+one_path = rk.market.generate(dynamics={"rent_index": trend}, periods=years, count=1)
+helpers.plot_paths(paths=one_path)
 ```
 
 ```python
 # cell 6
 cycle = trend.replace(cycle_period="10 years", cycle_amplitude="10 %")
-helpers.plot_paths(paths=cycle.generate(periods=years, count=1), names=["rent_index"])
+one_path = rk.market.generate(dynamics={"rent_index": cycle}, periods=years, count=1)
+helpers.plot_paths(paths=one_path)
 ```
 
 Narrative: a trend and a cycle are fixed shapes. Volatility, noise and shocks are
@@ -129,9 +132,10 @@ random numbers; it is not a date. `generate` refuses random dynamics without a s
 dynamics = cycle.replace(
     volatility="5 % pa", noise="2 %", shock_probability="2 % pa", shock_size="-25 %"
 )
-helpers.plot_paths(
-    paths=dynamics.generate(periods=years, seed=1, count=5), names=["rent_index"]
+five_paths = rk.market.generate(
+    dynamics={"rent_index": dynamics}, periods=years, seed=1, count=5
 )
+helpers.plot_paths(paths=five_paths)
 ```
 
 > **Finance note.** Real-estate markets cycle, revert to a trend and suffer rare
@@ -146,7 +150,9 @@ library versions. Replay uses the captured values and draws no new random number
 ```python
 # cell 8
 count = helpers.path_count(default=500)  # RK_PATH_COUNT: 4 in CI, full locally
-paths = dynamics.generate(periods=years, seed=1, count=count)
+paths = rk.market.generate(
+    dynamics={"rent_index": dynamics}, periods=years, seed=1, count=count
+)
 paths.capture  # generator, parameters, seed, versions
 ```
 
@@ -154,7 +160,7 @@ paths.capture  # generator, parameters, seed, versions
 # cell 9
 rk.io.save(document=paths, path="paths/04_rent_index.json")
 assert rk.io.load(path="paths/04_rent_index.json") == paths
-assert dynamics.generate(periods=years, seed=1, count=count) == paths
+assert paths.regenerate(seed=1) == paths  # the same seed gives the same paths
 ```
 
 ## 5. The plan on average inputs
@@ -234,34 +240,39 @@ helpers.plot_flows(
 )
 ```
 
-## 9. Optional: correlated use markets
+## 9. Optional: use markets that move together
 
-Narrative: hotel, residential and retail markets move together, but not exactly.
-A correlated generator gives one index for each use. The Model uses each index in
-the income of its use.
+Narrative: hotel, residential and retail rents move together, but not exactly. You
+choose how. One simple structure: a market-wide index that every use shares, times a
+factor of the use's own. The shared index makes the uses move together; the own
+factors make them differ. `generate` makes each series independently. The structure
+is yours, written as Flow arithmetic here and as an equation in the Model (lesson 07).
 
 ```python
 # cell 17
-uses = rk.market.Dynamics.correlated(
-    generators={
-        "hotel_index": dynamics.replace(volatility="8 % pa"),
-        "residential_index": dynamics,
-        "retail_index": dynamics.replace(trend="1 % pa"),
+use_paths = rk.market.generate(
+    dynamics={
+        "market_index": dynamics,
+        "hotel_factor": rk.market.Dynamics(trend="0 % pa", volatility="6 % pa"),
+        "residential_factor": rk.market.Dynamics(trend="0 % pa", volatility="3 % pa"),
+        "retail_factor": rk.market.Dynamics(trend="-1 % pa", volatility="4 % pa"),
     },
-    correlation={
-        "hotel_index": {"residential_index": 0.5, "retail_index": 0.3},
-        "residential_index": {"retail_index": 0.4},
-    },
+    periods=years,
+    seed=1,
+    count=count,
 )
-use_paths = uses.generate(periods=years, seed=1, count=count)
 ```
 
 ```python
 # cell 18
-helpers.plot_paths(
-    paths=use_paths, names=["hotel_index", "residential_index", "retail_index"], count=3
+path = use_paths[use_paths.keys[0]]
+helpers.plot_flows(
+    flows={
+        "Hotel": path["market_index"] * path["hotel_factor"],
+        "Residential": path["market_index"] * path["residential_factor"],
+        "Retail": path["market_index"] * path["retail_factor"],
+    }
 )
-use_paths.correlation()  # sample correlation of the period changes
 ```
 
 ## Exercises
@@ -271,8 +282,11 @@ the NPV change? How does the mean change?
 
 ```python
 # solution
-volatile = dynamics.replace(volatility="10 % pa").generate(
-    periods=years, seed=1, count=count
+volatile = rk.market.generate(
+    dynamics={"rent_index": dynamics.replace(volatility="10 % pa")},
+    periods=years,
+    seed=1,
+    count=count,
 )
 volatile_outcome = rk.execution.solve(specification=base.across(paths=volatile))
 volatile_npv = volatile_outcome.distribution(key="unlevered_npv")
@@ -337,7 +351,7 @@ known at each date.
 ## Cell budget
 
 17 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 13 lines (cell 17). Cells follow `ruff format` (D15).
+solutions. The longest cell has 12 lines (cell 17). Cells follow `ruff format` (D15).
 
 ## Rule check
 
@@ -346,7 +360,7 @@ solutions. The longest cell has 13 lines (cell 17). Cells follow `ruff format` (
 | 2 | 1, 10 | G26: `rk.io.load` and `rk.io.save` for any document kind; `model.equations` display ([G10](README.md#gap-list)) |
 | 3–3b | 2, 3 | G27: equation keys, entity `replace(key=, equation=)` and `remove(key=)`; G28: entity `flow(key=, units=, periods=)` |
 | 4 | 2, 5 | G21: `free` then `on(model=)`; `on` refuses a fixed value that the new revision does not declare |
-| 5–7 | 6, 11 | `rk.market.Dynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)`; `generate` needs `seed=` only when the dynamics are random |
+| 5–7 | 6, 11 | `rk.market.Dynamics` and `rk.market.generate(dynamics=, periods=, seed=, count=)` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)`; `generate` needs `seed=` only when the dynamics are random |
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
 | 8–9 | 4, 6 | `rk.market.Paths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |
 | 10 | 6 | G30: `Paths.mean(name)` gives one Flow |
@@ -354,6 +368,6 @@ solutions. The longest cell has 13 lines (cell 17). Cells follow `ruff format` (
 | 12–15 | 8 | G31: `Outcome.distribution(key)` with `summary`, `mean`, `quantile(level=)`, `probability`, `case(quantile=)` |
 | 14 | 8 | G66; G31: `Outcome.mean()` gives the mean of a batch as one Outcome for `rk.execution.compare` |
 | 16 | 8 | G31: `Distribution.case(quantile=)` returns the case at a quantile |
-| 17–18 | 6 | G32: correlated generators with correlations by name, and `Paths.correlation()` |
+| 17–18 | 6, 10 | G32: `rk.market.generate(dynamics={name: Dynamics})` makes independent named series; co-movement is composed by the author with Flow arithmetic, not declared (D31). The helper draws only |
 | 19 | 8 | G33: `Outcome.run.market_paths` pin; `Paths[key][name]`; G69: `Paths.regenerate(seed=)` (Try it 3) |
 | — | — | Run time across 500 paths needs the reusable worker ([#130](https://github.com/daniel-fink/rangekeeper/issues/130)) and one structure for all cases (G20) |

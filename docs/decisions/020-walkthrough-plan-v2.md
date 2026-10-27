@@ -269,15 +269,16 @@ outcome.table("unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall")
   capture market paths with a seed. Run the plan across the paths with
   `Specification.across`. Read the distribution of NPV and funding shortfall.
   Explain why a plan valued on average inputs differs from the average of its
-  results. Optional section: correlated hotel, residential and retail indices.
+  results. Optional section: hotel, residential and retail indices that move
+  together through a shared market index (amended by #201, decision D31).
 - **Prerequisites.** Lesson 03.
 - **Time.** 60 minutes core, 30 optional.
-- **Library shown.** `PathGenerator` and the built-in `MarketDynamics`,
-  `MarketPaths` and its capture record, `Specification.across`, batch summaries
+- **Library shown.** `PathGenerator`, the built-in `rk.market.Dynamics` with
+  `rk.market.generate`, `rk.market.Paths` and its capture record, `Specification.across`, batch summaries
   in `Outcome`. The core path uses one property-wide rent index.
 - **Finance taught.** Market cycles, volatility, mean reversion, rare shocks,
-  the flaw of averages, target curves (value at risk and gain), correlation
-  between use markets, and the rule not to apply market growth twice.
+  the flaw of averages, target curves (value at risk and gain), use markets
+  that move together, and the rule not to apply market growth twice.
 - **Path count.** An environment variable sets the count: small in CI, full
   locally.
 - **Depends on.** [#135](https://github.com/daniel-fink/rangekeeper/issues/135)–[#138](https://github.com/daniel-fink/rangekeeper/issues/138),
@@ -536,7 +537,7 @@ The data package records its provenance (#210):
 | --- | --- |
 | Can lesson 03's cases reach the cash flows through the solve? Where do the funding account and commitment check live? | Resolved by #201: decisions D1 and D2 in the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
 | How an equation refers to a rollup result | Resolved by #201: decision D3 in the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
-| Generator parameters and correlations for the property's markets | Authoring lesson 04 |
+| Generator parameters for the market index and the use factors | Authoring lesson 04 |
 | Thresholds, latest dates and the site sale price rule | Authoring lesson 05 |
 | The hotel provision for Building B (cores, services, costs) and the expansion floors and premium | #214 and authoring lesson 07 |
 

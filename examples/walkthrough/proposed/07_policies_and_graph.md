@@ -42,7 +42,8 @@ The lesson is not authored until #216 is verified (ADR-020).
 
 Narrative: start from the property graph of lesson 06 with the dated plan of lessons
 03–05. The building incomes, operating costs and budgets are now rollups of the
-floors. Each use has its own market index from lesson 04's optional section.
+floors. Each use's index is lesson 04's market index times a factor of its own (lesson
+04's optional section). The Model writes that as an equation.
 
 ```python
 # cell 1
@@ -55,7 +56,7 @@ import helpers
 ```python
 # cell 2
 residential = rk.io.load(path=helpers.data_path(name="07_property_plan.model.json"))
-use_paths = rk.io.load(path=helpers.data_path(name="04_use_indices.paths.json"))
+use_paths = rk.io.load(path=helpers.data_path(name="04_use_factors.paths.json"))
 plan = helpers.load_base_plan()
 residential.rollups()  # key, value rolled up, relationship, root and contributors
 ```
@@ -77,20 +78,22 @@ fixed = (
 )
 ```
 
-Narrative: each use has its own market index. The paths name their series
-`hotel_index`, `residential_index` and `retail_index`, but the Model has one keyed
-value, `use_index`, with one member for each use. The names differ, so `across` needs
-`series=`: the path series for each member.
+Narrative: the paths hold `market_index` and one factor for each use. The Model
+declares `market_index`, a keyed `use_factor` with one member for each use, and the
+equation `use_index = market_index * use_factor`. `market_index` matches by name. The
+factors' names differ from the Model's, so `across` needs `series=`: the path series
+for each member.
 
 ```python
 # cell 3b
 use_series = {
-    "use_index": {
-        "hotel": "hotel_index",
-        "residential": "residential_index",
-        "retail": "retail_index",
+    "use_factor": {
+        "hotel": "hotel_factor",
+        "residential": "residential_factor",
+        "retail": "retail_factor",
     }
 }
+residential.equations.involving("use_index")  # use_index = market_index * use_factor
 ```
 
 ## 2. A design alternative
@@ -467,7 +470,7 @@ solutions. The longest cell has 16 lines (optional cell 18). Cells follow
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G59: `Model.rollups()` table |
-| 3 | 2, 4 | G43 (keyed values); G60, G73: `series=` maps a keyed Flow value to several path series |
+| 3–3b | 2, 4 | G43 (keyed values, and a keyed equation `use_index = market_index * use_factor`); G60, G73: `series=` maps a keyed Flow value to several path series (D31) |
 | 4 | 2, 7 | G61: `edit(name=)`, `relabel(filter, **labels)`, `include(fragment)`; `Filter(within=)` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)) |
 | 5 | 7 | G62: `rk.model.diff(a, b)` with typed parts |
 | 6 | 7, 8 | G74: `rk.model.compare(models=, rollups=)` gives one table of declared rollups by design |
