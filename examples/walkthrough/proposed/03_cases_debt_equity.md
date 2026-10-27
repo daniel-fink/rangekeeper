@@ -89,7 +89,12 @@ assert rk.quantity.isclose(actual=budget, expected=plan["a_cost"])
 ## 3. The dated Model
 
 Narrative: as in lesson 02, start an empty Model and edit it. Declare the inputs
-with their units. Dates are values too, so a later lesson can change them.
+with their units. Dates are values too, so a later lesson can change them. The
+plan's sequence relates them: the shared works start on the start date, Building A
+follows a year later, each building takes two years to build, and Building B cannot
+start before the shared works finish. Equations can be grouped in named
+formulations, like the sections of a pro forma. A group changes nothing in the
+solve; it organises the display and the trace. The date equations form "Dates".
 
 ```python
 # cell 5
@@ -100,6 +105,14 @@ site.date(key="base_date")
 site.date(key="sale_date")
 site.date(key="start_date")
 site.date(key="b_start")
+site.equations(
+    "shared_start = start_date",
+    "a_start = shared_start + 1 year",
+    "a_open = a_start + 2 years",
+    "b_open = b_start + 2 years",
+    "b_start >= shared_start + 1 year",
+    formulation="Dates",
+)
 ```
 
 Narrative: the amounts and rates. Incomes and operating costs are annual amounts
@@ -144,13 +157,7 @@ site.flow(key="b_renewals", units="AUD", periods=years)
 site.flow(key="sale", units="AUD", periods=years)
 ```
 
-Narrative: equations can be grouped in named formulations, like the sections of a
-pro forma: development, operations, sale and debt. A group changes nothing in the
-solve; it organises the display and the trace.
-
-The plan's sequence is a set of equations too. The site is bought and the shared works start
-on the start date. Building A follows a year later, and each building
-takes two years to build. Building B cannot start before the shared works finish.
+Narrative: development, the next group. The site is bought on the start date.
 Development payments are negative; `rx.profile.uniform` divides an amount evenly
 over the years from a start date. In lesson 01, `rk.` functions calculated a result
 at once. In an equation, functions start with `rx.`: they write a relation that the
@@ -159,11 +166,6 @@ solve uses.
 ```python
 # cell 6
 site.equations(
-    "shared_start = start_date",
-    "a_start = shared_start + 1 year",
-    "a_open = a_start + 2 years",
-    "b_open = b_start + 2 years",
-    "b_start >= shared_start + 1 year",
     "land = -rx.flow.event(amount=land_cost, on=start_date)",
     "shared_works = -rx.profile.uniform(total=shared_cost, start=shared_start, years=1)",
     "a_works = -rx.profile.uniform(total=a_cost, start=a_start, years=2)",
@@ -557,7 +559,7 @@ assert reference_outcome["loan_principal"].at(on=date(2027, 1, 1)) == from_loan
 ## Cell budget
 
 25 core code cells, 2 optional cells (section 11, one in a new kernel) and 1 check cell
-(budget 20–25), 3 exercise solutions. The longest cell has 15 lines (cells 5b and 9). Cells
+(budget 20–25), 3 exercise solutions. The longest cell has 16 lines (cell 5). Cells
 follow `ruff format` (D15).
 
 ## Rule check
@@ -566,7 +568,7 @@ follow `ruff format` (D15).
 | --- | --- | --- |
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
-| 5–5c | 2, 5 | G08 (entity handles); G15: date-valued Values; G16: Flows made from amounts declare their Periods, other values take units and shape from their equations |
+| 5–5c | 2, 5 | G08 (entity handles); G72: the "Dates" formulation; G15: date-valued Values; G16: Flows made from amounts declare their Periods, other values take units and shape from their equations |
 | 6–8 | 3, 6 | G72: `formulation=` groups; G17: functions in equations (`rx.flow.event`, `rx.profile.uniform`, `rx.profile.compounding`, `rk.finance.npv`, and the methods `at` and `trim`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |

@@ -93,7 +93,7 @@ use_series = {
         "retail": "retail_factor",
     }
 }
-residential.equations.involving("use_index")  # use_index = market_index * use_factor
+residential.equations.where(keys=["use_index"])  # use_index = market_index * use_factor
 ```
 
 ## 2. A design alternative

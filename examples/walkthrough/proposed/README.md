@@ -50,7 +50,7 @@ pass.
 | D11 | Rates by use on each floor (lesson 06) | Keyed values (`by="use"`) and floor equations (`equations_for`). The reference income is a rollup of floor income, so income traces to floors | 06, 07 |
 | D12 | Where does growth live, and what replaces "projection"? | A **profile** says how an amount develops over Periods. Profiles live in a new public namespace, `rk.profile`: growth profiles (`Constant`, `Linear`, `Compounding`) take an `initial=` amount; distribution profiles (`Uniform`, `SCurve`) take a `total=` amount. `rk.flow.Flow.from_profile(profile, periods=, initial= or total=)` makes the Flow. Growth is series maths, not finance, so it is not in `rk.finance` | 01, 03 |
 | D13 | How does a reader make a Quantity? | `rk.Quantity("5 %")` or `rk.Quantity(0.05, "ratio")`, at the root beside the three documents: every layer uses it. The namespace that holds the unit system, the registry and `isclose` is `rk.quantity`, not `rk.units`, so "units" keeps one meaning: a unit string. `q()` and `Quantity.parse` are not added | 01–07 |
-| D14 | Are arguments named? | Yes. Every Rangekeeper call and every function in an equation string names its arguments, and the API makes them keyword-only. Exceptions: lists of any length (`select`, `free`, `table`, `stream`, `equations`, `involving`), `min` and `max` in equations, Python built-ins, `datetime.date` and Polars calls | 01–07 |
+| D14 | Are arguments named? | Yes. Every Rangekeeper call and every function in an equation string names its arguments, and the API makes them keyword-only. Exceptions: lists of any length (`select`, `free`, `table`, `stream`, `equations`), `min` and `max` in equations, Python built-ins, `datetime.date` and Polars calls | 01–07 |
 | D15 | How are cells formatted? | With the project's `ruff format` (Black style): 88 columns, and a trailing comma after the last argument puts one argument per line. The pre-commit hook formats the lesson notebooks the same way, so the cell budgets count formatted lines. A cell split for length keeps its number with a letter (4, 4b). A long equation string is wrapped in parentheses | 01–07 |
 | D16 | How are values declared, and how is a rate per year written? | One call for each value, naming its key and units: `site.value(key="land_cost", units="AUD")`, `site.flow(key="rent_index", units="ratio")`, `site.date(key="start_date")`. Keyed and timeline variants add `by=` and `periods=`. `units=` always means units; a date has none. A rate per year is `"% pa"`, for example `"7 % pa"`, not `"1/year"` | 01–07 |
 | D17 | How is unit text written? | `per` divides (`"5 per sqm"`, `"750 AUD per sqm pa"`), `pa` means per year, and a count has a named unit (`"0.02 dwelling per sqm"`). A unit expression contains no numbers: Pint reads `"per 100 sqm"` as "÷ 100 × sqm", so the registry rejects it with a suggestion | 01–07 |
@@ -69,6 +69,7 @@ pass.
 | D30 | How are Outcomes compared? | With one call whatever their number: `rk.execution.compare(outcomes={name: outcome}, keys=[...], baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences, paired by path when the Outcomes hold paths. There is no `Outcome.compare(other=)` and no `rk.execution.table`, so the call does not change between two Outcomes and more | 02–07 |
 | D31 | How do use markets move together? | The author composes it. `rk.market.generate` makes independent named series; a structure such as a shared market index times a factor for each use is ordinary Flow arithmetic or a Model equation (`use_index = market_index * use_factor`). There is no correlation argument or correlated generator class: a correlation method embeds choices (which shocks correlate, shared crashes, missing pairs) that the author should make in view. Same reasoning as D2 and D23 | 04, 07 |
 | D32 | Text or Python for equations? | Both, in 1.0, from one registry of equation functions. Text is the form the lessons teach and the documents show; `rangekeeper.expressions`, imported as `rx`, is the Python form. Both use the same names (D21): an equation in text is the Python form inside a string, except `=` for `==`, `and`/`or`/`not` for `&`/`\|`/`~`, and unquoted unit literals (`2 % pa` for `"2 % pa"`). Handles carry the Flow methods; a declaration returns a handle and `site.ref(key=)` finds one. Each library function keeps one job: `rk.finance.npv` computes on values, `rx.finance.npv` builds an expression. The parser table, `rx` with typed stubs and the docs table are generated from the registry. Equivalence tests require text and `rx` to make identical records. Both forms are checked when written, with suggestions. Not a suffix such as `.symbols()` (poor completion, no form for methods), not a separate package | 02–07 |
+| D33 | How does a reader query a Model? | As in LINQ and SQL: a singular noun returns one item and raises on none or several (`model.entity(code=)`); a plural collection returns many through `.where(...)` (`model.entities.where(filter=)`, `model.equations.where(keys=, formulation=)`), and result tables use the same `.where(...)`. Not `find`, which returns one item in .NET and JavaScript; not `filter`, which would stutter beside `filter=`. `Filter`'s comparison argument is `condition=`, not `where=`. Equations have no direction, so `keys=` means direct use; there is no transitive form | 03, 05–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -197,10 +198,11 @@ draft.relabel(filter=filter, use="hotel")
 draft.include(fragment=fragment)
 draft.remove(entity=code)  # G61
 model = draft.commit()
-model.equations, model.equations.involving("start_date"), equation.text  # G10, G47
+model.equations, model.equations.where(keys=["start_date"]), equation.text  # G10, G47
+model.equations.where(formulation="Dates")  # G47
 (
     model.entity(code="a_hotel_floor_1"),
-    model.find(filter=rk.model.Filter(...)),
+    model.entities.where(filter=rk.model.Filter(condition="gfa >= 1500 sqm")),
     model.view(over="serves"),
 )  # #156, #160, G37
 model.rollup(of="gfa", over="contains", root="property", contributors=floors)  # #158
@@ -370,12 +372,12 @@ use. **Issue** is filled in when the issue is filed.
 | 9 | — | Date values, date arithmetic, `rk.duration.NEVER` and `NEVER` in equation text | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
 | 10 | — | `rk.Model(name=, namespace=, description=)`, read-only `model.unit_system`, `ModelDraft` with `add_entity` and `entity`, entity handles with `value(key=, units=)`, `flow(key=, units=)` and `date(key=)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
-| 12 | — | Equation keys, `replace`, `remove`, `add_to(key=, term=)`, `Equation.text`, `equations.involving` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
+| 12 | — | Equation keys, `replace`, `remove`, `add_to(key=, term=)`, `Equation.text`, `equations.where(keys=, formulation=)` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
 | 13 | — | Keyed values, label indexing (`rent[use]`), members by name in equation text (`use_index["hotel"]`) and `equations_for` | G43, G45, G60 | `model`, `specification` | 06·19, 21; 07·3 | #121, #138, #141 |
 | 14 | — | An entity's `rollup(key=, ...)` declares a Value; `Model.rollups()` | G44, G59 | `model` | 06·20; 07·2, 17 | #158 |
 | 15 | — | Rollup facade: several roots, `direction=rk.model.Direction`, pivots by ancestor, `trace`, Outcome rollups, and `rk.model.compare(models=, rollups=)` (G74) | G39–G41, G46, G74 | `model`, `execution` | 06·11–15, 23; 07·6, 12 | #157, #158, #159 |
-| 16 | — | Model inspection: `summary`, `entities`, `relationships`, `view`, `diff`; one snake_case name per relationship (`contains`, `serves`) | G35–G37, G62 | `model` | 06·2–8; 07·5 | #160 |
-| 17 | — | Filter additions: `where=`, `within=`, `has=`, `name=` | G38 | `model` | 06·10, 16; 07·4, 6 | #121 |
+| 16 | — | Model inspection: `summary`, `entities` (a collection), `relationships`, `view`, `diff`; one snake_case name per relationship (`contains`, `serves`) | G35–G37, G62 | `model` | 06·2–8; 07·5 | #160 |
+| 17 | — | Filter additions: `condition=`, `within=`, `has=`, `name=`; `model.entities.where(filter=)` | G38 | `model` | 06·10, 16; 07·4, 6 | #121 |
 | 18 | — | Error and diagnostic fields: ambiguous lookups, non-affine unknowns, broken constraints | G14, G42, G52 | `errors`, `execution` | 02·20–21; 05·7; 06·16–17, 24 | #134, #154, #155, #156 |
 | 19 | — | Specification roles: unfixed values are free; `fix` input types; a later `fix` of a key replaces the earlier one; `roles` | G11 | `specification` | 02·10, 13; 03·exercises | #144 |
 | 20 | — | `Specification.on(model)`; it refuses a fixed value that the new revision does not declare, so a removed value is freed first | G21 | `specification` | 03·14, 20; 04·4; 05·11, 13 | #144 |

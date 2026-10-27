@@ -56,7 +56,7 @@ classification and its own values. Look up one floor by its code.
 
 ```python
 # cell 4
-model.entities()  # code, name, classification and labels
+model.entities  # code, name, classification and labels
 ```
 
 ```python
@@ -91,22 +91,25 @@ helpers.show_graph(view=services)
 ## 4. Select with a filter
 
 Narrative: a filter is a declarative selection. It tests classifications, labels
-and values with units. A missing value never passes a test. The view shows the
-objects that a filter selects, coloured by their `use` label.
+and values with units. A missing value never passes a test. `model.entities.where`
+keeps the entities that pass, as `Where` does in LINQ. The view shows the objects
+that a filter selects, coloured by their `use` label.
 
 ```python
 # cell 9
 floors = rk.model.Filter(classification="floor")
-floor_entities = model.find(filter=floors)
+floor_entities = model.entities.where(filter=floors)
 # 33 floors, coloured by use
 helpers.show_geometry(model=model, highlight=floor_entities, color_by="use")
 ```
 
 ```python
 # cell 10
-model.find(
+model.entities.where(
     filter=rk.model.Filter(
-        classification="floor", labels={"use": "residential"}, where="gfa >= 1500 sqm"
+        classification="floor",
+        labels={"use": "residential"},
+        condition="gfa >= 1500 sqm",
     )
 )
 ```
@@ -181,7 +184,8 @@ lookup of an unknown code says what it looked for.
 
 ```python
 # cell 16
-model.find(filter=rk.model.Filter(name="buildingAretail")).table("code", "name", "id")
+same_name = model.entities.where(filter=rk.model.Filter(name="buildingAretail"))
+same_name.table("code", "name", "id")
 ```
 
 ```python
@@ -401,9 +405,9 @@ solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G35: `Model.summary()` |
 | 3, 7–9 | 10 | Helpers draw. `show_geometry(model=, highlight=, color_by=)` draws the objects that a filter selects ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
-| 4–6 | 4, 7 | Lookups by code ([#156](https://github.com/daniel-fink/rangekeeper/issues/156), [#160](https://github.com/daniel-fink/rangekeeper/issues/160)). G36: `entities()`, `Entity.values`, `relationships(entity)` tables |
+| 4–6 | 4, 7 | Lookups by code ([#156](https://github.com/daniel-fink/rangekeeper/issues/156), [#160](https://github.com/daniel-fink/rangekeeper/issues/160)). G36: `entities` (a collection with `where(filter=)`), `Entity.values`, `relationships(entity)` tables |
 | 7–8 | 7 | G37: `Model.view(relationship_classification)` |
-| 9–10 | 7 | `Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). G38: `where=` string comparisons with units |
+| 9–10 | 7 | `Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). G38: `condition=` string comparisons with units; `entities.where(filter=)` |
 | 11–12 | 7, 8 | Rollups ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)), pivots ([#159](https://github.com/daniel-fink/rangekeeper/issues/159)). G39: `Model.rollup(key, over=, root=, contributors=)` facade; pivot rows by ancestor classification |
 | 13–14 | 7 | G40: several roots, `direction=rk.model.Direction.INCOMING`, `by_root()`, `coverage.shared` |
 | 15 | 7 | G41: `RollupResult.trace(root)` |
