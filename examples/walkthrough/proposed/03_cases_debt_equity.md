@@ -288,7 +288,7 @@ site.equations(
     "loan_draws = -leverage * (land + works)",
     "loan_balance = loan_draws.cumulative()",
     "loan_interest = -rk.finance.interest(balance=loan_balance, rate=loan_rate)",
-    "repayment = -rk.finance.settle(balance=loan_balance, on=sale_date)",
+    "repayment = -rk.flow.event(amount=loan_balance.at(on=sale_date), on=sale_date)",
     formulation="Debt",
 )
 ```
@@ -558,7 +558,7 @@ follow `ruff format` (D15).
 | 9 | 2, 8 | G11, G12 |
 | 10 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
 | 11, 14 | 8 | Cases ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G20: `cases(mapping)` overrides by key; `Outcome.case`, `Outcome.table` with a case column |
-| 13 | 3, 6 | G17 (`cumulative()`, `rk.finance.interest`, `rk.finance.settle`, `rk.finance.irr`); G09: `irr` is evaluated after the affine stage |
+| 13 | 3, 6 | G17 (`cumulative()`, `at()`, `rk.flow.event`, `rk.finance.interest`, `rk.finance.irr`); G09: `irr` is evaluated after the affine stage |
 | 14 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |
 | 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row |
 | 17 | 6 | By hand once |

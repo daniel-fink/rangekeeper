@@ -59,6 +59,7 @@ pass.
 | D20 | Does a Model have a default timeline or unit system? | No. `rk.Model(name=, namespace=, description=)` takes neither. A Flow made from amounts by a profile or an event is declared with its `periods=`; every other Flow takes its Periods from its operands. The Model records the unit system in use (the curated registry, its version and any registered extensions) as a read-only `model.unit_system`; custom units go through the registry extension point | 03–07 |
 | D21 | How are functions named in equation strings? | As in Python, with the `rk.` namespace: `rk.profile.uniform(...)`, `rk.flow.event(...)`, `rk.finance.npv(...)`. Operations on one Flow are methods: `operating.at(on=...)`, `project_cash.trim(end=...)`, `loan_draws.cumulative()`, `headroom.min()`. Only `max(a, b)` stays bare. Eight words are reserved: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false` | 03–07 |
 | D22 | ~~How does a known-data Account take transactions?~~ | Withdrawn with the Account (D2) | — |
+| D23 | When is something a library function, and when is it composition? | Compose when it is plain arithmetic on Flows: a balance is `cumulative()`, a repayment at sale is `rk.flow.event(amount=loan_balance.at(on=sale_date), on=sale_date)`, a terminal value is `shift`, divide and `trim`. Keep a library function when it carries a real convention: `rk.finance.interest(..., method=)` (compounding, day count), `npv`, `irr`, `payment`, profiles. So there is no `settle`, no account and no reversion helper | 01–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -274,7 +275,7 @@ named (D14). Functions are called as in Python, with their `rk.` namespace (D21)
 | `rk.profile.uniform(total=, start=, years=)`, `rk.profile.scurve(total=, start=, years=)` | A Flow made by a distribution profile: a total divided over the years from a start date |
 | `rk.flow.event(amount=, on=)` | A Flow with one amount on one date |
 | `rk.finance.npv(flow=, rate=, on=)`, `rk.finance.irr(flow=)` | Valuation on one date basis (D4, D5 for `irr`) |
-| `rk.finance.interest(balance=, rate=)`, `rk.finance.settle(balance=, on=)` | Interest on the opening balance, and repayment of a balance |
+| `rk.finance.interest(balance=, rate=, method=)` | Interest on a balance under a stated convention (compounding, day count, opening or average balance) |
 | `x.at(on=)`, `x.trim(start=, end=)`, `x.since(on=)`, `x.shift(periods=)`, `x.cumulative()`, `x.total()`, `x.first()`, `x.last()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date; the part inside a span; the same Periods with zero before a date; each period's amount `periods` away (`-1` gives the next period's; a rule cannot read a later amount, G53); running totals; the sum; the first and last amounts; and extremes (D4) |
 | `max(a, b)` | The larger of two values. Like Python's built-in, its arguments are not named |
 
