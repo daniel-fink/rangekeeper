@@ -197,7 +197,7 @@ def test_model_builds_one_index_and_reuses_it_for_validation(monkeypatch):
         return build(record)
 
     monkeypatch.setattr(RecordIndex, "build", counted)
-    model = Model.create(metadata=r.Metadata(id=uuid4(), schema_version="0.7.0"))
+    model = Model.create(metadata=r.Metadata(id=uuid4(), schema_version="1.0.0"))
     assert len(calls) == 1
     validate(model).raise_if_invalid()
     assert len(calls) == 1

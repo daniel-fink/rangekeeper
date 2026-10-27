@@ -9,8 +9,7 @@ import yaml
 
 pytest.importorskip("pyarrow")
 from rangekeeper import Model
-from rangekeeper.io.bundle import Reader, identity, model_digest, write
-from rangekeeper.io.migration import model_07_to_08
+from rangekeeper.io.bundle import Reader, model_digest, write
 from rangekeeper.schema.runtime import exact_equal
 
 ROOT = Path(__file__).parents[1]
@@ -23,7 +22,7 @@ def test_record_query_filters_in_parquet_without_arrow_materialization(
 
     model = Model.from_data(
         dict(
-            metadata=dict(id=str(UUID(int=1)), schema_version="0.8.0"),
+            metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"),
             system=dict(
                 entities=[
                     dict(id=str(UUID(int=i)), name=f"Entity {i}")
@@ -56,7 +55,7 @@ def test_record_query_filters_in_parquet_without_arrow_materialization(
 def test_records_page_in_numeric_path_order(tmp_path):
     model = Model.from_data(
         dict(
-            metadata=dict(id=str(UUID(int=1)), schema_version="0.8.0"),
+            metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"),
             system=dict(
                 entities=[
                     dict(id=str(UUID(int=i)), name=f"Entity {i}") for i in range(2, 14)
@@ -160,7 +159,7 @@ def test_unknown_format_unsafe_inventory_and_limits(tmp_path):
     import json
 
     model = Model.from_data(
-        dict(metadata=dict(id=str(UUID(int=1)), schema_version="0.8.0"))
+        dict(metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"))
     )
     write(tmp_path / "bundle", model)
     path = tmp_path / "bundle/manifest.json"
@@ -177,17 +176,3 @@ def test_unknown_format_unsafe_inventory_and_limits(tmp_path):
     path.write_text(json.dumps(original))
     with pytest.raises(ValueError):
         Reader(tmp_path / "bundle", max_rows=1)
-
-
-def test_old_model_is_unchanged_until_explicit_migration(tmp_path):
-    old = Model.from_data(
-        dict(metadata=dict(id=str(UUID(int=1)), schema_version="0.7.0"))
-    )
-    migrated = model_07_to_08(old, id=UUID(int=2))
-    assert migrated.metadata.previous == old.id
-    assert old.metadata.schema_version == "0.7.0"
-    assert migrated.metadata.schema_version == "0.8.0"
-    write(tmp_path / "old", old)
-    write(tmp_path / "new", migrated)
-    assert Reader(tmp_path / "old").model().to_data() == old.to_data()
-    assert identity(old) != identity(migrated)

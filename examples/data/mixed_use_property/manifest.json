@@ -48,7 +48,7 @@
       "description": "The canonical Rangekeeper Model converted from transport.json.gz with mapping.json. It keeps the source content IDs.",
       "licence": "CC-BY-4.0",
       "origin": "derived",
-      "sha256": "a59ac9522d2c16aede7cdc1a77c0a7efe34ec978f5b307e29d87100ba954f200"
+      "sha256": "d1caf8d8aced2c5e22c9895e76c15ef2a0c377a80c197a6f35d05059367a3fab"
     },
     "origins.json": {
       "bytes": 8852,

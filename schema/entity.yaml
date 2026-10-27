@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/entity
 name: rangekeeper_entity
 title: Rangekeeper Entity
-version: 0.1.0
+version: 1.0.0
 description: Entities identify domain objects and describe them through a classification and characteristics.
   Identity is independent of names and Model revisions.
 prefixes:

@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/measure
 name: rangekeeper_measure
 title: Rangekeeper Quantities and Measures
-version: 0.3.0
+version: 1.0.0
 description: Quantities carry numerical magnitudes and units. Measures define measurement meaning and
   canonical units.
 prefixes:

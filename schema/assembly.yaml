@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/assembly
 name: rangekeeper_assembly
 title: Rangekeeper Assembly
-version: 0.2.0
+version: 1.0.0
 description: Entities that identify shared collections of graph members.
 prefixes:
   linkml: https://w3id.org/linkml/

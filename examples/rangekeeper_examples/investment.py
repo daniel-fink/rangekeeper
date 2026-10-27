@@ -131,7 +131,7 @@ def author(
     base = (
         scenario.model
         if scenario
-        else Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
+        else Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     )
     if scenario and tuple(scenario.realization.plan.periods) != periods:
         raise ValueError("scenario periods must match the complete investment horizon")
@@ -403,7 +403,7 @@ def specify(
     )
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(assignments),
             unknowns=unknowns,

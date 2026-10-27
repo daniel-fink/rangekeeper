@@ -7,6 +7,7 @@ Tree validation adds exact revision and publication checks after resolution.
 import math
 from datetime import datetime
 
+from rangekeeper.schema.validation import supports_version
 from rangekeeper.shared.validation import require
 
 
@@ -178,7 +179,10 @@ def validate_local(run, schema_version):
     """
     metadata = run["metadata"]
     identity = metadata["id"]
-    require(metadata["schema_version"] == schema_version, "unsupported Run version")
+    require(
+        supports_version(metadata["schema_version"], schema_version),
+        "unsupported Run version",
+    )
     require(metadata.get("previous") != identity, "Run self predecessor")
     require(
         run["specification"] != identity, "Specification reference targets this Run"

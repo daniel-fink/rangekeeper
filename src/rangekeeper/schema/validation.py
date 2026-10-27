@@ -1,6 +1,7 @@
 """Structural validation against packaged, closed LinkML-derived schemas."""
 
 import json
+import re
 from collections.abc import Mapping
 from copy import deepcopy
 from functools import cache, lru_cache
@@ -51,6 +52,25 @@ def slots_for(kind: str) -> dict:
 def document_version(kind: str) -> str:
     """Return the packaged document version for a record kind."""
     return str(_artifacts()[2]["document_versions"][kind])
+
+
+def supports_version(version: object, current: str) -> bool:
+    """Return whether a reader of format ``current`` reads ``version``.
+
+    A reader reads every format with its major version, up to its own version
+    (ADR-017). The packaged versions come from ``document_version``.
+    """
+
+    def parse(text: object) -> tuple[int, int, int] | None:
+        if not isinstance(text, str) or not re.fullmatch(r"\d+\.\d+\.\d+", text):
+            return None
+        major, minor, patch = (int(part) for part in text.split("."))
+        return major, minor, patch
+
+    found, reader = parse(version), parse(current)
+    if found is None or reader is None:
+        return False
+    return found[0] == reader[0] and found <= reader
 
 
 def _prepare_local_validators(schema: dict):

@@ -1,6 +1,6 @@
 metadata:
   id: 81fbc431-60dd-56ec-8589-ba0e92bb6271
-  schema_version: 0.7.0
+  schema_version: 1.0.0
   name: Value and rent preferences
   description: Prefer higher capital value, then lower rent per dwelling. An implementation
     may present trade-offs for user choice or select automatically using this preference

@@ -144,7 +144,7 @@ def test_model_flow_content_store_and_stream():
     )
     entity = Entity(id=uuid4(), characteristics=Characteristics(values=(a, b, prop)))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(entity,)),
     )

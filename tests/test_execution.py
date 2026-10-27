@@ -373,14 +373,14 @@ def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
     store.put(other)
     conflict = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "includes": [str(good.id), str(other.id)],
         }
     )
     store.put(conflict)
     batch = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "model": str(model.id),
             "cases": [str(good.id), str(conflict.id)],
         }
@@ -388,7 +388,7 @@ def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
     store.put(batch)
     outer = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "cases": [str(batch.id), str(good.id)],
         }
     )
@@ -506,7 +506,7 @@ def test_missing_references_and_invalid_batch_graph_raise_before_execution():
         store.put(
             Specification.from_data(
                 {
-                    "metadata": {"id": str(id), "schema_version": "0.7.0"},
+                    "metadata": {"id": str(id), "schema_version": "1.0.0"},
                     "cases": [str(other)],
                 }
             )
@@ -533,7 +533,7 @@ def test_constant_only_assertions_and_repeated_publication(truth):
     store, model = setup(model_data=model_data)
     investigation = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "model": str(model.id),
         }
     )
@@ -556,7 +556,7 @@ def test_unconstrained_unknown_has_explicit_choice_evidence():
     area = UUID("9d86011c-1658-5c10-87c1-94d281b74e96")
     investigation = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "model": str(model.id),
             "unknowns": [dict(target=str(area))],
         }
@@ -614,7 +614,7 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
         )
     model = Model.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "definitions": {
                 "measures": [
                     {
@@ -650,7 +650,7 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
     store.put(model)
     specification = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "model": str(model.id),
             "unknowns": [dict(target=str(id)) for id in ids],
             "settings": {"iteration_limit": 1, "time_limit": 30},

@@ -414,7 +414,7 @@ def test_role_editing_is_explicit_atomic_and_revision_pinned():
     store.put(base)
     included = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"), includes=(base.id,)
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"), includes=(base.id,)
         )
     )
     with pytest.raises(ValueError, match="inherited"):
@@ -508,7 +508,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
     model = model.revise(Update(system=model.system.replace(formulations=(relation,))))
     spec = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=assign_flow(model, net.id),
             unknowns=unknown_flow(model, ids["A_annual"]),

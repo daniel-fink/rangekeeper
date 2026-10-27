@@ -281,7 +281,7 @@ def test_public_mapping_and_constructor_outcomes_remain_equal(monkeypatch, name)
 )
 def test_history_context_remains_ordered_and_detached(case, indexed):
     data = load()
-    prior = {"id": data["metadata"]["previous"], "schema_version": "0.7.0"}
+    prior = {"id": data["metadata"]["previous"], "schema_version": "1.0.0"}
     history = [prior]
     if case == "duplicate":
         history.append(deepcopy(prior))
@@ -422,7 +422,7 @@ def scenario_data():
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(validation, "_validate", original_validate)
         base = Model.from_data(
-            {"metadata": {"id": str(UUID(int=910)), "schema_version": "0.7.0"}}
+            {"metadata": {"id": str(UUID(int=910)), "schema_version": "1.0.0"}}
         )
         plan = market.make_plan(
             id=UUID(int=911),
@@ -463,7 +463,7 @@ def test_captured_scenario_contracts_match_export(scenario_data, case, indexed):
 @pytest.mark.parametrize("section", ["definitions", "system", "provenance"])
 @pytest.mark.parametrize("presence", ["absent", "null", "empty"])
 def test_optional_section_presence_is_not_collapsed(monkeypatch, section, presence):
-    data = {"metadata": {"id": str(UUID(int=920)), "schema_version": "0.7.0"}}
+    data = {"metadata": {"id": str(UUID(int=920)), "schema_version": "1.0.0"}}
     if presence != "absent":
         data[section] = None if presence == "null" else {}
     if presence == "null":
@@ -526,9 +526,7 @@ def geometry_model():
 
 
 @pytest.mark.parametrize("indexed", [False, True])
-@pytest.mark.parametrize(
-    "case", ["valid", "null", "digest", "mapping", "duplicate", "legacy"]
-)
+@pytest.mark.parametrize("case", ["valid", "null", "digest", "mapping", "duplicate"])
 def test_geometry_fallback_keeps_existing_semantics(case, indexed):
     data = geometry_model()
     if case == "null":
@@ -539,8 +537,6 @@ def test_geometry_fallback_keeps_existing_semantics(case, indexed):
         data["geometry"]["mappings"][0]["entity"] = MISSING
     elif case == "duplicate":
         data["geometry"]["mappings"] *= 2
-    elif case == "legacy":
-        data["metadata"]["schema_version"] = "0.7.0"
     compare_record(data, indexed=indexed, valid=case in {"valid", "null"})
 
 

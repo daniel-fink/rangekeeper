@@ -39,10 +39,25 @@ exact match. `Model.find_entities(classification=id)` still matches exactly. See
 
 ## Geometry and Bundle IO
 
-The [Bundle reference](../reference/bundle.md) defines the optional IO and Model
-schema 0.8.0. Existing 0.7.0 Models remain readable without implicit migration.
-Use `model_07_to_08` for an explicit new identity/predecessor; never rewrite the
-old artifact or substitute this version for a locked 0.9 environment.
+The [Bundle reference](../reference/bundle.md) defines the optional IO and the
+Model Geometry field.
+
+## Document formats 1.0.0
+
+Release 1.0.0a2 resets the Model, Specification and Run formats, and every schema
+module, to 1.0.0 ([ADR-017](../decisions/017-api-and-formats.md)). A 1.x reader
+reads every format with major version 1, up to its own version. It does not read
+0.x documents: Model 0.7.0 and 0.8.0, Specification 0.7.0 and Run 0.4.0 raise
+`UnsupportedVersionError`. `rangekeeper.io.migration` and `model_07_to_08` are
+removed.
+
+For each stored 0.x document or Bundle, choose one route:
+
+- rebuild it from its source pipeline with 1.0;
+- convert it with the one-off conversion script
+  ([#120](https://github.com/daniel-fink/rangekeeper/issues/120)) when it is available.
+
+Never rewrite the old artifact in place.
 
 ## 1.0.0a2 rename map (draft)
 

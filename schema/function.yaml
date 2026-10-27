@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/function
 name: rangekeeper_function
 title: Rangekeeper Functions
-version: 0.5.0
+version: 1.0.0
 description: Versioned function signatures and the domains of their arguments and results.
 prefixes:
   linkml: https://w3id.org/linkml/

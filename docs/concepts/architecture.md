@@ -140,7 +140,7 @@ contents are not yet in their 1.0 owner:
 | `specification` | The Specification document, composition, roles, and policy declarations and evaluation | Policy evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
 | `run` | The Run document, its report and outputs, and evidence validation | — |
 | `execution` | Preparation, compilation, backends, acceptance and publication | Policy evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
-| `io` | JSON and YAML codecs, stores, Bundle, Polars export and migration | The store protocol moves to `shared` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
+| `io` | JSON and YAML codecs, stores, Bundle and Polars export | The store protocol moves to `shared` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
 
 Import-linter contracts that enforce the layer order follow in [#97](https://github.com/daniel-fink/rangekeeper/issues/97).
 

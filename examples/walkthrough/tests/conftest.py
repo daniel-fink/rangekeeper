@@ -36,7 +36,7 @@ def tree():
     root = Entity(id=uuid4(), code="root", name="buildingA", classification=node.id)
     child = Entity(id=uuid4(), code="child", name="Child", classification=node.id)
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(
             taxonomies=(
                 Taxonomy(

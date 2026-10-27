@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/common
 name: rangekeeper_common
 title: Rangekeeper Common Types
-version: 0.2.0
+version: 1.0.0
 description: Shared primitive types and revision metadata for Rangekeeper documents.
 prefixes:
   linkml: https://w3id.org/linkml/

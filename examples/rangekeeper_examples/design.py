@@ -509,7 +509,7 @@ def specify(model: Model) -> Specification:
                     inputs[item.id] = item
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(
                 Assignment(

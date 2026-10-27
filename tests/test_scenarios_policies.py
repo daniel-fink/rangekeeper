@@ -32,7 +32,7 @@ from rangekeeper_examples.investment import build_stop_gain_resale_policy
 
 
 def base():
-    return Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
+    return Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
 
 
 def test_parallel_streams_and_replay(monkeypatch):
@@ -131,7 +131,7 @@ def policy_model(factors):
             )
         )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(formulations=(Formulation(id=uuid4(), values=tuple(values)),)),
     )
@@ -308,7 +308,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     store.put(spec)
     other = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             policy=policy,
         )
@@ -316,7 +316,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     store.put(other)
     joined = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             includes=(spec.id, other.id),
         )
     )

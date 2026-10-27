@@ -35,8 +35,12 @@ python tools/schema/generate.py --check
 python tools/schema/generate_csharp.py --check
 ```
 
-When a change affects wire compatibility, update its explicit migration,
-version policy, fixtures and reference documentation together. Source-history
+Every schema module and every document format is at 1.0.0
+([ADR-017](../decisions/017-api-and-formats.md)). The generator writes the
+document versions to `manifest.json`; readers get them from there, not from
+literals. A change that a 1.x reader cannot read needs a new major format
+version. When a change affects wire compatibility, update the version policy,
+fixtures and reference documentation together. Source-history
 files are evidence; do not regenerate them to conceal a version change.
 
 ## Geometry vocabulary and Bundle mapping
@@ -61,10 +65,8 @@ schema and preserve complete Model content; query engines and user interfaces do
 not define a second canonical schema. Shared reconstruction/query fixtures belong
 with the reader contract.
 
-Model 0.8.0 adds optional provider-neutral Geometry
-and generates Python/C# records from `schema/geometry.yaml`. Specification remains
-at 0.7.0 and Run remains at 0.4.0. The explicit 0.7-to-0.8 Model migration creates a new identity and
-retains its predecessor. The [Bundle reference](../reference/bundle.md) defines
+The Model has optional provider-neutral Geometry, with Python/C# records generated
+from `schema/geometry.yaml`. The [Bundle reference](../reference/bundle.md) defines
 the Parquet mapping and publication marker.
 
 The [Bundle acceptance matrix](../decisions/008-rangekeeper-bundle-contract.md#bundle-acceptance-criteria)

@@ -2366,7 +2366,7 @@
               "type": "null"
             }
           ],
-          "description": "Optional exact Geometry pin and Entity mappings. Requires Model schema 0.8.0."
+          "description": "Optional exact Geometry pin and Entity mappings."
         },
         "metadata": {
           "$ref": "#/$defs/Metadata",

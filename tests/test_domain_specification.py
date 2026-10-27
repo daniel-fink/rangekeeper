@@ -52,7 +52,7 @@ class Resolver:
 def spec(**fields):
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"), **fields
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"), **fields
         )
     )
 
@@ -134,12 +134,12 @@ def test_missing_wrong_kind_wrong_identity_and_cycles():
     left_id, right_id = uuid4(), uuid4()
     left = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=left_id, schema_version="0.7.0"), includes=(right_id,)
+            metadata=Metadata(id=left_id, schema_version="1.0.0"), includes=(right_id,)
         )
     )
     right = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=right_id, schema_version="0.7.0"), includes=(left_id,)
+            metadata=Metadata(id=right_id, schema_version="1.0.0"), includes=(left_id,)
         )
     )
     with pytest.raises(ValidationError, match="cycle"):
@@ -208,7 +208,7 @@ def test_local_revision_and_unknown_external_references():
                 metadata=Metadata(
                     id=before.id,
                     previous=after.id,
-                    schema_version="0.7.0",
+                    schema_version="1.0.0",
                     name="reuse",
                 )
             )
@@ -226,7 +226,7 @@ def test_duplicate_local_references_and_identity_reuse_are_rejected():
         spec(includes=(target, target))
     with pytest.raises(ValidationError, match="duplicate unknown"):
         spec(unknowns=(Reference(target=target), Reference(target=target)))
-    metadata = Metadata(id=uuid4(), schema_version="0.7.0")
+    metadata = Metadata(id=uuid4(), schema_version="1.0.0")
     with pytest.raises(ValidationError, match="cycle"):
         Specification(SpecificationRecord(metadata=metadata, includes=(metadata.id,)))
 

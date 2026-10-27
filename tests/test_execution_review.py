@@ -16,7 +16,7 @@ def identity():
 
 
 def metadata():
-    return {"id": identity(), "schema_version": "0.7.0"}
+    return {"id": identity(), "schema_version": "1.0.0"}
 
 
 def literal(value):

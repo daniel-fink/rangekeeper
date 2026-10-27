@@ -2246,7 +2246,7 @@ class Model(Record):
 
     @property
     def geometry(self) -> Geometry | None:
-        'Optional exact Geometry pin and Entity mappings. Requires Model schema 0.8.0.'
+        'Optional exact Geometry pin and Entity mappings.'
         return cast('Geometry | None', self._field('geometry'))
 
 

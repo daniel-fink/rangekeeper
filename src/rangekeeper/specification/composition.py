@@ -16,7 +16,7 @@ from uuid import UUID
 from rangekeeper.model.scope import reference_key
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import Specification as SpecificationRecord
-from rangekeeper.schema.validation import document_version
+from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -54,7 +54,7 @@ def validate_local_header(doc, schema_version):
     metadata = doc["metadata"]
     ref = metadata["id"]
     require(
-        metadata["schema_version"] == schema_version,
+        supports_version(metadata["schema_version"], schema_version),
         "unsupported Specification schema version",
     )
     require(metadata.get("previous") != ref, "self predecessor")

@@ -1,6 +1,6 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/distribution
 name: rangekeeper_distribution
-version: 0.1.0
+version: 1.0.0
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
