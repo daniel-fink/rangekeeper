@@ -31,9 +31,19 @@ Its folders mirror the packages:
 | Folder | Contents |
 | --- | --- |
 | `tests/<package>` | Tests of one package, for example `tests/flow` or `tests/model`. A fixture is next to the tests that read it |
-| `tests/contracts` | Format versions, retired names, golden account results and the jsonschema conformance of structural validation. Golden formats, the API snapshot and deterministic builds follow |
+| `tests/contracts` | Format versions, retired names, golden account results, the jsonschema conformance of structural validation and the API snapshot. Golden Bundle formats and deterministic builds follow |
 | `tests/integration` | Complete teaching models and calculations across several packages, with their model builders |
 | `tests/walkthrough` | The example data package and the design example, in the core environment |
+
+`tests/contracts/api.json` is the snapshot of the public API
+([ADR-017](../decisions/017-api-and-formats.md)): each public name of each public
+package, with its kind, defining module and signature. The snapshot test fails
+when the public API changes. Review the difference, then write the snapshot again
+and commit it with the change:
+
+```sh
+uv run python -m tests.contracts.api --write
+```
 
 The walkthrough helper and lesson tests stay in `examples/walkthrough/tests`,
 because they need the walkthrough environment. Put a new test in the folder of
