@@ -63,8 +63,8 @@ table = to_table(View(model), columns=columns)
 | `LabelColumn(name, key)` | Returns classification UUIDs for a local Label. It does not substitute potentially ambiguous codes. |
 | `PropertyColumn(name, key)` | Returns detached decoded property content. A non-property Value raises `TableError`. Missing and explicit null return `None`; `False` and zero retain their types. |
 
-`to_table(source, *, columns=DEFAULT_COLUMNS, units=default_units)` returns a
-Table. Defaults are Model UUID, Entity UUID and name. Row IDs are Entity UUIDs;
+`to_table(source, *, columns=DEFAULT_COLUMNS, units=None)` returns a
+Table. Without `units`, conversion uses `Model.unit_system` of the View's Model. Defaults are Model UUID, Entity UUID and name. Row IDs are Entity UUIDs;
 View order determines row order. Include `model_id` when rows leave the pinned
 View context. Missing or unresolved quantities project to `None`; a known zero
 remains zero. Inspect the Model when absence must be distinguished from a declared

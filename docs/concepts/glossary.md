@@ -47,7 +47,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | --- | --- | --- | --- |
 | Quantity | A magnitude with units | `units` | `model.measure.Quantity` |
 | Units | A unit string, such as `AUD/year` | `units` | — |
-| Unit system | The policy that parses, checks and converts units | `units` | Sometimes also called `units` |
+| Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `units` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | `start_inclusive`, `end_exclusive` |
 | Span | A named half-open range of time | `duration` | — |

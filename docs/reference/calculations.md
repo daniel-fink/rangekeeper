@@ -34,7 +34,7 @@ and extent. Multi-Flow operations live in `calculations.series`: `align`, `aggre
 `Aggregation` returns its Flow with contribution metadata. Join and missing-data
 policies are explicit. A coordinate absent from one input is distinct from a
 movement whose magnitude is unresolved. A requested absent zero stays zero in the
-destination unit, including conversion between affine units.
+destination unit.
 
 Dimensional compatibility is necessary but does not prove the intended economics.
 The caller chooses additive totals, weighted means, integration or compounding.

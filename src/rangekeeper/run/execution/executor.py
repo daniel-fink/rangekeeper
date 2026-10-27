@@ -18,7 +18,7 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.errors import ValidationError
-from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.units import UnitSystem
 from rangekeeper.specification import Composition, Specification
 
 
@@ -30,6 +30,7 @@ class Executor:
     case has a fresh Run even when it fails; repeated paths are separate attempts.
     Missing references, invalid batch graphs, storage errors and programming errors
     raise to the caller. Expected formulation/numerical failures become Run evidence.
+    Without ``units``, each attempt uses the unit system of its input Model.
     No commit, network access, graph migration or source-workflow execution occurs.
     """
 
@@ -38,7 +39,7 @@ class Executor:
         store: RecordStore,
         *,
         backend: Backend | None = None,
-        units: UnitSystem = default_units,
+        units: UnitSystem | None = None,
         tolerances: acceptance.Tolerances = acceptance.Tolerances(),
     ) -> None:
         self.store = store

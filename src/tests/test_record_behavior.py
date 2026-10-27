@@ -216,13 +216,13 @@ def test_generated_classes_properties_and_replacement_have_documentation():
             assert getattr(cls, name).__doc__
 
 
-def test_zero_filling_uses_target_units_for_offset_conversions():
-    first = r.Flow.from_events([DAY], [1], units="kelvin")
-    second = r.Flow.from_events([date(2026, 1, 2)], [0], units="degC")
+def test_zero_filling_converts_to_target_units():
+    first = r.Flow.from_events([DAY], [1], units="m")
+    second = r.Flow.from_events([date(2026, 1, 2)], [1], units="ft")
     result = aggregate(
         [first, second], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
     )
-    assert [m.number for m in result.flow.movements] == [1.0, 273.15]
+    assert [m.number for m in result.flow.movements] == pytest.approx([1.0, 0.3048])
     assert result.coverage == (0.5, 0.5)
     independent = align(
         [first, second], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO

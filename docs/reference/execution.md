@@ -15,8 +15,9 @@ worker. `pyproject.toml` declares the supported version ranges. The worker does
 not refuse other versions; the Run evidence records the Pyomo and HiGHS versions
 that it found.
 
-`Executor(store, *, backend=None, units=default_units, tolerances=Tolerances())`
+`Executor(store, *, backend=None, units=None, tolerances=Tolerances())`
 supports `MemoryStore`, `DirectoryStore` or a compatible `RecordStore`.
+Without `units`, each attempt uses the [unit system](units.md) of its input Model.
 `execute(specification: Specification) -> Run` stores the supplied root after
 reference-graph preflight. Referenced Models, includes and cases must already be
 available. Expected capability, settings and numerical outcomes appear in the Run.

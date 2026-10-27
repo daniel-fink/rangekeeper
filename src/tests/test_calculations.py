@@ -310,7 +310,7 @@ def test_resample_complete_calendar_and_explicit_reduction():
     flow = Flow.from_events(
         [date(2020, 1, 1), date(2020, 1, 31), date(2020, 3, 1)],
         [10, 20, 40],
-        units="kWh",
+        units="dwelling",
     )
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
     with pytest.raises(ValueError):
@@ -328,7 +328,7 @@ def test_resample_complete_calendar_and_explicit_reduction():
     ] and result.coverage == (1, 0, 1)
     assert result.flow.total().magnitude == 70
     stocks = Flow.from_events(
-        [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="kWh"
+        [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="dwelling"
     )
     assert (
         series.resample(stocks, periods=periods[:1], method=ResamplingMethod.LAST)
@@ -374,7 +374,7 @@ def test_projection_and_partition_invariants():
     ) == (1, 2, 3, 3, 3)
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=7)
     flow = projection.distribute(
-        Quantity(magnitude=100, units="kg"),
+        Quantity(magnitude=100, units="sqm"),
         periods=periods,
         distribution=Distribution.pert(),
     )

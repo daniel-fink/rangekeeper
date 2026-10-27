@@ -50,9 +50,9 @@ from rangekeeper.model import (
 from rangekeeper.model import characteristics
 from rangekeeper.model.diff import between
 
-area = Measure(id=uuid4(), code="area", name="Area", units="squaremeter")
+area = Measure(id=uuid4(), code="area", name="Area", units="sqm")
 gross = Value(id=uuid4(), key="gross", kind=ValueKind.MEASUREMENT, measure=area.id,
-              quantity=Quantity(magnitude=100, units="squaremeter"))
+              quantity=Quantity(magnitude=100, units="sqm"))
 net = Value(id=uuid4(), key="net", kind=ValueKind.MEASUREMENT, measure=area.id)
 entity = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(gross, net)))
 model = Model.create(
@@ -187,17 +187,12 @@ procedure](../contributing/verification.md) for checks and evidence limits.
 
 ## Units and limits
 
-`UnitSystem.compatible(left, right)` checks dimensions, not equal scale.
-`convert(quantity, to=...)` returns a new finite Quantity. Invalid/unknown units and
-incompatible conversions raise `UnitError`. The configuration is immutable; the registry
-is private and imported lazily. Standard physical units and squaremeter/squarefoot
-aliases are supported. Dwelling is an independent count dimension. Every catalogue currency
-has an independent dimension: AUD and USD are incompatible, with no exchange inference.
-
-Currency codes come directly from the declared py-moneyed dependency, including
-historical codes. This is not a claim that each code is currently in circulation.
-`UnitSystem.validate_units(text)` parses one spelling without comparing it to itself. Importing domain APIs does not import
-Pint; actual unit operations require the already-declared Pint runtime dependency.
+A Model validates its recorded units with its unit system. `Model.unit_system`
+returns that system, and derived operations use it by default. The
+[units reference](units.md) gives the curated registry, its errors and
+suggestions, and the operations that use `Model.unit_system`. Every catalogue
+currency has an independent dimension: AUD and USD are incompatible, with no
+exchange inference.
 
 Supported recorded units are checked in Model and Specification-local mathematics.
 Equation unit inference, generic Fact/Claim-content agreement, imposed graph-query
