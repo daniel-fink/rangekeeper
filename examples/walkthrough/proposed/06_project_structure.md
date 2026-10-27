@@ -382,7 +382,7 @@ assert served.coverage.shared == {"plinth_plant"}
 ## Cell budget
 
 25 core code cells, 1 optional cell and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 15 lines (cell 21). Cells follow `ruff format` (D15).
+solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (D15).
 
 ## Rule check
 
