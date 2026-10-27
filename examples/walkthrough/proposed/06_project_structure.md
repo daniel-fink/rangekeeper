@@ -98,9 +98,8 @@ objects that a filter selects, coloured by their `use` label.
 # cell 9
 floors = rk.model.Filter(classification="floor")
 floor_entities = model.find(filter=floors)
-helpers.show_geometry(
-    model=model, highlight=floor_entities, color_by="use"
-)  # 33 floors
+# 33 floors, coloured by use
+helpers.show_geometry(model=model, highlight=floor_entities, color_by="use")
 ```
 
 ```python

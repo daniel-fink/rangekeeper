@@ -168,9 +168,8 @@ nacf.at(on=date(2011, 1, 1)) / exit_cap_rate  # the price at the end of year 10,
 
 ```python
 # cell 11
-exit_values = (
-    nacf.shift(by=-1) / exit_cap_rate
-)  # each year: next year's NACF / cap rate
+# each year: next year's NACF / cap rate
+exit_values = nacf.shift(by=-1) / exit_cap_rate
 exit_values.display()
 ```
 
