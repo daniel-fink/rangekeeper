@@ -45,7 +45,7 @@ import helpers
 
 ```python
 # cell 2
-data = helpers.load_property(snapshot=2032)
+data = helpers.load_property(year=2032)
 data  # key, quantity and origin of each total
 ```
 

@@ -109,7 +109,7 @@ step, **predict** the shape and then draw it.
 
 ```python
 # cell 5
-trend = rk.finance.MarketDynamics(trend="2 % pa")
+trend = rk.market.Dynamics(trend="2 % pa")
 helpers.plot_paths(paths=trend.generate(periods=years, count=1), names=["rent_index"])
 ```
 
@@ -139,7 +139,7 @@ helpers.plot_paths(
 
 ## 4. Generate and capture
 
-Narrative: generate many paths with one seed. The result is a `MarketPaths`
+Narrative: generate many paths with one seed. The result is an `rk.market.Paths`
 document. Its capture record keeps the generator, its parameters, the seed and the
 library versions. Replay uses the captured values and draws no new random numbers.
 
@@ -164,10 +164,10 @@ across paths? First, value the plan on the average rent index.
 
 ```python
 # cell 10
-average = rk.execution.solve(
+average_outcome = rk.execution.solve(
     specification=base.fix(rent_index=paths.mean(name="rent_index"))
 )
-average["unlevered_npv"], average["equity_npv"]
+average_outcome["unlevered_npv"], average_outcome["equity_npv"]
 ```
 
 ## 6. The plan across all paths
@@ -178,20 +178,22 @@ here, `rent_index`. One solve gives one result for each path.
 
 ```python
 # cell 11
-outcomes = rk.execution.solve(specification=base.across(paths=paths))
-outcomes.table("unlevered_npv", "equity_npv", "peak_shortfall").head()
+paths_outcome = rk.execution.solve(specification=base.across(paths=paths))
+paths_outcome.table("unlevered_npv", "equity_npv", "peak_shortfall").head()
 ```
 
 ```python
 # cell 12
-npv = outcomes.distribution(key="unlevered_npv")
+npv = paths_outcome.distribution(key="unlevered_npv")
 npv.summary()  # mean, standard deviation, 5 % and 95 % quantiles
 ```
 
 ```python
 # cell 13
 helpers.plot_target_curve(
-    outcomes={"Paths": outcomes}, key="unlevered_npv", mark=average["unlevered_npv"]
+    outcomes=paths_outcome,
+    key="unlevered_npv",
+    markers={"Average path": average_outcome["unlevered_npv"]},
 )
 ```
 
@@ -203,8 +205,10 @@ larger for equity and for funding.
 
 ```python
 # cell 14
-for key in ("unlevered_npv", "equity_npv", "peak_shortfall"):
-    print(key, outcomes.distribution(key=key).mean - average[key])
+rk.execution.table(
+    outcomes={"Average path": average_outcome, "Mean of paths": paths_outcome.mean()},
+    keys=["unlevered_npv", "equity_npv", "peak_shortfall"],
+)
 ```
 
 > **Finance note.** A plan that looks good on the average path can fail on many paths.
@@ -217,13 +221,13 @@ Narrative: read the probability of a loss and of a funding shortfall.
 
 ```python
 # cell 15
-shortfall = outcomes.distribution(key="peak_shortfall")
+shortfall = paths_outcome.distribution(key="peak_shortfall")
 npv.probability(below="0 AUD"), shortfall.probability(above="0 AUD")
 ```
 
 ```python
 # cell 16
-worst = outcomes.case(key=npv.quantile_member(level=0.05))
+worst = npv.case(quantile=0.05)  # the path at the 5 % quantile of the NPV
 helpers.plot_flows(outcome=worst, keys=["cash", "headroom", "committed"])
 ```
 
@@ -235,13 +239,16 @@ the income of its use.
 
 ```python
 # cell 17
-uses = rk.finance.MarketDynamics.correlated(
+uses = rk.market.Dynamics.correlated(
     generators={
         "hotel_index": dynamics.replace(volatility="8 % pa"),
         "residential_index": dynamics,
         "retail_index": dynamics.replace(trend="1 % pa"),
     },
-    correlation=[[1, 0.5, 0.3], [0.5, 1, 0.4], [0.3, 0.4, 1]],
+    correlation={
+        "hotel_index": {"residential_index": 0.5, "retail_index": 0.3},
+        "residential_index": {"retail_index": 0.4},
+    },
 )
 use_paths = uses.generate(periods=years, seed=1, count=count)
 ```
@@ -264,10 +271,9 @@ the NPV change? How does the mean change?
 volatile = dynamics.replace(volatility="10 % pa").generate(
     periods=years, seed=1, count=count
 )
-wide = rk.execution.solve(specification=base.across(paths=volatile))
-assert wide.distribution(key="unlevered_npv").quantile(level=0.05) < npv.quantile(
-    level=0.05
-)
+volatile_outcome = rk.execution.solve(specification=base.across(paths=volatile))
+volatile_npv = volatile_outcome.distribution(key="unlevered_npv")
+assert volatile_npv.quantile(level=0.05) < npv.quantile(level=0.05)
 ```
 
 **Try it 2: growth applied twice.** In a draft, make Building A's rent compound at
@@ -283,33 +289,34 @@ site.replace(
     equation="a_rent = rk.profile.compounding(initial=a_income, rate=2 % pa, start=a_open)",
 )
 twice_model = draft.commit()
-twice = rk.execution.solve(specification=base.on(model=twice_model).across(paths=paths))
-twice.distribution(key="unlevered_npv").mean - npv.mean
+twice_outcome = rk.execution.solve(
+    specification=base.on(model=twice_model).across(paths=paths)
+)
+twice_outcome.distribution(key="unlevered_npv").mean - npv.mean
 ```
 
 The mean NPV rises, but the market did not change. The index already contains the
 trend, so Building A's rent now grows twice.
 
-**Try it 3: another seed.** Generate the same count with seed 2. How much does
+**Try it 3: another seed.** Regenerate the paths with seed 2. How much does
 the mean NPV move? What does this say about the path count?
 
 ```python
 # solution
-other = dynamics.generate(periods=years, seed=2, count=count)
-moved = rk.execution.solve(specification=base.across(paths=other))
-moved.distribution(key="unlevered_npv").mean - npv.mean
+other = paths.regenerate(seed=2)  # the same generator, periods and count
+reseeded_outcome = rk.execution.solve(specification=base.across(paths=other))
+reseeded_outcome.distribution(key="unlevered_npv").mean - npv.mean
 ```
 
 ## Checks and recap
 
 ```python
 # cell 19 (checks)
-assert len(outcomes.cases) == count
-assert outcomes.run.market_paths == paths.id  # the Run pins the paths
-assert npv.mean != average["unlevered_npv"]  # the flaw of averages
-assert (
-    outcomes.case(key=paths.keys[0])["rent_index"] == paths[paths.keys[0]]["rent_index"]
-)
+assert len(paths_outcome.cases) == count
+assert paths_outcome.run.market_paths == paths.id  # the Run pins the paths
+assert npv.mean != average_outcome["unlevered_npv"]  # the flaw of averages
+first = paths.keys[0]
+assert paths_outcome.case(key=first)["rent_index"] == paths[first]["rent_index"]
 ```
 
 **Recap.**
@@ -327,7 +334,7 @@ known at each date.
 ## Cell budget
 
 17 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 11 lines (cell 3b). Cells follow `ruff format` (D15).
+solutions. The longest cell has 13 lines (cell 17). Cells follow `ruff format` (D15).
 
 ## Rule check
 
@@ -336,13 +343,14 @@ solutions. The longest cell has 11 lines (cell 3b). Cells follow `ruff format` (
 | 2 | 1, 10 | G26: `rk.io.load` and `rk.io.save` for any document kind; `model.equations` display ([G10](README.md#gap-list)) |
 | 3–3b | 2, 3 | G27: equation keys, entity `replace(key=, equation=)` and `remove(key=)`; G28: entity `flow(key=, units=, periods=)` |
 | 4 | 2, 5 | G21: `free` then `on(model=)`; `on` refuses a fixed value that the new revision does not declare |
-| 5–7 | 6, 11 | `MarketDynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)`; `generate` needs `seed=` only when the dynamics are random |
+| 5–7 | 6, 11 | `rk.market.Dynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)`; `generate` needs `seed=` only when the dynamics are random |
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
-| 8–9 | 4, 6 | `MarketPaths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |
-| 10 | 6 | G30: `MarketPaths.mean(name)` gives one Flow |
+| 8–9 | 4, 6 | `rk.market.Paths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |
+| 10 | 6 | G30: `Paths.mean(name)` gives one Flow |
 | 11 | 8 | `across` ([#138](https://github.com/daniel-fink/rangekeeper/issues/138)). G73: path series match Model values by key |
-| 12–15 | 8 | G31: `Outcome.distribution(key)` with `summary`, `mean`, `quantile(level=)`, `probability`, `quantile_member(level=)` |
-| 16 | 8 | G20: `Outcome.case(key=)` with a path key |
-| 17–18 | 6 | G32: correlated generators and `MarketPaths.correlation()` |
-| 19 | 8 | G33: `Outcome.run.market_paths` pin; `MarketPaths[key][name]` |
+| 12–15 | 8 | G31: `Outcome.distribution(key)` with `summary`, `mean`, `quantile(level=)`, `probability`, `case(quantile=)` |
+| 14 | 8 | G13; G31: `Outcome.mean()` gives the mean of a batch as one row for `rk.execution.table` |
+| 16 | 8 | G31: `Distribution.case(quantile=)` returns the case at a quantile |
+| 17–18 | 6 | G32: correlated generators with correlations by name, and `Paths.correlation()` |
+| 19 | 8 | G33: `Outcome.run.market_paths` pin; `Paths[key][name]`; G69: `Paths.regenerate(seed=)` (Try it 3) |
 | — | — | Run time across 500 paths needs the reusable worker ([#130](https://github.com/daniel-fink/rangekeeper/issues/130)) and one structure for all cases (G20) |

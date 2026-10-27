@@ -13,7 +13,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Model | Project knowledge: definitions, system, provenance and an optional geometry pin | `model` | — |
 | Specification | An investigation of one Model revision: fixed and free values, estimates, bounds, objectives, policies, includes and cases | `specification` | — |
 | Run | Finalized evidence of one attempt or batch: status, report, output Models and child Runs | `run` | — |
-| MarketPaths | A captured, replayable set of market paths with its capture record | `finance` | `ScenarioRealization` inside Model provenance |
+| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record | `market` | `MarketPaths`; `ScenarioRealization` inside Model provenance |
 | Bundle | A delivered set of documents with their exact dependencies | `io` | — |
 | Revision | One immutable version of a document, identified by its Metadata UUID | `schema` | — |
 
@@ -51,7 +51,9 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `quantity` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | `start_inclusive`, `end_exclusive` |
+| Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | `tuple[Period, ...]`; `PeriodIndex` in 0.8 |
 | Span | A named half-open range of time | `duration` | — |
+| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; `never` in equation text. Not `None`, which means missing | `duration` | `"never"` string |
 | Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | `calculations.projection` (`Extrapolation`, `Distribution` projections) |
 | Movement | One dated or period-based amount | `flow` | — |
 | Flow | An ordered series of Movements in one unit | `flow` | `model.flux.Flow` |
@@ -98,8 +100,8 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Coverage | Which contributors had a value, and which did not | `model`, `flow` | Four different types |
 | Pivot | A cross-tab of rollup results by rows and columns | `model` | — |
 | Filter | A declarative selection by classification, labels, number comparisons and presence | `model` | Classification and exact label criteria only |
-| Path | One possible history of external conditions: named Flows with availability | `finance` | Scenario |
-| Path generator | A registered method that makes market paths from parameters and a seed | `finance` | `ScenarioPlan` method |
+| Path | One possible history of external conditions: named Flows with availability | `market` | Scenario |
+| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `ScenarioPlan` method; `MarketDynamics` |
 
 ## Authoring
 

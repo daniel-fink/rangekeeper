@@ -263,8 +263,8 @@ cases = {
     "reference": {"rent_growth": "3 % pa", "exit_cap_rate": "5 %"},
     "strong": {"rent_growth": "5 % pa", "exit_cap_rate": "4.5 %"},
 }
-outcomes = rk.execution.solve(specification=base.cases(cases=cases))
-outcomes.table("unlevered_npv")
+cases_outcome = rk.execution.solve(specification=base.cases(cases=cases))
+cases_outcome.table("unlevered_npv")
 ```
 
 
@@ -313,8 +313,8 @@ model = draft.commit()
 levered = base.on(model=model).fix(
     leverage="65 %", loan_rate="6 % pa", equity_rate="12 % pa"
 )
-levered_outcomes = rk.execution.solve(specification=levered.cases(cases=cases))
-levered_outcomes.table("unlevered_npv", "equity_npv", "equity_irr")
+levered_outcome = rk.execution.solve(specification=levered.cases(cases=cases))
+levered_outcome.table("unlevered_npv", "equity_npv", "equity_irr")
 ```
 
 > **Finance note.** Debt makes the equity's results larger in both directions. When
@@ -436,8 +436,8 @@ model = draft.commit()
 funded = levered.on(model=model).fix(
     equity=plan["equity"], bridge_limit=plan["bridge_limit"]
 )
-summary = rk.execution.solve(specification=funded.cases(cases=cases))
-summary.table(
+funded_outcome = rk.execution.solve(specification=funded.cases(cases=cases))
+funded_outcome.table(
     "unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall", "commitment_gap"
 )
 ```
@@ -445,7 +445,7 @@ summary.table(
 ```python
 # cell 21
 helpers.plot_flows(
-    outcome=summary.case(key="weak"), keys=["cash", "headroom", "committed"]
+    outcome=funded_outcome.case(key="weak"), keys=["cash", "headroom", "committed"]
 )
 ```
 
@@ -491,11 +491,14 @@ cash flow causes the change?
 
 ```python
 # solution
-stress = rk.execution.solve(
+stress_outcome = rk.execution.solve(
     specification=funded.fix(rent_growth="0 % pa", exit_cap_rate="7 %")
 )
 rk.execution.table(
-    outcomes={"Reference": summary.case(key="reference"), "Stress": stress},
+    outcomes={
+        "Reference": funded_outcome.case(key="reference"),
+        "Stress": stress_outcome,
+    },
     keys=["commitment_gap", "peak_shortfall", "equity_npv"],
 )
 ```
@@ -509,31 +512,31 @@ IRR in the weak market?
 
 ```python
 # solution
-weak_target = rk.execution.solve(
+weak_target_outcome = rk.execution.solve(
     specification=target.fix(rent_growth="1 % pa", exit_cap_rate="6 %")
 )
-assert weak_target["land_cost"] < target_outcome["land_cost"]
+assert weak_target_outcome["land_cost"] < target_outcome["land_cost"]
 ```
 
 **Try it 3: start Building B a year later.** Which year has the least headroom now?
 
 ```python
 # solution
-later = rk.execution.solve(specification=funded.fix(b_start=date(2031, 1, 1)))
-later["headroom"].argmin()
+later_outcome = rk.execution.solve(specification=funded.fix(b_start=date(2031, 1, 1)))
+later_outcome["headroom"].argmin()
 ```
 
 ## Checks and recap
 
 ```python
 # cell 24 (checks)
-npvs = outcomes.table("unlevered_npv")["unlevered_npv"]
+npvs = cases_outcome.table("unlevered_npv")["unlevered_npv"]
 assert npvs.is_sorted()  # weak < reference < strong
 cash = target_outcome["equity_cash_flow"]
 target_npv = rk.finance.npv(flow=cash, rate="15 % pa", on=date(2027, 1, 1))
 assert rk.quantity.isclose(actual=target_npv, expected="0 AUD", abs="1 AUD")
-reference = summary.case(key="reference")
-assert reference["headroom"].at(on=date(2027, 1, 1)) == headroom_2027
+reference_outcome = funded_outcome.case(key="reference")
+assert reference_outcome["headroom"].at(on=date(2027, 1, 1)) == headroom_2027
 ```
 
 **Recap.**

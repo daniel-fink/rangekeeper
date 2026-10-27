@@ -56,18 +56,19 @@ contracts enforce the rule.
 | 1 | `shared` (internal) | Errors and diagnostics, resolver and store protocols, the extension registry, fingerprints |
 | 2 | `schema` (internal) | Data-only generated records, enums and JSON; the record runtime; the kind registry; structural validation |
 | — | `quantity` | `Quantity` (also at the root) and `UnitSystem`, with the curated unit registry |
-| 3 | `duration` | Frequency, Period, Span and calendar rules |
+| 3 | `duration` | Frequency, Period, Periods, Span, `NEVER` and calendar rules |
 | 4 | `profile` | Growth and distribution profiles: how an amount develops over Periods |
 | 5 | `flow` | Movement, Flow, Stream, their options and table display, and the private engine |
-| 6 | `finance` | Calculations on known values: PV, NPV, IRR, payments, interest, and path generators |
-| 7 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
-| 8 | `specification` | The Specification document, composition, roles and policy declarations |
-| 9 | `run` | The Run document and evidence validation |
-| 10 | `execution` | Case resolution, role binding, problem building, backends, verification, policy evaluation and publication |
-| 11 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
+| 6 | `market` | Path generators (`Dynamics`) and the market paths document (`Paths`) |
+| 7 | `finance` | Calculations on known values: PV, NPV, IRR, payments and interest |
+| 8 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
+| 9 | `specification` | The Specification document, composition, roles and policy declarations |
+| 10 | `run` | The Run document and evidence validation |
+| 11 | `execution` | Case resolution, role binding, problem building, backends, verification, policy evaluation and publication |
+| 12 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
 `quantity` sits beside `shared`, below `duration`. Users import from `rangekeeper`,
-`quantity`, `duration`, `profile`, `flow`, `finance`, `model`, `specification`, `execution`,
+`quantity`, `duration`, `profile`, `flow`, `market`, `finance`, `model`, `specification`, `execution`,
 `io` and `errors`. `schema` and `shared` are internal. Owners re-export the
 records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
 and [ADR-017](../decisions/017-api-and-formats.md).
@@ -136,8 +137,8 @@ contents are not yet in their 1.0 owner:
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
 | `flow` | Stream, the Flow re-exports, table display and the private engine | `flow.series` is removed; Flow and Stream methods replace it ([#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
-| `finance` | Financial valuation, projection, accounts and deterministic dynamics | Path generators arrive from `model.scenario` ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)) |
-| `model` | The Model document, definitions, the system graph and rollups, equations, provenance, geometry and captured scenarios | `model.scenario` moves to `finance` and the MarketPaths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)) |
+| `finance` | Financial valuation, projection, accounts and deterministic dynamics | Path generators go to `market` with the market paths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137); #201, D29) |
+| `model` | The Model document, definitions, the system graph and rollups, equations, provenance, geometry and captured scenarios | `model.scenario` moves to `market` and the market paths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)) |
 | `specification` | The Specification document, composition, roles, and policy declarations and evaluation | Policy evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
 | `run` | The Run document, its report and outputs, and evidence validation | — |
 | `execution` | Preparation, compilation, backends, acceptance and publication | Policy evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |

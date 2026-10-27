@@ -169,7 +169,7 @@ nacf.at(on=date(2011, 1, 1)) / exit_cap_rate  # the price at the end of year 10,
 ```python
 # cell 11
 exit_values = (
-    nacf.shift(periods=-1) / exit_cap_rate
+    nacf.shift(by=-1) / exit_cap_rate
 )  # each year: next year's NACF / cap rate
 exit_values.display()
 ```
@@ -265,7 +265,7 @@ does the owner lose? Change one input, then explain the result.
 
 ```python
 # cell 20
-exit_6 = (nacf.shift(periods=-1) / rk.Quantity(text="6 %")).trim(span=sale_year)
+exit_6 = (nacf.shift(by=-1) / rk.Quantity(text="6 %")).trim(span=sale_year)
 flows_6 = (
     table.with_flows(flows={"Terminal value": exit_6})
     .select("NACF", "Terminal value")
@@ -284,7 +284,7 @@ by how much does the value change?
 growth_3 = rk.profile.Compounding(rate="3 % pa")
 pgi_3 = rk.flow.Flow.from_profile(profile=growth_3, periods=years, initial="100 USD")
 nacf_3 = 0.95 * pgi_3 - 0.35 * pgi_3 - 0.10 * pgi_3
-terminal_3 = (nacf_3.shift(periods=-1) / exit_cap_rate).trim(span=sale_year)
+terminal_3 = (nacf_3.shift(by=-1) / exit_cap_rate).trim(span=sale_year)
 flows_3 = rk.flow.Stream(flows={"NACF": nacf_3, "Terminal value": terminal_3})
 cash_3 = flows_3.trim(span=holding).sum()
 value_3 = rk.finance.npv(flow=cash_3, rate=discount_rate, on=holding.start)
@@ -356,7 +356,7 @@ cell has 10 lines (cell 8). Cells follow `ruff format` (D15).
 | 6 | 1, 6 | G70: `rk.profile` and `Flow.from_profile` with `initial=` or `total=` (D12; absorbs [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 7, 10, 12, 16 | 8 | G03: `Flow.at(date)` returns one Quantity |
 | 8–9, 13–14 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `with_flows(mapping)`, `select`, `sum()` |
-| 11–12, 20 | 6 | G05: `Flow.shift(periods=)` and `Flow.trim(period)`; no domain helper for the terminal value |
+| 11–12, 20 | 6 | G05: `Flow.shift(by=)` and `Flow.trim(period)`; no domain helper for the terminal value |
 | 15 | 6 | `resample` with `ResampleMethod` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
 | 17–19 | 6 | `pv`, `npv`, `irr` on dates ([#167](https://github.com/daniel-fink/rangekeeper/issues/167), [#164](https://github.com/daniel-fink/rangekeeper/issues/164)) |
 | 12, 15, 21 | 5, 8 | G06: Flow value equality and `rk.quantity.isclose` |

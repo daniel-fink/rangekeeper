@@ -61,10 +61,6 @@ model.equations.involving("start_date", "b_start")
 
 ```python
 # cell 3
-yearly = rk.duration.Frequency.YEAR
-years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
-    frequency=yearly
-)
 fixed = rk.io.load(path=helpers.data_path(name="04_base_case.specification.json"))
 fixed.roles  # lesson 04's base case: start in 2027, Building B in 2030
 ```
@@ -82,27 +78,33 @@ helpers.plot_paths(paths=stories, names=["rent_index"])
 
 ```python
 # cell 5
-fixed_stories = rk.execution.solve(specification=fixed.across(paths=stories))
-fixed_stories.table("equity_npv", "peak_shortfall")
+fixed_stories_outcome = rk.execution.solve(specification=fixed.across(paths=stories))
+fixed_stories_outcome.table("equity_npv", "peak_shortfall")
 ```
 
 ## 3. A rule: wait to start
 
 Narrative: in place of a fixed start date, decide it. Each January from 2027 to
 2030, read the latest rent index. Start when it reaches 1.05. If it never does, do
-not buy the site. `decide` replaces the fixed start date with a rule.
+not buy the site. `decide` replaces the fixed start date with a rule. The reviews are
+a `Periods`: the rule looks on the first day of each Period. The threshold is a
+value in the Specification, so you can change it later without rewriting the rule.
+`rk.duration.NEVER` means the event does not happen.
 
 ```python
 # cell 6
-wait = fixed.decide(
-    key="start_date",
-    when="rent_index >= 1.05",
-    review=yearly,
-    window=(date(2027, 1, 1), date(2031, 1, 1)),
-    otherwise="never",
+yearly = rk.duration.Frequency.YEAR
+start_reviews = rk.duration.Span(start=date(2027, 1, 1), end=date(2031, 1, 1)).periods(
+    frequency=yearly
 )
-waited = rk.execution.solve(specification=wait.across(paths=stories))
-waited.table("start_date", "b_start", "equity_npv")
+wait = fixed.parameters(start_threshold=1.05).decide(
+    key="start_date",
+    when="rent_index >= start_threshold",
+    periods=start_reviews,
+    otherwise=rk.duration.NEVER,
+)
+wait_outcome = rk.execution.solve(specification=wait.across(paths=stories))
+wait_outcome.table("start_date", "b_start", "equity_npv")
 ```
 
 Narrative: the trace shows each review: the date, what was observed, when it became
@@ -114,8 +116,13 @@ constraint. The rule for Building B must follow the rule for the start.
 
 ```python
 # cell 7
-waited.case(key="long downturn").trace()
-waited.case(key="long downturn").status, waited.case(key="long downturn").diagnostics
+downturn = wait_outcome.case(key="long downturn")
+downturn.trace()  # each review: date, observed value, when it was known, result
+```
+
+```python
+# cell 7b
+downturn.status, downturn.diagnostics
 ```
 
 > **Finance note.** A start date that follows the market is an option to wait. Its
@@ -133,13 +140,12 @@ made, before any solve.
 try:
     fixed.decide(
         key="start_date",
-        when="rent_index.shift(periods=-1) >= 1.05",
-        review=yearly,
-        window=(date(2027, 1, 1), date(2031, 1, 1)),
-        otherwise="never",
+        when="rent_index.shift(by=-1) >= 1.05",
+        periods=start_reviews,
+        otherwise=rk.duration.NEVER,
     )
 except rk.errors.AvailabilityError as error:
-    print(error.code, error.value, error.available_on, error.decision_date)
+    print(error.code, error.key, error.available_on, error.decision_date)
 ```
 
 > **Finance note.** Hindsight bias: a rule that sees the future always looks
@@ -148,22 +154,25 @@ except rk.errors.AvailabilityError as error:
 ## 5. Start Building B when the market and funding allow
 
 Narrative: decide Building B's start too. Start B when the index reaches 1.10 and
-the funding headroom covers B's whole budget. Building B's earliest date follows
-the start date, so the window starts there. The headroom comes from lesson 03's funding
+the funding headroom covers B's whole budget. Building B cannot start before the
+shared works finish, so `earliest=` skips the reviews before that date on each
+path. The headroom comes from lesson 03's funding
 equations, with the decisions made so far.
 
 ```python
 # cell 9
+b_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).periods(
+    frequency=yearly
+)
 start_b = wait.decide(
     key="b_start",
     when="rent_index >= 1.10 and headroom >= b_cost",
-    review=yearly,
-    window=("shared_start + 1 year", date(2033, 1, 1)),
-    otherwise="never",
+    periods=b_reviews,
+    earliest="shared_start + 1 year",
+    otherwise=rk.duration.NEVER,
 )
-helpers.show_decisions(
-    specification=start_b
-)  # the decided values, their rules and windows
+# the decided values, their rules and their review Periods
+helpers.show_decisions(specification=start_b)
 ```
 
 ## 6. Stop and sell Building B's site
@@ -175,6 +184,9 @@ decided value.
 
 ```python
 # cell 10
+years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
+    frequency=yearly
+)
 draft = model.edit()
 site = draft.entity(code="property")
 site.value(key="b_land_share", units="ratio")
@@ -184,32 +196,37 @@ site.equations(
     "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
     "b_site_sale = rk.flow.event(amount=b_site_value, on=b_sale_date)",
 )
-site.extend(key="project_cash", terms="+ b_site_sale")
+site.add_to(key="project_cash", term="b_site_sale")
 model = draft.commit()
 ```
 
 ```python
 # cell 11
+sale_reviews = rk.duration.Span(start=date(2033, 1, 1), end=date(2034, 1, 1)).periods(
+    frequency=yearly
+)
 strategy = (
     start_b.on(model=model)
     .fix(b_land_share="40 %")
     .decide(
         key="b_sale_date",
         when="b_start == never",
-        review=yearly,
-        window=(date(2033, 1, 1), date(2034, 1, 1)),
-        otherwise="never",
+        periods=sale_reviews,
+        otherwise=rk.duration.NEVER,
     )
 )
-traced = rk.execution.solve(specification=strategy.across(paths=stories))
-traced.decisions()  # one row for each case and review
+```
+
+```python
+# cell 11b
+stories_outcome = rk.execution.solve(specification=strategy.across(paths=stories))
+stories_outcome.decisions()  # one row for each case and review
 ```
 
 ```python
 # cell 12
-helpers.plot_decisions(
-    outcome=traced, name="rent_index"
-)  # each history and its decisions
+# each history and its decisions
+helpers.plot_decisions(outcome=stories_outcome, name="rent_index")
 ```
 
 ## 7. All paths: paired comparison
@@ -220,21 +237,26 @@ difference holds the market fixed and shows the effect of the rules alone.
 
 ```python
 # cell 13
-fixed_plan = fixed.on(model=model).fix(b_land_share="40 %", b_sale_date="never")
-fixed_out = rk.execution.solve(specification=fixed_plan.across(paths=paths))
-flex_out = rk.execution.solve(specification=strategy.across(paths=paths))
+fixed_plan = fixed.on(model=model).fix(
+    b_land_share="40 %", b_sale_date=rk.duration.NEVER
+)
+fixed_outcome = rk.execution.solve(specification=fixed_plan.across(paths=paths))
+strategy_outcome = rk.execution.solve(specification=strategy.across(paths=paths))
 ```
 
 ```python
 # cell 14
-difference = flex_out.compare(other=fixed_out, keys=["equity_npv", "peak_shortfall"])
+difference = strategy_outcome.compare(
+    other=fixed_outcome, keys=["equity_npv", "peak_shortfall"]
+)
 difference.summary()  # mean difference, share of paths better, worst loss
 ```
 
 ```python
 # cell 15
 helpers.plot_target_curve(
-    outcomes={"Strategy": flex_out, "Fixed plan": fixed_out}, key="equity_npv"
+    outcomes={"Strategy": strategy_outcome, "Fixed plan": fixed_outcome},
+    key="equity_npv",
 )
 ```
 
@@ -246,14 +268,15 @@ realised start years, and the paired difference for each.
 
 ```python
 # cell 16
-flex_out.distribution(key="start_date").counts()
+strategy_outcome.distribution(key="start_date").counts()
 difference.by(key="start_date").summary()  # where waiting gains, and where it costs
 ```
 
 ## 9. Optional: a threshold sweep
 
-Narrative: a rule parameter can be a named Specification parameter. Cases can then
-sweep it. Cases and paths multiply: each threshold runs on every path.
+Narrative: the threshold is a value in the Specification (cell 6), so cases can sweep
+it like any other value. Cases and paths multiply: each threshold runs on every
+path.
 
 ```python
 # cell 17
@@ -267,19 +290,9 @@ thresholds = {
 
 ```python
 # cell 17b
-swept = (
-    strategy.parameters(start_threshold=1.05)
-    .decide(
-        key="start_date",
-        when="rent_index >= start_threshold",
-        review=yearly,
-        window=(date(2027, 1, 1), date(2031, 1, 1)),
-        otherwise="never",
-    )
-    .cases(cases=thresholds)
-)
-sweep = rk.execution.solve(specification=swept.across(paths=paths))
-sweep.compare(other=fixed_out, keys=["equity_npv"]).by_case().summary()
+swept = strategy.cases(cases=thresholds)
+sweep_outcome = rk.execution.solve(specification=swept.across(paths=paths))
+sweep_outcome.compare(other=fixed_outcome, keys=["equity_npv"]).by_case().summary()
 ```
 
 ## Exercises
@@ -289,16 +302,10 @@ start in 2027? Does the mean paired difference rise?
 
 ```python
 # solution
-early = strategy.decide(
-    key="start_date",
-    when="rent_index >= 1.02",
-    review=yearly,
-    window=(date(2027, 1, 1), date(2031, 1, 1)),
-    otherwise="never",
-)
-early_out = rk.execution.solve(specification=early.across(paths=paths))
-early_out.distribution(key="start_date").counts()
-early_out.compare(other=fixed_out, keys=["equity_npv"]).summary()
+early = strategy.fix(start_threshold=1.02)
+early_outcome = rk.execution.solve(specification=early.across(paths=paths))
+early_outcome.distribution(key="start_date").counts()
+early_outcome.compare(other=fixed_outcome, keys=["equity_npv"]).summary()
 ```
 
 **Try it 2: no funding check.** Remove the funding condition from Building B's rule.
@@ -309,12 +316,12 @@ On how many paths does the commitment gap become positive?
 reckless = strategy.decide(
     key="b_start",
     when="rent_index >= 1.10",
-    review=yearly,
-    window=("shared_start + 1 year", date(2033, 1, 1)),
-    otherwise="never",
+    periods=b_reviews,
+    earliest="shared_start + 1 year",
+    otherwise=rk.duration.NEVER,
 )
-reckless_out = rk.execution.solve(specification=reckless.across(paths=paths))
-gaps = reckless_out.distribution(key="commitment_gap")
+reckless_outcome = rk.execution.solve(specification=reckless.across(paths=paths))
+gaps = reckless_outcome.distribution(key="commitment_gap")
 gaps.probability(above="0 AUD")
 ```
 
@@ -324,20 +331,22 @@ the paired difference change on the paths where B never starts?
 ```python
 # solution
 cheap_site = strategy.fix(b_land_share="25 %")
-cheap = rk.execution.solve(specification=cheap_site.across(paths=paths))
-cheap.compare(other=fixed_out, keys=["equity_npv"]).where(b_start="never").summary()
+cheap_site_outcome = rk.execution.solve(specification=cheap_site.across(paths=paths))
+cheap_difference = cheap_site_outcome.compare(other=fixed_outcome, keys=["equity_npv"])
+cheap_difference.where(b_start=rk.duration.NEVER).summary()
 ```
 
 ## Checks and recap
 
 ```python
 # cell 18 (checks)
-assert flex_out.run.market_paths == fixed_out.run.market_paths == paths.id
-for row in flex_out.decisions().observations():
+assert strategy_outcome.run.market_paths == fixed_outcome.run.market_paths == paths.id
+for row in strategy_outcome.decisions().observations():
     assert row.available_on <= row.decision_date
-for row in flex_out.decisions().where(value="b_start", result="decided"):
+decided = rk.execution.ReviewResult.DECIDED
+for row in strategy_outcome.decisions().where(key="b_start", result=decided):
     assert row.observed["headroom"] >= row.observed["b_cost"]
-assert flex_out.case(key=paths.keys[0]).run.policy_evidence.verified
+assert strategy_outcome.case(key=paths.keys[0]).run.policy_evidence.verified
 ```
 
 **Recap.**
@@ -354,26 +363,26 @@ between designs.
 
 ## Cell budget
 
-16 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 14 lines (cells 11 and 17b). Cells follow `ruff format` (D15).
+18 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
+solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (D15).
 
 ## Rule check
 
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G47: `equations.involving(keys)` |
-| 4 | 10 | G48: `MarketPaths` from explicit Flows (the three histories are data, made once) |
-| 6 | 2, 6 | G49: `Specification.decide(key, when=, review=, window=, otherwise=)`, the "decided" role, rules as strings |
-| 6, 10, 13 | 5 | G50: `never` for date values; functions treat a `never` date as "no flow" |
-| 7, 12 | 8, 9 | G51: `Outcome.trace()` and `Outcome.decisions()` tables; infeasible decided values name the constraint (G52) |
-| 8 | 9 | G53: `AvailabilityError` at Specification validation ([#139](https://github.com/daniel-fink/rangekeeper/issues/139)) |
+| 4 | 10 | G48: `rk.market.Paths` from explicit Flows (the three histories are data, made once) |
+| 6 | 2, 6 | D1–D2 of the review: `rk.duration.Periods` from `Span.periods`; G49: `Specification.decide(key=, when=, periods=, earliest=, latest=, otherwise=)`, the "decided" role, rules as strings; G57: `parameters` for a rule's threshold |
+| 6, 11, 13 | 5 | G50: `rk.duration.NEVER` for date values, `never` in rule text; functions treat a `NEVER` date as "no flow" |
+| 7–7b, 11b, 12 | 8, 9 | G51: `Outcome.trace()` and `Outcome.decisions()` tables; infeasible decided values name the constraint (G52) |
+| 8 | 9 | G53: `AvailabilityError` (with `key`) at Specification validation ([#139](https://github.com/daniel-fink/rangekeeper/issues/139)) |
 | 9 | 6 | G54: sequential solve: a rule observes solved values (funding) under the decisions so far ([#213](https://github.com/daniel-fink/rangekeeper/issues/213)) |
-| 9, 11 | 3 | G55: decision windows with expression bounds; rules that observe earlier decisions (`b_start == never`) |
-| 10 | 2, 3 | G27 (`extend`); G17 (`at`, `rk.flow.event`) |
+| 9, 11 | 3 | G55: `earliest=` and `latest=` expression bounds on the reviews; rules that observe earlier decisions (`b_start == never`) |
+| 10 | 2, 3 | G27 (`add_to(key=, term=)`); G17 (`at`, `rk.flow.event`) |
 | 13–16 | 8 | G56: `Outcome.compare(other=, keys=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
-| 17–17b | 2 | G57: Specification parameters for rules, and cases × paths |
-| 18 | 8 | G58: policy evidence in the Run (`policy_evidence.verified`), observations with `available_on` |
+| 17–17b, Try it 1 | 2 | G57: a rule's threshold fixed and swept like any Specification value; cases × paths |
+| 18 | 8 | G58: policy evidence in the Run (`policy_evidence.verified`), observations with `available_on`; `rk.execution.ReviewResult` |
 
 ## Cells for #213
 
@@ -386,13 +395,14 @@ The design for sequential decisions must support:
   default). Solved values, such as funding headroom, are available on the review date
   when they depend only on Movements up to that date. Validation rejects a rule that
   reads a later value (cell 8).
-- **Decided values.** A date value, or "never". The decision fixes the value; the
+- **Decided values.** A date value, or `rk.duration.NEVER`. The decision fixes the value; the
   Model's equations, equalities and bounds, move the dependent dates (cells 6, 9, 11).
-- **Windows.** Review dates from a start to an end, with bounds that can be
-  expressions of earlier decisions (cell 9).
+- **Reviews.** A `Periods`: the rule looks on the first day of each Period.
+  `earliest=` and `latest=` skip reviews outside bounds that are expressions of
+  earlier decisions (cell 9).
 - **Funding.** The rule observes the funding values (`headroom`) under the decisions
   made so far, so evaluation alternates review and solve in date order (cell 9).
 - **Traces.** For each case and review: date, decided value, observations with their
   availability dates, the rule's truth and the result (cells 7, 11).
-- **Paired comparison.** Two Outcomes on the same pinned `MarketPaths`, matched by
+- **Paired comparison.** Two Outcomes on the same pinned `rk.market.Paths`, matched by
  path key (cells 13–16).

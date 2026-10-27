@@ -17,12 +17,12 @@ when the library work lands.
 | Lesson | File | Core cells |
 | --- | --- | --- |
 | 01 Basic discounted cash flow | [01_basic_dcf.md](01_basic_dcf.md) | 20 |
-| 02 Front door, back door | [02_front_door_back_door.md](02_front_door_back_door.md) | 20 + 4 optional |
+| 02 Front door, back door | [02_front_door_back_door.md](02_front_door_back_door.md) | 21 + 4 optional |
 | 03 Cases, debt and equity | [03_cases_debt_equity.md](03_cases_debt_equity.md) | 25 + 2 optional |
-| 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 16 + 2 optional |
-| 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 16 + 1 optional |
+| 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 17 + 2 optional |
+| 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 18 + 2 optional |
 | 06 Project structure | [06_project_structure.md](06_project_structure.md) | 25 + 1 optional |
-| 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 18 + 4 optional |
+| 07 Policies and the model graph | [07_policies_and_graph.md](07_policies_and_graph.md) | 20 + 5 optional |
 
 Each lesson file has the goals box, the narrative outline, the cells, the exercises
 with solutions, the checks and recap, the cell budget and a rule check. The rule
@@ -61,6 +61,11 @@ pass.
 | D22 | ~~How does a known-data Account take transactions?~~ | Withdrawn with the Account (D2) | — |
 | D23 | When is something a library function, and when is it composition? | Compose when it is plain arithmetic on Flows: a balance is `cumulative()`, a repayment at sale is `rk.flow.event(amount=loan_balance.at(on=sale_date), on=sale_date)`, a terminal value is `shift`, divide and `trim`. Keep a library function when it carries a real convention: `rk.finance.interest(..., method=)` (compounding, day count), `npv`, `irr`, `payment`, profiles. So there is no `settle`, no account and no reversion helper | 01–07 |
 | D24 | How much Python may a cell use? | Plain Python only. Cells use no `**` unpacking, no comprehensions or generator expressions, and no f-strings that build keys. A `for` loop may repeat a calculation, a display or a check over a short list; it never declares values (D16). Where a few cases differ, write each one out by key. A helper takes the batch it draws (`plot_target_curve(outcomes=, key=)`), so the cell does not build a mapping for it | 01–07 |
+| D25 | How is a sequence of Periods held and named? | `rk.duration.Periods`: an ordered, gap-free sequence of Periods with one frequency, like rk 0.8's `PeriodIndex`. `Span.periods(frequency=)` returns one. An argument that takes one is always `periods=`; one date is `on=`; a move by whole periods is `by=` (`x.shift(by=-1)`); a Span is `span=`. `decide` takes its reviews as `periods=`, reviewed on the first day of each Period, with optional `earliest=` and `latest=` expressions in place of a window tuple. Not `Sequence`, which is Python's abstract type | 04–07 |
+| D26 | Strings or enums for fixed words? | A fixed list of words that rangekeeper defines is an enum (`rk.duration.Frequency`, `rk.specification.Role`, `rk.execution.Criterion`, `rk.execution.ReviewResult`, `rk.execution.Status`, `rk.model.Direction`, `rk.errors.Code`). Words that the data or the user defines stay strings: classifications, labels, relationship names, case keys, formulation names, units and equation text. "This event does not happen" is the constant `rk.duration.NEVER` (a one-member enum inside), written `never` in equation text; it is not `None`, which means missing | 05–07 |
+| D27 | How are results named in the cells? | A Specification is named for its question (`base`, `funded`, `strategy`); its result is the same name with `_outcome`, also for a batch; a dict of results ends in `_outcomes` | 03–07 |
+| D28 | What stays as it is? | `rk.execution.solve(specification=)` stays a function (a method would make `specification` depend on `execution`); amounts such as `"2.5e6 AUD"` keep `e` notation; `fix` takes a bare number for a ratio (`coverage=1.25`) | 02–07 |
+| D29 | How do path generators and relationships read? | Path generators are series maths, like profiles (D12), so they leave `finance` for `rk.market` (`Dynamics`, `Paths`). Correlations are given by name. Relationships have one snake_case name each (`contains`, `serves`); the other direction is `direction=rk.model.Direction.INCOMING`. The data package maps the source names | 04–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -106,10 +111,12 @@ rk.Model, rk.Specification, rk.Run, rk.Quantity
 rk.quantity.isclose(actual=a, expected=b, abs="1 AUD")  # G06
 span = rk.duration.Span.years(start=date(2001, 1, 1), count=10)  # G01
 yearly = rk.duration.Frequency.YEAR
-span.extend(years=1).periods(frequency=yearly)
+years = span.extend(years=1).periods(frequency=yearly)  # an rk.duration.Periods
+years.start, years.end, years.frequency, len(years), years[-1]  # G01
+rk.duration.NEVER  # "the event does not happen"; G50
 flow = rk.flow.Flow(amounts={period: 100, date(2001, 1, 1): -50}, units="USD")  # G02
 flow.at(on=date(2010, 1, 1)), flow.total(), -0.05 * flow + other_flow  # G03, G04
-flow.shift(periods=-1), flow.trim(span=period)  # G05
+flow.shift(by=-1), flow.trim(span=period)  # G05
 stream = rk.flow.Stream(flows={"PGI": pgi, "OPEX": opex}).with_flows(
     flows={"NOI": noi}
 )  # G04
@@ -136,15 +143,23 @@ fees = rk.flow.Flow.from_profile(
 rk.finance.payment(
     principal="1 AUD", rate="6 % pa", term="20 years", frequency=monthly
 )  # #167: like PMT, with units
-rk.finance.MarketDynamics(trend="2 % pa", volatility="5 % pa").generate(
+```
+
+### Market paths
+
+```python
+paths = rk.market.Dynamics(trend="2 % pa", volatility="5 % pa").generate(
     periods=years, seed=1, count=500
 )  # #135, #136, G29
-rk.finance.MarketDynamics.correlated(generators={...}, correlation=[[...]])  # G32
+rk.market.Dynamics.correlated(
+    generators={"hotel_index": hotel, "residential_index": residential},
+    correlation={"hotel_index": {"residential_index": 0.5}},
+)  # G32
 (
     paths.mean(name="rent_index"),
     paths[key]["rent_index"],
     paths.capture,
-    paths.generator,
+    paths.regenerate(seed=2),
 )  # #137, G30, G69
 ```
 
@@ -170,12 +185,12 @@ draft.equations_for(
 site.rollup(
     key="reference_income",
     of="income",
-    over="spatiallyContains",
+    over="contains",
     root="property",
-    contributors=rk.model.Filter(classification="floor"),
+    contributors=floors,
 )  # G44
 site.replace(key=key, equation=eq)
-site.extend(key=key, terms=terms)
+site.add_to(key=key, term="b_site_sale")
 site.remove(key=key)  # G27
 draft.relabel(filter=filter, use="hotel")
 draft.include(fragment=fragment)
@@ -187,9 +202,13 @@ model.equations, model.equations.involving("start_date"), equation.text  # G10, 
     model.find(filter=rk.model.Filter(...)),
     model.view(over="serves"),
 )  # #156, #160, G37
+model.rollup(of="gfa", over="contains", root="property", contributors=floors)  # #158
 model.rollup(
-    of="gfa", over="spatiallyContains", root="property", contributors=...
-)  # #158, G39
+    of="volume",
+    over="serves",
+    direction=rk.model.Direction.INCOMING,
+    roots=["building_a", "building_b"],
+)  # G39, G40
 (
     result.value,
     result.coverage,
@@ -197,6 +216,7 @@ model.rollup(
     result.trace(root="building_b"),
 )  # #159, G41
 rk.model.diff(before=a, after=b), rk.model.namespace(name="...")  # G62, #147
+rk.model.compare(models={"Residential": a, "Hotel": b}, rollups=["b_cost"])  # G74
 ```
 
 ### Specification
@@ -206,21 +226,24 @@ spec = model.specify(name="Front door").fix(
     land_cost="20e6 AUD", rent={"hotel": "750 AUD per sqm pa"}
 )  # #144, G11, G45
 spec.free("land_cost"), spec.roles, spec.on(model=new_model)  # G11, G21
-spec.cases(cases={"weak": {...}, "strong": {...}})  # G20
+spec.cases(cases={"weak": {...}, "strong": {...}}), spec.case(key="weak")  # G20, G75
 spec.across(paths=paths)  # #138, G73: path series match Model values by key
 spec.across(paths=use_paths, series={"use_index": {"hotel": "hotel_index"}})  # G73
-spec.decide(
+spec.parameters(start_threshold=1.05).decide(
     key="start_date",
-    when="rent_index >= 1.05",
-    review=yearly,
-    window=(date(2027, 1, 1), date(2031, 1, 1)),
-    otherwise="never",
-)  # G49
+    when="rent_index >= start_threshold",
+    periods=reviews,  # an rk.duration.Periods; reviewed on the first day of each
+    earliest=None,  # or an expression, such as "shared_start + 1 year"
+    latest=None,
+    timing=rk.duration.PeriodTiming.FIRST,
+    otherwise=rk.duration.NEVER,
+)  # G49, G55, G57
 (
-    spec.parameters(start_threshold=1.05),
+    spec.fix(start_threshold=1.02),
     spec.rules,
     spec.with_rules(rules=rules),
 )  # G57, G64, G65
+spec.roles  # the role column holds rk.specification.Role: FIXED, FREE, DECIDED (G76)
 spec.alternatives(b_design={"residential": residential, "hotel": hotel})  # G63
 ```
 
@@ -241,8 +264,18 @@ outcome = rk.execution.solve(specification=spec)  # #126, G12
 )  # G19, G20
 (
     outcome.distribution(key="equity_npv").summary(),
+    outcome.distribution(key="equity_npv").case(quantile=0.05),
+    outcome.distribution(key="b_design").counts(),
+    outcome.mean(),
     outcome.compare(other=other, keys=["equity_npv"]),
 )  # G31, G56
+gain.breakeven(
+    key="provision", criterion=rk.execution.Criterion.QUANTILE, level=0.05
+)  # G68
+outcome.decisions().where(
+    key="b_start", result=rk.execution.ReviewResult.DECIDED
+)  # G51
+outcome.status == rk.execution.Status.INFEASIBLE, error.code  # rk.errors.Code; G76
 (
     outcome.trace(),
     outcome.decisions(),
@@ -267,7 +300,7 @@ rk.execution.compare(
 ### Equation strings
 
 Equations use value keys, dotted paths (`building_a.income`),
-keyed members (`rent[use]`), quantity literals (`0 AUD`, `2 years`), the operators
+keyed members (`rent[use]` by a label, `use_index["hotel"]` by name), quantity literals (`0 AUD`, `2 years`), the operators
 `+ - * /`, the comparisons `= >= <= > <` and functions. Every function argument is
 named (D14). Functions are called as in Python, with their `rk.` namespace (D21):
 
@@ -278,7 +311,7 @@ named (D14). Functions are called as in Python, with their `rk.` namespace (D21)
 | `rk.flow.event(amount=, on=)` | A Flow with one amount on one date |
 | `rk.finance.npv(flow=, rate=, on=)`, `rk.finance.irr(flow=)` | Valuation on one date basis (D4, D5 for `irr`) |
 | `rk.finance.interest(balance=, rate=, method=)` | Interest on a balance under a stated convention (compounding, day count, opening or average balance) |
-| `x.at(on=)`, `x.trim(start=, end=)`, `x.since(on=)`, `x.shift(periods=)`, `x.cumulative()`, `x.total()`, `x.first()`, `x.last()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date; the part inside a span; the same Periods with zero before a date; each period's amount `periods` away (`-1` gives the next period's; a rule cannot read a later amount, G53); running totals; the sum; the first and last amounts; and extremes (D4) |
+| `x.at(on=)`, `x.trim(start=, end=)`, `x.since(on=)`, `x.shift(by=)`, `x.cumulative()`, `x.total()`, `x.first()`, `x.last()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date; the part inside a span; the same Periods with zero before a date; each period's amount `by` periods away (`-1` gives the next period's; a rule cannot read a later amount, G53); running totals; the sum; the first and last amounts; and extremes (D4) |
 | `max(a, b)` | The larger of two values. Like Python's built-in, its arguments are not named |
 
 Each profile in `rk.profile` is also an equation function, under its own name in lower
@@ -286,7 +319,8 @@ case: `Compounding` is `rk.profile.compounding(...)`. A profile registered throu
 extension point is an equation function too.
 
 **Reserved words.** These cannot be value keys or entity codes; `commit()` rejects
-them by name: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false`. Other words
+them by name: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false`. `never` in a
+string is `rk.duration.NEVER` in Python (D26). Other words
 are free, because their position decides what they mean: a unit word follows a number,
 a method name follows a Flow, an argument name is inside a call, and a label key is
 inside brackets.
@@ -309,43 +343,44 @@ use. **Issue** is filled in when the issue is filed.
 
 | # | Issue | Title | Gaps | Layer | Cells | Related |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | — | Span conveniences: `years`, `extend`, `periods(frequency)` | G01 | `duration` | 01·4; 03·3 | #119 |
+| 1 | — | `rk.duration.Periods` and Span conveniences: `years`, `extend`, `periods(frequency)` returning a `Periods` with `start`, `end`, `span`, `frequency`, `len`, indexing, `trim`, `extend(count=)`, `containing(on=)`, value equality and a compact document form | G01 | `duration` | 01·4; 03·3; 04·3; 05·6, 9–11; 07·7, 18 | #119 |
 | 2 | — | Flow and Stream construction, lookup and arithmetic | G02–G04 | `flow` | 01·5–13; 03·17 | #103, #162 |
 | 3 | — | Value equality and `rk.quantity.isclose` | G06 | `quantity`, `flow` | 01·12, 15, 21; 02·22 | #109, #117 |
-| 4 | — | Flow methods: `shift(periods=)`, `trim(span=)` with a Period, `cumulative()`, `total()`, `since(on=)`, `first()`, `last()`, `min()`, `max()` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |
+| 4 | — | Flow methods: `shift(by=)`, `trim(span=)` with a Period, `cumulative()`, `total()`, `since(on=)`, `first()`, `last()`, `min()`, `max()` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
 | 7 | — | Function catalogue for equations, called as `rk.profile.*`, `rk.flow.*`, `rk.finance.*` and Flow methods, with the reserved words and the literal rule | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
 | 8 | — | Flow-valued string equations, with Periods from declarations and operands | G18 | `model` | 03·6–8 | #145, #163 |
-| 9 | — | Date values, date arithmetic and `never` | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
+| 9 | — | Date values, date arithmetic, `rk.duration.NEVER` and `never` in equation text | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
 | 10 | — | `rk.Model(name=, namespace=, description=)`, read-only `model.unit_system`, `ModelDraft` with `add_entity` and `entity`, entity handles with `value(key=, units=)`, `flow(key=, units=)` and `date(key=)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
-| 12 | — | Equation keys, `replace`, `remove`, `extend`, `Equation.text`, `equations.involving` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
-| 13 | — | Keyed values, label indexing and `equations_for` | G43, G45, G60 | `model`, `specification` | 06·19, 21; 07·3 | #121, #138, #141 |
+| 12 | — | Equation keys, `replace`, `remove`, `add_to(key=, term=)`, `Equation.text`, `equations.involving` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
+| 13 | — | Keyed values, label indexing (`rent[use]`), members by name in equation text (`use_index["hotel"]`) and `equations_for` | G43, G45, G60 | `model`, `specification` | 06·19, 21; 07·3 | #121, #138, #141 |
 | 14 | — | An entity's `rollup(key=, ...)` declares a Value; `Model.rollups()` | G44, G59 | `model` | 06·20; 07·2, 17 | #158 |
-| 15 | — | Rollup facade: several roots, pivots by ancestor, `trace`, Outcome rollups | G39–G41, G46 | `model`, `execution` | 06·11–15, 23; 07·6, 12 | #157, #158, #159 |
-| 16 | — | Model inspection: `summary`, `entities`, `relationships`, `view`, `diff` | G35–G37, G62 | `model` | 06·2–8; 07·5 | #160 |
+| 15 | — | Rollup facade: several roots, `direction=rk.model.Direction`, pivots by ancestor, `trace`, Outcome rollups, and `rk.model.compare(models=, rollups=)` (G74) | G39–G41, G46, G74 | `model`, `execution` | 06·11–15, 23; 07·6, 12 | #157, #158, #159 |
+| 16 | — | Model inspection: `summary`, `entities`, `relationships`, `view`, `diff`; one snake_case name per relationship (`contains`, `serves`) | G35–G37, G62 | `model` | 06·2–8; 07·5 | #160 |
 | 17 | — | Filter additions: `where=`, `within=`, `has=`, `name=` | G38 | `model` | 06·10, 16; 07·4, 6 | #121 |
 | 18 | — | Error and diagnostic fields: ambiguous lookups, non-affine unknowns, broken constraints | G14, G42, G52 | `errors`, `execution` | 02·20–21; 05·7; 06·16–17, 24 | #134, #154, #155, #156 |
 | 19 | — | Specification roles: unfixed values are free; `fix` input types; a later `fix` of a key replaces the earlier one; `roles` | G11 | `specification` | 02·10, 13; 03·exercises | #144 |
 | 20 | — | `Specification.on(model)`; it refuses a fixed value that the new revision does not declare, so a removed value is freed first | G21 | `specification` | 03·14, 20; 04·4; 05·11, 13 | #144 |
-| 21 | — | Cases and batch Outcomes: `cases(mapping)`, `case`, `table`, `stream`, `rk.execution.table` | G13, G19, G20 | `specification`, `execution` | 02·15; 03·10–14 | #127, #144 |
+| 21 | — | Cases and batch Outcomes: `cases(mapping)`, `Specification.case(key=)`, `Outcome.case`, `table`, `stream`, `rk.execution.table` | G13, G19, G20, G75 | `specification`, `execution` | 02·15; 03·10–14 | #127, #144 |
 | 22 | — | `solve` resolves the documents that made the Specification | G12 | `execution` | 02·11 onwards | #126 |
 | 23 | — | `rk.execution.replay` and `Store.find_runs` | G25 | `execution`, `io` | 03·22–23 | #126, #176 |
 | 24 | — | One-call document IO: `rk.io.load` and `rk.io.save`; a loaded Specification brings the documents it pins, so `solve` can resolve them | G26 | `io` | 04·2, 9; 05·2; 06·2, 22; 07·2, 7 | #112 |
 | 25 | — | ~~`rk.finance.Account` with a limit; `with_transactions` returns a new Account with balance and headroom Flows~~ Withdrawn: funding is composition (D2) | G23 | — | — | — |
 | 26 | — | ~~An entity's `account(key=, ..., commitments=)`~~ Withdrawn: funding is composition (D2) | G24 | — | — | — |
-| 27 | — | Outcome distributions | G31 | `execution` | 04·12–16; 05·16 | #127 |
-| 28 | — | Paired comparison of Outcomes | G56, G66, G68 | `execution` | 05·14–17; 07·9, 14–16 | #138, #213, #214 |
-| 29 | — | MarketPaths access and construction | G30, G33, G48, G69 | `finance` | 04·10, 19; 05·4; 07·16 | #137 |
-| 30 | — | MarketDynamics parameters and correlated generators; `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `finance` | 04·5–7, 17–18 | #136 |
-| 31 | — | Rules that decide values: `decide`, traces, availability errors | G49, G51, G53, G55, G64, G65, G67 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
-| 32 | — | Specification parameters, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
+| 27 | — | Outcome distributions: `summary`, `quantile(level=)`, `probability`, `counts()`, `case(quantile=)`; `Outcome.mean()` for a batch | G31 | `execution` | 04·12–16; 05·16 | #127 |
+| 28 | — | Paired comparison of Outcomes; `breakeven` and `best` with `criterion=rk.execution.Criterion` and `level=` | G56, G66, G68 | `execution` | 05·14–17; 07·9, 14–16 | #138, #213, #214 |
+| 29 | — | `rk.market.Paths` access and construction; `regenerate(seed=)` | G30, G33, G48, G69 | `market` | 04·10, 19; 05·4; 07·16 | #137 |
+| 30 | — | `rk.market.Dynamics` parameters and correlated generators, with correlations given by name; `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `market` | 04·5–7, 17–18 | #136 |
+| 31 | — | Rules that decide values: `decide(key=, when=, periods=, earliest=, latest=, timing=, otherwise=)`, traces, `decisions().where(key=, result=rk.execution.ReviewResult)`, availability errors with `key` | G49, G51, G53, G55, G64, G65, G67 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
+| 32 | — | Specification parameters for rule thresholds, fixed and swept like other values, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
 | 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
 | 35 | — | `rk.Quantity` at the root, text in the constructor, and the `rk.quantity` namespace | G71 | `quantity` | 01·2–3, 10, 17; 02·22; 03·24 | #148, #149, #150 |
 | 36 | — | Named formulations: `equations(..., formulation=)`, a default Formulation for each entity, and equations grouped by formulation in displays and traces | G72 | `model` | 03·6–8, 13, 19b | #141, #145 |
 | 37 | — | `across` matching: each path series fixes the Model value with the same key. `series=` maps a value whose key differs, or the members of a keyed value, to path series. A series that matches no value, a value that `series=` names but the paths lack, or a value with two sources raises an error that lists the path series and the Model keys | G73 | `specification` | 04·11; 05·5; 07·3b | #138 |
+| 38 | — | Enums for the words rangekeeper defines: `rk.specification.Role`, `rk.execution.Criterion`, `rk.execution.ReviewResult`, `rk.execution.Status`, `rk.errors.Code`; `rk.model.Direction` made public (D26) | G76 | `specification`, `execution`, `errors`, `model` | 02·18–21; 05·8, 18; 06·13; 07·14 | #134, #154 |
 
 Scope changes for existing issues:
 
@@ -425,6 +460,9 @@ These are inputs for authoring, not API gaps:
 - The 1.0 data package gives entities readable unique codes, such as
   `a_hotel_floor_1`, and `use` labels on floors
   ([#210](https://github.com/daniel-fink/rangekeeper/issues/210)).
+- The data package maps the source relationship names to one snake_case name each:
+  `spatiallyContains` becomes `contains`, and `servedBy` becomes `serves` read in the
+  other direction (D29).
 - CI writes the documents that later lessons load from the cells of earlier lessons,
   with a namespace, and checks that they do not change: `02_feasibility.model.json`,
   `02_back_door.specification.json`, `03_base_case.specification.json` (lesson 03's
