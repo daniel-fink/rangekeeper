@@ -49,6 +49,14 @@ data = helpers.load_property(snapshot=2032)
 data  # key, quantity and origin of each total
 ```
 
+Narrative: this is the property. Its totals come from this design. Lesson 06 opens
+the design and shows the objects behind each total.
+
+```python
+# cell 2b
+helpers.show_geometry(name="mixed_use_property")
+```
+
 ## 2. A calculation has a direction
 
 Narrative: a spreadsheet calculates in one direction. Start from the cost and
@@ -391,7 +399,7 @@ adds debt, equity and funding.
 
 ## Cell budget
 
-20 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest cell
+21 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest cell
 has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 
 ## Rule check
@@ -400,6 +408,7 @@ has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 | --- | --- | --- |
 | 1 | 1, 10 | Walkthrough helpers package ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | 2 | 10 | G07: helpers load totals with origins; they do not calculate |
+| 2b | 10 | G07: the helper draws the design's geometry. It shows no graph and no values |
 | 3 | 6 | By hand once; replaced in cells 9–11 |
 | 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `value(key=, units=)` and `equations` (D6, D16) |
 | 6, 11 | 6 | G09: staged solve. `reference_income` is a product of fixed values, then `rent_factor * reference_income` is affine |

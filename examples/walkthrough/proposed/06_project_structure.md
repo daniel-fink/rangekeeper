@@ -28,9 +28,9 @@ Value, and equations refer to it by key.
 
 ## 1. The property as a graph
 
-Narrative: in lessons 02–05 the property was one asset with totals. Here is the same
-property as a graph: 50 objects, with spatial, service and grouping relationships,
-and its geometry.
+Narrative: in lessons 02–05 the property was one asset with totals. Lesson 02 showed
+its design as one picture. Here is the same property as a graph: 50 objects, with
+spatial, service and grouping relationships. Each object has its own geometry.
 
 ```python
 # cell 1
@@ -46,7 +46,7 @@ graph.summary()  # counts of entities, relationships and classifications
 
 ```python
 # cell 3
-helpers.show_geometry(model=graph)
+helpers.show_geometry(model=graph, color_by="classification")
 ```
 
 ## 2. Entities, values and relationships
@@ -91,12 +91,13 @@ helpers.show_graph(view=services)
 ## 4. Select with a filter
 
 Narrative: a filter is a declarative selection. It tests classifications, labels
-and values with units. A missing value never passes a test.
+and values with units. A missing value never passes a test. The view shows the
+objects that a filter selects, coloured by their `use` label.
 
 ```python
 # cell 9
 floors = graph.find(filter=rk.model.Filter(classification="floor"))
-len(floors)  # 33
+helpers.show_geometry(model=graph, highlight=floors, color_by="use")  # 33 floors
 ```
 
 ```python
@@ -387,7 +388,7 @@ solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G35: `Model.summary()` |
-| 3, 7–8 | 10 | Helpers draw ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
+| 3, 7–9 | 10 | Helpers draw. `show_geometry(model=, highlight=, color_by=)` draws the objects that a filter selects ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | 4–6 | 4, 7 | Lookups by code ([#156](https://github.com/daniel-fink/rangekeeper/issues/156), [#160](https://github.com/daniel-fink/rangekeeper/issues/160)). G36: `entities()`, `Entity.values`, `relationships(entity)` tables |
 | 7–8 | 7 | G37: `Model.view(relationship_classification)` |
 | 9–10 | 7 | `Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). G38: `where=` string comparisons with units |

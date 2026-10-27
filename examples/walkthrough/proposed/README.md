@@ -391,6 +391,11 @@ Not filed as gaps:
     and dark theme) draws the charts, the timeline and the equation network.
     vis-network (through PyVis, which leaves the library under ADR-010) draws the
     project graph. The Speckle viewer draws geometry.
+  - **Geometry.** `show_geometry(name=)` draws a design from the data package
+    without loading a Model (lesson 02). `show_geometry(model=, highlight=,
+    color_by=)` draws a Model's entities, marks the entities in `highlight` and
+    colours by a classification or a label (lesson 06). Give `name=` or `model=`,
+    not both. The viewer reads the captured Speckle transport, not a server.
   - **Signatures follow the 1.0 API.** Today's drafts on `develop` take today's
     records and a `path=`: `show_timeline(phases=, path=)` and
     `show_relations(formulation=, names=, specifications=, path=)`. The proposed
@@ -425,7 +430,8 @@ These are inputs for authoring, not API gaps:
   lesson 06 with the dated plan of lessons 03–05.
 - Lesson 05 needs the three readable histories (`05_histories.paths.json`).
 - Lesson 07 needs the Building B hotel fragment and the Building A expansion fragment
-  ([#214](https://github.com/daniel-fink/rangekeeper/issues/214)).
+  ([#214](https://github.com/daniel-fink/rangekeeper/issues/214)). If the fragments
+  carry geometry, lesson 07 can show the realised design of one path.
 
 ## Changes from the ADR-020 sketches
 

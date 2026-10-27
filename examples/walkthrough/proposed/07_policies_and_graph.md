@@ -453,6 +453,10 @@ The design for structural variants must support:
   (cell 7). Several choices can be open at once (cell 18).
 - **Realised structure per path.** Each case's Outcome carries the realised Model, so
   rollups and pivots work per path and across the batch (cells 11–12).
+- **Geometry of each option.** The hotel fragment carries geometry, so that
+  `helpers.show_geometry(model=both.case(key=...).model, color_by="use")` can show
+  Building B as built on one path. The proposed cells do not show it yet; add it
+  when the fragment data exists.
 - **Provision on every path.** The provision is an ordinary fixed value in the
   Specification, and its cash flow is in every option's relations (cells 7, 13, 19).
 - **Paired evaluation.** All strategies on one pinned `MarketPaths`, compared by path
