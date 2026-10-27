@@ -392,13 +392,19 @@ class Codemod:
         for fixup in self.map.fixups:
             if fixup.path not in (relative, target):
                 continue
-            count = text.count(fixup.old)
+            old, new = fixup.old, fixup.new
+            if "\r\n" in text:
+                # A Windows checkout can have CRLF line ends; the map uses LF.
+                old, new = (
+                    x.replace("\r\n", "\n").replace("\n", "\r\n") for x in (old, new)
+                )
+            count = text.count(old)
             if count > 1:
                 detail = f"fixup {fixup.old!r} matches {count} times"
                 changes.append(Change(relative, 0, "review", detail))
             elif count == 1:
-                line = text[: text.index(fixup.old)].count("\n") + 1
-                text = text.replace(fixup.old, fixup.new)
+                line = text[: text.index(old)].count("\n") + 1
+                text = text.replace(old, new)
                 detail = f"{fixup.old!r} -> {fixup.new!r}"
                 changes.append(Change(relative, line, "fixup", detail))
         return text, changes

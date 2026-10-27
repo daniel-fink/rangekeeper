@@ -60,7 +60,7 @@ class TextRewriter:
             if match is None:
                 break
             closing = re.compile(
-                rf"^[ \t]{{0,3}}{re.escape(match['fence'][0])}{{{len(match['fence'])},}}[ \t]*$",
+                rf"^[ \t]{{0,3}}{re.escape(match['fence'][0])}{{{len(match['fence'])},}}[ \t]*\r?$",
                 re.MULTILINE,
             )
             close = closing.search(text, match.end())

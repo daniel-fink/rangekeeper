@@ -120,11 +120,15 @@ class PythonRewriter:
 
     def rewrite(self, source: str, context: Context) -> tuple[str, list[Change]]:
         """Return the new source and the changes; raise ParserSyntaxError on bad input."""
-        module = cst.parse_module(source)
+        # Work in LF; libcst can emit LF into CRLF source. Restore CRLF after.
+        crlf = "\r\n" in source
+        module = cst.parse_module(source.replace("\r\n", "\n") if crlf else source)
         wrapper = MetadataWrapper(module, unsafe_skip_copy=True)
         transformer = _Transformer(self.resolver, self.locations, context, wrapper)
-        result = wrapper.visit(transformer)
-        return result.code, transformer.changes
+        code = wrapper.visit(transformer).code
+        if crlf:
+            code = code.replace("\r\n", "\n").replace("\n", "\r\n")
+        return code, transformer.changes
 
 
 class _Transformer(cst.CSTTransformer):

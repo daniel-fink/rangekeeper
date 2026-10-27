@@ -557,3 +557,27 @@ def test_repository_map_is_valid_and_rendered():
     assert pending and all("#255" in e.pending for e in pending)
     assert all("#255" in n.pending for n in rename_map.notes)
     assert render.main(["--check"]) == 0
+
+
+def test_crlf_files_get_the_same_changes(project: Path):
+    """A Windows checkout can have CRLF line ends; rules and fixups still apply."""
+    for path in project.rglob("*"):
+        if path.is_file() and path.suffix in {".py", ".md", ".toml"}:
+            data = path.read_bytes().replace(b"\r\n", b"\n")
+            path.write_bytes(data.replace(b"\n", b"\r\n"))
+    Codemod(project, _map()).run(apply=True)
+
+    def lf(name: str) -> str:
+        data = (project / name).read_bytes()
+        assert b"\n" not in data.replace(b"\r\n", b""), f"{name} mixes line ends"
+        return data.decode().replace("\r\n", "\n")
+
+    test = lf("tests/test_use.py")
+    assert "retired" not in test
+    assert "from pkg.duration import count_steps" in test
+    assert "    from pkg.duration import count_steps\n    count_steps(1, 2)\n" in test
+    guide = lf("docs/guide.md")
+    assert "from pkg.duration import count_steps\n\ncount_steps(1, 2)" in guide
+    assert "def count_steps(start, end):" in lf("src/pkg/duration/calendar.py")
+    assert "from pkg.flow.series import FlowAggregate" in lf("src/pkg/flow/__init__.py")
+    assert not Codemod(project, _map()).run().changed
