@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rangekeeper.flow.series import MeanWeighting, ResamplingMethod
+    from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
 from uuid import UUID
 
 from rangekeeper.flow import Flow, MissingValueHandling, Movement, Stream
@@ -185,7 +185,7 @@ def accumulate(
 def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
     """Use fixed structural membership, never known-only numerical masks."""
     from rangekeeper.flow._mapping import period_indices, weights
-    from rangekeeper.flow.series import MeanWeighting, ResamplingMethod
+    from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
     from rangekeeper.model.expression.authoring import literal
 
     if not isinstance(method, ResamplingMethod):

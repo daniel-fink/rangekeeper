@@ -2246,7 +2246,7 @@ class Model(Record):
 
     @property
     def geometry(self) -> Geometry | None:
-        'Optional exact Geometry pin and Entity mappings. Requires Model schema 0.8.0.'
+        'Optional exact Geometry pin and Entity mappings.'
         return cast('Geometry | None', self._field('geometry'))
 
 
@@ -2542,38 +2542,38 @@ class Parameter(Record):
 
 
 class Period(PeriodBehavior, Record):
-    'Half-open interval [start_inclusive, end_exclusive). Date boundaries use the Gregorian calendar; start must precede end.'
+    'Half-open interval [start, end), which includes start and excludes end. Date boundaries use the Gregorian calendar; start must precede end.'
     __slots__ = ()
     _kind = 'Period'
 
     def __init__(self, *,
-        start_inclusive: Date,
-        end_exclusive: Date,
+        start: Date,
+        end: Date,
     ) -> None:
         self._initialize({
-            'start_inclusive': start_inclusive,
-            'end_exclusive': end_exclusive,
+            'start': start,
+            'end': end,
         })
 
     def replace(self, *,
-        start_inclusive: Date | Unset = UNSET,
-        end_exclusive: Date | Unset = UNSET,
+        start: Date | Unset = UNSET,
+        end: Date | Unset = UNSET,
     ) -> Period:
         """Return a validated copy; omitted arguments preserve field presence and value."""
         return self._replace({
-            'start_inclusive': start_inclusive,
-            'end_exclusive': end_exclusive,
+            'start': start,
+            'end': end,
         })
 
     @property
-    def start_inclusive(self) -> Date:
-        'Start inclusive.'
-        return cast('Date', self._field('start_inclusive'))
+    def start(self) -> Date:
+        'Start.'
+        return cast('Date', self._field('start'))
 
     @property
-    def end_exclusive(self) -> Date:
-        'End exclusive.'
-        return cast('Date', self._field('end_exclusive'))
+    def end(self) -> Date:
+        'End.'
+        return cast('Date', self._field('end'))
 
 
 class Policy(Record):
@@ -3697,25 +3697,25 @@ class Span(SpanBehavior, Period):
 
     def __init__(self, *,
         name: str | None | Unset = UNSET,
-        start_inclusive: Date,
-        end_exclusive: Date,
+        start: Date,
+        end: Date,
     ) -> None:
         self._initialize({
             'name': name,
-            'start_inclusive': start_inclusive,
-            'end_exclusive': end_exclusive,
+            'start': start,
+            'end': end,
         })
 
     def replace(self, *,
         name: str | None | Unset = UNSET,
-        start_inclusive: Date | Unset = UNSET,
-        end_exclusive: Date | Unset = UNSET,
+        start: Date | Unset = UNSET,
+        end: Date | Unset = UNSET,
     ) -> Span:
         """Return a validated copy; omitted arguments preserve field presence and value."""
         return self._replace({
             'name': name,
-            'start_inclusive': start_inclusive,
-            'end_exclusive': end_exclusive,
+            'start': start,
+            'end': end,
         })
 
     @property
@@ -3724,14 +3724,14 @@ class Span(SpanBehavior, Period):
         return cast('str | None', self._field('name'))
 
     @property
-    def start_inclusive(self) -> Date:
-        'Start inclusive.'
-        return cast('Date', self._field('start_inclusive'))
+    def start(self) -> Date:
+        'Start.'
+        return cast('Date', self._field('start'))
 
     @property
-    def end_exclusive(self) -> Date:
-        'End exclusive.'
-        return cast('Date', self._field('end_exclusive'))
+    def end(self) -> Date:
+        'End.'
+        return cast('Date', self._field('end'))
 
 
 class Specification(Record):

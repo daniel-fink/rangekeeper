@@ -3,9 +3,10 @@
 from uuid import UUID
 
 from rangekeeper import Model
-from rangekeeper.model import Entity, Quantity
+from rangekeeper.model import Entity
 from rangekeeper.model.system import Hierarchy, Reduction, RollupResult, View, reducers
 from rangekeeper.model.system.selection import select_value
+from rangekeeper.quantity import Quantity
 
 
 def inspect(model: Model, id: UUID) -> Quantity | None:

@@ -1,7 +1,7 @@
 # Model authoring, lookup and validation
 
 `Model` owns one complete immutable snapshot of Definitions, System content and
-Provenance, plus optional Geometry in schema 0.8.0. It supplies revision-local lookup, authoring and validation. It does
+Provenance, plus optional Geometry. It supplies revision-local lookup, authoring and validation. It does
 not choose fixed or unknown Values or execute equations. The [three-root
 concept](../concepts/model-specification-run.md) explains this boundary; [records](records.md)
 and [identity](identity.md) define shared construction and reference rules.
@@ -43,10 +43,8 @@ reused. No cache spans revisions or independent validation operations.
 ```python
 from uuid import uuid4
 from rangekeeper.schema import Metadata
-from rangekeeper.model import (
-    Model, Entity, System, Definitions, Measure, Quantity,
-    Characteristics, Value, ValueKind, Update,
-)
+from rangekeeper.model import Model, Entity, System, Definitions, Measure, Characteristics, Value, ValueKind, Update
+from rangekeeper.quantity import Quantity
 from rangekeeper.model import characteristics
 from rangekeeper.model.diff import between
 
@@ -56,7 +54,7 @@ gross = Value(id=uuid4(), key="gross", kind=ValueKind.MEASUREMENT, measure=area.
 net = Value(id=uuid4(), key="net", kind=ValueKind.MEASUREMENT, measure=area.id)
 entity = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(gross, net)))
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.8.0"),
+    metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
     definitions=Definitions(measures=(area,)), system=System(entities=(entity,)),
 )
 assert model.value(gross.id).quantity.magnitude == 100
@@ -201,9 +199,9 @@ the bounded validators. See [execution](execution.md) for numerical acceptance
 and [source interpretation](../concepts/source-workflows.md) for source-to-Claim
 responsibilities.
 
-## Geometry in schema 0.8.0
+## Geometry
 
 The optional provider-neutral Geometry field records exact native content and
 Entity/Assembly mappings. See the [Bundle contract](bundle.md) for ownership,
-validation, identity, old-Model reading and explicit migration. Canonical source
+validation and identity. Canonical source
 provenance remains Source/Location/Claim/Fact, independently of these mappings.

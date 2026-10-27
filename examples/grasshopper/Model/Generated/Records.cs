@@ -1531,17 +1531,17 @@ public sealed class Period : WireRecord
     public Period() { }
     public Period(JsonObject data) : base(data) { }
 
-    /// <summary>Wire field end_exclusive; missing and null remain distinct.</summary>
-    public DateOnly EndExclusive
+    /// <summary>Wire field end; missing and null remain distinct.</summary>
+    public DateOnly End
     {
-        get => Read<DateOnly>("end_exclusive");
-        init => Write("end_exclusive", value);
+        get => Read<DateOnly>("end");
+        init => Write("end", value);
     }
-    /// <summary>Wire field start_inclusive; missing and null remain distinct.</summary>
-    public DateOnly StartInclusive
+    /// <summary>Wire field start; missing and null remain distinct.</summary>
+    public DateOnly Start
     {
-        get => Read<DateOnly>("start_inclusive");
-        init => Write("start_inclusive", value);
+        get => Read<DateOnly>("start");
+        init => Write("start", value);
     }
 }
 
@@ -2227,11 +2227,11 @@ public sealed class Span : WireRecord
     public Span() { }
     public Span(JsonObject data) : base(data) { }
 
-    /// <summary>Wire field end_exclusive; missing and null remain distinct.</summary>
-    public DateOnly EndExclusive
+    /// <summary>Wire field end; missing and null remain distinct.</summary>
+    public DateOnly End
     {
-        get => Read<DateOnly>("end_exclusive");
-        init => Write("end_exclusive", value);
+        get => Read<DateOnly>("end");
+        init => Write("end", value);
     }
     /// <summary>Wire field name; missing and null remain distinct.</summary>
     public Optional<string> Name
@@ -2239,11 +2239,11 @@ public sealed class Span : WireRecord
         get => ReadOptional<string>("name");
         init => WriteOptional("name", value);
     }
-    /// <summary>Wire field start_inclusive; missing and null remain distinct.</summary>
-    public DateOnly StartInclusive
+    /// <summary>Wire field start; missing and null remain distinct.</summary>
+    public DateOnly Start
     {
-        get => Read<DateOnly>("start_inclusive");
-        init => Write("start_inclusive", value);
+        get => Read<DateOnly>("start");
+        init => Write("start", value);
     }
 }
 

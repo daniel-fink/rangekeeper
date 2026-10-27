@@ -1,12 +1,11 @@
 """Immutable Model, Specification and Run roots with explicit capability packages."""
 
-from importlib import import_module
 from importlib import metadata as _metadata
-from types import ModuleType
 
 from .model import Model
 from .quantity import Quantity
 from .run import Run
+from .shared.exports import lazy as _lazy
 from .specification import Specification
 
 _LAZY_MODULES = frozenset(
@@ -24,13 +23,15 @@ _LAZY_MODULES = frozenset(
         "quantity",
     }
 )
+# Internal packages load on access but are not public (ADR-010).
+_INTERNAL = frozenset({"schema", "shared"})
 __all__ = [
     "Model",
     "Specification",
     "Run",
     "Quantity",
     "__version__",
-    *sorted(_LAZY_MODULES),
+    *sorted(_LAZY_MODULES - _INTERNAL),
 ]
 
 try:
@@ -38,14 +39,4 @@ try:
 except _metadata.PackageNotFoundError:  # A source tree that is not installed.
     __version__ = "0+unknown"
 
-
-def __getattr__(name: str) -> ModuleType:
-    if name not in _LAZY_MODULES:
-        raise AttributeError(name)
-    module = import_module(f"{__name__}.{name}")
-    globals()[name] = module
-    return module
-
-
-def __dir__() -> list[str]:
-    return sorted({*globals(), *_LAZY_MODULES})
+__getattr__, __dir__ = _lazy(__name__, modules=_LAZY_MODULES)

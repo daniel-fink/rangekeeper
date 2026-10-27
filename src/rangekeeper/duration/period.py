@@ -18,11 +18,11 @@ from rangekeeper.duration.calendar import PeriodTiming as PeriodTiming
 from rangekeeper.schema.records import Period, Span
 
 
-def make_period(start_inclusive: date, end_exclusive: date) -> Period:
+def make_period(start: date, end: date) -> Period:
     """Construct a positive interval; convert old inclusive end dates explicitly."""
     return Period(
-        start_inclusive=require_date(start_inclusive),
-        end_exclusive=require_date(end_exclusive),
+        start=require_date(start),
+        end=require_date(end),
     ).check()
 
 
@@ -45,30 +45,28 @@ def make_periods(
 
 
 def periods_between(
-    start_inclusive: date,
-    end_exclusive: date,
+    start: date,
+    end: date,
     *,
     frequency: Frequency,
     include_partial: bool = False,
     month_roll: MonthRoll = MonthRoll.PRESERVE_END,
 ) -> tuple[Period, ...]:
     """Partition an interval; require explicit permission for a partial final period."""
-    if elapsed_days(start_inclusive, end_exclusive) < 0:
+    if elapsed_days(start, end) < 0:
         raise ValueError("end precedes start")
-    offset(start_inclusive, frequency=frequency, count=0, month_roll=month_roll)
+    offset(start, frequency=frequency, count=0, month_roll=month_roll)
     if type(include_partial) is not bool:
         raise TypeError("include_partial must be a Boolean")
-    count = count_steps(
-        start_inclusive, end_exclusive, frequency=frequency, month_roll=month_roll
-    )
+    count = count_steps(start, end, frequency=frequency, month_roll=month_roll)
     result = make_periods(
-        start_inclusive, frequency=frequency, count=count, month_roll=month_roll
+        start, frequency=frequency, count=count, month_roll=month_roll
     )
-    previous = result[-1].end_exclusive if result else start_inclusive
-    if previous < end_exclusive:
+    previous = result[-1].end if result else start
+    if previous < end:
         if not include_partial:
             raise ValueError("span contains a partial final period")
-        result += (make_period(previous, end_exclusive),)
+        result += (make_period(previous, end),)
     return result
 
 
@@ -138,7 +136,7 @@ def cover(periods: Sequence[Period], *, name: str | None = None) -> Span:
     for period in periods:
         period.check()
     return Span(
-        start_inclusive=min(p.start_inclusive for p in periods),
-        end_exclusive=max(p.end_exclusive for p in periods),
+        start=min(p.start for p in periods),
+        end=max(p.end for p in periods),
         name=name,
     )

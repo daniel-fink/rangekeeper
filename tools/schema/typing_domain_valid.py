@@ -11,7 +11,7 @@ from rangekeeper.specification import Specification, SpecificationRecord
 
 entity = Entity(id=uuid4(), code="A")
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+    metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
     system=System(entities=(entity,)),
 )
 identity: UUID = model.entity(entity.id).id
@@ -22,7 +22,7 @@ path: str = location.path
 revision: Model = model.revise(Update(system=System()))
 specification = Specification(
     SpecificationRecord(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"), model=model.id
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"), model=model.id
     )
 )
 

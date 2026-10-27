@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/content
 name: rangekeeper_content
 title: Rangekeeper Structured Property Content
-version: 0.1.0
+version: 1.0.0
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/

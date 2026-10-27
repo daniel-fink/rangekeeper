@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/formulation
 name: rangekeeper_formulations
 title: Rangekeeper Mathematical Formulations
-version: 0.3.0
+version: 1.0.0
 description: Mathematical containers owning local Values, Expressions, Constraints, and child Formulations,
   with named references to shared Values.
 prefixes:

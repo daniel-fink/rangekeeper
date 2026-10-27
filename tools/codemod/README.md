@@ -87,7 +87,10 @@ rewrite safely. Read this list after each run.
 ## Run the consumer pass
 
 The consumer pass needs the index of the old package: its modules and
-re-exports. Write the index from a checkout of the old version:
+re-exports. The repository includes the index of the last release before the
+pass, [`indexes/rangekeeper-1.0.0a1.json`](indexes/rangekeeper-1.0.0a1.json). The
+[upgrade guide](../../docs/guides/upgrading.md#run-the-consumer-codemod) gives the
+commands for consumers. To write an index from a checkout of another old version:
 
 ```sh
 uv run python -m tools.codemod --write-index rangekeeper-index.json

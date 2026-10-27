@@ -5,8 +5,7 @@ from uuid import uuid4
 
 from rangekeeper.duration import Frequency, Span
 from rangekeeper.execution import Executor
-from rangekeeper.flow import Flow, Stream
-from rangekeeper.flow.series import ResamplingMethod
+from rangekeeper.flow import Flow, ResamplingMethod, Stream
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
     Assembly,
@@ -87,7 +86,7 @@ def hierarchy_model():
     )
     ids["root"] = root.id
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         definitions=Definitions(measures=(money,)),
         system=System(entities=entities, assemblies=(root,)),
     )
@@ -125,7 +124,7 @@ def hierarchy_model():
 def forward_specification(model, ids):
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(
                 a
@@ -142,7 +141,7 @@ def forward_specification(model, ids):
 
 
 def solve_example():
-    from rangekeeper.model import Quantity
+    from rangekeeper.quantity import Quantity
 
     model, ids = hierarchy_model()
     store = MemoryStore()

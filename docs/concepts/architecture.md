@@ -136,13 +136,13 @@ contents are not yet in their 1.0 owner:
 | `schema` | Generated records, enums, the record runtime, structural validation and record behaviours | The Flow and Movement behaviours move to `flow` ([#106](https://github.com/daniel-fink/rangekeeper/issues/106)) |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
-| `flow` | Stream, the Flow re-exports, table display and the private engine | `flow.series` is removed; Flow and Stream methods replace it ([#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
+| `flow` | Stream, the Flow re-exports, their options, table display and the private engine | — |
 | `finance` | Financial valuation, projection, accounts and deterministic dynamics | Path generators go to `market` with the market paths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137); #201, D29) |
 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance, geometry and captured scenarios | `model.scenario` moves to `market` and the market paths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)) |
 | `specification` | The Specification document, composition, roles, and policy declarations and evaluation | Policy evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
 | `run` | The Run document, its report and outputs, and evidence validation | — |
 | `execution` | Preparation, compilation, backends, acceptance and publication | Policy evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
-| `io` | JSON and YAML codecs, stores, Bundle, Polars export and migration | The store protocol moves to `shared` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
+| `io` | JSON and YAML codecs, stores, Bundle and Polars export | The store protocol moves to `shared` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
 
 Import-linter contracts that enforce the layer order follow in [#97](https://github.com/daniel-fink/rangekeeper/issues/97).
 

@@ -29,7 +29,7 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.runtime import UNSET, Record, Unset
-from rangekeeper.schema.validation import document_version
+from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.arguments import optional_text, require_uuid
 from rangekeeper.shared.errors import UnsupportedVersionError
 
@@ -63,7 +63,9 @@ class Model:
             raise TypeError("record must be a generated Model record")
         if not isinstance(units, UnitSystem):
             raise TypeError("units must be a UnitSystem")
-        if record.metadata.schema_version not in ("0.7.0", document_version("Model")):
+        if not supports_version(
+            record.metadata.schema_version, document_version("Model")
+        ):
             raise UnsupportedVersionError(record.metadata.schema_version)
         index = RecordIndex.build(record)
         from rangekeeper.model.validation import _validate

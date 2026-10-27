@@ -1,6 +1,5 @@
 """Policy declarations and lazy finite evaluation over explicit observations."""
 
-from importlib import import_module
 from typing import TYPE_CHECKING
 
 from rangekeeper.schema.records import (
@@ -27,6 +26,7 @@ from rangekeeper.schema.records import (
 from rangekeeper.schema.records import (
     Rule as Rule,
 )
+from rangekeeper.shared.exports import lazy as _lazy
 
 if TYPE_CHECKING:
     from rangekeeper.specification.policy.evaluation import evaluate as evaluate
@@ -63,13 +63,4 @@ __all__ = [
 ]
 
 
-def __getattr__(name):
-    if name not in _RUNTIME:
-        raise AttributeError(name)
-    value = getattr(import_module(f"{__name__}.{_RUNTIME[name]}"), name)
-    globals()[name] = value
-    return value
-
-
-def __dir__():
-    return sorted(set(globals()) | set(__all__))
+__getattr__, __dir__ = _lazy(__name__, names=_RUNTIME)

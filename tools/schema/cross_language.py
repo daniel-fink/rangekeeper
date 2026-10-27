@@ -87,11 +87,7 @@ if a.mode == "prepare":
         }
     )
     model = model.revise(Update(system=System.from_data(data)))
-    from rangekeeper.io.migration import model_07_to_08
     from rangekeeper.model import Geometry
-
-    if model.metadata.schema_version == "0.7.0":
-        model = model_07_to_08(model)
     from rangekeeper.model.geometry import inventory_digest
 
     native_files = [{"path": "synthetic.dat", "sha256": "0" * 64, "size": 0}]

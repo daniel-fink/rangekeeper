@@ -73,7 +73,7 @@ def main() -> None:
         {
             "metadata": {
                 "id": str(uuid4()),
-                "schema_version": "0.7.0",
+                "schema_version": "1.0.0",
                 "name": "Sequential scalar investigations",
             },
             "cases": [str(forward_spec.id), str(revised_inverse.id)],

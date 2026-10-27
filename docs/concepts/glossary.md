@@ -50,7 +50,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Units | A unit string, such as `AUD per year` | `quantity` | — |
 | Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `quantity` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
-| Period | One half-open time interval with `start` and `end` | `duration` | `start_inclusive`, `end_exclusive` |
+| Period | One half-open time interval with `start` and `end` | `duration` | — |
 | Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | `tuple[Period, ...]`; `PeriodIndex` in 0.8 |
 | Span | A named half-open range of time | `duration` | — |
 | Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; `never` in equation text. Not `None`, which means missing | `duration` | `"never"` string |

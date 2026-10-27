@@ -11,7 +11,7 @@ from rangekeeper.model import Entity, Metadata, Model, System, Update
 def test_current_envelope_and_associations_bind_revision():
     entity = Entity(id=uuid4(), name="Current")
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(entities=(entity,)),
     )
     associations = [
@@ -35,7 +35,7 @@ def test_envelope_rejects_source_payloads_and_foreign_associations():
         decode_model({"speckle_type": "Base"})
     entity = Entity(id=uuid4(), name="Current")
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(entities=(entity,)),
     )
     with pytest.raises(MappingError, match="invalid association fields"):

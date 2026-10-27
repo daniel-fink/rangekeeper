@@ -122,7 +122,7 @@ for every Movement. `Movement.number` provides a nonoptional float for arithmeti
 `Flow.clean` is a transformation: it removes unresolved movements and, when
 requested, zeroes. It is not a validation step.
 
-Periods use `[start_inclusive, end_exclusive)`. Movement dates can record independent payment or
+Periods use `[start, end)`: `start` is included and `end` is excluded. Movement dates can record independent payment or
 observation dates outside their coverage period. Recorded dates take precedence;
 undated period movements require `PeriodTiming.FIRST`, `LAST` or `END` when resolving a date.
 Flows carry units and coordinates. The calling model determines whether operations

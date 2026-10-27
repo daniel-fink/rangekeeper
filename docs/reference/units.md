@@ -104,7 +104,7 @@ unit system:
 - `run.validate`, which uses the unit system of the root's input Model.
 
 Operations on records without a Model, such as `Flow.check`, `Flow.convert`,
-`flow.series` and `Account`, use `default_units`.
+Flow and Stream operations and `Account`, use `default_units`.
 
 Importing domain APIs does not import Pint. The first unit operation builds the
 private registry.

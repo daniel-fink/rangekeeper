@@ -1,6 +1,6 @@
 metadata:
   id: 9887a19f-70c0-52a7-939e-67b677338ef0
-  schema_version: 0.7.0
+  schema_version: 1.0.0
   name: Inverse valuation
   description: 'Determine rent and NOI for an assigned capital value. Expected arithmetic:
     rent 27500 AUD/dwelling/year and NOI 500000 AUD/year. This example pins the same

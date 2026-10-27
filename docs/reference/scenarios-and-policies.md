@@ -1,9 +1,9 @@
 # Temporal equations, scenarios and policies
 
-Model uses schema **0.8.0**, Specification uses **0.7.0** and Run uses **0.4.0**. LinkML owns
-persistent fields. Generated Python and C# artifacts change together. Readers
-accept current versions. Explicit migration creates new revisions and remaps pins;
-it does not rewrite historical Runs or claim to reproduce old execution.
+Model, Specification and Run use format **1.0.0**. LinkML owns persistent fields.
+Generated Python and C# artifacts change together. A reader accepts every format
+with its major version, up to its own version. Conversion creates new revisions and
+remaps pins; it does not rewrite historical Runs or claim to reproduce old execution.
 
 ## Declarations and numerical roles
 
@@ -18,7 +18,7 @@ be absent or null. Known zero is distinct from both. Duplicate roles and conflic
 between assignments, unknowns and policy controls use UUID identity. Composition
 permits one policy contribution; it does not allow contributions to override roles.
 
-Period fields are `start_inclusive` and `end_exclusive`. `PeriodTiming.FIRST`,
+Period fields are `start` (included) and `end` (excluded). `PeriodTiming.FIRST`,
 `LAST` and `END` select the first date, final included date and excluded boundary.
 A recorded Movement date takes precedence over a requested representative date.
 See [calendar and account contracts](calculations.md).

@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/provenance
 name: rangekeeper_provenance
 title: Rangekeeper Provenance
-version: 0.5.0
+version: 1.0.0
 description: Evidence and reasoning supporting the recorded state of graph objects.
 prefixes:
   linkml: https://w3id.org/linkml/

@@ -62,8 +62,9 @@ alone does not establish that two pinned views refer to the same snapshot conten
 
 ## Explicit format migration
 
-Document readers accept supported versions without silently upgrading content.
-The [upgrade guide](../guides/upgrading.md)
+Document readers accept every format with their major version, up to their own
+version, without silently upgrading content. The packaged versions come from the
+schema manifest. The [upgrade guide](../guides/upgrading.md)
 owns supported source versions, conversion order and external pin remapping.
 Migration creates new revisions. Historical Runs retain their original document
 pins and reader environment; they are not rewritten as current executions.

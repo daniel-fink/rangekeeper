@@ -179,17 +179,17 @@ def check_inputs(name, parameters, arrays):
 
 def validate_plan(plan):
     """Check the complete passive plan against its market method contract."""
-    from rangekeeper.model.distribution import Distribution
+    from rangekeeper.schema.records import Distribution
 
     contract = method(plan["method"])
     periods = plan["periods"]
     require(bool(periods), "scenario requires periods")
     require(
-        all(p["start_inclusive"] < p["end_exclusive"] for p in periods),
+        all(p["start"] < p["end"] for p in periods),
         "invalid scenario period",
     )
     require(
-        all(a["end_exclusive"] <= b["start_inclusive"] for a, b in pairwise(periods)),
+        all(a["end"] <= b["start"] for a, b in pairwise(periods)),
         "scenario periods overlap or are out of order",
     )
     params = plan["parameters"]
@@ -259,7 +259,7 @@ def validate_realizations(provenance, scope):
                     for index, movement in enumerate(value["flow"]["movements"]):
                         required = (
                             date.fromisoformat(
-                                item["plan"]["periods"][index + delay]["end_exclusive"]
+                                item["plan"]["periods"][index + delay]["end"]
                             )
                             - timedelta(days=1)
                         ).isoformat()
@@ -324,7 +324,7 @@ def _validate_contents(item, scope):
                     token = reference_key(dict(target=movement["id"]))
                     expected_availability.add(token)
                     earliest = (
-                        date.fromisoformat(plan["periods"][index]["end_exclusive"])
+                        date.fromisoformat(plan["periods"][index]["end"])
                         - timedelta(days=1)
                     ).isoformat()
                     require(

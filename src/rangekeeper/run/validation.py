@@ -18,7 +18,7 @@ from rangekeeper.schema.enums import CompletionStatus
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.records import Diagnostic, Quantity, Step
 from rangekeeper.schema.runtime import Record, exact_equal
-from rangekeeper.schema.validation import document_version
+from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -347,12 +347,12 @@ class _RunValidation:
             require(ref not in self.visited, "Run has multiple spawning parents")
             run = self.resolve(ref, "Run")
             require(
-                run["metadata"]["schema_version"] == self.run_version,
+                supports_version(run["metadata"]["schema_version"], self.run_version),
                 "unsupported Run version",
             )
             spec = self.resolve(run["specification"], "Specification")
             require(
-                spec["metadata"]["schema_version"] == self.spec_version,
+                supports_version(spec["metadata"]["schema_version"], self.spec_version),
                 "unsupported Specification version",
             )
             for field in ("spawns", "outputs"):

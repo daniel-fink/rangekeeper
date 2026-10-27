@@ -14,20 +14,19 @@ from uuid import UUID, uuid5
 from rangekeeper.duration import PeriodTiming
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model import (
+    Binding,
     Definitions,
+    Distribution,
     Formulation,
     Measure,
     Metadata,
     Model,
     Provenance,
-    Quantity,
     System,
     Update,
     Value,
 )
 from rangekeeper.model.scenario import (
-    Binding,
-    Distribution,
     LibraryVersion,
     ObservationAvailability,
     RandomStream,
@@ -56,6 +55,7 @@ from rangekeeper.model.scenario.contracts import check_values, method, validate_
 from rangekeeper.model.scenario.implementation import calculation_provenance
 from rangekeeper.model.scenario.random import create_generator, stream_identifier
 from rangekeeper.model.scenario.view import Market
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.records import Reference
 
@@ -133,10 +133,7 @@ def _flow(plan, amounts, owner: UUID):
             Movement(
                 id=uuid5(
                     owner,
-                    "movement/"
-                    + p.start_inclusive.isoformat()
-                    + "/"
-                    + p.end_exclusive.isoformat(),
+                    "movement/" + p.start.isoformat() + "/" + p.end.isoformat(),
                 ),
                 key=f"p{i + 1}",
                 period=p,

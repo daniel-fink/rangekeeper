@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/constraint
 name: rangekeeper_constraint
 title: Rangekeeper Constraints
-version: 0.1.0
+version: 1.0.0
 description: Identified assertions that Boolean Expressions must hold.
 prefixes:
   linkml: https://w3id.org/linkml/
