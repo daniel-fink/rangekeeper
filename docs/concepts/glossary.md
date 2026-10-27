@@ -69,7 +69,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |
 | Composition | The effective investigation after included Specifications are combined | `specification` | — |
 | Case | One entry in a batch Specification, for example one market path | `specification` | — |
-| Rule | A declaration that decides one value during the solve: `decide(key=, when=, periods=, earliest=, latest=, otherwise=)` ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word \"policy\" is not used | `specification` | `Decision`, `Rule` and `Action` records |
+| Rule | A declaration that decides one value during the solve: `decide(key=, when=, periods=, earliest=, latest=, otherwise=)` ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word "policy" is not used | `specification` | `Decision`, `Rule` and `Action` records |
 | Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | Policy control |
 | Review date | A date on which a rule tests its condition: the first day of each of its `Periods`, between optional `earliest` and `latest` bounds | `specification` | Decision date, window |
 | Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | — |
