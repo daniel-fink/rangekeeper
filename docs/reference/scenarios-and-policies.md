@@ -18,7 +18,7 @@ be absent or null. Known zero is distinct from both. Duplicate roles and conflic
 between assignments, unknowns and policy controls use UUID identity. Composition
 permits one policy contribution; it does not allow contributions to override roles.
 
-Period fields are `start_inclusive` and `end_exclusive`. `PeriodTiming.FIRST`,
+Period fields are `start` (included) and `end` (excluded). `PeriodTiming.FIRST`,
 `LAST` and `END` select the first date, final included date and excluded boundary.
 A recorded Movement date takes precedence over a requested representative date.
 See [calendar and account contracts](calculations.md).

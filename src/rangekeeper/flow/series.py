@@ -241,8 +241,8 @@ def integrate(
         exposures = tuple(
             Quantity(
                 magnitude=year_fraction(
-                    s.period.start_inclusive,
-                    s.period.end_exclusive,
+                    s.period.start,
+                    s.period.end,
                     convention=day_count,
                 ),
                 units="year",

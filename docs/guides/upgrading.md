@@ -128,13 +128,13 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.formulation.authoring.declare` | — | pending | #255 D6 and D16: `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)` and `date(...)`. |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
-| `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed (needs schema) | Also Span. Half-open; the end is excluded. |
-| `rangekeeper.schema.records.Period.end_exclusive` | `end` | agreed (needs schema) | Also Span. |
+| `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |
+| `rangekeeper.schema.records.Period.end_exclusive` | `end` | agreed | Also Span. |
 | `rangekeeper.model.flux.Stream.labels` | `names` | draft | Each use needs review. Classification `labels` keep their name. The package pass renamed the Stream field by hand; the consumer pass lists the uses to check. |
 | `findings` | `diagnostics` | draft | Each use needs review. |
 | `issues` | `diagnostics` | draft | Each use needs review. |
-| Any call: `start_inclusive=` | `start=` | agreed (needs schema) |  |
-| Any call: `end_exclusive=` | `end=` | agreed (needs schema) |  |
+| Any call: `start_inclusive=` | `start=` | agreed |  |
+| Any call: `end_exclusive=` | `end=` | agreed |  |
 | `rangekeeper.model.flux.Stream.select`: `labels=` | `names=` | draft |  |
 | `rangekeeper.model.flux.Stream.from_values`: `labels=` | `names=` | draft |  |
 

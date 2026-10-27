@@ -1,9 +1,9 @@
 {
   "artifacts": {
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "records.py": "fd972e4be3a6ec6336238f4307c1a71c04be07b89c854dc0f2406677c10e3dde",
-    "schema.json": "ecebd6e0501a5eaf40fecaf0c6a701390d02ac4591613d7ef1c43037a8b604dd",
-    "slots.json": "3703a25d7ec86f520daa43c276925cf62a9bdcee434030b4d02096e48a105f30"
+    "records.py": "b0d74704bb0fcd2d8316af0dbf2a4d5043a9199c38e5517e87edf3c207590e02",
+    "schema.json": "2423d5676d333ced0e434cb3462123caa89196c34ad10d940d4226be33bf5af2",
+    "slots.json": "e36e7d305c19d107408a8a94def81507485813efc6e08078f61922b9d0335333"
   },
   "classes": [
     "Action",
@@ -108,7 +108,7 @@
     "schema/content.yaml": "7c2e3ee9b4cd5c3b4a79ca45e41689528ee8e16bca06d27342cc2d168aa7a96e",
     "schema/definitions.yaml": "4f4f57c79a32cb64f4475d385a03db4ee1cfd21ae47e7762c4e28323841b43bd",
     "schema/distribution.yaml": "093e2e47ce3f720b25a64f6e6572ad9ccbba1e8c2ed291768573a5ac37fb588b",
-    "schema/duration.yaml": "c4676ff7e8dcbbdcb3aed526ba7a600464e7eae4d3542d3d3a865c1d4aaffe77",
+    "schema/duration.yaml": "1d80757173e5d1d94c4962121b92f480bff71cb070eecdf59f30ba108bcd215b",
     "schema/entity.yaml": "956f005a80a6bcaa58bfd32896cb8e41e4c696dfa3ae02626b949a78a8dde7ae",
     "schema/expression.yaml": "b6173a413b9b21d280c0cc2cf039b73bf7cd06ece65d7b9eab35753453dbacc0",
     "schema/flow.yaml": "d39f56233a63c9614d2979007eb9d47473c153e92cac36974e1bff1161eeeb34",

@@ -164,9 +164,7 @@ def test_model_flow_content_store_and_stream():
 
     restored_yaml = yaml.loads(yaml.dumps(model), kind=Model)
     assert restored_yaml.to_data() == model.to_data()
-    assert (
-        type(restored_yaml.value(a.id).flow.movements[0].period.start_inclusive) is date
-    )
+    assert type(restored_yaml.value(a.id).flow.movements[0].period.start) is date
     data = restored.to_data()
     data["system"]["entities"][0]["characteristics"]["values"][0]["flow"]["movements"][
         0
@@ -202,7 +200,7 @@ def test_calendar_frequencies(frequency, count, end):
     periods = make_periods(
         date(2020, 1, 1), frequency=Frequency(frequency), count=count
     )
-    assert periods[-1].end == end and periods[0].end == periods[1].start_inclusive
+    assert periods[-1].end == end and periods[0].end == periods[1].start
 
 
 def test_month_anchor_and_leap_year():
@@ -446,8 +444,8 @@ def test_adapter_exports_are_detached():
     frame = po.to_frame(flow)
     assert po.from_frame(frame, units=flow.units) == flow
     cells = frame.to_dicts()
-    cells[0]["period"]["start_inclusive"] = "2000-01-01"
-    assert flow.movements[0].period.start_inclusive == date(2020, 1, 1)
+    cells[0]["period"]["start"] = "2000-01-01"
+    assert flow.movements[0].period.start == date(2020, 1, 1)
 
 
 def test_dynamics_fixed_inputs():
@@ -547,8 +545,8 @@ def test_polars_preserves_explicit_null_and_omission():
                     "key": "a",
                     "date": None,
                     "period": {
-                        "start_inclusive": "2020-01-01",
-                        "end_exclusive": "2020-01-02",
+                        "start": "2020-01-01",
+                        "end": "2020-01-02",
                     },
                     "claims": None,
                 },
@@ -556,8 +554,8 @@ def test_polars_preserves_explicit_null_and_omission():
                     "id": str(uuid4()),
                     "key": "b",
                     "period": {
-                        "start_inclusive": "2020-01-02",
-                        "end_exclusive": "2020-01-03",
+                        "start": "2020-01-02",
+                        "end": "2020-01-03",
                     },
                     "magnitude": None,
                 },

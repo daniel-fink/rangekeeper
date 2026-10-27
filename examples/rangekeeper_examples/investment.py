@@ -449,7 +449,7 @@ def report(model: Model) -> InvestmentReport:
     sale_date = sale[0].resolve()
     first_period = _flow(v["total"]).movements[0].period
     assert first_period is not None
-    first = first_period.start_inclusive
+    first = first_period.start
     from datetime import timedelta
 
     purchase = Movement(
@@ -604,7 +604,7 @@ def horizon_returns(model: Model) -> Flow:
     v = values(model)
     first_period = _flow(v["total"]).movements[0].period
     assert first_period is not None
-    first = first_period.start_inclusive
+    first = first_period.start
     purchase = Movement(
         id=uuid4(),
         key="acquisition",

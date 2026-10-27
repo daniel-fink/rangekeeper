@@ -9,11 +9,11 @@
       "sha256": "8b0e9c0f2914d9dc54d077cdfac3114d73b68b685d9e5cad20fc400540804411"
     },
     "assumptions.json": {
-      "bytes": 3096,
+      "bytes": 3056,
       "description": "Legacy teaching assumptions for the property. origins.json gives the origin of each value.",
       "licence": "CC-BY-4.0",
       "origin": "teaching-assumptions",
-      "sha256": "d8c5d38345baab913e07e1c46b445e026e8d7c2f9a618749b1d034c82a65a879"
+      "sha256": "23ad7fc529db239453b4e432e0b8e8d77f9c03a57a60c49049d21f1105f651bc"
     },
     "audit.json": {
       "bytes": 8060,

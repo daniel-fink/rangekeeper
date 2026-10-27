@@ -62,7 +62,7 @@ def test_model_can_select_different_reductions_for_the_same_flow(reduction, expe
 def test_means_require_a_choice_and_do_not_infer_weighting_from_units():
     periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=2)
     flow = Flow.from_periods(periods, [10, 20], units="dimensionless")
-    target = [make_period(periods[0].start_inclusive, periods[-1].end)]
+    target = [make_period(periods[0].start, periods[-1].end)]
     with pytest.raises(ValueError, match="weighting"):
         series.resample(flow, periods=target, method=ResamplingMethod.MEAN)
     observed = series.resample(

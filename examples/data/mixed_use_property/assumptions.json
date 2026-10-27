@@ -13,12 +13,12 @@
   ],
   "currency": "AUD",
   "forecast_span": {
-    "end_exclusive": "2012-01-01",
-    "start_inclusive": "2001-01-01"
+    "end": "2012-01-01",
+    "start": "2001-01-01"
   },
   "holding_span": {
-    "end_exclusive": "2011-01-01",
-    "start_inclusive": "2001-01-01"
+    "end": "2011-01-01",
+    "start": "2001-01-01"
   },
   "legacy_correction": "Include utility-only capital expenditure in NACF even where an object has no income or OPEX",
   "reporting": {

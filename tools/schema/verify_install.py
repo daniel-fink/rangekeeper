@@ -159,7 +159,7 @@ import rangekeeper
 from rangekeeper.schema.records import Model, Metadata, Runtime, Period, Flow, Movement, Source
 from rangekeeper.duration import PeriodTiming
 from rangekeeper.model.validation import validate
-period = Period(start_inclusive=date(2026, 1, 1), end_exclusive=date(2026, 2, 1))
+period = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
 movement = Movement(id=uuid4(), key="january", period=period)
 assert movement.date is None and "date" not in movement.to_data()
 flow = Flow(units="AUD", movements=(movement,))
@@ -175,7 +175,7 @@ for removed in ("rangekeeper.finance._flow", "rangekeeper.finance.distribution",
 import rangekeeper.flow as flow_api
 assert flow_api.Movement is Movement and not hasattr(flow_api, "FlowSample")
 assert not hasattr(flow, "basis") and not hasattr(flow, "kind")
-assert type(Period.from_data(period.to_data()).start_inclusive) is date
+assert type(Period.from_data(period.to_data()).start) is date
 source = Source(id=uuid4(), name="Schedule", checksum="abc",
     issued_at=date(2026, 1, 1), received_at="2026-01-02T09:30:00+11:00")
 assert source.issued_at == date(2026, 1, 1)

@@ -250,9 +250,7 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
         Movement(
             id=uuid4(),
             key="inserted",
-            period=Period(
-                start_inclusive=date(2026, 1, 1), end_exclusive=date(2027, 1, 1)
-            ),
+            period=Period(start=date(2026, 1, 1), end=date(2027, 1, 1)),
         ).to_data(),
     )
     changed = model.revise(Update(system=System.from_data(data)))

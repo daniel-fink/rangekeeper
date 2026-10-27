@@ -43,8 +43,8 @@ claim = Claim(
 expression = Expression(id=uuid4(), kind=ExpressionKind.BOOLEAN, boolean=False)
 restored: Model = Model.from_data(model.to_data())
 
-period = Period(start_inclusive=date(2026, 1, 1), end_exclusive=date(2026, 2, 1))
-start: date = period.start_inclusive
+period = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
+start: date = period.start
 movement = Movement(id=uuid4(), key="january", period=period)
 payment_date: date | None = movement.date
 flow = Flow(units="AUD", movements=(movement,))

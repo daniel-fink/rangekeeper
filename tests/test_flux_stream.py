@@ -308,9 +308,7 @@ def test_cancellation_units_empty_and_boundaries():
         ).resample(make_periods(day, frequency=Frequency.MONTH, count=12), method=R.SUM)
     with pytest.raises(ValueError, match="trim crosses"):
         stream = collection()
-        stream.trim(
-            Span(start_inclusive=date(2027, 2, 1), end_exclusive=date(2028, 1, 1))
-        )
+        stream.trim(Span(start=date(2027, 2, 1), end=date(2028, 1, 1)))
     with pytest.raises(ValueError):
         Stream({}).sum()
 
@@ -468,9 +466,7 @@ def test_selection_releases_unselected_coordinates_before_trim():
     assert len(selected._prepared().coordinates) == 12
     assert (
         len(
-            selected.trim(
-                Span(start_inclusive=date(2027, 2, 1), end_exclusive=date(2027, 4, 1))
-            )
+            selected.trim(Span(start=date(2027, 2, 1), end=date(2027, 4, 1)))
             .flows[0]
             .movements
         )
@@ -531,7 +527,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
             12
             if method is R.LAST
             else math.fsum(
-                v * (m.period.end_exclusive - m.period.start_inclusive).days
+                v * (m.period.end - m.period.start).days
                 for v, m in zip(magnitudes, periods, strict=True)
             )
             / 365

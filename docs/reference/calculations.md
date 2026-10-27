@@ -113,7 +113,7 @@ numeric sequence helper used by extrapolation and dynamics.
 | `model.formulation` | Build declared equations for forward and inverse investigations |
 
 Dates are calendar values, never implicit timestamps. Periods are half-open:
-`[start_inclusive, end_exclusive)`. Financial valuation uses actual payment dates; period-only movements
+`[start, end)`. Financial valuation uses actual payment dates; period-only movements
 need `PeriodTiming.FIRST`, `PeriodTiming.END` or `PeriodTiming.LAST`. Frequency and elapsed time are
 explicit. Currency and time units are not stripped from quantities.
 

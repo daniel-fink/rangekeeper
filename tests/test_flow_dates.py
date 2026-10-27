@@ -49,10 +49,10 @@ def test_date_records_and_detached_wire_format():
         "magnitude": 2,
     }
     assert Period.from_data(JANUARY.to_data()) == JANUARY
-    assert type(JANUARY.start_inclusive) is date
+    assert type(JANUARY.start) is date
     data = JANUARY.to_data()
-    data["start_inclusive"] = "2000-01-01"
-    assert JANUARY.start_inclusive == date(2026, 1, 1)
+    data["start"] = "2000-01-01"
+    assert JANUARY.start == date(2026, 1, 1)
 
 
 @pytest.mark.parametrize(
@@ -68,7 +68,7 @@ def test_datetimes_are_not_flow_coordinates(value):
         lambda: make_period(value, date(2026, 2, 1)),
         lambda: offset(value, frequency=Frequency.DAY),
         lambda: Movement(id=uuid4(), key="event", date=value),
-        lambda: Period(start_inclusive=value, end_exclusive=date(2026, 2, 1)),
+        lambda: Period(start=value, end=date(2026, 2, 1)),
     ):
         with pytest.raises((TypeError, ValidationError)):
             operation()
@@ -116,8 +116,8 @@ def test_payment_date_is_independent_of_coverage():
     assert financial.calculate_xnpv(
         flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.LAST
     ).magnitude == pytest.approx(100 / 1.1 ** (35 / 365))
-    assert flow.trim(start=JANUARY.start_inclusive, end=JANUARY.end) == flow
-    assert flow.extent() == (JANUARY.start_inclusive, JANUARY.end)
+    assert flow.trim(start=JANUARY.start, end=JANUARY.end) == flow
+    assert flow.extent() == (JANUARY.start, JANUARY.end)
     with pytest.raises(ValueError, match="crosses a movement period"):
         flow.trim(start=date(2026, 1, 2), end=JANUARY.end)
     # Period aggregation states coverage, rather than inventing one payment date.
@@ -187,8 +187,8 @@ def test_date_and_period_null_presence_survives_frames():
                     "id": str(uuid4()),
                     "key": "b",
                     "period": {
-                        "start_inclusive": "2026-02-01",
-                        "end_exclusive": "2026-03-01",
+                        "start": "2026-02-01",
+                        "end": "2026-03-01",
                     },
                     "magnitude": None,
                 },

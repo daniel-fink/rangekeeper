@@ -36,9 +36,9 @@ def period_indices(
     starts = []
     for i, period in enumerate(periods):
         period.check()
-        if i and periods[i - 1].end_exclusive > period.start_inclusive:
+        if i and periods[i - 1].end > period.start:
             raise ValueError("resampling periods overlap or are unordered")
-        starts.append(period.start_inclusive)
+        starts.append(period.start)
     groups = []
     for coordinate in coordinates:
         start = date.fromisoformat(coordinate[1])
@@ -46,8 +46,8 @@ def period_indices(
         end = date.fromisoformat(coordinate[2]) if coordinate[0] == "period" else None
         if (
             index < 0
-            or start >= periods[index].end_exclusive
-            or (end is not None and end > periods[index].end_exclusive)
+            or start >= periods[index].end
+            or (end is not None and end > periods[index].end)
         ):
             raise ValueError("movement is outside or crosses target periods")
         groups.append(index)

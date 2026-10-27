@@ -18,24 +18,19 @@ class PeriodBehavior:
     @property
     def first(self) -> date:
         """Return the first included date."""
-        return cast("Period", self).start_inclusive
+        return cast("Period", self).start
 
     @property
     def last(self) -> date:
         """Return the last included date."""
-        return cast("Period", self).end_exclusive - timedelta(days=1)
-
-    @property
-    def end(self) -> date:
-        """Return the excluded end boundary."""
-        return cast("Period", self).end_exclusive
+        return cast("Period", self).end - timedelta(days=1)
 
     def check(self) -> Period:
-        """Require a positive date interval [start_inclusive, end_exclusive)."""
+        """Require a positive date interval [start, end)."""
         period = cast("Period", self)
         from rangekeeper.duration.calendar import elapsed_days
 
-        if elapsed_days(period.start_inclusive, period.end_exclusive) <= 0:
+        if elapsed_days(period.start, period.end) <= 0:
             raise ValueError("period end must follow start")
         return period
 

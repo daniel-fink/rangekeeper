@@ -70,8 +70,8 @@ def test_month_end_is_explicit_and_period_end_is_exclusive():
         month_roll=MonthRoll.PRESERVE_END,
     ) == date(2020, 5, 31)
     period = make_period(date(2020, 2, 1), date(2020, 3, 1))
-    assert period.end_exclusive - timedelta(days=1) == date(2020, 2, 29)
-    assert elapsed_days(period.start_inclusive, period.end_exclusive) == 29
+    assert period.end - timedelta(days=1) == date(2020, 2, 29)
+    assert elapsed_days(period.start, period.end) == 29
 
 
 def test_flow_construction_detachment_and_negation():

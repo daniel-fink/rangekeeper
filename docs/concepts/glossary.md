@@ -49,7 +49,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Units | A unit string, such as `AUD/year` | `units` | — |
 | Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `units` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
-| Period | One half-open time interval with `start` and `end` | `duration` | `start_inclusive`, `end_exclusive` |
+| Period | One half-open time interval with `start` and `end` | `duration` | — |
 | Span | A named half-open range of time | `duration` | — |
 | Movement | One dated or period-based amount | `flow` | — |
 | Flow | An ordered series of Movements in one unit | `flow` | `model.flux.Flow` |

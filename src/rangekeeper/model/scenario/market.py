@@ -133,10 +133,7 @@ def _flow(plan, amounts, owner: UUID):
             Movement(
                 id=uuid5(
                     owner,
-                    "movement/"
-                    + p.start_inclusive.isoformat()
-                    + "/"
-                    + p.end_exclusive.isoformat(),
+                    "movement/" + p.start.isoformat() + "/" + p.end.isoformat(),
                 ),
                 key=f"p{i + 1}",
                 period=p,
