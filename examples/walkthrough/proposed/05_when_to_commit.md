@@ -56,21 +56,15 @@ import helpers
 # cell 2
 model = rk.io.load(path=helpers.data_path(name="04_base_plan_on_paths.model.json"))
 paths = rk.io.load(path=helpers.data_path(name="04_rent_index.paths.json"))
-plan = helpers.load_base_plan()
 model.equations.involving("start_date", "b_start")
 ```
 
 ```python
 # cell 3
-assumptions = {
-    "discount_rate": "7 % pa",
-    "opex_growth": "3.5 % pa",
-    "exit_cap_rate": "5 %",
-    "rent_growth": "0 % pa",
-}
 yearly = rk.duration.Frequency.YEAR
-debt = {"leverage": "65 %", "loan_rate": "6 % pa", "equity_rate": "12 % pa"}
-fixed = model.specify(name="Fixed plan").fix(**plan.inputs, **assumptions, **debt)
+base = rk.io.load(path=helpers.data_path(name="03_base_case.specification.json"))
+fixed = base.on(model=model).fix(rent_growth="0 % pa")
+fixed.roles  # lesson 03's plan: start in 2027, Building B in 2030
 ```
 
 ## 2. Three readable histories

@@ -46,7 +46,6 @@ import helpers
 ```python
 # cell 2
 model = rk.io.load(path=helpers.data_path(name="03_base_plan.model.json"))
-plan = helpers.load_base_plan()
 model.equations  # the relations from lesson 03
 ```
 
@@ -68,16 +67,9 @@ model = draft.commit()
 
 ```python
 # cell 4
-assumptions = {
-    "discount_rate": "7 % pa",
-    "opex_growth": "3.5 % pa",
-    "exit_cap_rate": "5 %",
-    "rent_growth": "0 % pa",
-}
-debt = {"leverage": "65 %", "loan_rate": "6 % pa", "equity_rate": "12 % pa"}
-base = model.specify(name="Base plan on paths").fix(
-    **plan.inputs, **assumptions, **debt
-)
+base = rk.io.load(path=helpers.data_path(name="03_base_case.specification.json"))
+base = base.on(model=model).fix(rent_growth="0 % pa")  # the index carries the trend
+base.roles  # lesson 03's plan, assumptions, debt and funding, by name
 ```
 
 > **Finance note.** Market growth applied twice is a common error. If the index
@@ -301,7 +293,7 @@ known at each date.
 ## Cell budget
 
 16 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 11 lines (cell 4). Cells follow `ruff format` (D15).
+solutions. The longest cell has 10 lines (cell 17). Cells follow `ruff format` (D15).
 
 ## Rule check
 

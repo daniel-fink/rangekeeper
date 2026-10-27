@@ -61,8 +61,9 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
+| Role | What a Specification says about a value: fixed, free, decided, estimate or bound. `Specification.roles` lists them | `specification` | — |
 | Fix | Supply a known value for an investigation (an Assignment) | `specification` | `lock` |
-| Free | Make a value an unknown that the solve finds | `specification` | `unlock` |
+| Free | Make a value an unknown that the solve finds. A value that is not fixed is free | `specification` | `unlock` |
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |
 | Composition | The effective investigation after included Specifications are combined | `specification` | — |
 | Case | One entry in a batch Specification, for example one market path | `specification` | — |

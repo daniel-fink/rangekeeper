@@ -17,7 +17,7 @@ when the library work lands.
 | Lesson | File | Core cells |
 | --- | --- | --- |
 | 01 Basic discounted cash flow | [01_basic_dcf.md](01_basic_dcf.md) | 20 |
-| 02 Front door, back door | [02_front_door_back_door.md](02_front_door_back_door.md) | 19 + 4 optional |
+| 02 Front door, back door | [02_front_door_back_door.md](02_front_door_back_door.md) | 20 + 4 optional |
 | 03 Cases, debt and equity | [03_cases_debt_equity.md](03_cases_debt_equity.md) | 25 + 2 optional |
 | 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 16 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 16 + 1 optional |
@@ -323,7 +323,7 @@ use. **Issue** is filled in when the issue is filed.
 | 21 | — | Cases and batch Outcomes: `cases(mapping)`, `case`, `table`, `stream`, `rk.execution.table` | G13, G19, G20 | `specification`, `execution` | 02·15; 03·10–14 | #127, #144 |
 | 22 | — | `solve` resolves the documents that made the Specification | G12 | `execution` | 02·11 onwards | #126 |
 | 23 | — | `rk.execution.replay` and `Store.find_runs` | G25 | `execution`, `io` | 03·22–23 | #126, #176 |
-| 24 | — | One-call document IO: `rk.io.load` and `rk.io.save` | G26 | `io` | 04·2, 9; 05·2; 06·2, 22; 07·2, 7 | #112 |
+| 24 | — | One-call document IO: `rk.io.load` and `rk.io.save`; a loaded Specification brings the documents it pins, so `solve` can resolve them | G26 | `io` | 04·2, 9; 05·2; 06·2, 22; 07·2, 7 | #112 |
 | 25 | — | `rk.finance.Account` with a limit and headroom | G23 | `finance` | 03·18 | — |
 | 26 | — | An entity's `account(key=, ..., commitments=)` | G24 | `model` | 03·19; 05·9 | — |
 | 27 | — | Outcome distributions | G31 | `execution` | 04·12–16; 05·16 | #127 |
@@ -362,7 +362,8 @@ Not filed as gaps:
   charts, graphs, timelines and geometry. This is helper work for
   [#87](https://github.com/daniel-fink/rangekeeper/issues/87) and
   [#88](https://github.com/daniel-fink/rangekeeper/issues/88): `load_property`,
-  `load_base_plan`, `load_fragment`, `data_path`, `path_count`, `show_equations`,
+  `load_base_plan` (both return an object that displays a table and gives each
+  Quantity by key, such as `plan["a_cost"]`), `load_fragment`, `data_path`, `path_count`, `show_equations`,
   `show_timeline`, `show_geometry`, `show_graph`, `show_decisions`, `plot_paths`,
   `plot_cash_flows`, `plot_funding`, `plot_target_curve`, `plot_decisions`.
 - **G54 (sequential solve with solved observations)** and **G58 (policy evidence)**.
@@ -379,6 +380,8 @@ These are inputs for authoring, not API gaps:
   ([#210](https://github.com/daniel-fink/rangekeeper/issues/210)).
 - CI writes the documents that later lessons load from the cells of earlier lessons,
   with a namespace, and checks that they do not change: `02_feasibility.model.json`,
+  `02_back_door.specification.json`, `03_base_case.specification.json` (lesson 03's
+  `funded` Specification),
   `03_base_plan.model.json`, `04_base_plan_on_paths.model.json`,
   `04_rent_index.paths.json`, `04_use_indices.paths.json` and
   `05_strategy.specification.json`. `07_property_plan.model.json` joins the graph of

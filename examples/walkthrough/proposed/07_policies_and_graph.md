@@ -60,17 +60,21 @@ plan = helpers.load_base_plan()
 residential.rollups()  # key, value rolled up, relationship, root and contributors
 ```
 
+Narrative: start from lesson 03's Specification. It fixed each building's income,
+operating cost and budget as totals. Here the floors give those totals, so free them
+and fix the rates by use in their place. The rents follow the market indices, so rent
+growth is zero, as in lesson 04.
+
 ```python
 # cell 3
 yearly = rk.duration.Frequency.YEAR
-assumptions = {
-    "discount_rate": "7 % pa",
-    "opex_growth": "3.5 % pa",
-    "exit_cap_rate": "5 %",
-    "rent_growth": "0 % pa",
-    "b_land_share": "40 %",
-}
-debt = {"leverage": "65 %", "loan_rate": "6 % pa", "equity_rate": "12 % pa"}
+base = rk.io.load(path=helpers.data_path(name="03_base_case.specification.json"))
+fixed = (
+    base.on(model=residential)
+    .free("a_income", "b_income", "a_opex", "b_opex", "a_cost", "b_cost")
+    .fix(efficiency=plan["efficiency"], rent=plan["rent"], vacancy=plan["vacancy"])
+    .fix(rent_growth="0 % pa", b_land_share="40 %", provision="0 AUD")
+)
 ```
 
 Narrative: each use has its own market index. The keyed value `use_index` takes one
@@ -84,8 +88,6 @@ uses = {
     "retail": "retail_index",
 }
 assign = {"use_index": uses}
-inputs = {**plan.inputs, **plan.use_rates, **assumptions, **debt}
-fixed = residential.specify(name="Fixed design").fix(**inputs, provision="0 AUD")
 ```
 
 ## 2. A design alternative

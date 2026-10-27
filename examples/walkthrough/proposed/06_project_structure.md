@@ -270,12 +270,12 @@ constant = (payment / rk.Quantity(text="1 AUD")).to(units="% pa")
 ```python
 # cell 21
 data = helpers.load_property(snapshot=2032)
-lending = {"leverage": "65 %", "coverage": 1.25, "mortgage_constant": constant}
-back = model.specify(name="Back door from floors").fix(
-    **data.inputs.select("works_cost", "operating_cost"),
-    **data.use_rates,
-    **lending,
-    rent_factor=1,
+back = (
+    model.specify(name="Back door from floors")
+    .fix(works_cost=data["works_cost"], operating_cost=data["operating_cost"])
+    .fix(leverage="65 %", coverage=1.25, mortgage_constant=constant)
+    .fix(efficiency=data["efficiency"], rent=data["rent"], vacancy=data["vacancy"])
+    .fix(rent_factor=1)
 )
 outcome = rk.execution.solve(specification=back)
 outcome["land_cost"]
@@ -283,11 +283,9 @@ outcome["land_cost"]
 
 ```python
 # cell 22
-lesson_02 = rk.io.load(path=helpers.data_path(name="02_feasibility.model.json"))
-lesson_02_back = lesson_02.specify(name="Back door").fix(
-    **data.inputs, **lending, rent_factor=1
-)
-before = rk.execution.solve(specification=lesson_02_back)
+lesson_02 = rk.io.load(path=helpers.data_path(name="02_back_door.specification.json"))
+lesson_02.roles  # the totals by use that lesson 02 fixed
+before = rk.execution.solve(specification=lesson_02)
 assert rk.quantity.isclose(actual=outcome["land_cost"], expected=before["land_cost"])
 ```
 
@@ -400,7 +398,7 @@ solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (
 | 18 | 3 | Lesson 02's strings, unchanged |
 | 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `equations_for(filter=, equations=)` |
 | 20 | 2, 7 | G44: entity `rollup(key=, ...)` declares a Value (decision D3) |
-| 21 | 2, 5 | G45: `fix` takes keyed values as mappings; `data.inputs.select` |
+| 21 | 2, 5 | G45: `fix` takes keyed values as mappings |
 | 22 | 8 | G26 |
 | 23 | 7, 8 | G46: `Outcome.rollup(key)` and `Outcome.model` |
 | 24 | 9 | G27 (`remove`); [#156](https://github.com/daniel-fink/rangekeeper/issues/156) with `referenced_by` |

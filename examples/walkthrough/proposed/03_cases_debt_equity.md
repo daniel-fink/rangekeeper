@@ -52,7 +52,7 @@ import helpers
 ```python
 # cell 2
 plan = helpers.load_base_plan()
-plan.inputs  # dates, budgets, incomes and funding, with origins
+plan  # dates, budgets, incomes and funding, with origins
 ```
 
 ```python
@@ -78,7 +78,7 @@ the plan's total. The other packages follow the same rule.
 hard = sum(
     plan.areas["building_a"][use] * plan.rates[use] for use in plan.areas["building_a"]
 )
-assert rk.quantity.isclose(actual=hard * 1.2, expected=plan.inputs["a_cost"])
+assert rk.quantity.isclose(actual=hard * 1.2, expected=plan["a_cost"])
 ```
 
 ## 3. The dated Model
@@ -205,9 +205,18 @@ Fix the plan's inputs and the reference assumptions. Everything else is free.
 
 ```python
 # cell 9
+base = (
+    model.specify(name="Base case")
+    .fix(base_date=plan["base_date"], sale_date=plan["sale_date"])
+    .fix(start_date=plan["start_date"], b_start=plan["b_start"])
+    .fix(land_cost=plan["land_cost"], shared_cost=plan["shared_cost"])
+    .fix(a_cost=plan["a_cost"], b_cost=plan["b_cost"])
+    .fix(a_income=plan["a_income"], b_income=plan["b_income"])
+    .fix(a_opex=plan["a_opex"], b_opex=plan["b_opex"])
+    .fix(a_renewal=plan["a_renewal"], b_renewal=plan["b_renewal"])
+)
 reference = {"rent_growth": "3 % pa", "exit_cap_rate": "5 %"}
-valuation = {"discount_rate": "7 % pa", "opex_growth": "3.5 % pa"}
-base = model.specify(name="Base case").fix(**plan.inputs, **valuation, **reference)
+base = base.fix(**reference).fix(discount_rate="7 % pa", opex_growth="3.5 % pa")
 outcome = rk.execution.solve(specification=base)
 outcome["unlevered_npv"]
 ```
@@ -282,8 +291,9 @@ model = draft.commit()
 
 ```python
 # cell 14
-debt = {"leverage": "65 %", "loan_rate": "6 % pa", "equity_rate": "12 % pa"}
-levered = base.on(model=model).fix(**debt)
+levered = base.on(model=model).fix(
+    leverage="65 %", loan_rate="6 % pa", equity_rate="12 % pa"
+)
 levered_outcomes = rk.execution.solve(specification=levered.cases(cases=cases))
 levered_outcomes.table("unlevered_npv", "equity_npv", "equity_irr")
 ```
@@ -334,16 +344,14 @@ end of each year. Calculate the first year's closing balance and headroom by han
 paid_2027 = outcome["land"].at(on=date(2027, 1, 1)) + outcome["works"].at(
     on=date(2027, 1, 1)
 )
-closing_2027 = plan.inputs["equity"] + paid_2027
-headroom_2027 = closing_2027 + plan.inputs["bridge_limit"]
+closing_2027 = plan["equity"] + paid_2027
+headroom_2027 = closing_2027 + plan["bridge_limit"]
 closing_2027, headroom_2027
 ```
 
 ```python
 # cell 18
-account = rk.finance.Account(
-    opening=plan.inputs["equity"], limit=plan.inputs["bridge_limit"]
-)
+account = rk.finance.Account(opening=plan["equity"], limit=plan["bridge_limit"])
 history = account.post(transactions=outcome["land"] + outcome["works"])
 assert history.closing.at(on=date(2027, 1, 1)) == closing_2027
 history.display()  # opening, transactions, closing and headroom by year
@@ -392,7 +400,9 @@ model = draft.commit()
 
 ```python
 # cell 20
-funded = levered.on(model=model)
+funded = levered.on(model=model).fix(
+    equity=plan["equity"], bridge_limit=plan["bridge_limit"]
+)
 summary = rk.execution.solve(specification=funded.cases(cases=cases))
 summary.table(
     "unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall", "commitment_gap"

@@ -46,7 +46,7 @@ import helpers
 ```python
 # cell 2
 data = helpers.load_property(snapshot=2032)
-data.inputs  # key, quantity and origin of each total
+data  # key, quantity and origin of each total
 ```
 
 ## 2. A calculation has a direction
@@ -58,7 +58,7 @@ new formulas. The relations did not change; only the question did.
 
 ```python
 # cell 3
-total_cost = 20e6 + data.inputs["works_cost"].magnitude
+total_cost = 20e6 + data["works_cost"].magnitude
 debt_service = 0.0860 * 0.65 * total_cost
 required_noi = 1.25 * debt_service
 required_noi  # AUD per year, calculated from cost to income
@@ -188,16 +188,37 @@ constant  # 8.60 % pa
 ## 5. The front door
 
 Narrative. **Predict:** at a land cost of 20 million AUD, must rents be above or below
-the reference rents? A Specification asks the question. It fixes the known values.
-Every value that it does not fix is free: the solve finds it.
+the reference rents? A Specification asks the question. It fixes the known values, by
+name. Every value that it does not fix is free: the solve finds it. Each `fix` returns
+a new Specification, so the fixes can be grouped by topic.
 
 ```python
 # cell 10
-lending = {"leverage": "65 %", "coverage": 1.25, "mortgage_constant": constant}
-front = model.specify(name="Front door").fix(
-    **data.inputs, **lending, land_cost="20e6 AUD"
+front = (
+    model.specify(name="Front door")
+    .fix(land_cost="20e6 AUD", works_cost=data["works_cost"])
+    .fix(operating_cost=data["operating_cost"])
+    .fix(leverage="65 %", coverage=1.25, mortgage_constant=constant)
 )
-front.roles  # fixed values, and the free values the solve finds
+```
+
+Narrative: the reference rents and areas by use, from the data package. Every fixed
+value is named.
+
+```python
+# cell 10b
+front = front.fix(
+    hotel_area=data["hotel_area"],
+    hotel_rent=data["hotel_rent"],
+    hotel_vacancy=data["hotel_vacancy"],
+    residential_area=data["residential_area"],
+    residential_rent=data["residential_rent"],
+    residential_vacancy=data["residential_vacancy"],
+    retail_area=data["retail_area"],
+    retail_rent=data["retail_rent"],
+    retail_vacancy=data["retail_vacancy"],
+)
+front.roles  # each value: fixed with its quantity, or free for the solve to find
 ```
 
 ```python
@@ -213,7 +234,7 @@ reference rent. A required rent is a threshold, not a forecast.
 ```python
 # cell 12
 factor = front_outcome["rent_factor"]
-{use: factor * data.inputs[f"{use}_rent"] for use in ("hotel", "residential", "retail")}
+{use: factor * data[f"{use}_rent"] for use in ("hotel", "residential", "retail")}
 ```
 
 ## 6. The back door
@@ -314,11 +335,7 @@ what is the highest leverage the income supports?
 
 ```python
 # solution
-max_leverage = (
-    model.specify(name="Largest loan")
-    .fix(**data.inputs, **lending, land_cost="20e6 AUD", rent_factor=1)
-    .free("leverage")
-)
+max_leverage = front.fix(rent_factor=1).free("leverage")
 rk.execution.solve(specification=max_leverage)["leverage"]
 ```
 
@@ -331,7 +348,9 @@ longer = rk.finance.payment(
     principal="1 AUD", rate="6 % pa", term="25 years", frequency=monthly
 )
 longer_constant = (longer / rk.Quantity(text="1 AUD")).to(units="% pa")
-longer_outcome = rk.execution.solve(specification=front.fix(mortgage_constant=longer_constant))
+longer_outcome = rk.execution.solve(
+    specification=front.fix(mortgage_constant=longer_constant)
+)
 assert longer_outcome["rent_factor"] < factor
 ```
 
@@ -372,8 +391,8 @@ adds debt, equity and funding.
 
 ## Cell budget
 
-19 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest cell
-has 11 lines (cell 4). Cells follow `ruff format` (D15).
+20 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest cell
+has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 
 ## Rule check
 
