@@ -25,6 +25,21 @@ uv run --locked mypy
 uv run --locked pytest -q
 ```
 
+The suite is in `tests/` ([ADR-018](../decisions/018-release-and-engineering.md)).
+Its folders mirror the packages:
+
+| Folder | Contents |
+| --- | --- |
+| `tests/<package>` | Tests of one package, for example `tests/flow` or `tests/model`. A fixture is next to the tests that read it |
+| `tests/contracts` | Format versions, retired names, golden account results and the jsonschema conformance of structural validation. Golden formats, the API snapshot and deterministic builds follow |
+| `tests/integration` | Complete teaching models and calculations across several packages, with their model builders |
+| `tests/walkthrough` | The example data package and the design example, in the core environment |
+
+The walkthrough helper and lesson tests stay in `examples/walkthrough/tests`,
+because they need the walkthrough environment. Put a new test in the folder of
+the package that owns the behaviour. Name a test file for its behaviour, not
+for the review or refactoring that found it.
+
 To check an installed wheel with no extra or with one extra, install it in a
 separate environment and run, outside the checkout's `src` folder:
 
@@ -137,7 +152,7 @@ The current CI workflow is described in [continuous integration](README.md#conti
 
 ## Bundle candidate verification
 
-With the `bundle` extra installed, run `python -m pytest -q tests/test_bundle.py`
+With the `bundle` extra installed, run `python -m pytest -q tests/io/test_bundle.py`
 from the root. Full schema generation and C# checks also apply because Model schema
 changed. See the [Bundle contract](../reference/bundle.md) and the acceptance
 matrix in [ADR-008](../decisions/008-rangekeeper-bundle-contract.md). Do not infer provider or host acceptance

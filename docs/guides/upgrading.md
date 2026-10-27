@@ -102,7 +102,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.io.store` | `rangekeeper.shared.store` | draft (needs refactor) | The protocol imports Model, Specification and Run; these imports must become type-only. |
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
 | `rangekeeper.model.scenario` | `rangekeeper.finance.paths` | draft (needs refactor) | Path generators and the MarketPaths document replace the scenario plan. |
-| `src/tests/` | `tests/` | agreed | The pass moves the suite to the top level. Sub-folders that mirror the packages, and tests/contracts and tests/integration, follow in the pass. |
+| `src/tests/` | `tests/` | agreed | The pass moves the suite to the top level. #177 adds the sub-folders that mirror the packages, and tests/contracts, tests/integration and tests/walkthrough. |
 
 ### Renamed names
 
