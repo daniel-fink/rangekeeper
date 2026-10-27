@@ -54,6 +54,11 @@ supported, documented and tested, and both produce the same expression records.
 The walkthrough teaches the string form. It shows the operator form once, in an
 Under the hood aside ([ADR-020](020-walkthrough-plan-v2.md)).
 
+An equation is an equality or a bound that must hold. Each one is stored as a
+Constraint over Expressions in a Formulation. `equations(..., formulation=name)`
+puts equations in a named Formulation; without a name they join the entity's
+default Formulation (#201, decision D18).
+
 ### Identities and deterministic builds
 
 Every record gets a new UUID by default. The builder fills in Metadata and the

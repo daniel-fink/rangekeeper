@@ -122,7 +122,9 @@ site.value(key="exit_cap_rate", units="ratio")
 site.value(key="discount_rate", units="% pa")
 ```
 
-Narrative: the plan's sequence is a relation too. The site is bought and the shared
+Narrative: equations can be grouped in named formulations, like the sections of a
+pro forma: development, operations, sale and debt. A group changes nothing in the
+solve; it organises the display and the trace. The plan's sequence is a relation too. The site is bought and the shared
 works start on the start date. Building A follows a year later, and each building
 takes two years to build. Building B cannot start before the shared works finish.
 Development payments are negative; `uniform` divides an amount evenly over the years
@@ -141,6 +143,7 @@ site.equations(
     "a_works = -uniform(total=a_cost, start=a_start, years=2)",
     "b_works = -uniform(total=b_cost, start=b_start, years=2)",
     "works = shared_works + a_works + b_works",
+    formulation="Development",
 )
 ```
 
@@ -156,6 +159,7 @@ site.equations(
     "b_costs = compounding(initial=b_opex, rate=opex_growth, start=b_open)",
     "income = a_rent + b_rent",
     "opex = -(a_costs + b_costs)",
+    formulation="Operations",
 )
 ```
 
@@ -175,6 +179,7 @@ site.equations(
     ),
     "renewals = -(a_renewals + b_renewals)",
     "operating = income + opex + renewals",
+    formulation="Operations",
 )
 ```
 
@@ -188,6 +193,7 @@ site.equations(
     "project_cash = land + works + operating + sale",
     "net_cash_flow = trim(flow=project_cash, end=sale_date)",
     "unlevered_npv = npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
+    formulation="Sale and value",
 )
 model = draft.commit()
 ```
@@ -257,6 +263,7 @@ site.equations(
     "loan_balance = cumulative(flow=loan_draws)",
     "loan_interest = -interest(balance=loan_balance, rate=loan_rate)",
     "repayment = -settle(balance=loan_balance, on=sale_date)",
+    formulation="Debt",
 )
 ```
 
@@ -268,6 +275,7 @@ site.equations(
     "equity_cash_flow = net_cash_flow + loan_draws + loan_interest + repayment",
     "equity_npv = npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
     "equity_irr = irr(flow=equity_cash_flow)",
+    formulation="Debt",
 )
 model = draft.commit()
 ```
@@ -377,6 +385,7 @@ largest commitment gap.
 site.equations(
     "peak_shortfall = max(0 AUD, -min(funding.headroom))",
     "commitment_gap = max(0 AUD, max(funding.committed - funding.headroom))",
+    formulation="Funding",
 )
 model = draft.commit()
 ```
@@ -502,7 +511,7 @@ follow `ruff format` (D15).
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
 | 5 | 2, 5 | G08 (`rk.Model(timeline=)`, entity handles); G15: date-valued Values; G16: infer units and shapes of other values |
-| 6–8 | 3, 6 | G17: Function catalogue for equations (`event`, `at`, `uniform`, `compounding`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
+| 6–8 | 3, 6 | G72: `formulation=` groups; G17: Function catalogue for equations (`event`, `at`, `uniform`, `compounding`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
 | 10, 12 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |

@@ -54,6 +54,7 @@ pass.
 | D15 | How are cells formatted? | With the project's `ruff format` (Black style): 88 columns, and a trailing comma after the last argument puts one argument per line. The pre-commit hook formats the lesson notebooks the same way, so the cell budgets count formatted lines. A cell split for length keeps its number with a letter (4, 4b). A long equation string is wrapped in parentheses | 01–07 |
 | D16 | How are values declared, and how is a rate per year written? | One call for each value, naming its key and units: `site.value(key="land_cost", units="AUD")`, `site.flow(key="rent_index", units="ratio")`, `site.date(key="start_date")`. Keyed and timeline variants add `by=` and `periods=`. `units=` always means units; a date has none. A rate per year is `"% pa"`, for example `"7 % pa"`, not `"1/year"` | 01–07 |
 | D17 | How is unit text written? | `per` divides (`"5 per sqm"`, `"750 AUD per sqm pa"`), `pa` means per year, and a count has a named unit (`"0.02 dwelling per sqm"`). A unit expression contains no numbers: Pint reads `"per 100 sqm"` as "÷ 100 × sqm", so the registry rejects it with a suggestion | 01–07 |
+| D18 | Equations, expressions or constraints? | "Equation" is the reader's word: one relation that must hold, an equality or a bound. It is stored as a Constraint over Expressions; the glossary says so. `equations(..., formulation="Debt")` puts equations in a named Formulation, for display and traces; without it they join the entity's default Formulation | 02–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -155,7 +156,7 @@ site.flow(key="rent_index", units="ratio")  # G08
 site.flow(key="use_index", units="ratio", by="use")  # G43
 site.date(key="start_date")  # G15
 site.equation(equation="total_cost = land_cost + works_cost")
-site.equations("...", "...")  # #145, G18
+site.equations("...", "...", formulation="Debt")  # #145, G18, G72
 draft.equations_for(
     filter=rk.model.Filter(classification="floor"),
     equations=["income = nla * rent[use]"],
@@ -333,6 +334,7 @@ use. **Issue** is filled in when the issue is filed.
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
 | 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
 | 35 | — | `rk.Quantity` at the root, text in the constructor, and the `rk.quantity` namespace | G71 | `quantity` | 01·2–3, 10, 17; 02·22; 03·24 | #148, #149, #150 |
+| 36 | — | Named formulations: `equations(..., formulation=)`, a default Formulation for each entity, and equations grouped by formulation in displays and traces | G72 | `model` | 03·6–8, 13, 19b | #141, #145 |
 
 Acceptance tests for existing issues. These cells depend on
 [#149](https://github.com/daniel-fink/rangekeeper/issues/149) (the curated unit
