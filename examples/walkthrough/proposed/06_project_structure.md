@@ -182,10 +182,11 @@ for word.
 
 ```python
 # cell 18
-e = graph.edit()
-e.values(land_cost="AUD", works_cost="AUD", leverage="ratio", mortgage_constant="1/year",
-         coverage="ratio", operating_cost="AUD pa", rent_factor="ratio")
-e.equations(
+draft = graph.edit()
+site = draft.entity(code="property")
+site.values(land_cost="AUD", works_cost="AUD", leverage="ratio", mortgage_constant="1/year",
+            coverage="ratio", operating_cost="AUD pa", rent_factor="ratio")
+site.equations(
     "total_cost = land_cost + works_cost",
     "mortgage = leverage * total_cost",
     "debt_service = mortgage_constant * mortgage",
@@ -201,11 +202,11 @@ to every floor.
 
 ```python
 # cell 19
-e.values(efficiency="ratio", rent="AUD/sqm pa", vacancy="ratio", by="use")
-e.equations_for(
+site.values(efficiency="ratio", rent="AUD/sqm pa", vacancy="ratio", by="use")
+draft.equations_for(
     filter=rk.model.Filter(classification="floor"),
     equations=["nla = efficiency[use] * gfa",
-               "income = nla * rent[use] * (1 - vacancy[use])"],
+                   "income = nla * rent[use] * (1 - vacancy[use])"],
 )
 ```
 
@@ -214,9 +215,9 @@ declares a value; lesson 02's equation uses it by key.
 
 ```python
 # cell 20
-e.rollup(key="reference_income", of="income", over="spatiallyContains", root="property",
-         contributors=rk.model.Filter(classification="floor"))
-model = e.commit()
+site.rollup(key="reference_income", of="income", over="spatiallyContains", root="property",
+            contributors=rk.model.Filter(classification="floor"))
+model = draft.commit()
 ```
 
 ## 10. The back door again
@@ -256,10 +257,10 @@ equation that names the floor by code fails at `commit()` with a named error.
 
 ```python
 # cell 24
-e = model.edit()
-e.remove(entity="a_hotel_floor_1")
+draft = model.edit()
+draft.remove(entity="a_hotel_floor_1")
 try:
-    e.commit()
+    draft.commit()
 except rk.errors.MissingReferenceError as error:
     print(error.requested, error.referenced_by)
 ```
@@ -337,7 +338,7 @@ solutions. Cell 18 has 12 lines.
 | 16–17 | 4, 9 | G42: `AmbiguousReferenceError`; error fields `requested`, `candidates` ([#156](https://github.com/daniel-fink/rangekeeper/issues/156)) |
 | 18 | 3 | Lesson 02's strings, unchanged |
 | 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `equations_for(filter=, equations=)` |
-| 20 | 2, 7 | G44: `ModelBuilder.rollup` declares a Value (decision D3) |
+| 20 | 2, 7 | G44: entity `rollup(key=, ...)` declares a Value (decision D3) |
 | 21 | 2, 5 | G45: `fix` takes keyed values as mappings; `data.inputs.select` |
 | 22 | 8 | G26 |
 | 23 | 7, 8 | G46: `Outcome.rollup(key)` and `Outcome.model` |

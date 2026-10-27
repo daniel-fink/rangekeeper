@@ -59,13 +59,14 @@ income relation. Fix rent growth at zero.
 
 ```python
 # cell 3
-e = model.edit()
-e.flows(rent_index="ratio")
-e.replace(key="income",
-          equation="income = rent_index * ("
-                   "compounding(initial=a_income, rate=rent_growth, base=base_date, start=a_open)"
-                   " + compounding(initial=b_income, rate=rent_growth, base=base_date, start=b_open))")
-model = e.commit()
+draft = model.edit()
+site = draft.entity(code="property")
+site.flows(rent_index="ratio")
+site.replace(key="income",
+             equation="income = rent_index * ("
+                      "compounding(initial=a_income, rate=rent_growth, base=base_date, start=a_open)"
+                      " + compounding(initial=b_income, rate=rent_growth, base=base_date, start=b_open))")
+model = draft.commit()
 ```
 
 ```python
@@ -283,7 +284,7 @@ solutions. The longest cell has 7 lines.
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26: `rk.io.load` and `rk.io.save` for any document kind; `model.equations` display ([G10](README.md#gap-list)) |
-| 3 | 2, 3 | G27: equation keys and `ModelBuilder.replace(key, equation)`; G28: `ModelBuilder.flows(**units)` on the timeline |
+| 3 | 2, 3 | G27: equation keys and entity `replace(key=, equation=)`; G28: entity `flows(**units)` on the timeline |
 | 5–7 | 6, 11 | `MarketDynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)` |
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
 | 8–9 | 4, 6 | `MarketPaths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |

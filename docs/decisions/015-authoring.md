@@ -18,16 +18,24 @@ lesson 03:
 
 ### Builders on documents
 
-- `Model.build(*, namespace=None)` and `model.edit()` return a builder.
-- The builder adds measures, classifications, entities, assemblies,
-  relationships, values and equations. It refers to objects by handle or by code.
+- `rk.Model(*, name, timeline=None, namespace=None)` makes an empty, immutable
+  Model. There is no second way to make one.
+- `model.edit()` returns a draft (`ModelDraft`), the builder for that revision.
+- The draft adds measures, classifications, entities, assemblies and
+  relationships. `draft.add_entity(...)` makes an entity and returns its handle;
+  `draft.entity(code=...)` finds one. Values, Flows, equations, rollups and
+  accounts are declared on an entity handle. The draft refers to objects by handle
+  or by code.
+- Amended 2026-10-26 by the walkthrough proposed cells (#201, decision D6): this
+  replaces `Model.build()` and an implicit root entity.
 - `commit()` validates once and returns a new revision.
 - Where possible, the builder's collection `add_*` methods are generated from
   the LinkML collections, so the builder stays in step with the schema.
 - Builder errors point at the builder call.
 
-Specification authoring uses the same style. A caller fixes and frees roles by
-key: `fix(target, quantity)` and `free(target)` ([ADR-012](012-naming-and-glossary.md)).
+Specification authoring uses chained calls, not a draft: each call returns a new
+Specification, because each step is valid on its own. A caller fixes and frees roles
+by key: `fix(target, quantity)` and `free(target)` ([ADR-012](012-naming-and-glossary.md)).
 `across(...)` makes a batch over market paths ([ADR-014](014-market-paths.md)).
 The builder fills in the metadata and the format version.
 

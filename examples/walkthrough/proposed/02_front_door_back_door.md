@@ -11,7 +11,7 @@ API conventions and the gap list: [README](README.md).
 >
 > **You will learn to:**
 >
-> 1. build a Model with a builder and string equations;
+> 1. make a Model, edit it in a draft and commit it, with string equations;
 > 2. tell an equation from a calculation direction;
 > 3. fix values in a Specification, solve, and read the result from `Outcome`;
 > 4. reverse the question by changing two roles;
@@ -66,15 +66,21 @@ required_noi                          # AUD per year, calculated from cost to in
 
 ## 3. Declare the relations once
 
-Narrative: a Model declares values with their units and the equations between them.
-An equation does not say which side is known. The builder collects the declarations;
-`commit()` checks them once, including the units of every equation, and returns an
-immutable Model.
+Narrative: a Model describes things, called entities, with their values and the
+equations between them. Here it describes one entity: the property. An equation does
+not say which side is known.
+
+A Model never changes. To change one, `edit()` gives a draft. The draft collects the
+changes; `commit()` checks them all once, including the units of every equation, and
+returns a new Model. The first Model is empty; the draft adds the property, its values
+and its equations.
 
 ```python
 # cell 4
-b = rk.Model.build(name="Mixed-use feasibility", subject="property")
-b.values(
+model = rk.Model(name="Mixed-use feasibility")
+draft = model.edit()
+site = draft.add_entity(code="property", classification="property")
+site.values(
     land_cost="AUD", works_cost="AUD", total_cost="AUD",
     leverage="ratio", mortgage="AUD", mortgage_constant="1/year",
     debt_service="AUD pa", coverage="ratio", noi="AUD pa",
@@ -85,7 +91,7 @@ b.values(
 
 ```python
 # cell 5
-b.equations(
+site.equations(
     "total_cost = land_cost + works_cost",
     "mortgage = leverage * total_cost",
     "debt_service = mortgage_constant * mortgage",
@@ -101,15 +107,15 @@ means 10 % higher. Parking earns no rent.
 
 ```python
 # cell 6
-b.values(hotel_area="sqm", hotel_rent="AUD/sqm pa", hotel_vacancy="ratio",
-         residential_area="sqm", residential_rent="AUD/sqm pa", residential_vacancy="ratio",
-         retail_area="sqm", retail_rent="AUD/sqm pa", retail_vacancy="ratio")
-b.equation(
+site.values(hotel_area="sqm", hotel_rent="AUD/sqm pa", hotel_vacancy="ratio",
+            residential_area="sqm", residential_rent="AUD/sqm pa", residential_vacancy="ratio",
+            retail_area="sqm", retail_rent="AUD/sqm pa", retail_vacancy="ratio")
+site.equation(
     equation="reference_income = hotel_area * hotel_rent * (1 - hotel_vacancy)"
-    " + residential_area * residential_rent * (1 - residential_vacancy)"
-    " + retail_area * retail_rent * (1 - retail_vacancy)"
+             " + residential_area * residential_rent * (1 - residential_vacancy)"
+             " + retail_area * retail_rent * (1 - retail_vacancy)"
 )
-model = b.commit()
+model = draft.commit()
 ```
 
 ```python
@@ -121,7 +127,7 @@ helpers.show_relations(of=model)          # a diagram with no input or output ar
 > on value handles. Both forms make the same records.
 >
 > ```python
-> v = model.edit().handles()
+> v = model.edit().entity(code="property").handles()
 > assert (v.noi == v.coverage * v.debt_service).text == "noi = coverage * debt_service"
 > ```
 
@@ -329,7 +335,7 @@ cell has 9 lines (cell 4).
 | 1 | 1, 10 | Walkthrough helpers package ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | 2 | 10 | G07: helpers load totals with origins; they do not calculate |
 | 3 | 6 | By hand once; replaced in cells 9–11 |
-| 4–6 | 2, 3, 5 | `Model.build`, `values`, `equations`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `subject=` and bulk `values(**units)` |
+| 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `values(**units)` and `equations` (D6) |
 | 6, 11 | 6 | G09: staged solve. `reference_income` is a product of fixed values, then `rent_factor * reference_income` is affine |
 | 7, 14 | 10 | Helper draws the relations ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | aside | 3 | Operator form ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)). G10: `Equation.text` gives canonical text |

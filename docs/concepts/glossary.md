@@ -98,9 +98,9 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
-| Builder | An object that collects additions or edits and returns a new revision at `commit()` | `model`, `specification` | — |
-| Namespace | A UUID that makes builder IDs deterministic | `model` | — |
-| Handle | A builder reference to an object that does not have a UUID yet | `model` | — |
+| Draft | A mutable set of additions or changes to a Model, from `model.edit()`. `commit()` checks it once and returns a new revision | `model` | Builder |
+| Namespace | A UUID that makes the IDs of a Model and its drafts deterministic | `model` | — |
+| Handle | A draft's reference to an object, such as an entity, that does not have a UUID yet | `model` | — |
 
 ## Words with one meaning only
 

@@ -32,19 +32,19 @@ names the gaps.
 ## Decisions
 
 The maintainer made these choices during the proposed-cells pass. They resolve the open
-preparation decisions of ADR-020 and the builder shape that ADR-015 left to this
+preparation decisions of ADR-020 and the authoring shape that ADR-015 left to this
 pass.
 
 | ID | Question | Decision | Used in |
 | --- | --- | --- | --- |
 | D1 | Can lesson 03's cases reach the cash flows through the solve? | Yes. The Model declares the DCF as Flow relations: growth with a rate, the terminal value, NPV at a rate. A case fixes the rates, so the solve stays affine. One Model answers lessons 02–05 | 03, 04, 05 |
-| D2 | Where do the funding account and the commitment check live? | Both places. `rk.finance.Account` calculates on known data (the "by hand once, then the library" cell). `ModelBuilder.account` declares the balance, headroom and committed payments as relations, so cases, paths and rules can use them | 03, 05 |
+| D2 | Where do the funding account and the commitment check live? | Both places. `rk.finance.Account` calculates on known data (the "by hand once, then the library" cell). An entity's `account(...)` declares the balance, headroom and committed payments as relations, so cases, paths and rules can use them | 03, 05 |
 | D3 | How does an equation refer to a rollup result? | A rollup declares a Value. Equations refer to it by key, as to any other value. The solve traces through the rollup to its contributors | 06, 07 |
 | D4 | How does a batch report IRR, peak shortfall and other non-affine results? | Staged evaluation. `irr`, `min` and `max` are Model relations. The solve evaluates them after the affine stage, and verification checks them | 03, 04 |
 | D5 | When do the inverse rewrites land? | In 1.0. A fixed IRR becomes an NPV row at that rate, and a bound on a minimum becomes one row for each period. The target-IRR land price is a core cell of lesson 03 | 03 |
-| D6 | Where do the builder's values live while the property is one asset? | On an implicit subject entity: `rk.Model.build(name=..., subject="property")`. Equations use bare keys. Other entities use dotted paths, such as `funding.headroom` | 02–07 |
+| D6 | How is a Model made and changed? | One way each. `rk.Model(name=...)` makes an empty, immutable Model. `model.edit()` gives a `ModelDraft`; `commit()` checks it once and returns a new revision. There is no implicit entity: `draft.add_entity(code=, classification=)` makes one and `draft.entity(code=)` finds one. Values, Flows, equations, rollups and accounts are declared on the entity handle, and its equations use bare keys. Other entities use dotted paths, such as `funding.headroom`. `root=` keeps its meaning in rollups | 02–07 |
 | D7 | Must every unknown be named with `free()`? | No. A value that is not fixed is free. `free()` releases a value that was fixed before. An underdetermined solve names the free unknowns | 02–07 |
-| D8 | Specification builder or chained calls? | Chained calls. `fix`, `free`, `cases`, `across` and `decide` each return a new immutable Specification. Only the Model uses a builder and `commit()` | 02–07 |
+| D8 | Specification builder or chained calls? | Chained calls. `fix`, `free`, `cases`, `across` and `decide` each return a new immutable Specification, because each step is valid on its own. A Model change is often invalid until it is complete, so the Model uses a draft and `commit()` | 02–07 |
 | D9 | How does a policy change the plan? | If a value can change, it belongs in the Specification. If it is part of the modelling, it belongs in the Model. The Model declares the relations between dates (lesson 03). A rule **decides** one value: it fixes the value on the first review date on which its condition holds. "Decided" is a role beside fixed and free. There is no separate action concept | 03, 05, 07 |
 | D10 | How is a design variant declared? | Each option is its own Model revision. The Specification lists the alternatives, and the choice between them is a decided value. A provision cost is a fixed value in the Specification | 07 |
 | D11 | Rates by use on each floor (lesson 06) | Keyed values (`by="use"`) and floor equations (`equations_for`). The reference income is a rollup of floor income, so income traces to floors | 06, 07 |
@@ -55,7 +55,7 @@ pass.
 Two choices in the cells are open for review. They do not change the API shape:
 
 - **Unit inference (G16).** Lesson 02 declares every value. From lesson 03, only
-  inputs are declared, and the builder infers the units of the other values. Without
+  inputs are declared, and the draft infers the units of the other values. Without
   inference, lesson 03 needs about 15 more lines of declarations.
 - **Funding structure.** Lesson 03 uses equity and an overdraft-style bridge limit.
   `development.json` also has a fixed draw schedule. Authoring picks one.
@@ -106,18 +106,21 @@ paths.mean(name="rent_index"), paths[key]["rent_index"], paths.capture, paths.ge
 ### Model
 
 ```python
-b = rk.Model.build(name="...", subject="property", timeline=years, namespace=None)  # #141, G08
-b.values(land_cost="AUD", start_date="date"), b.flows(rent_index="ratio")           # G08, G15
-b.values(rent="AUD/sqm pa", by="use")                                               # G43
-b.equation(equation="total_cost = land_cost + works_cost"); b.equations("...", "...")        # #145, G18
-b.equations_for(filter=rk.model.Filter(classification="floor"), equations=["income = nla * rent[use]"])  # G43
-b.rollup(key="reference_income", of="income", over="spatiallyContains", root="property",
-         contributors=rk.model.Filter(classification="floor"))                      # G44
-b.account(key="funding", opening="equity", limit="bridge_limit",
-          transactions="land + works", commitments={"a_works": "a_start"})          # G24
-model = b.commit()
-e = model.edit(name=None); e.replace(key=key, equation=eq); e.remove(key=key); e.remove(entity=code); e.extend(key=key, terms=terms)  # G27
-e.relabel(filter=filter, use="hotel"); e.include(fragment=fragment)                                 # G61
+model = rk.Model(name="...", timeline=years, namespace=None)                         # G08
+draft = model.edit(name=None)                                                         # #141
+site = draft.add_entity(code="property", classification="property")                   # G08
+site = draft.entity(code="property")                                                  # find, in an edit
+site.values(land_cost="AUD", start_date="date"), site.flows(rent_index="ratio")       # G08, G15
+site.values(rent="AUD/sqm pa", by="use")                                              # G43
+site.equation(equation="total_cost = land_cost + works_cost"); site.equations("...", "...")  # #145, G18
+draft.equations_for(filter=rk.model.Filter(classification="floor"), equations=["income = nla * rent[use]"])  # G43
+site.rollup(key="reference_income", of="income", over="spatiallyContains", root="property",
+            contributors=rk.model.Filter(classification="floor"))                    # G44
+site.account(key="funding", opening="equity", limit="bridge_limit",
+             transactions="land + works", commitments={"a_works": "a_start"})       # G24
+site.replace(key=key, equation=eq); site.extend(key=key, terms=terms); site.remove(key=key)  # G27
+draft.relabel(filter=filter, use="hotel"); draft.include(fragment=fragment); draft.remove(entity=code)  # G61
+model = draft.commit()
 model.equations, model.equations.involving("start_date"), equation.text            # G10, G47
 model.entity(code="a_hotel_floor_1"), model.find(filter=rk.model.Filter(...)), model.view(over="serves")   # #156, #160, G37
 model.rollup(of="gfa", over="spatiallyContains", root="property", contributors=...)    # #158, G39
@@ -196,11 +199,11 @@ use. **Issue** is filled in when the issue is filed.
 | 7 | — | Function catalogue for equations, named as in `rk.profile`, `rk.flow` and `rk.finance` | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
 | 8 | — | Flow-valued string equations on the Model timeline | G18 | `model` | 03·6–8 | #145, #163 |
 | 9 | — | Date values, date arithmetic and `never` | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
-| 10 | — | Builder: `subject`, `timeline`, `values(**units)`, `flows(**units)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
+| 10 | — | `rk.Model(name=, timeline=)`, `ModelDraft` with `add_entity` and `entity`, entity handles with `values(**units)` and `flows(**units)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
 | 12 | — | Equation keys, `replace`, `remove`, `extend`, `Equation.text`, `equations.involving` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
 | 13 | — | Keyed values, label indexing and `equations_for` | G43, G45, G60 | `model`, `specification` | 06·19, 21; 07·3 | #121, #138, #141 |
-| 14 | — | `ModelBuilder.rollup` declares a Value; `Model.rollups()` | G44, G59 | `model` | 06·20; 07·2, 17 | #158 |
+| 14 | — | An entity's `rollup(key=, ...)` declares a Value; `Model.rollups()` | G44, G59 | `model` | 06·20; 07·2, 17 | #158 |
 | 15 | — | Rollup facade: several roots, pivots by ancestor, `trace`, Outcome rollups | G39–G41, G46 | `model`, `execution` | 06·11–15, 23; 07·6, 12 | #157, #158, #159 |
 | 16 | — | Model inspection: `summary`, `entities`, `relationships`, `view`, `diff` | G35–G37, G62 | `model` | 06·2–8; 07·5 | #160 |
 | 17 | — | Filter additions: `where=`, `within=`, `has=`, `name=` | G38 | `model` | 06·10, 16; 07·4, 6 | #121 |
@@ -212,7 +215,7 @@ use. **Issue** is filled in when the issue is filed.
 | 23 | — | `rk.execution.replay` and `Store.find_runs` | G25 | `execution`, `io` | 03·22–23 | #126, #176 |
 | 24 | — | One-call document IO: `rk.io.load` and `rk.io.save` | G26 | `io` | 04·2, 9; 05·2; 06·2, 22; 07·2, 7 | #112 |
 | 25 | — | `rk.finance.Account` with a limit and headroom | G23 | `finance` | 03·18 | — |
-| 26 | — | `ModelBuilder.account` with commitments | G24 | `model` | 03·19; 05·9 | — |
+| 26 | — | An entity's `account(key=, ..., commitments=)` | G24 | `model` | 03·19; 05·9 | — |
 | 27 | — | Outcome distributions | G31 | `execution` | 04·12–16; 05·16 | #127 |
 | 28 | — | Paired comparison of Outcomes | G56, G66, G68 | `execution` | 05·14–17; 07·9, 14–16 | #138, #213, #214 |
 | 29 | — | MarketPaths access and construction | G30, G33, G48, G69 | `finance` | 04·10, 19; 05·4; 07·16 | #137 |

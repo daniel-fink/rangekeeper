@@ -171,14 +171,14 @@ value = rk.finance.npv(cashflows, rate=0.07, on=holding.start)
 - **Project.** The property as one asset, at a stabilised snapshot year. Area
   by use comes from the data package. One dimensionless rent factor scales the
   reference rents of all uses.
-- **Goals.** Build a Model with a builder and string equations. Tell an
+- **Goals.** Make a Model, edit it in a draft and commit it, with string equations. Tell an
   equation from a calculation direction. Fix and free values in a
   Specification. Solve and read the result from `Outcome`. Reverse the question
   by changing two roles. Recognise underdetermined, infeasible and unsupported
   outcomes (optional section).
 - **Prerequisites.** Lesson 01.
 - **Time.** 60 minutes core, 20 optional.
-- **Library shown.** `Model.build()` and `commit()`, string equations (the
+- **Library shown.** `rk.Model()`, `edit()` and `commit()`, string equations (the
   operator form once, in an Under the hood aside), the Specification builder
   with `fix` and `free`, `solve`, `Outcome`, the `underdetermined` status,
   dimensional checks and coded diagnostics.
@@ -411,8 +411,8 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
    `rk.profile`, `rk.flow`, `rk.finance`, `rk.model`, `rk.specification`, `rk.execution`,
    `rk.io`, `rk.errors` and `rk.quantity`. Cells never import `schema`, `shared`
    or private modules.
-2. **Build, do not assemble.** Use `Model.build()`, `model.edit()`, `commit()`
-   and the Specification builder. Cells never write Metadata, a format version,
+2. **Build, do not assemble.** Use `rk.Model()`, `model.edit()`, `commit()`
+   and the chained Specification calls. Cells never write Metadata, a format version,
    `uuid4()` or a `.replace` chain.
 3. **Equations are strings.** Write `b.equation("noi = coverage * debt_service")`.
    Lesson 02 shows the operator form once, in an Under the hood aside. Both

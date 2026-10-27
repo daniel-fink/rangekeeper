@@ -81,11 +81,11 @@ join Building B. Make it as a new revision of the same Model.
 
 ```python
 # cell 4
-e = residential.edit(name="Building B as hotel")
-e.relabel(filter=rk.model.Filter(classification="floor", within="building_b"), use="hotel")
+draft = residential.edit(name="Building B as hotel")
+draft.relabel(filter=rk.model.Filter(classification="floor", within="building_b"), use="hotel")
 # cores and plant, with their costs
-e.include(fragment=helpers.load_fragment(name="building_b_hotel_services"))
-hotel = e.commit()
+draft.include(fragment=helpers.load_fragment(name="building_b_hotel_services"))
+hotel = draft.commit()
 ```
 
 ```python
@@ -243,18 +243,19 @@ too, because they match the same filter. A rule decides the expansion date.
 
 ```python
 # cell 17
-e = residential.edit(name="Building A expanded")
-e.include(fragment=helpers.load_fragment(name="building_a_extra_floors"))
+draft = residential.edit(name="Building A expanded")
+site = draft.entity(code="property")
+draft.include(fragment=helpers.load_fragment(name="building_a_extra_floors"))
 extra = rk.model.Filter(classification="floor", labels={"phase": "expansion"})
-e.rollup(key="x_income", of="income", over="spatiallyContains", root="building_a",
-         contributors=extra)
-e.rollup(key="x_cost", of="build_cost", over="spatiallyContains", root="building_a",
-         contributors=extra)
-e.values(expansion_date="date")
-e.extend(key="works", terms="- uniform(total=x_cost, start=expansion_date, years=1)")
-e.extend(key="income", terms="+ compounding(initial=x_income, rate=rent_growth, base=base_date,"
-                             " start=expansion_date + 1 year)")
-expanded = e.commit()
+site.rollup(key="x_income", of="income", over="spatiallyContains", root="building_a",
+            contributors=extra)
+site.rollup(key="x_cost", of="build_cost", over="spatiallyContains", root="building_a",
+            contributors=extra)
+site.values(expansion_date="date")
+site.extend(key="works", terms="- uniform(total=x_cost, start=expansion_date, years=1)")
+site.extend(key="income", terms="+ compounding(initial=x_income, rate=rent_growth, base=base_date,"
+                                " start=expansion_date + 1 year)")
+expanded = draft.commit()
 ```
 
 ```python
@@ -350,7 +351,7 @@ solutions. Cell 15 has 9 lines.
 The design for structural variants must support:
 
 - **Alternatives as Model revisions.** `edit()`, `relabel`, `include` and `commit`
-  make each option (cell 4). The options share the subject and the relations; they
+  make each option (cell 4). The options share the property entity and the relations; they
   differ in structure.
 - **A bounded choice in the Specification.** `alternatives(key={name: Model})` pins
   each option's revision. The choice is a decided value with a window and a default

@@ -161,16 +161,17 @@ decided value.
 
 ```python
 # cell 10
-e = model.edit()
-e.values(b_land_share="ratio", b_sale_date="date")
-e.equations(
+draft = model.edit()
+site = draft.entity(code="property")
+site.values(b_land_share="ratio", b_sale_date="date")
+site.equations(
     "b_site_sale = event(amount=b_land_share * land_cost * at(flow=rent_index, on=b_sale_date),"
     "                    on=b_sale_date)",
 )
-e.replace(key="net_cash_flow",
-          equation="net_cash_flow = trim(flow=land + works + operating + sale + b_site_sale,"
-                   "                     end=sale_date)")
-model = e.commit()
+site.replace(key="net_cash_flow",
+             equation="net_cash_flow = trim(flow=land + works + operating + sale + b_site_sale,"
+                      "                     end=sale_date)")
+model = draft.commit()
 ```
 
 ```python

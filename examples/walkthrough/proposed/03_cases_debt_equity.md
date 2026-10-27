@@ -79,15 +79,18 @@ assert rk.quantity.isclose(actual=hard * 1.2, expected=plan.inputs["a_cost"])
 
 ## 3. The dated Model
 
-Narrative: declare the inputs with their units. From this lesson on, declare only the
-inputs: the builder infers the units and shape of every other value from the
-equations, and `commit()` names any value that it cannot infer. Dates are values
-too, so a later lesson can change them.
+Narrative: as in lesson 02, start an empty Model and edit it, now with a yearly
+timeline for its Flows. Declare the inputs with their units. From this lesson on,
+declare only the inputs: the draft infers the units and shape of every other value
+from the equations, and `commit()` names any value that it cannot infer. Dates are
+values too, so a later lesson can change them.
 
 ```python
 # cell 5
-b = rk.Model.build(name="Mixed-use base plan", subject="property", timeline=years)
-b.values(
+model = rk.Model(name="Mixed-use base plan", timeline=years)
+draft = model.edit()
+site = draft.add_entity(code="property", classification="property")
+site.values(
     base_date="date", sale_date="date", start_date="date", b_start="date",
     land_cost="AUD", shared_cost="AUD", a_cost="AUD", b_cost="AUD",
     a_income="AUD pa", b_income="AUD pa", a_opex="AUD pa", b_opex="AUD pa",
@@ -104,7 +107,7 @@ from a start date.
 
 ```python
 # cell 6
-b.equations(
+site.equations(
     "shared_start = start_date",
     "a_start = shared_start + 1 year",
     "a_open = a_start + 2 years",
@@ -123,7 +126,7 @@ earns nothing until it opens. Renewals come every five years after opening.
 
 ```python
 # cell 7
-b.equations(
+site.equations(
     "income = compounding(initial=a_income, rate=rent_growth, base=base_date, start=a_open)"
     " + compounding(initial=b_income, rate=rent_growth, base=base_date, start=b_open)",
     "opex = -compounding(initial=a_opex, rate=opex_growth, base=base_date, start=a_open)"
@@ -140,12 +143,12 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as relations
 
 ```python
 # cell 8
-b.equations(
+site.equations(
     "sale = event(amount=at(flow=operating, on=sale_date + 1 year) / exit_cap_rate, on=sale_date)",
     "net_cash_flow = trim(flow=land + works + operating + sale, end=sale_date)",
     "unlevered_npv = npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
 )
-model = b.commit()
+model = draft.commit()
 ```
 
 ## 4. The base case
@@ -203,9 +206,10 @@ Specification to that revision.
 
 ```python
 # cell 13
-e = model.edit()
-e.values(leverage="ratio", loan_rate="1/year", equity_rate="1/year")
-e.equations(
+draft = model.edit()
+site = draft.entity(code="property")
+site.values(leverage="ratio", loan_rate="1/year", equity_rate="1/year")
+site.equations(
     "loan_draws = -leverage * (land + works)",
     "loan_balance = cumulative(flow=loan_draws)",
     "loan_interest = -interest(balance=loan_balance, rate=loan_rate)",
@@ -214,7 +218,7 @@ e.equations(
     "equity_npv = npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
     "equity_irr = irr(flow=equity_cash_flow)",
 )
-model = e.commit()
+model = draft.commit()
 ```
 
 ```python
@@ -287,16 +291,17 @@ exceed the headroom.
 
 ```python
 # cell 19
-e = model.edit()
-e.values(equity="AUD", bridge_limit="AUD")
-e.account(key="funding", opening="equity", limit="bridge_limit",
-          transactions="land + works + operating",
-          commitments={"shared_works": "shared_start", "a_works": "a_start", "b_works": "b_start"})
-e.equations(
+draft = model.edit()
+site = draft.entity(code="property")
+site.values(equity="AUD", bridge_limit="AUD")
+site.account(key="funding", opening="equity", limit="bridge_limit",
+             transactions="land + works + operating",
+             commitments={"shared_works": "shared_start", "a_works": "a_start", "b_works": "b_start"})
+site.equations(
     "peak_shortfall = max(0 AUD, -min(funding.headroom))",
     "commitment_gap = max(0 AUD, max(funding.committed - funding.headroom))",
 )
-model = e.commit()
+model = draft.commit()
 ```
 
 ```python
@@ -337,13 +342,13 @@ run = store.find_runs(specification="Base case")[-1]
 rk.execution.replay(run=run, store=store).raise_for_status()
 ```
 
-> **Under the hood: the same IDs on every build.** Pass a namespace to the builder.
+> **Under the hood: the same IDs on every build.** Pass a namespace to `rk.Model`.
 > The same inputs then give the same Model ID and record IDs in every kernel
 > ([#147](https://github.com/daniel-fink/rangekeeper/issues/147)):
 >
 > ```python
 > ns = rk.model.namespace(name="rangekeeper-walkthrough/03")
-> b = rk.Model.build(name="Mixed-use base plan", subject="property", timeline=years, namespace=ns)
+> model = rk.Model(name="Mixed-use base plan", timeline=years, namespace=ns)
 > ```
 
 ## Exercises
@@ -413,7 +418,7 @@ Cell 7 has 9 lines and cell 13 has 13; no cell has more than 15.
 | --- | --- | --- |
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
-| 5 | 2, 5 | G08 (`subject`, `timeline`); G15: date-valued Values; G16: infer units and shapes of other values |
+| 5 | 2, 5 | G08 (`rk.Model(timeline=)`, entity handles); G15: date-valued Values; G16: infer units and shapes of other values |
 | 6–8 | 3, 6 | G17: Function catalogue for equations (`event`, `at`, `uniform`, `compounding`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
@@ -424,7 +429,7 @@ Cell 7 has 9 lines and cell 13 has 13; no cell has more than 15.
 | 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row |
 | 17 | 6 | By hand once |
 | 18 | 6 | G23: `rk.finance.Account` with `limit`, `post`, `headroom` |
-| 19 | 2, 6 | G24: `ModelBuilder.account` with `commitments`; `min` and `max` in G09 |
+| 19 | 2, 6 | G24: entity `account(key=, ..., commitments=)`; `min` and `max` in G09 |
 | 21 | 10 | Helper draws only |
 | 22–23 | 1, 4 | `execute` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126)); G25: `rk.execution.replay` and `store.find_runs(specification=name)` |
 | 24 | 5, 8 | G06 |
