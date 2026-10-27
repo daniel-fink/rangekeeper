@@ -29,8 +29,10 @@ Each stage is a public, typed, pure function:
 1. **Resolve cases:** build the case graph of a Specification and its includes
    and cases.
 2. **Validate the composition** once. Pass a validated composition forward.
-3. **Bind roles:** give each value its role (fixed, free, estimate or bound).
-   Evaluate policies at their decision dates.
+3. **Bind roles:** give each value its role (fixed, free, decided, estimate or
+   bound). When the Specification has rules, the decide stage then evaluates
+   them for each path, in date order ([ADR-021](021-sequential-decisions.md)).
+   It calls stages 4 and 5 for each provisional solve.
 4. **Build the problem:** make an `AffineProblem` with variables, rows,
    relations and bounds. This stage also runs rank and free-variable analysis.
 5. **Solve:** the backend returns a `BackendResult`.
@@ -122,4 +124,4 @@ the same: independent verification still decides publication.
   implementation lands.
 - [ADR-016: safety defaults](016-safety-defaults.md).
 
-Supersedes: none. Amends: ADR-003. Superseded by: none.
+Supersedes: none. Amends: ADR-003. Superseded by: none. Amended by: [ADR-021](021-sequential-decisions.md) adds the decided role and the decide stage.
