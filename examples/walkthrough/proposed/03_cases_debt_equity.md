@@ -236,8 +236,8 @@ base = (
     .fix(a_opex=plan["a_opex"], b_opex=plan["b_opex"])
     .fix(a_renewal=plan["a_renewal"], b_renewal=plan["b_renewal"])
 )
-reference = {"rent_growth": "3 % pa", "exit_cap_rate": "5 %"}
-base = base.fix(**reference).fix(discount_rate="7 % pa", opex_growth="3.5 % pa")
+base = base.fix(rent_growth="3 % pa", exit_cap_rate="5 %")
+base = base.fix(discount_rate="7 % pa", opex_growth="3.5 % pa")
 outcome = rk.execution.solve(specification=base)
 outcome["unlevered_npv"]
 ```
@@ -258,7 +258,7 @@ same valuation conventions.
 # cell 11
 cases = {
     "weak": {"rent_growth": "1 % pa", "exit_cap_rate": "6 %"},
-    "reference": reference,
+    "reference": {"rent_growth": "3 % pa", "exit_cap_rate": "5 %"},
     "strong": {"rent_growth": "5 % pa", "exit_cap_rate": "4.5 %"},
 }
 outcomes = rk.execution.solve(specification=base.cases(cases=cases))
@@ -483,29 +483,34 @@ rk.execution.replay(run=run, store=store).raise_for_status()
 
 ## Exercises
 
-**Try it 1: a stress case.** Add a case with no rent growth and a 7 % exit cap rate.
-Does the commitment gap change? Which cash flow causes the change?
+**Try it 1: a stress case.** Solve the funded plan with no rent growth and a 7 % exit
+cap rate. Compare it with the reference case. Does the commitment gap change? Which
+cash flow causes the change?
 
 ```python
 # solution
-with_stress = {**cases, "stress": {"rent_growth": "0 % pa", "exit_cap_rate": "7 %"}}
-stress = rk.execution.solve(specification=funded.cases(cases=with_stress))
-gap = {key: stress.case(key=key)["commitment_gap"] for key in ("stress", "reference")}
-assert gap["stress"] >= gap["reference"]
-# Building A's lower income pays less of Building B's works.
-# The exit cap rate has no effect.
+stress = rk.execution.solve(
+    specification=funded.fix(rent_growth="0 % pa", exit_cap_rate="7 %")
+)
+rk.execution.table(
+    outcomes={"Reference": summary.case(key="reference"), "Stress": stress},
+    keys=["commitment_gap", "peak_shortfall", "equity_npv"],
+)
 ```
+
+The gap increases. Building A's income is lower, so it pays less of Building B's
+works. The exit cap rate changes the equity NPV but not the gap, because the sale
+occurs after all works are paid.
 
 **Try it 2: the target IRR in the weak case.** What land price gives a 15 % equity
 IRR in the weak market?
 
 ```python
 # solution
-weak_target = target.fix(**cases["weak"])
-assert (
-    rk.execution.solve(specification=weak_target)["land_cost"]
-    < target_outcome["land_cost"]
+weak_target = rk.execution.solve(
+    specification=target.fix(rent_growth="1 % pa", exit_cap_rate="6 %")
 )
+assert weak_target["land_cost"] < target_outcome["land_cost"]
 ```
 
 **Try it 3: start Building B a year later.** Which year has the least headroom now?

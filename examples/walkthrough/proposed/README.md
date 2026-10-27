@@ -325,7 +325,7 @@ use. **Issue** is filled in when the issue is filed.
 | 16 | — | Model inspection: `summary`, `entities`, `relationships`, `view`, `diff` | G35–G37, G62 | `model` | 06·2–8; 07·5 | #160 |
 | 17 | — | Filter additions: `where=`, `within=`, `has=`, `name=` | G38 | `model` | 06·10, 16; 07·4, 6 | #121 |
 | 18 | — | Error and diagnostic fields: ambiguous lookups, non-affine unknowns, broken constraints | G14, G42, G52 | `errors`, `execution` | 02·20–21; 05·7; 06·16–17, 24 | #134, #154, #155, #156 |
-| 19 | — | Specification roles: unfixed values are free; `fix` input types; `roles` | G11 | `specification` | 02·10, 13 | #144 |
+| 19 | — | Specification roles: unfixed values are free; `fix` input types; a later `fix` of a key replaces the earlier one; `roles` | G11 | `specification` | 02·10, 13; 03·exercises | #144 |
 | 20 | — | `Specification.on(model)` | G21 | `specification` | 03·14, 20; 05·11, 13 | #144 |
 | 21 | — | Cases and batch Outcomes: `cases(mapping)`, `case`, `table`, `stream`, `rk.execution.table` | G13, G19, G20 | `specification`, `execution` | 02·15; 03·10–14 | #127, #144 |
 | 22 | — | `solve` resolves the documents that made the Specification | G12 | `execution` | 02·11 onwards | #126 |
