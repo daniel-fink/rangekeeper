@@ -95,6 +95,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | View | A selection of Entities and Relationships from a Model | `model` | — |
 | Hierarchy | A tree built from Relationships or memberships | `model` | — |
 | Rollup | Totals of values over a Hierarchy | `model` | `Reduction` |
+| Rollup definition | `rk.model.Rollup(of=, over=, roots=, contributors=)`: what a rollup adds up, over which relationship, from which roots and contributors. `value(..., rollup=)` declares a value with it | `model` | — |
 | Rollup result | The value and coverage of a rollup | `model` | `model.system.reduction.Aggregation` |
 | Flow aggregate | The result of aggregating Flows, with coverage | `flow` | `calculations.series.Aggregation` |
 | Coverage | Which contributors had a value, and which did not | `model`, `flow` | Four different types |

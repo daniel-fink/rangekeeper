@@ -39,7 +39,7 @@ pass.
 | --- | --- | --- | --- |
 | D1 | Can lesson 03's cases reach the cash flows through the solve? | Yes. The Model declares the DCF as Flow equations: growth with a rate, the terminal value, NPV at a rate. A case fixes the rates, so the solve stays affine. One Model answers lessons 02–05 | 03, 04, 05 |
 | D2 | Where do the funding accounts and the commitment check live? | Nowhere special: they are composition, in the rk 0.8 pattern of one account's overdraft drawing on the next. Equity is drawn as needed and spent first; the loan takes what the equity cannot cover: `funding_need = -(net_cash_flow + loan_interest).cumulative()`, `loan_principal = rx.max(0 AUD, funding_need - equity)`, `loan_draws = loan_principal.diff()`, and `equity_cash_flow = net_cash_flow + loan_interest + loan_draws`. Income and the sale repay the loan first. What can still be spent is `equity_available` and `loan_available`; loan principal above the limit is a `shortfall`; committed but unpaid payments use `cumulative()`, `total()` and `since(on=)`. The word "headroom" is not used. There is no account class in `rk.finance` and no account declaration in the Model. Repeated use is served by a recipe in the how-to guides (#194), not by an API. Revised 2026-10-27: the bridge facility and the pro-rata loan are replaced by the cascade | 03, 04, 05, 07 |
-| D3 | How does an equation refer to a rollup result? | A rollup declares a Value. Equations refer to it by key, as to any other value. The solve traces through the rollup to its contributors | 06, 07 |
+| D3 | How does an equation refer to a rollup result? | A rollup declares a Value, with `value(..., rollup=)` (D39). Equations refer to it by key, as to any other value. The solve traces through the rollup to its contributors | 06, 07 |
 | D4 | How does a batch report IRR, peak shortfall and other non-affine results? | Staged evaluation. `irr`, `min` and `max` are Model equations. The solve evaluates them after the affine stage, and verification checks them | 03, 04 |
 | D5 | When do the inverse rewrites land? | In 1.0. A fixed IRR becomes an NPV row at that rate, and a bound on a minimum becomes one row for each period. The target-IRR land price is a core cell of lesson 03 | 03 |
 | D6 | How is a Model made and changed? | One way each. `rk.Model(name=...)` makes an empty, immutable Model. `model.edit()` gives a `ModelDraft`; `commit()` checks it once and returns a new revision. There is no implicit entity: `draft.add_entity(code=, classification=)` makes one and `draft.entity(code=)` finds one. Values, Flows, equations and rollups are declared on the entity handle, and its equations use bare keys. Other entities use dotted paths, such as `building_a.income`. `roots=` keeps its meaning in rollups (D38) | 02–07 |
@@ -75,6 +75,7 @@ pass.
 | D36 | Does a check or a search get its own method? | Not when plain composition shows the finance. Lesson 07 composes the largest justified premium from two runs (no premium and a test premium): the mean paired gain without the premium, divided by what each dollar of premium costs. A solve at that premium checks it: the mean gain is zero only if no decision changed. There is no `decisions.same_across_cases()`. Whether the library offers a search for the 5 % quantile criterion, and in what form, is open (G68) | 07 |
 | D37 | How is a search written? | As a query over cases ([ADR-024](../../../docs/decisions/024-search-as-query.md)). `cases=` takes a mapping of listed cases or a `rk.specification.Range(key=, first=, last=)` of one value. The criterion is a condition built once and injected (`"equity_npv.quantile(level=0.05) >= 0 AUD"`, or the same in `rx`). The by-case table is a query: `where(condition=)`, `order_by(key=)`, `first()`, `max(key=, tolerance=)`, `explain()`. Over a range the Outcome is deferred and the engine plans the solves: exact when no decision changes and the values are linear, bracketed otherwise, with the evidence in the result and the Run. A range cannot vary a value that a rule reads. `breakeven`, `best`, `same_across_cases` and `rk.execution.Criterion` are removed | 07 |
 | D38 | Rollup or aggregate, and one root or several? | `rollup`: totals over a hierarchy, as ADR-012 named it. `aggregate` stays the word for combining Flows (`Stream.aggregate`), and in LINQ it means a fold. A rollup takes `roots=[...]`, a list for one root or several, so the call does not change with the count; `trace(roots=)` follows. `result.value` counts shared contributors once; `result.by_root` gives each root's part | 06, 07 |
+| D39 | Does `rollup` declare or compute? | It computes: `model.rollup(...)` and `outcome.rollup(...)` return a result now. A declared rollup is a value: `project.value(key=, units=, rollup=rk.model.Rollup(of=, over=, roots=, contributors=))`, with the definition built once and injected. A declared rollup's result is read from a collection, `outcome.rollups[key]` or `model.rollups[key]`; its value is `outcome[key]` like any value | 06, 07 |
 
 One choice in the cells is open for review. It does not change the API shape:
 
@@ -185,13 +186,10 @@ project.equations("...", "...", formulation="Debt")  # #145, G18, G72
 draft.entities.where(filter=rk.model.Filter(classification="floor")).equations(
     "income = nla * rent[use]"
 )  # G43: equations on each selected entity
-project.rollup(
-    key="reference_income",
-    of="income",
-    over="contains",
-    roots=["project"],
-    contributors=floors,
-)  # G44
+floor_income = rk.model.Rollup(
+    of="income", over="contains", roots=["project"], contributors=floors
+)  # G44: a rollup definition, built once
+project.value(key="reference_income", units="AUD pa", rollup=floor_income)  # D39
 project.replace(key=key, equation=eq)
 project.add_to(key=key, term="b_site_sale")
 project.remove(key=key)  # G27
@@ -280,7 +278,7 @@ outcome.status == rk.execution.Status.INFEASIBLE, error.code  # rk.errors.Code; 
 (
     outcome.trace,
     outcome.decisions,
-    outcome.rollup(key="reference_income"),
+    outcome.rollups["reference_income"],
     outcome.model,
 )  # G51, G46
 rk.execution.compare(outcomes={"Front": a, "Back": b}, keys=["land_cost"])  # G66
@@ -386,8 +384,8 @@ use. **Issue** is filled in when the issue is filed.
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
 | 12 | — | Equation keys, `replace`, `remove`, `add_to(key=, term=)`, `Equation.text`, `equations.where(keys=, formulation=)` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
 | 13 | — | Keyed values, label indexing (`rent[use]`), members by name in equation text (`use_index["hotel"]`) and equations on selected entities (`draft.entities.where(filter=).equations(...)`) | G43, G45, G60 | `model`, `specification` | 06·19, 21; 07·3 | #121, #138, #141 |
-| 14 | — | An entity's `rollup(key=, of=, over=, roots=, contributors=)` declares a Value; `Model.rollups` | G44, G59 | `model` | 06·20; 07·2, 17 | #158 |
-| 15 | — | Rollup facade: `roots=[...]`, one list argument for one root or several (D38), `direction=rk.model.Direction`, pivots by ancestor, `trace`, Outcome rollups, and `rk.model.compare(models=, keys=)` (G74) | G39–G41, G46, G74 | `model`, `execution` | 06·11–15, 23; 07·6, 12 | #157, #158, #159 |
+| 14 | — | `rk.model.Rollup(of=, over=, roots=, contributors=)`; `value(key=, units=, rollup=)` declares a Value with it; `Model.rollups` and `Outcome.rollups[key]` read declared rollups (D39) | G44, G59 | `model` | 06·20; 07·2, 17 | #158 |
+| 15 | — | Rollup facade: `roots=[...]`, one list argument for one root or several (D38), `direction=rk.model.Direction`, pivots by ancestor, `trace`, `outcome.rollup(...)` over each case, and `rk.model.compare(models=, keys=)` (G74) | G39–G41, G46, G74 | `model`, `execution` | 06·11–15, 23; 07·6, 12 | #157, #158, #159 |
 | 16 | — | Model inspection: `summary`, `entities` (a collection), `relationships`, `view`, `diff`; one snake_case name per relationship (`contains`, `serves`) | G35–G37, G62 | `model` | 06·2–8; 07·5 | #160 |
 | 17 | — | Filter additions: `condition=`, `within=`, `has=`, `name=`; `model.entities.where(filter=)` | G38 | `model` | 06·10, 16; 07·4, 6 | #121 |
 | 18 | — | Error and diagnostic fields: ambiguous lookups, non-affine unknowns, broken constraints | G14, G42, G52 | `errors`, `execution` | 02·20–21; 05·7; 06·16–17, 24 | #134, #154, #155, #156 |

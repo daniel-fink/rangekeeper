@@ -369,20 +369,14 @@ Narrative: the new floors have their own income and cost, rolled up under Buildi
 
 ```python
 # cell 17b
-project.rollup(
-    key="x_income",
-    of="income",
-    over="contains",
-    roots=["building_a"],
-    contributors=extra,
+extra_income = rk.model.Rollup(
+    of="income", over="contains", roots=["building_a"], contributors=extra
 )
-project.rollup(
-    key="x_cost",
-    of="build_cost",
-    over="contains",
-    roots=["building_a"],
-    contributors=extra,
+extra_cost = rk.model.Rollup(
+    of="build_cost", over="contains", roots=["building_a"], contributors=extra
 )
+project.value(key="x_income", units="AUD pa", rollup=extra_income)
+project.value(key="x_cost", units="AUD", rollup=extra_cost)
 ```
 
 Narrative: the expansion is built in one year from its date, and earns from the year

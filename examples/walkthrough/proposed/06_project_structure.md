@@ -250,18 +250,17 @@ draft.entities.where(filter=floors).equations(
 )
 ```
 
-Narrative: the reference income is now a rollup of floor income. The rollup
-declares a value; lesson 02's equation uses it by key.
+Narrative: the reference income is now a rollup of floor income. Define the rollup
+once, as a value of its own, then declare `reference_income` as a value with that
+rollup. Lesson 02's equation uses it by key. `rollup(...)` computes a rollup now;
+`rollup=` on a value declares one.
 
 ```python
 # cell 20
-project.rollup(
-    key="reference_income",
-    of="income",
-    over="contains",
-    roots=["project"],
-    contributors=floors,
+floor_income = rk.model.Rollup(
+    of="income", over="contains", roots=["project"], contributors=floors
 )
+project.value(key="reference_income", units="AUD pa", rollup=floor_income)
 model = draft.commit()
 ```
 
@@ -306,7 +305,7 @@ assert rk.quantity.isclose(
 
 ```python
 # cell 23
-back_outcome.rollup(key="reference_income").pivot(rows="building", columns="use")
+back_outcome.rollups["reference_income"].pivot(rows="building", columns="use")
 ```
 
 ## Optional: an edit that breaks a reference
@@ -365,7 +364,7 @@ the rent factor. Then trace the required income to Building B's floors.
 # solution
 front = back.fix(land_cost="20e6 AUD").free("rent_factor")
 front_outcome = rk.execution.solve(specification=front)
-front_outcome.rollup(key="reference_income").trace(roots=["building_b"])
+front_outcome.rollups["reference_income"].trace(roots=["building_b"])
 ```
 
 ## Checks and recap
@@ -415,10 +414,10 @@ solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (
 | 16–17 | 4, 9 | G42: `AmbiguousReferenceError`; error fields `requested`, `candidates` ([#156](https://github.com/daniel-fink/rangekeeper/issues/156)) |
 | 18 | 3 | Lesson 02's strings, unchanged |
 | 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `entities.where(filter=).equations(...)` declares equations on each selected entity |
-| 20 | 2, 7 | G44: entity `rollup(key=, ...)` declares a Value (decision D3) |
+| 20 | 2, 7 | G44: `rk.model.Rollup(of=, over=, roots=, contributors=)` as a definition, and `value(key=, units=, rollup=)` declares a Value with it (D3, D39) |
 | 21 | 2, 5 | G45: `fix` takes keyed values as mappings |
 | 22 | 8 | G26 |
-| 23 | 7, 8 | G46: `Outcome.rollup(key)` and `Outcome.model` |
+| 23 | 7, 8 | G46: `Outcome.rollups[key]` gives a declared rollup's result; `Outcome.model` |
 | 24 | 9 | G27 (`remove`); [#156](https://github.com/daniel-fink/rangekeeper/issues/156) with `referenced_by` |
 | 25 | 8 | G39–G40 |
 

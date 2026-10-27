@@ -102,7 +102,7 @@ A rule decides a choice key in the same way that it decides a date (ADR-021):
 
 - **Each case records its realised Model** in the Run: the option names and the
   revision UUID. `outcome.case(key=...).model` returns that revision.
-- **`outcome.rollup(of=, over=, roots=, contributors=)`** runs the rollup on each
+- **`outcome.rollup(of=, over=, roots=, contributors=)`** computes the rollup now, on each
   case's realised Model with that case's solved values. The batch result has
   `pivot(...)` and `describe()`.
 - **`outcome.table("b_design", ...)`** shows the chosen option name for each case.
