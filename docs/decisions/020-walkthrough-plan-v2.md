@@ -226,7 +226,7 @@ back = front.fix(rent_factor=1).free("land_cost")
   as cases of one batch Specification. Solve the batch and compare the cases in
   one table. For each case, report unlevered NPV, equity NPV and equity IRR at
   one equity level, with equity drawn first and a loan after it. Then compare equity
-  levels on the reference case. Test construction funding: the loan balance, the
+  levels on the reference case. Test construction funding: the loan principal, the
   shortfall and the commitment gap.
 - **Prerequisites.** Lessons 01 and 02.
 - **Time.** 60 minutes core, 25 optional (amortisation schedule, more equity
@@ -238,7 +238,7 @@ back = front.fix(rent_factor=1).free("land_cost")
 - **Finance taught.** Base plan and base case, development budget (hard costs,
   soft costs, contingency), opening dates, unlevered and levered cash flows,
   loan-to-value, equity NPV, IRR and its failure cases, equity first, then the
-  construction loan, the remaining equity and loan, committed but unpaid costs, and
+  construction loan, the available equity and loan, committed but unpaid costs, and
   the do-nothing baseline.
 - **By hand once.** One year's split between equity and the loan, then the cascade in
   the Model.

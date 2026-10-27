@@ -22,7 +22,7 @@ account object (D2).
 > 3. fund the plan with equity first, then a loan, and report unlevered NPV, equity
 >    NPV and equity IRR for each case and equity level;
 > 4. find the land price that gives a target equity IRR;
-> 5. test construction funding: the loan balance, the shortfall and the commitment gap.
+> 5. test construction funding: the loan principal, the shortfall and the commitment gap.
 >
 > **Before you start.** Lessons 01 and 02.
 >
@@ -279,7 +279,7 @@ Narrative: the owner commits 50 million AUD of equity and pays it in as costs fa
 due. Lenders usually require the equity to be spent first. When the equity is used
 up, a construction loan pays the rest, up to its limit. Income and the sale repay the
 loan first; the rest goes to equity. The funding need is the running total that the
-project has not paid from its own cash; the loan balance is the part of it that the
+project has not paid from its own cash; the loan principal is the part of it that the
 equity cannot cover. Add the equations to a new revision of the Model.
 
 ```python
@@ -292,9 +292,9 @@ site.value(key="loan_rate", units="% pa")
 site.value(key="equity_rate", units="% pa")
 site.equations(
     "funding_need = -(net_cash_flow + loan_interest).cumulative()",
-    "loan_balance = max(0 AUD, funding_need - equity)",
-    "loan_draws = loan_balance.diff()",
-    "loan_interest = -rk.finance.interest(balance=loan_balance, rate=loan_rate)",
+    "loan_principal = max(0 AUD, funding_need - equity)",
+    "loan_draws = loan_principal.diff()",
+    "loan_interest = -rk.finance.interest(balance=loan_principal, rate=loan_rate)",
     formulation="Funding",
 )
 ```
@@ -344,7 +344,7 @@ levels = {
     "30 m equity": {"equity": "30e6 AUD"},
 }
 rk.execution.solve(specification=levered.cases(cases=levels)).table(
-    "equity_npv", "equity_irr", "loan_balance"
+    "equity_npv", "equity_irr", "loan_principal"
 )
 ```
 
@@ -386,17 +386,17 @@ loan's part of it.
 ```python
 # cell 18
 reference_outcome = levered_outcome.case(key="reference")
-assert reference_outcome["loan_balance"].at(on=date(2027, 1, 1)) == from_loan
+assert reference_outcome["loan_principal"].at(on=date(2027, 1, 1)) == from_loan
 reference_outcome.stream(
-    "net_cash_flow", "funding_need", "loan_draws", "loan_balance", "equity_cash_flow"
+    "net_cash_flow", "funding_need", "loan_draws", "loan_principal", "equity_cash_flow"
 ).display()
 ```
 
 ## 10. Commitments
 
-Narrative: what can still be spent is the remaining equity and the remaining loan.
-`loan_remaining` is what can still be drawn, not what is owed (`loan_balance`). A
-shortfall is a loan balance above the limit. Building A's income helps to pay for
+Narrative: what can still be spent is the available equity and the available loan.
+`loan_available` is what can still be drawn under the limit; `loan_principal` is what
+is owed. A shortfall is loan principal above the limit. Building A's income helps to pay for
 Building B, so the need includes the operating cash flow.
 
 ```python
@@ -404,9 +404,9 @@ Building B, so the need includes the operating cash flow.
 draft = model.edit()
 site = draft.entity(code="property")
 site.equations(
-    "equity_remaining = max(0 AUD, equity - funding_need)",
-    "loan_remaining = loan_limit - loan_balance",
-    "shortfall = max(0 AUD, -loan_remaining)",
+    "equity_available = max(0 AUD, equity - funding_need)",
+    "loan_available = loan_limit - loan_principal",
+    "shortfall = max(0 AUD, -loan_available)",
     "peak_shortfall = shortfall.max()",
     formulation="Funding",
 )
@@ -415,7 +415,7 @@ site.equations(
 Narrative: a package's remaining payments become committed when it starts. What is
 still to be paid is the running total less the whole total; `since` makes it zero
 before the start date. The commitment gap is the largest amount by which committed
-but unpaid payments exceed the remaining equity and the remaining loan.
+but unpaid payments exceed the available equity and the available loan.
 
 ```python
 # cell 19b
@@ -425,7 +425,7 @@ site.equations(
     "b_unpaid = b_works.cumulative() - b_works.total()",
     "committed = shared_unpaid.since(on=shared_start) + a_unpaid.since(on=a_start)"
     " + b_unpaid.since(on=b_start)",
-    "commitment_gap = max(0 AUD, (committed - equity_remaining - loan_remaining).max())",
+    "commitment_gap = max(0 AUD, (committed - equity_available - loan_available).max())",
     formulation="Funding",
 )
 model = draft.commit()
@@ -444,7 +444,7 @@ funded_outcome.table(
 # cell 21
 helpers.plot_flows(
     outcome=funded_outcome.case(key="weak"),
-    keys=["equity_remaining", "loan_remaining", "committed"],
+    keys=["equity_available", "loan_available", "committed"],
 )
 ```
 
@@ -518,13 +518,13 @@ weak_target_outcome = rk.execution.solve(
 assert weak_target_outcome["land_cost"] < target_outcome["land_cost"]
 ```
 
-**Try it 3: start Building B a year later.** In which year is the remaining loan
+**Try it 3: start Building B a year later.** In which year is the available loan
 smallest now?
 
 ```python
 # solution
 later_outcome = rk.execution.solve(specification=funded.fix(b_start=date(2031, 1, 1)))
-later_outcome["loan_remaining"].argmin()
+later_outcome["loan_available"].argmin()
 ```
 
 ## Checks and recap
@@ -537,7 +537,7 @@ cash = target_outcome["equity_cash_flow"]
 target_npv = rk.finance.npv(flow=cash, rate="15 % pa", on=date(2027, 1, 1))
 assert rk.quantity.isclose(actual=target_npv, expected="0 AUD", abs="1 AUD")
 reference_outcome = funded_outcome.case(key="reference")
-assert reference_outcome["loan_balance"].at(on=date(2027, 1, 1)) == from_loan
+assert reference_outcome["loan_principal"].at(on=date(2027, 1, 1)) == from_loan
 ```
 
 **Recap.**
@@ -586,4 +586,4 @@ follow `ruff format` (D15).
   15 lines to cells 6–8.
 - **Equity timing.** Equity is drawn as needed and spent before the loan (D2), as
   construction lenders usually require. A pro-rata structure after a minimum equity
-  tranche is the common alternative; it changes only the `loan_balance` equation.
+  tranche is the common alternative; it changes only the `loan_principal` equation.

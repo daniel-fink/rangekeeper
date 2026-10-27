@@ -19,7 +19,7 @@ The current library cannot do this:
 
 - **The policy slice is exogenous.** `specification.policy.evaluate` runs once,
   before compilation, on recorded values. It rejects a solved observation, such as
-  the remaining loan ([scenarios and policies](../reference/scenarios-and-policies.md)).
+  the available loan ([scenarios and policies](../reference/scenarios-and-policies.md)).
 - **It has an action concept.** Decision D9 of #201 removes it: if a value can
   change, it belongs in the Specification; if it is part of the modelling, it
   belongs in the Model. A rule decides one value. There is no action.
@@ -95,7 +95,7 @@ Movement before it.
 | A path Flow that `across` assigns | Its availability date is on or before the review date. A period Movement is available at the period's `end` plus the output's lag; a dated Movement at its date plus the lag ([ADR-014](014-market-paths.md)) |
 | A fixed value or a rule parameter | Always |
 | A value that an earlier rule decided | Its decision date is on or before the review date |
-| A solved Flow, such as `loan_remaining` | Its Movement is in a period that ends on or before the review date |
+| A solved Flow, such as `loan_available` | Its Movement is in a period that ends on or before the review date |
 | A solved scalar, such as `b_cost` | It does not depend on a free input, on a value that a later rule decides, or on a Movement that is not yet available |
 
 Two rules apply to undecided values:
@@ -134,9 +134,9 @@ Validation rejects a rule that reads the future. It checks in two places:
   `b_start`, `committed` includes B's budget from that date. The executor adds no
   commitment of its own.
 - **Funding feasibility is part of the condition.** The author writes it, for
-  example `equity_remaining + loan_remaining >= b_cost`. The executor does not block a decision
-  that makes the commitment gap positive. The commitment gap is a Model value, and
-  the Outcome reports it (lesson 05, exercise 2).
+  example `equity_available + loan_available >= b_cost`. The executor does not
+  block a decision that makes the commitment gap positive. The commitment gap is a
+  Model value, and the Outcome reports it (lesson 05, exercise 2).
 
 ### Evaluation order
 
@@ -314,7 +314,7 @@ b_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).perio
 )
 start_b = wait.decide(
     key="b_start",
-    when="rent_index >= 1.10 and equity_remaining + loan_remaining >= b_cost",
+    when="rent_index >= 1.10 and equity_available + loan_available >= b_cost",
     periods=b_reviews,
     earliest="shared_start + 1 year",
     otherwise=rk.duration.NEVER,
@@ -322,8 +322,9 @@ start_b = wait.decide(
 ```
 
 The reviews stay closed until `start_date` is decided, because `earliest` refers to
-it. `equity_remaining` and `loan_remaining` are solved Flows. On each review, the executor uses the provisional solution with
-`start_date` fixed and `b_start` at `never`. After `start_date` is decided, the
+it. `equity_available` and `loan_available` are solved Flows. On each review, the
+executor uses the provisional solution with `start_date` fixed and `b_start` at
+`NEVER`. After `start_date` is decided, the
 first review of B solves again, and later reviews reuse that solution until a
 decision changes the state. On 2031-01-01 the rule reads both at the end of the
 2030 period.

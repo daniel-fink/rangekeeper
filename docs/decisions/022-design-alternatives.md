@@ -125,8 +125,8 @@ A rule decides a choice key in the same way that it decides a date (ADR-021):
 
 ### The premium question
 
-The provision is paid from equity, so it reduces the remaining equity. A rule
-such as `equity_remaining + loan_remaining >= b_cost` can then decide differently
+The provision is paid from equity, so it reduces the available equity. A rule
+such as `equity_available + loan_available >= b_cost` can then decide differently
 as the premium rises. The library makes this visible and does not hide it:
 
 - **Sweep the premium as cases:** `cases(cases=premiums)`, with one case for each
@@ -193,13 +193,13 @@ written first. In January 2030 on one path:
 | --- | --- |
 | `use_index["hotel"] >= 1.10 * use_index["residential"]` | true |
 | `rent_index >= 1.10` | true |
-| `equity_remaining + loan_remaining` | 40 M AUD |
+| `equity_available + loan_available` | 40 M AUD |
 | `b_cost` as residential, as hotel | 35 M AUD, 42 M AUD |
 
 1. The design rule runs. Its `latest` bound refers to `b_start`, which is
    undecided, so the review is open. The condition is true: `b_design = "hotel"`.
 2. B's rule runs. The state changed, so the executor solves again with the hotel
-   Model. `b_cost` is 42 M AUD, more than the remaining equity and loan. B does
+   Model. `b_cost` is 42 M AUD, more than the available equity and loan. B does
    not start.
 
 If the design condition were false, B's rule would read the residential cost of
