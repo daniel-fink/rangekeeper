@@ -19,7 +19,6 @@ from rangekeeper.model import (
     Measure,
     Metadata,
     Model,
-    Quantity,
     Reference,
     System,
     Update,
@@ -43,6 +42,7 @@ from rangekeeper.model.formulation import declare
 from rangekeeper.model.formulation.authoring import identify, identify_tree
 from rangekeeper.model.formulation.flow import aligned, shape
 from rangekeeper.model.scenario.view import Market
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.records import (
     Assignment,
     Policy,

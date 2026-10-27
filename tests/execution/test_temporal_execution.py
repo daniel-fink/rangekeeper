@@ -18,15 +18,15 @@ from rangekeeper.model import (
     Measure,
     Metadata,
     Model,
-    Quantity,
+    Reference,
     System,
     Update,
     Value,
 )
-from rangekeeper.model.expression import Reference
 from rangekeeper.model.expression.authoring import divide, equal, reference
 from rangekeeper.model.formulation import financial, flow, growth
 from rangekeeper.model.formulation.authoring import declare
+from rangekeeper.quantity import Quantity
 from rangekeeper.run import validate
 from rangekeeper.schema.enums import CompletionStatus, SolutionStatus, ValueKind
 from rangekeeper.specification import Assignment, Specification, SpecificationRecord

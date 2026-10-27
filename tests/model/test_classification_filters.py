@@ -13,7 +13,6 @@ from rangekeeper.model import (
     Measure,
     Metadata,
     Model,
-    Quantity,
     System,
     Taxonomy,
     Value,
@@ -28,6 +27,7 @@ from rangekeeper.model.system import (
     reducers,
 )
 from rangekeeper.model.system.selection import select_value
+from rangekeeper.quantity import Quantity
 from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
 
 

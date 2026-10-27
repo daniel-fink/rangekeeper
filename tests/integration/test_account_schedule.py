@@ -18,14 +18,14 @@ from rangekeeper.model import (
     Measure,
     Metadata,
     Model,
-    Quantity,
+    Reference,
     System,
     Update,
     Value,
 )
-from rangekeeper.model.expression import Reference
 from rangekeeper.model.expression import authoring as expression
 from rangekeeper.model.formulation import account, declare, flow
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import Operator, SolutionStatus, ValueKind
 from rangekeeper.specification import Assignment, Specification, SpecificationRecord
 from rangekeeper.specification.targets import unknown_flow

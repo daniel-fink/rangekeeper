@@ -16,7 +16,6 @@ from rangekeeper.model import (
     Measure,
     Metadata,
     Model,
-    Quantity,
     System,
     Update,
     Value,
@@ -28,7 +27,7 @@ from rangekeeper.model import (
 from rangekeeper.model.diff import between
 from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.model.validation import validate
-from rangekeeper.quantity import UnitSystem, default_units
+from rangekeeper.quantity import Quantity, UnitSystem, default_units
 from rangekeeper.shared.errors import (
     IdentityConflictError,
     MissingReferenceError,

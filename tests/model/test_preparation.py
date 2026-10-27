@@ -8,23 +8,25 @@ import yaml
 
 from rangekeeper.model import (
     Assembly,
+    Constraint,
     Definitions,
     Entity,
+    Expression,
+    Formulation,
     Measure,
     Metadata,
     Model,
-    Quantity,
 )
 from rangekeeper.model.definitions import measure
-from rangekeeper.model.expression import Constraint, Expression, ExpressionKind
+from rangekeeper.model.expression import ExpressionKind
 from rangekeeper.model.expression.domains import DomainCompatibility, compare_domains
 from rangekeeper.model.expression.validation import (
     analyze_expressions,
     infer_query_domain,
 )
-from rangekeeper.model.formulation import Formulation
 from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.model.scope import build_scope
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.index import RecordIndex, walk_data
 from rangekeeper.schema.runtime import exact_equal
 from rangekeeper.shared.errors import (

@@ -117,6 +117,20 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.measure.Measure` | `rangekeeper.model.Measure` | draft | The `model.measure` shim is removed; `rangekeeper.model` re-exports the record. |
 | `rangekeeper.model.distribution.Distribution` | `rangekeeper.model.Distribution` | draft | The `model.distribution` shim is removed. |
 | `rangekeeper.model.distribution.DistributionFamily` | `rangekeeper.model.DistributionFamily` | draft |  |
+| `rangekeeper.model.system.System` | `rangekeeper.model.System` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.system.Entity` | `rangekeeper.model.Entity` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.system.Assembly` | `rangekeeper.model.Assembly` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.system.Relationship` | `rangekeeper.model.Relationship` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.expression.Expression` | `rangekeeper.model.Expression` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.expression.Reference` | `rangekeeper.model.Reference` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.expression.Function` | `rangekeeper.model.Function` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.expression.Domain` | `rangekeeper.model.Domain` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.expression.Constraint` | `rangekeeper.model.Constraint` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.formulation.Formulation` | `rangekeeper.model.Formulation` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.formulation.Binding` | `rangekeeper.model.Binding` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.scenario.Binding` | `rangekeeper.model.Binding` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.scenario.Distribution` | `rangekeeper.model.Distribution` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.Quantity` | `rangekeeper.quantity.Quantity` | agreed | One canonical path for each public name. |
 | `rangekeeper.schema.behaviors.flow.MissingValueHandling` | — | open | One persisted enum (MissingHandling) and one runtime enum with a distinct name. |
 | `rangekeeper.calculations.financial.calculate_pv` | `pv` | pending | #255 D14 and D19 with #167: `rangekeeper.finance.pv(flow=, rate=, on=)`. |
 | `rangekeeper.calculations.financial.calculate_xnpv` | `npv` | pending | #255 D19 with #167: `rangekeeper.finance.npv(flow=, rate=, on=)`. |

@@ -5,9 +5,9 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.model import Value, ValueKind
+from rangekeeper.model import Expression, Value, ValueKind
 from rangekeeper.model.content import encode
-from rangekeeper.model.expression import Expression, ExpressionKind, Operator
+from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.run import CompletionStatus
 from rangekeeper.schema.enums import _ENUM_TYPES
 from rangekeeper.shared.errors import ValidationError

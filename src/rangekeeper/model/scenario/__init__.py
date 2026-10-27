@@ -21,9 +21,7 @@ __getattr__, __dir__ = _lazy(__name__, names=_EXPORTS, modules=_MODULES)
 """Schema-generated scenario declarations and provenance records."""
 
 from rangekeeper.schema.records import (
-    Binding,
     CalculationProvenance,
-    Distribution,
     LibraryVersion,
     ObservationAvailability,
     RandomStream,
@@ -33,12 +31,10 @@ from rangekeeper.schema.records import (
 )
 
 __all__ += [
-    "Distribution",
     "ScenarioParameter",
     "ScenarioPlan",
     "ScenarioRealization",
     "CalculationProvenance",
-    "Binding",
     "RandomStream",
     "LibraryVersion",
     "ObservationAvailability",

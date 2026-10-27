@@ -72,9 +72,6 @@ from rangekeeper.schema.records import (
     Provenance as Provenance,
 )
 from rangekeeper.schema.records import (
-    Quantity as Quantity,
-)
-from rangekeeper.schema.records import (
     Reference as Reference,
 )
 from rangekeeper.schema.records import (
@@ -107,7 +104,6 @@ __all__ = [
     "Value",
     "Reference",
     "Measure",
-    "Quantity",
     "Taxonomy",
     "Classification",
     "Function",

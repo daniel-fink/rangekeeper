@@ -37,7 +37,7 @@ from uuid import uuid4
 from rangekeeper.schema import Metadata
 from rangekeeper.shared.errors import MissingReferenceError
 from rangekeeper.specification import Specification, SpecificationRecord
-from rangekeeper.model.expression import Reference
+from rangekeeper.model import Reference
 
 shared = Specification(SpecificationRecord(
     metadata=Metadata(id=uuid4(), schema_version="1.0.0"),

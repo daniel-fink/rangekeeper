@@ -141,7 +141,7 @@ def forward_specification(model, ids):
 
 
 def solve_example():
-    from rangekeeper.model import Quantity
+    from rangekeeper.quantity import Quantity
 
     model, ids = hierarchy_model()
     store = MemoryStore()

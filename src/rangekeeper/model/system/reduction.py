@@ -21,12 +21,12 @@ from enum import Enum, unique
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper.model import Entity, Model, Quantity, Value, ValueKind
+from rangekeeper.model import Entity, Model, Value, ValueKind
 from rangekeeper.model.system import reducers
 from rangekeeper.model.system.errors import AggregationError, SelectionError
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.selection import ValueSelector, _recorded_quantity
-from rangekeeper.quantity import UnitSystem
+from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.records import Flow
 
 

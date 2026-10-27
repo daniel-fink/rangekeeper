@@ -19,10 +19,13 @@ def test_old_root_module_paths_are_absent(name):
 
 
 def test_system_surface_exposes_canonical_records_and_model_operations():
+    import rangekeeper.model
     from rangekeeper.schema import records
 
+    # One canonical path: rangekeeper.model exports the System records.
     for name in ("System", "Entity", "Assembly", "Relationship"):
-        assert getattr(graph, name) is getattr(records, name)
+        assert getattr(rangekeeper.model, name) is getattr(records, name)
+        assert name not in graph.__all__
     for name in (
         "Graph",
         "Characteristics",

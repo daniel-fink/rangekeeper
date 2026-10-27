@@ -40,3 +40,26 @@ def test_internal_packages_are_not_public():
 
     assert {"schema", "shared"}.isdisjoint(rangekeeper.__all__)
     assert rangekeeper.schema.__name__ == "rangekeeper.schema"
+
+
+def test_each_public_name_has_one_canonical_path():
+    """A public object has one path, plus a root re-export (ADR-017, #269)."""
+    import types
+
+    import rangekeeper
+
+    paths: dict[int, list[str]] = {}
+    for name in api.PACKAGES:
+        module = importlib.import_module(name)
+        for public in api.public_names(module):
+            value = getattr(module, public)
+            if public == "__version__" or isinstance(value, types.ModuleType):
+                continue
+            if name == "rangekeeper":
+                continue
+            paths.setdefault(id(value), []).append(f"{name}.{public}")
+    duplicates = [found for found in paths.values() if len(found) > 1]
+    assert not duplicates
+    root = {"Model", "Specification", "Run", "Quantity"}
+    assert set(rangekeeper.__all__) - {"__version__"} - set(dir(rangekeeper)) == set()
+    assert root <= set(rangekeeper.__all__)

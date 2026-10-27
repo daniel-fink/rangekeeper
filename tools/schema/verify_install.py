@@ -334,7 +334,8 @@ from uuid import uuid4
 from rangekeeper.model.system import View, Hierarchy, Reduction
 from rangekeeper.model.system.selection import select_value
 from rangekeeper.model.system import reducers
-from rangekeeper.model import Metadata, Definitions, Measure, System, Entity, Assembly, Characteristics, Value, ValueKind, Quantity
+from rangekeeper.model import Metadata, Definitions, Measure, System, Entity, Assembly, Characteristics, Value, ValueKind
+from rangekeeper.quantity import Quantity
 measure = Measure(id=uuid4(), code='area', name='Area', units='meter ** 2')
 value = Value(id=uuid4(), key='net', kind=ValueKind.MEASUREMENT, measure=measure.id, quantity=Quantity(magnitude=12, units='meter ** 2'))
 entity = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
