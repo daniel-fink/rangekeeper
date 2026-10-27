@@ -389,7 +389,7 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 
 | Cell | Rules | Result |
 | --- | --- | --- |
-| 2 | 1, 10 | G26; G47: `equations.where(keys=, formulation=)` |
+| 2 | 1, 10 | G26; G47: `equations.where(formulation=)`; D40 |
 | 4 | 10 | G48: `rk.market.Paths` from explicit Flows (the three histories are data, made once) |
 | 6 | 2, 6 | D1–D2 of the review: `rk.duration.Periods` from `Span.periods`; G49: `Specification.decide(key=, when=, periods=, earliest=, latest=, otherwise=)`, the "decided" role, rules as strings; G57: `parameters` for a rule's trigger |
 | 6, 11, 13 | 5 | G50: `rk.duration.NEVER` for date values, `NEVER` in rule text; functions treat a `NEVER` date as "no flow" |

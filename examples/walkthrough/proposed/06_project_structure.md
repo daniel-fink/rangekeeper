@@ -96,13 +96,15 @@ helpers.show_graph(of=services)
 
 Narrative: a filter is a declarative selection. It tests classifications, labels
 and values with units. A missing value never passes a test. `model.entities.where`
-keeps the entities that pass, as `Where` does in LINQ. The view shows the objects
-that a filter selects, coloured by their `use` label.
+keeps the entities that pass, as `Where` does in LINQ. It takes named columns, such
+as `classification="floor"`, a `condition=`, or both. A filter built once is a
+condition you can reuse. The view shows the objects that a filter selects, coloured
+by their `use` label.
 
 ```python
 # cell 9
 floors = rk.model.Filter(classification="floor")
-floor_entities = model.entities.where(filter=floors)
+floor_entities = model.entities.where(condition=floors)
 # 33 floors, coloured by use
 helpers.show_geometry(of=model, highlight=floor_entities, color_by="use")
 ```
@@ -110,11 +112,8 @@ helpers.show_geometry(of=model, highlight=floor_entities, color_by="use")
 ```python
 # cell 10
 model.entities.where(
-    filter=rk.model.Filter(
-        classification="floor",
-        labels={"use": "residential"},
-        condition="gfa >= 1500 sqm",
-    )
+    classification="floor",
+    condition='use == "residential" and gfa >= 1500 sqm',
 )
 ```
 
@@ -188,7 +187,7 @@ lookup of an unknown code says what it looked for.
 
 ```python
 # cell 16
-same_name = model.entities.where(filter=rk.model.Filter(name="buildingAretail"))
+same_name = model.entities.where(name="buildingAretail")
 same_name.table("code", "name", "id")
 ```
 
@@ -244,7 +243,7 @@ to every floor.
 project.value(key="efficiency", units="ratio", by="use")
 project.value(key="rent", units="AUD per sqm pa", by="use")
 project.value(key="vacancy", units="ratio", by="use")
-draft.entities.where(filter=floors).equations(
+draft.entities.where(condition=floors).equations(
     "nla = efficiency[use] * gfa",
     "income = nla * rent[use] * (1 - vacancy[use])",
 )
@@ -405,15 +404,15 @@ solutions. The longest cell has 11 lines (cell 19). Cells follow `ruff format` (
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G35: `Model.summary()` |
 | 3, 7–9 | 10 | Helpers draw. `show_geometry(of=, highlight=, color_by=)` draws the objects that a filter selects ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
-| 4–6 | 4, 7 | Lookups by code ([#156](https://github.com/daniel-fink/rangekeeper/issues/156), [#160](https://github.com/daniel-fink/rangekeeper/issues/160)). G36: `entities` (a collection with `where(filter=)`), `Entity.values`, `relationships(entity)` tables |
+| 4–6 | 4, 7 | Lookups by code ([#156](https://github.com/daniel-fink/rangekeeper/issues/156), [#160](https://github.com/daniel-fink/rangekeeper/issues/160)). G36: `entities` and `relationships` as collections with `where(...)` (D40), `Entity.values` |
 | 7–8 | 7 | G37: `Model.view(relationship_classification)` |
-| 9–10 | 7 | `Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). G38: `condition=` string comparisons with units; `entities.where(filter=)` |
+| 9–10 | 7 | `Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). G38: `condition=` string comparisons with units; `entities.where(classification=, condition=)` with named columns and a condition, or a `Filter` as the condition (D40) |
 | 11–12 | 7, 8 | Rollups ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)), pivots ([#159](https://github.com/daniel-fink/rangekeeper/issues/159)). G39: `Model.rollup(of=, over=, roots=, contributors=)` facade, with `roots=` a list for one root or several (D38); pivot rows by ancestor classification |
 | 13–14 | 7 | G40: several roots, `direction=rk.model.Direction.INCOMING`, `by_root`, `coverage.shared` |
 | 15 | 7 | G41: `RollupResult.trace(roots=)` |
 | 16–17 | 4, 9 | G42: `AmbiguousReferenceError`; error fields `requested`, `candidates` ([#156](https://github.com/daniel-fink/rangekeeper/issues/156)) |
 | 18 | 3 | Lesson 02's strings, unchanged |
-| 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `entities.where(filter=).equations(...)` declares equations on each selected entity |
+| 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `entities.where(condition=).equations(...)` declares equations on each selected entity |
 | 20 | 2, 7 | G44: `rk.model.Rollup(of=, over=, roots=, contributors=)` as a definition, and `value(key=, units=, rollup=)` declares a Value with it (D3, D39) |
 | 21 | 2, 5 | G45: `fix` takes keyed values as mappings |
 | 22 | 8 | G26 |
