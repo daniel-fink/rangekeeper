@@ -54,8 +54,8 @@ import helpers
 
 ```python
 # cell 2
-model = rk.io.load(helpers.data_path("04_base_plan_on_paths.model.json"))
-paths = rk.io.load(helpers.data_path("04_rent_index.paths.json"))
+model = rk.io.load(path=helpers.data_path(name="04_base_plan_on_paths.model.json"))
+paths = rk.io.load(path=helpers.data_path(name="04_rent_index.paths.json"))
 plan = helpers.load_base_plan()
 model.equations.involving("start_date", "b_start")
 ```
@@ -66,7 +66,7 @@ assumptions = {"discount_rate": "7 %/year", "opex_growth": "3.5 %/year",
                "exit_cap_rate": "5 %", "rent_growth": "0 %/year"}
 yearly = rk.duration.Frequency.YEAR
 debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
-fixed = model.specify("Fixed plan").fix(**plan.inputs, **assumptions, **debt)
+fixed = model.specify(name="Fixed plan").fix(**plan.inputs, **assumptions, **debt)
 ```
 
 ## 2. Three readable histories
@@ -76,14 +76,15 @@ and a short recovery then a decline. The fixed plan starts in 2027 on all three.
 
 ```python
 # cell 4
-stories = rk.io.load(helpers.data_path("05_histories.paths.json"))
-helpers.plot_paths(stories, "rent_index")
+stories = rk.io.load(path=helpers.data_path(name="05_histories.paths.json"))
+helpers.plot_paths(paths=stories, names=["rent_index"])
 ```
 
 ```python
 # cell 5
 assign = {"rent_index": "rent_index"}
-rk.execution.solve(fixed.across(stories, assign=assign)).table("equity_npv", "peak_shortfall")
+fixed_stories = rk.execution.solve(specification=fixed.across(paths=stories, assign=assign))
+fixed_stories.table("equity_npv", "peak_shortfall")
 ```
 
 ## 3. A rule: wait to start
@@ -94,9 +95,9 @@ not buy the site. `decide` replaces the fixed start date with a rule.
 
 ```python
 # cell 6
-wait = fixed.decide("start_date", when="rent_index >= 1.05", review=yearly,
+wait = fixed.decide(key="start_date", when="rent_index >= 1.05", review=yearly,
                     window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
-waited = rk.execution.solve(wait.across(stories, assign=assign))
+waited = rk.execution.solve(specification=wait.across(paths=stories, assign=assign))
 waited.table("start_date", "b_start", "equity_npv")
 ```
 
@@ -109,8 +110,8 @@ constraint. The rule for Building B must follow the rule for the start.
 
 ```python
 # cell 7
-waited.case("long downturn").trace()
-waited.case("long downturn").status, waited.case("long downturn").diagnostics
+waited.case(key="long downturn").trace()
+waited.case(key="long downturn").status, waited.case(key="long downturn").diagnostics
 ```
 
 > **Finance note.** A start date that follows the market is an option to wait. Its
@@ -126,7 +127,8 @@ made, before any solve.
 ```python
 # cell 8
 try:
-    fixed.decide("start_date", when="shift(rent_index, periods=-1) >= 1.05", review=yearly,
+    fixed.decide(key="start_date", when="shift(flow=rent_index, periods=-1) >= 1.05",
+                 review=yearly,
                  window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
 except rk.errors.AvailabilityError as error:
     print(error.code, error.value, error.available_on, error.decision_date)
@@ -144,10 +146,10 @@ account of lesson 03, with the decisions made so far.
 
 ```python
 # cell 9
-start_b = wait.decide("b_start", when="rent_index >= 1.10 and funding.headroom >= b_cost",
+start_b = wait.decide(key="b_start", when="rent_index >= 1.10 and funding.headroom >= b_cost",
                       review=yearly, window=("shared_start + 1 year", date(2033, 1, 1)),
                       otherwise="never")
-helpers.show_decisions(start_b)        # the decided values, their rules and windows
+helpers.show_decisions(specification=start_b)        # the decided values, their rules and windows
 ```
 
 ## 6. Stop and sell Building B's site
@@ -162,25 +164,27 @@ decided value.
 e = model.edit()
 e.values(b_land_share="ratio", b_sale_date="date")
 e.equations(
-    "b_site_sale = event(b_land_share * land_cost * at(rent_index, b_sale_date), on=b_sale_date)",
+    "b_site_sale = event(amount=b_land_share * land_cost * at(flow=rent_index, on=b_sale_date),"
+    "                    on=b_sale_date)",
 )
-e.replace("net_cash_flow",
-          "net_cash_flow = trim(land + works + operating + sale + b_site_sale, end=sale_date)")
+e.replace(key="net_cash_flow",
+          equation="net_cash_flow = trim(flow=land + works + operating + sale + b_site_sale,"
+                   "                     end=sale_date)")
 model = e.commit()
 ```
 
 ```python
 # cell 11
-strategy = (start_b.on(model).fix(b_land_share="40 %")
-            .decide("b_sale_date", when="b_start == never", review=yearly,
+strategy = (start_b.on(model=model).fix(b_land_share="40 %")
+            .decide(key="b_sale_date", when="b_start == never", review=yearly,
                     window=(date(2033, 1, 1), date(2034, 1, 1)), otherwise="never"))
-traced = rk.execution.solve(strategy.across(stories, assign=assign))
+traced = rk.execution.solve(specification=strategy.across(paths=stories, assign=assign))
 traced.decisions()                     # one row for each case and review
 ```
 
 ```python
 # cell 12
-helpers.plot_decisions(traced, "rent_index")    # each history, with its decision dates
+helpers.plot_decisions(outcome=traced, name="rent_index")   # each history and its decisions
 ```
 
 ## 7. All paths: paired comparison
@@ -191,21 +195,21 @@ difference holds the market fixed and shows the effect of the rules alone.
 
 ```python
 # cell 13
-fixed_out = rk.execution.solve(fixed.on(model).fix(b_land_share="40 %", b_sale_date="never")
-                               .across(paths, assign=assign))
-flex_out = rk.execution.solve(strategy.across(paths, assign=assign))
+fixed_plan = fixed.on(model=model).fix(b_land_share="40 %", b_sale_date="never")
+fixed_out = rk.execution.solve(specification=fixed_plan.across(paths=paths, assign=assign))
+flex_out = rk.execution.solve(specification=strategy.across(paths=paths, assign=assign))
 ```
 
 ```python
 # cell 14
-difference = flex_out.compare(fixed_out, "equity_npv", "peak_shortfall")
+difference = flex_out.compare(other=fixed_out, keys=["equity_npv", "peak_shortfall"])
 difference.summary()                   # mean difference, share of paths better, worst loss
 ```
 
 ```python
 # cell 15
-helpers.plot_target_curve(flex_out.distribution("equity_npv"),
-                          fixed_out.distribution("equity_npv"))
+helpers.plot_target_curve(distributions={"Strategy": flex_out.distribution(key="equity_npv"),
+                                         "Fixed plan": fixed_out.distribution(key="equity_npv")})
 ```
 
 ## 8. Rule parameters and realised decisions
@@ -216,8 +220,8 @@ realised start years, and the paired difference for each.
 
 ```python
 # cell 16
-flex_out.distribution("start_date").counts()
-difference.by("start_date").summary()  # where waiting gains, and where it costs
+flex_out.distribution(key="start_date").counts()
+difference.by(key="start_date").summary()  # where waiting gains, and where it costs
 ```
 
 ## 9. Optional: a threshold sweep
@@ -228,11 +232,11 @@ sweep it. Cases and paths multiply: each threshold runs on every path.
 ```python
 # cell 17
 swept = (strategy.parameters(start_threshold=1.05)
-         .decide("start_date", when="rent_index >= start_threshold", review=yearly,
+         .decide(key="start_date", when="rent_index >= start_threshold", review=yearly,
                  window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
-         .cases({f"{t:.2f}": {"start_threshold": t} for t in (1.00, 1.02, 1.05, 1.08)}))
-sweep = rk.execution.solve(swept.across(paths, assign=assign))
-sweep.compare(fixed_out, "equity_npv").by_case().summary()
+         .cases(cases={f"{t:.2f}": {"start_threshold": t} for t in (1.00, 1.02, 1.05, 1.08)}))
+sweep = rk.execution.solve(specification=swept.across(paths=paths, assign=assign))
+sweep.compare(other=fixed_out, keys=["equity_npv"]).by_case().summary()
 ```
 
 ## Exercises
@@ -242,11 +246,11 @@ start in 2027? Does the mean paired difference rise?
 
 ```python
 # solution
-early = strategy.decide("start_date", when="rent_index >= 1.02", review=yearly,
+early = strategy.decide(key="start_date", when="rent_index >= 1.02", review=yearly,
                         window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
-early_out = rk.execution.solve(early.across(paths, assign=assign))
-early_out.distribution("start_date").counts()
-early_out.compare(fixed_out, "equity_npv").summary()
+early_out = rk.execution.solve(specification=early.across(paths=paths, assign=assign))
+early_out.distribution(key="start_date").counts()
+early_out.compare(other=fixed_out, keys=["equity_npv"]).summary()
 ```
 
 **Try it 2: no funding check.** Remove the funding condition from Building B's rule.
@@ -254,9 +258,10 @@ On how many paths does the commitment gap become positive?
 
 ```python
 # solution
-reckless = strategy.decide("b_start", when="rent_index >= 1.10", review=yearly,
+reckless = strategy.decide(key="b_start", when="rent_index >= 1.10", review=yearly,
                            window=("shared_start + 1 year", date(2033, 1, 1)), otherwise="never")
-gaps = rk.execution.solve(reckless.across(paths, assign=assign)).distribution("commitment_gap")
+reckless_out = rk.execution.solve(specification=reckless.across(paths=paths, assign=assign))
+gaps = reckless_out.distribution(key="commitment_gap")
 gaps.probability(above="0 AUD")
 ```
 
@@ -265,8 +270,9 @@ the paired difference change on the paths where B never starts?
 
 ```python
 # solution
-cheap = rk.execution.solve(strategy.fix(b_land_share="25 %").across(paths, assign=assign))
-cheap.compare(fixed_out, "equity_npv").where(b_start="never").summary()
+cheap_site = strategy.fix(b_land_share="25 %")
+cheap = rk.execution.solve(specification=cheap_site.across(paths=paths, assign=assign))
+cheap.compare(other=fixed_out, keys=["equity_npv"]).where(b_start="never").summary()
 ```
 
 ## Checks and recap
@@ -277,7 +283,7 @@ assert flex_out.run.market_paths == fixed_out.run.market_paths == paths.id
 assert all(row.available_on <= row.decision_date for row in flex_out.decisions().observations())
 starts = flex_out.decisions().where(value="b_start", result="decided")
 assert all(row.observed["funding.headroom"] >= row.observed["b_cost"] for row in starts)
-assert flex_out.case(paths.keys[0]).run.policy_evidence.verified
+assert flex_out.case(key=paths.keys[0]).run.policy_evidence.verified
 ```
 
 **Recap.**
@@ -310,7 +316,7 @@ solutions. The longest cell has 10 lines (cell 10).
 | 9 | 6 | G54: sequential solve: a rule observes solved values (funding) under the decisions so far ([#213](https://github.com/daniel-fink/rangekeeper/issues/213)) |
 | 9, 11 | 3 | G55: decision windows with expression bounds; rules that observe earlier decisions (`b_start == never`) |
 | 10 | 2, 3 | G27 (`replace`); G17 (`at`, `event`) |
-| 13–16 | 8 | G56: `Outcome.compare(other, *keys)` paired by path, with `summary`, `by`, `by_case`, `where` |
+| 13–16 | 8 | G56: `Outcome.compare(other=, keys=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
 | 17 | 2 | G57: Specification parameters for rules, and cases × paths |
 | 18 | 8 | G58: policy evidence in the Run (`policy_evidence.verified`), observations with `available_on` |

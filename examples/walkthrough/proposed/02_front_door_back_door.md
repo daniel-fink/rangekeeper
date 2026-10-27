@@ -105,7 +105,7 @@ b.values(hotel_area="sqm", hotel_rent="AUD/sqm pa", hotel_vacancy="ratio",
          residential_area="sqm", residential_rent="AUD/sqm pa", residential_vacancy="ratio",
          retail_area="sqm", retail_rent="AUD/sqm pa", retail_vacancy="ratio")
 b.equation(
-    "reference_income = hotel_area * hotel_rent * (1 - hotel_vacancy)"
+    equation="reference_income = hotel_area * hotel_rent * (1 - hotel_vacancy)"
     " + residential_area * residential_rent * (1 - residential_vacancy)"
     " + retail_area * retail_rent * (1 - retail_vacancy)"
 )
@@ -114,7 +114,7 @@ model = b.commit()
 
 ```python
 # cell 7
-helpers.show_relations(model)          # a diagram with no input or output arrows
+helpers.show_relations(of=model)          # a diagram with no input or output arrows
 ```
 
 > **Under the hood: the operator form.** The same equation can use Python operators
@@ -155,13 +155,13 @@ Every value that it does not fix is free: the solve finds it.
 ```python
 # cell 10
 lending = {"leverage": "65 %", "coverage": 1.25, "mortgage_constant": constant}
-front = model.specify("Front door").fix(**data.inputs, **lending, land_cost="20e6 AUD")
+front = model.specify(name="Front door").fix(**data.inputs, **lending, land_cost="20e6 AUD")
 front.roles                            # fixed values, and the free values the solve finds
 ```
 
 ```python
 # cell 11
-front_outcome = rk.execution.solve(front)
+front_outcome = rk.execution.solve(specification=front)
 front_outcome.raise_for_status()
 front_outcome["rent_factor"]
 ```
@@ -184,19 +184,19 @@ The Model does not change.
 ```python
 # cell 13
 back = front.fix(rent_factor=1).free("land_cost")
-back_outcome = rk.execution.solve(back)
+back_outcome = rk.execution.solve(specification=back)
 back_outcome["land_cost"]
 ```
 
 ```python
 # cell 14
-helpers.show_relations(back)           # the same equations, with different markers
+helpers.show_relations(of=back)           # the same equations, with different markers
 ```
 
 ```python
 # cell 15
-rk.execution.table({"Front door": front_outcome, "Back door": back_outcome},
-                   "land_cost", "rent_factor", "noi", "mortgage")
+rk.execution.table(outcomes={"Front door": front_outcome, "Back door": back_outcome},
+                   keys=["land_cost", "rent_factor", "noi", "mortgage"])
 ```
 
 > **Finance note.** A negative supportable land price is a shortfall under these
@@ -211,7 +211,7 @@ back the land cost that we started with.
 ```python
 # cell 16
 round_trip = back.fix(rent_factor=front_outcome["rent_factor"])
-rk.execution.solve(round_trip)["land_cost"]          # 20e6 AUD
+rk.execution.solve(specification=round_trip)["land_cost"]          # 20e6 AUD
 ```
 
 ## 8. Change one input
@@ -221,7 +221,8 @@ land price rise or fall? Change one fixed value.
 
 ```python
 # cell 17
-rk.execution.solve(back.fix(leverage="50 %"))["land_cost"] - back_outcome["land_cost"]
+lower_leverage = rk.execution.solve(specification=back.fix(leverage="50 %"))
+lower_leverage["land_cost"] - back_outcome["land_cost"]
 ```
 
 ## 9. Optional: when the question is not well posed
@@ -233,7 +234,7 @@ and a diagnostic that names the values or equations by key.
 
 ```python
 # cell 18
-loose = rk.execution.solve(back.free("rent_factor"))
+loose = rk.execution.solve(specification=back.free("rent_factor"))
 loose.status, loose.free_unknowns      # UNDERDETERMINED, ('land_cost', 'rent_factor')
 ```
 
@@ -241,7 +242,7 @@ loose.status, loose.free_unknowns      # UNDERDETERMINED, ('land_cost', 'rent_fa
 
 ```python
 # cell 19
-tight = rk.execution.solve(front.fix(rent_factor=1))
+tight = rk.execution.solve(specification=front.fix(rent_factor=1))
 tight.status, tight.diagnostics        # INFEASIBLE; the diagnostic names the equations
 ```
 
@@ -249,8 +250,10 @@ tight.status, tight.diagnostics        # INFEASIBLE; the diagnostic names the eq
 
 ```python
 # cell 20
-product = rk.execution.solve(back.fix(land_cost="20e6 AUD").free("leverage", "coverage"))
-product.status, product.diagnostics    # UNSUPPORTED: nonaffine_unknowns in "noi = coverage * debt_service"
+both_free = back.fix(land_cost="20e6 AUD").free("leverage", "coverage")
+product = rk.execution.solve(specification=both_free)
+product.status, product.diagnostics
+# UNSUPPORTED: nonaffine_unknowns in "noi = coverage * debt_service"
 ```
 
 ```python
@@ -268,9 +271,9 @@ what is the highest leverage the income supports?
 
 ```python
 # solution
-max_leverage = model.specify("Largest loan").fix(
+max_leverage = model.specify(name="Largest loan").fix(
     **data.inputs, **lending, land_cost="20e6 AUD", rent_factor=1).free("leverage")
-rk.execution.solve(max_leverage)["leverage"]
+rk.execution.solve(specification=max_leverage)["leverage"]
 ```
 
 **Try it 2: a longer amortisation.** With a 25-year amortisation, what rent factor
@@ -279,7 +282,8 @@ does the front door need?
 ```python
 # solution
 longer = rk.finance.mortgage_constant(rate="6 %/year", term="25 years", payments_per_year=12)
-assert rk.execution.solve(front.fix(mortgage_constant=longer))["rent_factor"] < factor
+longer_outcome = rk.execution.solve(specification=front.fix(mortgage_constant=longer))
+assert longer_outcome["rent_factor"] < factor
 ```
 
 **Try it 3: a stronger market.** If rents were 10 % above the reference rents, what
@@ -287,7 +291,7 @@ land price could they support? Predict the change before you solve.
 
 ```python
 # solution
-stronger = rk.execution.solve(back.fix(rent_factor=1.1))["land_cost"]
+stronger = rk.execution.solve(specification=back.fix(rent_factor=1.1))["land_cost"]
 assert stronger > back_outcome["land_cost"]
 ```
 
@@ -295,9 +299,10 @@ assert stronger > back_outcome["land_cost"]
 
 ```python
 # cell 22 (checks)
-assert rk.quantity.isclose(rk.execution.solve(round_trip)["land_cost"], rk.Quantity("20e6 AUD"))
-assert rk.quantity.isclose(front_outcome["effective_income"],
-                        factor * front_outcome["reference_income"])
+assert rk.quantity.isclose(actual=rk.execution.solve(specification=round_trip)["land_cost"],
+                           expected=rk.Quantity(text="20e6 AUD"))
+assert rk.quantity.isclose(actual=front_outcome["effective_income"],
+                        expected=factor * front_outcome["reference_income"])
 assert back.model_id == front.model_id == model.id
 ```
 
@@ -331,7 +336,7 @@ cell has 9 lines (cell 4).
 | 9 | 6 | `mortgage_constant` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
 | 10, 13 | 2, 4 | `specify`, `fix`, `free` ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G11: unfixed values are free by default; `fix` takes strings, numbers and Quantities; `roles` table |
 | 11, 13 | 8 | `solve` and `Outcome` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126), [#127](https://github.com/daniel-fink/rangekeeper/issues/127)). G12: `solve` resolves the Model that made the Specification, with no resolver argument |
-| 15 | 8 | G13: `rk.execution.table` for named Outcomes |
+| 15 | 8 | G13: `rk.execution.table(outcomes=, keys=)` for named Outcomes |
 | 18 | 9 | `underdetermined` ([#152](https://github.com/daniel-fink/rangekeeper/issues/152)) |
 | 19 | 9 | Fixed values that conflict are infeasible ([#153](https://github.com/daniel-fink/rangekeeper/issues/153)), with coded diagnostics ([#154](https://github.com/daniel-fink/rangekeeper/issues/154)) |
 | 20–21 | 9 | G14: `nonaffine_unknowns` diagnostic and `UnsupportedError` with `code` and `equation` |

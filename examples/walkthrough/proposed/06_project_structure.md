@@ -40,13 +40,13 @@ import helpers
 
 ```python
 # cell 2
-graph = rk.io.load(helpers.data_path("mixed_use_property.model.json"))
+graph = rk.io.load(path=helpers.data_path(name="mixed_use_property.model.json"))
 graph.summary()                        # counts of entities, relationships and classifications
 ```
 
 ```python
 # cell 3
-helpers.show_geometry(graph)
+helpers.show_geometry(model=graph)
 ```
 
 ## 2. Entities, values and relationships
@@ -61,13 +61,13 @@ graph.entities()                       # code, name, classification and labels
 
 ```python
 # cell 5
-floor = graph.entity("a_hotel_floor_1")
+floor = graph.entity(code="a_hotel_floor_1")
 floor.values                           # gfa, perimeter, floor-to-floor height, level
 ```
 
 ```python
 # cell 6
-graph.relationships(floor)             # contained by its space; served by the cores and plant
+graph.relationships(entity=floor)      # contained by its space; served by cores and plant
 ```
 
 ## 3. One graph, three views
@@ -78,14 +78,14 @@ question. A service link is not a cost allocation.
 
 ```python
 # cell 7
-spatial = graph.view("spatiallyContains")
-helpers.show_graph(spatial)
+spatial = graph.view(over="spatiallyContains")
+helpers.show_graph(view=spatial)
 ```
 
 ```python
 # cell 8
-services = graph.view("serves")
-helpers.show_graph(services)
+services = graph.view(over="serves")
+helpers.show_graph(view=services)
 ```
 
 ## 4. Select with a filter
@@ -95,13 +95,13 @@ and values with units. A missing value never passes a test.
 
 ```python
 # cell 9
-floors = graph.find(rk.model.Filter(classification="floor"))
+floors = graph.find(filter=rk.model.Filter(classification="floor"))
 len(floors)                            # 33
 ```
 
 ```python
 # cell 10
-graph.find(rk.model.Filter(classification="floor", labels={"use": "residential"},
+graph.find(filter=rk.model.Filter(classification="floor", labels={"use": "residential"},
                            where="gfa >= 1500 sqm"))
 ```
 
@@ -113,14 +113,14 @@ has a value and a coverage: which contributors had the value, and which did not.
 
 ```python
 # cell 11
-a_gfa = graph.rollup("gfa", over="spatiallyContains", root="building_a",
+a_gfa = graph.rollup(of="gfa", over="spatiallyContains", root="building_a",
                      contributors=rk.model.Filter(classification="floor"))
 a_gfa.value, a_gfa.coverage
 ```
 
 ```python
 # cell 12
-gfa = graph.rollup("gfa", over="spatiallyContains", root="property",
+gfa = graph.rollup(of="gfa", over="spatiallyContains", root="property",
                    contributors=rk.model.Filter(classification="floor"))
 gfa.pivot(rows="building", columns="use")
 ```
@@ -133,8 +133,9 @@ but the total counts it once.
 
 ```python
 # cell 13
-served = graph.rollup("volume", over="servedBy", roots=["building_a", "building_b"])
-served.by_root(), served.value         # each building includes the plant; the total does not repeat it
+served = graph.rollup(of="volume", over="servedBy", roots=["building_a", "building_b"])
+# each building includes the plant; the total does not repeat it
+served.by_root(), served.value
 ```
 
 ```python
@@ -150,7 +151,7 @@ its floors, with the path from the root to each floor.
 
 ```python
 # cell 15
-gfa.trace("building_b")
+gfa.trace(root="building_b")
 ```
 
 ## 8. Names repeat; identities do not
@@ -161,7 +162,7 @@ lookup of an unknown code says what it looked for.
 
 ```python
 # cell 16
-graph.find(rk.model.Filter(name="buildingAretail")).table("code", "name", "id")
+graph.find(filter=rk.model.Filter(name="buildingAretail")).table("code", "name", "id")
 ```
 
 ```python
@@ -202,9 +203,9 @@ to every floor.
 # cell 19
 e.values(efficiency="ratio", rent="AUD/sqm pa", vacancy="ratio", by="use")
 e.equations_for(
-    rk.model.Filter(classification="floor"),
-    "nla = efficiency[use] * gfa",
-    "income = nla * rent[use] * (1 - vacancy[use])",
+    filter=rk.model.Filter(classification="floor"),
+    equations=["nla = efficiency[use] * gfa",
+               "income = nla * rent[use] * (1 - vacancy[use])"],
 )
 ```
 
@@ -213,7 +214,7 @@ declares a value; lesson 02's equation uses it by key.
 
 ```python
 # cell 20
-e.rollup("reference_income", of="income", over="spatiallyContains", root="property",
+e.rollup(key="reference_income", of="income", over="spatiallyContains", root="property",
          contributors=rk.model.Filter(classification="floor"))
 model = e.commit()
 ```
@@ -228,22 +229,24 @@ inputs as lesson 02, with the rates by use in place of the totals.
 data = helpers.load_property(snapshot=2032)
 lending = {"leverage": "65 %", "coverage": 1.25,
            "mortgage_constant": rk.finance.mortgage_constant(rate="6 %/year", term="20 years")}
-back = model.specify("Back door from floors").fix(
-    **data.inputs.select("works_cost", "operating_cost"), **data.use_rates, **lending, rent_factor=1)
-outcome = rk.execution.solve(back)
+back = model.specify(name="Back door from floors").fix(
+    **data.inputs.select("works_cost", "operating_cost"), **data.use_rates, **lending,
+    rent_factor=1)
+outcome = rk.execution.solve(specification=back)
 outcome["land_cost"]
 ```
 
 ```python
 # cell 22
-lesson_02 = rk.io.load(helpers.data_path("02_feasibility.model.json"))
-before = rk.execution.solve(lesson_02.specify("Back door").fix(**data.inputs, **lending, rent_factor=1))
-assert rk.quantity.isclose(outcome["land_cost"], before["land_cost"])
+lesson_02 = rk.io.load(path=helpers.data_path(name="02_feasibility.model.json"))
+lesson_02_back = lesson_02.specify(name="Back door").fix(**data.inputs, **lending, rent_factor=1)
+before = rk.execution.solve(specification=lesson_02_back)
+assert rk.quantity.isclose(actual=outcome["land_cost"], expected=before["land_cost"])
 ```
 
 ```python
 # cell 23
-outcome.rollup("reference_income").pivot(rows="building", columns="use")
+outcome.rollup(key="reference_income").pivot(rows="building", columns="use")
 ```
 
 ## Optional: an edit that breaks a reference
@@ -254,7 +257,7 @@ equation that names the floor by code fails at `commit()` with a named error.
 ```python
 # cell 24
 e = model.edit()
-e.remove("a_hotel_floor_1")
+e.remove(entity="a_hotel_floor_1")
 try:
     e.commit()
 except rk.errors.MissingReferenceError as error:
@@ -268,7 +271,7 @@ model by building and use. Which use has the most area in Building B?
 
 ```python
 # solution
-nla = outcome.model.rollup("nla", over="spatiallyContains", root="property",
+nla = outcome.model.rollup(of="nla", over="spatiallyContains", root="property",
                            contributors=rk.model.Filter(classification="floor"))
 nla.pivot(rows="building", columns="use")
 ```
@@ -278,11 +281,11 @@ three uses add up to the total.
 
 ```python
 # solution
-by_use = {use: outcome.model.rollup("income", over="spatiallyContains", root="property",
+by_use = {use: outcome.model.rollup(of="income", over="spatiallyContains", root="property",
                                     contributors=rk.model.Filter(classification="floor",
                                                                  labels={"use": use})).value
           for use in ("hotel", "residential", "retail")}
-assert rk.quantity.isclose(sum(by_use.values()), outcome["reference_income"])
+assert rk.quantity.isclose(actual=sum(by_use.values()), expected=outcome["reference_income"])
 ```
 
 **Try it 3: the rent that Building B needs.** Fix the land at 20 million AUD and free
@@ -291,7 +294,7 @@ the rent factor. Then trace the required income to Building B's floors.
 ```python
 # solution
 front = back.fix(land_cost="20e6 AUD").free("rent_factor")
-rk.execution.solve(front).rollup("reference_income").trace("building_b")
+rk.execution.solve(specification=front).rollup(key="reference_income").trace(root="building_b")
 ```
 
 ## Checks and recap
@@ -299,7 +302,7 @@ rk.execution.solve(front).rollup("reference_income").trace("building_b")
 ```python
 # cell 25 (checks)
 assert len(floors) == 33 and gfa.coverage.complete
-assert rk.quantity.isclose(gfa.value, sum(gfa.pivot(rows="building").values()))
+assert rk.quantity.isclose(actual=gfa.value, expected=sum(gfa.pivot(rows="building").values()))
 assert served.coverage.shared == {"plinth_plant"}
 ```
 
@@ -333,7 +336,7 @@ solutions. Cell 18 has 12 lines.
 | 15 | 7 | G41: `RollupResult.trace(root)` |
 | 16–17 | 4, 9 | G42: `AmbiguousReferenceError`; error fields `requested`, `candidates` ([#156](https://github.com/daniel-fink/rangekeeper/issues/156)) |
 | 18 | 3 | Lesson 02's strings, unchanged |
-| 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `equations_for(filter, ...)` |
+| 19 | 2, 3 | G43: keyed values (`by="use"`), label indexing in equations, `equations_for(filter=, equations=)` |
 | 20 | 2, 7 | G44: `ModelBuilder.rollup` declares a Value (decision D3) |
 | 21 | 2, 5 | G45: `fix` takes keyed values as mappings; `data.inputs.select` |
 | 22 | 8 | G26 |

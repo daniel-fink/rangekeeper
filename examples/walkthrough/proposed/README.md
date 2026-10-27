@@ -50,6 +50,7 @@ pass.
 | D11 | Rates by use on each floor (lesson 06) | Keyed values (`by="use"`) and floor equations (`equations_for`). The reference income is a rollup of floor income, so income traces to floors | 06, 07 |
 | D12 | Where does growth live, and what replaces "projection"? | A **profile** says how an amount develops over Periods. Profiles live in a new public namespace, `rk.profile`: growth profiles (`Constant`, `Linear`, `Compounding`) take an `initial=` amount; distribution profiles (`Uniform`, `SCurve`) take a `total=` amount. `rk.flow.Flow.from_profile(profile, periods=, initial= or total=)` makes the Flow. Growth is series maths, not finance, so it is not in `rk.finance` | 01, 03 |
 | D13 | How does a reader make a Quantity? | `rk.Quantity("5 %")` or `rk.Quantity(0.05, "ratio")`, at the root beside the three documents: every layer uses it. The namespace that holds the unit system, the registry and `isclose` is `rk.quantity`, not `rk.units`, so "units" keeps one meaning: a unit string. `q()` and `Quantity.parse` are not added | 01–07 |
+| D14 | Are arguments named? | Yes. Every Rangekeeper call and every function in an equation string names its arguments, and the API makes them keyword-only. Exceptions: lists of any length (`select`, `free`, `table`, `stream`, `equations`, `involving`), `min` and `max` in equations, Python built-ins, `datetime.date` and Polars calls | 01–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -75,31 +76,31 @@ rk.quantity, rk.duration, rk.profile, rk.flow, rk.finance, rk.model, rk.specific
 ### Values and time
 
 ```python
-rk.Quantity("20e6 AUD"), rk.Quantity("7 %/year"), rk.Quantity(1697.45, "sqm")      # #148, #149, G71
-rk.quantity.isclose(a, b, abs="1 AUD")                                                  # G06
+rk.Quantity(text="20e6 AUD"), rk.Quantity(text="7 %/year"), rk.Quantity(magnitude=1697.45, units="sqm")      # #148, #149, G71
+rk.quantity.isclose(actual=a, expected=b, abs="1 AUD")                                                  # G06
 span = rk.duration.Span.years(start=date(2001, 1, 1), count=10)                      # G01
 yearly = rk.duration.Frequency.YEAR
-span.extend(years=1).periods(yearly)
-flow = rk.flow.Flow({period: 100, date(2001, 1, 1): -50}, units="USD")              # G02
-flow.at(date(2010, 1, 1)), flow.total(), -0.05 * flow + other_flow                  # G03, G04
-flow.shift(periods=-1), flow.trim(period)                                            # G05
-stream = rk.flow.Stream({"PGI": pgi, "OPEX": opex}).with_flows({"NOI": noi})         # G04
-stream.select("PGI", "OPEX").sum(), stream.trim(span), stream.display()
-flow.resample(rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT)     # #103
+span.extend(years=1).periods(frequency=yearly)
+flow = rk.flow.Flow(amounts={period: 100, date(2001, 1, 1): -50}, units="USD")              # G02
+flow.at(on=date(2010, 1, 1)), flow.total(), -0.05 * flow + other_flow                  # G03, G04
+flow.shift(periods=-1), flow.trim(span=period)                                            # G05
+stream = rk.flow.Stream(flows={"PGI": pgi, "OPEX": opex}).with_flows(flows={"NOI": noi})         # G04
+stream.select("PGI", "OPEX").sum(), stream.trim(span=span), stream.display()
+flow.resample(frequency=rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT)     # #103
 growth = rk.profile.Compounding(rate="2 %/year")                                     # G70
-pgi = rk.flow.Flow.from_profile(growth, periods=years, initial="100 USD", base=None, start=None, every=None)
-fees = rk.flow.Flow.from_profile(rk.profile.SCurve(), periods=build, total="3e6 AUD")
+pgi = rk.flow.Flow.from_profile(profile=growth, periods=years, initial="100 USD", base=None, start=None, every=None)
+fees = rk.flow.Flow.from_profile(profile=rk.profile.SCurve(), periods=build, total="3e6 AUD")
 ```
 
 ### Finance on known data
 
 ```python
-rk.finance.pv(flow, rate="7 %/year", on=date), rk.finance.npv(...), rk.finance.irr(flow)        # #167, #164
+rk.finance.pv(flow=flow, rate="7 %/year", on=date), rk.finance.npv(flow=flow, rate="7 %/year", on=date)  # #167, #164
 rk.finance.mortgage_constant(rate="6 %/year", term="20 years", payments_per_year=12) # #167
-rk.finance.Account(opening=..., limit=...).post(transactions)                       # G23
-rk.finance.MarketDynamics(trend="2 %/year", ...).generate(periods=, seed=, count=)   # #135, #136, G29
-rk.finance.MarketDynamics.correlated({...}, correlation=[[...]])                    # G32
-paths.mean("rent_index"), paths[key]["rent_index"], paths.capture, paths.generator   # #137, G30, G69
+rk.finance.Account(opening=..., limit=...).post(transactions=transactions)          # G23
+rk.finance.MarketDynamics(trend="2 %/year", volatility="5 %/year").generate(periods=years, seed=2027, count=500)  # #135, #136, G29
+rk.finance.MarketDynamics.correlated(generators={...}, correlation=[[...]])         # G32
+paths.mean(name="rent_index"), paths[key]["rent_index"], paths.capture, paths.generator   # #137, G30, G69
 ```
 
 ### Model
@@ -108,71 +109,72 @@ paths.mean("rent_index"), paths[key]["rent_index"], paths.capture, paths.generat
 b = rk.Model.build(name="...", subject="property", timeline=years, namespace=None)  # #141, G08
 b.values(land_cost="AUD", start_date="date"), b.flows(rent_index="ratio")           # G08, G15
 b.values(rent="AUD/sqm pa", by="use")                                               # G43
-b.equation("total_cost = land_cost + works_cost"); b.equations("...", "...")        # #145, G18
-b.equations_for(rk.model.Filter(classification="floor"), "income = nla * rent[use]")  # G43
-b.rollup("reference_income", of="income", over="spatiallyContains", root="property",
+b.equation(equation="total_cost = land_cost + works_cost"); b.equations("...", "...")        # #145, G18
+b.equations_for(filter=rk.model.Filter(classification="floor"), equations=["income = nla * rent[use]"])  # G43
+b.rollup(key="reference_income", of="income", over="spatiallyContains", root="property",
          contributors=rk.model.Filter(classification="floor"))                      # G44
-b.account("funding", opening="equity", limit="bridge_limit",
+b.account(key="funding", opening="equity", limit="bridge_limit",
           transactions="land + works", commitments={"a_works": "a_start"})          # G24
 model = b.commit()
-e = model.edit(name=None); e.replace(key, eq); e.remove(key); e.extend(key, terms)  # G27
-e.relabel(filter, use="hotel"); e.include(fragment)                                 # G61
+e = model.edit(name=None); e.replace(key=key, equation=eq); e.remove(key=key); e.remove(entity=code); e.extend(key=key, terms=terms)  # G27
+e.relabel(filter=filter, use="hotel"); e.include(fragment=fragment)                                 # G61
 model.equations, model.equations.involving("start_date"), equation.text            # G10, G47
-model.entity("a_hotel_floor_1"), model.find(rk.model.Filter(...)), model.view("serves")   # #156, #160, G37
-model.rollup("gfa", over="spatiallyContains", root="property", contributors=...)    # #158, G39
-result.value, result.coverage, result.pivot(rows="building", columns="use"), result.trace("building_b")  # #159, G41
-rk.model.diff(a, b), rk.model.namespace("...")                                      # G62, #147
+model.entity(code="a_hotel_floor_1"), model.find(filter=rk.model.Filter(...)), model.view(over="serves")   # #156, #160, G37
+model.rollup(of="gfa", over="spatiallyContains", root="property", contributors=...)    # #158, G39
+result.value, result.coverage, result.pivot(rows="building", columns="use"), result.trace(root="building_b")  # #159, G41
+rk.model.diff(before=a, after=b), rk.model.namespace(name="...")                                      # G62, #147
 ```
 
 ### Specification
 
 ```python
-spec = model.specify("Front door").fix(land_cost="20e6 AUD", rent={"hotel": "750 AUD/sqm pa"})  # #144, G11, G45
-spec.free("land_cost"), spec.roles, spec.on(new_model)                              # G11, G21
-spec.cases({"weak": {...}, "strong": {...}})                                        # G20
-spec.across(paths, assign={"rent_index": "rent_index"})                             # #138
-spec.decide("start_date", when="rent_index >= 1.05", review=yearly,
+spec = model.specify(name="Front door").fix(land_cost="20e6 AUD", rent={"hotel": "750 AUD/sqm pa"})  # #144, G11, G45
+spec.free("land_cost"), spec.roles, spec.on(model=new_model)                              # G11, G21
+spec.cases(cases={"weak": {...}, "strong": {...}})                                        # G20
+spec.across(paths=paths, assign={"rent_index": "rent_index"})                             # #138
+spec.decide(key="start_date", when="rent_index >= 1.05", review=yearly,
             window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")         # G49
-spec.parameters(start_threshold=1.05), spec.rules, spec.with_rules(rules)           # G57, G64, G65
+spec.parameters(start_threshold=1.05), spec.rules, spec.with_rules(rules=rules)           # G57, G64, G65
 spec.alternatives(b_design={"residential": residential, "hotel": hotel})            # G63
 ```
 
 ### Execution and evidence
 
 ```python
-outcome = rk.execution.solve(spec)                                                  # #126, G12
+outcome = rk.execution.solve(specification=spec)                                                  # #126, G12
 outcome["rent_factor"], outcome.status, outcome.raise_for_status(), outcome.free_unknowns  # #127
-outcome.stream("land", "works"), outcome.case("weak"), outcome.table("npv", "irr")  # G19, G20
-outcome.distribution("equity_npv").summary(), outcome.compare(other, "equity_npv")  # G31, G56
-outcome.trace(), outcome.decisions(), outcome.rollup("reference_income"), outcome.model  # G51, G46
-rk.execution.table({"Front": a, "Back": b}, "land_cost")                            # G13
-rk.execution.compare({"fixed": f, "both": c}, "equity_npv", baseline="fixed")       # G66
-rk.execution.execute(spec, store), rk.execution.replay(run, store)                  # #126, G25
-rk.io.load(path), rk.io.save(document, path), rk.io.DirectoryStore(path)            # G26
+outcome.stream("land", "works"), outcome.case(key="weak"), outcome.table("npv", "irr")  # G19, G20
+outcome.distribution(key="equity_npv").summary(), outcome.compare(other=other, keys=["equity_npv"])  # G31, G56
+outcome.trace(), outcome.decisions(), outcome.rollup(key="reference_income"), outcome.model  # G51, G46
+rk.execution.table(outcomes={"Front": a, "Back": b}, keys=["land_cost"])            # G13
+rk.execution.compare(outcomes={"fixed": f, "both": c}, keys=["equity_npv"], baseline="fixed")  # G66
+rk.execution.execute(specification=spec, store=store), rk.execution.replay(run=run, store=store)                  # #126, G25
+rk.io.load(path=path), rk.io.save(document=document, path=path), rk.io.DirectoryStore(path=path)            # G26
 ```
 
 ### Equation strings
 
 Equations use value keys, dotted paths (`funding.headroom`), keyed members
 (`rent[use]`), quantity literals (`0 AUD`, `2 years`), the operators `+ - * /`, the
-comparisons `= >= <= > <` and the functions in G17. Each profile in `rk.profile` is
-also an equation function, under its own name in lower case: `Compounding` is
-`compounding(...)`, `SCurve` is `scurve(...)`. The first argument of a growth profile
-is the initial amount; the first argument of a distribution profile is the total. A
-profile registered through the extension point is an equation function too. The
-other functions use the same names and keywords as `rk.flow` and `rk.finance`:
+comparisons `= >= <= > <` and the functions in G17. Every function argument is named,
+as in Python calls (D14). Each profile in `rk.profile` is also an equation function,
+under its own name in lower case: `Compounding` is `compounding(...)`, `SCurve` is
+`scurve(...)`. A growth profile takes `initial=`; a distribution profile takes
+`total=`. A profile registered through the extension point is an equation function
+too. The other functions use the same names and keywords as `rk.flow` and
+`rk.finance`:
 
 | Function | Meaning |
 | --- | --- |
-| `compounding(initial, rate=, base=, start=, every=)`, `linear(...)`, `constant(...)` | Growth profiles on the Model timeline from a base date; zero before `start`; `every` for periodic amounts |
-| `uniform(total, start=, years=)`, `scurve(total, start=, years=)` | Distribution profiles: a total divided over the years from a start date |
-| `event(amount, on=)` | One amount on one date |
-| `at(flow, date)` | The amount of the period that contains a date |
-| `trim(flow, start=, end=)` | The part of a Flow inside a span |
-| `cumulative(flow)`, `interest(balance, rate=)`, `settle(balance, on=)` | Balances, interest on the opening balance, and repayment of a balance |
-| `npv(flow, rate=, on=)`, `irr(flow)` | Valuation on one date basis (D4, D5 for `irr`) |
-| `min(flow)`, `max(a, b)` | Extremes (D4) |
-| `shift(flow, periods=)` | Each period takes the amount `periods` away; `-1` gives the next period's amount. A rule cannot read a later amount (G53) |
+| `compounding(initial=, rate=, base=, start=, every=)`, `linear(initial=, ...)`, `constant(initial=, ...)` | Growth profiles on the Model timeline from a base date; zero before `start`; `every` for periodic amounts |
+| `uniform(total=, start=, years=)`, `scurve(total=, start=, years=)` | Distribution profiles: a total divided over the years from a start date |
+| `event(amount=, on=)` | One amount on one date |
+| `at(flow=, on=)` | The amount of the period that contains a date |
+| `trim(flow=, start=, end=)` | The part of a Flow inside a span |
+| `cumulative(flow=)`, `interest(balance=, rate=)`, `settle(balance=, on=)` | Balances, interest on the opening balance, and repayment of a balance |
+| `npv(flow=, rate=, on=)`, `irr(flow=)` | Valuation on one date basis (D4, D5 for `irr`) |
+| `min(...)`, `max(...)` | Extremes of a Flow or of several values (D4). Like Python's built-ins, their arguments are not named |
+| `shift(flow=, periods=)` | Each period takes the amount `periods` away; `-1` gives the next period's amount. A rule cannot read a later amount (G53) |
 
 A Flow-valued equation applies period by period on the Model timeline. A scalar
 term applies to every period (G18).

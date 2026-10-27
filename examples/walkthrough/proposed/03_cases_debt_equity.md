@@ -57,9 +57,9 @@ plan.inputs                            # dates, budgets, incomes and funding, wi
 
 ```python
 # cell 3
-helpers.show_timeline(plan)
+helpers.show_timeline(plan=plan)
 yearly = rk.duration.Frequency.YEAR
-years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(yearly)
+years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(frequency=yearly)
 ```
 
 > **Finance note.** A development budget has hard costs (construction), soft costs
@@ -74,7 +74,7 @@ the plan's total. The other packages follow the same rule.
 ```python
 # cell 4
 hard = sum(plan.areas["building_a"][use] * plan.rates[use] for use in plan.areas["building_a"])
-assert rk.quantity.isclose(hard * 1.2, plan.inputs["a_cost"])
+assert rk.quantity.isclose(actual=hard * 1.2, expected=plan.inputs["a_cost"])
 ```
 
 ## 3. The dated Model
@@ -110,10 +110,10 @@ b.equations(
     "a_open = a_start + 2 years",
     "b_open = b_start + 2 years",
     "b_start >= shared_start + 1 year",
-    "land = -event(land_cost, on=start_date)",
-    "shared_works = -uniform(shared_cost, start=shared_start, years=1)",
-    "a_works = -uniform(a_cost, start=a_start, years=2)",
-    "b_works = -uniform(b_cost, start=b_start, years=2)",
+    "land = -event(amount=land_cost, on=start_date)",
+    "shared_works = -uniform(total=shared_cost, start=shared_start, years=1)",
+    "a_works = -uniform(total=a_cost, start=a_start, years=2)",
+    "b_works = -uniform(total=b_cost, start=b_start, years=2)",
     "works = shared_works + a_works + b_works",
 )
 ```
@@ -124,12 +124,14 @@ earns nothing until it opens. Renewals come every five years after opening.
 ```python
 # cell 7
 b.equations(
-    "income = compounding(a_income, rate=rent_growth, base=base_date, start=a_open)"
-    " + compounding(b_income, rate=rent_growth, base=base_date, start=b_open)",
-    "opex = -compounding(a_opex, rate=opex_growth, base=base_date, start=a_open)"
-    " - compounding(b_opex, rate=opex_growth, base=base_date, start=b_open)",
-    "renewals = -compounding(a_renewal, rate=opex_growth, base=base_date, start=a_open + 5 years, every=5 years)"
-    " - compounding(b_renewal, rate=opex_growth, base=base_date, start=b_open + 5 years, every=5 years)",
+    "income = compounding(initial=a_income, rate=rent_growth, base=base_date, start=a_open)"
+    " + compounding(initial=b_income, rate=rent_growth, base=base_date, start=b_open)",
+    "opex = -compounding(initial=a_opex, rate=opex_growth, base=base_date, start=a_open)"
+    " - compounding(initial=b_opex, rate=opex_growth, base=base_date, start=b_open)",
+    "renewals = -compounding(initial=a_renewal, rate=opex_growth, base=base_date,"
+    "                        start=a_open + 5 years, every=5 years)"
+    " - compounding(initial=b_renewal, rate=opex_growth, base=base_date,"
+    "               start=b_open + 5 years, every=5 years)",
     "operating = income + opex + renewals",
 )
 ```
@@ -139,9 +141,9 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as relations
 ```python
 # cell 8
 b.equations(
-    "sale = event(at(operating, sale_date + 1 year) / exit_cap_rate, on=sale_date)",
-    "net_cash_flow = trim(land + works + operating + sale, end=sale_date)",
-    "unlevered_npv = npv(net_cash_flow, rate=discount_rate, on=base_date)",
+    "sale = event(amount=at(flow=operating, on=sale_date + 1 year) / exit_cap_rate, on=sale_date)",
+    "net_cash_flow = trim(flow=land + works + operating + sale, end=sale_date)",
+    "unlevered_npv = npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
 )
 model = b.commit()
 ```
@@ -155,15 +157,15 @@ Fix the plan's inputs and the reference assumptions. Everything else is free.
 # cell 9
 reference = {"rent_growth": "3 %/year", "exit_cap_rate": "5 %"}
 valuation = {"discount_rate": "7 %/year", "opex_growth": "3.5 %/year"}
-base = model.specify("Base case").fix(**plan.inputs, **valuation, **reference)
-outcome = rk.execution.solve(base)
+base = model.specify(name="Base case").fix(**plan.inputs, **valuation, **reference)
+outcome = rk.execution.solve(specification=base)
 outcome["unlevered_npv"]
 ```
 
 ```python
 # cell 10
 outcome.stream("land", "works", "income", "opex", "renewals", "sale").display()
-helpers.plot_cash_flows(outcome, "net_cash_flow")
+helpers.plot_cash_flows(outcome=outcome, key="net_cash_flow")
 ```
 
 ## 5. Named cases
@@ -179,13 +181,13 @@ cases = {
     "reference": reference,
     "strong": {"rent_growth": "5 %/year", "exit_cap_rate": "4.5 %"},
 }
-outcomes = rk.execution.solve(base.cases(cases))
+outcomes = rk.execution.solve(specification=base.cases(cases=cases))
 outcomes.table("unlevered_npv")
 ```
 
 ```python
 # cell 12
-outcomes.case("weak").stream("income", "sale").display()
+outcomes.case(key="weak").stream("income", "sale").display()
 ```
 
 > **Under the hood.** `base.cases(...)` makes one batch Specification. Each case
@@ -205,12 +207,12 @@ e = model.edit()
 e.values(leverage="ratio", loan_rate="1/year", equity_rate="1/year")
 e.equations(
     "loan_draws = -leverage * (land + works)",
-    "loan_balance = cumulative(loan_draws)",
-    "loan_interest = -interest(loan_balance, rate=loan_rate)",
-    "repayment = -settle(loan_balance, on=sale_date)",
+    "loan_balance = cumulative(flow=loan_draws)",
+    "loan_interest = -interest(balance=loan_balance, rate=loan_rate)",
+    "repayment = -settle(balance=loan_balance, on=sale_date)",
     "equity_cash_flow = net_cash_flow + loan_draws + loan_interest + repayment",
-    "equity_npv = npv(equity_cash_flow, rate=equity_rate, on=base_date)",
-    "equity_irr = irr(equity_cash_flow)",
+    "equity_npv = npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
+    "equity_irr = irr(flow=equity_cash_flow)",
 )
 model = e.commit()
 ```
@@ -218,8 +220,9 @@ model = e.commit()
 ```python
 # cell 14
 debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
-levered = base.on(model).fix(**debt)
-rk.execution.solve(levered.cases(cases)).table("unlevered_npv", "equity_npv", "equity_irr")
+levered = base.on(model=model).fix(**debt)
+levered_outcomes = rk.execution.solve(specification=levered.cases(cases=cases))
+levered_outcomes.table("unlevered_npv", "equity_npv", "equity_irr")
 ```
 
 > **Finance note.** Debt makes the equity's results larger in both directions. When
@@ -235,7 +238,7 @@ leverage? Compare three levels in one batch.
 ```python
 # cell 15
 levels = {"no debt": {"leverage": 0}, "50 %": {"leverage": "50 %"}, "65 %": {"leverage": "65 %"}}
-rk.execution.solve(levered.cases(levels)).table("equity_npv", "equity_irr")
+rk.execution.solve(specification=levered.cases(cases=levels)).table("equity_npv", "equity_irr")
 ```
 
 ## 8. A target equity IRR
@@ -247,7 +250,7 @@ IRR fixed, the IRR relation becomes "NPV at 15 % is zero", which is an affine ro
 ```python
 # cell 16
 target = levered.fix(equity_irr="15 %/year").free("land_cost")
-target_outcome = rk.execution.solve(target)
+target_outcome = rk.execution.solve(specification=target)
 target_outcome["land_cost"]
 ```
 
@@ -259,7 +262,7 @@ end of each year. Calculate the first year's closing balance and headroom by han
 
 ```python
 # cell 17
-paid_2027 = outcome["land"].at(date(2027, 1, 1)) + outcome["works"].at(date(2027, 1, 1))
+paid_2027 = outcome["land"].at(on=date(2027, 1, 1)) + outcome["works"].at(on=date(2027, 1, 1))
 closing_2027 = plan.inputs["equity"] + paid_2027
 headroom_2027 = closing_2027 + plan.inputs["bridge_limit"]
 closing_2027, headroom_2027
@@ -268,8 +271,8 @@ closing_2027, headroom_2027
 ```python
 # cell 18
 account = rk.finance.Account(opening=plan.inputs["equity"], limit=plan.inputs["bridge_limit"])
-history = account.post(outcome["land"] + outcome["works"])
-assert history.closing.at(date(2027, 1, 1)) == closing_2027
+history = account.post(transactions=outcome["land"] + outcome["works"])
+assert history.closing.at(on=date(2027, 1, 1)) == closing_2027
 history.display()                      # opening, transactions, closing and headroom by year
 ```
 
@@ -286,7 +289,8 @@ exceed the headroom.
 # cell 19
 e = model.edit()
 e.values(equity="AUD", bridge_limit="AUD")
-e.account("funding", opening="equity", limit="bridge_limit", transactions="land + works + operating",
+e.account(key="funding", opening="equity", limit="bridge_limit",
+          transactions="land + works + operating",
           commitments={"shared_works": "shared_start", "a_works": "a_start", "b_works": "b_start"})
 e.equations(
     "peak_shortfall = max(0 AUD, -min(funding.headroom))",
@@ -297,14 +301,15 @@ model = e.commit()
 
 ```python
 # cell 20
-funded = levered.on(model)
-summary = rk.execution.solve(funded.cases(cases))
+funded = levered.on(model=model)
+summary = rk.execution.solve(specification=funded.cases(cases=cases))
 summary.table("unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall", "commitment_gap")
 ```
 
 ```python
 # cell 21
-helpers.plot_funding(summary.case("weak"), "funding")      # balance, limit and committed payments
+# balance, limit and committed payments
+helpers.plot_funding(outcome=summary.case(key="weak"), account="funding")
 ```
 
 > **Finance note.** The commitment gap uses only cash and facilities that exist at
@@ -320,16 +325,16 @@ that the result is the same. A namespace gives the same IDs on every build.
 
 ```python
 # cell 22
-store = rk.io.DirectoryStore("runs/03")
-executed = rk.execution.execute(funded.cases(cases), store)
+store = rk.io.DirectoryStore(path="runs/03")
+executed = rk.execution.execute(specification=funded.cases(cases=cases), store=store)
 executed.run.id
 ```
 
 ```python
 # cell 23 (new kernel)
-store = rk.io.DirectoryStore("runs/03")
+store = rk.io.DirectoryStore(path="runs/03")
 run = store.find_runs(specification="Base case")[-1]
-rk.execution.replay(run, store).raise_for_status()
+rk.execution.replay(run=run, store=store).raise_for_status()
 ```
 
 > **Under the hood: the same IDs on every build.** Pass a namespace to the builder.
@@ -337,7 +342,7 @@ rk.execution.replay(run, store).raise_for_status()
 > ([#147](https://github.com/daniel-fink/rangekeeper/issues/147)):
 >
 > ```python
-> ns = rk.model.namespace("rangekeeper-walkthrough/03")
+> ns = rk.model.namespace(name="rangekeeper-walkthrough/03")
 > b = rk.Model.build(name="Mixed-use base plan", subject="property", timeline=years, namespace=ns)
 > ```
 
@@ -348,9 +353,10 @@ Does the commitment gap change? Which cash flow causes the change?
 
 ```python
 # solution
-stress = rk.execution.solve(funded.cases({**cases, "stress": {"rent_growth": "0 %/year",
-                                                              "exit_cap_rate": "7 %"}}))
-assert stress.case("stress")["commitment_gap"] >= stress.case("reference")["commitment_gap"]
+with_stress = {**cases, "stress": {"rent_growth": "0 %/year", "exit_cap_rate": "7 %"}}
+stress = rk.execution.solve(specification=funded.cases(cases=with_stress))
+gap = {key: stress.case(key=key)["commitment_gap"] for key in ("stress", "reference")}
+assert gap["stress"] >= gap["reference"]
 # Building A's lower income pays less of Building B's works. The exit cap rate has no effect.
 ```
 
@@ -360,14 +366,14 @@ IRR in the weak market?
 ```python
 # solution
 weak_target = target.fix(**cases["weak"])
-assert rk.execution.solve(weak_target)["land_cost"] < target_outcome["land_cost"]
+assert rk.execution.solve(specification=weak_target)["land_cost"] < target_outcome["land_cost"]
 ```
 
 **Try it 3: start Building B a year later.** Which year has the least headroom now?
 
 ```python
 # solution
-later = rk.execution.solve(funded.fix(b_start=date(2031, 1, 1)))
+later = rk.execution.solve(specification=funded.fix(b_start=date(2031, 1, 1)))
 later["funding.headroom"].argmin()
 ```
 
@@ -375,12 +381,14 @@ later["funding.headroom"].argmin()
 
 ```python
 # cell 24 (checks)
-weak, ref, strong = (outcomes.case(k)["unlevered_npv"] for k in ("weak", "reference", "strong"))
+weak, ref, strong = (outcomes.case(key=key)["unlevered_npv"]
+                     for key in ("weak", "reference", "strong"))
 assert weak < ref < strong
 assert rk.quantity.isclose(
-    rk.finance.npv(target_outcome["equity_cash_flow"], rate="15 %/year", on=date(2027, 1, 1)),
-    rk.Quantity("0 AUD"), abs="1 AUD")
-assert summary.case("reference")["funding.headroom"].at(date(2027, 1, 1)) == headroom_2027
+    actual=rk.finance.npv(flow=target_outcome["equity_cash_flow"], rate="15 %/year",
+                          on=date(2027, 1, 1)),
+    expected=rk.Quantity(text="0 AUD"), abs="1 AUD")
+assert summary.case(key="reference")["funding.headroom"].at(on=date(2027, 1, 1)) == headroom_2027
 ```
 
 **Recap.**

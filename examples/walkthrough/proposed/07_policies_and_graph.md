@@ -54,8 +54,8 @@ import helpers
 
 ```python
 # cell 2
-residential = rk.io.load(helpers.data_path("07_property_plan.model.json"))
-use_paths = rk.io.load(helpers.data_path("04_use_indices.paths.json"))
+residential = rk.io.load(path=helpers.data_path(name="07_property_plan.model.json"))
+use_paths = rk.io.load(path=helpers.data_path(name="04_use_indices.paths.json"))
 plan = helpers.load_base_plan()
 residential.rollups()                  # key, value rolled up, relationship, root and contributors
 ```
@@ -68,7 +68,7 @@ yearly = rk.duration.Frequency.YEAR
 debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
 assign = {"use_index": {"hotel": "hotel_index", "residential": "residential_index",
                         "retail": "retail_index"}}
-fixed = residential.specify("Fixed design").fix(**plan.inputs, **plan.use_rates,
+fixed = residential.specify(name="Fixed design").fix(**plan.inputs, **plan.use_rates,
                                                 **assumptions, **debt, provision="0 AUD")
 ```
 
@@ -82,14 +82,16 @@ join Building B. Make it as a new revision of the same Model.
 ```python
 # cell 4
 e = residential.edit(name="Building B as hotel")
-e.relabel(rk.model.Filter(classification="floor", within="building_b"), use="hotel")
-e.include(helpers.load_fragment("building_b_hotel_services"))   # cores and plant, with costs
+e.relabel(filter=rk.model.Filter(classification="floor", within="building_b"), use="hotel")
+# cores and plant, with their costs
+e.include(fragment=helpers.load_fragment(name="building_b_hotel_services"))
 hotel = e.commit()
 ```
 
 ```python
 # cell 5
-rk.model.diff(residential, hotel)      # relabelled floors, added entities and relationships
+# relabelled floors, added entities and relationships
+rk.model.diff(before=residential, after=hotel)
 ```
 
 Narrative. **Predict:** which of Building B's totals change? Roll up the same values
@@ -98,9 +100,9 @@ over both structures.
 ```python
 # cell 6
 for design in (residential, hotel):
-    nla = design.rollup("nla", over="spatiallyContains", root="building_b",
+    nla = design.rollup(of="nla", over="spatiallyContains", root="building_b",
                         contributors=rk.model.Filter(classification="floor"))
-    cost = design.rollup("build_cost", over="spatiallyContains", root="building_b",
+    cost = design.rollup(of="build_cost", over="spatiallyContains", root="building_b",
                          contributors=rk.model.Filter(has="build_cost"))
     print(design.name, nla.pivot(columns="use"), cost.value)
 ```
@@ -119,11 +121,11 @@ Otherwise build residential. The provision is paid when the site is bought.
 
 ```python
 # cell 7
-timing = rk.io.load(helpers.data_path("05_strategy.specification.json")).rules
+timing = rk.io.load(path=helpers.data_path(name="05_strategy.specification.json")).rules
 timing                                 # lesson 05's three rules, as written there
 switch = (fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
           .fix(provision="2.5e6 AUD")
-          .decide("b_design", when="hotel_index >= 1.10 * residential_index", review=yearly,
+          .decide(key="b_design", when="hotel_index >= 1.10 * residential_index", review=yearly,
                   window=("shared_start + 1 year", "b_start"), otherwise="residential"))
 ```
 
@@ -131,11 +133,11 @@ switch = (fixed.alternatives(b_design={"residential": residential, "hotel": hote
 # cell 8
 strategies = {
     "fixed": fixed,
-    "timing": fixed.with_rules(timing),
+    "timing": fixed.with_rules(rules=timing),
     "switch": switch,
-    "both": switch.with_rules(timing),
+    "both": switch.with_rules(rules=timing),
 }
-outcomes = {name: rk.execution.solve(spec.across(use_paths, assign=assign))
+outcomes = {name: rk.execution.solve(specification=spec.across(paths=use_paths, assign=assign))
             for name, spec in strategies.items()}
 ```
 
@@ -147,14 +149,15 @@ where Building B stays residential.
 
 ```python
 # cell 9
-comparison = rk.execution.compare(outcomes, "equity_npv", "peak_shortfall", baseline="fixed")
+comparison = rk.execution.compare(outcomes=outcomes, keys=["equity_npv", "peak_shortfall"],
+                                  baseline="fixed")
 comparison.summary()                   # mean difference, share better, 5 % quantile
 ```
 
 ```python
 # cell 10
-helpers.plot_target_curve(*(o.distribution("equity_npv") for o in outcomes.values()),
-                          names=list(outcomes))
+helpers.plot_target_curve(distributions={name: outcome.distribution(key="equity_npv")
+                                         for name, outcome in outcomes.items()})
 ```
 
 ## 5. What gets built
@@ -170,7 +173,7 @@ both.table("b_design", "start_date", "b_open").group_by("b_design").len()
 
 ```python
 # cell 12
-both.rollup("nla", over="spatiallyContains", root="property",
+both.rollup(of="nla", over="spatiallyContains", root="property",
             contributors=rk.model.Filter(classification="floor")).pivot(columns="use").describe()
 ```
 
@@ -185,15 +188,16 @@ strategy at several provision costs and confirm that the decisions are the same.
 ```python
 # cell 13
 premiums = {p: {"provision": p} for p in ("0 AUD", "2.5e6 AUD", "5e6 AUD", "7.5e6 AUD")}
-sweep = rk.execution.solve(strategies["both"].cases(premiums).across(use_paths, assign=assign))
+premium_sweep = strategies["both"].cases(cases=premiums).across(paths=use_paths, assign=assign)
+sweep = rk.execution.solve(specification=premium_sweep)
 sweep.decisions().same_across_cases()   # are the decisions the same at every premium?
 ```
 
 ```python
 # cell 14
-gain = sweep.compare(outcomes["timing"], "equity_npv").by_case()
+gain = sweep.compare(other=outcomes["timing"], keys=["equity_npv"]).by_case()
 gain.summary()
-gain.breakeven("provision", criterion="mean")
+gain.breakeven(key="provision", criterion="mean")
 ```
 
 > **Finance note.** The provision uses equity and funding headroom that Building B's
@@ -211,19 +215,22 @@ same generator with a new seed.
 # cell 15
 thresholds = {t: {"switch_threshold": t} for t in (1.00, 1.05, 1.10, 1.20)}
 tunable = (strategies["both"].parameters(switch_threshold=1.10)
-           .decide("b_design", when="hotel_index >= switch_threshold * residential_index",
+           .decide(key="b_design", when="hotel_index >= switch_threshold * residential_index",
                    review=yearly, window=("shared_start + 1 year", "b_start"),
-                   otherwise="residential").cases(thresholds))
-train = rk.execution.solve(tunable.across(use_paths, assign=assign))
-best = train.compare(outcomes["timing"], "equity_npv").by_case().best(criterion="mean")
+                   otherwise="residential").cases(cases=thresholds))
+train = rk.execution.solve(specification=tunable.across(paths=use_paths, assign=assign))
+by_threshold = train.compare(other=outcomes["timing"], keys=["equity_npv"]).by_case()
+best = by_threshold.best(criterion="mean")
 ```
 
 ```python
 # cell 16
 fresh = use_paths.generator.generate(periods=use_paths.periods, seed=2028, count=len(use_paths))
-test = rk.execution.solve(tunable.cases({best: thresholds[best]}).across(fresh, assign=assign))
-baseline = rk.execution.solve(strategies["timing"].across(fresh, assign=assign))
-test.compare(baseline, "equity_npv").summary()   # usually less than on the training paths
+chosen = tunable.cases(cases={best: thresholds[best]})
+test = rk.execution.solve(specification=chosen.across(paths=fresh, assign=assign))
+timing_only = strategies["timing"].across(paths=fresh, assign=assign)
+baseline = rk.execution.solve(specification=timing_only)
+test.compare(other=baseline, keys=["equity_npv"]).summary()   # usually less than in training
 ```
 
 ## Optional: vertical expansion
@@ -237,13 +244,16 @@ too, because they match the same filter. A rule decides the expansion date.
 ```python
 # cell 17
 e = residential.edit(name="Building A expanded")
-e.include(helpers.load_fragment("building_a_extra_floors"))
+e.include(fragment=helpers.load_fragment(name="building_a_extra_floors"))
 extra = rk.model.Filter(classification="floor", labels={"phase": "expansion"})
-e.rollup("x_income", of="income", over="spatiallyContains", root="building_a", contributors=extra)
-e.rollup("x_cost", of="build_cost", over="spatiallyContains", root="building_a", contributors=extra)
+e.rollup(key="x_income", of="income", over="spatiallyContains", root="building_a",
+         contributors=extra)
+e.rollup(key="x_cost", of="build_cost", over="spatiallyContains", root="building_a",
+         contributors=extra)
 e.values(expansion_date="date")
-e.extend("works", "- uniform(x_cost, start=expansion_date, years=1)")
-e.extend("income", "+ compounding(x_income, rate=rent_growth, base=base_date, start=expansion_date + 1 year)")
+e.extend(key="works", terms="- uniform(total=x_cost, start=expansion_date, years=1)")
+e.extend(key="income", terms="+ compounding(initial=x_income, rate=rent_growth, base=base_date,"
+                             " start=expansion_date + 1 year)")
 expanded = e.commit()
 ```
 
@@ -251,9 +261,10 @@ expanded = e.commit()
 # cell 18
 expand = (strategies["both"].alternatives(a_design={"base": residential, "expanded": expanded})
           .fix(a_provision="1.5e6 AUD")
-          .decide("expansion_date", when="residential_index >= 1.25", review=yearly,
+          .decide(key="expansion_date", when="residential_index >= 1.25", review=yearly,
                   window=("a_open + 3 years", date(2035, 1, 1)), otherwise="never"))
-rk.execution.solve(expand.across(use_paths, assign=assign)).compare(outcomes["both"], "equity_npv").summary()
+expanded_out = rk.execution.solve(specification=expand.across(paths=use_paths, assign=assign))
+expanded_out.compare(other=outcomes["both"], keys=["equity_npv"]).summary()
 ```
 
 ## Exercises
@@ -263,7 +274,7 @@ stay residential? What does the switch strategy lose on those paths?
 
 ```python
 # solution
-switch_vs_fixed = outcomes["switch"].compare(outcomes["fixed"], "equity_npv")
+switch_vs_fixed = outcomes["switch"].compare(other=outcomes["fixed"], keys=["equity_npv"])
 switch_vs_fixed.where(b_design="residential").summary()
 ```
 
@@ -272,7 +283,7 @@ quantile criterion.
 
 ```python
 # solution
-gain.breakeven("provision", criterion=("quantile", 0.05))
+gain.breakeven(key="provision", criterion=("quantile", 0.05))
 ```
 
 **Try it 3: the switch without timing flexibility.** Is the switch worth more with or
@@ -290,8 +301,8 @@ comparison.select("switch", "both").summary()
 assert len({o.run.market_paths for o in outcomes.values()}) == 1      # the same paths
 provision_paid = both.table("provision_cost")["provision_cost"]
 assert (provision_paid < 0).all()                                     # paid on every path
-assert both.case(use_paths.keys[0]).model.id in {residential.id, hotel.id}
-assert rk.model.diff(residential, hotel).added_entities              # a structural change
+assert both.case(key=use_paths.keys[0]).model.id in {residential.id, hotel.id}
+assert rk.model.diff(before=residential, after=hotel).added_entities   # a structural change
 ```
 
 **Recap.**
@@ -323,7 +334,7 @@ solutions. Cell 15 has 9 lines.
 | 7 | 2, 6 | G63: `Specification.alternatives(key={name: Model})` and a decided Model choice; G49, G55 |
 | 7 | 1, 10 | G64: `Specification.rules` reads the rules of a saved Specification, so lesson 05's rules are loaded as a document, not from a helper |
 | 8 | 2 | G65: `Specification.with_rules(rules)` |
-| 9–10 | 8 | G66: `rk.execution.compare(mapping, *keys, baseline=)` for several strategies |
+| 9–10 | 8 | G66: `rk.execution.compare(outcomes=, keys=, baseline=)` for several strategies |
 | 11 | 8 | G20, G51 (decided values in tables) |
 | 12 | 7, 8 | G46 for batches: `Outcome.rollup(...)` over each case's realised Model |
 | 13 | 8 | G67: `decisions().same_across_cases()` |

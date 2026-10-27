@@ -50,14 +50,14 @@ dimensionless ratio.
 
 ```python
 # cell 2
-rent = rk.Quantity("1200 USD pa")
-rent.to("USD/month")
+rent = rk.Quantity(text="1200 USD pa")
+rent.to(units="USD/month")
 ```
 
 ```python
 # cell 3
-rate = rk.Quantity("2 %/year")
-rate * rk.Quantity("1 year")          # 0.02, a dimensionless ratio
+rate = rk.Quantity(text="2 %/year")
+rate * rk.Quantity(text="1 year")          # 0.02, a dimensionless ratio
 ```
 
 > **Under the hood.** `rk.Quantity("5 %")` and `rk.Quantity(0.05, "ratio")` make the
@@ -79,7 +79,7 @@ use, and use the name after that.
 holding = rk.duration.Span.years(start=date(2001, 1, 1), count=10, name="Holding")
 forecast = holding.extend(years=1)
 yearly = rk.duration.Frequency.YEAR
-years = forecast.periods(yearly)
+years = forecast.periods(frequency=yearly)
 years                                  # 11 Periods, 2001 to 2011
 ```
 
@@ -90,7 +90,7 @@ date. Make the first two years of potential gross income by hand.
 
 ```python
 # cell 5
-first_two = rk.flow.Flow({years[0]: 100, years[1]: 102}, units="USD")
+first_two = rk.flow.Flow(amounts={years[0]: 100, years[1]: 102}, units="USD")
 first_two.display()
 ```
 
@@ -105,13 +105,13 @@ holds the initial amount.
 ```python
 # cell 6
 growth = rk.profile.Compounding(rate=rate)
-pgi = rk.flow.Flow.from_profile(growth, periods=years, initial="100 USD")
+pgi = rk.flow.Flow.from_profile(profile=growth, periods=years, initial="100 USD")
 pgi.display()
 ```
 
 ```python
 # cell 7
-pgi.at(date(2010, 1, 1))               # the amount of the Period that contains this date
+pgi.at(on=date(2010, 1, 1))               # the amount of the Period that contains this date
 ```
 
 > **Finance note.** Potential gross income (PGI) is the income if all the space is
@@ -129,7 +129,7 @@ scale it. Name the lines in a Stream, and add them period by period with `sum()`
 
 ```python
 # cell 8
-operations = rk.flow.Stream({
+operations = rk.flow.Stream(flows={
     "PGI": pgi,
     "Vacancy": -0.05 * pgi,
     "OPEX": -0.35 * pgi,
@@ -159,8 +159,8 @@ year of the sale.
 
 ```python
 # cell 10
-exit_cap_rate = rk.Quantity("5 %")
-nacf.at(date(2011, 1, 1)) / exit_cap_rate       # the price at the end of year 10, by hand
+exit_cap_rate = rk.Quantity(text="5 %")
+nacf.at(on=date(2011, 1, 1)) / exit_cap_rate       # the price at the end of year 10, by hand
 ```
 
 ```python
@@ -171,9 +171,9 @@ exit_values.display()
 
 ```python
 # cell 12
-sale_year = holding.periods(yearly)[-1]
-terminal_value = exit_values.trim(sale_year)
-assert terminal_value.total() == nacf.at(date(2011, 1, 1)) / exit_cap_rate
+sale_year = holding.periods(frequency=yearly)[-1]
+terminal_value = exit_values.trim(span=sale_year)
+assert terminal_value.total() == nacf.at(on=date(2011, 1, 1)) / exit_cap_rate
 ```
 
 > **Finance note.** The terminal value has other names: the reversion (in US texts,
@@ -189,9 +189,9 @@ Flow. Trim the table to the holding span and compare it with Table 1.1.
 
 ```python
 # cell 13
-table = operations.with_flows({"NOI": noi, "CAPEX": capex, "NACF": nacf,
+table = operations.with_flows(flows={"NOI": noi, "CAPEX": capex, "NACF": nacf,
                                "Terminal value": terminal_value})
-table = table.trim(holding)
+table = table.trim(span=holding)
 table.display()                        # compare with Table 1.1
 ```
 
@@ -207,8 +207,9 @@ quarters back into years. The round trip gives the same Flow.
 
 ```python
 # cell 15
-by_quarter = pgi.resample(rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT)
-assert by_quarter.resample(yearly, method=rk.flow.ResampleMethod.SUM) == pgi
+by_quarter = pgi.resample(frequency=rk.duration.Frequency.QUARTER,
+                          method=rk.flow.ResampleMethod.SPLIT)
+assert by_quarter.resample(frequency=yearly, method=rk.flow.ResampleMethod.SUM) == pgi
 ```
 
 ## 10. Present value, by hand once
@@ -219,13 +220,13 @@ Then calculate the whole column.
 
 ```python
 # cell 16
-cash_flows.at(date(2001, 1, 1)) / 1.07
+cash_flows.at(on=date(2001, 1, 1)) / 1.07
 ```
 
 ```python
 # cell 17
-discount_rate = rk.Quantity("7 %/year")
-present_values = rk.finance.pv(cash_flows, rate=discount_rate, on=holding.start)
+discount_rate = rk.Quantity(text="7 %/year")
+present_values = rk.finance.pv(flow=cash_flows, rate=discount_rate, on=holding.start)
 present_values.display()
 ```
 
@@ -237,15 +238,15 @@ rate. This shows that NPV and IRR use the same dates.
 
 ```python
 # cell 18
-value = rk.finance.npv(cash_flows, rate=discount_rate, on=holding.start)
+value = rk.finance.npv(flow=cash_flows, rate=discount_rate, on=holding.start)
 value
 ```
 
 ```python
 # cell 19
-purchase = rk.flow.Flow({holding.start: -value})
-investment = rk.flow.Stream({"Purchase": purchase, "Cash flows": cash_flows}).sum()
-rk.finance.irr(investment)             # 7 %/year
+purchase = rk.flow.Flow(amounts={holding.start: -value})
+investment = rk.flow.Stream(flows={"Purchase": purchase, "Cash flows": cash_flows}).sum()
+rk.finance.irr(flow=investment)             # 7 %/year
 ```
 
 ## 12. Change one input
@@ -255,9 +256,9 @@ does the owner lose? Change one input, then explain the result.
 
 ```python
 # cell 20
-exit_6 = (nacf.shift(periods=-1) / rk.Quantity("6 %")).trim(sale_year)
-flows_6 = table.with_flows({"Terminal value": exit_6}).select("NACF", "Terminal value").sum()
-rk.finance.npv(flows_6, rate=discount_rate, on=holding.start) - value
+exit_6 = (nacf.shift(periods=-1) / rk.Quantity(text="6 %")).trim(span=sale_year)
+flows_6 = table.with_flows(flows={"Terminal value": exit_6}).select("NACF", "Terminal value").sum()
+rk.finance.npv(flow=flows_6, rate=discount_rate, on=holding.start) - value
 ```
 
 ## Exercises
@@ -267,14 +268,14 @@ by how much does the value change?
 
 ```python
 # solution
-pgi_3 = rk.flow.Flow.from_profile(rk.profile.Compounding(rate="3 %/year"), periods=years,
+pgi_3 = rk.flow.Flow.from_profile(profile=rk.profile.Compounding(rate="3 %/year"), periods=years,
                                    initial="100 USD")
 nacf_3 = (0.95 * pgi_3 - 0.35 * pgi_3 - 0.10 * pgi_3)
-flows_3 = rk.flow.Stream({
+flows_3 = rk.flow.Stream(flows={
     "NACF": nacf_3,
-    "Terminal value": (nacf_3.shift(periods=-1) / exit_cap_rate).trim(sale_year),
-}).trim(holding).sum()
-value_3 = rk.finance.npv(flows_3, rate=discount_rate, on=holding.start)
+    "Terminal value": (nacf_3.shift(periods=-1) / exit_cap_rate).trim(span=sale_year),
+}).trim(span=holding).sum()
+value_3 = rk.finance.npv(flow=flows_3, rate=discount_rate, on=holding.start)
 assert value_3 > value
 ```
 
@@ -284,11 +285,11 @@ assert value_3 > value
 ```python
 # solution
 seven = rk.duration.Span.years(start=date(2001, 1, 1), count=7)
-flows_7 = rk.flow.Stream({
+flows_7 = rk.flow.Stream(flows={
     "NACF": nacf,
-    "Terminal value": exit_values.trim(seven.periods(yearly)[-1]),
-}).trim(seven).sum()
-value_7 = rk.finance.npv(flows_7, rate=discount_rate, on=seven.start)
+    "Terminal value": exit_values.trim(span=seven.periods(frequency=yearly)[-1]),
+}).trim(span=seven).sum()
+value_7 = rk.finance.npv(flow=flows_7, rate=discount_rate, on=seven.start)
 ```
 
 **Try it 3: a price above value.** Pay 5 % more than `value`. Is the IRR above or
@@ -296,11 +297,11 @@ below 7 %?
 
 ```python
 # solution
-overpay = rk.flow.Stream({
-    "Purchase": rk.flow.Flow({holding.start: -1.05 * value}),
+overpay = rk.flow.Stream(flows={
+    "Purchase": rk.flow.Flow(amounts={holding.start: -1.05 * value}),
     "Cash flows": cash_flows,
 }).sum()
-assert rk.finance.irr(overpay) < discount_rate
+assert rk.finance.irr(flow=overpay) < discount_rate
 ```
 
 ## Checks and recap
@@ -308,8 +309,8 @@ assert rk.finance.irr(overpay) < discount_rate
 ```python
 # cell 21 (checks)
 assert table["NOI"] == table["PGI"] + table["Vacancy"] + table["OPEX"]
-assert terminal_value.total() == exit_values.at(date(2010, 1, 1))
-assert rk.quantity.isclose(rk.finance.irr(investment), discount_rate)
+assert terminal_value.total() == exit_values.at(on=date(2010, 1, 1))
+assert rk.quantity.isclose(actual=rk.finance.irr(flow=investment), expected=discount_rate)
 ```
 
 **Recap.**
