@@ -354,7 +354,7 @@ Not filed as gaps:
   charts, graphs, timelines and geometry. This is helper work for
   [#87](https://github.com/daniel-fink/rangekeeper/issues/87) and
   [#88](https://github.com/daniel-fink/rangekeeper/issues/88): `load_property`,
-  `load_base_plan`, `load_fragment`, `data_path`, `path_count`, `show_relations`,
+  `load_base_plan`, `load_fragment`, `data_path`, `path_count`, `show_equations`,
   `show_timeline`, `show_geometry`, `show_graph`, `show_decisions`, `plot_paths`,
   `plot_cash_flows`, `plot_funding`, `plot_target_curve`, `plot_decisions`.
 - **G54 (sequential solve with solved observations)** and **G58 (policy evidence)**.

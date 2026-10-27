@@ -144,7 +144,7 @@ model = draft.commit()
 
 ```python
 # cell 7
-helpers.show_relations(of=model)  # a diagram with no input or output arrows
+helpers.show_equations(of=model)  # a diagram with no input or output arrows
 ```
 
 > **Under the hood: the operator form.** The same equation can use Python operators
@@ -224,7 +224,7 @@ back_outcome["land_cost"]
 
 ```python
 # cell 14
-helpers.show_relations(of=back)  # the same equations, with different markers
+helpers.show_equations(of=back)  # the same equations, with different markers
 ```
 
 ```python
@@ -376,7 +376,7 @@ has 11 lines (cell 4). Cells follow `ruff format` (D15).
 | 3 | 6 | By hand once; replaced in cells 9–11 |
 | 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `value(key=, units=)` and `equations` (D6, D16) |
 | 6, 11 | 6 | G09: staged solve. `reference_income` is a product of fixed values, then `rent_factor * reference_income` is affine |
-| 7, 14 | 10 | Helper draws the relations ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
+| 7, 14 | 10 | Helper draws the equations and their values, with role markers for a Specification ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | aside | 3 | Operator form ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)). G10: `Equation.text` gives canonical text |
 | 9 | 6 | `mortgage_constant` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
 | 10, 13 | 2, 4 | `specify`, `fix`, `free` ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G11: unfixed values are free by default; `fix` takes strings, numbers and Quantities; `roles` table |

@@ -113,7 +113,7 @@ Assignment alone does not display the chart.
 shared `plotly_white`/`plotly_dark` styles, fonts, controls and colour palettes.
 Use colours stay the same across the hierarchy charts. Package colours stay the
 same in the development timeline. `show_timeline()` displays supplied dates;
-`show_relations()` derives its edges from the actual equations and lets the reader
+`show_equations()` derives its edges from the actual equations and lets the reader
 switch Specification roles without changing the relationships. Line charts also
 use different dashes and markers. Helpers apply the style to a copy of the Figure.
 
