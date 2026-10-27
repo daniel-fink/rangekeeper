@@ -65,6 +65,12 @@ The report lists each use that needs a change by hand. These are the changes:
 | `from rangekeeper.model.characteristics import Value` (and `Label`, `Characteristics`, `ValueKind`) | `from rangekeeper.model import Value`. `model.characteristics` keeps only `value()` and `label()` |
 | Code that reads the wire keys `start_inclusive` and `end_exclusive` | The keys are `start` and `end` |
 
+Each public name has one import path, plus the root re-exports `Model`,
+`Specification`, `Run` and `Quantity`. The codemod moves imports of the removed
+alias paths, for example `from rangekeeper.model.expression import Reference`
+becomes `from rangekeeper.model import Reference`. It lists an access through a
+module, such as `system.Entity`, for review.
+
 The codemod does not apply the entries that wait for decisions in
 [#255](https://github.com/daniel-fink/rangekeeper/pull/255), for example `pv`,
 `npv`, `irr`, growth profiles and the builder names. The
@@ -109,7 +115,8 @@ This table lists the public names that 1.x consumers use, with their state in
 | `model.system.classified`, `Model.descendants` | Unchanged | — |
 | `model.system.reducers` | Unchanged | Part of the `Reduction` split |
 | `shared.units.UnitSystem`, `default_units` | `rangekeeper.quantity.UnitSystem`, `default_units` (the codemod moves them). `Model.unit_system` is unchanged | — |
-| `model.measure.Quantity` | `rangekeeper.Quantity` and `rangekeeper.quantity.Quantity` | Quantity text in API arguments ([#255](https://github.com/daniel-fink/rangekeeper/pull/255), pending) |
+| `model.measure.Quantity`, `model.Quantity` | `rangekeeper.Quantity` and `rangekeeper.quantity.Quantity` (the codemod moves them) | Quantity text in API arguments ([#255](https://github.com/daniel-fink/rangekeeper/pull/255), pending) |
+| `model.system.System`, `Entity`, `Assembly`, `Relationship` | `rangekeeper.model` only (the codemod moves them). `model.system` keeps the views, rollups and pivots | — |
 | `rangekeeper.Model`, `model.Definitions` | Unchanged; the Model format is 1.0.0 | Builder names ([#255](https://github.com/daniel-fink/rangekeeper/pull/255), pending) |
 | `io.bundle.Reader`, `write`, `Reader(..., check_index=False)` | Unchanged API. A Bundle with 0.x documents does not open | Identifiers `rangekeeper.bundle/1` and `rangekeeper.parquet/1`; the format freezes at 1.0.0b1 (ADR-017) |
 
