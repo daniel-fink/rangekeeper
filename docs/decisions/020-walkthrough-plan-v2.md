@@ -179,7 +179,7 @@ value = rk.finance.npv(cashflows, rate=0.07, on=holding.start)
 - **Prerequisites.** Lesson 01.
 - **Time.** 60 minutes core, 20 optional.
 - **Library shown.** `rk.Model()`, `edit()` and `commit()`, string equations (the
-  operator form once, in an Under the hood aside), the Specification builder
+  Python form, `rangekeeper.expressions` as `rx`, once in an Under the hood aside), the Specification builder
   with `fix` and `free`, `solve`, `Outcome`, the `underdetermined` status,
   dimensional checks and coded diagnostics.
 - **Finance taught.** Simple financial feasibility analysis (SFFA) front door
@@ -419,8 +419,8 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
    and the chained Specification calls. Cells never write Metadata, a format version,
    `uuid4()` or a `.replace` chain.
 3. **Equations are strings.** Write `b.equation("noi = coverage * debt_service")`.
-   Lesson 02 shows the operator form once, in an Under the hood aside. Both
-   forms are first-class and make the same records
+   Lesson 02 shows the Python form (`rangekeeper.expressions`, as `rx`) once, in an
+   Under the hood aside. Both forms are first-class and make the same records
    ([ADR-015](015-authoring.md#equations)).
 4. **Refer by key or code.** Cells never paste a UUID. Under the hood asides use
    a namespace for reproducible IDs.

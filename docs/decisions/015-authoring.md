@@ -46,16 +46,40 @@ Records stay public. They are for reading results and for full control.
 
 ### Equations
 
-There are two ways to write an equation. Both are first-class: each is fully
-supported, documented and tested, and both produce the same expression records.
+There are two ways to write an equation, both in 1.0. Both are first-class: each is
+fully supported, documented and tested, and both produce the same expression records.
 
-- **Python operators on value handles,** for example
-  `builder.equation(v.value == v.noi / v.cap_rate)`.
-- **A string parser,** for example `builder.equation("value = noi / cap_rate")`.
-  It resolves names against value keys.
+- **Text,** for example `site.equation(equation="value = noi / cap_rate")`. A parser
+  resolves names against value keys and functions against the registry below.
+- **Python,** through `rangekeeper.expressions`, imported as `rx`. A declaration
+  returns a handle, and `site.ref(key=)` finds one. Operators on handles build
+  expressions; `==` makes an equality and `>=` or `<=` a bound, for example
+  `site.equation(value == noi / cap_rate)`. Functions mirror the text names:
+  `rx.profile.compounding(...)` where text writes `rk.profile.compounding(...)`.
+  Python's limits are named once: `rx.max(a, b)`, and `&`, `|` and `~` for `and`,
+  `or` and `not`.
 
-The walkthrough teaches the string form. It shows the operator form once, in an
-Under the hood aside ([ADR-020](020-walkthrough-plan-v2.md)).
+**One registry.** Each equation function is declared once: its name, its named
+parameters with their kinds and units, its result, its evaluation stage, its
+availability rule and the value function that it mirrors. The parser's function
+table, `rx` with typed stubs, and the function table in the docs are generated from
+it. A library function keeps one job: `rk.finance.npv` computes on values, and
+`rx.finance.npv` builds an expression. Neither checks which kind of argument it has.
+
+**Checked when written.** `equation` and `equations` parse and check each equation
+at once against the declared keys, units and reserved words, with suggestions for a
+near miss. `commit()` checks the whole draft again.
+
+**Equivalence tests.** For each registry entry, text and `rx` make identical records
+and the same canonical text; text round-trips through records; and a symbolic
+function evaluated on fixed data equals its value function. A property test does
+the same for random expression trees.
+
+The walkthrough teaches the text form. Lesson 02 shows the Python form once, in an
+Under the hood aside ([ADR-020](020-walkthrough-plan-v2.md)). Amended 2026-10-28 by
+the walkthrough proposed cells (#201, decision D32): a namespace of its own in place
+of a suffix on each function or a separate package, because each function then keeps
+one job and editors complete the names.
 
 An equation is an equality or a bound that must hold. Each one is stored as a
 Constraint over Expressions in a Formulation. `equations(..., formulation=name)`

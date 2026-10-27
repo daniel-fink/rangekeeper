@@ -155,12 +155,20 @@ model = draft.commit()
 helpers.show_equations(of=model)  # a diagram with no input or output arrows
 ```
 
-> **Under the hood: the operator form.** The same equation can use Python operators
-> on value handles. Both forms make the same records.
+> **Under the hood: the same equation in Python.** `rangekeeper.expressions`, imported
+> as `rx`, writes equations with Python operators. A declaration returns a handle, and
+> `site.ref(key=)` finds the handle of a value declared earlier. Text and Python make
+> the same records, and `.text` prints the text form. A function that text writes as
+> `rk.profile.compounding(...)` is `rx.profile.compounding(...)` in Python (D32).
 >
 > ```python
-> v = model.edit().entity(code="property").handles()
-> assert (v.noi == v.coverage * v.debt_service).text == "noi = coverage * debt_service"
+> import rangekeeper.expressions as rx
+>
+> site = model.edit().entity(code="property")
+> noi = site.ref(key="noi")
+> coverage = site.ref(key="coverage")
+> debt_service = site.ref(key="debt_service")
+> assert (noi == coverage * debt_service).text == "noi = coverage * debt_service"
 > ```
 
 ## 4. The mortgage constant, by hand once
@@ -418,7 +426,7 @@ has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 | 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `value(key=, units=)` and `equations` (D6, D16) |
 | 6, 11 | 6 | G09: staged solve. `reference_income` is a product of fixed values, then `rent_factor * reference_income` is affine |
 | 7, 14 | 10 | Helper draws the equations and their values, with role markers for a Specification ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
-| aside | 3 | Operator form ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)). G10: `Equation.text` gives canonical text |
+| aside | 3 | G78: `rangekeeper.expressions` (`rx`), `site.ref(key=)` and operators on handles ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)); G10: `Equation.text` gives canonical text |
 | 9 | 6 | `rk.finance.payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)); the constant is derived from it (D19) |
 | 10, 13 | 2, 4 | `specify`, `fix`, `free` ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G11: unfixed values are free by default; `fix` takes strings, numbers and Quantities; `roles` table |
 | 11, 13 | 8 | `solve` and `Outcome` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126), [#127](https://github.com/daniel-fink/rangekeeper/issues/127)). G12: `solve` resolves the Model that made the Specification, with no resolver argument |

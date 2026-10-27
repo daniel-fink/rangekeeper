@@ -37,7 +37,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Code | A catalogue identifier, such as a Classification code | `model` | — |
 | Label | A Classification attached to an Entity in addition to its main Classification | `model` | — |
 | Formulation | A named set of equations over Values. It does not say which values are known | `model` | — |
-| Equation | One relation that must hold between values: an equality, or a bound such as `b_start >= shared_start + 1 year`. It is written as text or with operators, and stored as a Constraint over Expressions in a Formulation. It has no calculation direction | `model` | — |
+| Equation | One relation that must hold between values: an equality, or a bound such as `b_start >= shared_start + 1 year`. It is written as text or in Python with `rx` (`rangekeeper.expressions`), and stored as a Constraint over Expressions in a Formulation. It has no calculation direction | `model` | — |
 | Expression | One mathematical expression in an equation | `model` | — |
 | Provenance | Sources, Claims and Facts that support recorded content | `model` | — |
 | Geometry pin | An exact link to native geometry files and their Entity mappings | `model` | — |
@@ -109,7 +109,8 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | --- | --- | --- | --- |
 | Draft | A mutable set of additions or changes to a Model, from `model.edit()`. `commit()` checks it once and returns a new revision | `model` | Builder |
 | Namespace | A UUID that makes the IDs of a Model and its drafts deterministic | `model` | — |
-| Handle | A draft's reference to an object, such as an entity, that does not have a UUID yet | `model` | — |
+| Handle | A draft's reference to an object, such as an entity, that does not have a UUID yet. A value's handle also builds equations with Python operators | `model`, `expressions` | — |
+| Expressions (`rx`) | The Python form of equations: `import rangekeeper.expressions as rx`. It mirrors the equation functions of the text form and makes the same records | `expressions` | Nested `equal(left=..., right=add(...))` constructors |
 
 ## Words with one meaning only
 

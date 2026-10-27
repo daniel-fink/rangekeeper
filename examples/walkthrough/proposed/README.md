@@ -68,6 +68,7 @@ pass.
 | D29 | How do path generators and relationships read? | Path generators are series maths, like profiles (D12), so they leave `finance` for `rk.market` (`Dynamics`, `Paths`). Correlations are given by name. Relationships have one snake_case name each (`contains`, `serves`); the other direction is `direction=rk.model.Direction.INCOMING`. The data package maps the source names | 04–07 |
 | D30 | How are Outcomes compared? | With one call whatever their number: `rk.execution.compare(outcomes={name: outcome}, keys=[...], baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences, paired by path when the Outcomes hold paths. There is no `Outcome.compare(other=)` and no `rk.execution.table`, so the call does not change between two Outcomes and more | 02–07 |
 | D31 | How do use markets move together? | The author composes it. `rk.market.generate` makes independent named series; a structure such as a shared market index times a factor for each use is ordinary Flow arithmetic or a Model equation (`use_index = market_index * use_factor`). There is no correlation argument or correlated generator class: a correlation method embeds choices (which shocks correlate, shared crashes, missing pairs) that the author should make in view. Same reasoning as D2 and D23 | 04, 07 |
+| D32 | Text or Python for equations? | Both, in 1.0, from one registry of equation functions. Text is the form the lessons teach and the documents show; `rangekeeper.expressions`, imported as `rx`, is the Python form. `rx` mirrors the functions (`rx.profile.compounding(...)` where text writes `rk.profile.compounding(...)`), handles carry the Flow methods, a declaration returns a handle and `site.ref(key=)` finds one, literals are text (`rate="2 % pa"`), and Python's limits are named once (`rx.max`, `&`, `\|`, `~`). Each library function keeps one job: `rk.finance.npv` computes on values, `rx.finance.npv` builds an expression. The parser table, `rx` with typed stubs and the docs table are generated from the registry. Equivalence tests require text and `rx` to make identical records. Both forms are checked when written, with suggestions. Not a suffix such as `.symbols()` (poor completion, no form for methods), not a separate package | 02–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -296,6 +297,22 @@ rk.execution.compare(
 )  # G26
 ```
 
+### Equations in Python
+
+```python
+import rangekeeper.expressions as rx  # G78, D32
+
+a_income = site.value(key="a_income", units="AUD pa")  # a declaration returns a handle
+a_open = site.date(key="a_open")
+a_rent = site.flow(key="a_rent", units="AUD", periods=years)
+site.equation(
+    a_rent == rx.profile.compounding(initial=a_income, rate="2 % pa", start=a_open)
+)
+noi = site.ref(key="noi")  # the handle of a value declared earlier
+(noi == coverage * debt_service).text  # "noi = coverage * debt_service"
+rx.max(a, b), (a >= b) & (c >= d), loan_principal.diff()
+```
+
 ### Equation strings
 
 Equations use value keys, dotted paths (`building_a.income`),
@@ -348,8 +365,8 @@ use. **Issue** is filled in when the issue is filed.
 | 4 | — | Flow methods: `shift(by=)`, `trim(span=)` with a Period, `cumulative()`, `diff()`, `total()`, `since(on=)`, `first()`, `last()`, `min()`, `max()` | G05 | `flow` | 01·11–12, 20; 03·13; 05·8 | #103, #162 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
-| 7 | — | Function catalogue for equations, called as `rk.profile.*`, `rk.flow.*`, `rk.finance.*` and Flow methods, with the reserved words and the literal rule | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
-| 8 | — | Flow-valued string equations, with Periods from declarations and operands | G18 | `model` | 03·6–8 | #145, #163 |
+| 7 | — | Function catalogue for equations, called as `rk.profile.*`, `rk.flow.*`, `rk.finance.*` and Flow methods, with the reserved words and the literal rule; read from the registry of G78 | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
+| 8 | — | Flow-valued string equations, with Periods from declarations and operands, parsed and checked when written (D32) | G18 | `model` | 03·6–8 | #145, #163 |
 | 9 | — | Date values, date arithmetic, `rk.duration.NEVER` and `never` in equation text | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
 | 10 | — | `rk.Model(name=, namespace=, description=)`, read-only `model.unit_system`, `ModelDraft` with `add_entity` and `entity`, entity handles with `value(key=, units=)`, `flow(key=, units=)` and `date(key=)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
@@ -381,6 +398,7 @@ use. **Issue** is filled in when the issue is filed.
 | 37 | — | `across` matching: each path series fixes the Model value with the same key. `series=` maps a value whose key differs, or the members of a keyed value, to path series. A series that matches no value, a value that `series=` names but the paths lack, or a value with two sources raises an error that lists the path series and the Model keys | G73 | `specification` | 04·11; 05·5; 07·3b | #138 |
 | 38 | — | Enums for the words rangekeeper defines: `rk.specification.Role`, `rk.execution.Criterion`, `rk.execution.ReviewResult`, `rk.execution.Status`, `rk.errors.Code`; `rk.model.Direction` made public (D26) | G76 | `specification`, `execution`, `errors`, `model` | 02·18–21; 05·8, 18; 06·13; 07·14 | #134, #154 |
 | 39 | — | Piecewise equations with a free value: the solve picks the active side of each `max` or `min` (for example the equity-first cascade), solves the affine problem and verifies the choice; a wrong choice is reported, not hidden | G77 | `execution` | 03·16 | #125, #152, #164 |
+| 40 | — | One registry of equation functions (name, named parameters with kinds and units, result, evaluation stage, availability rule, the value function it mirrors); the parser table, `rangekeeper.expressions` (`rx`) with typed stubs, and the docs function table generated from it; handles from declarations and `site.ref(key=)`; operators, `rx.max`, `&`, `\|`, `~`; Flow methods on handles; checks when an equation is written, with suggestions; equivalence tests (text and `rx` give identical records, text round-trips, a symbolic function on fixed data equals its value function) | G78 | `model` | 02 aside | #143, #145, #163 |
 
 Scope changes for existing issues:
 

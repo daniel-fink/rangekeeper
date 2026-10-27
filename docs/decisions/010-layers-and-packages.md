@@ -79,7 +79,10 @@ contracts in the test suite enforce this rule.
 ### Public namespaces
 
 Users import from `rangekeeper` (Model, Specification, Run and Quantity), `duration`, `profile`, `flow`,
-`market`, `finance`, `model`, `specification`, `execution`, `io`, `errors` and `quantity`.
+`market`, `finance`, `model`, `expressions`, `specification`, `execution`, `io`, `errors` and
+`quantity`. `expressions` (imported as `rx`) builds equations in Python. It sits in the
+`model` layer and is generated from the equation-function registry (#201, decision
+D32; [ADR-015](015-authoring.md#equations)).
 `schema` and `shared` are internal. Each owner re-exports the records that its
 users need. For example, `flow` exports Flow, `model` exports Entity and
 `specification` exports Assignment. [ADR-017](017-api-and-formats.md) defines
