@@ -1,6 +1,6 @@
 # ADR-022: Choose between design alternatives with rules
 
-Status: proposed. Recorded: 2026-10-27.
+Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27.
 
 ## Problem
 

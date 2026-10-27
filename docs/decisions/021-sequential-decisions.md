@@ -1,6 +1,6 @@
 # ADR-021: Decide values by rules over market paths
 
-Status: proposed. Recorded: 2026-10-27.
+Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27.
 
 ## Problem
 

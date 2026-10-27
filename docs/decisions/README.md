@@ -57,12 +57,13 @@ interim API; all lessons are rebuilt for 1.x.
 ## Executor designs for lessons 05 and 07
 
 These records design the executor features that walkthrough lessons 05 and 07
-need ([ADR-019](019-walkthrough-direction.md)). #215 and #216 implement them.
+need ([ADR-019](019-walkthrough-direction.md)). They were accepted on 2026-10-27.
+#215 and #216 implement them.
 
 | Decision | Status | Scope |
 | --- | --- | --- |
-| [ADR-021: Decide values by rules over market paths](021-sequential-decisions.md) | Proposed | Rules that decide one value, observations and availability, evaluation order, staged solves for each path, decision traces, replay and paired comparison; amends ADR-013 and ADR-014 |
-| [ADR-022: Choose between design alternatives with rules](022-design-alternatives.md) | Proposed | Alternatives as Model revisions, choice keys, realised structure for each path, strategy comparison and the premium question; amends ADR-001 |
+| [ADR-021: Decide values by rules over market paths](021-sequential-decisions.md) | Accepted for 1.0; implementation pending | Rules that decide one value, observations and availability, evaluation order, staged solves for each path, decision traces, replay and paired comparison; amends ADR-013 and ADR-014 |
+| [ADR-022: Choose between design alternatives with rules](022-design-alternatives.md) | Accepted for 1.0; implementation pending | Alternatives as Model revisions, choice keys, realised structure for each path, strategy comparison and the premium question; amends ADR-001 |
 
 ## Implementation history
 
