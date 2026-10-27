@@ -1330,10 +1330,6 @@
         {
           "category": "uuid",
           "kind": "Value"
-        },
-        {
-          "category": "uuid",
-          "kind": "Measurement"
         }
       ],
       "ordered": false,
@@ -2137,47 +2133,6 @@
       ],
       "ordered": false,
       "required": true
-    }
-  },
-  "Measurement": {
-    "id": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "measure": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "Measure"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "quantity": {
-      "many": false,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "record",
-          "kind": "Quantity"
-        }
-      ],
-      "ordered": false,
-      "required": false
     }
   },
   "Metadata": {

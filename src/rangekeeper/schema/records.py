@@ -2082,50 +2082,6 @@ class Measure(Record):
         return cast('tuple[str, ...] | None', self._field('tags'))
 
 
-class Measurement(Record):
-    'An identified measurable property with a Measure and an optional Quantity.'
-    __slots__ = ()
-    _kind = 'Measurement'
-
-    def __init__(self, *,
-        measure: UUID,
-        quantity: Quantity | None | Unset = UNSET,
-        id: UUID,
-    ) -> None:
-        self._initialize({
-            'measure': measure,
-            'quantity': quantity,
-            'id': id,
-        })
-
-    def replace(self, *,
-        measure: UUID | Unset = UNSET,
-        quantity: Quantity | None | Unset = UNSET,
-        id: UUID | Unset = UNSET,
-    ) -> Measurement:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'measure': measure,
-            'quantity': quantity,
-            'id': id,
-        })
-
-    @property
-    def measure(self) -> UUID:
-        'Measure defining meaning and canonical units, referenced by its stable UUID.'
-        return cast('UUID', self._field('measure'))
-
-    @property
-    def quantity(self) -> Quantity | None:
-        "Optional recorded numerical content. Its units must be compatible with the Measure's canonical units. Omission or null denotes unresolved content."
-        return cast('Quantity | None', self._field('quantity'))
-
-    @property
-    def id(self) -> UUID:
-        'Stable identity of the Measurement, used by provenance Facts.'
-        return cast('UUID', self._field('id'))
-
-
 class Metadata(Record):
     'Identity, description, and optional lineage of one immutable document revision.'
     __slots__ = ()
@@ -4286,7 +4242,6 @@ _TYPES = {
     'LibraryVersion': LibraryVersion,
     'Location': Location,
     'Measure': Measure,
-    'Measurement': Measurement,
     'Metadata': Metadata,
     'Method': Method,
     'Model': Model,
@@ -4327,4 +4282,4 @@ _TYPES = {
     'Value': Value,
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionOutcome', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionOutcome', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']

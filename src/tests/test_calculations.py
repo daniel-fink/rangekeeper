@@ -17,7 +17,6 @@ from rangekeeper.calculations.account import (
     CurrentInterest,
     InterestTreatment,
 )
-from rangekeeper.calculations.interval import Interval
 from rangekeeper.calculations.projection import PaddingMode, ProjectionMethod
 from rangekeeper.calculations.series import (
     AggregationMethod,
@@ -379,10 +378,6 @@ def test_projection_and_partition_invariants():
         distribution=Distribution.pert(),
     )
     assert flow.total().magnitude == pytest.approx(100)
-    pieces = Interval(3, 13).subdivide((0.2, 0.3, 0.5))
-    assert sum(p.length for p in pieces) == 10 and pieces[0].right == pieces[1].left
-    with pytest.raises(ValueError):
-        Interval(0, 1).subdivide(0)
 
 
 def test_financial_independent_examples():

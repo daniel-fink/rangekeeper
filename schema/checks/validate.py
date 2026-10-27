@@ -26,7 +26,6 @@ for name, _file in (
     ("Classification", "classification"),
     ("Measure", "measure"),
     ("Quantity", "measure"),
-    ("Measurement", "measure"),
     ("Characteristics", "characteristics"),
     ("Label", "characteristics"),
     ("Value", "characteristics"),
@@ -78,16 +77,18 @@ cases = []
 measurement = {
     "id": fixture["entities"][0]["characteristics"]["values"][0]["id"],
     "measure": fixture["definitions"]["measures"][0]["id"],
+    "key": "area",
+    "kind": "measurement",
 }
 for quantity in (
     None,
     {"magnitude": 0, "units": "m^2"},
     {"magnitude": 855000, "units": "cm^2"},
 ):
-    validators["Measurement"].validate(dict(measurement, quantity=quantity))
+    validators["Value"].validate(dict(measurement, quantity=quantity))
     if quantity is not None:
         validators["Quantity"].validate(quantity)
-validators["Measurement"].validate(measurement)
+validators["Value"].validate(measurement)
 for quantity in (
     {},
     {"magnitude": 1},
@@ -100,12 +101,8 @@ for quantity in (
     {"magnitude": 1, "units": "m^2", "measure": measurement["measure"]},
 ):
     cases.append(("Quantity", quantity))
-    cases.append(("Measurement", dict(measurement, quantity=quantity)))
-    cases.append(
-        ("Value", dict(measurement, key="area", kind="measurement", quantity=quantity))
-    )
-cases.append(("Measurement", dict(measurement, amount=85.5)))
-cases.append(("Value", dict(measurement, key="area", kind="measurement", amount=85.5)))
+    cases.append(("Value", dict(measurement, quantity=quantity)))
+cases.append(("Value", dict(measurement, amount=85.5)))
 legacy_value = copy.deepcopy(fixture["entities"][0]["characteristics"]["values"][0])
 legacy_value["type"] = legacy_value.pop("kind")
 cases.append(("Value", legacy_value))
