@@ -172,10 +172,10 @@ strategies = {
     "switch": switch,
     "both": switch.with_rules(rules=timing),
 }
-outcomes = {
-    name: rk.execution.solve(specification=spec.across(paths=use_paths, assign=assign))
-    for name, spec in strategies.items()
-}
+outcomes = {}
+for name, strategy in strategies.items():
+    on_paths = strategy.across(paths=use_paths, assign=assign)
+    outcomes[name] = rk.execution.solve(specification=on_paths)
 ```
 
 ## 4. Paired comparison of four strategies
@@ -194,12 +194,7 @@ comparison.summary()  # mean difference, share better, 5 % quantile
 
 ```python
 # cell 10
-helpers.plot_target_curve(
-    distributions={
-        name: outcome.distribution(key="equity_npv")
-        for name, outcome in outcomes.items()
-    }
-)
+helpers.plot_target_curve(outcomes=outcomes, key="equity_npv")
 ```
 
 ## 5. What gets built
@@ -233,7 +228,12 @@ strategy at several provision costs and confirm that the decisions are the same.
 
 ```python
 # cell 13
-premiums = {p: {"provision": p} for p in ("0 AUD", "2.5e6 AUD", "5e6 AUD", "7.5e6 AUD")}
+premiums = {
+    "0 AUD": {"provision": "0 AUD"},
+    "2.5e6 AUD": {"provision": "2.5e6 AUD"},
+    "5e6 AUD": {"provision": "5e6 AUD"},
+    "7.5e6 AUD": {"provision": "7.5e6 AUD"},
+}
 premium_sweep = (
     strategies["both"].cases(cases=premiums).across(paths=use_paths, assign=assign)
 )
@@ -261,7 +261,16 @@ same generator with a new seed.
 
 ```python
 # cell 15
-thresholds = {t: {"switch_threshold": t} for t in (1.00, 1.05, 1.10, 1.20)}
+thresholds = {
+    "1.00": {"switch_threshold": 1.00},
+    "1.05": {"switch_threshold": 1.05},
+    "1.10": {"switch_threshold": 1.10},
+    "1.20": {"switch_threshold": 1.20},
+}
+```
+
+```python
+# cell 15b
 tunable = (
     strategies["both"]
     .parameters(switch_threshold=1.10)
@@ -277,7 +286,7 @@ tunable = (
 ```
 
 ```python
-# cell 15b
+# cell 15c
 train = rk.execution.solve(specification=tunable.across(paths=use_paths, assign=assign))
 by_threshold = train.compare(other=outcomes["timing"], keys=["equity_npv"]).by_case()
 best = by_threshold.best(criterion="mean")
@@ -311,16 +320,33 @@ draft = residential.edit(name="Building A expanded")
 site = draft.entity(code="property")
 draft.include(fragment=helpers.load_fragment(name="building_a_extra_floors"))
 extra = rk.model.Filter(classification="floor", labels={"phase": "expansion"})
-scope = {"over": "spatiallyContains", "root": "building_a", "contributors": extra}
-site.rollup(key="x_income", of="income", **scope)
-site.rollup(key="x_cost", of="build_cost", **scope)
+```
+
+Narrative: the new floors have their own income and cost, rolled up under Building A.
+
+```python
+# cell 17b
+site.rollup(
+    key="x_income",
+    of="income",
+    over="spatiallyContains",
+    root="building_a",
+    contributors=extra,
+)
+site.rollup(
+    key="x_cost",
+    of="build_cost",
+    over="spatiallyContains",
+    root="building_a",
+    contributors=extra,
+)
 ```
 
 Narrative: the expansion is built in one year from its date, and earns from the year
 after. Add both to the existing works and income.
 
 ```python
-# cell 17b
+# cell 17c
 site.date(key="expansion_date")
 site.equations("x_open = expansion_date + 1 year")
 site.extend(
@@ -391,10 +417,11 @@ comparison.select("switch", "both").summary()
 
 ```python
 # cell 19 (checks)
-assert len({o.run.market_paths for o in outcomes.values()}) == 1  # the same paths
+for outcome in outcomes.values():
+    assert outcome.run.market_paths == use_paths.id  # the same paths
 provision_paid = both.table("provision_cost")["provision_cost"]
 assert (provision_paid < 0).all()  # paid on every path
-assert both.case(key=use_paths.keys[0]).model.id in {residential.id, hotel.id}
+assert both.case(key=use_paths.keys[0]).model.id in (residential.id, hotel.id)
 assert rk.model.diff(
     before=residential, after=hotel
 ).added_entities  # a structural change
@@ -414,7 +441,7 @@ how-to guides.
 
 ## Cell budget
 
-18 core code cells, 4 optional cells and 1 check cell (budget 20–25), 3 exercise
+19 core code cells, 5 optional cells and 1 check cell (budget 20–25), 3 exercise
 solutions. The longest cell has 15 lines (cell 6). Cells follow
 `ruff format` (D15).
 
@@ -435,9 +462,9 @@ solutions. The longest cell has 15 lines (cell 6). Cells follow
 | 12 | 7, 8 | G46 for batches: `Outcome.rollup(...)` over each case's realised Model |
 | 13 | 8 | G67: `decisions().same_across_cases()` |
 | 14 | 8 | G68: `by_case().breakeven(key, criterion=)` and `best(criterion=)` |
-| 15 | 2 | G57 |
+| 15–15c | 2 | G57 |
 | 16 | 4, 6 | G69: `MarketPaths.generator` rebuilds the generator from the capture record |
-| 17 | 2, 3 | G61, G17; G27 (`extend` adds terms to one side of an equation) |
+| 17–17c | 2, 3 | G61, G17; G27 (`extend` adds terms to one side of an equation) |
 | 18 | 6 | G63 with two alternative keys at once |
 | 19 | 8 | G62, G33 |
 

@@ -242,7 +242,12 @@ reference rent. A required rent is a threshold, not a forecast.
 ```python
 # cell 12
 factor = front_outcome["rent_factor"]
-{use: factor * data[f"{use}_rent"] for use in ("hotel", "residential", "retail")}
+required_rent = {
+    "hotel": factor * data["hotel_rent"],
+    "residential": factor * data["residential_rent"],
+    "retail": factor * data["retail_rent"],
+}
+required_rent
 ```
 
 ## 6. The back door

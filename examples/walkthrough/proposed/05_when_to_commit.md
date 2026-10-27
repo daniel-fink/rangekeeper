@@ -266,6 +266,16 @@ sweep it. Cases and paths multiply: each threshold runs on every path.
 
 ```python
 # cell 17
+thresholds = {
+    "1.00": {"start_threshold": 1.00},
+    "1.02": {"start_threshold": 1.02},
+    "1.05": {"start_threshold": 1.05},
+    "1.08": {"start_threshold": 1.08},
+}
+```
+
+```python
+# cell 17b
 swept = (
     strategy.parameters(start_threshold=1.05)
     .decide(
@@ -275,7 +285,7 @@ swept = (
         window=(date(2027, 1, 1), date(2031, 1, 1)),
         otherwise="never",
     )
-    .cases(cases={f"{t:.2f}": {"start_threshold": t} for t in (1.00, 1.02, 1.05, 1.08)})
+    .cases(cases=thresholds)
 )
 sweep = rk.execution.solve(specification=swept.across(paths=paths, assign=assign))
 sweep.compare(other=fixed_out, keys=["equity_npv"]).by_case().summary()
@@ -334,11 +344,10 @@ cheap.compare(other=fixed_out, keys=["equity_npv"]).where(b_start="never").summa
 ```python
 # cell 18 (checks)
 assert flex_out.run.market_paths == fixed_out.run.market_paths == paths.id
-assert all(
-    row.available_on <= row.decision_date for row in flex_out.decisions().observations()
-)
-starts = flex_out.decisions().where(value="b_start", result="decided")
-assert all(row.observed["headroom"] >= row.observed["b_cost"] for row in starts)
+for row in flex_out.decisions().observations():
+    assert row.available_on <= row.decision_date
+for row in flex_out.decisions().where(value="b_start", result="decided"):
+    assert row.observed["headroom"] >= row.observed["b_cost"]
 assert flex_out.case(key=paths.keys[0]).run.policy_evidence.verified
 ```
 
@@ -356,8 +365,8 @@ between designs.
 
 ## Cell budget
 
-16 core code cells, 1 optional cell and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 14 lines (cell 11). Cells follow `ruff format` (D15).
+16 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
+solutions. The longest cell has 14 lines (cells 11 and 17b). Cells follow `ruff format` (D15).
 
 ## Rule check
 
@@ -374,7 +383,7 @@ solutions. The longest cell has 14 lines (cell 11). Cells follow `ruff format` (
 | 10 | 2, 3 | G27 (`extend`); G17 (`at`, `rk.flow.event`) |
 | 13–16 | 8 | G56: `Outcome.compare(other=, keys=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
-| 17 | 2 | G57: Specification parameters for rules, and cases × paths |
+| 17–17b | 2 | G57: Specification parameters for rules, and cases × paths |
 | 18 | 8 | G58: policy evidence in the Run (`policy_evidence.verified`), observations with `available_on` |
 
 ## Cells for #213

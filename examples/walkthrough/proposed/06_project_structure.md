@@ -179,14 +179,14 @@ graph.find(filter=rk.model.Filter(name="buildingAretail")).table("code", "name",
 
 ```python
 # cell 17
-for request in ({"name": "buildingAretail"}, {"code": "building_c"}):
-    try:
-        graph.entity(**request)
-    except (
-        rk.errors.AmbiguousReferenceError,
-        rk.errors.MissingReferenceError,
-    ) as error:
-        print(type(error).__name__, error.requested, error.candidates)
+try:
+    graph.entity(name="buildingAretail")
+except rk.errors.AmbiguousReferenceError as error:
+    print(error.requested, error.candidates)  # two codes
+try:
+    graph.entity(code="building_c")
+except rk.errors.MissingReferenceError as error:
+    print(error.requested, error.candidates)  # the nearest codes
 ```
 
 ## 9. Lesson 02's income from the floors
@@ -331,18 +331,17 @@ three uses add up to the total.
 
 ```python
 # solution
-by_use = {
-    use: outcome.model.rollup(
+total = rk.Quantity(text="0 AUD pa")
+for use in ("hotel", "residential", "retail"):
+    income = outcome.model.rollup(
         of="income",
         over="spatiallyContains",
         root="property",
         contributors=rk.model.Filter(classification="floor", labels={"use": use}),
-    ).value
-    for use in ("hotel", "residential", "retail")
-}
-assert rk.quantity.isclose(
-    actual=sum(by_use.values()), expected=outcome["reference_income"]
-)
+    )
+    print(use, income.value)
+    total = total + income.value
+assert rk.quantity.isclose(actual=total, expected=outcome["reference_income"])
 ```
 
 **Try it 3: the rent that Building B needs.** Fix the land at 20 million AUD and free

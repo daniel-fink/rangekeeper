@@ -76,7 +76,9 @@ the plan's total. The other packages follow the same rule.
 ```python
 # cell 4
 areas = plan.areas["building_a"]
-hard_costs = sum(areas[use] * plan.rates[use] for use in areas)
+hard_costs = rk.Quantity(text="0 AUD")
+for use in areas:
+    hard_costs = hard_costs + areas[use] * plan.rates[use]
 soft_costs = 0.10 * hard_costs
 contingency = 0.10 * hard_costs
 budget = hard_costs + soft_costs + contingency

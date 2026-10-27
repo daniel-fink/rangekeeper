@@ -60,6 +60,7 @@ pass.
 | D21 | How are functions named in equation strings? | As in Python, with the `rk.` namespace: `rk.profile.uniform(...)`, `rk.flow.event(...)`, `rk.finance.npv(...)`. Operations on one Flow are methods: `operating.at(on=...)`, `project_cash.trim(end=...)`, `loan_draws.cumulative()`, `headroom.min()`. Only `max(a, b)` stays bare. Eight words are reserved: `rk`, `max`, `never`, `and`, `or`, `not`, `true`, `false` | 03–07 |
 | D22 | ~~How does a known-data Account take transactions?~~ | Withdrawn with the Account (D2) | — |
 | D23 | When is something a library function, and when is it composition? | Compose when it is plain arithmetic on Flows: a balance is `cumulative()`, a repayment at sale is `rk.flow.event(amount=loan_balance.at(on=sale_date), on=sale_date)`, a terminal value is `shift`, divide and `trim`. Keep a library function when it carries a real convention: `rk.finance.interest(..., method=)` (compounding, day count), `npv`, `irr`, `payment`, profiles. So there is no `settle`, no account and no reversion helper | 01–07 |
+| D24 | How much Python may a cell use? | Plain Python only. Cells use no `**` unpacking, no comprehensions or generator expressions, and no f-strings that build keys. A `for` loop may repeat a calculation, a display or a check over a short list; it never declares values (D16). Where a few cases differ, write each one out by key. A helper takes the batch it draws (`plot_target_curve(outcomes=, key=)`), so the cell does not build a mapping for it | 01–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -396,6 +397,8 @@ Not filed as gaps:
     color_by=)` draws a Model's entities, marks the entities in `highlight` and
     colours by a classification or a label (lesson 06). Give `name=` or `model=`,
     not both. The viewer reads the captured Speckle transport, not a server.
+  - **Batch arguments.** A helper that draws several Outcomes takes the mapping and
+    the key, for example `plot_target_curve(outcomes=, key=)` (D24).
   - **Signatures follow the 1.0 API.** Today's drafts on `develop` take today's
     records and a `path=`: `show_timeline(phases=, path=)` and
     `show_relations(formulation=, names=, specifications=, path=)`. The proposed
