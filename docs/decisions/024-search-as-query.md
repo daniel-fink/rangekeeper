@@ -1,6 +1,6 @@
 # ADR-024: Search as a query over a range of cases
 
-Status: proposed. Recorded: 2026-10-28.
+Status: accepted for 1.0; implementation pending. Recorded: 2026-10-28.
 
 ## Problem
 
