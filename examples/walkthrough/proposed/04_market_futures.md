@@ -52,9 +52,8 @@ model.equations  # the relations from lesson 03
 ## 2. One market driver
 
 Narrative: lesson 03 grew rents at a fixed rate in each case. Here, one property-wide
-rent index carries the market. The index already contains the trend, so the Model
-must not also apply rent growth. Add the index as a driver Flow and use it in the
-income relation. Fix rent growth at zero.
+rent index carries the market, trend included. Add the index as a driver Flow and use
+it in the income relation.
 
 ```python
 # cell 3
@@ -66,18 +65,41 @@ draft = model.edit()
 site = draft.entity(code="property")
 site.flow(key="rent_index", units="ratio", periods=years)
 site.replace(key="income", equation="income = rent_index * (a_rent + b_rent)")
+```
+
+Narrative: lesson 03's rents compound at `rent_growth`. Now the index carries all
+growth, so each rent is flat at today's income, and the Model has no rent growth to
+apply. The Model cannot count growth twice, so no Specification has to remember to
+set a rate to zero.
+
+```python
+# cell 3b
+site.replace(
+    key="a_rent",
+    equation="a_rent = rk.profile.constant(initial=a_income, start=a_open)",
+)
+site.replace(
+    key="b_rent",
+    equation="b_rent = rk.profile.constant(initial=b_income, start=b_open)",
+)
+site.remove(key="rent_growth")
 model = draft.commit()
 ```
+
+Narrative: lesson 03's Specification fixed a rent growth rate. This Model has no
+rent growth, so free that value before you move the Specification to the new
+revision. `on` refuses a fixed value that the new revision does not declare.
 
 ```python
 # cell 4
 base = rk.io.load(path=helpers.data_path(name="03_base_case.specification.json"))
-base = base.on(model=model).fix(rent_growth="0 % pa")  # the index carries the trend
+base = base.free("rent_growth").on(model=model)
 base.roles  # lesson 03's plan, assumptions, debt and funding, by name
 ```
 
 > **Finance note.** Market growth applied twice is a common error. If the index
-> already grows 2 % a year, a 2 % rent growth on top of it gives 4 %.
+> already grows 2 % a year, a 2 % rent growth on top of it gives 4 %. Put the growth
+> in one place: here, the index.
 
 ## 3. A path, one component at a time
 
@@ -167,7 +189,9 @@ npv.summary()  # mean, standard deviation, 5 % and 95 % quantiles
 
 ```python
 # cell 13
-helpers.plot_target_curve(distributions={"Paths": npv}, mark=average["unlevered_npv"])
+helpers.plot_target_curve(
+    outcomes={"Paths": outcomes}, key="unlevered_npv", mark=average["unlevered_npv"]
+)
 ```
 
 ## 7. The flaw of averages
@@ -245,16 +269,27 @@ assert wide.distribution(key="unlevered_npv").quantile(level=0.05) < npv.quantil
 )
 ```
 
-**Try it 2: growth applied twice.** Fix rent growth at 2 % pa as well as the
-index. How much does the mean NPV rise? Why is this wrong?
+**Try it 2: growth applied twice.** In a draft, make Building A's rent compound at
+2 % pa again, as in lesson 03, on top of the index. How much does the mean NPV rise?
+Why is this wrong?
 
 ```python
 # solution
+draft = model.edit()
+site = draft.entity(code="property")
+site.replace(
+    key="a_rent",
+    equation="a_rent = rk.profile.compounding(initial=a_income, rate=2 % pa, start=a_open)",
+)
+twice_model = draft.commit()
 twice = rk.execution.solve(
-    specification=base.fix(rent_growth="2 % pa").across(paths=paths, assign=assign)
+    specification=base.on(model=twice_model).across(paths=paths, assign=assign)
 )
 twice.distribution(key="unlevered_npv").mean - npv.mean
 ```
+
+The mean NPV rises, but the market did not change. The index already contains the
+trend, so Building A's rent now grows twice.
 
 **Try it 3: another seed.** Generate the same count with seed 2028. How much does
 the mean NPV move? What does this say about the path count?
@@ -292,15 +327,16 @@ known at each date.
 
 ## Cell budget
 
-16 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 10 lines (cells 3 and 17). Cells follow `ruff format` (D15).
+17 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
+solutions. The longest cell has 11 lines (cell 3b). Cells follow `ruff format` (D15).
 
 ## Rule check
 
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26: `rk.io.load` and `rk.io.save` for any document kind; `model.equations` display ([G10](README.md#gap-list)) |
-| 3 | 2, 3 | G27: equation keys and entity `replace(key=, equation=)`; G28: entity `flow(key=, units=, periods=)` |
+| 3–3b | 2, 3 | G27: equation keys, entity `replace(key=, equation=)` and `remove(key=)`; G28: entity `flow(key=, units=, periods=)` |
+| 4 | 2, 5 | G21: `free` then `on(model=)`; `on` refuses a fixed value that the new revision does not declare |
 | 5–7 | 6, 11 | `MarketDynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)` |
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
 | 8–9 | 4, 6 | `MarketPaths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |

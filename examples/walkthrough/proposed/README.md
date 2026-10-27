@@ -327,7 +327,7 @@ use. **Issue** is filled in when the issue is filed.
 | 17 | — | Filter additions: `where=`, `within=`, `has=`, `name=` | G38 | `model` | 06·10, 16; 07·4, 6 | #121 |
 | 18 | — | Error and diagnostic fields: ambiguous lookups, non-affine unknowns, broken constraints | G14, G42, G52 | `errors`, `execution` | 02·20–21; 05·7; 06·16–17, 24 | #134, #154, #155, #156 |
 | 19 | — | Specification roles: unfixed values are free; `fix` input types; a later `fix` of a key replaces the earlier one; `roles` | G11 | `specification` | 02·10, 13; 03·exercises | #144 |
-| 20 | — | `Specification.on(model)` | G21 | `specification` | 03·14, 20; 05·11, 13 | #144 |
+| 20 | — | `Specification.on(model)`; it refuses a fixed value that the new revision does not declare, so a removed value is freed first | G21 | `specification` | 03·14, 20; 04·4; 05·11, 13 | #144 |
 | 21 | — | Cases and batch Outcomes: `cases(mapping)`, `case`, `table`, `stream`, `rk.execution.table` | G13, G19, G20 | `specification`, `execution` | 02·15; 03·10–14 | #127, #144 |
 | 22 | — | `solve` resolves the documents that made the Specification | G12 | `execution` | 02·11 onwards | #126 |
 | 23 | — | `rk.execution.replay` and `Store.find_runs` | G25 | `execution`, `io` | 03·22–23 | #126, #176 |
@@ -426,7 +426,8 @@ These are inputs for authoring, not API gaps:
 - CI writes the documents that later lessons load from the cells of earlier lessons,
   with a namespace, and checks that they do not change: `02_feasibility.model.json`,
   `02_back_door.specification.json`, `03_base_case.specification.json` (lesson 03's
-  `funded` Specification),
+  `funded` Specification), `04_base_case.specification.json` (lesson 04's `base`, on
+  the Model with the rent index),
   `03_base_plan.model.json`, `04_base_plan_on_paths.model.json`,
   `04_rent_index.paths.json`, `04_use_indices.paths.json` and
   `05_strategy.specification.json`. `07_property_plan.model.json` joins the graph of

@@ -65,9 +65,8 @@ yearly = rk.duration.Frequency.YEAR
 years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
     frequency=yearly
 )
-base = rk.io.load(path=helpers.data_path(name="03_base_case.specification.json"))
-fixed = base.on(model=model).fix(rent_growth="0 % pa")
-fixed.roles  # lesson 03's plan: start in 2027, Building B in 2030
+fixed = rk.io.load(path=helpers.data_path(name="04_base_case.specification.json"))
+fixed.roles  # lesson 04's base case: start in 2027, Building B in 2030
 ```
 
 ## 2. Three readable histories
@@ -240,10 +239,7 @@ difference.summary()  # mean difference, share of paths better, worst loss
 ```python
 # cell 15
 helpers.plot_target_curve(
-    distributions={
-        "Strategy": flex_out.distribution(key="equity_npv"),
-        "Fixed plan": fixed_out.distribution(key="equity_npv"),
-    }
+    outcomes={"Strategy": flex_out, "Fixed plan": fixed_out}, key="equity_npv"
 )
 ```
 

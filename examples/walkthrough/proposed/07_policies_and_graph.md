@@ -60,20 +60,20 @@ plan = helpers.load_base_plan()
 residential.rollups()  # key, value rolled up, relationship, root and contributors
 ```
 
-Narrative: start from lesson 03's Specification. It fixed each building's income,
+Narrative: start from lesson 04's Specification. It fixed each building's income,
 operating cost and budget as totals. Here the floors give those totals, so free them
-and fix the rates by use in their place. The rents follow the market indices, so rent
-growth is zero, as in lesson 04.
+and fix the rates by use in their place. As in lesson 04, the market indices carry
+all rent growth.
 
 ```python
 # cell 3
 yearly = rk.duration.Frequency.YEAR
-base = rk.io.load(path=helpers.data_path(name="03_base_case.specification.json"))
+base = rk.io.load(path=helpers.data_path(name="04_base_case.specification.json"))
 fixed = (
     base.on(model=residential)
     .free("a_income", "b_income", "a_opex", "b_opex", "a_cost", "b_cost")
     .fix(efficiency=plan["efficiency"], rent=plan["rent"], vacancy=plan["vacancy"])
-    .fix(rent_growth="0 % pa", b_land_share="40 %", provision="0 AUD")
+    .fix(b_land_share="40 %", provision="0 AUD")
 )
 ```
 
@@ -355,7 +355,7 @@ site.extend(
 )
 site.extend(
     key="income",
-    terms="+ rk.profile.compounding(initial=x_income, rate=rent_growth, start=x_open)",
+    terms="+ rk.profile.constant(initial=x_income, start=x_open)",
 )
 expanded = draft.commit()
 ```
