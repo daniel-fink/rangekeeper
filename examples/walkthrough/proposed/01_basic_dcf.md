@@ -70,13 +70,16 @@ rate * rk.Quantity("1 year")          # 0.02, a dimensionless ratio
 
 Narrative: the holding period is 10 years from 1 January 2001. The forecast needs one
 more year, because the buyer at the end of year 10 pays for year 11's income. A Span
-is half-open: it includes its start and excludes its end.
+is half-open: it includes its start and excludes its end. A Frequency is the calendar
+step: type `rk.duration.Frequency.` and press Tab to see them all. Name the one you
+use, and use the name after that.
 
 ```python
 # cell 4
 holding = rk.duration.Span.years(start=date(2001, 1, 1), count=10, name="Holding")
 forecast = holding.extend(years=1)
-years = forecast.periods("year")
+yearly = rk.duration.Frequency.YEAR
+years = forecast.periods(yearly)
 years                                  # 11 Periods, 2001 to 2011
 ```
 
@@ -168,7 +171,7 @@ exit_values.display()
 
 ```python
 # cell 12
-sale_year = holding.periods("year")[-1]
+sale_year = holding.periods(yearly)[-1]
 terminal_value = exit_values.trim(sale_year)
 assert terminal_value.total() == nacf.at(date(2011, 1, 1)) / exit_cap_rate
 ```
@@ -204,8 +207,8 @@ quarters back into years. The round trip gives the same Flow.
 
 ```python
 # cell 15
-quarterly = pgi.resample("quarter", method=rk.flow.ResampleMethod.SPLIT)
-assert quarterly.resample("year", method=rk.flow.ResampleMethod.SUM) == pgi
+by_quarter = pgi.resample(rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT)
+assert by_quarter.resample(yearly, method=rk.flow.ResampleMethod.SUM) == pgi
 ```
 
 ## 10. Present value, by hand once
@@ -283,7 +286,7 @@ assert value_3 > value
 seven = rk.duration.Span.years(start=date(2001, 1, 1), count=7)
 flows_7 = rk.flow.Stream({
     "NACF": nacf,
-    "Terminal value": exit_values.trim(seven.periods("year")[-1]),
+    "Terminal value": exit_values.trim(seven.periods(yearly)[-1]),
 }).trim(seven).sum()
 value_7 = rk.finance.npv(flows_7, rate=discount_rate, on=seven.start)
 ```
@@ -332,7 +335,7 @@ questions.
 | --- | --- | --- |
 | 1 | 1 | Pass |
 | 2–3 | 1, 5 | G71: `rk.Quantity(text)` at the root and the `rk.quantity` namespace (D13); `pa` and `%/year` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
-| 4 | 1, 11 | G01: `Span.years`, `extend`, `periods("year")` |
+| 4 | 1, 11 | G01: `Span.years`, `extend`, `periods(yearly)` |
 | 5, 19 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
 | 6 | 1, 6 | G70: `rk.profile` and `Flow.from_profile` with `initial=` or `total=` (D12; absorbs [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 7, 10, 12, 16 | 8 | G03: `Flow.at(date)` returns one Quantity |

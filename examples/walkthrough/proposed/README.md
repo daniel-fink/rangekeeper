@@ -78,13 +78,14 @@ rk.quantity, rk.duration, rk.profile, rk.flow, rk.finance, rk.model, rk.specific
 rk.Quantity("20e6 AUD"), rk.Quantity("7 %/year"), rk.Quantity(1697.45, "sqm")      # #148, #149, G71
 rk.quantity.isclose(a, b, abs="1 AUD")                                                  # G06
 span = rk.duration.Span.years(start=date(2001, 1, 1), count=10)                      # G01
-span.extend(years=1).periods("year")
+yearly = rk.duration.Frequency.YEAR
+span.extend(years=1).periods(yearly)
 flow = rk.flow.Flow({period: 100, date(2001, 1, 1): -50}, units="USD")              # G02
 flow.at(date(2010, 1, 1)), flow.total(), -0.05 * flow + other_flow                  # G03, G04
 flow.shift(periods=-1), flow.trim(period)                                            # G05
 stream = rk.flow.Stream({"PGI": pgi, "OPEX": opex}).with_flows({"NOI": noi})         # G04
 stream.select("PGI", "OPEX").sum(), stream.trim(span), stream.display()
-flow.resample("quarter", method=rk.flow.ResampleMethod.SPLIT)                       # #103
+flow.resample(rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT)     # #103
 growth = rk.profile.Compounding(rate="2 %/year")                                     # G70
 pgi = rk.flow.Flow.from_profile(growth, periods=years, initial="100 USD", base=None, start=None, every=None)
 fees = rk.flow.Flow.from_profile(rk.profile.SCurve(), periods=build, total="3e6 AUD")
@@ -130,7 +131,7 @@ spec = model.specify("Front door").fix(land_cost="20e6 AUD", rent={"hotel": "750
 spec.free("land_cost"), spec.roles, spec.on(new_model)                              # G11, G21
 spec.cases({"weak": {...}, "strong": {...}})                                        # G20
 spec.across(paths, assign={"rent_index": "rent_index"})                             # #138
-spec.decide("start_date", when="rent_index >= 1.05", review="year",
+spec.decide("start_date", when="rent_index >= 1.05", review=yearly,
             window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")         # G49
 spec.parameters(start_threshold=1.05), spec.rules, spec.with_rules(rules)           # G57, G64, G65
 spec.alternatives(b_design={"residential": residential, "hotel": hotel})            # G63
@@ -184,7 +185,7 @@ use. **Issue** is filled in when the issue is filed.
 
 | # | Issue | Title | Gaps | Layer | Cells | Related |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | — | Span conveniences: `years`, `extend`, `periods("year")` | G01 | `duration` | 01·4; 03·3 | #119 |
+| 1 | — | Span conveniences: `years`, `extend`, `periods(frequency)` | G01 | `duration` | 01·4; 03·3 | #119 |
 | 2 | — | Flow and Stream construction, lookup and arithmetic | G02–G04 | `flow` | 01·5–13; 03·17 | #103, #162 |
 | 3 | — | Value equality and `rk.quantity.isclose` | G06 | `quantity`, `flow` | 01·12, 15, 21; 02·22 | #109, #117 |
 | 4 | — | `Flow.shift(periods=)` and `Flow.trim(period)` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |

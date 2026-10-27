@@ -58,7 +58,8 @@ plan.inputs                            # dates, budgets, incomes and funding, wi
 ```python
 # cell 3
 helpers.show_timeline(plan)
-years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods("year")
+yearly = rk.duration.Frequency.YEAR
+years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(yearly)
 ```
 
 > **Finance note.** A development budget has hard costs (construction), soft costs

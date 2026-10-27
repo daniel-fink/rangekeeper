@@ -64,6 +64,7 @@ model.equations.involving("start_date", "b_start")
 # cell 3
 assumptions = {"discount_rate": "7 %/year", "opex_growth": "3.5 %/year",
                "exit_cap_rate": "5 %", "rent_growth": "0 %/year"}
+yearly = rk.duration.Frequency.YEAR
 debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
 fixed = model.specify("Fixed plan").fix(**plan.inputs, **assumptions, **debt)
 ```
@@ -93,7 +94,7 @@ not buy the site. `decide` replaces the fixed start date with a rule.
 
 ```python
 # cell 6
-wait = fixed.decide("start_date", when="rent_index >= 1.05", review="year",
+wait = fixed.decide("start_date", when="rent_index >= 1.05", review=yearly,
                     window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
 waited = rk.execution.solve(wait.across(stories, assign=assign))
 waited.table("start_date", "b_start", "equity_npv")
@@ -125,7 +126,7 @@ made, before any solve.
 ```python
 # cell 8
 try:
-    fixed.decide("start_date", when="shift(rent_index, periods=-1) >= 1.05", review="year",
+    fixed.decide("start_date", when="shift(rent_index, periods=-1) >= 1.05", review=yearly,
                  window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
 except rk.errors.AvailabilityError as error:
     print(error.code, error.value, error.available_on, error.decision_date)
@@ -144,7 +145,7 @@ account of lesson 03, with the decisions made so far.
 ```python
 # cell 9
 start_b = wait.decide("b_start", when="rent_index >= 1.10 and funding.headroom >= b_cost",
-                      review="year", window=("shared_start + 1 year", date(2033, 1, 1)),
+                      review=yearly, window=("shared_start + 1 year", date(2033, 1, 1)),
                       otherwise="never")
 helpers.show_decisions(start_b)        # the decided values, their rules and windows
 ```
@@ -171,7 +172,7 @@ model = e.commit()
 ```python
 # cell 11
 strategy = (start_b.on(model).fix(b_land_share="40 %")
-            .decide("b_sale_date", when="b_start == never", review="year",
+            .decide("b_sale_date", when="b_start == never", review=yearly,
                     window=(date(2033, 1, 1), date(2034, 1, 1)), otherwise="never"))
 traced = rk.execution.solve(strategy.across(stories, assign=assign))
 traced.decisions()                     # one row for each case and review
@@ -227,7 +228,7 @@ sweep it. Cases and paths multiply: each threshold runs on every path.
 ```python
 # cell 17
 swept = (strategy.parameters(start_threshold=1.05)
-         .decide("start_date", when="rent_index >= start_threshold", review="year",
+         .decide("start_date", when="rent_index >= start_threshold", review=yearly,
                  window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
          .cases({f"{t:.2f}": {"start_threshold": t} for t in (1.00, 1.02, 1.05, 1.08)}))
 sweep = rk.execution.solve(swept.across(paths, assign=assign))
@@ -241,7 +242,7 @@ start in 2027? Does the mean paired difference rise?
 
 ```python
 # solution
-early = strategy.decide("start_date", when="rent_index >= 1.02", review="year",
+early = strategy.decide("start_date", when="rent_index >= 1.02", review=yearly,
                         window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
 early_out = rk.execution.solve(early.across(paths, assign=assign))
 early_out.distribution("start_date").counts()
@@ -253,7 +254,7 @@ On how many paths does the commitment gap become positive?
 
 ```python
 # solution
-reckless = strategy.decide("b_start", when="rent_index >= 1.10", review="year",
+reckless = strategy.decide("b_start", when="rent_index >= 1.10", review=yearly,
                            window=("shared_start + 1 year", date(2033, 1, 1)), otherwise="never")
 gaps = rk.execution.solve(reckless.across(paths, assign=assign)).distribution("commitment_gap")
 gaps.probability(above="0 AUD")

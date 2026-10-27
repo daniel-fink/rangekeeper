@@ -64,6 +64,7 @@ residential.rollups()                  # key, value rolled up, relationship, roo
 # cell 3
 assumptions = {"discount_rate": "7 %/year", "opex_growth": "3.5 %/year",
                "exit_cap_rate": "5 %", "rent_growth": "0 %/year", "b_land_share": "40 %"}
+yearly = rk.duration.Frequency.YEAR
 debt = {"leverage": "65 %", "loan_rate": "6 %/year", "equity_rate": "12 %/year"}
 assign = {"use_index": {"hotel": "hotel_index", "residential": "residential_index",
                         "retail": "retail_index"}}
@@ -122,7 +123,7 @@ timing = rk.io.load(helpers.data_path("05_strategy.specification.json")).rules
 timing                                 # lesson 05's three rules, as written there
 switch = (fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
           .fix(provision="2.5e6 AUD")
-          .decide("b_design", when="hotel_index >= 1.10 * residential_index", review="year",
+          .decide("b_design", when="hotel_index >= 1.10 * residential_index", review=yearly,
                   window=("shared_start + 1 year", "b_start"), otherwise="residential"))
 ```
 
@@ -211,7 +212,7 @@ same generator with a new seed.
 thresholds = {t: {"switch_threshold": t} for t in (1.00, 1.05, 1.10, 1.20)}
 tunable = (strategies["both"].parameters(switch_threshold=1.10)
            .decide("b_design", when="hotel_index >= switch_threshold * residential_index",
-                   review="year", window=("shared_start + 1 year", "b_start"),
+                   review=yearly, window=("shared_start + 1 year", "b_start"),
                    otherwise="residential").cases(thresholds))
 train = rk.execution.solve(tunable.across(use_paths, assign=assign))
 best = train.compare(outcomes["timing"], "equity_npv").by_case().best(criterion="mean")
@@ -250,7 +251,7 @@ expanded = e.commit()
 # cell 18
 expand = (strategies["both"].alternatives(a_design={"base": residential, "expanded": expanded})
           .fix(a_provision="1.5e6 AUD")
-          .decide("expansion_date", when="residential_index >= 1.25", review="year",
+          .decide("expansion_date", when="residential_index >= 1.25", review=yearly,
                   window=("a_open + 3 years", date(2035, 1, 1)), otherwise="never"))
 rk.execution.solve(expand.across(use_paths, assign=assign)).compare(outcomes["both"], "equity_npv").summary()
 ```

@@ -86,7 +86,8 @@ After each step, **predict** the shape and then draw it.
 
 ```python
 # cell 5
-years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods("year")
+yearly = rk.duration.Frequency.YEAR
+years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(yearly)
 trend = rk.finance.MarketDynamics(trend="2 %/year")
 helpers.plot_paths(trend.generate(periods=years, seed=2027, count=1), "rent_index")
 ```
