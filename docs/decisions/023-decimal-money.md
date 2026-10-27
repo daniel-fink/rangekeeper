@@ -1,6 +1,6 @@
 # ADR-023: Store currency amounts as Decimal and calculate in float64
 
-Status: proposed. Recorded: 2026-10-27.
+Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27.
 
 ## Problem
 

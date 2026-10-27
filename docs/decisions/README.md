@@ -21,7 +21,8 @@ the sections and the Status line; the Status column below uses the same words.
 
 ## Accepted for 1.0
 
-These records were accepted on 2026-10-26. Their implementation is pending. The
+ADR-010 to ADR-020 were accepted on 2026-10-26, and ADR-023 on 2026-10-27.
+Their implementation is pending. The
 [Rangekeeper project](https://github.com/users/daniel-fink/projects/8) tracks the
 implementation as epics with sub-issues, milestones 0.8.72 to 1.0.0 and
 blocked-by links. The
@@ -41,14 +42,7 @@ blocked-by links. The
 | [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted for 1.0; implementation pending | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
 | [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, ideal cells first, helpers, CI execution and sources |
 | [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; ideal cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
-
-## Proposed for 1.0
-
-These records wait for approval. Their implementation follows the approval.
-
-| Decision | Status | Scope |
-| --- | --- | --- |
-| [ADR-023: Decimal currency amounts](023-decimal-money.md) | Proposed | Currency amounts as Decimal, float64 calculation boundaries, JSON, YAML and Parquet encodings, solver evidence and tolerances, and minor-unit rounding; the design of ADR-017's Money section |
+| [ADR-023: Decimal currency amounts](023-decimal-money.md) | Accepted for 1.0; implementation pending | Currency amounts as Decimal, float64 calculation boundaries, JSON, YAML and Parquet encodings, solver evidence and tolerances, and minor-unit rounding; the design of ADR-017's Money section |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
