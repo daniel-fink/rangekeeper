@@ -97,10 +97,13 @@ modules:
     requires: [refactor]
     note: The lazy exports of `specification.policy` load it by its short name.
   - old: rangekeeper.shared.units
-    new: rangekeeper.units
-    status: pending
-    source: ADR-010
-    pending: "#255 D13: the namespace is `rangekeeper.quantity`, and `Quantity` is also at the root."
+    new: rangekeeper.quantity
+    status: draft
+    source: ADR-010, #255 D13
+    note: >-
+      The namespace that holds the unit system, the registry and `isclose` is
+      `rangekeeper.quantity`, so "units" keeps one meaning: a unit string.
+      `Quantity` is also at the root.
   - old: rangekeeper.io.store
     new: rangekeeper.shared.store
     status: draft
@@ -161,16 +164,10 @@ symbols:
     source: ADR-012
   - module: rangekeeper.model.measure
     name: Quantity
-    new_module: rangekeeper.units
-    status: pending
-    source: ADR-010
-    pending: "#255 D13: `rangekeeper.Quantity` at the root, and the namespace `rangekeeper.quantity`."
-  - module: rangekeeper.shared.units
-    name: UnitSystem
-    new_module: rangekeeper.units
-    status: pending
-    source: ADR-010
-    pending: "#255 D13: `rangekeeper.quantity.UnitSystem`."
+    new_module: rangekeeper.quantity
+    status: draft
+    source: ADR-010, #255 D13
+    note: "`rangekeeper.Quantity` at the root also gives the record."
   - module: rangekeeper.model.measure
     name: Measure
     new_module: rangekeeper.model
