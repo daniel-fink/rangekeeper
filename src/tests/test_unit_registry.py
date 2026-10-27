@@ -87,15 +87,16 @@ def example_units() -> set[str]:
         if path.suffix in (".py", ".ipynb", ".md"):
             found.update(
                 re.findall(
-                    r"units\\?[\"']?\s*[=:]\s*\\?[\"']([^\"'\\]+)", path.read_text()
+                    r"units\\?[\"']?\s*[=:]\s*\\?[\"']([^\"'\\]+)",
+                    path.read_text(encoding="utf-8"),
                 )
             )
         if path.suffix == ".json":
-            _units_in(json.loads(path.read_text()), found)
+            _units_in(json.loads(path.read_text(encoding="utf-8")), found)
         elif path.name.endswith(".json.gz"):
             _units_in(json.loads(gzip.decompress(path.read_bytes())), found)
         elif path.suffix == ".csv":
-            with path.open(newline="") as handle:
+            with path.open(newline="", encoding="utf-8") as handle:
                 for row in csv.DictReader(handle):
                     found.update(
                         value
