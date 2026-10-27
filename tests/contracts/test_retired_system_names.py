@@ -8,6 +8,7 @@ import pytest
 
 import rangekeeper
 from rangekeeper.model import system as graph
+from rangekeeper.model.system import errors as graph_errors
 
 
 @pytest.mark.parametrize("name", ("api", "measure"))
@@ -37,7 +38,7 @@ def test_system_surface_exposes_canonical_records_and_model_operations():
     ):
         assert name not in graph.__all__
         assert not hasattr(graph, name), name
-        assert not hasattr(graph.errors, name), name
+        assert not hasattr(graph_errors, name), name
     for name in (
         "_catalog",
         "graph",

@@ -23,7 +23,7 @@ from rangekeeper.flow import Flow
 from rangekeeper.quantity import Quantity
 
 REFERENCE = json.loads(
-    (Path(__file__).parent / "fixtures/account-reference.json").read_text()
+    (Path(__file__).parent / "fixtures/account-golden-results.json").read_text()
 )
 
 

@@ -1,4 +1,4 @@
-"""Compare prepared reference dispatch with the unchanged jsonschema oracle."""
+"""Prepared structural validation gives the same diagnostics as unchanged jsonschema."""
 
 import json
 from copy import deepcopy
