@@ -172,13 +172,13 @@ average["unlevered_npv"], average["equity_npv"]
 
 ## 6. The plan across all paths
 
-Narrative: `across` makes one case for each path. Each case fixes the rent index
-from its path. One solve gives one result for each path.
+Narrative: `across` makes one case for each path. A path is a set of named series.
+In each case, `across` fixes each Model value from the series with the same name:
+here, `rent_index`. One solve gives one result for each path.
 
 ```python
 # cell 11
-assign = {"rent_index": "rent_index"}
-outcomes = rk.execution.solve(specification=base.across(paths=paths, assign=assign))
+outcomes = rk.execution.solve(specification=base.across(paths=paths))
 outcomes.table("unlevered_npv", "equity_npv", "peak_shortfall").head()
 ```
 
@@ -264,7 +264,7 @@ the NPV change? How does the mean change?
 volatile = dynamics.replace(volatility="10 % pa").generate(
     periods=years, seed=1, count=count
 )
-wide = rk.execution.solve(specification=base.across(paths=volatile, assign=assign))
+wide = rk.execution.solve(specification=base.across(paths=volatile))
 assert wide.distribution(key="unlevered_npv").quantile(level=0.05) < npv.quantile(
     level=0.05
 )
@@ -283,9 +283,7 @@ site.replace(
     equation="a_rent = rk.profile.compounding(initial=a_income, rate=2 % pa, start=a_open)",
 )
 twice_model = draft.commit()
-twice = rk.execution.solve(
-    specification=base.on(model=twice_model).across(paths=paths, assign=assign)
-)
+twice = rk.execution.solve(specification=base.on(model=twice_model).across(paths=paths))
 twice.distribution(key="unlevered_npv").mean - npv.mean
 ```
 
@@ -298,7 +296,7 @@ the mean NPV move? What does this say about the path count?
 ```python
 # solution
 other = dynamics.generate(periods=years, seed=2, count=count)
-moved = rk.execution.solve(specification=base.across(paths=other, assign=assign))
+moved = rk.execution.solve(specification=base.across(paths=other))
 moved.distribution(key="unlevered_npv").mean - npv.mean
 ```
 
@@ -342,7 +340,7 @@ solutions. The longest cell has 11 lines (cell 3b). Cells follow `ruff format` (
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
 | 8–9 | 4, 6 | `MarketPaths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |
 | 10 | 6 | G30: `MarketPaths.mean(name)` gives one Flow |
-| 11 | 8 | `across` ([#138](https://github.com/daniel-fink/rangekeeper/issues/138)) |
+| 11 | 8 | `across` ([#138](https://github.com/daniel-fink/rangekeeper/issues/138)). G73: path series match Model values by key |
 | 12–15 | 8 | G31: `Outcome.distribution(key)` with `summary`, `mean`, `quantile(level=)`, `probability`, `quantile_member(level=)` |
 | 16 | 8 | G20: `Outcome.case(key=)` with a path key |
 | 17–18 | 6 | G32: correlated generators and `MarketPaths.correlation()` |

@@ -77,17 +77,20 @@ fixed = (
 )
 ```
 
-Narrative: each use has its own market index. The keyed value `use_index` takes one
-path Flow for each use.
+Narrative: each use has its own market index. The paths name their series
+`hotel_index`, `residential_index` and `retail_index`, but the Model has one keyed
+value, `use_index`, with one member for each use. The names differ, so `across` needs
+`series=`: the path series for each member.
 
 ```python
 # cell 3b
-uses = {
-    "hotel": "hotel_index",
-    "residential": "residential_index",
-    "retail": "retail_index",
+use_series = {
+    "use_index": {
+        "hotel": "hotel_index",
+        "residential": "residential_index",
+        "retail": "retail_index",
+    }
 }
-assign = {"use_index": uses}
 ```
 
 ## 2. A design alternative
@@ -174,7 +177,7 @@ strategies = {
 }
 outcomes = {}
 for name, strategy in strategies.items():
-    on_paths = strategy.across(paths=use_paths, assign=assign)
+    on_paths = strategy.across(paths=use_paths, series=use_series)
     outcomes[name] = rk.execution.solve(specification=on_paths)
 ```
 
@@ -235,7 +238,7 @@ premiums = {
     "7.5e6 AUD": {"provision": "7.5e6 AUD"},
 }
 premium_sweep = (
-    strategies["both"].cases(cases=premiums).across(paths=use_paths, assign=assign)
+    strategies["both"].cases(cases=premiums).across(paths=use_paths, series=use_series)
 )
 sweep = rk.execution.solve(specification=premium_sweep)
 sweep.decisions().same_across_cases()  # are the decisions the same at every premium?
@@ -287,7 +290,9 @@ tunable = (
 
 ```python
 # cell 15c
-train = rk.execution.solve(specification=tunable.across(paths=use_paths, assign=assign))
+train = rk.execution.solve(
+    specification=tunable.across(paths=use_paths, series=use_series)
+)
 by_threshold = train.compare(other=outcomes["timing"], keys=["equity_npv"]).by_case()
 best = by_threshold.best(criterion="mean")
 ```
@@ -298,8 +303,8 @@ fresh = use_paths.generator.generate(
     periods=use_paths.periods, seed=2, count=len(use_paths)
 )
 chosen = tunable.cases(cases={best: thresholds[best]})
-test = rk.execution.solve(specification=chosen.across(paths=fresh, assign=assign))
-timing_only = strategies["timing"].across(paths=fresh, assign=assign)
+test = rk.execution.solve(specification=chosen.across(paths=fresh, series=use_series))
+timing_only = strategies["timing"].across(paths=fresh, series=use_series)
 baseline = rk.execution.solve(specification=timing_only)
 test.compare(
     other=baseline, keys=["equity_npv"]
@@ -379,7 +384,7 @@ expand = (
 ```python
 # cell 18b
 expanded_out = rk.execution.solve(
-    specification=expand.across(paths=use_paths, assign=assign)
+    specification=expand.across(paths=use_paths, series=use_series)
 )
 expanded_out.compare(other=outcomes["both"], keys=["equity_npv"]).summary()
 ```
@@ -450,7 +455,7 @@ solutions. The longest cell has 15 lines (cell 6). Cells follow
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G59: `Model.rollups()` table |
-| 3 | 2, 4 | G43 (keyed values); G60: `assign` maps a keyed Flow value to several path names |
+| 3 | 2, 4 | G43 (keyed values); G60, G73: `series=` maps a keyed Flow value to several path series |
 | 4 | 2, 7 | G61: `edit(name=)`, `relabel(filter, **labels)`, `include(fragment)`; `Filter(within=)` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)) |
 | 5 | 7 | G62: `rk.model.diff(a, b)` with typed parts |
 | 6 | 7, 11 | G39; display in plain Python |

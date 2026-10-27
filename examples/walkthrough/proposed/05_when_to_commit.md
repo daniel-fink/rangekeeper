@@ -82,10 +82,7 @@ helpers.plot_paths(paths=stories, names=["rent_index"])
 
 ```python
 # cell 5
-assign = {"rent_index": "rent_index"}
-fixed_stories = rk.execution.solve(
-    specification=fixed.across(paths=stories, assign=assign)
-)
+fixed_stories = rk.execution.solve(specification=fixed.across(paths=stories))
 fixed_stories.table("equity_npv", "peak_shortfall")
 ```
 
@@ -104,7 +101,7 @@ wait = fixed.decide(
     window=(date(2027, 1, 1), date(2031, 1, 1)),
     otherwise="never",
 )
-waited = rk.execution.solve(specification=wait.across(paths=stories, assign=assign))
+waited = rk.execution.solve(specification=wait.across(paths=stories))
 waited.table("start_date", "b_start", "equity_npv")
 ```
 
@@ -204,7 +201,7 @@ strategy = (
         otherwise="never",
     )
 )
-traced = rk.execution.solve(specification=strategy.across(paths=stories, assign=assign))
+traced = rk.execution.solve(specification=strategy.across(paths=stories))
 traced.decisions()  # one row for each case and review
 ```
 
@@ -224,10 +221,8 @@ difference holds the market fixed and shows the effect of the rules alone.
 ```python
 # cell 13
 fixed_plan = fixed.on(model=model).fix(b_land_share="40 %", b_sale_date="never")
-fixed_out = rk.execution.solve(
-    specification=fixed_plan.across(paths=paths, assign=assign)
-)
-flex_out = rk.execution.solve(specification=strategy.across(paths=paths, assign=assign))
+fixed_out = rk.execution.solve(specification=fixed_plan.across(paths=paths))
+flex_out = rk.execution.solve(specification=strategy.across(paths=paths))
 ```
 
 ```python
@@ -283,7 +278,7 @@ swept = (
     )
     .cases(cases=thresholds)
 )
-sweep = rk.execution.solve(specification=swept.across(paths=paths, assign=assign))
+sweep = rk.execution.solve(specification=swept.across(paths=paths))
 sweep.compare(other=fixed_out, keys=["equity_npv"]).by_case().summary()
 ```
 
@@ -301,7 +296,7 @@ early = strategy.decide(
     window=(date(2027, 1, 1), date(2031, 1, 1)),
     otherwise="never",
 )
-early_out = rk.execution.solve(specification=early.across(paths=paths, assign=assign))
+early_out = rk.execution.solve(specification=early.across(paths=paths))
 early_out.distribution(key="start_date").counts()
 early_out.compare(other=fixed_out, keys=["equity_npv"]).summary()
 ```
@@ -318,9 +313,7 @@ reckless = strategy.decide(
     window=("shared_start + 1 year", date(2033, 1, 1)),
     otherwise="never",
 )
-reckless_out = rk.execution.solve(
-    specification=reckless.across(paths=paths, assign=assign)
-)
+reckless_out = rk.execution.solve(specification=reckless.across(paths=paths))
 gaps = reckless_out.distribution(key="commitment_gap")
 gaps.probability(above="0 AUD")
 ```
@@ -331,7 +324,7 @@ the paired difference change on the paths where B never starts?
 ```python
 # solution
 cheap_site = strategy.fix(b_land_share="25 %")
-cheap = rk.execution.solve(specification=cheap_site.across(paths=paths, assign=assign))
+cheap = rk.execution.solve(specification=cheap_site.across(paths=paths))
 cheap.compare(other=fixed_out, keys=["equity_npv"]).where(b_start="never").summary()
 ```
 

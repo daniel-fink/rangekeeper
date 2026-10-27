@@ -207,7 +207,8 @@ spec = model.specify(name="Front door").fix(
 )  # #144, G11, G45
 spec.free("land_cost"), spec.roles, spec.on(model=new_model)  # G11, G21
 spec.cases(cases={"weak": {...}, "strong": {...}})  # G20
-spec.across(paths=paths, assign={"rent_index": "rent_index"})  # #138
+spec.across(paths=paths)  # #138, G73: path series match Model values by key
+spec.across(paths=use_paths, series={"use_index": {"hotel": "hotel_index"}})  # G73
 spec.decide(
     key="start_date",
     when="rent_index >= 1.05",
@@ -344,6 +345,7 @@ use. **Issue** is filled in when the issue is filed.
 | 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
 | 35 | — | `rk.Quantity` at the root, text in the constructor, and the `rk.quantity` namespace | G71 | `quantity` | 01·2–3, 10, 17; 02·22; 03·24 | #148, #149, #150 |
 | 36 | — | Named formulations: `equations(..., formulation=)`, a default Formulation for each entity, and equations grouped by formulation in displays and traces | G72 | `model` | 03·6–8, 13, 19b | #141, #145 |
+| 37 | — | `across` matching: each path series fixes the Model value with the same key. `series=` maps a value whose key differs, or the members of a keyed value, to path series. A series that matches no value, a value that `series=` names but the paths lack, or a value with two sources raises an error that lists the path series and the Model keys | G73 | `specification` | 04·11; 05·5; 07·3b | #138 |
 
 Scope changes for existing issues:
 
