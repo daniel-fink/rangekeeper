@@ -103,25 +103,26 @@ base.roles  # lesson 03's plan, assumptions, debt and funding, by name
 
 ## 3. A path, one component at a time
 
-Narrative: a path generator makes market paths from parameters and a seed. Start
-with a trend only. Then add a cycle, then volatility and noise, then a rare shock.
-After each step, **predict** the shape and then draw it.
+Narrative: a path generator makes market paths from parameters. Start with a trend
+only. Then add a cycle, then volatility and noise, then a rare shock. After each
+step, **predict** the shape and then draw it.
 
 ```python
 # cell 5
 trend = rk.finance.MarketDynamics(trend="2 % pa")
-helpers.plot_paths(
-    paths=trend.generate(periods=years, seed=2027, count=1), names=["rent_index"]
-)
+helpers.plot_paths(paths=trend.generate(periods=years, count=1), names=["rent_index"])
 ```
 
 ```python
 # cell 6
 cycle = trend.replace(cycle_period="10 years", cycle_amplitude="10 %")
-helpers.plot_paths(
-    paths=cycle.generate(periods=years, seed=2027, count=1), names=["rent_index"]
-)
+helpers.plot_paths(paths=cycle.generate(periods=years, count=1), names=["rent_index"])
 ```
+
+Narrative: a trend and a cycle are fixed shapes. Volatility, noise and shocks are
+random, so from here each path is random. A **seed** makes random paths repeatable:
+the same seed and parameters give the same paths. The seed is a label for one set of
+random numbers; it is not a date. `generate` refuses random dynamics without a seed.
 
 ```python
 # cell 7
@@ -129,7 +130,7 @@ dynamics = cycle.replace(
     volatility="5 % pa", noise="2 %", shock_probability="2 % pa", shock_size="-25 %"
 )
 helpers.plot_paths(
-    paths=dynamics.generate(periods=years, seed=2027, count=5), names=["rent_index"]
+    paths=dynamics.generate(periods=years, seed=1, count=5), names=["rent_index"]
 )
 ```
 
@@ -145,7 +146,7 @@ library versions. Replay uses the captured values and draws no new random number
 ```python
 # cell 8
 count = helpers.path_count(default=500)  # RK_PATH_COUNT: 4 in CI, full locally
-paths = dynamics.generate(periods=years, seed=2027, count=count)
+paths = dynamics.generate(periods=years, seed=1, count=count)
 paths.capture  # generator, parameters, seed, versions
 ```
 
@@ -153,7 +154,7 @@ paths.capture  # generator, parameters, seed, versions
 # cell 9
 rk.io.save(document=paths, path="paths/04_rent_index.json")
 assert rk.io.load(path="paths/04_rent_index.json") == paths
-assert dynamics.generate(periods=years, seed=2027, count=count) == paths
+assert dynamics.generate(periods=years, seed=1, count=count) == paths
 ```
 
 ## 5. The plan on average inputs
@@ -242,7 +243,7 @@ uses = rk.finance.MarketDynamics.correlated(
     },
     correlation=[[1, 0.5, 0.3], [0.5, 1, 0.4], [0.3, 0.4, 1]],
 )
-use_paths = uses.generate(periods=years, seed=2027, count=count)
+use_paths = uses.generate(periods=years, seed=1, count=count)
 ```
 
 ```python
@@ -261,7 +262,7 @@ the NPV change? How does the mean change?
 ```python
 # solution
 volatile = dynamics.replace(volatility="10 % pa").generate(
-    periods=years, seed=2027, count=count
+    periods=years, seed=1, count=count
 )
 wide = rk.execution.solve(specification=base.across(paths=volatile, assign=assign))
 assert wide.distribution(key="unlevered_npv").quantile(level=0.05) < npv.quantile(
@@ -291,12 +292,12 @@ twice.distribution(key="unlevered_npv").mean - npv.mean
 The mean NPV rises, but the market did not change. The index already contains the
 trend, so Building A's rent now grows twice.
 
-**Try it 3: another seed.** Generate the same count with seed 2028. How much does
+**Try it 3: another seed.** Generate the same count with seed 2. How much does
 the mean NPV move? What does this say about the path count?
 
 ```python
 # solution
-other = dynamics.generate(periods=years, seed=2028, count=count)
+other = dynamics.generate(periods=years, seed=2, count=count)
 moved = rk.execution.solve(specification=base.across(paths=other, assign=assign))
 moved.distribution(key="unlevered_npv").mean - npv.mean
 ```
@@ -337,7 +338,7 @@ solutions. The longest cell has 11 lines (cell 3b). Cells follow `ruff format` (
 | 2 | 1, 10 | G26: `rk.io.load` and `rk.io.save` for any document kind; `model.equations` display ([G10](README.md#gap-list)) |
 | 3–3b | 2, 3 | G27: equation keys, entity `replace(key=, equation=)` and `remove(key=)`; G28: entity `flow(key=, units=, periods=)` |
 | 4 | 2, 5 | G21: `free` then `on(model=)`; `on` refuses a fixed value that the new revision does not declare |
-| 5–7 | 6, 11 | `MarketDynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)` |
+| 5–7 | 6, 11 | `MarketDynamics` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)`; `generate` needs `seed=` only when the dynamics are random |
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
 | 8–9 | 4, 6 | `MarketPaths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |
 | 10 | 6 | G30: `MarketPaths.mean(name)` gives one Flow |

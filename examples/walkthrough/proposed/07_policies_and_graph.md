@@ -295,7 +295,7 @@ best = by_threshold.best(criterion="mean")
 ```python
 # cell 16
 fresh = use_paths.generator.generate(
-    periods=use_paths.periods, seed=2028, count=len(use_paths)
+    periods=use_paths.periods, seed=2, count=len(use_paths)
 )
 chosen = tunable.cases(cases={best: thresholds[best]})
 test = rk.execution.solve(specification=chosen.across(paths=fresh, assign=assign))

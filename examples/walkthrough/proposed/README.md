@@ -137,7 +137,7 @@ rk.finance.payment(
     principal="1 AUD", rate="6 % pa", term="20 years", frequency=monthly
 )  # #167: like PMT, with units
 rk.finance.MarketDynamics(trend="2 % pa", volatility="5 % pa").generate(
-    periods=years, seed=2027, count=500
+    periods=years, seed=1, count=500
 )  # #135, #136, G29
 rk.finance.MarketDynamics.correlated(generators={...}, correlation=[[...]])  # G32
 (
@@ -337,7 +337,7 @@ use. **Issue** is filled in when the issue is filed.
 | 27 | — | Outcome distributions | G31 | `execution` | 04·12–16; 05·16 | #127 |
 | 28 | — | Paired comparison of Outcomes | G56, G66, G68 | `execution` | 05·14–17; 07·9, 14–16 | #138, #213, #214 |
 | 29 | — | MarketPaths access and construction | G30, G33, G48, G69 | `finance` | 04·10, 19; 05·4; 07·16 | #137 |
-| 30 | — | MarketDynamics parameters and correlated generators | G29, G32 | `finance` | 04·5–7, 17–18 | #136 |
+| 30 | — | MarketDynamics parameters and correlated generators; `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `finance` | 04·5–7, 17–18 | #136 |
 | 31 | — | Rules that decide values: `decide`, traces, availability errors | G49, G51, G53, G55, G64, G65, G67 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
 | 32 | — | Specification parameters, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
