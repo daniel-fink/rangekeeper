@@ -32,6 +32,7 @@ The map has these sections:
 | `parameters` | Renames of keyword parameters |
 | `removed` | Names with no direct replacement. The tool lists their uses |
 | `notes` | Decisions that change API shapes. The tool does not apply them |
+| `fixups` | Exact text edits in one file, for cases that the rules do not cover. An edit applies only when its text occurs once |
 | `exclude` | Paths that the tool never changes, such as ADRs and history |
 
 Each entry has a status. The tool applies `agreed` and `draft` entries. It does
@@ -66,9 +67,15 @@ The tool does these things:
 - adds new public subpackages to a package's lazy module table;
 - rewrites dotted names and `src/...` paths in strings, for example
   `monkeypatch.setattr` targets and the fingerprint source lists;
+- rewrites Python code held in strings, such as `python -c` scripts in tests;
 - keeps `Path(__file__).parents[N]` on the same folder when a file moves;
+- applies the `fixups`, for example to retirement guards that list a 0.x
+  module name that 1.0 reuses;
 - rewrites Python code blocks, prose references and paths in Markdown,
-  notebooks and configuration files.
+  notebooks and configuration files;
+- points relative Markdown links at the new locations of moved files. This
+  also applies to excluded Markdown, such as ADRs and history, whose words
+  do not change.
 
 The run is idempotent: a second run changes nothing. `--check` exits with
 status 1 when a change is still necessary.

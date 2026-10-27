@@ -5,6 +5,8 @@ from __future__ import annotations
 import ast
 import json
 import os
+import posixpath
+import re
 import shutil
 import subprocess
 import sys
@@ -32,6 +34,11 @@ TEXT = {
     ".txt": "config",
     ".rst": "config",
 }
+_LINK = re.compile(
+    r"(?P<head>\]\(\s*<?|^\s{0,3}\[[^\]\n]+\]:\s*<?)"
+    r"(?P<path>[^\s)>#]+)(?P<fragment>#[^\s)>]*)?",
+    re.MULTILINE,
+)
 SKIP_DIRS = frozenset(
     {
         ".git",
@@ -301,10 +308,11 @@ class Codemod:
         for relative in self._discover():
             suffix = PurePosixPath(relative).suffix
             target = self._repository_target(relative)
-            rewrite = (suffix in PYTHON or suffix in TEXT) and not self.map.excluded(
-                relative
-            )
-            if not rewrite:
+            excluded = self.map.excluded(relative)
+            rewrite = (suffix in PYTHON or suffix in TEXT) and not excluded
+            # Excluded Markdown keeps its words, but its links must still resolve.
+            links_only = suffix == ".md" and excluded and not self.consumer
+            if not rewrite and not links_only:
                 if target != relative:
                     plan.data.append((relative, target))
                 continue
@@ -315,8 +323,15 @@ class Codemod:
                 if target != relative:
                     plan.data.append((relative, target))
                 continue
-            result, changes = self._rewrite(relative, text, suffix)
-            report.changes += changes
+            if links_only:
+                result, changes = text, []
+            else:
+                result, changes = self._rewrite(relative, text, suffix)
+            if suffix == ".md" and not self.consumer:
+                result, linked = self._links(relative, target, result)
+                changes += linked
+            result, fixed = self._fixups(relative, target, result)
+            report.changes += changes + fixed
             if result != text or target != relative:
                 plan.files.append(_File(relative, target, text, result))
         if not self.consumer:
@@ -331,8 +346,68 @@ class Codemod:
         report.created = sorted(plan.created)
         return plan
 
+    def _links(
+        self,
+        relative: str,
+        target: str,
+        text: str,
+    ) -> tuple[str, list[Change]]:
+        """Point relative Markdown links at the new locations of moved files."""
+        changes: list[Change] = []
+        here = posixpath.dirname(relative)
+        there = posixpath.dirname(target)
+
+        def link(match: re.Match) -> str:
+            path, fragment = match["path"], match["fragment"] or ""
+            if ":" in path or path.startswith("/"):
+                return match[0]
+            old = posixpath.normpath(posixpath.join(here, path))
+            if old.startswith(".."):
+                return match[0]
+            new = (
+                self._repository_target(old)
+                if (self.root / old).is_file()
+                else self._folder_target(old)
+            )
+            if new == old and here == there:
+                return match[0]
+            moved = posixpath.relpath(new, there or ".")
+            if path.endswith("/") and not moved.endswith("/"):
+                moved += "/"
+            if moved == path:
+                return match[0]
+            line = text[: match.start()].count("\n") + 1
+            changes.append(Change(relative, line, "link", f"{path} -> {moved}"))
+            return f"{match['head']}{moved}{fragment}"
+
+        return _LINK.sub(link, text), changes
+
+    def _fixups(
+        self,
+        relative: str,
+        target: str,
+        text: str,
+    ) -> tuple[str, list[Change]]:
+        changes = []
+        for fixup in self.map.fixups:
+            if fixup.path not in (relative, target):
+                continue
+            count = text.count(fixup.old)
+            if count > 1:
+                detail = f"fixup {fixup.old!r} matches {count} times"
+                changes.append(Change(relative, 0, "review", detail))
+            elif count == 1:
+                line = text[: text.index(fixup.old)].count("\n") + 1
+                text = text.replace(fixup.old, fixup.new)
+                detail = f"{fixup.old!r} -> {fixup.new!r}"
+                changes.append(Change(relative, line, "fixup", detail))
+        return text, changes
+
     def _rewrite(
-        self, relative: str, text: str, suffix: str
+        self,
+        relative: str,
+        text: str,
+        suffix: str,
     ) -> tuple[str, list[Change]]:
         try:
             if suffix in PYTHON:

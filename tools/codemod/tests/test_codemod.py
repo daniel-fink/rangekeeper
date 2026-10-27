@@ -98,6 +98,14 @@ MAP = {
             "requires": ["schema"],
         },
     ],
+    "fixups": [
+        {
+            "path": "src/tests/test_use.py",
+            "old": "# retired: duration\n",
+            "new": "",
+            "status": "agreed",
+        },
+    ],
     "removed": [
         {
             "name": "pkg.calc.series.resample",
@@ -250,6 +258,12 @@ FILES = {
         from pkg.model import flux
         from pkg.spec import Specification
 
+        # retired: duration
+        SCRIPT = '''
+            from pkg.model.duration import measure
+            measure(1, 2)
+            '''
+
 
         def test_use(monkeypatch):
             monkeypatch.setattr("pkg.calc.series.Aggregation.x", 1, raising=False)
@@ -276,7 +290,9 @@ FILES = {
         pkg.model.flux stays text, but it is still rewritten
         ```
         """,
-    "history/old.md": "`pkg.model.flux` is the old name.\n",
+    "history/old.md": (
+        "`pkg.model.flux` is the old name. See [series](../src/pkg/calc/series.py#L1).\n"
+    ),
     "pyproject.toml": '[tool.pytest.ini_options]\ntestpaths = ["src/tests"]\npythonpath = ["src"]\n',
 }
 
@@ -376,6 +392,10 @@ def test_map_keeps_agreed_and_draft_entries():
             "unknown",
         ),
         ({"version": 2}, "version"),
+        (
+            {"fixups": [{"path": "a.py", "old": "x", "new": "xy", "status": "agreed"}]},
+            "idempotent",
+        ),
     ],
 )
 def test_map_rejects_invalid_entries(change, message):
@@ -438,13 +458,18 @@ def test_package_pass_moves_and_rewrites(project: Path):
     assert "rk.flow.Stream is flux.Stream" in test
     assert "Specification().fix().chain()" in test
     assert "rk.model.system.RollupResult.__doc__" in test
+    assert "retired" not in test
+    script = "SCRIPT = '''\n    from pkg.duration import count_steps\n    count_steps(1, 2)\n    '''"
+    assert script in test
 
     guide = _read(project, "docs/guide.md")
     assert "`pkg.flow.Stream`" in guide and "`rk.flow.series.FlowAggregate`" in guide
     assert "pytest tests/test_use.py" in guide
     assert "from pkg.duration import count_steps\n\ncount_steps(1, 2)" in guide
     assert "pkg.flow stays text" in guide
-    assert _read(project, "history/old.md") == "`pkg.model.flux` is the old name.\n"
+    assert _read(project, "history/old.md") == (
+        "`pkg.model.flux` is the old name. See [series](../src/pkg/flow/series.py#L1).\n"
+    )
     assert 'testpaths = ["tests"]' in _read(project, "pyproject.toml")
 
     notebook = json.loads(_read(project, "docs/lesson.ipynb"))

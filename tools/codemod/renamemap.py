@@ -106,6 +106,15 @@ class Removed(Entry):
 
 
 @dataclass(frozen=True)
+class Fixup(Entry):
+    """One exact text edit in one file, for a case that the rules do not cover."""
+
+    path: str = ""
+    old: str = ""
+    new: str = ""
+
+
+@dataclass(frozen=True)
 class Note(Entry):
     """A decision that changes an API shape, not a name."""
 
@@ -120,6 +129,7 @@ _KINDS = {
     "parameters": (ParameterRename, ("callable", "name", "new_name")),
     "removed": (Removed, ("name", "replacement")),
     "notes": (Note, ("topic",)),
+    "fixups": (Fixup, ("path", "old")),
 }
 
 
@@ -143,6 +153,8 @@ def _entry(kind: str, data: Mapping) -> Entry:
     requires = tuple(data.get("requires", ()))
     if not set(requires) <= REQUIREMENTS:
         raise MapError(f"{kind}: requires {requires} is not in {sorted(REQUIREMENTS)}")
+    if kind == "fixups" and data["old"] in data.get("new", ""):
+        raise MapError(f"{kind}: `new` contains `old`, so the edit is not idempotent")
     if kind == "attributes" and data.get("apply", "review") not in {"all", "review"}:
         raise MapError(f"{kind}: apply must be 'all' or 'review'")
     values = {**data, "requires": requires}
@@ -163,6 +175,7 @@ class RenameMap:
     parameters: tuple[ParameterRename, ...] = ()
     removed: tuple[Removed, ...] = ()
     notes: tuple[Note, ...] = ()
+    fixups: tuple[Fixup, ...] = ()
     skipped: tuple[Entry, ...] = field(default=())
 
     @classmethod

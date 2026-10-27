@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import textwrap
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import PurePosixPath
@@ -763,7 +764,7 @@ class _Transformer(cst.CSTTransformer):
                     "review",
                     f"{raw!r} names a submodule that leaves {self.context.module}",
                 )
-            new = self._text(raw)
+            new = self._text(self._script(raw) or raw)
             kind = "string"
         if new == raw:
             return updated
@@ -782,6 +783,31 @@ class _Transformer(cst.CSTTransformer):
             return updated
         self.record(original, "string", f"{updated.value!r} -> {new!r}")
         return updated.with_changes(value=new)
+
+    def _script(self, raw: str) -> str | None:
+        """Rewrite Python code held in a string, such as a `python -c` script."""
+        if "import" not in raw or self.resolver.package not in raw or "\\" in raw:
+            return None
+        match = re.match(r"(?s)(.*?)([ \t]*)\Z", raw)
+        body, tail = (match[1], match[2]) if match else (raw, "")
+        code = textwrap.dedent(body)
+        lines = [x for x in body.splitlines() if x.strip()]
+        dedented = [x for x in code.splitlines() if x.strip()]
+        if not lines:
+            return None
+        width = (len(lines[0]) - len(lines[0].lstrip())) - (
+            len(dedented[0]) - len(dedented[0].lstrip())
+        )
+        indent = lines[0][:width]
+        try:
+            new, _ = PythonRewriter(self.resolver, self.locations).rewrite(
+                code, Context(path=self.context.path, uses_package=True)
+            )
+        except cst.ParserSyntaxError:
+            return None
+        if new == code:
+            return None
+        return textwrap.indent(new, indent) + tail
 
     def _in_annotation(self, node: cst.CSTNode) -> bool:
         current = self.parents.get(node)

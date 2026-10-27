@@ -397,3 +397,25 @@ notes:
   - topic: Loan payment
     status: pending
     pending: "#255 D19 with #167: `rangekeeper.finance.payment(principal=, rate=, term=, frequency=)`."
+
+# Exact text edits for cases that the rules do not cover. Each edit applies
+# only when `old` occurs once in the file, so a second run changes nothing.
+fixups:
+  - path: src/tests/test_retirement.py
+    old: "    \"duration\",\n"
+    new: ""
+    status: agreed
+    source: ADR-010
+    note: The retirement guard lists the 0.x module `rangekeeper.duration`; 1.0 reuses the name for a public package.
+  - path: src/tests/test_retirement.py
+    old: "    \"execution\",\n"
+    new: ""
+    status: agreed
+    source: ADR-010
+    note: The retirement guard lists the 0.x module `rangekeeper.execution`; 1.0 reuses the name for a public package.
+  - path: src/tests/test_legacy_boundary.py
+    old: "        \"table\",\n"
+    new: ""
+    status: draft
+    source: ADR-012
+    note: The guard lists the retired 0.x module `model.system.table`; the draft map reuses the name for `model.system.projection`. #93 confirms the reuse.
