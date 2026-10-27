@@ -166,7 +166,7 @@ b_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).perio
 )
 start_b = wait.decide(
     key="b_start",
-    when="rent_index >= 1.10 and equity_left + loan_undrawn >= b_cost",
+    when="rent_index >= 1.10 and equity_remaining + loan_undrawn >= b_cost",
     periods=b_reviews,
     earliest="shared_start + 1 year",
     otherwise=rk.duration.NEVER,
@@ -345,7 +345,7 @@ for row in strategy_outcome.decisions().observations():
     assert row.available_on <= row.decision_date
 decided = rk.execution.ReviewResult.DECIDED
 for row in strategy_outcome.decisions().where(key="b_start", result=decided):
-    available = row.observed["equity_left"] + row.observed["loan_undrawn"]
+    available = row.observed["equity_remaining"] + row.observed["loan_undrawn"]
     assert available >= row.observed["b_cost"]
 assert strategy_outcome.case(key=paths.keys[0]).run.policy_evidence.verified
 ```
@@ -389,7 +389,7 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 
 The design for sequential decisions must support:
 
-- **Observations.** A rule names Model values (`rent_index`, `equity_left`,
+- **Observations.** A rule names Model values (`rent_index`, `equity_remaining`,
   `loan_undrawn`,
   `b_cost`) and earlier decided values (`b_start == never`). The value read is the
   latest one available on the review date.
@@ -403,7 +403,7 @@ The design for sequential decisions must support:
 - **Reviews.** A `Periods`: the rule looks on the first day of each Period.
   `earliest=` and `latest=` skip reviews outside bounds that are expressions of
   earlier decisions (cell 9).
-- **Funding.** The rule observes the funding values (`equity_left`,
+- **Funding.** The rule observes the funding values (`equity_remaining`,
   `loan_undrawn`) under the decisions made so far, so evaluation alternates review
   and solve in date order (cell 9).
 - **Traces.** For each case and review: date, decided value, observations with their

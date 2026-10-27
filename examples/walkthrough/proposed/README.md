@@ -38,7 +38,7 @@ pass.
 | ID | Question | Decision | Used in |
 | --- | --- | --- | --- |
 | D1 | Can lesson 03's cases reach the cash flows through the solve? | Yes. The Model declares the DCF as Flow equations: growth with a rate, the terminal value, NPV at a rate. A case fixes the rates, so the solve stays affine. One Model answers lessons 02–05 | 03, 04, 05 |
-| D2 | Where do the funding accounts and the commitment check live? | Nowhere special: they are composition, in the rk 0.8 pattern of one account's overdraft drawing on the next. Equity is drawn as needed and spent first; the loan takes what the equity cannot cover: `funding_need = -(net_cash_flow + loan_interest).cumulative()`, `loan_balance = max(0 AUD, funding_need - equity)`, `loan_draws = loan_balance.change()`, and `equity_cash_flow = net_cash_flow + loan_interest + loan_draws`. Income and the sale repay the loan first. What is left is `equity_left` and `loan_undrawn`; a loan balance above the limit is a `shortfall`; committed but unpaid payments use `cumulative()`, `total()` and `since(on=)`. The word "headroom" is not used. There is no account class in `rk.finance` and no account declaration in the Model. Repeated use is served by a recipe in the how-to guides (#194), not by an API. Revised 2026-10-27: the bridge facility and the pro-rata loan are replaced by the cascade | 03, 04, 05, 07 |
+| D2 | Where do the funding accounts and the commitment check live? | Nowhere special: they are composition, in the rk 0.8 pattern of one account's overdraft drawing on the next. Equity is drawn as needed and spent first; the loan takes what the equity cannot cover: `funding_need = -(net_cash_flow + loan_interest).cumulative()`, `loan_balance = max(0 AUD, funding_need - equity)`, `loan_draws = loan_balance.diff()`, and `equity_cash_flow = net_cash_flow + loan_interest + loan_draws`. Income and the sale repay the loan first. What is left is `equity_remaining` and `loan_undrawn`; a loan balance above the limit is a `shortfall`; committed but unpaid payments use `cumulative()`, `total()` and `since(on=)`. The word "headroom" is not used. There is no account class in `rk.finance` and no account declaration in the Model. Repeated use is served by a recipe in the how-to guides (#194), not by an API. Revised 2026-10-27: the bridge facility and the pro-rata loan are replaced by the cascade | 03, 04, 05, 07 |
 | D3 | How does an equation refer to a rollup result? | A rollup declares a Value. Equations refer to it by key, as to any other value. The solve traces through the rollup to its contributors | 06, 07 |
 | D4 | How does a batch report IRR, peak shortfall and other non-affine results? | Staged evaluation. `irr`, `min` and `max` are Model equations. The solve evaluates them after the affine stage, and verification checks them | 03, 04 |
 | D5 | When do the inverse rewrites land? | In 1.0. A fixed IRR becomes an NPV row at that rate, and a bound on a minimum becomes one row for each period. The target-IRR land price is a core cell of lesson 03 | 03 |
@@ -312,7 +312,7 @@ named (D14). Functions are called as in Python, with their `rk.` namespace (D21)
 | `rk.flow.event(amount=, on=)` | A Flow with one amount on one date |
 | `rk.finance.npv(flow=, rate=, on=)`, `rk.finance.irr(flow=)` | Valuation on one date basis (D4, D5 for `irr`) |
 | `rk.finance.interest(balance=, rate=, method=)` | Interest on a balance under a stated convention (compounding, day count, opening or average balance) |
-| `x.at(on=)`, `x.trim(start=, end=)`, `x.since(on=)`, `x.shift(by=)`, `x.cumulative()`, `x.change()`, `x.total()`, `x.first()`, `x.last()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date; the part inside a span; the same Periods with zero before a date; each period's amount `by` periods away (`-1` gives the next period's; a rule cannot read a later amount, G53); running totals; each period's change in a running total (the reverse of `cumulative()`); the sum; the first and last amounts; and extremes (D4) |
+| `x.at(on=)`, `x.trim(start=, end=)`, `x.since(on=)`, `x.shift(by=)`, `x.cumulative()`, `x.diff()`, `x.total()`, `x.first()`, `x.last()`, `x.min()`, `x.max()` | Methods on a Flow `x`, as in Python: the amount of the period that contains a date; the part inside a span; the same Periods with zero before a date; each period's amount `by` periods away (`-1` gives the next period's; a rule cannot read a later amount, G53); running totals; each period's difference from the previous period, as in pandas (the reverse of `cumulative()`); the sum; the first and last amounts; and extremes (D4) |
 | `max(a, b)` | The larger of two values. Like Python's built-in, its arguments are not named |
 
 Each profile in `rk.profile` is also an equation function, under its own name in lower
@@ -347,7 +347,7 @@ use. **Issue** is filled in when the issue is filed.
 | 1 | — | `rk.duration.Periods` and Span conveniences: `years`, `extend`, `periods(frequency)` returning a `Periods` with `start`, `end`, `span`, `frequency`, `len`, indexing, `trim`, `extend(count=)`, `containing(on=)`, value equality and a compact document form | G01 | `duration` | 01·4; 03·3; 04·3; 05·6, 9–11; 07·7, 18 | #119 |
 | 2 | — | Flow and Stream construction, lookup and arithmetic | G02–G04 | `flow` | 01·5–13; 03·17 | #103, #162 |
 | 3 | — | Value equality and `rk.quantity.isclose` | G06 | `quantity`, `flow` | 01·12, 15, 21; 02·22 | #109, #117 |
-| 4 | — | Flow methods: `shift(by=)`, `trim(span=)` with a Period, `cumulative()`, `change()`, `total()`, `since(on=)`, `first()`, `last()`, `min()`, `max()` | G05 | `flow` | 01·11–12, 20; 03·13; 05·8 | #103, #162 |
+| 4 | — | Flow methods: `shift(by=)`, `trim(span=)` with a Period, `cumulative()`, `diff()`, `total()`, `since(on=)`, `first()`, `last()`, `min()`, `max()` | G05 | `flow` | 01·11–12, 20; 03·13; 05·8 | #103, #162 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
 | 7 | — | Function catalogue for equations, called as `rk.profile.*`, `rk.flow.*`, `rk.finance.*` and Flow methods, with the reserved words and the literal rule | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
@@ -388,7 +388,7 @@ Scope changes for existing issues:
 
 - [#194](https://github.com/daniel-fink/rangekeeper/issues/194) (how-to guides) gains a
   recipe: a funding cascade (equity first, then a loan with a limit, interest and
-  commitments), composed from `cumulative()`, `change()`, `max`, `total()`,
+  commitments), composed from `cumulative()`, `diff()`, `max`, `total()`,
   `since(on=)` and `rk.finance.interest` (D2).
 - [#94](https://github.com/daniel-fink/rangekeeper/issues/94) (rename map and codemod)
   needs an entry: today's `calculations.account.Account` is not carried into 1.0.

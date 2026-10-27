@@ -7,7 +7,7 @@ API conventions and the gap list: [README](README.md).
 Decisions used here (recorded in the [README](README.md#decisions)): the cases
 reach the cash flows through the solve (D1); `irr`, `min` and `max` are evaluated
 after the affine stage, and a fixed IRR becomes an affine row (D4); funding is an
-equity-first cascade composed from `cumulative()`, `change()` and `max`, with no
+equity-first cascade composed from `cumulative()`, `diff()` and `max`, with no
 account object (D2).
 
 ## Goals box
@@ -293,7 +293,7 @@ site.value(key="equity_rate", units="% pa")
 site.equations(
     "funding_need = -(net_cash_flow + loan_interest).cumulative()",
     "loan_balance = max(0 AUD, funding_need - equity)",
-    "loan_draws = loan_balance.change()",
+    "loan_draws = loan_balance.diff()",
     "loan_interest = -rk.finance.interest(balance=loan_balance, rate=loan_rate)",
     formulation="Funding",
 )
@@ -403,7 +403,7 @@ need includes the operating cash flow.
 draft = model.edit()
 site = draft.entity(code="property")
 site.equations(
-    "equity_left = max(0 AUD, equity - funding_need)",
+    "equity_remaining = max(0 AUD, equity - funding_need)",
     "loan_undrawn = loan_limit - loan_balance",
     "shortfall = max(0 AUD, -loan_undrawn)",
     "peak_shortfall = shortfall.max()",
@@ -424,7 +424,7 @@ site.equations(
     "b_unpaid = b_works.cumulative() - b_works.total()",
     "committed = shared_unpaid.since(on=shared_start) + a_unpaid.since(on=a_start)"
     " + b_unpaid.since(on=b_start)",
-    "commitment_gap = max(0 AUD, (committed - equity_left - loan_undrawn).max())",
+    "commitment_gap = max(0 AUD, (committed - equity_remaining - loan_undrawn).max())",
     formulation="Funding",
 )
 model = draft.commit()
@@ -443,7 +443,7 @@ funded_outcome.table(
 # cell 21
 helpers.plot_flows(
     outcome=funded_outcome.case(key="weak"),
-    keys=["equity_left", "loan_undrawn", "committed"],
+    keys=["equity_remaining", "loan_undrawn", "committed"],
 )
 ```
 
@@ -568,7 +568,7 @@ follow `ruff format` (D15).
 | 9 | 2, 8 | G11, G12 |
 | 10 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
 | 11, 14 | 8 | Cases ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G20: `cases(mapping)` overrides by key; `Outcome.case`, `Outcome.table` with a case column |
-| 13–13b | 3, 6 | The equity-first cascade as equations (D2): G05 (`cumulative()`, `change()`), G17 (`rk.finance.interest`, `rk.finance.irr`, period-by-period `max`); G09: `max` and `irr` are evaluated in period order after the affine stage |
+| 13–13b | 3, 6 | The equity-first cascade as equations (D2): G05 (`cumulative()`, `diff()`), G17 (`rk.finance.interest`, `rk.finance.irr`, period-by-period `max`); G09: `max` and `irr` are evaluated in period order after the affine stage |
 | 14 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |
 | 16 | 6, 8 | G22: a fixed `irr` becomes an affine NPV row; G77: with a free value, the solve picks the active side of each `max` and checks it after the solve |
 | 17 | 6 | By hand once |
