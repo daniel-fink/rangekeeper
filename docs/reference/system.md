@@ -119,8 +119,9 @@ when the local key is missing. A custom selector must return a current Value own
 by that Entity; cross-owner, Formulation-local and stale quantities are rejected.
 
 All selected quantities convert explicitly to `units` before reduction. The
-`unit_system` parameter defaults to the existing `default_units`; callers using a
-custom Model unit policy should pass the same policy here. Results are immutable
+`unit_system` parameter defaults to `None`: `execute` then uses
+`Model.unit_system` of the hierarchy's Model ([units](units.md)). A supplied unit
+system checks `units` when the Reduction is created; otherwise `execute` checks them. Results are immutable
 schema Quantities. Custom reducers must return a compatible finite Quantity;
 programming errors from callbacks propagate to the caller.
 

@@ -13,7 +13,7 @@ from rangekeeper.schema.records import (
     Quantity,
 )
 from rangekeeper.shared.errors import ContractError
-from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.units import UnitSystem
 from rangekeeper.specification.policy._availability import evidence_dates
 from rangekeeper.specification.policy.observation import PolicyCapabilityError, _observe
 from rangekeeper.specification.policy.predicate import evaluate as evaluate_expression
@@ -68,11 +68,15 @@ def evaluate(
     policy: Policy,
     *,
     model: Model,
-    units: UnitSystem = default_units,
+    units: UnitSystem | None = None,
 ) -> PolicyResult:
-    """Evaluate a validated finite declaration against one pinned recorded path."""
+    """Evaluate a validated finite declaration against one pinned recorded path.
+
+    Without ``units``, evaluation uses the unit system of ``model``.
+    """
     if not isinstance(policy, Policy):
         raise TypeError("policy must be a Policy record")
+    units = model.unit_system if units is None else units
     scope = scope_for_model(model)
     declaration = policy.to_data()
     validate_policy(declaration, scope=scope, units_compatible=units.compatible)

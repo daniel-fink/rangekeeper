@@ -29,7 +29,7 @@ from rangekeeper.shared.errors import (
     UnitError,
 )
 from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.units import UnitSystem
 from rangekeeper.shared.validation import (
     bounded,
     checked,
@@ -412,9 +412,12 @@ def prepare(
     composition: Composition,
     *,
     resolver: SpecificationResolver,
-    units: UnitSystem = default_units,
+    units: UnitSystem | None = None,
 ) -> PreparedValidation:
-    """Check one composition without recomposing; retain successful prerequisites."""
+    """Check one composition without recomposing; retain successful prerequisites.
+
+    Without ``units``, the check uses the unit system of the input Model.
+    """
     from rangekeeper.model.model import Model
     from rangekeeper.model.validation import recorded_unit_issues
     from rangekeeper.schema.records import Measure
@@ -446,7 +449,9 @@ def prepare(
         effective = cast(Mapping[str, Any], composition.requirements._data)
         resolved_model = model
         issues: list[Issue] = []
-        if model._units != units:
+        if units is None:
+            units = model.unit_system
+        elif model.unit_system != units:
             issues.extend(
                 recorded_unit_issues(
                     model._record,

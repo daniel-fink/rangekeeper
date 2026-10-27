@@ -79,7 +79,8 @@ A Composition exposes derived `root_id` and `model_id`, immutable generated
 `contributor_ids`. Its read-only `sources` map contains `Source(document_id, path)`
 values with original document pointers. It is not a saved revision and creates no UUID.
 
-`composition.validate(resolver=..., units=...)` checks the existing view directly.
+`composition.validate(resolver=..., units=None)` checks the existing view directly.
+Without `units`, it uses the [unit system](units.md) of the input Model.
 It does not export and recompose contributors. Internal preparation retains the
 exact resolved Model, combined Scope and ExpressionAnalysis for execution.
 Independent public calls establish fresh resolver and unit contexts. Invalid

@@ -24,7 +24,7 @@ from rangekeeper.shared.errors import (
     ValidationError,
 )
 from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.units import UnitSystem
 from rangekeeper.shared.validation import (
     bounded,
     require,
@@ -113,13 +113,15 @@ class Composition:
         self,
         *,
         resolver: SpecificationResolver,
-        units: UnitSystem = default_units,
+        units: UnitSystem | None = None,
     ) -> ValidationReport:
-        """Validate this composition against its resolved input Model."""
-        from rangekeeper.shared.units import default_units
+        """Validate this composition against its resolved input Model.
+
+        Without ``units``, validation uses the unit system of the input Model.
+        """
         from rangekeeper.specification.validation import prepare
 
-        return prepare(self, resolver=resolver, units=units or default_units).report
+        return prepare(self, resolver=resolver, units=units).report
 
 
 def validate_settings(settings):

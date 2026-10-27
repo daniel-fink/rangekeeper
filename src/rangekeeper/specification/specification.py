@@ -148,7 +148,6 @@ class Specification:
         """
         from rangekeeper.model.scope import recorded_scalar, target_units
         from rangekeeper.schema.records import Assignment, Quantity
-        from rangekeeper.shared.units import default_units
         from rangekeeper.specification.targets import expand_targets
 
         if type(recorded) is not bool:
@@ -175,7 +174,7 @@ class Specification:
                 raise TypeError(
                     "quantity must be a Quantity or target-to-Quantity mapping"
                 )
-            default_units.convert(q, to=target_units(model, ref))
+            model.unit_system.convert(q, to=target_units(model, ref))
             assignments.append(Assignment(target=ref, quantity=q))
         return self._edit_roles(
             id=id,

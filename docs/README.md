@@ -34,7 +34,7 @@ Historical records retain the contracts and results from their recorded date.
 | Common record rules | [Records](reference/records.md), [identity and revisions](reference/identity.md) |
 | Immutable Model and investigation delivery | [Bundle](reference/bundle.md) |
 | Document roots | [Model](reference/model.md), [Specification](reference/specification.md), [Run and storage](reference/run-and-storage.md) |
-| Mathematics | [Expressions](reference/expressions.md), [calculations](reference/calculations.md), [execution](reference/execution.md) |
+| Mathematics | [Expressions](reference/expressions.md), [units](reference/units.md), [calculations](reference/calculations.md), [execution](reference/execution.md) |
 | Futures and choices | [Scenarios and policies](reference/scenarios-and-policies.md) |
 | Structure and projection | [System views and reductions](reference/system.md), [tables](reference/tables.md) |
 

@@ -77,7 +77,7 @@ def test_day_count_boundaries_and_reversed_dates():
 @pytest.mark.parametrize("first_period", [-1, 0, 1, 3])
 def test_pv_keeps_records_and_non_currency_units(first_period):
     source = Flow(
-        units="kg",
+        units="sqm",
         movements=(
             Movement(
                 id=uuid4(),
@@ -91,7 +91,7 @@ def test_pv_keeps_records_and_non_currency_units(first_period):
     )
     before = source.to_data()
     result = calculate_pv(source, rate=0.1, first_period=first_period)
-    assert source.to_data() == before and result.units == "kg"
+    assert source.to_data() == before and result.units == "sqm"
     for i, (original, discounted) in enumerate(
         zip(source.movements, result.movements, strict=True)
     ):
