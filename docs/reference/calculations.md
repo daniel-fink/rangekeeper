@@ -231,5 +231,7 @@ returns one PyXIRR root and its residual. Both require `timing=` for period-only
 movements. `IrrResult` contains `rate`, `residual`, `guess` and
 `method="pyxirr.xirr"`. A guess is neither a bound nor proof of root uniqueness.
 Failed or nonfinite library results raise `ValueError`. An IRR residual greater
-than `1e-8 * max(gross_movements, 1)` also fails. Empty Flows have zero XNPV but no
-IRR. There is no bounded-solver fallback.
+than `1e-8 * max(gross_movements, 1)` also fails. This check uses the residual at
+the earliest payment, so a distant `valuation_date` does not reject a valid root;
+`IrrResult.residual` is the residual at `valuation_date`. Empty Flows have zero XNPV
+but no IRR. There is no bounded-solver fallback.
