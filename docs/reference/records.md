@@ -72,6 +72,35 @@ Validation runs in tiers ([ADR-011](../decisions/011-records-and-validation.md#w
 | Structural | `from_data`, `from_json`, the codecs (`rk.io.json`, `rk.io.yaml`) and `DirectoryStore` reads | jsonschema over the whole tree |
 | Semantic | `Model`, `Specification` and `Run` construction, so `create`, `revise` and `from_data`; composition before execution; Run publication | Document rules, references, units and dimensions |
 
+### Validate and check a document
+
+Each document (`Model`, `Specification` and `Run`) has the same two methods
+([ADR-011](../decisions/011-records-and-validation.md#validation-api)). The
+MarketPaths document gets them when it lands.
+
+- `validate(*, resolver=None, units=None) -> ValidationReport` reports content
+  problems and raises nothing for them. Each `Issue` has a
+  [code and structured fields](errors.md#validation-issues).
+- `check(*, resolver=None, units=None)` returns the same document when the report
+  is empty. Otherwise it raises `ValidationError`, and the error's `report` holds
+  the issues.
+
+Construction already checked the local rules, so without arguments the report of
+a constructed document is empty. The arguments add checks:
+
+| Document | With `resolver` | With `units` |
+| --- | --- | --- |
+| `Model` | Nothing: a Model references no other document, and the store need not hold its predecessor | Checks the recorded units against that unit system instead of `unit_system` |
+| `Specification` | Resolves the includes and cases, composes each concrete case and checks it against its input Model, as execution does. A batch also checks that each case uses the Model that it pins. A partial contribution reports what it lacks, for example `model.missing` | Replaces the unit system of each input Model |
+| `Run` | Checks the Run tree and its published outputs against the exact revisions that they reference, the same as `rangekeeper.run.validate` | Used by the tree check |
+
+```python
+report = specification.validate(resolver=store)
+for issue in report.issues:
+    print(issue.code, issue.document_id, issue.path, issue.targets)
+run = run.check(resolver=store)  # raises ValidationError with the report
+```
+
 Record data (a mapping) passed to a typed constructor for a record field is
 untrusted and gets the structural tier. Generated signatures
 let type checkers reject unknown fields, wrong record types and invalid enum

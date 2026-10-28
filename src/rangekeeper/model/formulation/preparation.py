@@ -8,12 +8,12 @@ Neither path evaluates quantities, executes graph queries or invokes a solver.
 import math
 from uuid import UUID
 
-from rangekeeper.model._scope import build_scope, validate_values
+from rangekeeper.model._scope import build_scope, check_value_content
 from rangekeeper.model.expression.validation import (
-    validate_constraint_predicates,
-    validate_function_signature,
+    check_constraint_predicates,
+    check_function_signature,
 )
-from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.model.formulation.validation import check_formulation_names
 from rangekeeper.shared.validation import require, require_ownership, require_unique
 
 
@@ -47,8 +47,8 @@ def prepare_formulations(document, additional_formulations=(), *, path=""):
         "Formulation scope cannot also own root Expressions or Constraints",
     )
     roots = system.get("formulations") or []
-    validate_formulation_names(roots, path=path + "/formulations")
-    validate_formulation_names(additional_formulations, path="/additional_formulations")
+    check_formulation_names(roots, path=path + "/formulations")
+    check_formulation_names(additional_formulations, path="/additional_formulations")
     located = [
         *_walk_formulations(roots, path + "/formulations"),
         *_walk_formulations(additional_formulations, "/additional_formulations"),
@@ -82,9 +82,9 @@ def prepare_formulations(document, additional_formulations=(), *, path=""):
             (relationship.get("characteristics") or {}).get("values") or []
         )
     scope = build_scope(document, local_values=local_values + relationship_values)
-    validate_values(scope)
+    check_value_content(scope)
     for function in scope.functions.values():
-        validate_function_signature(function, scope=scope)
+        check_function_signature(function, scope=scope)
     for value in scope.values.values():
         quantity = value.get("quantity")
         if quantity is not None:
@@ -106,7 +106,7 @@ def prepare_formulations(document, additional_formulations=(), *, path=""):
         for formulation in formulations
         for record in formulation.get("constraints") or []
     ]
-    analysis = validate_constraint_predicates(
+    analysis = check_constraint_predicates(
         constraints,
         expressions,
         scope=scope,

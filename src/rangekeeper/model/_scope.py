@@ -161,10 +161,10 @@ def scope_for_model(model):
     return build_scope(document, local_values=local_values)
 
 
-def validate_values(scope):
+def check_value_content(scope):
     """Check intrinsic Value content after declaration identities are indexed."""
     from rangekeeper.flow import Flow
-    from rangekeeper.model.content import validate_content
+    from rangekeeper.model.content import check_content
     from rangekeeper.schema.records import PropertyContent
 
     for value in scope.values.values():
@@ -200,6 +200,6 @@ def validate_values(scope):
             )
             if value.get("content") is not None:
                 try:
-                    validate_content(PropertyContent.from_data(value["content"]))
+                    check_content(PropertyContent.from_data(value["content"]))
                 except (ValueError, TypeError) as error:
                     require(False, str(error))

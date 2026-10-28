@@ -7,31 +7,37 @@ if TYPE_CHECKING:
     from rangekeeper.model import Model
     from rangekeeper.schema.records import Quantity, Reference
 from dataclasses import dataclass
+from typing import Self
 from uuid import UUID
 
-from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.model.formulation.validation import check_formulation_names
+from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.index import RecordIndex
 from rangekeeper.schema.records import Metadata
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.validation import (
+    check_known_reference_types,
     document_version,
     supports_version,
-    validate_known_reference_types,
 )
+from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.errors import UnsupportedVersionError
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.shared.validation import bounded, require
 from rangekeeper.specification.composition import (
     Composition,
-    validate_local_header,
-    validate_roles,
-    validate_settings,
+    check_local_header,
+    check_roles,
+    check_settings,
 )
 
 
-def _validate_local(record: SpecificationRecord) -> None:
-    """Check local ownership and roles while permitting unresolved external inputs."""
+def _validate_local(record: SpecificationRecord) -> ValidationReport:
+    """Report local ownership and role problems; unresolved external inputs are allowed.
+
+    An unsupported schema version raises UnsupportedVersionError.
+    """
     data = record.to_data()
     index = RecordIndex.build(record)
     version = document_version("Specification")
@@ -39,13 +45,13 @@ def _validate_local(record: SpecificationRecord) -> None:
         raise UnsupportedVersionError(record.metadata.schema_version)
 
     def check():
-        validate_local_header(data, version)
-        validate_known_reference_types(record, index=index)
+        check_local_header(data, version)
+        check_known_reference_types(record, index=index)
         require(
             record.metadata.previous not in index.records,
             "Specification predecessor targets current scope",
         )
-        validate_roles(data)
+        check_roles(data)
         for field in ("includes", "cases"):
             require(
                 all(
@@ -59,11 +65,11 @@ def _validate_local(record: SpecificationRecord) -> None:
                 record.model not in index.records,
                 "Model pin targets a local declaration",
             )
-        validate_settings(data.get("settings") or {})
+        check_settings(data.get("settings") or {})
 
-        validate_formulation_names(data.get("formulations") or [])
+        check_formulation_names(data.get("formulations") or [])
 
-    bounded([], check, document=data).raise_if_invalid()
+    return bounded([], check, document=data)
 
 
 @dataclass(frozen=True, init=False, eq=False)
@@ -81,7 +87,7 @@ class Specification:
     def __init__(self, record: SpecificationRecord) -> None:
         if not isinstance(record, SpecificationRecord):
             raise TypeError("record must be a generated Specification record")
-        _validate_local(record)
+        _validate_local(record).raise_if_invalid()
         object.__setattr__(self, "_record", record)
 
     @classmethod
@@ -110,6 +116,37 @@ class Specification:
 
     def __repr__(self) -> str:
         return f"Specification(id={self.id!r}, includes={len(self.record.includes or ())}, cases={len(self.record.cases or ())})"
+
+    def validate(
+        self,
+        *,
+        resolver: SpecificationResolver | None = None,
+        units: UnitSystem | None = None,
+    ) -> ValidationReport:
+        """Report the problems of this contribution; content problems raise nothing.
+
+        Without ``resolver``, the check repeats the local rules of construction.
+        With ``resolver``, it resolves the includes and cases, composes each
+        concrete case and checks it against its input Model, as execution does.
+        A partial contribution then reports what it lacks, for example its
+        input Model. ``units`` replaces the unit system of each input Model.
+        """
+        from rangekeeper.specification.validation import validate_document
+
+        return validate_document(self, resolver=resolver, units=units)
+
+    def check(
+        self,
+        *,
+        resolver: SpecificationResolver | None = None,
+        units: UnitSystem | None = None,
+    ) -> Self:
+        """Return this contribution if ``validate`` finds no problem.
+
+        Otherwise raise ValidationError; its ``report`` holds the problems.
+        """
+        self.validate(resolver=resolver, units=units).raise_if_invalid()
+        return self
 
     def compose(self, *, resolver: SpecificationResolver) -> Composition:
         """Resolve this contribution to one immutable additive investigation."""

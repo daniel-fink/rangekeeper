@@ -179,6 +179,8 @@ reports unsupported content rather than changing its type.
 
 ## Validation reports and failures
 
+`model.validate(units=...)` and `model.check(units=...)` check a revision against
+another unit system ([validate and check](records.md#validate-and-check-a-document)).
 `model.validation.validate` accepts a facade, generated Model record or serialized
 mapping and returns a `ValidationReport`. Shared argument guards reject invalid
 Python arguments with `TypeError` or `ValueError`. They do not inspect documents.

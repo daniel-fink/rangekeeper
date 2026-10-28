@@ -177,7 +177,7 @@ def check_inputs(name, parameters, arrays):
         raise ValueError("zero volatility requires zero innovation draws")
 
 
-def validate_plan(plan):
+def check_plan(plan):
     """Check the complete passive plan against its market method contract."""
     from rangekeeper.profile import Distribution
 
@@ -221,21 +221,21 @@ def validate_plan(plan):
     check_values(plan["method"], fixed)
 
 
-def validate_realizations(provenance, scope):
+def check_realizations(provenance, scope):
     """Check captured input/output references and delayed observation declarations."""
     from rangekeeper.model._scope import reference_key, resolve_reference
 
     realizations = provenance.get("scenarios") or []
     require_unique(realizations, "id", "scenario realization")
     for item in realizations:
-        validate_plan(item["plan"])
+        check_plan(item["plan"])
         for field in ("inputs", "outputs", "streams", "versions"):
             require_unique(item[field], "name", f"scenario {field}")
         if item.get("calculation") is not None:
             require_unique(
                 item["calculation"]["versions"], "name", "calculation dependency"
             )
-        _validate_contents(item, scope)
+        _check_contents(item, scope)
         tokens = [reference_key(a["target"]) for a in item["availability"]]
         require(len(tokens) == len(set(tokens)), "duplicate observation availability")
         for availability in item["availability"]:
@@ -272,7 +272,7 @@ def validate_realizations(provenance, scope):
                         )
 
 
-def _validate_contents(item, scope):
+def _check_contents(item, scope):
     """Enforce complete captured shapes without importing generation algorithms."""
     from rangekeeper.model._scope import reference_key, resolve_reference
 

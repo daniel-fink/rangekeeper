@@ -43,7 +43,7 @@ def completion_for(completions):
     return CompletionStatus.SKIPPED
 
 
-def validate_non_batch_status(run):
+def check_non_batch_status(run):
     """Check the permitted completion/solution/output combinations for one attempt."""
     status = run["report"]["status"]
     completion, solution = status["completion"], status["solution"]
@@ -67,7 +67,7 @@ def validate_non_batch_status(run):
         require(not run.get("spawns"), "skipped non-batch Run cannot spawn")
 
 
-def validate_report(run, *, batch, effective=None):
+def check_report(run, *, batch, effective=None):
     """Check local report evidence; effective requirements add requested-setting checks."""
     data = run["report"]
     if effective is not None:
@@ -187,7 +187,7 @@ def validate_report(run, *, batch, effective=None):
         )
 
 
-def validate_local(run, schema_version):
+def check_local(run, schema_version):
     """Check one finalized record without resolving any external document.
 
     not_applicable declares an aggregate; cross-document validation verifies that
@@ -209,5 +209,5 @@ def validate_local(run, schema_version):
         require(identity not in refs, f"Run cannot reference itself through {field}")
     batch = run["report"]["status"]["solution"] == "not_applicable"
     if not batch:
-        validate_non_batch_status(run)
-    validate_report(run, batch=batch)
+        check_non_batch_status(run)
+    check_report(run, batch=batch)

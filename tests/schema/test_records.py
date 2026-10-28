@@ -21,7 +21,7 @@ from rangekeeper.schema import records as r
 from rangekeeper.schema.validation import schema_for, validate
 from rangekeeper.shared.errors import ValidationError
 from rangekeeper.specification.validation import (
-    validate_records as validate_specification,
+    validate_records as check_specification,
 )
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
@@ -270,10 +270,8 @@ def test_shared_specification_and_run_validation():
         data["metadata"]["id"]: data for data in map(load, EXAMPLES.glob("run*.yaml"))
     }
     specification = load(EXAMPLES / "specification-forward.yaml")
-    assert validate_specification(
-        specification, models=models, specifications=specs
-    ).valid
-    assert validate_specification(
+    assert check_specification(specification, models=models, specifications=specs).valid
+    assert check_specification(
         load(EXAMPLES / "specification-batch.yaml"), models=models, specifications=specs
     ).valid
     run = load(EXAMPLES / "run-forward.yaml")
@@ -283,7 +281,7 @@ def test_shared_specification_and_run_validation():
     assert not validate_run(broken, models=models, specifications=specs, runs={}).valid
     broken_models = deepcopy(models)
     next(iter(broken_models.values()))["metadata"]["id"] = "bad"
-    assert not validate_specification(
+    assert not check_specification(
         specification, models=broken_models, specifications=specs
     ).valid
 

@@ -14,12 +14,12 @@ import pytest
 from rangekeeper.errors import Code
 from rangekeeper.model._scope import build_scope
 from rangekeeper.model.expression.validation import (
+    check_constraint_predicates,
+    check_function_signature,
     infer_expression_domain,
-    validate_constraint_predicates,
-    validate_function_signature,
 )
 from rangekeeper.model.formulation.preparation import prepare_formulations
-from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.model.formulation.validation import check_formulation_names
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.diagnostics import Issue
 from rangekeeper.shared.errors import ContractError
@@ -157,8 +157,8 @@ def test_constraint_names_and_predicates_are_separate_rules():
     assert roots == before
     # Combining those Constraints under one owner changes only the naming rule.
     with pytest.raises(ContractError, match="duplicate Constraint code"):
-        validate_formulation_names([{"constraints": constraints}])
-    validate_constraint_predicates(constraints, [predicate], scope=build_scope({}))
+        check_formulation_names([{"constraints": constraints}])
+    check_constraint_predicates(constraints, [predicate], scope=build_scope({}))
 
 
 @pytest.mark.parametrize(
@@ -174,7 +174,7 @@ def test_local_naming_rule_reports_nested_owner_without_resolving_references(
 ):
     roots = [{"formulations": [{collection: [{field: "x"}, {field: "x"}]}]}]
     with pytest.raises(ContractError) as failure:
-        validate_formulation_names(roots)
+        check_formulation_names(roots)
     assert (
         failure.value.path == f"/formulations/0/formulations/0/{collection}/1/{field}"
     )
@@ -199,7 +199,7 @@ def test_local_naming_rule_reports_nested_owner_without_resolving_references(
 )
 def test_predicate_reports_reference_and_domain_failures(predicate, expressions, code):
     with pytest.raises(ContractError) as failure:
-        validate_constraint_predicates(
+        check_constraint_predicates(
             [{"id": uid("constraint"), "predicate": uid(predicate)}],
             expressions,
             scope=build_scope({}),
@@ -222,7 +222,7 @@ def test_constraint_identity_cannot_collide_with_a_value_declaration():
         }
     )
     with pytest.raises(ContractError, match="duplicate Constraint identity"):
-        validate_constraint_predicates(
+        check_constraint_predicates(
             [{"id": uid("value"), "predicate": uid("p")}],
             [{"id": uid("p"), "kind": "boolean"}],
             scope=scope,
@@ -231,7 +231,7 @@ def test_constraint_identity_cannot_collide_with_a_value_declaration():
 
 def test_expression_identity_cannot_collide_with_a_constraint():
     with pytest.raises(ContractError, match="duplicate Expression identity"):
-        validate_constraint_predicates(
+        check_constraint_predicates(
             [{"id": uid("same"), "predicate": uid("same")}],
             [{"id": uid("same"), "kind": "boolean"}],
             scope=build_scope({}),
@@ -261,12 +261,12 @@ def test_signature_validation_is_independently_composable():
     with pytest.raises(
         ContractError, match="required positional parameter follows optional"
     ):
-        validate_function_signature(function, scope=build_scope({}))
+        check_function_signature(function, scope=build_scope({}))
     scope = build_scope({"functions": [function]})
     with pytest.raises(
         ContractError, match="required positional parameter follows optional"
     ):
-        validate_function_signature(scope.functions[UUID(uid("function"))], scope=scope)
+        check_function_signature(scope.functions[UUID(uid("function"))], scope=scope)
 
 
 def test_model_and_partial_specification_share_local_naming_diagnostics():
