@@ -34,6 +34,38 @@ division, and a leading `per` means `1 /`:
 Units contain no numbers other than exponents. Put the scale in the magnitude:
 write `0.005 dwelling per sqm`, not `0.5 dwelling per 100 sqm`.
 
+## Quantities
+
+`rk.Quantity` is a magnitude with units. Make one from text, or from a magnitude
+and units. The arguments are keyword-only:
+
+```python
+import rangekeeper as rk
+
+rent = rk.Quantity(text="1200 USD pa")
+rate = rk.Quantity(magnitude=0.07, units="pa")
+rent.to(units="USD per month")  # Quantity(text='100 USD per month')
+```
+
+Text is a number, then units: `"7 % pa"`, `"20e6 AUD"`, `"750 AUD per sqm pa"`.
+The default unit system parses it, so unknown units fail with
+[suggestions](#errors-and-suggestions). `str()` gives the same form, and `repr()`
+gives `Quantity(text='7 % pa')`. `to(units=)` converts to compatible units;
+currencies never convert.
+
+Arithmetic checks units:
+
+| Operation | Result |
+| --- | --- |
+| `a + b`, `a - b` | Compatible units only. The result has the units of `a`; `b` is converted to them |
+| `a * 2`, `2 * a`, `a / 2` | The units of `a` |
+| `a * b`, `a / b` | The combined units. A dimensionless operand, such as `5 %`, acts as its plain number (0.05), so `100 USD / 5 %` is `2000 USD`. Units of the same dimension cancel: `2 % pa * 1 year` is `0.02 dimensionless`, and `750 AUD per sqm pa * 100 sqm` is `75000 AUD * pa` |
+| `-a`, `abs(a)` | The units of `a`; a currency amount changes sign exactly |
+
+A currency amount stays an amount: the calculation uses float64, and the result
+goes through `money.to_amount` ([currency amounts](#currency-amounts)). A result
+that is not finite raises `UnitError`.
+
 ## Errors and suggestions
 
 Each failure raises `UnitError`. Its `suggestions` attribute gives the spellings

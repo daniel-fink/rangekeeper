@@ -44,15 +44,16 @@
   "Quantity": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, magnitude: Decimal | str | int | float, units: str) -> None",
+    "__init__": "method (self, *, magnitude: decimal.Decimal | str | int | float | None = None, units: str | None = None, text: str | None = None) -> None",
     "magnitude": "property",
     "number": "property",
     "replace": "method (self, *, magnitude: Decimal | str | int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
     "round": "method (self, *, places: int | None = None, mode: str = 'ROUND_HALF_EVEN') -> Quantity",
+    "to": "method (self, *, units: str) -> Quantity",
     "units": "property"
    },
    "module": "rangekeeper.quantity",
-   "signature": "(*, magnitude: Decimal | str | int | float, units: str) -> None"
+   "signature": "(*, magnitude: decimal.Decimal | str | int | float | None = None, units: str | None = None, text: str | None = None) -> None"
   },
   "Run": {
    "kind": "class",
@@ -1982,15 +1983,16 @@
   "Quantity": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, magnitude: Decimal | str | int | float, units: str) -> None",
+    "__init__": "method (self, *, magnitude: decimal.Decimal | str | int | float | None = None, units: str | None = None, text: str | None = None) -> None",
     "magnitude": "property",
     "number": "property",
     "replace": "method (self, *, magnitude: Decimal | str | int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
     "round": "method (self, *, places: int | None = None, mode: str = 'ROUND_HALF_EVEN') -> Quantity",
+    "to": "method (self, *, units: str) -> Quantity",
     "units": "property"
    },
    "module": "rangekeeper.quantity",
-   "signature": "(*, magnitude: Decimal | str | int | float, units: str) -> None"
+   "signature": "(*, magnitude: decimal.Decimal | str | int | float | None = None, units: str | None = None, text: str | None = None) -> None"
   },
   "UnitSystem": {
    "kind": "class",
