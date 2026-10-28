@@ -439,11 +439,11 @@
   "Executor": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, store: rangekeeper.shared.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | None = None, units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None",
+    "__init__": "method (self, store: rangekeeper.shared.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None",
     "execute": "method (self, specification: rangekeeper.specification.specification.Specification) -> rangekeeper.run.run.Run"
    },
    "module": "rangekeeper.execution.executor",
-   "signature": "(store: rangekeeper.shared.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | None = None, units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None"
+   "signature": "(store: rangekeeper.shared.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None"
   },
   "Tolerances": {
    "kind": "class",
@@ -479,6 +479,10 @@
    },
    "module": "rangekeeper.execution.backends.base",
    "signature": "(termination: str, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+  },
+  "registry": {
+   "kind": "value",
+   "type": "Registry"
   }
  },
  "rangekeeper.finance": {
@@ -665,6 +669,15 @@
    "kind": "alias",
    "value": "rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run"
   },
+  "GeometryProvider": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *args, **kwargs)",
+    "validate": "method (self, path: pathlib.Path, geometry: rangekeeper.schema.records.Geometry) -> None"
+   },
+   "module": "rangekeeper.io.geometry",
+   "signature": "(*args, **kwargs)"
+  },
   "MemoryStore": {
    "kind": "class",
    "members": {
@@ -688,6 +701,10 @@
    },
    "module": "rangekeeper.shared.store",
    "signature": "(*args, **kwargs)"
+  },
+  "geometry_providers": {
+   "kind": "value",
+   "type": "Registry"
   },
   "json": {
    "kind": "module",
@@ -1848,6 +1865,7 @@
     "compatible": "method (self, left: str, right: str) -> bool",
     "convert": "method (self, quantity: rangekeeper.schema.records.Quantity, *, to: str) -> rangekeeper.schema.records.Quantity",
     "divide": "method (self, numerator: str, denominator: str) -> str",
+    "fingerprint": "property",
     "minor_unit": "method (self, code: str) -> int | None",
     "multiply": "method (self, left: str, right: str) -> str",
     "parse_quantity": "method (self, text: str) -> rangekeeper.schema.records.Quantity",
@@ -1865,6 +1883,10 @@
    "kind": "function",
    "module": "rangekeeper.quantity",
    "signature": "(code: str) -> int | None"
+  },
+  "unit_systems": {
+   "kind": "value",
+   "type": "Registry"
   }
  },
  "rangekeeper.run": {

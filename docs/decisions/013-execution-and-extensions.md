@@ -1,6 +1,6 @@
 # ADR-013: Execution pipeline and extension points
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; extension points implemented in 1.0.0a2 (#131), pipeline pending. Recorded: 2026-10-26.
 
 ## Problem
 

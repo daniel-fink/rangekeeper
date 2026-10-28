@@ -90,6 +90,8 @@ class Code(StrEnum):
     AGGREGATION = "aggregation"
     DECODE = "decode"
     ENCODING = "encoding"
+    EXTENSION_CONFLICT = "extension.conflict"
+    EXTENSION_UNKNOWN = "extension.unknown"
     PUBLISHED_FILE = "published_file"
     REPLAY_UNAVAILABLE = "replay_unavailable"
     REVISION_CONFLICT = "revision_conflict"

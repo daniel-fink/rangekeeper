@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 from rangekeeper.execution import acceptance
 from rangekeeper.execution.attempt import Attempt
-from rangekeeper.execution.backends import Backend, PyomoHighs
+from rangekeeper.execution.backends import Backend, registry
 from rangekeeper.execution.planning import Plan
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.run import Run, RunRecord, Severity, SolutionStatus
@@ -31,6 +31,8 @@ class Executor:
     case has a fresh Run even when it fails; repeated paths are separate attempts.
     Missing references, invalid batch graphs, storage errors and programming errors
     raise to the caller. Expected formulation/numerical failures become Run evidence.
+    ``backend`` is a Backend or the name of a registered one. Run evidence records
+    its registered name and fingerprint.
     Without ``units``, each attempt uses the unit system of its input Model.
     No commit, network access, graph migration or source-workflow execution occurs.
     """
@@ -39,12 +41,12 @@ class Executor:
         self,
         store: RecordStore,
         *,
-        backend: Backend | None = None,
+        backend: Backend | str = "pyomo-highs",
         units: UnitSystem | None = None,
         tolerances: acceptance.Tolerances = acceptance.Tolerances(),
     ) -> None:
         self.store = store
-        self.backend = backend if backend is not None else PyomoHighs()
+        self.backend = registry.get(backend) if isinstance(backend, str) else backend
         self.units = units
         self.tolerances = tolerances
 

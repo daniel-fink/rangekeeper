@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 from uuid import UUID
 
 from rangekeeper.execution.compiler import Compiled
@@ -20,6 +20,7 @@ class Result:
     evidence: Mapping[str, object] = field(default_factory=dict)
 
 
+@runtime_checkable
 class Backend(Protocol):
     """Backends must enforce the remaining wall deadline and return finite evidence."""
 
