@@ -9,7 +9,7 @@ from rangekeeper.io._document import (
     from_envelope,
     require_revision,
     require_same,
-    snapshot,
+    trusted,
 )
 from rangekeeper.io.atomic import write_new
 from rangekeeper.io.json import _parse
@@ -47,14 +47,17 @@ class DirectoryStore:
         return require_revision(document, id, type(document))
 
     def put(self, document: Document) -> UUID:
-        """Validate before creating storage; atomically add a revision or compare it.
+        """Atomically add a validated revision, or compare it with the stored one.
+
+        The document was validated when it was built; put does not validate it
+        again. A Run's references are resolved against this store first.
 
         Identical concurrent puts succeed; different content/kind conflicts. A crash
         before the final link can leave only a temporary file, ignored by readers.
         IO failure after linking may leave a complete published record; retries are
         idempotent. No overwrite rename or cross-document transaction is used.
         """
-        candidate = snapshot(document)
+        candidate = trusted(document)
         try:
             existing = self._read(candidate.id)
         except MissingReferenceError:

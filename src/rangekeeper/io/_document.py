@@ -29,15 +29,15 @@ def restore(data: object, kind: type[D]) -> D:
     return cast(D, kind.from_data(cast(Mapping[str, object], data)))
 
 
-def snapshot(document: Document) -> Document:
-    """Revalidate detached content before any IO; do not trust a caller-owned instance."""
+def trusted(document: Document) -> Document:
+    """Return a document that IO writes without validating it again (ADR-011).
+
+    An exact Model, Specification or Run instance was validated when it was
+    built, and it is immutable, so stores and codecs trust it. Data and other
+    types are not accepted here; decode data with ``restore``.
+    """
     require_kind(type(document))
-    restored = restore(document.to_data(), type(document))
-    if restored.id != document.id:
-        raise IdentityConflictError(
-            "document identity differs from serialized Metadata"
-        )
-    return restored
+    return document
 
 
 def require_revision(document: Document, identity: UUID, kind: type[D]) -> D:
