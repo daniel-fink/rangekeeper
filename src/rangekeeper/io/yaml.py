@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from rangekeeper.io._amounts import amounts, detach, lenient, numbers
 from rangekeeper.io._document import D, Document, require_kind, restore, trusted
 from rangekeeper.io.atomic import write_new
 from rangekeeper.schema.runtime import copy_json
@@ -23,13 +24,17 @@ def loads(text: str, *, kind: type[D]) -> D:
     The policy is ``rangekeeper.shared.yaml.decode``. Cyclic aliases and
     non-finite numbers are also rejected; opaque Claim content is never
     recursively coerced. Shared non-cyclic aliases are copied into independent
-    immutable data.
+    immutable data. A currency amount may be a quoted string or a plain
+    numeral; it is read from its source text, never through float, and stored
+    as canonical text (ADR-023).
     """
     require_kind(kind)
     if not isinstance(text, str):
         raise TypeError("text must be a string")
     try:
-        data = copy_json(decode(text))
+        data = detach(decode(text, numerals=True))
+        data = amounts(kind.__name__, data, lenient)
+        data = copy_json(numbers(data))
     except DecodeError:
         raise
     except (ValueError, TypeError, KeyError) as error:
@@ -38,7 +43,10 @@ def loads(text: str, *, kind: type[D]) -> D:
 
 
 def dumps(document: Document) -> str:
-    """Write safe YAML retaining list order, absent/null fields and string scalars."""
+    """Write safe YAML retaining list order, absent/null fields and string scalars.
+
+    A currency amount is a quoted string with its canonical text.
+    """
     return _implementation().safe_dump(
         trusted(document).to_data(), sort_keys=False, allow_unicode=True
     )

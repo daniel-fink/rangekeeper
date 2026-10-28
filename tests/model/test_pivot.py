@@ -149,7 +149,7 @@ def price(reducer=reducers.sum, **kw):
 
 def magnitude(pivot, row, column=None):
     value = pivot.value(row, column)
-    return None if value is None else value.magnitude
+    return None if value is None else value.number
 
 
 def records(ids, *codes):

@@ -155,7 +155,7 @@ def _sample(model: Model, plan: ScenarioPlan, key: str) -> Model:
         sampled = (
             parameter.distribution.sample(size=count, generator=generator(name))
             if parameter.distribution is not None
-            else (cast(Quantity, parameter.quantity).magnitude,) * count
+            else (cast(Quantity, parameter.quantity).number,) * count
         )
         if contract.scalar_parameters:
             parameters[name] = sampled[0]

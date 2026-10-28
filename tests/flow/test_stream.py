@@ -492,7 +492,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
         for value in entity["characteristics"]["values"]:
             if value["id"] == str(net.id):
                 for m, v in zip(value["flow"]["movements"], magnitudes, strict=True):
-                    m["magnitude"] = v
+                    m["magnitude"] = str(v)
     model = model.revise(Update(system=System.from_data(data)))
     relation = flow.resample(
         model,

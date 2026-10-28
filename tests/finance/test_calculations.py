@@ -258,7 +258,7 @@ def test_explicit_calendar_integration():
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
     rates = Flow.from_periods(periods, [3660, 3660], units="AUD/year")
     assert [
-        s.magnitude
+        s.number
         for s in rates.integrate(
             day_count=DayCount.ACTUAL_ACTUAL, units="AUD"
         ).movements
@@ -366,7 +366,7 @@ def test_profile_and_partition_invariants():
         periods=periods,
         distribution=Distribution.pert(),
     )
-    assert flow.total().magnitude == pytest.approx(100)
+    assert flow.total().number == pytest.approx(100)
 
 
 def test_financial_independent_examples():
@@ -375,7 +375,7 @@ def test_financial_independent_examples():
     )
     assert financial.calculate_xnpv(
         flow, rate=0.1, valuation_date=date(2021, 1, 1)
-    ).magnitude == pytest.approx(0, abs=1e-12)
+    ).number == pytest.approx(0, abs=1e-12)
     result = financial.calculate_irr(flow)
     assert result.rate == pytest.approx(0.1) and abs(result.residual.magnitude) < 1e-9
     assert [
@@ -428,7 +428,7 @@ def test_weighted_rates_and_partial_period_helpers():
     result = rates.resample(
         target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.ELAPSED
     )
-    assert result.movements[0].magnitude == pytest.approx((31 * 10 + 29 * 20) / 60)
+    assert result.movements[0].number == pytest.approx((31 * 10 + 29 * 20) / 60)
     assert (
         rates.resample(
             target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.OBSERVATIONS

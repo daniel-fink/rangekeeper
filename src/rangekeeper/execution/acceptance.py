@@ -13,7 +13,7 @@ from rangekeeper.model.expression.evaluation import (
     finite_quantity,
 )
 from rangekeeper.model.scope import recorded_scalar
-from rangekeeper.quantity import UnitSystem
+from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.run import Severity
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
@@ -21,7 +21,6 @@ from rangekeeper.schema.records import (
     Expression,
     ExpressionKind,
     Operator,
-    Quantity,
 )
 from rangekeeper.shared.codes import Code
 
@@ -95,13 +94,12 @@ def check(
             units=prepared.units,
             fixed=prepared.assignments.keys(),
         ):
-            residual = float(left.magnitude - right.magnitude)
+            residual = left.number - right.number
             tolerance = (
                 0.0
                 if boolean
                 else tolerances.absolute
-                + tolerances.relative
-                * max(abs(float(left.magnitude)), abs(float(right.magnitude)))
+                + tolerances.relative * max(abs(left.number), abs(right.number))
             )
             if not math.isfinite(residual) or not math.isfinite(tolerance):
                 raise NumericalError("acceptance residual or tolerance is not finite")

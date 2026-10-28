@@ -3,8 +3,9 @@
 from collections.abc import Sequence
 from uuid import UUID, uuid4
 
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import ExpressionKind, Operator
-from rangekeeper.schema.records import Expression, Quantity, Reference
+from rangekeeper.schema.records import Expression, Reference
 
 
 def literal(

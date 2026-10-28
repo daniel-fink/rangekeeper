@@ -71,7 +71,7 @@ def test_means_require_a_choice_and_do_not_infer_weighting_from_units():
         target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.ELAPSED
     )
     assert observed.movements[0].magnitude == 15
-    assert elapsed.movements[0].magnitude == pytest.approx((31 * 10 + 28 * 20) / 59)
+    assert elapsed.movements[0].number == pytest.approx((31 * 10 + 28 * 20) / 59)
 
 
 def test_products_preserve_time_dimensions_and_scaled_dimensionless_units():

@@ -12,6 +12,7 @@ from rangekeeper.model.expression.domains import (
     infer_selection_domain,
 )
 from rangekeeper.model.scope import Scope, resolve_reference
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError
 from rangekeeper.shared.validation import require, require_new
@@ -122,7 +123,9 @@ def _infer_expression_domain(node, seen, *, scope: Scope, analysis, path) -> dic
     if kind == "quantity":
         import math
 
-        require(math.isfinite(node["quantity"]["magnitude"]), "non-finite magnitude")
+        require(
+            math.isfinite(number(node["quantity"]["magnitude"])), "non-finite magnitude"
+        )
         return dict(kind="quantity", units=node["quantity"]["units"])
     if kind == "boolean":
         return dict(kind=kind)

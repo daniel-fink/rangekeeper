@@ -17,7 +17,6 @@ import _library
 import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
-from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 
@@ -713,13 +712,13 @@ with TemporaryDirectory(prefix="rk-expression-") as temp:
         record = json_loader.loads(
             json.dumps(before), target_class=getattr(module, cls)
         )
-        after = json.loads(json_dumper.dumps(record, inject_type=False))
-        assert after == before, (before, after)
+        after = _library.dump(record)
+        assert _library.stock(after) == _library.stock(before), (before, after)
         validators[cls].validate(after)
         restored = json_loader.loads(
             json.dumps(after), target_class=getattr(module, cls)
         )
-        assert json.loads(json_dumper.dumps(restored, inject_type=False)) == before
+        assert _library.stock(_library.dump(restored)) == _library.stock(before)
         if cls == "Expression" and before["kind"] == "call":
             assert isinstance(record.call.function, module.FunctionId)
         if cls == "Query":

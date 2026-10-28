@@ -17,7 +17,6 @@ import _library
 import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
-from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 
@@ -364,8 +363,8 @@ with TemporaryDirectory(prefix="rk-formulation-") as temp:
             record = json_loader.loads(
                 json.dumps(before), target_class=module.Formulation
             )
-            after = json.loads(json_dumper.dumps(record, inject_type=False))
-            assert before == after, (before, after)
+            after = _library.dump(record)
+            assert _library.stock(before) == _library.stock(after), (before, after)
             assert isinstance(record.id, module.FormulationId)
             if record.bindings:
                 assert isinstance(record.bindings[0].value, module.ValueId)

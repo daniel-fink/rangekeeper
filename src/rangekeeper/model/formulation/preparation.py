@@ -14,6 +14,7 @@ from rangekeeper.model.expression.validation import (
 )
 from rangekeeper.model.formulation.validation import validate_formulation_names
 from rangekeeper.model.scope import build_scope, validate_values
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.validation import require, require_ownership, require_unique
 
 
@@ -88,7 +89,10 @@ def prepare_formulations(document, additional_formulations=(), *, path=""):
     for value in scope.values.values():
         quantity = value.get("quantity")
         if quantity is not None:
-            require(math.isfinite(quantity["magnitude"]), "non-finite Value magnitude")
+            require(
+                math.isfinite(number(quantity["magnitude"])),
+                "non-finite Value magnitude",
+            )
     for formulation, owner in located:
         for index, binding in enumerate(formulation.get("bindings") or []):
             require(

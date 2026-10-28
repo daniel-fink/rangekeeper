@@ -164,7 +164,7 @@ def calculate_irr(
         day_count=day_count,
         timing=timing,
     )
-    if abs(anchored.magnitude) > 1e-8 * max(
+    if abs(anchored.number) > 1e-8 * max(
         1.0, math.fsum(abs(amount) for amount in amounts)
     ):
         raise ValueError("IRR residual exceeds acceptance tolerance")

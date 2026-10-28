@@ -53,7 +53,7 @@ def test_explicit_valuation_before_between_and_after_payments(
         result = calculate_xnpv(
             flow, rate=rate, valuation_date=valuation_date, day_count=convention
         )
-        assert result.magnitude == pytest.approx(expected, rel=1e-12)
+        assert result.number == pytest.approx(expected, rel=1e-12)
         assert result.units == "AUD"
 
 
@@ -114,7 +114,7 @@ def test_empty_zero_and_single_payment_flows():
         flow = Flow.from_events([date(2027, 1, 1)], [amount], units="m")
         assert calculate_xnpv(
             flow, rate=0.1, valuation_date=date(2026, 1, 1)
-        ).magnitude == pytest.approx(amount / 1.1)
+        ).number == pytest.approx(amount / 1.1)
         with pytest.raises(ValueError, match="positive and negative"):
             calculate_irr(flow)
     with pytest.raises(ValueError, match="positive and negative"):

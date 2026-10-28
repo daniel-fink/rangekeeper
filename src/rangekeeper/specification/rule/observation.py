@@ -9,7 +9,8 @@ from rangekeeper.model.scope import (
     resolve_reference,
     scope_for_model,
 )
-from rangekeeper.schema.records import ObservationBinding, ObservedQuantity, Quantity
+from rangekeeper.quantity import Quantity
+from rangekeeper.schema.records import ObservationBinding, ObservedQuantity
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import RangekeeperError
 from rangekeeper.specification.rule._availability import available_on, evidence_dates

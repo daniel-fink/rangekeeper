@@ -45,8 +45,8 @@ def test_linear_known_data_regression():
     assert math.isclose(
         result.disposition.movements[-1].magnitude, 1218.99, rel_tol=0.01
     )
-    assert result.pv_sums.total().magnitude == pytest.approx(1000)
-    assert abs(result.irr.residual.magnitude) < 1e-7
+    assert result.pv_sums.total().number == pytest.approx(1000)
+    assert abs(result.irr.residual.number) < 1e-7
     assert len(result.investment_cashflows.movements) == 11
 
 
@@ -59,10 +59,10 @@ def test_deterministic_horizon_comparison(initial, increment, terminal):
     )
     result, _ = execute(deterministic, model)
     curve = deterministic.values(result.model)["horizon_pv"].flow
-    assert curve.movements[-1].magnitude == pytest.approx(terminal, abs=0.01)
-    assert result.pv.magnitude == pytest.approx(curve.movements[-1].magnitude)
+    assert curve.movements[-1].number == pytest.approx(terminal, abs=0.01)
+    assert result.pv.number == pytest.approx(curve.movements[-1].number)
     assert result.sale_date == datetime.date(2030, 12, 31)
-    assert abs(result.irr.residual.magnitude) < 1e-6
+    assert abs(result.irr.residual.number) < 1e-6
 
 
 def test_probabilistic_and_flexible_use_identical_captured_paths():

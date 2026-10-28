@@ -47,7 +47,9 @@ classes:
         inlined: true
       magnitude:
         description: Amount in the Flow units; absent or null means unresolved, and zero is a known amount.
-        range: decimal
+        any_of:
+        - range: Amount
+        - range: double
       claims:
         description: Unique UUIDs of provenance Claims that support this Movement.
         range: UUID

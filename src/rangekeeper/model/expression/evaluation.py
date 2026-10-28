@@ -4,8 +4,8 @@ import math
 from collections.abc import Mapping
 from uuid import UUID
 
-from rangekeeper.quantity import UnitSystem
-from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
+from rangekeeper.quantity import Quantity, UnitSystem
+from rangekeeper.schema.records import Expression, ExpressionKind, Operator
 from rangekeeper.shared.errors import UnsupportedError
 
 
@@ -35,7 +35,7 @@ def evaluate(
         if node.operand is None:
             raise ValueError("negation requires an operand")
         value = evaluate(node.operand, values, units=units)
-        return finite_quantity(-float(value.magnitude), value.units)
+        return finite_quantity(-value.number, value.units)
     if node.kind is not ExpressionKind.BINARY or node.operator not in {
         Operator.ADD,
         Operator.SUBTRACT,
@@ -49,9 +49,9 @@ def evaluate(
     if node.operands is None or len(node.operands) != 2:
         raise ValueError("binary expression requires two operands")
     left, right = (evaluate(child, values, units=units) for child in node.operands)
-    a, b = float(left.magnitude), float(right.magnitude)
+    a, b = left.number, right.number
     if node.operator in (Operator.ADD, Operator.SUBTRACT):
-        b = float(units.convert(right, to=left.units).magnitude)
+        b = units.convert(right, to=left.units).number
         return finite_quantity(
             a + b if node.operator is Operator.ADD else a - b, left.units
         )
@@ -59,5 +59,5 @@ def evaluate(
         return finite_quantity(a * b, f"({left.units}) * ({right.units})")
     if node.operator is Operator.DIVIDE:
         return finite_quantity(a / b, f"({left.units}) / ({right.units})")
-    b = float(units.convert(right, to="dimensionless").magnitude)
+    b = units.convert(right, to="dimensionless").number
     return finite_quantity(a**b, f"({left.units}) ** {b}")

@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "3aa3cae77fd746a9578a775f6c7a04abe2b0302395f32d0bfa357e2a0654d0cc",
-    "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "records.py": "5b0f775dbdc3f018686b1bd95d34d64f7c9c45a0ec6a01c6d2f1f8cb88bc90c3",
-    "schema.json": "bf142c181b35980da584bef54538031f10424ee9eb2d8ed67b4ac39e46abc3a4",
-    "slots.json": "8e859e14b7bcdc71d3fd31816f5d244f6e9e90ae7b8854bf8c5e9509762b8bc2"
+    "checks.py": "5d89eec68f04959a06235575869d993c25ea83e205c6f0f85ae691290ee5774b",
+    "enums.py": "f3a4ccd09355fdb04a94a8c5af558bb5286f568ff28a0e13b203c3d3e1fba5bf",
+    "records.py": "b2cdd213d44e61106ed971c56cf8754a326da7305d8a53a2263c694e11aed7a9",
+    "schema.json": "31cf05266456259a9c6dd390870114c5aff04ea1ddf94835a0710bc63c6f8c84",
+    "slots.json": "c2cbeac01f13c44f13f1ee71549f047e5027096be04f0a6278b664b195789006"
   },
   "classes": [
     "Action",
@@ -104,7 +104,7 @@
     "schema/binding.yaml": "68a69d3be474c4bea52e4fbbf1dd853cf8f7eddd9923e79c489a0629ccbcc8ec",
     "schema/characteristics.yaml": "2e53d57b2f67898865f6c8dc3f351c9233bdafcbd20cf53727c02dc87635cf29",
     "schema/classification.yaml": "65e92ca8e598ed94e51468ffbed1f8e646bae0c7127983f905c884a35589c49d",
-    "schema/common.yaml": "4ab468ef9421484786b7e474c36fca63dc9d640bf27379dc3122224ed6ab6424",
+    "schema/common.yaml": "4cdf7eeb661a6356cc39d69d417099f43fcc15fdebe66da5ba11f31d46f31992",
     "schema/constraint.yaml": "74242011c99b655ce4ced89426df36b26c09eb7a0bbef8602983168e75c972dd",
     "schema/content.yaml": "86368a1b3649f552c400138b6820a9e06b1fe979ef0fb5fceeb1ca09359743af",
     "schema/definitions.yaml": "31e528ef991f92aa1ce8afea4ec32f2160a03860e8d20a2328560e3f476bde85",
@@ -112,23 +112,23 @@
     "schema/duration.yaml": "02dbb776846f9715eff3a71c1acb30be160650d7e89928841b73a86595a7dc61",
     "schema/entity.yaml": "956f005a80a6bcaa58bfd32896cb8e41e4c696dfa3ae02626b949a78a8dde7ae",
     "schema/expression.yaml": "e1a185ff0c9903f6d46ae123b5ec326b7b257f168d6b970c479c706fb4d1fc61",
-    "schema/flow.yaml": "4a5ac78d1e878ebd8d258bf6d123d711d1abcd67194a27a2a38eb3824cede137",
+    "schema/flow.yaml": "445b1b8fea26c26a145de32a70c7b4c312cf419090d3077c1c4251b3fedeaf95",
     "schema/formulation.yaml": "659f4380df7cafae81c21af6830b9f100cb64b2cd47b1d6789ae3aa67f4e95d4",
     "schema/function.yaml": "b430d868c3d1973fea8abd272ff796987deb894f1218f4bd0838a5e95ba94c0d",
     "schema/geometry.yaml": "62777dfce41c862ee851fe7e6f5f044220dc857a7a08a573a51f96ddcc8c98e2",
-    "schema/measure.yaml": "88d417ab8e5f151ff32fcaa6412fe12154ff4328dfcd4ea451b27ca6db9141a3",
+    "schema/measure.yaml": "8af2081c45a4dc123c436441d557d36934648e60598953faa10f89b240138bbf",
     "schema/model.yaml": "d998afd2fc7010b15863b358defb9c178d1aacd982aa93877fd1bab479f2aef7",
     "schema/provenance.yaml": "dbc4138fe81d290ac1aa789efa46750554eb8e2db934cca4d4f4340f021b63e1",
     "schema/query.yaml": "ff94ae0111e3f44fdedb0de2d19ddbf6bdee72c7354b0087a1899166cdd87d6b",
     "schema/reference.yaml": "2e554658a7d03b849bddf72a1014317b1144eec9b3bd34fe63874b4059400ced",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
     "schema/rule.yaml": "184d6e3c08d2d5e3c93f7c454c3e47bc66d4161cda6357d200ae410a6c67be89",
-    "schema/run.yaml": "f59b185ba7e1d869fd51aa5b3943cc896e3cad5dc47a4df8dbb3bfbce2cbbe80",
+    "schema/run.yaml": "62e4c1551915e48ec5cd6a75a45bbdbdac466c9ca32d84932a27d375fe059127",
     "schema/scenario.yaml": "2952d83a42d3b8b72a317cf32b392ea877cc3cbb254de4a1276ff6928b1f6726",
-    "schema/settings.yaml": "857cfb5fa49ee77e8469f51a3d188714fde401352c23922b055fd8d107f10e96",
+    "schema/settings.yaml": "33b976592d1f15197791e08f1b4c6fa418738a60e77ecc13b955ac94a8396248",
     "schema/specification.yaml": "e4e0ccd074b6f610543a1253b4590cae9b92cddd93060377fa101c9b0b1f229b",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "9fcdc942714773ba07cf73a61b01e62356f788540189d53a63e4cb4eff990cc4",
+    "tools/schema/generate.py": "231e9b91179aebfef2a0e043f5bd2b2871a6aab26444c365eeb76b0cbaee8731",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"
   }
 }

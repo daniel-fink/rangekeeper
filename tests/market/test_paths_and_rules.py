@@ -76,13 +76,13 @@ def test_fixed_market_oracle_and_shock_applied_once():
     )
     result = generate(base(), plan, scenario_keys=["fixed"])[0]
     assert [
-        m.magnitude for m in result.value("space_market").flow.movements
+        m.number for m in result.value("space_market").flow.movements
     ] == pytest.approx([2, 2.2, 2.42])
     assert [
-        m.magnitude for m in result.value("historical_value").flow.movements
+        m.number for m in result.value("historical_value").flow.movements
     ] == pytest.approx([3.2, 3.96, 4.598])
     assert [
-        m.magnitude for m in result.value("shock_effect").flow.movements
+        m.number for m in result.value("shock_effect").flow.movements
     ] == pytest.approx([-0.2, -0.1, -0.05])
     ref = Reference(
         target=result.value("implied_reversion_cap_rates").flow.movements[0].id
@@ -101,7 +101,7 @@ def test_fixed_market_oracle_and_shock_applied_once():
         result.model,
         at=date(2028, 12, 31),
         bindings=[ObservationBinding(name="forward", target=ref)],
-    ).quantities[0].quantity.magnitude == pytest.approx(2.2 / 3.2)
+    ).quantities[0].quantity.number == pytest.approx(2.2 / 3.2)
 
 
 def rule_model(factors):
@@ -253,11 +253,10 @@ def test_supplied_innovations_realize_without_randomness(monkeypatch):
     draws = capture(model, plan, scenario_key="known", inputs=inputs)
     result = realize(model, plan, draws=draws)
     assert [
-        m.magnitude
-        for m in result.resolve_output("autoregressive_returns").flow.movements
+        m.number for m in result.resolve_output("autoregressive_returns").flow.movements
     ] == pytest.approx([0.01, 0.025, 0.0025])
     assert [
-        m.magnitude for m in result.value("historical_value").flow.movements
+        m.number for m in result.value("historical_value").flow.movements
     ] == pytest.approx([4, 4.5, 4.94125])
     assert replay(result.model).model.id == result.model.id
     assert result.realization.generator == "supplied"

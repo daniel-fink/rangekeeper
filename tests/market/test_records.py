@@ -97,6 +97,6 @@ def test_market_view_is_revision_pinned_and_has_named_values():
     levels = result.cumulative_volatility.flow.movements
     cycle = result.space_cycle.flow.movements
     rents = result.space_market.flow.movements
-    assert [m.magnitude for m in rents] == pytest.approx(
+    assert [m.number for m in rents] == pytest.approx(
         [(1 + c.magnitude) * v.magnitude for c, v in zip(cycle, levels, strict=True)]
     )

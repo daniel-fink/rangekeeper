@@ -2129,7 +2129,8 @@
       "enum": [
         "evaluator",
         "compiler",
-        "solver"
+        "solver",
+        "convention"
       ],
       "title": "ImplementationKind",
       "type": "string"
@@ -2458,11 +2459,19 @@
           ]
         },
         "magnitude": {
-          "description": "Amount in the Flow units; absent or null means unresolved, and zero is a known amount.",
-          "type": [
-            "number",
-            "null"
-          ]
+          "anyOf": [
+            {
+              "pattern": "^(0|-?(0\\.[0-9]*[1-9]|[1-9][0-9]*(\\.[0-9]*[1-9])?))$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Amount in the Flow units; absent or null means unresolved, and zero is a known amount."
         },
         "period": {
           "anyOf": [
@@ -2962,8 +2971,16 @@
       "description": "Numerical content consisting of a finite magnitude and explicit units.",
       "properties": {
         "magnitude": {
-          "description": "Finite numerical magnitude expressed in the accompanying units.",
-          "type": "number"
+          "anyOf": [
+            {
+              "pattern": "^(0|-?(0\\.[0-9]*[1-9]|[1-9][0-9]*(\\.[0-9]*[1-9])?))$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Finite numerical magnitude expressed in the accompanying units."
         },
         "units": {
           "description": "Explicit units for this magnitude, such as m^2, AUD/year, or dimensionless.",

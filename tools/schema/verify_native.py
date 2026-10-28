@@ -4,6 +4,7 @@ import importlib.util
 import json
 import sys
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -37,6 +38,10 @@ def normalized(value, key=None):
         }
     if isinstance(value, list):
         return [normalized(v) for v in value]
+    if key == "magnitude" and type(value) in (int, float, str):
+        # Stock LinkML types the Amount-or-double union as its default range,
+        # string, so it writes every magnitude as text (ADR-023).
+        return Decimal(str(value))
     if key in ("at", "started_at", "finished_at"):
         return datetime.fromisoformat(str(value).replace("Z", "+00:00")).isoformat()
     return value

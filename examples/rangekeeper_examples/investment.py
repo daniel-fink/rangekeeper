@@ -456,7 +456,7 @@ def report(model: Model) -> InvestmentReport:
         id=uuid4(),
         key="acquisition",
         date=first - timedelta(days=1),
-        magnitude=-abs(_quantity(v["acquisition_price"]).magnitude),
+        magnitude=-abs(_quantity(v["acquisition_price"]).number),
     )
     operating = tuple(
         Movement(id=uuid4(), key=m.key, date=m.date, magnitude=m.magnitude)
@@ -472,7 +472,7 @@ def report(model: Model) -> InvestmentReport:
         cashflows,
         pv,
         Quantity(
-            magnitude=pv.magnitude - abs(_quantity(v["acquisition_price"]).magnitude),
+            magnitude=pv.number - abs(_quantity(v["acquisition_price"]).number),
             units=pv.units,
         ),
         financial.calculate_irr(cashflows),
@@ -609,7 +609,7 @@ def horizon_returns(model: Model) -> Flow:
         id=uuid4(),
         key="acquisition",
         date=first - timedelta(days=1),
-        magnitude=-abs(_quantity(v["acquisition_price"]).magnitude),
+        magnitude=-abs(_quantity(v["acquisition_price"]).number),
     )
     result = []
     for index, sale in enumerate(_flow(v["potential_sale"]).movements):
@@ -622,7 +622,7 @@ def horizon_returns(model: Model) -> Flow:
                     id=uuid4(),
                     key=amount.key,
                     date=amount.date,
-                    magnitude=amount.magnitude + (sale.magnitude if i == index else 0),
+                    magnitude=amount.number + (sale.number if i == index else 0),
                 )
             )
         irr = financial.calculate_irr(

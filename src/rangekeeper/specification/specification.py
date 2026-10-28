@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rangekeeper.model import Model
-    from rangekeeper.schema.records import Quantity, Reference
+    from rangekeeper.quantity import Quantity
+    from rangekeeper.schema.records import Reference
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -147,7 +148,8 @@ class Specification:
         Included roles and rule controls must be revised at their owner.
         """
         from rangekeeper.model.scope import recorded_scalar, target_units
-        from rangekeeper.schema.records import Assignment, Quantity
+        from rangekeeper.quantity import Quantity
+        from rangekeeper.schema.records import Assignment
         from rangekeeper.specification.targets import expand_targets
 
         if type(recorded) is not bool:

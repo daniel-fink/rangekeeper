@@ -388,7 +388,7 @@ def test_mean_reduces_raw_contributors_not_subtree_means():
 def test_unit_conversion_and_incompatible_results():
     model, root, a, b, c, edges, _ = fixture()
     result = View(model).aggregate(reduction(units="centimeter ** 2"))
-    assert result.root_value.magnitude == pytest.approx(300000)
+    assert result.root_value.number == pytest.approx(300000)
     with pytest.raises(UnitError):
         View(model).aggregate(reduction(units="second"))
     with pytest.raises(UnitError):

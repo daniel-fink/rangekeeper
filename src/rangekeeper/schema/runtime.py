@@ -7,6 +7,7 @@ import math
 import re
 from collections.abc import Mapping
 from datetime import date as Date
+from decimal import Decimal
 from functools import cache
 from types import MappingProxyType
 from typing import TypeAlias, TypeVar, cast
@@ -32,6 +33,7 @@ JSONValue: TypeAlias = (
     | tuple["JSONValue", ...]
 )
 from rangekeeper.schema.kinds import record_type  # noqa: E402
+from rangekeeper.shared import amounts as _amounts  # noqa: E402
 
 R = TypeVar("R", bound="Record")
 
@@ -292,7 +294,8 @@ def _require_invariants(record, path: str) -> None:
         from rangekeeper.shared.codes import Code
         from rangekeeper.shared.diagnostics import Issue, ValidationReport
 
-        code = Code(f"invariant.{record._kind}")
+        # A rule with its own code, such as currency_amount, names it.
+        code = getattr(error, "code", None) or Code(f"invariant.{record._kind}")
         ValidationReport((Issue(code, str(error), path=path),)).raise_if_invalid()
 
 
@@ -348,6 +351,16 @@ class Record:
         and from_data run it; a decoded child of a checked record does not.
         """
 
+    @classmethod
+    def _coerce(cls, data: dict[str, object]) -> dict[str, object]:
+        """Return encoded fields after a conversion that depends on other fields.
+
+        Construction and replace call it before the node check. Owners of value
+        types override it: a currency amount depends on its units (ADR-023).
+        ``from_data`` does not call it; serialized data is already exact.
+        """
+        return data
+
     def __setattr__(self, name, value):
         raise AttributeError("records are immutable")
 
@@ -386,6 +399,15 @@ class Record:
                 for o in meta["options"]
             ):
                 return item.isoformat()
+            if type(item) in (Decimal, str) and any(
+                o["category"] == "primitive" and o["kind"] == "Amount"
+                for o in meta["options"]
+            ):
+                # Decimal text is exact; other text keeps its value and fails
+                # the check, as does a Decimal that is not finite.
+                if type(item) is str:
+                    return _amounts.canonical(item) or item
+                return _amounts.text(item) if item.is_finite() else str(item)
             return copy_json(item)
 
         if meta["many"] and isinstance(value, (tuple, list)):
@@ -409,6 +431,13 @@ class Record:
                 data.pop(name, None)
             else:
                 data[name] = value
+        coerced = type(self)._coerce(data)
+        if coerced is not data:
+            fields = {
+                **fields,
+                **{n: v for n, v in coerced.items() if data.get(n, OMIT) is not v},
+            }
+            data = coerced
         slots = _slot_map(self._kind)
         if any(slots[name]["mapping"] for name in fields):
             # A keyed collection holds reduced child records that only the
@@ -434,6 +463,7 @@ class Record:
 
         if hasattr(self, "_data"):
             raise AttributeError("records are already initialized")
+        data = type(self)._coerce(data)
         slots = _slot_map(self._kind)
         if any(slots[name]["mapping"] for name in data):
             _validate_json(self._kind, copy_json(data)).raise_if_invalid()
@@ -551,6 +581,12 @@ class Record:
                         return Date.fromisoformat(item)
                     except ValueError:
                         continue
+                if (
+                    option["category"] == "primitive"
+                    and option["kind"] == "Amount"
+                    and type(item) is str
+                ):
+                    return Decimal(item)
                 if option["category"] == "record" and isinstance(item, Mapping):
                     cls = _TYPES[option["kind"]]
                     record = cls.__new__(cls)

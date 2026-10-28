@@ -163,7 +163,7 @@ def target_units(model, target) -> str:
 
 def recorded_scalar(model, target):
     """Read explicit scalar content using the same eligibility rules as validation."""
-    from rangekeeper.schema.records import Quantity
+    from rangekeeper.quantity import Quantity
 
     value, movement = _model_target(model, target)
     units = _model_units(model, value, movement)

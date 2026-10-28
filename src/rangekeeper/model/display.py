@@ -26,7 +26,7 @@ class PivotTable:
             raise ValueError("precision must be an integer from 0 to 12")
 
     def _cells(self):
-        from rangekeeper.schema.records import Quantity
+        from rangekeeper.quantity import Quantity
 
         pivot = self.pivot
         rows = pivot.rows

@@ -26,7 +26,7 @@ classes:
     attributes:
       relative_tolerance:
         description: Positive finite dimensionless convergence tolerance, strictly less than one.
-        range: decimal
+        range: double
         minimum_value: 0
         maximum_value: 1
       iteration_limit:
@@ -37,7 +37,7 @@ classes:
       time_limit:
         description: Positive finite execution time limit in seconds, using the backend's documented timing
           convention.
-        range: decimal
+        range: double
         minimum_value: 0
       symbol_limit:
         range: integer

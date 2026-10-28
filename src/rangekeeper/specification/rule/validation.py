@@ -12,6 +12,7 @@ from rangekeeper.model.scope import (
     resolve_reference,
 )
 from rangekeeper.quantity import default_units
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.validation import require
 from rangekeeper.specification.rule._availability import available_on, evidence_dates
 
@@ -86,7 +87,8 @@ def validate_rules(rules, *, scope, units_compatible=None):
                 )
                 actual = action["quantity"]
                 require(
-                    math.isfinite(actual["magnitude"]), "non-finite rule assignment"
+                    math.isfinite(number(actual["magnitude"])),
+                    "non-finite rule assignment",
                 )
                 require(
                     (
@@ -102,7 +104,8 @@ def validate_rules(rules, *, scope, units_compatible=None):
 
 def validate_evidence(rules, outcomes, *, scope, provenance=None, units=default_units):
     """Independently check ordered outcome evidence against declarations and inputs."""
-    from rangekeeper.schema.records import Expression, Quantity
+    from rangekeeper.quantity import Quantity
+    from rangekeeper.schema.records import Expression
     from rangekeeper.specification.rule.predicate import evaluate
 
     require(bool(outcomes), "rules require decision evidence")

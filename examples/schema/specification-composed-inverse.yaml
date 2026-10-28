@@ -9,7 +9,7 @@ includes:
 - 38a9e7e9-2eb4-5142-9570-8884a51452bb
 assignments:
 - quantity:
-    magnitude: 10000000
+    magnitude: "10000000"
     units: AUD
   target:
     target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2

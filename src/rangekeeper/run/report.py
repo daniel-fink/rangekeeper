@@ -8,6 +8,7 @@ import math
 from datetime import datetime
 
 from rangekeeper.schema.validation import supports_version
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.validation import require
 
 
@@ -139,11 +140,13 @@ def validate_report(run, *, batch, effective=None):
         for quantity in (residual, tolerance):
             if quantity is not None:
                 require(
-                    math.isfinite(quantity["magnitude"]),
+                    math.isfinite(number(quantity["magnitude"])),
                     "non-finite diagnostic quantity",
                 )
         if tolerance is not None:
-            require(tolerance["magnitude"] >= 0, "negative diagnostic tolerance")
+            require(
+                number(tolerance["magnitude"]) >= 0, "negative diagnostic tolerance"
+            )
             require(
                 tolerance["units"] == residual["units"],
                 "diagnostic unit conversion requires adapter",

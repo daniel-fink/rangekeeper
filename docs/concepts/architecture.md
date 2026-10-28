@@ -55,6 +55,7 @@ contracts enforce the rule.
 | --- | --- | --- |
 | 1 | `shared` (internal) | Errors and diagnostics, resolver and store protocols, the extension registry, fingerprints |
 | 2 | `schema` (internal) | Data-only generated records, enums and JSON; the record runtime; the kind registry; structural validation |
+| — | `money` | Currency amounts: the ISO 4217 catalogue, boundary conversions and rounding |
 | — | `quantity` | `Quantity` (also at the root) and `UnitSystem`, with the curated unit registry |
 | 3 | `duration` | Frequency, Period, Periods, Span, `NEVER` and calendar rules |
 | 4 | `profile` | Growth and distribution profiles: how an amount develops over Periods |
@@ -67,8 +68,8 @@ contracts enforce the rule.
 | 11 | `execution` | Case resolution, role binding, problem building, backends, verification, rule evaluation and publication |
 | 12 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
-`quantity` sits beside `shared`, below `duration`. Users import from `rangekeeper`,
-`quantity`, `duration`, `profile`, `flow`, `market`, `finance`, `model`, `specification`, `execution`,
+`quantity` and `money` sit beside `shared`, below `duration`; `money` is below
+`quantity`. Users import from `rangekeeper`, `quantity`, `money`, `duration`, `profile`, `flow`, `market`, `finance`, `model`, `specification`, `execution`,
 `io` and `errors`. `schema` and `shared` are internal. Owners re-export the
 records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
 and [ADR-017](../decisions/017-api-and-formats.md).
@@ -135,6 +136,7 @@ contents are not yet in their 1.0 owner:
 | --- | --- | --- |
 | `shared` | Errors, diagnostics, validation helpers, encoding, the resolver and store protocols, tables and fingerprints | — |
 | `schema` | Data-only generated records, enums, the record runtime, the kind registry and structural validation | — |
+| `money` | The ISO 4217 catalogue and minor units, `to_number`, `to_amount` and `round` | — |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
 | `profile` | Growth and distribution of known amounts over Periods: `extrapolate`, `distribute` and `GrowthMethod`; the Distribution owner (public as `rangekeeper.model.Distribution`) | Profile classes and `Flow.from_profile` replace the functions ([#298](https://github.com/daniel-fink/rangekeeper/issues/298)) |

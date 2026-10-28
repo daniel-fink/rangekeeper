@@ -7,7 +7,7 @@ from rangekeeper.flow import Flow, Movement
 from rangekeeper.model import Distribution
 
 movement = Movement(id=uuid4(), key="event", date=date(2026, 1, 1))
-movement.replace(magnitude="wrong")
+movement.replace(magnitude=[1])
 movement.replace(unknown=1)
 movement.replace(date="2026-01-01")
 movement.number = 2

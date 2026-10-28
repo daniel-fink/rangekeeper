@@ -291,7 +291,7 @@ def test_unit_dimensions(left, right, expected):
 
 def test_unit_conversion_and_configuration_are_immutable():
     original = Quantity(magnitude=1, units="foot")
-    assert default_units.convert(original, to="m").magnitude == pytest.approx(0.3048)
+    assert default_units.convert(original, to="m").number == pytest.approx(0.3048)
     assert original.magnitude == 1 and original.units == "foot"
     with pytest.raises(UnitError):
         default_units.convert(Quantity(magnitude=1, units="AUD"), to="USD")
@@ -308,9 +308,10 @@ def test_unit_conversion_and_configuration_are_immutable():
 def test_model_validates_recorded_units_but_not_opaque_content():
     model = simple()
     data = model.to_data()
-    data["system"]["entities"][0]["characteristics"]["values"][0]["quantity"][
-        "units"
-    ] = "AUD"
+    data["system"]["entities"][0]["characteristics"]["values"][0]["quantity"] = {
+        "magnitude": "1",
+        "units": "AUD",
+    }
     with pytest.raises(ValidationError) as error:
         Model.from_data(data)
     assert error.value.report.issues[0].code == "semantic.units"

@@ -36,7 +36,7 @@
               "id": "4368de4c-9aac-5451-925a-44880c087383",
               "kind": "quantity",
               "quantity": {
-                "magnitude": 1,
+                "magnitude": "1",
                 "units": "AUD"
               }
             }

@@ -193,8 +193,10 @@ def _collect(model, documents, resolver, max_documents=1000):
 
 def _option_type(option):
     category, kind = option["category"], option["kind"]
-    if category == "primitive" and kind in ("decimal", "double", "integer"):
-        # Decimal/integer strings preserve arbitrary precision; floats remain doubles.
+    if category == "primitive" and kind in ("double", "integer"):
+        # Integer strings preserve arbitrary precision; floats remain doubles.
+        # A currency amount (the Amount option) is a string with its canonical
+        # text (ADR-023).
         return pa.struct([("integer", pa.string()), ("number", pa.float64())])
     if category == "primitive" and kind == "boolean":
         return pa.bool_()
@@ -256,12 +258,9 @@ def _select(meta, value):
         if category == "primitive":
             if kind == "boolean" and type(value) is bool:
                 return position
-            if kind in ("decimal", "double", "integer") and type(value) in (int, float):
+            if kind in ("double", "integer") and type(value) in (int, float):
                 return position
-            if (
-                kind not in ("boolean", "decimal", "double", "integer")
-                and type(value) is str
-            ):
+            if kind not in ("boolean", "double", "integer") and type(value) is str:
                 return position
     raise ValueError("Value does not match a generated slot option")
 
@@ -296,11 +295,7 @@ def _shred(model):
                 elif category == "opaque":
                     # Only the schema's explicitly opaque Content slot uses inert JSON.
                     physical = encoded(value)
-                elif category == "primitive" and target in (
-                    "decimal",
-                    "double",
-                    "integer",
-                ):
+                elif category == "primitive" and target in ("double", "integer"):
                     physical = (
                         dict(integer=str(value), number=None)
                         if type(value) is int
@@ -625,11 +620,7 @@ class _DocumentReader:
                         return visit(value, target)
                     if category == "opaque":
                         return json.loads(value)
-                    if category == "primitive" and target in (
-                        "decimal",
-                        "double",
-                        "integer",
-                    ):
+                    if category == "primitive" and target in ("double", "integer"):
                         if (value["integer"] is None) == (value["number"] is None):
                             raise ValueError(
                                 "Numeric union must have one exact representation"

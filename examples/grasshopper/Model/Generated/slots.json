@@ -2445,7 +2445,11 @@
       "options": [
         {
           "category": "primitive",
-          "kind": "decimal"
+          "kind": "Amount"
+        },
+        {
+          "category": "primitive",
+          "kind": "double"
         }
       ],
       "ordered": false,
@@ -2941,7 +2945,11 @@
       "options": [
         {
           "category": "primitive",
-          "kind": "decimal"
+          "kind": "Amount"
+        },
+        {
+          "category": "primitive",
+          "kind": "double"
         }
       ],
       "ordered": false,
@@ -3939,7 +3947,7 @@
       "options": [
         {
           "category": "primitive",
-          "kind": "decimal"
+          "kind": "double"
         }
       ],
       "ordered": false,
@@ -3967,7 +3975,7 @@
       "options": [
         {
           "category": "primitive",
-          "kind": "decimal"
+          "kind": "double"
         }
       ],
       "ordered": false,

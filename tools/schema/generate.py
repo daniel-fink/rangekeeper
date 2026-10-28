@@ -42,6 +42,7 @@ OWNERS = {
     "Flow": "rangekeeper.flow",
     "Movement": "rangekeeper.flow",
     "Period": "rangekeeper.duration",
+    "Quantity": "rangekeeper.quantity",
     "Span": "rangekeeper.duration",
 }
 # Members that records.py adds to every class besides its fields.
@@ -51,13 +52,16 @@ PRIMITIVES = {
     "Code": "str",
     "URI": "str",
     "integer": "int",
-    "decimal": "int | float",
+    "Amount": "Decimal",
     "double": "int | float",
     "float": "int | float",
     "boolean": "bool",
     "date": "Date",
     "datetime": "str",
 }
+# Constructor and replace arguments that accept more than the property returns.
+# A currency amount also accepts its decimal text (ADR-023).
+ARGUMENTS = {"Amount": "Decimal | str"}
 # Boolean LinkML slot annotations that slots.json carries for every slot. A
 # lineage slot records document revision identity or lineage: it is not domain
 # content in a revision comparison and not a reference to a record in the
@@ -383,7 +387,7 @@ def field_type(meta, argument=False):
         elif category in ("record", "enum"):
             typ = kind
         else:
-            typ = PRIMITIVES.get(kind)
+            typ = (ARGUMENTS.get(kind) if argument else None) or PRIMITIVES.get(kind)
             if typ is None:
                 raise ValueError(f"Unsupported primitive {kind}")
         if typ not in variants:
@@ -410,6 +414,7 @@ def record_header(loaded: Loaded):
         "from collections.abc import Mapping",
         "from uuid import UUID",
         "from datetime import date as Date",
+        "from decimal import Decimal",
         "from .runtime import (",
         "    EMPTY,",
         "    OMIT,",

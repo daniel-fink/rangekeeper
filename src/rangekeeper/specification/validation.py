@@ -26,6 +26,7 @@ from rangekeeper.schema.validation import (
     require_declarations,
     supports_version,
 )
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
@@ -237,7 +238,8 @@ def _validate_concrete(
             expected = eligible(target)
             quantity = assignment["quantity"]
             require(
-                math.isfinite(quantity["magnitude"]), "non-finite supplied magnitude"
+                math.isfinite(number(quantity["magnitude"])),
+                "non-finite supplied magnitude",
             )
             actual = quantity["units"]
             if actual != expected:

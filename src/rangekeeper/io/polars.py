@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 from rangekeeper.duration.period import PeriodTiming
 from rangekeeper.flow import Flow, Stream
 from rangekeeper.flow._table import stream_frame
+from rangekeeper.money import _encoded, is_currency
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.optional import requires
 from rangekeeper.shared.table import Table
 
@@ -19,7 +21,8 @@ def to_frame(flow: Flow | Stream | Table) -> DataFrame:
 
     Table metadata stays outside the display frame; opaque cells use Object columns.
     Flow columns are the Movement slots in schema order, then _present. Their
-    types come from the schema slots. Integer magnitudes stay integers.
+    types come from the schema slots. Integer magnitudes stay integers; currency
+    amounts are Float64 (ADR-023), and ``from_frame`` converts them back.
 
     Flow units are an explicit argument to from_frame; a table alone does not
     carry the complete domain contract. Empty tables retain their movement columns.
@@ -89,16 +92,19 @@ def _movement_column(pl, name, slot, values):
     UUIDs, strings and dates keep their wire text. A record column is a Struct
     (Null when no row has a value). A numerical column keeps Python numbers:
     Int64 when all values are integers, Float64 when all are floats, and an
-    Object column when the values mix integers and floats or exceed Int64.
+    Object column when the values mix integers and floats or exceed Int64. A
+    currency amount is a float64 from ``money.to_number``.
     """
-    (option,) = slot["options"]
-    category, kind = option["category"], option["kind"]
+    kinds = {option["kind"] for option in slot["options"]}
+    category, kind = slot["options"][0]["category"], slot["options"][0]["kind"]
     if category == "record":
         if all(value is None for value in values):
             return pl.Series(name, values, dtype=pl.Null)
         rows = [{name: value} for value in values]
         return pl.DataFrame(rows, infer_schema_length=None).to_series()
-    if category == "primitive" and kind in ("decimal", "double", "float", "integer"):
+    if category == "primitive" and kinds & {"Amount", "double", "float", "integer"}:
+        # A currency amount becomes its float64 (ADR-023).
+        values = [number(value) for value in values]
         kinds = {type(value) for value in values if value is not None}
         dtype = pl.Int64 if kinds == {int} else pl.Float64 if kinds <= {float} else None
         try:
@@ -116,13 +122,20 @@ def _movement_column(pl, name, slot, values):
 
 
 def from_frame(frame: DataFrame, *, units: str) -> Flow:
-    """Copy an explicit movement table; NaN is invalid rather than an alias for missing."""
+    """Copy an explicit movement table; NaN is invalid rather than an alias for missing.
+
+    With currency units, each magnitude becomes an amount through
+    ``money.to_amount`` (ADR-023).
+    """
     data = frame.to_dicts()
+    currency = is_currency(units)
     for movement in data:
         present = movement.pop("_present")
         for field in tuple(movement):
             if field not in present:
                 movement.pop(field)
+        if currency and movement.get("magnitude") is not None:
+            movement["magnitude"] = _encoded(movement["magnitude"])
     result = Flow.from_data({"units": units, "movements": data})
     return result
 
@@ -150,7 +163,10 @@ def dates(
             "date": pl.Series(
                 [m.resolve(timing=timing) for m in flow.movements], dtype=pl.Date
             ),
-            name: pl.Series([m.magnitude for m in flow.movements], dtype=pl.Float64),
+            name: pl.Series(
+                [None if m.magnitude is None else m.number for m in flow.movements],
+                dtype=pl.Float64,
+            ),
         }
     )
 

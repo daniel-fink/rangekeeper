@@ -25,6 +25,7 @@ contract: a Run that is read back has the same code text.
 | --- | --- | --- |
 | Structure | `structure.json`, `structure.kind`, `structure.<keyword>` for each JSON Schema keyword, and `structure.value` and `structure.rule` from the generated node checks of typed construction and `replace` | `STRUCTURE_REQUIRED`, `STRUCTURE_TYPE`. A keyword without its own member has the code `STRUCTURE` and a `keyword` value |
 | Semantic | `semantic.*` | `CONTRACT`, `UNIQUE`, `CYCLE`, `IDENTITY`, `UNITS`, `ROLE_MISSING` |
+| Currency amounts | `currency_amount` (a magnitude whose type does not match its units) and `amount_digits` (more than 15 significant digits) | `CURRENCY_AMOUNT`, `AMOUNT_DIGITS` |
 | Invariants | `invariant.<kind>` for the local rules of a value type: Period, Span, Movement, Flow and Distribution | `INVARIANT_FLOW`, `INVARIANT_PERIOD` |
 | References | `reference.*` | `REFERENCE_MISSING`, `REFERENCE_KIND` |
 | Batches | `batch.*` | `BATCH_MODEL` |

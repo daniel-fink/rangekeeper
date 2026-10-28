@@ -3,8 +3,8 @@
 import operator
 
 from rangekeeper.model.expression.evaluation import evaluate as numerical
-from rangekeeper.quantity import UnitSystem
-from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
+from rangekeeper.quantity import Quantity, UnitSystem
+from rangekeeper.schema.records import Expression, ExpressionKind, Operator
 
 _COMPARISONS = {
     Operator.EQUAL: operator.eq,
@@ -58,6 +58,6 @@ def evaluate(node: Expression, quantities, *, units: UnitSystem):
         if not isinstance(left, Quantity) or not isinstance(right, Quantity):
             raise ValueError("numerical operands required")
         return _COMPARISONS[node.operator](
-            float(left.magnitude), float(units.convert(right, to=left.units).magnitude)
+            left.number, units.convert(right, to=left.units).number
         )
     return numerical(node, quantities, units=units)

@@ -6,12 +6,14 @@ Stream coordinates several Flows.
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import date
+from decimal import Decimal
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from rangekeeper.flow._options import MissingValueHandling
+from rangekeeper.money import _encoded, _require, is_currency, to_number
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
 from rangekeeper.schema.runtime import UNSET
@@ -22,8 +24,14 @@ if TYPE_CHECKING:
     from rangekeeper.duration.period import PeriodTiming
     from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
     from rangekeeper.flow._table import StreamTable
-    from rangekeeper.quantity import UnitSystem
-    from rangekeeper.schema.records import Quantity
+    from rangekeeper.quantity import Quantity, UnitSystem
+
+
+def _number(magnitude: Decimal | int | float | None) -> float | None:
+    """Return a magnitude as a number for a calculation; keep None."""
+    if isinstance(magnitude, Decimal):
+        return to_number(magnitude)
+    return magnitude
 
 
 @register
@@ -44,7 +52,7 @@ class Movement(records.Movement):
     def number(self) -> float:
         """Read a finite magnitude; unresolved data must be handled before arithmetic."""
         movement = self
-        value = movement.magnitude
+        value = _number(movement.magnitude)
         if value is None or not math.isfinite(value):
             raise ValueError(f"unresolved/nonfinite movement: {movement.key}")
         return float(value)
@@ -129,12 +137,31 @@ class Flow(records.Flow):
             result[coordinate] = movement
         return result
 
+    @classmethod
+    def _coerce(cls, data: dict[str, object]) -> dict[str, object]:
+        """Convert each magnitude in currency units to a currency amount (ADR-023)."""
+        units, movements = data.get("units"), data.get("movements")
+        if not isinstance(units, str) or not is_currency(units):
+            return data
+        if not isinstance(movements, (list, tuple)):
+            return data
+        result, changed = [], False
+        for movement in movements:
+            if isinstance(movement, Mapping) and movement.get("magnitude") is not None:
+                magnitude = movement["magnitude"]
+                encoded = _encoded(magnitude)
+                if encoded is not magnitude:
+                    movement, changed = {**movement, "magnitude": encoded}, True
+            result.append(movement)
+        return {**data, "movements": result} if changed else data
+
     def _invariants(self) -> None:
         """Require unique Movement IDs and ordered, unmixed, non-overlapping coordinates.
 
         All movements in one Flow use either periods or dated events. Period
         order uses coverage, not optional payment dates; those dates may lie
-        outside the period. Repeated event dates need distinct keys.
+        outside the period. Repeated event dates need distinct keys. Magnitudes
+        in currency units are currency amounts; other magnitudes are numbers.
         """
         identities = set()
         events: dict[date, list[str | None]] = {}
@@ -165,6 +192,8 @@ class Flow(records.Flow):
                     raise ValueError(
                         "repeated event dates require distinct nonblank matching keys"
                     )
+        for movement in self.movements:
+            _require(movement._data.get("magnitude"), self.units)
 
     def check(self, *, resolved: bool = False, units: UnitSystem | None = None) -> Flow:
         """Check the units against a unit system; resolved=True also requires numbers.
@@ -187,7 +216,7 @@ class Flow(records.Flow):
     def from_events(
         cls,
         dates: Sequence[date],
-        magnitudes: Sequence[int | float | None],
+        magnitudes: Sequence[Decimal | str | int | float | None],
         *,
         units: str,
         keys: Sequence[str | None] | None = None,
@@ -232,7 +261,7 @@ class Flow(records.Flow):
     def from_periods(
         cls,
         periods: Sequence[Period],
-        magnitudes: Sequence[int | float | None],
+        magnitudes: Sequence[Decimal | str | int | float | None],
         *,
         units: str,
         dates: Sequence[date | None] | None = None,
@@ -289,8 +318,7 @@ class Flow(records.Flow):
     def convert(self, *, units: str, unit_system: UnitSystem | None = None) -> Flow:
         """Convert all known movements together; retain unresolved movements and evidence."""
         flow = self
-        from rangekeeper.quantity import default_units
-        from rangekeeper.schema.records import Quantity
+        from rangekeeper.quantity import Quantity, default_units
 
         unit_system = default_units if unit_system is None else unit_system
         if not unit_system.compatible(flow.units, units):
@@ -321,16 +349,28 @@ class Flow(records.Flow):
             movements=tuple(
                 s.replace(
                     id=uuid4(),
-                    magnitude=None if s.magnitude is None else s.magnitude * factor,
+                    magnitude=(None if s.magnitude is None else s.number * factor),
                 )
                 for s in flow.movements
             )
         )
 
     def negate(self) -> Flow:
-        """Reverse each known magnitude while keeping unresolved entries and Claims."""
+        """Reverse each known magnitude while keeping unresolved entries and Claims.
+
+        The sign change is exact, also for a currency amount. The movements get
+        fresh IDs.
+        """
         flow = self
-        return flow.scale(-1)
+        return flow.replace(
+            movements=tuple(
+                s.replace(
+                    id=uuid4(),
+                    magnitude=None if s.magnitude is None else -s.magnitude,
+                )
+                for s in flow.movements
+            )
+        )
 
     def total(
         self, *, missing: MissingValueHandling = MissingValueHandling.ERROR
@@ -341,7 +381,7 @@ class Flow(records.Flow):
         the intended quantity; no balance, rate or other interpretation is inferred.
         """
         flow = self
-        from rangekeeper.schema.records import Quantity
+        from rangekeeper.quantity import Quantity
 
         if not isinstance(missing, MissingValueHandling):
             raise TypeError("missing must be a MissingValueHandling")
@@ -351,7 +391,7 @@ class Flow(records.Flow):
             MissingValueHandling.SKIP,
         ):
             raise ValueError("total missing must be error, propagate or skip")
-        values = [s.magnitude for s in flow.movements if s.magnitude is not None]
+        values = [s.number for s in flow.movements if s.magnitude is not None]
         if len(values) != len(flow.movements):
             if missing == MissingValueHandling.ERROR:
                 raise ValueError("cannot total unresolved movements")
@@ -425,8 +465,7 @@ class Flow(records.Flow):
         """
         flow = self
         from rangekeeper.duration.calendar import DayCount, year_fraction
-        from rangekeeper.quantity import default_units
-        from rangekeeper.schema.records import Quantity
+        from rangekeeper.quantity import Quantity, default_units
 
         if day_count is not None and not isinstance(day_count, DayCount):
             raise TypeError("day_count must be a DayCount")
@@ -463,7 +502,7 @@ class Flow(records.Flow):
                 if movement.magnitude is None
                 else default_units.convert(
                     Quantity(
-                        magnitude=movement.magnitude * exposure.magnitude,
+                        magnitude=movement.number * exposure.number,
                         units=product_unit,
                     ),
                     to=output_units,
@@ -531,10 +570,10 @@ class Flow(records.Flow):
             magnitude = (
                 None
                 if previous is None or movement.magnitude is None
-                else movement.magnitude - previous
+                else movement.number - previous
             )
             movements.append(movement.replace(id=uuid4(), magnitude=magnitude))
-            previous = movement.magnitude
+            previous = None if movement.magnitude is None else movement.number
         return flow.replace(movements=tuple(movements))
 
     def collapse(

@@ -9,13 +9,26 @@ _TAGS = frozenset(
 )
 
 
-def decode(content: str | bytes) -> object:
+class Numeral:
+    """A YAML float scalar with its source text, for an exact currency amount."""
+
+    __slots__ = ("text", "value")
+
+    def __init__(self, text: str, value: float) -> None:
+        self.text, self.value = text, value
+
+    def __repr__(self) -> str:
+        return f"Numeral({self.text!r})"
+
+
+def decode(content: str | bytes, *, numerals: bool = False) -> object:
     """Decode safe, JSON-compatible YAML with unique string keys.
 
     Custom and executable tags and merge keys raise DecodeError. Timestamp
     scalars stay strings: only generated typed fields interpret dates. A shared
     alias decodes to the same object at each use; callers copy the result, which
-    rejects cyclic aliases.
+    rejects cyclic aliases. With ``numerals``, each float scalar is a Numeral
+    that keeps its source text; the caller replaces it.
     """
     if not isinstance(content, (str, bytes)):
         raise TypeError("YAML content must be text or bytes")
@@ -47,6 +60,12 @@ def decode(content: str | bytes) -> object:
         return loader.construct_scalar(node)
 
     Loader.add_constructor("tag:yaml.org,2002:timestamp", timestamp)
+    if numerals:
+
+        def numeral(loader, node):
+            return Numeral(node.value, loader.construct_yaml_float(node))
+
+        Loader.add_constructor("tag:yaml.org,2002:float", numeral)
     try:
         return yaml.load(content, Loader=Loader)
     except yaml.YAMLError as error:

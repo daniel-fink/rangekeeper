@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import _library
 import yaml
 from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
@@ -128,8 +129,8 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
             "quantity": content,
         }
         record = json_loader.loads(json.dumps(measurement), target_class=module.Value)
-        encoded = json.loads(json_dumper.dumps(record, inject_type=False))
-        assert encoded.get("quantity") == content
+        encoded = _library.dump(record)
+        assert _library.stock(encoded.get("quantity")) == _library.stock(content)
         if content is not None:
             assert isinstance(record.quantity, module.Quantity)
     ownership = yaml.safe_load(
@@ -161,7 +162,8 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
                 for a, b in zip(before, after, strict=True):
                     supplied_fields_preserved(a, b)
             else:
-                assert before == after, (before, after)
+                # Stock LinkML writes a magnitude union as text (_library.stock).
+                assert before == after or str(before) == after, (before, after)
 
         supplied_fields_preserved(example, json.loads(encoded))
     print(

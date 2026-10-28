@@ -21,7 +21,7 @@ from rangekeeper.model.system.reduction import (
     Coverage,
     RollupResult,
 )
-from rangekeeper.schema.records import Quantity
+from rangekeeper.quantity import Quantity
 
 if TYPE_CHECKING:
     from rangekeeper.model.system.reduction import Reduction
