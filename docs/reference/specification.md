@@ -30,7 +30,7 @@ known local reference kinds, duplicate requirements, roles, settings and header 
 External references and incomplete solve roles are permitted in a saved contribution.
 
 The short example below uses `model` and `gross` from the
-[Model authoring example](model.md#authoring-lookup-and-revisions).
+[Model authoring example](model.md#records-lookup-and-revisions).
 
 ```python
 from uuid import uuid4

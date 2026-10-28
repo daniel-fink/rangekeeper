@@ -99,21 +99,30 @@ each missing part, and the
 show the target API in use.
 
 **Author a Model** ([ADR-015](../decisions/015-authoring.md))
-- Now: make the generated records (Entities, Values, Formulations) and call
-  `Model.create(...)` or `Model.from_data(...)`. The helpers in
-  `rangekeeper.model.formulation` declare equations. `model.revise(Update(...))`
-  returns a new immutable revision. See the [Model reference](../reference/model.md).
-- 1.0 target:
-  1. Start a builder with `Model.build()`, or with `model.edit()` for a change.
-  2. Add definitions, entities, relationships, values and equations.
-  3. Call `commit()`. It validates once and returns a new immutable revision.
+- Now:
+  1. `rk.Model(name=)` makes an empty Model; `model.edit()` returns a `ModelDraft`.
+  2. The draft adds Measures, Classifications, entities, assemblies and
+     relationships. `draft.add_entity(code=, classification=)` returns an entity
+     handle, which declares values and Flows with `value(key=, units=)` and
+     `flow(key=, units=, periods=)`. `equations(...)` takes Expression records
+     from `rangekeeper.model.expression.authoring`.
+  3. `commit()` validates the revision once and returns it.
   4. Put the revision into an append-only store.
 
-  Gap issues: [#141](https://github.com/daniel-fink/rangekeeper/issues/141),
-  [#281](https://github.com/daniel-fink/rangekeeper/issues/281),
+  `Model.create(...)` and `Model.from_data(...)` still take complete records,
+  and `model.revise(Update(...))` replaces complete sections. See the
+  [Model reference](../reference/model.md).
+- 1.0 target: equations in text and in `rx`, date values, Formulation handles,
+  equation keys and edits of existing declarations.
+
+  Gap issues: [#142](https://github.com/daniel-fink/rangekeeper/issues/142),
+  [#145](https://github.com/daniel-fink/rangekeeper/issues/145),
+  [#146](https://github.com/daniel-fink/rangekeeper/issues/146),
+  [#280](https://github.com/daniel-fink/rangekeeper/issues/280),
   [#283](https://github.com/daniel-fink/rangekeeper/issues/283),
   [#284](https://github.com/daniel-fink/rangekeeper/issues/284),
-  [#305](https://github.com/daniel-fink/rangekeeper/issues/305).
+  [#305](https://github.com/daniel-fink/rangekeeper/issues/305),
+  [#309](https://github.com/daniel-fink/rangekeeper/issues/309).
 
 **Calculate with known data**
 1. Make Flows and Streams from dates, periods and amounts.

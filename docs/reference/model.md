@@ -11,6 +11,7 @@ and [identity](identity.md) define shared construction and reference rules.
 | Owner | Responsibility |
 | --- | --- |
 | `model/model.py` | Model facade, construction, UUID lookup, Value and Label lookup by UUID or by owner and key (`Model.value`, `Model.label`), and revision |
+| `model/draft.py` | `ModelDraft`, entity handles and value handles: the changes for the next revision and its single commit |
 | `schema/index.py` | Schema-directed UUID, type and nearest-owner index with original paths |
 | `model/{definitions,provenance}.py` | Catalogue lookup, Facts and upstream Locations |
 | `model/{update,diff}.py` | Complete-section replacement and descriptive comparison |
@@ -39,7 +40,97 @@ coordinates them and recorded-unit checks. A `UnitSystem` different from the
 construction context rechecks recorded units before mathematical preparation is
 reused. No cache spans revisions or independent validation operations.
 
-## Authoring, lookup and revisions
+## Make and change a Model
+
+`rk.Model(*, name, namespace=None, description=None)` makes an empty Model: it
+has Metadata and no Definitions or System. It takes no unit system and no
+timeline. `model.unit_system` reads the unit system in use, the curated registry.
+
+A Model never changes. `model.edit(*, name=None, description=None)` returns a
+`ModelDraft`, which collects the changes for the next revision. The draft checks
+each call when it is made. `commit()` validates the complete revision once and
+returns it, with a new UUID and `previous=model.id`. `name` and `description`
+replace those of the new revision; by default it keeps them.
+
+```python
+import rangekeeper as rk
+from rangekeeper.model.expression.authoring import add, equal, reference
+from rangekeeper.schema.records import Reference
+
+model = rk.Model(name="Feasibility")
+draft = model.edit()
+project = draft.add_entity(code="project", classification="project")
+land = project.value(key="land_cost", units="AUD")
+works = project.value(key="works_cost", units="AUD")
+total = project.value(key="total_cost", units="AUD")
+ref = lambda handle: reference(Reference(target=handle.id))
+project.equations(equal(ref(total), add(ref(land), ref(works))))
+model = draft.commit()
+
+draft = model.edit()
+project = draft.entity(code="project")
+project.value(key="fees", units="AUD")
+assert project.ref(key="total_cost").id == total.id
+model = draft.commit()
+```
+
+| Draft call | Result |
+| --- | --- |
+| `add_entity(code=, classification=None, name=None)` | An Entity; returns its `EntityHandle` |
+| `add_assembly(code=, classification=None, name=None, entities=())` | An Assembly of entities given by code, UUID or handle; returns its handle |
+| `add_relationship(source=, target=, classification=)` | A directed Relationship between two entities; returns the record |
+| `add_measure(code=, name=, units=, definition=None)` | A Measure; returns the record |
+| `add_classification(code=, name=None, parent=None, taxonomy="entity")` | A Classification under `parent` or the Taxonomy root; a missing Taxonomy is made with a root of the same code |
+| `entity(id=None, *, code=None, name=None)` | The handle of one Entity or Assembly of the Model or the draft |
+| `commit()` | The validated revision |
+
+| Entity handle call | Result |
+| --- | --- |
+| `value(key=, units=, description=None)` | A measurement Value with no recorded quantity; returns its `ValueHandle` |
+| `flow(key=, units=, periods=None, description=None)` | A Flow Value. With `periods`, it has one unresolved Movement in each Period; without, its Periods come from its equations |
+| `ref(key=)` | The handle of a Value of the entity, declared now or in an earlier revision |
+| `equations(*equations)` | Adds Boolean Expression records to the entity's default Formulation |
+
+A `ValueHandle` has the Value's `id`, `key`, `owner` (the UUID of its entity) and
+declared `units`.
+
+**Rules that each call checks.**
+
+- An entity or Assembly code is unique in the Model, and a Value key is unique
+  in its entity. A second declaration raises `ContractError` with code `UNIQUE`.
+- A Value key is a Python identifier that is not a keyword or a reserved word of
+  equation text (`rx`, `rk`, `NEVER`).
+- Units must parse in the unit system of the Model; unknown units raise
+  `UnitError` with suggestions. Values share one Measure for each units text: the
+  draft uses a Measure with those units, or declares one whose code is the units.
+- A classification given by code is found in any Taxonomy. A code that no
+  Taxonomy has is declared under the root of the `entity` Taxonomy, or of the
+  `relationship` Taxonomy for a Relationship; a code that several Taxonomies
+  have raises `AmbiguousReferenceError`.
+- An equation is an Expression record whose root is Boolean: an equality, a
+  comparison, a logical operation, a Boolean literal or a call. Every Value or
+  Movement that it references must be in the Model or the draft. Equation text
+  is not supported yet.
+- The default Formulation of an entity is the root Formulation whose code is the
+  entity's code (or its UUID when it has no code). The draft makes it when the
+  entity's first equation is added.
+
+A missing entity or key raises `MissingReferenceError` with the nearest codes or
+keys. A commit with no change raises `RevisionConflictError`. A failed commit
+leaves the draft open to correct; after a commit, the draft and its handles raise
+`RevisionConflictError` for any change.
+
+With a `namespace` UUID, the Model UUID and every UUID that its drafts make
+(entities, values, Movements, Measures, Classifications, Taxonomies,
+Relationships, default Formulations and Constraints) are derived from the
+namespace and the object's code path (UUID version 5), so the same calls make the
+same records. Revision UUIDs and the UUIDs inside Expression records are not
+derived yet. A revision keeps the namespace of the object it was made from; a
+Model read from data has none.
+
+## Records, lookup and revisions
+
+`Model.create` and `Model.from_data` take complete records, for full control:
 
 ```python
 from uuid import uuid4

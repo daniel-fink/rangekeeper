@@ -4,10 +4,11 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from difflib import get_close_matches
 from types import MappingProxyType
-from typing import Self, TypeVar, cast
+from typing import TYPE_CHECKING, Self, TypeVar, cast
 from uuid import UUID, uuid4
 
 from rangekeeper.flow import Movement
+from rangekeeper.model.formulation.authoring import identify
 from rangekeeper.model.update import SECTIONS, Update
 from rangekeeper.quantity import UnitSystem, default_units
 from rangekeeper.schema.index import RecordIndex, RecordLocation, record_at
@@ -43,6 +44,9 @@ from rangekeeper.shared.errors import (
 )
 from rangekeeper.shared.references import SpecificationResolver
 
+if TYPE_CHECKING:
+    from rangekeeper.model.draft import ModelDraft
+
 K = TypeVar("K", Value, Label)
 
 
@@ -52,7 +56,8 @@ class Model:
 
     The generated record owns fields. This facade adds scoped lookup and revision
     behavior; callers receive immutable generated records rather than live objects
-    that can mutate a shared graph. Construct via ``create`` or ``from_data``.
+    that can mutate a shared graph. ``Model(name=)`` makes an empty Model, and
+    ``edit()`` changes it. ``from_data`` and ``create`` take complete records.
     """
 
     # Manual slots avoid Python 3.10's frozen-dataclass/property assignment bug.
@@ -61,18 +66,60 @@ class Model:
         "_index",
         "_keys",
         "_units",
+        "_namespace",
     )
     _record: ModelRecord
     _index: RecordIndex
     # The UUID of each Value and Label by its kind, owner UUID and key.
     _keys: Mapping[tuple[type, UUID | None, str], UUID]
     _units: UnitSystem
+    # The UUID namespace of the drafts made from this object, or None.
+    _namespace: UUID | None
 
     def __init__(
         self,
+        *,
+        name: str,
+        namespace: UUID | None = None,
+        description: str | None = None,
+    ) -> None:
+        """Make an empty Model with a name, and no definitions or system.
+
+        The Model uses the curated unit system; ``unit_system`` reads it. With a
+        ``namespace``, the Model UUID and the UUIDs that its drafts make are
+        derived from the namespace (UUID version 5), not random. A Model read
+        from data has no namespace.
+        """
+        require_text(name, "name")
+        optional_text(description, "description")
+        if namespace is not None:
+            require_uuid(namespace, "namespace")
+        metadata = Metadata(
+            id=uuid4() if namespace is None else identify(namespace, "model", name),
+            schema_version=document_version("Model"),
+            name=name,
+            description=UNSET if description is None else description,
+        )
+        self._publish(ModelRecord(metadata=metadata), default_units, namespace)
+
+    @classmethod
+    def _of(
+        cls,
         record: ModelRecord,
         *,
         units: UnitSystem = default_units,
+        namespace: UUID | None = None,
+    ) -> "Model":
+        """Validate a complete record and return its facade."""
+        model = cls.__new__(cls)
+        model._publish(record, units, namespace)
+        return model
+
+    def _publish(
+        self,
+        record: ModelRecord,
+        units: UnitSystem,
+        namespace: UUID | None,
     ) -> None:
         if not isinstance(record, ModelRecord):
             raise TypeError("record must be a generated Model record")
@@ -97,6 +144,7 @@ class Model:
         object.__setattr__(self, "_index", index)
         object.__setattr__(self, "_keys", MappingProxyType(keys))
         object.__setattr__(self, "_units", units)
+        object.__setattr__(self, "_namespace", namespace)
 
     @classmethod
     def from_data(
@@ -110,7 +158,7 @@ class Model:
         Invalid structure/semantics raises ValidationError; unsupported versions and
         duplicate identities have distinct errors. No history or filesystem is read.
         """
-        return cls(ModelRecord.from_data(data), units=units)
+        return cls._of(ModelRecord.from_data(data), units=units)
 
     @classmethod
     def create(
@@ -124,7 +172,7 @@ class Model:
         units: UnitSystem = default_units,
     ) -> "Model":
         """Build a complete Model from typed sections through the same validation path."""
-        return cls(
+        return cls._of(
             ModelRecord(
                 metadata=metadata,
                 definitions=definitions,
@@ -433,4 +481,21 @@ class Model:
             **{name: getattr(update, name) for name in SECTIONS},
         )
         check_revision(self._record, candidate)
-        return type(self)(candidate, units=self._units)
+        return type(self)._of(candidate, units=self._units, namespace=self._namespace)
+
+    def edit(
+        self,
+        *,
+        name: str | None = None,
+        description: str | None = None,
+    ) -> "ModelDraft":
+        """Return a draft of the next revision of this Model.
+
+        The draft collects changes. Its ``commit()`` validates them once and
+        returns the new revision; this Model does not change. ``name`` and
+        ``description`` replace those of the revision; by default the new
+        revision keeps them.
+        """
+        from rangekeeper.model.draft import ModelDraft
+
+        return ModelDraft._start(self, name=name, description=description)
