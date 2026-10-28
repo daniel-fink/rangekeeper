@@ -36,7 +36,6 @@ def period_indices(
     """Map each coordinate to one complete containing period in O(n log p)."""
     starts = []
     for i, period in enumerate(periods):
-        period.check()
         if i and periods[i - 1].end > period.start:
             raise ValueError("resampling periods overlap or are unordered")
         starts.append(period.start)

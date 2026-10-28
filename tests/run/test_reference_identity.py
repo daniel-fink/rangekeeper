@@ -149,8 +149,9 @@ def test_coordinate_index_preserves_unresolved_records_and_rejects_duplicates():
     index.clear()
     assert flow.to_data() == before
     duplicate = movements[0].replace(id=uuid4())
-    with pytest.raises(ValueError, match="duplicate coordinates"):
-        Flow(units="AUD", movements=(*movements, duplicate)).coordinate_index()
+    # A Flow cannot hold two events with the same date and key (ADR-011).
+    with pytest.raises(ValueError, match="distinct nonblank matching keys"):
+        Flow(units="AUD", movements=(*movements, duplicate))
 
 
 def test_alignment_uses_coordinates_while_results_have_independent_ids():

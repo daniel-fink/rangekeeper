@@ -86,7 +86,6 @@ def from_frame(frame: DataFrame, *, units: str) -> Flow:
             if field not in present:
                 movement.pop(field)
     result = Flow.from_data({"units": units, "movements": data})
-    result.check()
     return result
 
 

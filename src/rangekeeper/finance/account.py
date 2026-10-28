@@ -87,7 +87,7 @@ class Account:
                     self.opening.movements, self.closing.movements, strict=True
                 )
             )
-        ).check()
+        )
 
     @classmethod
     def calculate(
@@ -160,11 +160,11 @@ class Account:
             deficits.append(movement.replace(id=uuid4(), magnitude=min(closing, 0)))
             interests.append(movement.replace(id=uuid4(), magnitude=charge))
             running = closing
-        deficit_flow = transactions.replace(movements=tuple(deficits)).check()
+        deficit_flow = transactions.replace(movements=tuple(deficits))
         return cls(
-            transactions.replace(movements=tuple(opens)).check(),
-            transactions.replace(movements=tuple(closes)).check(),
+            transactions.replace(movements=tuple(opens)),
+            transactions.replace(movements=tuple(closes)),
             deficit_flow.difference(initial=0),
             deficit_flow,
-            transactions.replace(movements=tuple(interests)).check(),
+            transactions.replace(movements=tuple(interests)),
         )

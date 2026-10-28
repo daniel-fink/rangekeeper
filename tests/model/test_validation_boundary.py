@@ -307,7 +307,11 @@ def test_flow_presence_and_semantics_match_detached_export(case, indexed):
     data = flow_model()
     flow = data["system"]["entities"][0]["characteristics"]["values"][-1]["flow"]
     if case == "coordinate":
+        # A Movement keeps this rule itself, so the data is not a record.
         flow["movements"][0].pop("date")
+        with pytest.raises(ValidationError, match="date or period"):
+            ModelRecord.from_data(data)
+        return
     elif case == "claims":
         flow["movements"][0]["claims"] = [MISSING]
     elif case == "units":

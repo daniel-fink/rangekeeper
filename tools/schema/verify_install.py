@@ -171,7 +171,7 @@ assert type(flow.movements[0]) is Movement and not hasattr(flow, "samples")
 assert type(records.Flow.from_data(flow.to_data())) is Flow and not hasattr(records.Flow, "check")
 assert flow.movements[0].replace(magnitude=3).number == 3.0
 assert not flow.replace().movements[0].has_field("magnitude")
-assert period.check().resolve(timing=PeriodTiming.LAST) == date(2026, 1, 31)
+assert period.resolve(timing=PeriodTiming.LAST) == date(2026, 1, 31)
 assert Movement.__doc__ and Movement.magnitude.__doc__
 for removed in ("rangekeeper.finance._flow", "rangekeeper.finance.distribution", "rangekeeper.model.flow"):
     assert importlib.util.find_spec(removed) is None, removed

@@ -104,7 +104,7 @@ numeric sequence helper used by extrapolation and dynamics.
 | Owner | Responsibility |
 | --- | --- |
 | `duration` | Native Gregorian dates, Period coverage, explicit frequencies and timing |
-| `Period.check()` / `.resolve()` | Valid coverage and a declared representative date |
+| `Period.resolve()` | A declared representative date; coverage is valid from construction |
 | `Distribution` | Canonical parameters and intrinsic `check`, `sample`, `cdf`, `mass` |
 | `finance.projection` | Project a known Quantity over explicit periods |
 | `flow.Stream` | Align and combine several Flows with explicit policies |

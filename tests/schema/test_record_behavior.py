@@ -97,7 +97,8 @@ def test_decoded_records_keep_methods_and_schema_inheritance():
     )
     assert isinstance(span, Period)
     assert type(span.replace(name="Month")) is Span
-    assert span.check() is span
+    with pytest.raises(ValueError, match="end must follow start"):
+        span.replace(end=span.start)
     assert span.resolve(timing=PeriodTiming.END) == period.end
 
 

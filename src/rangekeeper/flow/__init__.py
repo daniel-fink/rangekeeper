@@ -283,7 +283,6 @@ class Stream:
     def trim(self, span: Period) -> Stream:
         """Select whole periods or dates inside an extent without allocating amounts."""
         if self._batch is None:
-            span.check()
             return self._derive(flows=tuple(f.trim(span) for f in self.flows))
         return self._derive(batch=self._batch.trim(span))
 

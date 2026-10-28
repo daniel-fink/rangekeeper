@@ -32,6 +32,14 @@ class Movement(records.Movement):
 
     __slots__ = ()
 
+    def _invariants(self) -> None:
+        """Require a date or a period, and distinct Claims."""
+        if self.period is None and self.date is None:
+            raise ValueError("movement requires a date or period")
+        claims = self.claims or ()
+        if len(claims) != len(set(claims)):
+            raise ValueError("duplicate movement Claim")
+
     @property
     def number(self) -> float:
         """Read a finite magnitude; unresolved data must be handled before arithmetic."""
@@ -121,45 +129,33 @@ class Flow(records.Flow):
             result[coordinate] = movement
         return result
 
-    def check(self, *, resolved: bool = False, units: UnitSystem | None = None) -> Flow:
-        """Check units, movement identity, date ordering and non-overlapping period coverage.
+    def _invariants(self) -> None:
+        """Require unique Movement IDs and ordered, unmixed, non-overlapping coordinates.
 
-        Return this Flow after checking; resolved=True also requires finite numbers.
-        This check does not repair content or assign missing magnitudes.
-        All movements in one Flow use either periods or dated events. Period order uses
-        coverage, not optional payment dates; those dates may lie outside the period.
+        All movements in one Flow use either periods or dated events. Period
+        order uses coverage, not optional payment dates; those dates may lie
+        outside the period. Repeated event dates need distinct keys.
         """
-        flow = self
-
-        from rangekeeper.duration.calendar import require_date
-        from rangekeeper.quantity import default_units
-
-        units = default_units if units is None else units
-        units.compatible(flow.units, flow.units)
         identities = set()
         events: dict[date, list[str | None]] = {}
         previous = None
         previous_end = None
         mode = None
-        for movement in flow.movements:
+        for movement in self.movements:
             if movement.id in identities:
                 raise ValueError(f"duplicate Movement UUID: {movement.id}")
             identities.add(movement.id)
-            if movement.date is not None:
-                require_date(movement.date)
-            if movement.period is None and movement.date is None:
-                raise ValueError("movement requires a date or period")
             period_mode = movement.period is not None
             if mode is not None and mode != period_mode:
                 raise ValueError("Flow cannot mix event and period movements")
             mode = period_mode
             if movement.period is not None:
-                movement.period.check()
                 if previous_end is not None and movement.period.start < previous_end:
                     raise ValueError("Flow periods overlap or are out of order")
                 previous_end = movement.period.end
+            elif movement.date is None:
+                raise ValueError("movement requires a date or period")
             else:
-                assert movement.date is not None
                 if previous is not None and movement.date < previous:
                     raise ValueError("Flow movements must be ordered by date")
                 previous = movement.date
@@ -169,12 +165,23 @@ class Flow(records.Flow):
                     raise ValueError(
                         "repeated event dates require distinct nonblank matching keys"
                     )
-            if len(movement.claims or ()) != len(set(movement.claims or ())):
-                raise ValueError("duplicate movement Claim")
+
+    def check(self, *, resolved: bool = False, units: UnitSystem | None = None) -> Flow:
+        """Check the units against a unit system; resolved=True also requires numbers.
+
+        A Flow keeps its own order and identity rules at construction. This
+        check adds what depends on context: the unit system, and with
+        resolved=True a finite number for every Movement. It returns this Flow
+        and does not repair content or assign missing magnitudes.
+        """
+        from rangekeeper.quantity import default_units
+
+        units = default_units if units is None else units
+        units.compatible(self.units, self.units)
         if resolved:
-            for movement in flow.movements:
+            for movement in self.movements:
                 _ = movement.number  # Raises for a Movement without a resolved number.
-        return flow
+        return self
 
     @classmethod
     def from_events(
@@ -219,7 +226,6 @@ class Flow(records.Flow):
                 )
             ),
         )
-        result.check()
         return result
 
     @classmethod
@@ -256,7 +262,6 @@ class Flow(records.Flow):
             )
         movements = []
         for i, (period, magnitude) in enumerate(zip(periods, magnitudes, strict=True)):
-            period.check()
             day = dates[i] if dates is not None else None
             movements.append(
                 Movement(
@@ -268,7 +273,6 @@ class Flow(records.Flow):
                 )
             )
         result = factory(units=units, movements=tuple(movements))
-        result.check()
         return result
 
     def clone(self) -> Flow:
@@ -280,7 +284,7 @@ class Flow(records.Flow):
         flow = self
         return flow.replace(
             movements=tuple(m.replace(id=uuid4()) for m in flow.movements)
-        ).check()
+        )
 
     def convert(self, *, units: str, unit_system: UnitSystem | None = None) -> Flow:
         """Convert all known movements together; retain unresolved movements and evidence."""
@@ -306,7 +310,7 @@ class Flow(records.Flow):
                 for s in flow.movements
             ),
             units=units,
-        ).check()
+        )
 
     def scale(self, factor: float) -> Flow:
         """Create independent scaled movements with fresh IDs, retaining missing amounts."""
@@ -321,7 +325,7 @@ class Flow(records.Flow):
                 )
                 for s in flow.movements
             )
-        ).check()
+        )
 
     def negate(self) -> Flow:
         """Reverse each known magnitude while keeping unresolved entries and Claims."""
@@ -339,7 +343,6 @@ class Flow(records.Flow):
         flow = self
         from rangekeeper.schema.records import Quantity
 
-        flow.check()
         if not isinstance(missing, MissingValueHandling):
             raise TypeError("missing must be a MissingValueHandling")
         if missing not in (
@@ -367,9 +370,7 @@ class Flow(records.Flow):
 
         if not isinstance(span, Period):
             raise TypeError("span must be a Period or Span")
-        span.check()
         start, end = span.start, span.end
-        flow.check()
         selected = []
         for movement in flow.movements:
             if movement.period is None:
@@ -384,7 +385,7 @@ class Flow(records.Flow):
                         "trim crosses a movement period; allocate explicitly"
                     )
                 selected.append(movement)
-        return flow.replace(movements=tuple(selected)).check()
+        return flow.replace(movements=tuple(selected))
 
     def resample(
         self,
@@ -427,7 +428,6 @@ class Flow(records.Flow):
         from rangekeeper.quantity import default_units
         from rangekeeper.schema.records import Quantity
 
-        flow.check()
         if day_count is not None and not isinstance(day_count, DayCount):
             raise TypeError("day_count must be a DayCount")
         if (exposures is None) == (day_count is None):
@@ -470,7 +470,7 @@ class Flow(records.Flow):
                 ).magnitude
             )
             movements.append(movement.replace(id=uuid4(), magnitude=magnitude))
-        return flow.replace(movements=tuple(movements), units=output_units).check()
+        return flow.replace(movements=tuple(movements), units=output_units)
 
     def multiply(self, *others: Flow) -> Flow:
         """Multiply known movements at exact common coordinates, with their units.
@@ -505,7 +505,7 @@ class Flow(records.Flow):
             )
             for group in zip(*(flow.movements for flow in aligned), strict=True)
         ]
-        return flows[0].replace(movements=tuple(movements), units=unit).check()
+        return flows[0].replace(movements=tuple(movements), units=unit)
 
     def clean(self, *, remove_zeroes: bool = False) -> Flow:
         """Explicitly remove unresolved movements, and optionally zeroes; do not impute data."""
@@ -516,7 +516,7 @@ class Flow(records.Flow):
                 for s in flow.movements
                 if s.magnitude is not None and (not remove_zeroes or s.magnitude != 0)
             )
-        ).check()
+        )
 
     def difference(self, *, initial: float | None = None) -> Flow:
         """Return adjacent differences; a missing neighbour yields an unresolved movement.
@@ -535,7 +535,7 @@ class Flow(records.Flow):
             )
             movements.append(movement.replace(id=uuid4(), magnitude=magnitude))
             previous = movement.magnitude
-        return flow.replace(movements=tuple(movements)).check()
+        return flow.replace(movements=tuple(movements))
 
     def collapse(
         self,
@@ -579,7 +579,7 @@ class Flow(records.Flow):
             magnitude=None if quantity is None else quantity.magnitude,
             claims=claims,
         )
-        return flow.replace(movements=tuple([movement])).check()
+        return flow.replace(movements=tuple([movement]))
 
     def extent(self, *, include_zeroes: bool = False) -> tuple[date, date] | None:
         """Return selected period coverage [start,end), or first/last dated events.
@@ -588,7 +588,6 @@ class Flow(records.Flow):
         describe coverage even when independent payment dates are recorded.
         """
         flow = self
-        flow.check()
         selected = [
             s
             for s in flow.movements
@@ -604,7 +603,6 @@ class Flow(records.Flow):
     def trim_empty(self) -> Flow:
         """Remove leading/trailing zero or unresolved rows, retaining interior gaps."""
         flow = self
-        flow.check()
         selected = [
             i
             for i, s in enumerate(flow.movements)
@@ -614,4 +612,4 @@ class Flow(records.Flow):
             movements=tuple(
                 flow.movements[selected[0] : selected[-1] + 1] if selected else ()
             )
-        ).check()
+        )

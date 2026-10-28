@@ -122,7 +122,6 @@ class Batch:
         rows: list[Movement] = []
         line_ids, coordinate_ids, orders, values = [], [], [], []
         for line, flow in enumerate(flows):
-            flow.check()
             flow.coordinate_index()
             for order, movement in enumerate(flow.movements):
                 key = movement.coordinate
@@ -195,7 +194,6 @@ class Batch:
 
     def trim(self, span):
         pl = polars()
-        span.check()
         keep = []
         for i, c in enumerate(self.coordinates):
             start = date.fromisoformat(c[1])
@@ -231,7 +229,7 @@ class Batch:
             )
             result[line].append(movement)
         return tuple(
-            Flow(units=unit, movements=tuple(movements)).check()
+            Flow(units=unit, movements=tuple(movements))
             for unit, movements in zip(self.units, result, strict=True)
         )
 
@@ -432,7 +430,7 @@ class Batch:
                 coverage.append(known)
             results.append(
                 FlowAggregate(
-                    Flow(units=unit, movements=tuple(movements)).check(),
+                    Flow(units=unit, movements=tuple(movements)),
                     tuple(coverage),
                 )
             )

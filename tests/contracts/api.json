@@ -156,7 +156,6 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *, start: Date, end: Date) -> None",
-    "check": "method (self) -> Period",
     "end": "property",
     "first": "property",
     "last": "property",
@@ -180,7 +179,6 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *, name: str | None | Unset = <Unset>, start: Date, end: Date) -> None",
-    "check": "method (self) -> Period",
     "end": "property",
     "first": "property",
     "from_duration": "classmethod (cls, *, name: str, start: date, frequency: Frequency, count: int, month_roll: MonthRoll | None = None) -> Span",
