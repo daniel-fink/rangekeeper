@@ -1,6 +1,6 @@
 # ADR-016: Safety defaults for units, outcomes and diagnostics
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; curated units, structured diagnostics and errors implemented in 1.0.0a2 (#149, #154, #155, #156, #312); dimensional checks and the underdetermined outcome pending. Recorded: 2026-10-26.
 
 ## Problem
 

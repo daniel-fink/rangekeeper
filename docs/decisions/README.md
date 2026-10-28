@@ -22,7 +22,8 @@ the sections and the Status line; the Status column below uses the same words.
 ## Accepted for 1.0
 
 ADR-010 to ADR-020 were accepted on 2026-10-26, and ADR-023 on 2026-10-27.
-Their implementation is pending. The
+1.0.0a2 implements ADR-010, ADR-011, ADR-012 and ADR-023, and parts of ADR-013
+and ADR-016 to ADR-018; the Status column shows what is pending. The
 [Rangekeeper project](https://github.com/users/daniel-fink/projects/8) tracks the
 implementation as epics with sub-issues, milestones 0.8.72 to 1.0.0 and
 blocked-by links. The
@@ -32,14 +33,14 @@ blocked-by links. The
 | Decision | Status | Scope |
 | --- | --- | --- |
 | [ADR-010: Layers, packages and public namespaces](010-layers-and-packages.md) | Accepted for 1.0; library boundary and layers implemented | Library boundary, layer order, ownership rules, public namespaces and the move map |
-| [ADR-011: Records, behaviour and validation](011-records-and-validation.md) | Accepted for 1.0; implementation pending | Data-only generated records, owner subclasses, document facades, generated runtime and validation tiers |
-| [ADR-012: Naming convention, glossary and rename pass](012-naming-and-glossary.md) | Accepted for 1.0; implementation pending | Naming rules, agreed renames, initial rename map and the single 1.0.0a2 codemod pass |
+| [ADR-011: Records, behaviour and validation](011-records-and-validation.md) | Accepted for 1.0; implemented in 1.0.0a2 | Data-only generated records, owner subclasses, document facades, generated runtime and validation tiers |
+| [ADR-012: Naming convention, glossary and rename pass](012-naming-and-glossary.md) | Accepted for 1.0; rename pass implemented in 1.0.0a2 | Naming rules, agreed renames, initial rename map and the single 1.0.0a2 codemod pass |
 | [ADR-013: Execution pipeline and extension points](013-execution-and-extensions.md) | Accepted for 1.0; extension points implemented, pipeline pending | Pure `solve`, `execute`, `Outcome`, backend contract, worker, registry pattern and fingerprints |
 | [ADR-014: Market paths and path generators](014-market-paths.md) | Accepted for 1.0; implementation pending | Path generators, the MarketPaths document and `Specification.across` |
 | [ADR-015: Authoring with builders, equations and identities](015-authoring.md) | Accepted for 1.0; implementation pending | Document builders, operator and string equations, deterministic builds and quantity parsing |
-| [ADR-016: Safety defaults](016-safety-defaults.md) | Accepted for 1.0; implementation pending | Curated units, dimensional checks, the underdetermined outcome, structured diagnostics and errors |
-| [ADR-017: Public API, stability and data formats](017-api-and-formats.md) | Accepted for 1.0; implementation pending | Semantic versioning, the 1.0.0 format reset, format changes before the freeze, Bundle format 1 and money |
-| [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted for 1.0; implementation pending | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
+| [ADR-016: Safety defaults](016-safety-defaults.md) | Accepted for 1.0; units, diagnostics and errors implemented, dimensional checks and the underdetermined outcome pending | Curated units, dimensional checks, the underdetermined outcome, structured diagnostics and errors |
+| [ADR-017: Public API, stability and data formats](017-api-and-formats.md) | Accepted for 1.0; format reset and money implemented, freeze pending | Semantic versioning, the 1.0.0 format reset, format changes before the freeze, Bundle format 1 and money |
+| [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted for 1.0; implemented except the docs site | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
 | [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, proposed cells first, helpers, CI execution and sources |
 | [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; proposed cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
 | [ADR-023: Decimal currency amounts](023-decimal-money.md) | Accepted for 1.0; implemented in 1.0.0a2 | Currency amounts as Decimal, float64 calculation boundaries, JSON, YAML and Parquet encodings, solver evidence and tolerances, and minor-unit rounding; the design of ADR-017's Money section |
