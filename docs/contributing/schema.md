@@ -23,6 +23,11 @@ generator attaches those behaviors to selected records and generates typed
 | Reusable wire examples | `examples/schema/` |
 | Positive/negative conformance procedures | `schema/checks/` |
 
+The generator is a set of small functions: it loads the bundle, derives the
+slot metadata, checks it, emits the records and writes the manifest. It stops
+when a slot name is a Python keyword or shadows a record or behaviour method,
+or when one slot has more than one record type.
+
 Do not edit generated files by hand. Create a separate environment with
 [`tools/schema/requirements.txt`](../../tools/schema/requirements.txt). From the
 repository root, with that environment active:
