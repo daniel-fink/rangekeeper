@@ -6,8 +6,8 @@ from uuid import uuid4
 
 import pytest
 
+from rangekeeper import execution
 from rangekeeper.duration import Frequency, make_periods
-from rangekeeper.execution import Executor
 from rangekeeper.io import MemoryStore
 from rangekeeper.market.generation import generate, make_plan
 from rangekeeper.model import Distribution, DistributionFamily, Metadata, Model
@@ -19,7 +19,7 @@ from tests.integration.models import deterministic, flexible, linear, probabilis
 def execute(consumer, model, **requirements):
     store = MemoryStore()
     store.put(model)
-    run = Executor(store).execute(consumer.specify(model, **requirements))
+    run = execution.execute(consumer.specify(model, **requirements), store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE, run.report.to_data()
     validate(run, resolver=store).raise_if_invalid()
     output = store.load_model(run.record.outputs[0])

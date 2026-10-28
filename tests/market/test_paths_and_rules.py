@@ -263,7 +263,7 @@ def test_supplied_innovations_realize_without_randomness(monkeypatch):
 
 
 def test_rule_run_rejects_forged_information_timing_and_actions():
-    from rangekeeper.execution import Executor
+    from rangekeeper.execution import execute
     from rangekeeper.io import MemoryStore
     from rangekeeper.run import Run, validate
     from rangekeeper_examples import investment
@@ -272,7 +272,7 @@ def test_rule_run_rejects_forged_information_timing_and_actions():
     rules = investment.build_stop_gain_resale_rules(model, minimum_holding_periods=1)
     store = MemoryStore()
     store.put(model)
-    run = Executor(store).execute(investment.specify(model, rules=rules))
+    run = execute(investment.specify(model, rules=rules), store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE
     for mutation in ("availability", "assignment", "rule", "termination"):
         data = run.to_data()
@@ -291,7 +291,7 @@ def test_rule_run_rejects_forged_information_timing_and_actions():
 
 
 def test_control_roles_conflict_across_contributors_and_endogenous_observation_fails():
-    from rangekeeper.execution import Executor
+    from rangekeeper.execution import execute
     from rangekeeper.io import MemoryStore
     from rangekeeper.shared.errors import ValidationError
     from rangekeeper.specification import Specification, SpecificationRecord
@@ -330,7 +330,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
         a for a in data["assignments"] if a["target"] != observed.to_data()
     ]
     data["unknowns"].append(observed.to_data())
-    run = Executor(store).execute(Specification.from_data(data))
+    run = execute(Specification.from_data(data), store).run
     assert not run.record.outputs
     assert [d.code for d in run.report.diagnostics if d.severity == Severity.ERROR] == [
         Code.UNSUPPORTED_CAPABILITY

@@ -25,9 +25,10 @@ from rangekeeper.execution.errors import (
     UnsupportedError,
 )
 from rangekeeper.execution.implementation import fingerprint
+from rangekeeper.execution.outcome import Outcome
 from rangekeeper.model import Model
 from rangekeeper.quantity import UnitSystem, unit_systems
-from rangekeeper.run import ImplementationKind, Run, StepKind
+from rangekeeper.run import ImplementationKind, StepKind
 from rangekeeper.schema.records import (
     CompletionStatus,
     Diagnostic,
@@ -68,11 +69,12 @@ class Attempt:
         view: Composition | ValidationError,
         *,
         resolver: DocumentResolver,
+        validate: bool = True,
     ) -> None:
         self.config, self.backend = config, backend
         self.units: UnitSystem | None = config.units
         self.specification, self.view = specification, view
-        self.resolver = resolver
+        self.resolver, self.validate = resolver, validate
         self.run_id, self.started, self.clock = uuid4(), _now(), time.monotonic()
         self.findings: list[Diagnostic] = []
         self.trace: list[Step] = []
@@ -136,11 +138,8 @@ class Attempt:
                 "execution deadline reached during preparation or compilation"
             )
 
-    def execute(self) -> tuple[Run, Model | None]:
-        """Run the stages, account for each expected failure, and return the Run.
-
-        Return the validated Run and its accepted output Model, if any.
-        """
+    def execute(self) -> Outcome:
+        """Run the stages, account for each expected failure, and return the Outcome."""
         try:
             problem = self.prepare()
             result = self.solve(problem)
@@ -377,8 +376,8 @@ class Attempt:
                     severity=Severity.ERROR,
                 )
 
-    def finish(self) -> tuple[Run, Model | None]:
-        """Assemble and validate the Run; return it with its accepted output."""
+    def finish(self) -> Outcome:
+        """Assemble the Outcome; validate its Run unless a later commit point will."""
         # No returned worker evidence means no claim that its iteration setting or
         # solver implementation actually ran. The parent deadline still applies.
         effective = (
@@ -431,12 +430,12 @@ class Attempt:
             trace=tuple(self.trace),
             rule_evidence=() if self.binding is None else self.binding.rule_evidence,
         )
-        run = assembly.assemble(
+        return assembly.assemble(
             self.specification,
             report,
             id=self.run_id,
             output=self.output,
             resolver=self.resolver,
             units=self.units if self.binding is None else self.binding.units,
+            validate=self.validate,
         )
-        return run, self.output

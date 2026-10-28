@@ -80,13 +80,13 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | None (planned, #302) |
 | Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | None (planned, #297) |
 | Availability | The earliest date at which a value can be observed | `specification` | — |
-| Solve | Calculate an `Outcome` without writing to a store | `execution` | Part of `Executor.execute`; `solve`: none (planned, #126) |
-| Execute | Solve and then publish to a store | `execution` | `Executor.execute` |
-| Affine problem | The linear problem that a backend receives | `execution` | `Compiled` request; `AffineProblem`: none (planned, #129) |
+| Solve | Calculate an `Outcome` without writing to a store | `execution` | `execution.solve` |
+| Execute | Solve and then publish to a store | `execution` | `execution.execute` |
+| Affine problem | The linear problem that a backend receives | `execution` | `AffineProblem`; its backend-neutral contract is planned (#129) |
 | Backend | A registered solver implementation | `execution` | — |
 | Termination | How a backend finished: feasible candidate, proven infeasible, limit, error or unknown | `execution` | Pyomo status strings |
-| Verification | Independent check of a candidate against the original equations | `execution` | Acceptance |
-| Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | None (planned, #127). Now the Run and the output Model |
+| Verification | Independent check of a candidate against the original equations | `execution` | `execution.verify`, which returns a `Verification` |
+| Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | `Outcome` with `run`, `outputs` and `cases`; reading values and status planned (#127) |
 | Underdetermined | A result with free unknowns that the equations do not fix | `execution` | Feasible with a warning |
 | Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | — |
 | Diagnostic | One coded finding with structured fields | `shared` | Also `findings` and `issues` |

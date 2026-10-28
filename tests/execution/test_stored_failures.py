@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper import Model, Specification
-from rangekeeper.execution import ExecutionConfig, Executor
+from rangekeeper.execution import ExecutionConfig, execute
 from rangekeeper.execution.rule import RuleCapabilityError, evaluate
 from rangekeeper.io import MemoryStore
 from rangekeeper.run import CompletionStatus, SolutionStatus, validate
@@ -48,9 +48,9 @@ class UncalledBackend:
 def failed_run(model, specification, *, code, solution):
     store = MemoryStore()
     store.put(model)
-    run = Executor(store, config=ExecutionConfig(backend=UncalledBackend())).execute(
-        specification
-    )
+    run = execute(
+        specification, store, config=ExecutionConfig(backend=UncalledBackend())
+    ).run
     assert run.report.status.completion is CompletionStatus.FAILED
     assert run.report.status.solution is solution
     assert not run.record.outputs

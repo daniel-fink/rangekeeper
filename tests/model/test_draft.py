@@ -322,7 +322,7 @@ def test_lesson_02_cell_4_runs_as_written():
     reason="requires the optional execution extra",
 )
 def test_a_committed_model_solves():
-    from rangekeeper.execution import Executor
+    from rangekeeper.execution import execute
     from rangekeeper.io import MemoryStore
     from rangekeeper.run import SolutionStatus
 
@@ -351,7 +351,7 @@ def test_a_committed_model_solves():
     )
     store = MemoryStore()
     store.put(model)
-    run = Executor(store).execute(specification)
+    run = execute(specification, store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE
     solved = store.load_model(run.record.outputs[0])
     assert solved.value(total).quantity == rk.Quantity(text="50e6 AUD")

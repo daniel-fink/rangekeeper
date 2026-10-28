@@ -755,6 +755,18 @@ removed:
     status: agreed
     source: ADR-012, ADR-014
     requires: [refactor]
+  - name: rangekeeper.execution.executor.Executor
+    replacement: >-
+      `rangekeeper.execution.execute(specification, store, config=)`, which
+      returns an `Outcome`; read the Run as `outcome.run`. Use
+      `rangekeeper.execution.solve(specification, resolver, config=)` to write
+      nothing
+    status: agreed
+    source: "ADR-013, #126"
+  - name: rangekeeper.execution.publication.CandidateResolver
+    replacement: "`rangekeeper.execution.assembly.Overlay(resolver, models=, runs=)`"
+    status: agreed
+    source: "ADR-013, #126"
   - name: rangekeeper.execution.planning.Plan
     replacement: >-
       `rangekeeper.execution.resolve_cases(specification, resolver=)`. It
@@ -788,9 +800,9 @@ notes:
     source: "ADR-013, #128"
     note: >-
       `Executor(store, backend=, units=, tolerances=)` becomes
-      `Executor(store, config=ExecutionConfig(backend=, units=, tolerances=))`.
-      `ExecutionConfig` also holds the default `limits` and the
-      `backend_options`.
+      `execute(specification, store, config=ExecutionConfig(backend=, units=,
+      tolerances=))`. `ExecutionConfig` also holds the default `limits` and
+      the `backend_options`.
   - topic: Keyword-only arguments
     status: agreed
     source: "#255 D14"

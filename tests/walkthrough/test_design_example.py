@@ -4,7 +4,7 @@ from uuid import uuid5
 
 import pytest
 
-from rangekeeper.execution import Executor
+from rangekeeper.execution import execute
 from rangekeeper.io.memory import MemoryStore
 from rangekeeper.model import System, Update
 from rangekeeper.run import SolutionStatus
@@ -24,7 +24,7 @@ def test_design_financial_components_and_provenance():
     model = design.formulate(authored)
     store = MemoryStore()
     store.put(model)
-    run = Executor(store).execute(design.specify(model))
+    run = execute(design.specify(model), store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report
     output = store.load_model(run.record.outputs[0])
     v = design.values(output)

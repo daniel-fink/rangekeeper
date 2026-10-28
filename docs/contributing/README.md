@@ -249,8 +249,8 @@ Each document's `validate_document` (in its package's `validation` module) is
 the one implementation behind `validate()` and `check()`.
 
 Use composition between runtime services instead of inheritance with hidden
-state. For example, `Executor` traverses batches, `Plan` resolves their graph,
-and `Attempt` owns one scalar execution. A layout `Formulation` owns symbolic
+state. For example, `solve` traverses batches, `resolve_cases` resolves their
+graph, and `Attempt` owns one scalar execution. A layout `Formulation` owns symbolic
 geometry; `Interface` owns mutable display state. C# `Validator.Check` overloads
 distinguish structural and local Model checks. These different responsibilities
 do not require a shared service superclass or universal status enum.

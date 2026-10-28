@@ -1,10 +1,11 @@
 # Scalar execution with Pyomo and HiGHS
 
 The execution package implements **actual affine feasibility execution** in `rangekeeper.execution`.
-The executor reads the canonical Model and an additive Specification composition,
+Execution reads the canonical Model and an additive Specification composition,
 lowers declared mathematics, solves in a separate process, independently evaluates
-the original expressions on serialized candidate quantities, and publishes accepted
-Model revisions followed by finalized Runs. LinkML remains the field authority.
+the original expressions on serialized candidate quantities, and returns an
+`Outcome`. `execute` also publishes accepted Model revisions followed by
+finalized Runs. LinkML remains the field authority.
 
 ## Execute an investigation
 
@@ -15,15 +16,30 @@ worker. `pyproject.toml` declares the supported version ranges. The worker does
 not refuse other versions; the Run evidence records the Pyomo and HiGHS versions
 that it found.
 
-`Executor(store, *, config=None)` supports `MemoryStore`, `DirectoryStore` or a
-compatible `RecordStore`. `config` is an [`ExecutionConfig`](#configuration);
-without it, the defaults apply. Each Run records the backend as a `solver`
-implementation, with its registered name and fingerprint.
-`execute(specification: Specification) -> Run` stores the supplied root after
-reference-graph preflight. Referenced Models, includes and cases must already be
-available. Expected capability, settings and numerical outcomes appear in the Run.
-Missing or wrong-kind revisions, invalid cyclic batch graphs or batch Model
-assertions, storage failures and programming errors raise to the caller.
+| Function | Writes | Returns |
+| --- | --- | --- |
+| `solve(specification, resolver, *, config=None)` | Nothing | An `Outcome` |
+| `execute(specification, store, *, config=None)` | The Specification, then for each case its outputs and then its Run, cases before their batch | The same `Outcome` |
+
+`resolver` is any `DocumentResolver`, for example a `MemoryStore`; it must
+supply the Models, includes and cases that the Specification names. `store` is a
+`MemoryStore`, `DirectoryStore` or a compatible `RecordStore`. `config` is an
+[`ExecutionConfig`](#configuration); without it, the defaults apply. Each Run
+records the backend as a `solver` implementation, with its registered name and
+fingerprint. Expected capability, settings and numerical outcomes appear in the
+Run. Missing or wrong-kind revisions, invalid cyclic batch graphs or batch Model
+assertions, storage failures and programming errors raise to the caller; when
+solving raises, `execute` writes nothing.
+
+An `Outcome` holds the finalized `run`, the accepted `outputs` in the order of
+`run.record.outputs`, and for a batch one Outcome in `cases` for each direct
+case. `walk()` yields each case before its batch. The reading API (`outcome["key"]`,
+`.status`, `.raise_for_status()`) follows in
+[#127](https://github.com/daniel-fink/rangekeeper/issues/127).
+
+Each Run is validated once. `solve` validates it with the unstored outputs and
+case Runs laid over `resolver`. `execute` does not: `RecordStore.put` is its one
+validation of each Run.
 
 Use the [examples guide](../guides/examples.md) for the complete valuation procedure and
 [its source](../../examples/execution/valuation.py). It executes forward, revises the
@@ -54,8 +70,8 @@ asks for one of them fails with an `unsupported_capability` diagnostic.
 
 Execution runs as typed stages ([ADR-013](../decisions/013-execution-and-extensions.md)).
 Each stage is a function in `rangekeeper.execution`. No stage writes to a store,
-and only the backend starts a process. `Executor` calls the stages for each case
-and stores the results.
+and only the backend starts a process. `solve` calls the stages for each case;
+`execute` then stores the results.
 
 | # | Stage | Input | Result | Raises |
 | --- | --- | --- | --- | --- |
@@ -66,7 +82,7 @@ and stores the results.
 | 5 | `Backend.solve(problem, *, limits, remaining, options)` | An `AffineProblem` | `Result`: termination, candidate values and evidence | `BackendUnavailableError`, `NumericalError` |
 | 6 | `make_candidate(binding, values, *, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
 | 7 | `verify(binding, candidate, *, tolerances=Tolerances())` | The candidate | `Verification`: accepted or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
-| 8 | `assemble(specification, report, *, id, output, resolver, units=None)` | The report of one leaf | The finalized Run, validated once with the output laid over the resolver | `ValidationError` |
+| 8 | `assemble(specification, report, *, id, output, resolver, units=None, validate=True)`; `assemble_batch(specification, cases, *, resolver, validate=True)` | The report of one leaf; the Outcomes of a batch's cases | An `Outcome` with the finalized Run. With `validate`, the Run is validated once with the unstored outputs and Runs laid over the resolver | `ValidationError` |
 
 `checkpoint` is a callable that raises `AttemptDeadlineError` when the attempt's
 time limit has passed. The stages call it between steps.
@@ -82,11 +98,12 @@ time limit has passed. The stages call it between steps.
 | `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
-| `execution/assembly.py` | Stage 8: make the finalized Run of one leaf and validate it against the candidate overlay. |
+| `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
+| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and the status of each expected failure. It stores nothing. |
-| `execution/executor.py` | Sequential batches, and output-before-Run persistence. |
+| `execution/pipeline.py` | `solve`: the stages for each case of a batch, in order. `execute`: `solve`, then output-before-Run publication. |
 | `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
 
 Derived stage results are runtime objects, not a second
@@ -97,7 +114,7 @@ Failed composition cases remain accountably visible within batch Runs.
 
 ## Supported mathematics
 
-The executor supports Model-owned scalar Measurements and finite Flow Movements with explicit fixed and
+Execution supports Model-owned scalar Measurements and finite Flow Movements with explicit fixed and
 unknown roles, quantity literals, references, negation, addition, subtraction,
 multiplication with at least one fixed expression, division by a nonzero fixed
 expression, and powers that remain affine after assignment. Constraints support
@@ -116,7 +133,7 @@ The adapter explicitly rejects nonlinear unknown products/divisors/powers, stric
 comparisons involving unknowns, disjunctions, function calls, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
 Values and market path generation follow the [temporal contract](market-paths-and-rules.md).
-Structural interventions are unsupported. The executor never substitutes hard-coded
+Structural interventions are unsupported. Execution never substitutes hard-coded
 valuation formulas.
 
 ## Settings, limits and conclusions
@@ -184,10 +201,11 @@ Claims describing the accepted assignment/solution and its Run/Specification. Th
 uses existing schema fields and does not introduce a typed cross-document provenance
 contract. Constant-only feasible revisions record a fresh feasibility Claim.
 
-Full Run validation occurs against the candidate overlay before storage. The output
-is stored first, then its finalized Run. A rejected candidate is never published.
-As with the stores, there is no multi-document transaction: IO failure can leave a
-complete accepted output or completed child Run. Every direct batch case has its own
+`execute` stores each output first, then its finalized Run; `RecordStore.put`
+validates the Run. A rejected candidate is never an output, so it is never
+published. As with the stores, there is no multi-document transaction: IO failure,
+or a Run that fails validation at `put`, can leave a complete accepted output or
+completed child Run. Every direct batch case has its own
 Run, including failures; parent outputs are exactly the unique union of child outputs.
 
 ## Related boundaries
