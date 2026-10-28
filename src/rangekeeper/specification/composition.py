@@ -43,7 +43,7 @@ REQUIREMENTS = (
     "formulations",
     "objectives",
     "settings",
-    "policy",
+    "rules",
 )
 FIELDS = {"metadata", "model", "includes", "cases", *REQUIREMENTS}
 
@@ -156,13 +156,13 @@ def validate_roles(document):
         "assigned and unknown roles overlap",
     )
     controls = [
-        reference_key(ref) for ref in (document.get("policy") or {}).get("targets", ())
+        reference_key(ref) for ref in (document.get("rules") or {}).get("targets", ())
     ]
-    groups["policy"] = set(controls)
-    require(len(controls) == len(groups["policy"]), "duplicate policy-controlled role")
+    groups["rules"] = set(controls)
+    require(len(controls) == len(groups["rules"]), "duplicate rule-controlled role")
     require(
-        not groups["policy"] & (groups["assignments"] | groups["unknowns"]),
-        "policy-controlled roles overlap",
+        not groups["rules"] & (groups["assignments"] | groups["unknowns"]),
+        "rule-controlled roles overlap",
     )
     return groups
 
@@ -263,9 +263,9 @@ def compose_specification(
             if value is not None:
                 claim(("settings", name), source, f"/settings/{name}")
                 effective.setdefault("settings", {})[name] = deepcopy(value)
-        if doc.get("policy"):
-            claim(("policy",), source, "/policy")
-            effective["policy"] = deepcopy(doc["policy"])
+        if doc.get("rules"):
+            claim(("rules",), source, "/rules")
+            effective["rules"] = deepcopy(doc["rules"])
         if doc.get("objectives"):
             claim(("objectives",), source, "/objectives")
             effective["objectives"] = deepcopy(doc["objectives"])

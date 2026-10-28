@@ -180,7 +180,7 @@ distinguish structural and local Model checks. These different responsibilities
 do not require a shared service superclass or universal status enum.
 
 The [package map](../concepts/architecture.md) owns import locations. The
-[scenario and policy reference](../reference/scenarios-and-policies.md) owns
+[market paths and rules reference](../reference/market-paths-and-rules.md) owns
 quantity names, authoring verbs and the distinction between declarations and
 recorded outcomes. The [record reference](../reference/records.md) owns field
 presence, immutability and intrinsic methods.

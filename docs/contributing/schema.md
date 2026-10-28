@@ -119,7 +119,7 @@ Use [records](../reference/records.md) for construction, presence, immutability
 and intrinsic methods; use [identity](../reference/identity.md) for revision scope
 and comparison. [Expressions](../reference/expressions.md),
 [calculations](../reference/calculations.md) and
-[scenarios and policies](../reference/scenarios-and-policies.md) own the domain
+[market paths and rules](../reference/market-paths-and-rules.md) own the domain
 meaning of their fields. [Run and storage](../reference/run-and-storage.md) owns
 publication and stored evidence.
 

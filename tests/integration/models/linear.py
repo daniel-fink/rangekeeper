@@ -1,7 +1,8 @@
 """Readable known-data DCF composition using canonical Flow content."""
 
+from rangekeeper import profile
 from rangekeeper.duration import Frequency, PeriodTiming, make_periods, offset
-from rangekeeper.finance import financial, projection
+from rangekeeper.finance import financial
 from rangekeeper.flow import AlignmentJoin, Flow, MissingValueHandling
 from rangekeeper.quantity import Quantity
 from tests.streams import lines
@@ -18,10 +19,10 @@ class Model:
             frequency=frequency,
             count=params["num_periods"] + 1,
         )
-        self.pgi = projection.extrapolate(
+        self.pgi = profile.extrapolate(
             Quantity(magnitude=params["initial_pgi"], units=units),
             periods=periods,
-            method=projection.ProjectionMethod.COMPOUND,
+            method=profile.GrowthMethod.COMPOUND,
             rate=params["growth_rate"],
         )
         self.vacancy = self.pgi.scale(-params["vacancy_rate"])

@@ -1,13 +1,15 @@
-"""Declared discount and present-value equations; no financial results are calculated here."""
+"""Declared discount, present-value and interest equations; no financial results are calculated here."""
 
 from uuid import UUID
 
 from rangekeeper.model import Model
 from rangekeeper.model.expression.authoring import (
     add,
+    binary,
     divide,
     equal,
     literal,
+    multiply,
     power,
     reference,
 )
@@ -17,7 +19,8 @@ from rangekeeper.model.expression.authoring import (
 from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.formulation.flow import aligned, shape
 from rangekeeper.model.scope import target_value
-from rangekeeper.schema.records import Formulation, Reference
+from rangekeeper.schema.enums import Operator
+from rangekeeper.schema.records import Expression, Formulation, Reference
 
 
 def discount(
@@ -74,4 +77,52 @@ def pv(model: Model, *, id: UUID, sequence: UUID, value: Reference) -> Formulati
         "present_value",
         [("total", equation)],
         (sequence, target_value(model, value).id),
+    )
+
+
+def interest(
+    model: Model,
+    *,
+    id: UUID,
+    principal: UUID,
+    rate: Reference,
+    interest: UUID,
+    nonnegative_principal: bool,
+) -> Formulation:
+    """Relate principal and interest Flow Value UUIDs through a scalar rate Reference.
+
+    Rate is dimensionless per step; principal and interest have compatible units.
+    Enforce principal >= 0.
+    """
+    if nonnegative_principal is not True:
+        raise ValueError(
+            "symbolic overdraft interest is unsupported; use known-data calculation"
+        )
+    prepared = shape(model, principal)
+    equations: list[tuple[str, Expression]] = []
+    for movement, matches in aligned(
+        model, (principal,), interest, shapes={principal: prepared}
+    ):
+        p = Reference(target=matches[0].id)
+        equations.extend(
+            (
+                (
+                    str(movement.id) + "/interest",
+                    equal(
+                        reference(Reference(target=movement.id)),
+                        multiply(reference(p), reference(rate)),
+                    ),
+                ),
+                (
+                    str(movement.id) + "/nonnegative",
+                    binary(
+                        Operator.GREATER_THAN_OR_EQUAL,
+                        reference(p),
+                        literal(0, prepared.units),
+                    ),
+                ),
+            )
+        )
+    return declare(
+        id, "interest", equations, (principal, target_value(model, rate).id, interest)
     )

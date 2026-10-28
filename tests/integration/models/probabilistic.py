@@ -1,7 +1,7 @@
 """Probabilistic consumer: realized input paths are supplied explicitly to author()."""
 
-from rangekeeper.model.scenario import replay
-from rangekeeper.model.scenario.market import generate, make_plan, realize
+from rangekeeper.market import replay
+from rangekeeper.market.generation import generate, make_plan, realize
 from rangekeeper_examples.investment import author, formulate, report, specify, values
 
 __all__ = [

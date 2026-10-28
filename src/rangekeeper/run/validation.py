@@ -457,19 +457,20 @@ class _RunValidation:
                     )
                 else:
                     if (
-                        effective.get("policy")
+                        effective.get("rules")
                         and not outputs
                         and (
-                            run["report"].get("outcomes") or solution != "not_assessed"
+                            run["report"].get("rule_evidence")
+                            or solution != "not_assessed"
                         )
                     ):
-                        from rangekeeper.specification.policy.validation import (
-                            validate_outcomes,
+                        from rangekeeper.specification.rule.validation import (
+                            validate_evidence,
                         )
 
-                        validate_outcomes(
-                            effective["policy"],
-                            run["report"].get("outcomes") or [],
+                        validate_evidence(
+                            effective["rules"],
+                            run["report"].get("rule_evidence") or [],
                             scope=scope,
                             provenance=model.get("provenance") or {},
                             units=self.units,

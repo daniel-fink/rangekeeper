@@ -264,7 +264,7 @@ def _validate_concrete(
     assigned, unknowns, controlled = (
         roles["assignments"],
         roles["unknowns"],
-        roles["policy"],
+        roles["rules"],
     )
     supplied("assignments")
     references = specification.get("unknowns") or []
@@ -272,11 +272,11 @@ def _validate_concrete(
         eligible(target)
     supplied("estimates")
     require(roles["estimates"] <= unknowns, "estimate target is not an unknown")
-    if specification.get("policy"):
-        from rangekeeper.specification.policy.validation import validate_policy
+    if specification.get("rules"):
+        from rangekeeper.specification.rule.validation import validate_rules
 
-        validate_policy(
-            specification["policy"], scope=scope, units_compatible=units_compatible
+        validate_rules(
+            specification["rules"], scope=scope, units_compatible=units_compatible
         )
 
     # Imposed predicates and every objective need role completeness. Unused

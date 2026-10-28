@@ -374,6 +374,17 @@ symbols:
     new_name: RuleCapabilityError
     status: agreed
     source: "#255 D41"
+  - module: rangekeeper.specification.policy.validation
+    name: validate_policy
+    new_name: validate_rules
+    status: agreed
+    source: "#255 D41"
+  - module: rangekeeper.specification.policy.validation
+    name: validate_outcomes
+    new_name: validate_evidence
+    status: agreed
+    source: "#255 D41"
+    note: It checks the `RuleEvidence` records of a Run report.
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it
@@ -433,6 +444,13 @@ attributes:
     source: ADR-021, #255 D41
     requires: [schema]
     note: The Run report field and its wire key.
+  - owner: rangekeeper.specification.policy.result.PolicyResult
+    name: outcomes
+    new_name: evidence
+    apply: review
+    status: agreed
+    source: "#255 D41"
+    note: The `RuleEvidence` records of one evaluation.
   - owner: "*"
     name: findings
     new_name: diagnostics
@@ -459,6 +477,11 @@ parameters:
     new_name: end
     status: agreed
     source: ADR-012
+  - callable: rangekeeper.specification.policy.evaluation.evaluate
+    name: policy
+    new_name: rules
+    status: agreed
+    source: "#255 D41"
   - callable: rangekeeper.model.flux.Stream.select
     name: labels
     new_name: names

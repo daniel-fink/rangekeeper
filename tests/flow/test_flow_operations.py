@@ -7,10 +7,6 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.duration import Frequency, Span, make_period, make_periods
-from rangekeeper.finance.account import (
-    Account,
-    InterestTreatment,
-)
 from rangekeeper.flow import (
     Flow,
     MeanWeighting,
@@ -96,26 +92,6 @@ def test_exposure_is_an_explicit_operation_without_a_rate_classification():
     assert length.movements[0].magnitude == 2
     with pytest.raises(ValueError, match="exposures or day_count"):
         length.integrate()
-
-
-def test_account_argument_defines_rate_role_and_checks_units():
-    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=2)
-    transactions = Flow.from_periods(periods, [0, 0], units="AUD")
-    rates = Flow.from_periods(periods, [10, 20], units="percent")
-    result = Account.calculate(
-        transactions,
-        starting=Quantity(magnitude=100, units="AUD"),
-        rate=rates,
-        treatment=InterestTreatment.FINANCED,
-    )
-    assert [s.magnitude for s in result.closing.movements] == pytest.approx([110, 132])
-    assert [s.magnitude for s in result.interest.movements] == pytest.approx([10, 22])
-    with pytest.raises(ValueError, match="incompatible"):
-        Account.calculate(
-            transactions,
-            starting=Quantity(magnitude=100, units="AUD"),
-            rate=transactions,
-        )
 
 
 @pytest.mark.parametrize("reduction", ["sum", "last", "mean"])
