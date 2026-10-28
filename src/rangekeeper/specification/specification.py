@@ -14,14 +14,14 @@ from rangekeeper.schema.index import RecordIndex
 from rangekeeper.schema.records import Metadata
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.revision import check_revision
-from rangekeeper.schema.validation import document_version, supports_version
-from rangekeeper.shared.errors import UnsupportedVersionError
-from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.validation import (
-    bounded,
-    require,
+from rangekeeper.schema.validation import (
+    document_version,
+    supports_version,
     validate_known_reference_types,
 )
+from rangekeeper.shared.errors import UnsupportedVersionError
+from rangekeeper.shared.references import SpecificationResolver
+from rangekeeper.shared.validation import bounded, require
 from rangekeeper.specification.composition import (
     Composition,
     validate_local_header,
@@ -144,7 +144,7 @@ class Specification:
         A scalar Quantity applies to each selected Movement in its stated units.
         A mapping supplies one Quantity per selected Movement. recorded=True copies
         recorded amounts explicitly; it cannot be combined with quantity.
-        Included roles and policy controls must be revised at their owner.
+        Included roles and rule controls must be revised at their owner.
         """
         from rangekeeper.model.scope import recorded_scalar, target_units
         from rangekeeper.schema.records import Assignment, Quantity
@@ -220,11 +220,9 @@ class Specification:
             raise ValueError("role selection is empty")
         for contribution in composition.contributors:
             record = contribution.record
-            if record.policy and targets & {
-                ref.target for ref in record.policy.targets
-            }:
+            if record.rules and targets & {ref.target for ref in record.rules.targets}:
                 raise ValueError(
-                    "policy-controlled targets must be revised through their policy"
+                    "rule-controlled targets must be revised through their rules"
                 )
             if contribution.id != self.id:
                 inherited = {ref.target for ref in record.unknowns or ()}

@@ -14,6 +14,7 @@ import hashlib
 import importlib.metadata
 import json
 import keyword
+import pprint
 import re
 import tempfile
 from pathlib import Path
@@ -37,7 +38,7 @@ PINNED = {
 # generated record and registers it in rangekeeper.schema.kinds; records decode
 # to the owner class. The records name owners only for type checking.
 OWNERS = {
-    "Distribution": "rangekeeper.finance._distribution",
+    "Distribution": "rangekeeper.profile",
     "Flow": "rangekeeper.flow",
     "Movement": "rangekeeper.flow",
     "Period": "rangekeeper.duration",
@@ -329,6 +330,39 @@ def check_slots(slots, reserved):
                 raise ValueError(f"Unsupported enum slot shape: {name}.{field}")
 
 
+def descriptions(loaded: Loaded):
+    """Return the LinkML description of every class and of each of its slots."""
+    return {
+        name: dict(
+            description=loaded.classes[name].description,
+            slots={
+                field.name: field.description
+                for field in loaded.view.class_induced_slots(name)
+            },
+        )
+        for name in sorted(loaded.classes)
+    }
+
+
+def check_descriptions(descriptions):
+    """Reject a class or slot without a description.
+
+    The descriptions become the record and property docstrings, so the
+    generator does not write a placeholder in their place.
+    """
+    missing = []
+    for name, described in descriptions.items():
+        if not str(described["description"] or "").strip():
+            missing.append(name)
+        missing += [
+            f"{name}.{field}"
+            for field, text in described["slots"].items()
+            if not str(text or "").strip()
+        ]
+    if missing:
+        raise ValueError("Missing LinkML descriptions: " + ", ".join(missing))
+
+
 def field_type(meta, argument=False):
     """Return the Python annotation of one field, as an argument or a property."""
     variants = []
@@ -376,7 +410,26 @@ def record_header(loaded: Loaded):
         "from collections.abc import Mapping",
         "from uuid import UUID",
         "from datetime import date as Date",
-        "from .runtime import Record, Unset, UNSET, FrozenJSONValue, JSONValue",
+        "from .runtime import (",
+        "    EMPTY,",
+        "    UNSET,",
+        "    FrozenJSONValue,",
+        "    JSONValue,",
+        "    Record,",
+        "    Unset,",
+        "    _decode_date,",
+        "    _decode_dates,",
+        "    _decode_enum,",
+        "    _decode_uuid,",
+        "    _decode_uuids,",
+        "    _encode_date,",
+        "    _encode_enum,",
+        "    _encode_many,",
+        "    _encode_record,",
+        "    _encode_uuid,",
+        "    _freeze,",
+        "    copy_json,",
+        ")",
         "",
         "if TYPE_CHECKING:",
         *[
@@ -397,15 +450,70 @@ def record_class(loaded: Loaded, name, fields):
     bases = [str(parent or "Record")]
     lines = [
         f"class {name}({', '.join(bases)}):",
-        f"    {str(loaded.classes[name].description or name)!r}",
+        f"    {str(loaded.classes[name].description)!r}",
         "    __slots__ = ()",
         f"    _kind = {name!r}",
+        "    _SLOTS = _freeze(",
+        *[
+            "        " + line
+            for line in pprint.pformat(fields, width=80, sort_dicts=False).splitlines()
+        ],
+        "    )",
         "",
     ]
     lines += record_init(fields)
     lines += record_replace(name, fields)
     lines += record_properties(loaded, name, fields)
     lines.append("")
+    return lines
+
+
+def encoder(meta):
+    """Return the expression that encodes the typed value ``v`` of one field.
+
+    The generator selects the encoder of each field; the runtime does not read
+    slot metadata to construct a record. A union field uses the general encoder.
+    """
+    options = meta["options"]
+    if meta["mapping"] or len(options) != 1:
+        return None
+    category, kind = options[0]["category"], options[0]["kind"]
+    if category == "uuid":
+        return "_encode_uuid({})"
+    if category == "enum":
+        return f"_encode_enum({{}}, {kind}, NAME)"
+    if category == "record":
+        return f"_encode_record({{}}, {kind}, NAME)"
+    if category == "primitive" and kind == "date":
+        return "_encode_date({})"
+    return "copy_json({})"
+
+
+def encode_lines(fields, target, *, constructor):
+    """Return the lines that encode each supplied field into ``target``.
+
+    A required constructor argument is always supplied; every other argument
+    may be UNSET, which leaves the field out.
+    """
+    lines = []
+    for field, meta in fields.items():
+        expression = encoder(meta)
+        if expression is None:
+            value = f"self._encode_field({field!r}, {field})"
+        else:
+            expression = expression.replace("NAME", repr(field))
+            value = (
+                f"_encode_many({field}, lambda v: {expression.format('v')})"
+                if meta["many"]
+                else expression.format(field)
+            )
+        if constructor and meta["required"]:
+            lines.append(f"        {target}[{field!r}] = {value}")
+        else:
+            lines += [
+                f"        if {field} is not UNSET:",
+                f"            {target}[{field!r}] = {value}",
+            ]
     return lines
 
 
@@ -421,9 +529,9 @@ def record_init(fields):
         "    def __init__(self, *,",
         *args,
         "    ) -> None:",
-        "        self._initialize({",
-        *[f"            {field!r}: {field}," for field in fields],
-        "        })",
+        "        data: dict[str, object] = {}",
+        *encode_lines(fields, "data", constructor=True),
+        "        self._set_data(data)",
         "",
     ]
 
@@ -431,7 +539,7 @@ def record_init(fields):
 def record_replace(name, fields):
     """Return the typed replace method of one record class.
 
-    Replacement uses the same field encoder and structural validation as
+    Replacement uses the same field encoders and structural validation as
     construction. UNSET preserves the existing field's presence and value.
     """
     lines = ["    def replace(self, *,"]
@@ -443,27 +551,64 @@ def record_replace(name, fields):
     return lines + [
         "    ) -> Self:",
         '        """Return a validated copy; omitted arguments preserve field presence and value."""',
-        "        return self._replace({",
-        *[f"            {field!r}: {field}," for field in fields],
-        "        })",
+        "        changes: dict[str, object] = {}",
+        *encode_lines(fields, "changes", constructor=False),
+        "        return self._replace(changes)",
         "",
     ]
 
 
+def decoder(field, meta):
+    """Return the expression that decodes one field from ``self._data``.
+
+    A missing collection reads as empty and a missing single value as None.
+    Records decode once and stay in the child cache. A union field uses the
+    general decoder.
+    """
+    options = meta["options"]
+    name = repr(field)
+    if meta["mapping"]:
+        return f"self._data.get({name}, EMPTY)"
+    if len(options) != 1:
+        return f"self._field({name})"
+    category, kind = options[0]["category"], options[0]["kind"]
+    many = meta["many"]
+    if category == "record":
+        return f"self._child({name}, {kind}, {many})"
+    if category == "uuid":
+        return (
+            f"_decode_uuids(self._data.get({name}, ()))"
+            if many
+            else (f"_decode_uuid(self._data.get({name}))")
+        )
+    if category == "enum":
+        return f"_decode_enum(self._data.get({name}), {kind})"
+    if category == "primitive" and kind == "date":
+        return (
+            f"_decode_dates(self._data.get({name}, ()))"
+            if many
+            else (f"_decode_date(self._data.get({name}))")
+        )
+    return f"self._data.get({name}, ())" if many else f"self._data.get({name})"
+
+
 def record_properties(loaded: Loaded, name, fields):
     """Return one read-only property for each field of one record class."""
-    descriptions = {
+    texts = {
         field.name: field.description for field in loaded.view.class_induced_slots(name)
     }
     lines = []
     for field, meta in fields.items():
         typ = field_type(meta)
-        doc = descriptions[field] or field.replace("_", " ").capitalize() + "."
+        value = decoder(field, meta)
+        # An opaque field reads its frozen value directly; a cast would be redundant.
+        if typ != "FrozenJSONValue | None":
+            value = f"cast({typ!r}, {value})"
         lines += [
             "    @property",
             f"    def {field}(self) -> {typ}:",
-            f"        {str(doc)!r}",
-            f"        return cast({typ!r}, self._field({field!r}))",
+            f"        {str(texts[field])!r}",
+            f"        return {value}",
             "",
         ]
     return lines
@@ -488,6 +633,14 @@ def records_source(loaded: Loaded, slots):
     lines += [
         "_TYPES = {",
         *[f"    {n!r}: {n}," for n in sorted(loaded.classes) if n not in loaded.opaque],
+        "}",
+        "",
+        "_SLOTS = {",
+        *[
+            f"    {n!r}: {n}._SLOTS,"
+            for n in sorted(loaded.classes)
+            if n not in loaded.opaque
+        ],
         "}",
         "",
         "_OWNERS = {",
@@ -529,6 +682,7 @@ def generate(*, native_module: bool = False):
         loaded = load(Path(directory), sources)
     metadata = slots(loaded)
     check_slots(metadata, reserved_names())
+    check_descriptions(descriptions(loaded))
     files = {
         "enums.py": enum_source(loaded.enums),
         "records.py": records_source(loaded, metadata),

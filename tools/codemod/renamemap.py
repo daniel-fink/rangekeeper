@@ -212,8 +212,13 @@ class RenameMap:
         for kind in _KINDS:
             for item in data.get(kind) or ():
                 entry = _entry(kind, item)
-                if kind in {"removed", "notes"}:
+                if kind == "notes":
                     kept[kind].append(entry)
+                elif kind == "removed":
+                    if entry.applies(include_pending=include_pending, allow=allowed):
+                        kept[kind].append(entry)
+                    else:
+                        skipped.append(entry)
                 elif (
                     entry.applies(include_pending=include_pending, allow=allowed)
                     and not entry.needs_name

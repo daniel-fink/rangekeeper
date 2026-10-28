@@ -1,8 +1,8 @@
 """Canonical Model revisions and schema-derived nested records."""
 
-from rangekeeper.finance._distribution import Distribution as Distribution
 from rangekeeper.model.model import Model as Model
 from rangekeeper.model.update import Update as Update
+from rangekeeper.profile import Distribution as Distribution
 from rangekeeper.schema.records import (
     Assembly as Assembly,
 )

@@ -10,6 +10,9 @@ it must not redeclare persistent fields. Read the
 
 Keep schema modules divided by domain responsibility. Change YAML descriptions
 at their source so generated record/property docstrings change with the contract.
+Every class and every slot needs a description: one sentence that states the
+meaning, and the units or presence rules when they matter. The generator stops
+on a missing description; it does not write a placeholder docstring.
 Generated records contain data only. The owner of a value type adds behaviour
 with a subclass that it registers in `rangekeeper.schema.kinds`; the subclass
 declares no fields. `OWNERS` in the generator names the owner module of each
@@ -27,7 +30,8 @@ value type.
 The generator is a set of small functions: it loads the bundle, derives the
 slot metadata, checks it, emits the records and writes the manifest. It stops
 when a slot name is a Python keyword or shadows a record method,
-or when one slot has more than one record type.
+when one slot has more than one record type, or when a class or slot has no
+description.
 
 A boolean LinkML slot annotation becomes a key of every slot in `slots.json`.
 `ANNOTATIONS` in the generator names the permitted annotations. `lineage` marks the
@@ -135,7 +139,7 @@ Use [records](../reference/records.md) for construction, presence, immutability
 and intrinsic methods; use [identity](../reference/identity.md) for revision scope
 and comparison. [Expressions](../reference/expressions.md),
 [calculations](../reference/calculations.md) and
-[scenarios and policies](../reference/scenarios-and-policies.md) own the domain
+[market paths and rules](../reference/market-paths-and-rules.md) own the domain
 meaning of their fields. [Run and storage](../reference/run-and-storage.md) owns
 publication and stored evidence.
 

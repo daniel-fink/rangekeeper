@@ -16,10 +16,12 @@ from uuid import UUID
 from rangekeeper import Model, Run, Specification
 from rangekeeper.io._document import require_revision, require_same, snapshot
 from rangekeeper.io.atomic import write_new
+from rangekeeper.io.geometry import find as find_provider
 from rangekeeper.model.geometry import safe_path
 from rangekeeper.run.validation import validate as validate_run
 from rangekeeper.schema.runtime import comparison_data
 from rangekeeper.schema.validation import slots_for
+from rangekeeper.shared import pointer
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
 from rangekeeper.shared.optional import requires
@@ -194,10 +196,6 @@ def _collect(model, documents, resolver, max_documents=1000, *, validated=False)
     return found
 
 
-def _pointer(value):
-    return str(value).replace("~", "~0").replace("/", "~1")
-
-
 def _option_type(option):
     category, kind = option["category"], option["kind"]
     if category == "primitive" and kind in ("decimal", "double", "integer"):
@@ -295,11 +293,8 @@ def _shred(model):
                 option = meta["options"][tag]
                 category, target = option["category"], option["kind"]
                 if category in ("record", "keyed"):
-                    child = (
-                        path
-                        + "/"
-                        + _pointer(name)
-                        + ("/" + _pointer(locator) if locator is not None else "")
+                    child = pointer.child(
+                        path, name, *(() if locator is None else (locator,))
                     )
                     visit(target, value, child, record_id or owner)
                     physical = child
@@ -473,7 +468,7 @@ def write(
         if pin is None:
             continue
         key = (pin["provider"], pin["format"], pin["format_version"])
-        adapter = provider_map.get(key, provider)
+        adapter = provider_map.get(key, provider) or find_provider(pin["provider"])
         if adapter is None:
             raise ValueError("Geometry needs an explicit provider")
         # Equal complete pins share bytes. A dependency can reuse a supplied pin.
@@ -625,11 +620,8 @@ class _DocumentReader:
                     if value is None:
                         raise ValueError("A present union needs its selected value")
                     if category in ("record", "keyed"):
-                        expected = (
-                            path
-                            + "/"
-                            + _pointer(name)
-                            + ("/" + _pointer(locator) if locator is not None else "")
+                        expected = pointer.child(
+                            path, name, *(() if locator is None else (locator,))
                         )
                         if value != expected:
                             raise ValueError(
@@ -897,7 +889,9 @@ class Reader(_Documents):
             if pin is None or digest(pin) in checked:
                 continue
             key = (pin["provider"], pin["format"], pin["format_version"])
-            provider = self.providers.get(key, self.provider)
+            provider = self.providers.get(key, self.provider) or find_provider(
+                pin["provider"]
+            )
             if provider is None:
                 raise ValueError("Unsupported Geometry: supply its explicit provider")
             provider.validate(self.geometry_path(document.id), document.geometry)

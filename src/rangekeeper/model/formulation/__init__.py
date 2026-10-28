@@ -4,7 +4,7 @@ from rangekeeper.shared.exports import lazy as _lazy
 
 from .authoring import declare
 
-_MODULES = {"account", "financial", "flow", "growth", "hierarchy"}
+_MODULES = {"financial", "flow", "growth", "hierarchy"}
 __all__ = ["declare", *sorted(_MODULES)]
 
 

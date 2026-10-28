@@ -22,11 +22,13 @@ classes:
       UUID references.
     attributes:
       taxonomies:
+        description: Taxonomies of this Model; codes are unique within the collection.
         range: Taxonomy
         multivalued: true
         inlined: true
         inlined_as_list: true
       measures:
+        description: Measures of this Model; codes are unique within the collection.
         range: Measure
         multivalued: true
         inlined: true

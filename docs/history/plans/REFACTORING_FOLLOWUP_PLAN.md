@@ -213,7 +213,7 @@ IDs across implementations or substitute an old fingerprint to satisfy a test.
 | Manifest | Required coordination |
 | --- | --- |
 | [Execution](../../../src/rangekeeper/execution/implementation.py) | Remove `_coordinates.py`, `model/_scenario.py`, `model/formulation/traversal.py` and `execution/evaluator.py`; retain their final owners in the correct common/compiler/evaluator groups |
-| [Scenario](../../../src/rangekeeper/model/scenario/implementation.py) | Remove `model/_scenario.py`; keep `scenarios/contracts.py` and Flow behavior. Replace the four deterministic dynamics paths with `calculations/dynamics.py`. Moving the coordinate helper into Flow changes an already included file. Sampling remains outside replay mathematics |
+| [Scenario](../../../src/rangekeeper/market/implementation.py) | Remove `model/_scenario.py`; keep `scenarios/contracts.py` and Flow behavior. Replace the four deterministic dynamics paths with `calculations/dynamics.py`. Moving the coordinate helper into Flow changes an already included file. Sampling remains outside replay mathematics |
 | [Workflow](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/implementation.py) | Remove stale `_artifacts.py` and adapter-error path rules; include moved provenance/computation. Preserve full installed-code audit separately from computation identity and presentation exclusions |
 
 Keep current-format historical results readable. Replay must report unavailable
@@ -332,7 +332,7 @@ the root helper is absent, and explicit order/identity tests pass.
 
 ## RF-027 Scenario contracts and sampling
 
-**Problem and evidence.** [`model/_scenario.py`](../../../src/rangekeeper/model/scenario/contracts.py)
+**Problem and evidence.** [`model/_scenario.py`](../../../src/rangekeeper/market/contracts.py)
 owns method/capture conformance but already imports `scenarios.contracts`.
 `market.captured_inputs` repeats content checks certified by construction of its
 immutable Model. `calculations/dynamics/noise.py` only forwards to Distribution;
@@ -537,7 +537,7 @@ record-boundary tests.
 **Problem and evidence.** After RF-027 removes the noise wrapper, the deterministic
 dynamics package contains `trend.py`, `volatility.py`, `cyclicality.py`, `shock.py`
 and a one-line `__init__.py`: about 130 lines in five files.
-[`scenarios/_paths.py`](../../../src/rangekeeper/model/scenario/_paths.py) is their only
+[`scenarios/_paths.py`](../../../src/rangekeeper/market/_paths.py) is their only
 production consumer. One module can expose the same small family of operations
 without the extra navigation and import paths.
 

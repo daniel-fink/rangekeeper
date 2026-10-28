@@ -112,6 +112,12 @@ MAP = {
             "replacement": "Flow.resample",
             "status": "agreed",
         },
+        {
+            "name": "pkg.calc.series.later",
+            "replacement": "a later release",
+            "status": "agreed",
+            "requires": ["refactor"],
+        },
     ],
 }
 
@@ -361,7 +367,13 @@ def test_map_keeps_agreed_and_draft_entries():
     skipped = {
         getattr(e, "old", "") or getattr(e, "name", "") for e in rename_map.skipped
     }
-    assert skipped == {"pkg.calc.growth", "calculate_pv", "start_inclusive"}
+    assert skipped == {
+        "pkg.calc.growth",
+        "calculate_pv",
+        "start_inclusive",
+        "pkg.calc.series.later",
+    }
+    assert [r.name for r in rename_map.removed] == ["pkg.calc.series.resample"]
     assert rename_map.module("pkg.calc.series.x") == "pkg.flow.series.x"
     assert rename_map.module("pkg.calc.money") == "pkg.finance.money"
     assert rename_map.module("pkg.calculations") == "pkg.calculations"
@@ -553,9 +565,9 @@ def test_cli_reports_and_checks(project: Path, tmp_path: Path, capsys):
 def test_repository_map_is_valid_and_rendered():
     data = yaml.safe_load(render.MAP.read_text())
     rename_map = RenameMap.from_data(data)
-    pending = [e for e in rename_map.skipped if e.status == "pending"]
-    assert pending and all("#255" in e.pending for e in pending)
-    assert all("#255" in n.pending for n in rename_map.notes)
+    # #255 decided every entry that waited for it (#93).
+    assert not [e for e in rename_map.skipped if e.status == "pending"]
+    assert all(n.status == "agreed" and n.source for n in rename_map.notes)
     assert render.main(["--check"]) == 0
 
 

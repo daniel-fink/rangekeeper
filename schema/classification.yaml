@@ -47,6 +47,7 @@ classes:
     description: A named, single-root hierarchy of Classifications.
     attributes:
       id:
+        description: Stable identity of the Taxonomy across Model revisions.
         range: UUID
         required: true
         identifier: true
@@ -55,10 +56,12 @@ classes:
         range: Code
         required: true
       name:
+        description: Nonblank human-readable name.
         range: string
         required: true
         pattern: \S
       definition:
+        description: Optional explanatory text.
         range: string
       classifications:
         description: Identified Classifications belonging to this Taxonomy; codes are unique within the

@@ -11,14 +11,14 @@ from rangekeeper.model import Model
 from rangekeeper.run import Run, validate
 from rangekeeper.schema.validation import document_version
 from rangekeeper.specification import Specification
-from rangekeeper.specification.policy import Policy, PolicyCapabilityError, evaluate
+from rangekeeper.specification.rule import RuleCapabilityError, RuleSet, evaluate
 
 
 def metadata(kind):
     return {"id": str(uuid4()), "schema_version": document_version(kind)}
 
 
-def publication(model_data, output_data, *, policy=None, decisions=None):
+def publication(model_data, output_data, *, rules=None, decisions=None):
     """Construct reported evidence without invoking an evaluator or solver."""
     model = Model.from_data(model_data)
     output_data["metadata"] = {
@@ -27,8 +27,8 @@ def publication(model_data, output_data, *, policy=None, decisions=None):
     }
     output = Model.from_data(output_data)
     spec_data = {"metadata": metadata("Specification"), "model": str(model.id)}
-    if policy is not None:
-        spec_data["policy"] = policy
+    if rules is not None:
+        spec_data["rules"] = rules
     spec = Specification.from_data(spec_data)
     store = MemoryStore()
     for item in (model, output, spec):
@@ -46,7 +46,7 @@ def publication(model_data, output_data, *, policy=None, decisions=None):
         },
     }
     if decisions is not None:
-        report["outcomes"] = decisions
+        report["rule_evidence"] = decisions
     run = Run.from_data(
         {
             "metadata": metadata("Run"),
@@ -129,7 +129,7 @@ def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidenc
             ]
         },
     }
-    policy = {
+    rules = {
         "id": str(uuid4()),
         "targets": [reference],
         "decisions": [
@@ -146,8 +146,8 @@ def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidenc
             }
         ],
     }
-    with pytest.raises(PolicyCapabilityError, match="earlier decision"):
-        evaluate(Policy.from_data(policy), model=Model.from_data(data))
+    with pytest.raises(RuleCapabilityError, match="earlier decision"):
+        evaluate(RuleSet.from_data(rules), model=Model.from_data(data))
     forged = {
         "decision": point,
         "at": at,
@@ -162,7 +162,7 @@ def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidenc
         "assignments": [{"target": reference, "quantity": quantity}],
         "terminated": False,
     }
-    run, resolver = publication(data, deepcopy(data), policy=policy, decisions=[forged])
+    run, resolver = publication(data, deepcopy(data), rules=rules, decisions=[forged])
     if not published:
         raw = run.to_data()
         raw.pop("outputs")
@@ -171,7 +171,7 @@ def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidenc
             {
                 "severity": "info",
                 "code": "fixture",
-                "message": "Recorded policy trace without publication",
+                "message": "Recorded rules trace without publication",
             }
         ]
         run = Run.from_data(raw)
@@ -213,7 +213,7 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
 
 def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancellation():
     from rangekeeper.execution.acceptance import _comparisons
-    from rangekeeper.execution.errors import UnsupportedProblem
+    from rangekeeper.execution.errors import UnsupportedError
     from rangekeeper.model import Expression, Reference
     from rangekeeper.model.expression import ExpressionKind, Operator
     from rangekeeper.quantity import Quantity, default_units
@@ -239,7 +239,7 @@ def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancel
     )
     assert relation == "less_than" and exact and left.magnitude < right.magnitude
     cancelled = predicate.replace(operands=(ref, ref.replace(id=uuid4())))
-    with pytest.raises(UnsupportedProblem, match="fixed"):
+    with pytest.raises(UnsupportedError, match="fixed"):
         tuple(_comparisons(cancelled, values, units=default_units))
     relation, left, right, exact = next(
         _comparisons(cancelled, values, units=default_units, fixed={target})
@@ -255,19 +255,19 @@ def test_shared_numerical_quantity_rejects_nonfinite_boolean_and_complex(number)
         finite_quantity(number, "dimensionless")
 
 
-def test_policy_result_normalizes_and_checks_outcomes():
+def test_rule_result_normalizes_and_checks_outcomes():
     from dataclasses import FrozenInstanceError
 
     from rangekeeper.model import Reference
     from rangekeeper.quantity import Quantity
     from rangekeeper.specification import Assignment
-    from rangekeeper.specification.policy import DecisionOutcome, PolicyResult
+    from rangekeeper.specification.rule import RuleEvidence, RuleResult
 
     assignment = Assignment(
         target=Reference(target=uuid4()),
         quantity=Quantity(magnitude=1, units="dimensionless"),
     )
-    outcome = DecisionOutcome(
+    outcome = RuleEvidence(
         decision=uuid4(),
         at=date(2027, 1, 1),
         observations=(),
@@ -275,13 +275,13 @@ def test_policy_result_normalizes_and_checks_outcomes():
         terminated=False,
     )
     supplied = [outcome]
-    result = PolicyResult(supplied)
+    result = RuleResult(supplied)
     supplied.clear()
-    assert result.outcomes == (outcome,) and result.assignments == (assignment,)
+    assert result.evidence == (outcome,) and result.assignments == (assignment,)
     with pytest.raises(FrozenInstanceError):
-        result.outcomes = ()
+        result.evidence = ()
     with pytest.raises(TypeError):
-        PolicyResult([assignment])
+        RuleResult([assignment])
 
 
 def test_execution_manifest_tracks_actual_currency_catalogue(monkeypatch):

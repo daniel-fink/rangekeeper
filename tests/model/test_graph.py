@@ -7,6 +7,7 @@ from uuid import uuid4
 
 import pytest
 
+from rangekeeper.errors import Code
 from rangekeeper.io import json as codec
 from rangekeeper.model import (
     Assembly,
@@ -267,7 +268,9 @@ def test_nested_membership_deduplicates_but_hierarchy_rejects_shared_child():
     view = View(model, entities=(outer.id, *(x.id for x in members)), relationships=())
     with pytest.raises(HierarchyError) as error:
         Hierarchy.from_membership(view, root=outer.id)
-    assert error.value.code == "multiple_parents" and error.value.ids == (b.id,)
+    assert error.value.code is Code.HIERARCHY_MULTIPLE_PARENTS and error.value.ids == (
+        b.id,
+    )
     selected = View(
         model, entities=(outer.id, root.id, a.id, b.id, c.id), relationships=()
     )
@@ -280,11 +283,11 @@ def test_nested_membership_deduplicates_but_hierarchy_rejects_shared_child():
 @pytest.mark.parametrize(
     "case,code",
     [
-        ("empty", "empty"),
-        ("disconnected", "disconnected"),
-        ("cycle", "cycle"),
-        ("parallel", "parallel_edges"),
-        ("multiple", "multiple_parents"),
+        ("empty", Code.HIERARCHY_EMPTY),
+        ("disconnected", Code.HIERARCHY_DISCONNECTED),
+        ("cycle", Code.HIERARCHY_CYCLE),
+        ("parallel", Code.HIERARCHY_PARALLEL_EDGES),
+        ("multiple", Code.HIERARCHY_MULTIPLE_PARENTS),
     ],
 )
 def test_hierarchy_rejects_ambiguous_topology(case, code):
@@ -304,7 +307,7 @@ def test_hierarchy_rejects_ambiguous_topology(case, code):
         view = View(model)
     with pytest.raises(HierarchyError) as error:
         Hierarchy.from_relationships(view)
-    assert error.value.code == code
+    assert error.value.code is code
     assert not view.is_arborescence
 
 
@@ -561,7 +564,7 @@ def test_membership_root_must_be_an_explicit_selected_uuid():
         Hierarchy.from_membership(view, root=None)
     with pytest.raises(HierarchyError) as error:
         Hierarchy.from_membership(view, root=a.id)
-    assert error.value.code == "root_mismatch"
+    assert error.value.code is Code.HIERARCHY_ROOT_MISMATCH
 
 
 def test_aggregation_requires_a_deliberate_parent_contributor_policy():

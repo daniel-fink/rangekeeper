@@ -7,6 +7,7 @@ from uuid import uuid4
 import pytest
 import yaml
 
+from rangekeeper.errors import Code
 from rangekeeper.model import Formulation, Metadata, Model, Reference, Value, ValueKind
 from rangekeeper.quantity import Quantity
 from rangekeeper.shared.errors import (
@@ -180,7 +181,11 @@ def test_partial_roles_do_not_become_complete_from_recorded_values():
     common = Specification.from_data(load("specification-common"))
     resolver = Resolver(model)
     report = common.compose(resolver=resolver).validate(resolver=resolver)
-    assert not report.valid and "missing solve role" in report.issues[0].message
+    assert not report.valid
+    issue = report.issues[0]
+    assert issue.code is Code.ROLE_MISSING
+    assert issue.targets and len(issue.values["keys"]) == len(issue.targets)
+    assert all(str(target) in issue.message for target in issue.targets)
 
 
 def test_batch_is_not_flattened_or_included_as_one_investigation():
@@ -273,9 +278,13 @@ def test_locally_known_role_target_cannot_masquerade_as_value():
     with pytest.raises(ValidationError) as failure:
         spec(formulations=(formulation,), unknowns=(Reference(target=formulation.id),))
     issue = failure.value.report.issues[0]
-    assert issue.code == "reference.kind"
+    assert issue.code is Code.REFERENCE_KIND
     assert issue.path == "/unknowns/0/target"
-    assert all(name in issue.message for name in ("Formulation", "Value", "Movement"))
+    assert issue.targets == (formulation.id,)
+    assert dict(issue.values) == {
+        "expected": ("Value", "Movement"),
+        "actual": "Formulation",
+    }
 
 
 def test_closed_specification_fields_are_the_schema_slots():
