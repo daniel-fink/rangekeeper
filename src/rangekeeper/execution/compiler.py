@@ -12,11 +12,8 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper.execution.errors import NumericalError, UnsupportedProblem
+from rangekeeper.execution.errors import NumericalError, UnsupportedError
 from rangekeeper.execution.preparation import Assertion, Prepared
-from rangekeeper.model.expression.evaluation import (
-    UnsupportedExpression,
-)
 from rangekeeper.model.expression.evaluation import (
     evaluate as numerical,
 )
@@ -81,7 +78,7 @@ class Compiler:
             Quantity(magnitude=1, units=value.units), to=units
         )
         if zero.magnitude != 0:
-            raise UnsupportedProblem("offset unit arithmetic is not supported")
+            raise UnsupportedError("offset unit arithmetic is not supported")
         return self.scale(value, float(one.magnitude), units)
 
     @staticmethod
@@ -115,7 +112,7 @@ class Compiler:
                 return _affine(float(assigned.magnitude), {}, assigned.units)
             if token in self.prepared.unknowns:
                 return _affine(0, {token: 1}, self.prepared.value_units[token])
-            raise UnsupportedProblem("expression reference has no explicit solve role")
+            raise UnsupportedError("expression reference has no explicit solve role")
         if node.kind == ExpressionKind.UNARY and node.operator == Operator.NEGATE:
             assert node.operand is not None
             value = self.expression(node.operand)
@@ -127,7 +124,7 @@ class Compiler:
             Operator.DIVIDE,
             Operator.POWER,
         }:
-            raise UnsupportedProblem(
+            raise UnsupportedError(
                 f"unsupported scalar expression: {node.kind}/{node.operator}"
             )
         assert node.operands is not None
@@ -136,7 +133,7 @@ class Compiler:
             return self.add(left, right, 1 if node.operator == Operator.ADD else -1)
         if node.operator == Operator.MULTIPLY:
             if left.coefficients and right.coefficients:
-                raise UnsupportedProblem(
+                raise UnsupportedError(
                     "multiplication of two unknown expressions is nonlinear"
                 )
             unit = f"({left.units}) * ({right.units})"
@@ -147,9 +144,7 @@ class Compiler:
             )
         if node.operator == Operator.DIVIDE:
             if right.coefficients:
-                raise UnsupportedProblem(
-                    "division by an unknown expression is nonlinear"
-                )
+                raise UnsupportedError("division by an unknown expression is nonlinear")
             if right.constant == 0:
                 raise NumericalError("division by zero in declared expression")
             return self.scale(
@@ -157,13 +152,13 @@ class Compiler:
             )
         right = self.convert(right, "dimensionless")
         if right.coefficients:
-            raise UnsupportedProblem("an unknown exponent is outside affine execution")
+            raise UnsupportedError("an unknown exponent is outside affine execution")
         if right.constant == 1:
             return left
         if right.constant == 0:
             return _affine(1, {}, "dimensionless")
         if left.coefficients:
-            raise UnsupportedProblem("a nontrivial power of an unknown is nonlinear")
+            raise UnsupportedError("a nontrivial power of an unknown is nonlinear")
         try:
             magnitude = float(left.constant**right.constant)
         except (ValueError, TypeError, OverflowError, ZeroDivisionError) as error:
@@ -190,7 +185,7 @@ class Compiler:
             Operator.GREATER_THAN,
         ):
             if node.operands is None or len(node.operands) != 2:
-                raise UnsupportedProblem("comparison requires two operands")
+                raise UnsupportedError("comparison requires two operands")
             referenced = {
                 child.target.target
                 for child, _, _ in walk(node)
@@ -199,7 +194,7 @@ class Compiler:
                 and child.target is not None
             }
             if not referenced <= self.prepared.assignments.keys():
-                raise UnsupportedProblem(
+                raise UnsupportedError(
                     "strict predicates require only fixed assigned or literal operands"
                 )
             try:
@@ -216,9 +211,7 @@ class Compiler:
                     ),
                     to=left.units,
                 )
-            except UnsupportedExpression as error:
-                raise UnsupportedProblem(str(error)) from error
-            except UnitError:
+            except (UnsupportedError, UnitError):
                 raise
             except (ArithmeticError, TypeError, ValueError) as error:
                 raise NumericalError(str(error)) from error
@@ -226,14 +219,14 @@ class Compiler:
                 operator.lt if node.operator is Operator.LESS_THAN else operator.gt
             )
             if not compare(left.magnitude, right.magnitude):
-                raise UnsupportedProblem("fixed strict predicate is false")
+                raise UnsupportedError("fixed strict predicate is false")
             return ()
         if node.kind != ExpressionKind.BINARY or node.operator not in {
             Operator.EQUAL,
             Operator.LESS_THAN_OR_EQUAL,
             Operator.GREATER_THAN_OR_EQUAL,
         }:
-            raise UnsupportedProblem(
+            raise UnsupportedError(
                 "only equality, nonstrict bounds and conjunctions are supported"
             )
         assert node.operands is not None
@@ -244,7 +237,7 @@ class Compiler:
         scale = max((1.0, *(abs(v) for v in residual.coefficients.values())))
         scaled = [abs(v / scale) for v in residual.coefficients.values()]
         if any(v <= 1e-12 for v in scaled) or abs(residual.constant / scale) >= 1e19:
-            raise UnsupportedProblem(
+            raise UnsupportedError(
                 "affine row exceeds the supported HiGHS numerical scaling range"
             )
         return (Row(item, node.operator.value, residual, scale),)
@@ -264,12 +257,12 @@ def compile(
         try:
             rows.extend(compiler.assertion(item))
             if constraint_limit is not None and len(rows) > constraint_limit:
-                raise UnsupportedProblem(
+                raise UnsupportedError(
                     f"expanded constraint limit {constraint_limit} exceeded",
                     code=Code.CONSTRAINT_LIMIT,
                 )
-        except UnsupportedProblem as error:
-            raise UnsupportedProblem(
+        except UnsupportedError as error:
+            raise UnsupportedError(
                 str(error),
                 code=error.code,
                 document=item.document,

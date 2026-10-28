@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper.execution.errors import UnsupportedProblem
+from rangekeeper.execution.errors import UnsupportedError
 from rangekeeper.flow import Movement
 from rangekeeper.model import Model
 from rangekeeper.model.scope import target_units
@@ -72,7 +72,7 @@ def prepare(
     units = model.unit_system if units is None else units
     requirements = composition.requirements
     if requirements.objectives:
-        raise UnsupportedProblem(
+        raise UnsupportedError(
             "ordered optimization objectives are not supported by scalar feasibility execution"
         )
     expressions = {
@@ -110,7 +110,7 @@ def prepare(
             for point in requirements.rules.decisions
             for binding in point.observations
         ):
-            raise UnsupportedProblem(
+            raise UnsupportedError(
                 "rule observation targets an endogenous unknown; sequential numerical rules are unsupported"
             )
         from rangekeeper.specification.rule.evaluation import evaluate
@@ -120,12 +120,12 @@ def prepare(
             rule_result = evaluate(requirements.rules, model=model, units=units)
             checkpoint()
         except RuleCapabilityError as error:
-            raise UnsupportedProblem(str(error)) from error
+            raise UnsupportedError(str(error)) from error
         rule_evidence = rule_result.evidence
         rule_assignments = rule_result.assignments
         role_references.extend(a.target for a in rule_assignments)
     if any(ref.target not in model_values for ref in role_references):
-        raise UnsupportedProblem(
+        raise UnsupportedError(
             "Specification-local Value publication requires a later adapter"
         )
     references = {ref.target: ref for ref in role_references}

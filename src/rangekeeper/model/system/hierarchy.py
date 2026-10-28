@@ -10,6 +10,7 @@ from rangekeeper.model import Assembly
 from rangekeeper.model.system.errors import HierarchyError
 from rangekeeper.model.system.view import View
 from rangekeeper.shared.arguments import require_uuid
+from rangekeeper.shared.codes import Code
 
 
 @unique
@@ -52,7 +53,9 @@ class Hierarchy:
             raise TypeError("view must be a Model-backed View")
         ids = tuple(entity.id for entity in view.entities)
         if not ids:
-            raise HierarchyError("empty", "a hierarchy requires at least one Entity")
+            raise HierarchyError(
+                Code.HIERARCHY_EMPTY, "a hierarchy requires at least one Entity"
+            )
         members = set(ids)
         if membership_root is None:
             edges = tuple((edge.source, edge.target) for edge in view.relationships)
@@ -70,13 +73,13 @@ class Hierarchy:
         for source, target in edges:
             if target in unordered[source]:
                 raise HierarchyError(
-                    "parallel_edges",
+                    Code.HIERARCHY_PARALLEL_EDGES,
                     "two edges identify the same parent/child pair",
                     ids=(source, target),
                 )
             if parents[target] is not None:
                 raise HierarchyError(
-                    "multiple_parents",
+                    Code.HIERARCHY_MULTIPLE_PARENTS,
                     "a selected node has more than one parent",
                     ids=(target,),
                 )
@@ -97,16 +100,18 @@ class Hierarchy:
             pending.extend(children[node])
         if len(reached) != len(ids):
             raise HierarchyError(
-                "cycle",
+                Code.HIERARCHY_CYCLE,
                 "selected edges contain a cycle",
                 ids=(id for id in ids if id not in reached),
             )
         if len(roots) != 1:
-            raise HierarchyError("disconnected", "expected exactly one root", ids=roots)
+            raise HierarchyError(
+                Code.HIERARCHY_DISCONNECTED, "expected exactly one root", ids=roots
+            )
         root = roots[0]
         if membership_root is not None and root != membership_root:
             raise HierarchyError(
-                "root_mismatch",
+                Code.HIERARCHY_ROOT_MISMATCH,
                 "requested membership root is not the selected root",
                 ids=(membership_root, root),
             )

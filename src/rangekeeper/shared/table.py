@@ -7,9 +7,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
-
-class TableError(ValueError):
-    """Invalid table columns, row shape, or duplicate row identity."""
+from rangekeeper.shared.errors import TableError
 
 
 @dataclass(frozen=True, slots=True)

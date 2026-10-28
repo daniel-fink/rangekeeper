@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.execution.acceptance import _comparisons
-from rangekeeper.execution.errors import NumericalError, UnsupportedProblem
+from rangekeeper.execution.errors import NumericalError, UnsupportedError
 from rangekeeper.model import Expression, Reference
 from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.model.expression.evaluation import evaluate as numerical
@@ -187,7 +187,7 @@ def test_conjunction_diagnostics_preserve_expression_order():
         (relation, left.magnitude - right.magnitude)
         for relation, left, right, _ in results
     ] == [("equal", 1), ("less_than_or_equal", -2)]
-    with pytest.raises(UnsupportedProblem):
+    with pytest.raises(UnsupportedError):
         tuple(_comparisons(literal(1), {}, units=default_units))
 
 
