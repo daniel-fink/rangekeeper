@@ -1,36 +1,33 @@
-"""Intrinsic Flow and Movement operations; Stream coordinates several Flows."""
+"""Movement and Flow: the value types of dated and period quantities.
+
+Stream coordinates several Flows.
+"""
 
 from __future__ import annotations
 
 import math
 from collections.abc import Sequence
 from datetime import date
-from enum import Enum, unique
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from rangekeeper.flow._options import MissingValueHandling
+from rangekeeper.schema import records
+from rangekeeper.schema.kinds import register
 from rangekeeper.schema.runtime import UNSET
 
 if TYPE_CHECKING:
+    from rangekeeper.duration import Period
     from rangekeeper.duration.calendar import DayCount
     from rangekeeper.duration.period import PeriodTiming
     from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
     from rangekeeper.model.display import StreamTable
     from rangekeeper.quantity import UnitSystem
-    from rangekeeper.schema.records import Flow, Movement, Period, Quantity
+    from rangekeeper.schema.records import Quantity
 
 
-@unique
-class MissingValueHandling(Enum):
-    """Treatment of unresolved magnitudes: raise, propagate None, skip or use zero."""
-
-    ERROR = "error"
-    PROPAGATE = "propagate"
-    SKIP = "skip"
-    ZERO = "zero"
-
-
-class MovementBehavior:
+@register
+class Movement(records.Movement):
     """Coordinate and numerical access without changing recorded evidence."""
 
     __slots__ = ()
@@ -38,7 +35,7 @@ class MovementBehavior:
     @property
     def number(self) -> float:
         """Read a finite magnitude; unresolved data must be handled before arithmetic."""
-        movement = cast("Movement", self)
+        movement = self
         value = movement.magnitude
         if value is None or not math.isfinite(value):
             raise ValueError(f"unresolved/nonfinite movement: {movement.key}")
@@ -47,7 +44,7 @@ class MovementBehavior:
     @property
     def coordinate(self) -> tuple:
         """Return the matching coordinate independently of UUID identity."""
-        movement = cast("Movement", self)
+        movement = self
         if movement.period is not None:
             return (
                 "period",
@@ -65,7 +62,7 @@ class MovementBehavior:
         Recorded dates take precedence over the fallback convention. No movement is
         changed, and payment outside its coverage period is permitted.
         """
-        movement = cast("Movement", self)
+        movement = self
         from rangekeeper.duration.calendar import PeriodTiming, require_date
 
         if timing is not None and not isinstance(timing, PeriodTiming):
@@ -79,7 +76,8 @@ class MovementBehavior:
         return movement.period.resolve(timing=timing)
 
 
-class FlowBehavior:
+@register
+class Flow(records.Flow):
     """Validate or transform one immutable Flow, preserving coordinate meaning."""
 
     __slots__ = ()
@@ -98,7 +96,7 @@ class FlowBehavior:
         """
         from rangekeeper.flow import Stream
 
-        return Stream({"Flow" if name is None else name: cast("Flow", self)}).display(
+        return Stream({"Flow" if name is None else name: self}).display(
             transpose=transpose,
             precision=precision,
         )
@@ -112,7 +110,7 @@ class FlowBehavior:
         Return the recorded Movements without reading magnitudes or changing IDs.
         The caller selects any alignment, ordering, or missing-value policy.
         """
-        flow = cast("Flow", self)
+        flow = self
         result = {}
         for movement in flow.movements:
             coordinate = movement.coordinate
@@ -131,7 +129,7 @@ class FlowBehavior:
         All movements in one Flow use either periods or dated events. Period order uses
         coverage, not optional payment dates; those dates may lie outside the period.
         """
-        flow = cast("Flow", self)
+        flow = self
 
         from rangekeeper.duration.calendar import require_date
         from rangekeeper.quantity import default_units
@@ -189,9 +187,8 @@ class FlowBehavior:
         ids: Sequence[UUID] | None = None,
     ) -> Flow:
         """Construct dated entries with supplied or fresh IDs; repeated dates need distinct keys."""
-        factory = cast("type[Flow]", cls)
+        factory = cls
         from rangekeeper.duration.calendar import require_date
-        from rangekeeper.schema.records import Movement
 
         if (
             len(dates) != len(magnitudes)
@@ -242,9 +239,8 @@ class FlowBehavior:
         dates remain absent; valuation and presentation can resolve a convention later.
         Omitted IDs are generated. Omitted matching keys remain absent.
         """
-        factory = cast("type[Flow]", cls)
+        factory = cls
         from rangekeeper.duration.calendar import require_date
-        from rangekeeper.schema.records import Movement
 
         if (
             len(periods) != len(magnitudes)
@@ -281,14 +277,14 @@ class FlowBehavior:
         Dates, matching keys, magnitudes and evidence remain unchanged. Revision
         updates use replace() instead, preserving the existing identities.
         """
-        flow = cast("Flow", self)
+        flow = self
         return flow.replace(
             movements=tuple(m.replace(id=uuid4()) for m in flow.movements)
         ).check()
 
     def convert(self, *, units: str, unit_system: UnitSystem | None = None) -> Flow:
         """Convert all known movements together; retain unresolved movements and evidence."""
-        flow = cast("Flow", self)
+        flow = self
         from rangekeeper.quantity import default_units
         from rangekeeper.schema.records import Quantity
 
@@ -314,7 +310,7 @@ class FlowBehavior:
 
     def scale(self, factor: float) -> Flow:
         """Create independent scaled movements with fresh IDs, retaining missing amounts."""
-        flow = cast("Flow", self)
+        flow = self
         if type(factor) not in (int, float) or not math.isfinite(factor):
             raise ValueError("factor must be finite")
         return flow.replace(
@@ -329,7 +325,7 @@ class FlowBehavior:
 
     def negate(self) -> Flow:
         """Reverse each known magnitude while keeping unresolved entries and Claims."""
-        flow = cast("Flow", self)
+        flow = self
         return flow.scale(-1)
 
     def total(
@@ -340,7 +336,7 @@ class FlowBehavior:
         This is a numerical sum. The model determines whether summation expresses
         the intended quantity; no balance, rate or other interpretation is inferred.
         """
-        flow = cast("Flow", self)
+        flow = self
         from rangekeeper.schema.records import Quantity
 
         flow.check()
@@ -366,8 +362,8 @@ class FlowBehavior:
         Partial period overlap raises ValueError; trimming must not silently allocate
         a period quantity or substitute an assumed payment date for its coverage.
         """
-        flow = cast("Flow", self)
-        from rangekeeper.schema.records import Period
+        flow = self
+        from rangekeeper.duration import Period
 
         if not isinstance(span, Period):
             raise TypeError("span must be a Period or Span")
@@ -402,7 +398,7 @@ class FlowBehavior:
 
         ``Stream.resample`` takes the same arguments and also reports coverage.
         """
-        flow = cast("Flow", self)
+        flow = self
         from rangekeeper.flow._batch import Batch
 
         return (
@@ -426,7 +422,7 @@ class FlowBehavior:
         A day-count convention uses period boundaries and a quantity measured in years.
         Calling this operation supplies the integration rule; the Flow has no rate kind.
         """
-        flow = cast("Flow", self)
+        flow = self
         from rangekeeper.duration.calendar import DayCount, year_fraction
         from rangekeeper.quantity import default_units
         from rangekeeper.schema.records import Quantity
@@ -493,7 +489,7 @@ class FlowBehavior:
                 if default_units.compatible(flow.units, "dimensionless")
                 else flow
             )
-            for flow in (cast("Flow", self), *others)
+            for flow in (self, *others)
         )
         aligned, _ = align(
             flows, join=AlignmentJoin.EXACT, missing=MissingValueHandling.ERROR
@@ -513,7 +509,7 @@ class FlowBehavior:
 
     def clean(self, *, remove_zeroes: bool = False) -> Flow:
         """Explicitly remove unresolved movements, and optionally zeroes; do not impute data."""
-        flow = cast("Flow", self)
+        flow = self
         return flow.replace(
             movements=tuple(
                 s
@@ -528,7 +524,7 @@ class FlowBehavior:
         The first movement is unresolved unless the caller supplies an initial value in
         the Flow's units. The model determines what the changes represent.
         """
-        flow = cast("Flow", self)
+        flow = self
 
         previous, movements = initial, []
         for movement in flow.movements:
@@ -554,9 +550,8 @@ class FlowBehavior:
         already records a date. This explicit loss of temporal detail does not mutate
         the source Flow. Empty input is returned unchanged.
         """
-        flow = cast("Flow", self)
+        flow = self
         from rangekeeper.duration.calendar import PeriodTiming, require_date
-        from rangekeeper.schema.records import Movement
 
         if timing is not None and not isinstance(timing, PeriodTiming):
             raise TypeError("timing must be a PeriodTiming")
@@ -592,7 +587,7 @@ class FlowBehavior:
         Unresolved movements and, by default, zeroes are excluded. Period boundaries
         describe coverage even when independent payment dates are recorded.
         """
-        flow = cast("Flow", self)
+        flow = self
         flow.check()
         selected = [
             s
@@ -608,7 +603,7 @@ class FlowBehavior:
 
     def trim_empty(self) -> Flow:
         """Remove leading/trailing zero or unresolved rows, retaining interior gaps."""
-        flow = cast("Flow", self)
+        flow = self
         flow.check()
         selected = [
             i

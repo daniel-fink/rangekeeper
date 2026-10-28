@@ -1,7 +1,7 @@
 {
   "artifacts": {
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "records.py": "7a24aec1f6f34bedf02564bd02c9a012b08d99e9cfd2dd0c2082076fea399597",
+    "records.py": "b56759437c907ec85fae1887dcc920fed6cb3330b2262a41815c384fe7df0142",
     "schema.json": "bf142c181b35980da584bef54538031f10424ee9eb2d8ed67b4ac39e46abc3a4",
     "slots.json": "abd85e5880edcd4263facb8f11d9dd8c741cb4ae0a038e080fe08dadaff2169c"
   },
@@ -127,7 +127,7 @@
     "schema/settings.yaml": "857cfb5fa49ee77e8469f51a3d188714fde401352c23922b055fd8d107f10e96",
     "schema/specification.yaml": "e4e0ccd074b6f610543a1253b4590cae9b92cddd93060377fa101c9b0b1f229b",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "a073d14b1e9403f173b5078e8e9f58bacbb33e420ba175dac3e03aa89c981f12",
+    "tools/schema/generate.py": "02cca5ec907c0301458332169cff8e62e9351d4ff1dfe6e8847c27e17c56e291",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"
   }
 }

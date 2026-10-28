@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
+from rangekeeper.flow import Movement
 from rangekeeper.model.update import Update
 from rangekeeper.quantity import UnitSystem, default_units
 from rangekeeper.schema.index import RecordIndex, RecordLocation, record_at
@@ -16,7 +17,6 @@ from rangekeeper.schema.records import (
     Formulation,
     Geometry,
     Metadata,
-    Movement,
     Provenance,
     Reference,
     Relationship,

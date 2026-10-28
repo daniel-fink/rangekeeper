@@ -17,13 +17,13 @@
     "geometry": "property",
     "id": "property",
     "metadata": "property",
-    "movement": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Movement",
+    "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
     "provenance": "property",
     "record_at": "method (self, path: str) -> rangekeeper.schema.index.RecordLocation",
     "record_by_id": "method (self, id: uuid.UUID) -> rangekeeper.schema.index.RecordLocation",
     "relationship": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Relationship",
-    "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.schema.records.Movement",
+    "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.flow.Movement",
     "revise": "method (self, update: rangekeeper.model.update.Update) -> Model",
     "source": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Source",
     "system": "property",
@@ -39,7 +39,7 @@
    "members": {
     "__init__": "method (self, *, magnitude: int | float, units: str) -> None",
     "magnitude": "property",
-    "replace": "method (self, *, magnitude: int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Quantity",
+    "replace": "method (self, *, magnitude: int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
     "units": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -160,11 +160,11 @@
     "end": "property",
     "first": "property",
     "last": "property",
-    "replace": "method (self, *, start: Date | Unset = <Unset>, end: Date | Unset = <Unset>) -> Period",
+    "replace": "method (self, *, start: Date | Unset = <Unset>, end: Date | Unset = <Unset>) -> Self",
     "resolve": "method (self, *, timing: PeriodTiming) -> date",
     "start": "property"
    },
-   "module": "rangekeeper.schema.records",
+   "module": "rangekeeper.duration.period",
    "signature": "(*, start: Date, end: Date) -> None"
   },
   "PeriodTiming": {
@@ -187,11 +187,11 @@
     "last": "property",
     "name": "property",
     "periods": "method (self, frequency: Frequency, *, include_partial: bool = False, month_roll: MonthRoll | None = None) -> tuple[Period, ...]",
-    "replace": "method (self, *, name: str | None | Unset = <Unset>, start: Date | Unset = <Unset>, end: Date | Unset = <Unset>) -> Span",
+    "replace": "method (self, *, name: str | None | Unset = <Unset>, start: Date | Unset = <Unset>, end: Date | Unset = <Unset>) -> Self",
     "resolve": "method (self, *, timing: PeriodTiming) -> date",
     "start": "property"
    },
-   "module": "rangekeeper.schema.records",
+   "module": "rangekeeper.duration.period",
    "signature": "(*, name: str | None | Unset = <Unset>, start: Date, end: Date) -> None"
   },
   "containing_period": {
@@ -555,7 +555,7 @@
     "movements": "property",
     "multiply": "method (self, *others: Flow) -> Flow",
     "negate": "method (self) -> Flow",
-    "replace": "method (self, *, units: str | Unset = <Unset>, movements: tuple[Movement, ...] | Unset = <Unset>) -> Flow",
+    "replace": "method (self, *, units: str | Unset = <Unset>, movements: tuple[Movement, ...] | Unset = <Unset>) -> Self",
     "resample": "method (self, periods: Sequence[Period], *, method: ResamplingMethod, weighting: MeanWeighting | None = None, missing: MissingValueHandling = MissingValueHandling.ERROR) -> Flow",
     "scale": "method (self, factor: float) -> Flow",
     "total": "method (self, *, missing: MissingValueHandling = MissingValueHandling.ERROR) -> Quantity | None",
@@ -563,7 +563,7 @@
     "trim_empty": "method (self) -> Flow",
     "units": "property"
    },
-   "module": "rangekeeper.schema.records",
+   "module": "rangekeeper.flow._flow",
    "signature": "(*, units: str, movements: tuple[Movement, ...]) -> None"
   },
   "FlowAggregate": {
@@ -590,7 +590,7 @@
     "SKIP",
     "ZERO"
    ],
-   "module": "rangekeeper.schema.behaviors.flow"
+   "module": "rangekeeper.flow._options"
   },
   "Movement": {
    "kind": "class",
@@ -604,10 +604,10 @@
     "magnitude": "property",
     "number": "property",
     "period": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> Movement",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> Self",
     "resolve": "method (self, *, timing: PeriodTiming | None = None) -> date"
    },
-   "module": "rangekeeper.schema.records",
+   "module": "rangekeeper.flow._flow",
    "signature": "(*, id: UUID, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> None"
   },
   "ResamplingMethod": {
@@ -705,7 +705,7 @@
     "__init__": "method (self, *, name: str, fingerprint: str, versions: tuple[LibraryVersion, ...]) -> None",
     "fingerprint": "property",
     "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, fingerprint: str | Unset = <Unset>, versions: tuple[LibraryVersion, ...] | Unset = <Unset>) -> CalculationProvenance",
+    "replace": "method (self, *, name: str | Unset = <Unset>, fingerprint: str | Unset = <Unset>, versions: tuple[LibraryVersion, ...] | Unset = <Unset>) -> Self",
     "versions": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -716,7 +716,7 @@
    "members": {
     "__init__": "method (self, *, name: str, version: str) -> None",
     "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, version: str | Unset = <Unset>) -> LibraryVersion",
+    "replace": "method (self, *, name: str | Unset = <Unset>, version: str | Unset = <Unset>) -> Self",
     "version": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -753,7 +753,7 @@
    "members": {
     "__init__": "method (self, *, target: Reference, available_at: Date) -> None",
     "available_at": "property",
-    "replace": "method (self, *, target: Reference | Unset = <Unset>, available_at: Date | Unset = <Unset>) -> ObservationAvailability",
+    "replace": "method (self, *, target: Reference | Unset = <Unset>, available_at: Date | Unset = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -765,7 +765,7 @@
     "__init__": "method (self, *, name: str, identifier: str) -> None",
     "identifier": "property",
     "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, identifier: str | Unset = <Unset>) -> RandomStream"
+    "replace": "method (self, *, name: str | Unset = <Unset>, identifier: str | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, name: str, identifier: str) -> None"
@@ -783,7 +783,7 @@
     "distribution": "property",
     "name": "property",
     "quantity": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, distribution: Distribution | None | Unset = <Unset>) -> ScenarioParameter"
+    "replace": "method (self, *, name: str | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, distribution: Distribution | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, name: str, quantity: Quantity | None | Unset = <Unset>, distribution: Distribution | None | Unset = <Unset>) -> None"
@@ -796,7 +796,7 @@
     "method": "property",
     "parameters": "property",
     "periods": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, method: str | Unset = <Unset>, seed: int | Unset = <Unset>, periods: tuple[Period, ...] | Unset = <Unset>, parameters: tuple[ScenarioParameter, ...] | Unset = <Unset>) -> ScenarioPlan",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, method: str | Unset = <Unset>, seed: int | Unset = <Unset>, periods: tuple[Period, ...] | Unset = <Unset>, parameters: tuple[ScenarioParameter, ...] | Unset = <Unset>) -> Self",
     "seed": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -814,7 +814,7 @@
     "key": "property",
     "outputs": "property",
     "plan": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, plan: ScenarioPlan | Unset = <Unset>, key: str | Unset = <Unset>, calculation: CalculationProvenance | None | Unset = <Unset>, generator: str | Unset = <Unset>, versions: tuple[LibraryVersion, ...] | Unset = <Unset>, streams: tuple[RandomStream, ...] | Unset = <Unset>, inputs: tuple[Binding, ...] | Unset = <Unset>, outputs: tuple[Binding, ...] | Unset = <Unset>, availability: tuple[ObservationAvailability, ...] | Unset = <Unset>) -> ScenarioRealization",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, plan: ScenarioPlan | Unset = <Unset>, key: str | Unset = <Unset>, calculation: CalculationProvenance | None | Unset = <Unset>, generator: str | Unset = <Unset>, versions: tuple[LibraryVersion, ...] | Unset = <Unset>, streams: tuple[RandomStream, ...] | Unset = <Unset>, inputs: tuple[Binding, ...] | Unset = <Unset>, outputs: tuple[Binding, ...] | Unset = <Unset>, availability: tuple[ObservationAvailability, ...] | Unset = <Unset>) -> Self",
     "streams": "property",
     "versions": "property"
    },
@@ -874,7 +874,7 @@
     "id": "property",
     "name": "property",
     "relationships": "property",
-    "replace": "method (self, *, entities: tuple[UUID, ...] | None | Unset = <Unset>, relationships: tuple[UUID, ...] | None | Unset = <Unset>, classification: UUID | None | Unset = <Unset>, id: UUID | Unset = <Unset>, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> Assembly"
+    "replace": "method (self, *, entities: tuple[UUID, ...] | None | Unset = <Unset>, relationships: tuple[UUID, ...] | None | Unset = <Unset>, classification: UUID | None | Unset = <Unset>, id: UUID | Unset = <Unset>, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, entities: tuple[UUID, ...] | None | Unset = <Unset>, relationships: tuple[UUID, ...] | None | Unset = <Unset>, classification: UUID | None | Unset = <Unset>, id: UUID, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> None"
@@ -884,7 +884,7 @@
    "members": {
     "__init__": "method (self, *, name: str, value: UUID) -> None",
     "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, value: UUID | Unset = <Unset>) -> Binding",
+    "replace": "method (self, *, name: str | Unset = <Unset>, value: UUID | Unset = <Unset>) -> Self",
     "value": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -895,7 +895,7 @@
    "members": {
     "__init__": "method (self, *, labels: tuple[Label, ...] | None | Unset = <Unset>, values: tuple[Value, ...] | None | Unset = <Unset>) -> None",
     "labels": "property",
-    "replace": "method (self, *, labels: tuple[Label, ...] | None | Unset = <Unset>, values: tuple[Value, ...] | None | Unset = <Unset>) -> Characteristics",
+    "replace": "method (self, *, labels: tuple[Label, ...] | None | Unset = <Unset>, values: tuple[Value, ...] | None | Unset = <Unset>) -> Self",
     "values": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -909,7 +909,7 @@
     "id": "property",
     "kind": "property",
     "method": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, content: JSONValue | None | Unset = <Unset>, kind: ClaimKind | Unset = <Unset>, sources: tuple[Location | UUID, ...] | None | Unset = <Unset>, method: Method | None | Unset = <Unset>) -> Claim",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, content: JSONValue | None | Unset = <Unset>, kind: ClaimKind | Unset = <Unset>, sources: tuple[Location | UUID, ...] | None | Unset = <Unset>, method: Method | None | Unset = <Unset>) -> Self",
     "sources": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -933,7 +933,7 @@
     "id": "property",
     "name": "property",
     "parent": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | Unset = <Unset>, name: str | Unset = <Unset>, definition: str | None | Unset = <Unset>, parent: UUID | None | Unset = <Unset>) -> Classification"
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | Unset = <Unset>, name: str | Unset = <Unset>, definition: str | None | Unset = <Unset>, parent: UUID | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, code: str, name: str, definition: str | None | Unset = <Unset>, parent: UUID | None | Unset = <Unset>) -> None"
@@ -947,7 +947,7 @@
     "id": "property",
     "name": "property",
     "predicate": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, predicate: UUID | Unset = <Unset>) -> Constraint"
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, predicate: UUID | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, predicate: UUID) -> None"
@@ -958,7 +958,7 @@
     "__init__": "method (self, *, taxonomies: tuple[Taxonomy, ...] | None | Unset = <Unset>, measures: tuple[Measure, ...] | None | Unset = <Unset>, functions: tuple[Function, ...] | None | Unset = <Unset>) -> None",
     "functions": "property",
     "measures": "property",
-    "replace": "method (self, *, taxonomies: tuple[Taxonomy, ...] | None | Unset = <Unset>, measures: tuple[Measure, ...] | None | Unset = <Unset>, functions: tuple[Function, ...] | None | Unset = <Unset>) -> Definitions",
+    "replace": "method (self, *, taxonomies: tuple[Taxonomy, ...] | None | Unset = <Unset>, measures: tuple[Measure, ...] | None | Unset = <Unset>, functions: tuple[Function, ...] | None | Unset = <Unset>) -> Self",
     "taxonomies": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -975,7 +975,7 @@
     "mass": "method (self, boundaries: Sequence[float]) -> tuple[float, ...]",
     "mode": "property",
     "pert": "classmethod (cls, *, lower: float = 0, upper: float = 1, mode: float = 0.5, weighting: float = 4, units: str = 'dimensionless') -> Distribution",
-    "replace": "method (self, *, kind: DistributionFamily | Unset = <Unset>, lower: int | float | Unset = <Unset>, upper: int | float | Unset = <Unset>, mode: int | float | None | Unset = <Unset>, weighting: int | float | None | Unset = <Unset>, units: str | Unset = <Unset>) -> Distribution",
+    "replace": "method (self, *, kind: DistributionFamily | Unset = <Unset>, lower: int | float | Unset = <Unset>, upper: int | float | Unset = <Unset>, mode: int | float | None | Unset = <Unset>, weighting: int | float | None | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
     "sample": "method (self, *, size: int, generator) -> tuple[float, ...]",
     "symmetric": "classmethod (cls, *, kind: DistributionFamily, mean: float = 0, residual: float = 1, units: str = 'dimensionless') -> Distribution",
     "triangular": "classmethod (cls, *, lower: float = 0, upper: float = 1, mode: float = 0.5, units: str = 'dimensionless') -> Distribution",
@@ -984,7 +984,7 @@
     "upper": "property",
     "weighting": "property"
    },
-   "module": "rangekeeper.schema.records",
+   "module": "rangekeeper.profile",
    "signature": "(*, kind: DistributionFamily, lower: int | float, upper: int | float, mode: int | float | None | Unset = <Unset>, weighting: int | float | None | Unset = <Unset>, units: str) -> None"
   },
   "DistributionFamily": {
@@ -1004,7 +1004,7 @@
     "item_domain": "property",
     "kind": "property",
     "measure": "property",
-    "replace": "method (self, *, kind: DomainKind | Unset = <Unset>, units: str | None | Unset = <Unset>, measure: UUID | Unset = <Unset>, item_domain: Domain | Unset = <Unset>, collection_kind: CollectionKind | Unset = <Unset>) -> Domain",
+    "replace": "method (self, *, kind: DomainKind | Unset = <Unset>, units: str | None | Unset = <Unset>, measure: UUID | Unset = <Unset>, item_domain: Domain | Unset = <Unset>, collection_kind: CollectionKind | Unset = <Unset>) -> Self",
     "units": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1019,7 +1019,7 @@
     "code": "property",
     "id": "property",
     "name": "property",
-    "replace": "method (self, *, classification: UUID | None | Unset = <Unset>, id: UUID | Unset = <Unset>, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> Entity"
+    "replace": "method (self, *, classification: UUID | None | Unset = <Unset>, id: UUID | Unset = <Unset>, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, classification: UUID | None | Unset = <Unset>, id: UUID, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> None"
@@ -1037,7 +1037,7 @@
     "operator": "property",
     "quantity": "property",
     "query": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, kind: ExpressionKind | Unset = <Unset>, quantity: Quantity | Unset = <Unset>, boolean: bool | Unset = <Unset>, target: Reference | Unset = <Unset>, operator: Operator | Unset = <Unset>, operands: tuple[Expression, ...] | None | Unset = <Unset>, operand: Expression | Unset = <Unset>, call: Call | Unset = <Unset>, selection: Selection | Unset = <Unset>, query: Query | Unset = <Unset>) -> Expression",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, kind: ExpressionKind | Unset = <Unset>, quantity: Quantity | Unset = <Unset>, boolean: bool | Unset = <Unset>, target: Reference | Unset = <Unset>, operator: Operator | Unset = <Unset>, operands: tuple[Expression, ...] | None | Unset = <Unset>, operand: Expression | Unset = <Unset>, call: Call | Unset = <Unset>, selection: Selection | Unset = <Unset>, query: Query | Unset = <Unset>) -> Self",
     "selection": "property",
     "target": "property"
    },
@@ -1050,7 +1050,7 @@
     "__init__": "method (self, *, target: UUID, claims: tuple[UUID, ...], reconciliation: Reconciliation | None | Unset = <Unset>) -> None",
     "claims": "property",
     "reconciliation": "property",
-    "replace": "method (self, *, target: UUID | Unset = <Unset>, claims: tuple[UUID, ...] | Unset = <Unset>, reconciliation: Reconciliation | None | Unset = <Unset>) -> Fact",
+    "replace": "method (self, *, target: UUID | Unset = <Unset>, claims: tuple[UUID, ...] | Unset = <Unset>, reconciliation: Reconciliation | None | Unset = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1068,7 +1068,7 @@
     "formulations": "property",
     "id": "property",
     "name": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, bindings: tuple[Binding, ...] | None | Unset = <Unset>, values: tuple[Value, ...] | None | Unset = <Unset>, expressions: tuple[Expression, ...] | None | Unset = <Unset>, constraints: tuple[Constraint, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>) -> Formulation",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, bindings: tuple[Binding, ...] | None | Unset = <Unset>, values: tuple[Value, ...] | None | Unset = <Unset>, expressions: tuple[Expression, ...] | None | Unset = <Unset>, constraints: tuple[Constraint, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>) -> Self",
     "values": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1083,7 +1083,7 @@
     "id": "property",
     "name": "property",
     "parameters": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | Unset = <Unset>, name: str | Unset = <Unset>, version: str | Unset = <Unset>, parameters: tuple[Parameter, ...] | None | Unset = <Unset>, result: Domain | Unset = <Unset>, semantics: str | Unset = <Unset>, unit_rule: str | Unset = <Unset>, empty_collection: EmptyHandling | Unset = <Unset>) -> Function",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | Unset = <Unset>, name: str | Unset = <Unset>, version: str | Unset = <Unset>, parameters: tuple[Parameter, ...] | None | Unset = <Unset>, result: Domain | Unset = <Unset>, semantics: str | Unset = <Unset>, unit_rule: str | Unset = <Unset>, empty_collection: EmptyHandling | Unset = <Unset>) -> Self",
     "result": "property",
     "semantics": "property",
     "unit_rule": "property",
@@ -1098,7 +1098,7 @@
     "__init__": "method (self, *, pin: GeometryPin, mappings: tuple[GeometryMapping, ...] | None | Unset = <Unset>) -> None",
     "mappings": "property",
     "pin": "property",
-    "replace": "method (self, *, pin: GeometryPin | Unset = <Unset>, mappings: tuple[GeometryMapping, ...] | None | Unset = <Unset>) -> Geometry"
+    "replace": "method (self, *, pin: GeometryPin | Unset = <Unset>, mappings: tuple[GeometryMapping, ...] | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, pin: GeometryPin, mappings: tuple[GeometryMapping, ...] | None | Unset = <Unset>) -> None"
@@ -1111,7 +1111,7 @@
     "kind": "property",
     "namespace": "property",
     "placement": "property",
-    "replace": "method (self, *, namespace: str | Unset = <Unset>, kind: str | Unset = <Unset>, key: str | Unset = <Unset>, scope: str | None | Unset = <Unset>, placement: tuple[str, ...] | None | Unset = <Unset>) -> GeometryElement",
+    "replace": "method (self, *, namespace: str | Unset = <Unset>, kind: str | Unset = <Unset>, key: str | Unset = <Unset>, scope: str | None | Unset = <Unset>, placement: tuple[str, ...] | None | Unset = <Unset>) -> Self",
     "scope": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1122,7 +1122,7 @@
    "members": {
     "__init__": "method (self, *, path: str, sha256: str, size: int) -> None",
     "path": "property",
-    "replace": "method (self, *, path: str | Unset = <Unset>, sha256: str | Unset = <Unset>, size: int | Unset = <Unset>) -> GeometryFile",
+    "replace": "method (self, *, path: str | Unset = <Unset>, sha256: str | Unset = <Unset>, size: int | Unset = <Unset>) -> Self",
     "sha256": "property",
     "size": "property"
    },
@@ -1135,7 +1135,7 @@
     "__init__": "method (self, *, entity: UUID, element: GeometryElement) -> None",
     "element": "property",
     "entity": "property",
-    "replace": "method (self, *, entity: UUID | Unset = <Unset>, element: GeometryElement | Unset = <Unset>) -> GeometryMapping"
+    "replace": "method (self, *, entity: UUID | Unset = <Unset>, element: GeometryElement | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, entity: UUID, element: GeometryElement) -> None"
@@ -1149,7 +1149,7 @@
     "format": "property",
     "format_version": "property",
     "provider": "property",
-    "replace": "method (self, *, provider: str | Unset = <Unset>, format: str | Unset = <Unset>, format_version: str | Unset = <Unset>, specification: str | Unset = <Unset>, specification_digest: str | Unset = <Unset>, content_digest: str | Unset = <Unset>, files: tuple[GeometryFile, ...] | Unset = <Unset>, source_address: str | None | Unset = <Unset>, source_version: str | None | Unset = <Unset>) -> GeometryPin",
+    "replace": "method (self, *, provider: str | Unset = <Unset>, format: str | Unset = <Unset>, format_version: str | Unset = <Unset>, specification: str | Unset = <Unset>, specification_digest: str | Unset = <Unset>, content_digest: str | Unset = <Unset>, files: tuple[GeometryFile, ...] | Unset = <Unset>, source_address: str | None | Unset = <Unset>, source_version: str | None | Unset = <Unset>) -> Self",
     "source_address": "property",
     "source_version": "property",
     "specification": "property",
@@ -1165,7 +1165,7 @@
     "classifications": "property",
     "id": "property",
     "key": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, key: str | Unset = <Unset>, classifications: tuple[UUID, ...] | None | Unset = <Unset>) -> Label"
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, key: str | Unset = <Unset>, classifications: tuple[UUID, ...] | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, key: str, classifications: tuple[UUID, ...] | None | Unset = <Unset>) -> None"
@@ -1178,7 +1178,7 @@
     "definition": "property",
     "id": "property",
     "name": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | Unset = <Unset>, name: str | Unset = <Unset>, units: str | Unset = <Unset>, definition: str | None | Unset = <Unset>, tags: tuple[str, ...] | None | Unset = <Unset>) -> Measure",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | Unset = <Unset>, name: str | Unset = <Unset>, units: str | Unset = <Unset>, definition: str | None | Unset = <Unset>, tags: tuple[str, ...] | None | Unset = <Unset>) -> Self",
     "tags": "property",
     "units": "property"
    },
@@ -1193,7 +1193,7 @@
     "id": "property",
     "name": "property",
     "previous": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, schema_version: str | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, previous: UUID | Unset = <Unset>) -> Metadata",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, schema_version: str | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, previous: UUID | Unset = <Unset>) -> Self",
     "schema_version": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1216,13 +1216,13 @@
     "geometry": "property",
     "id": "property",
     "metadata": "property",
-    "movement": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Movement",
+    "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
     "provenance": "property",
     "record_at": "method (self, path: str) -> rangekeeper.schema.index.RecordLocation",
     "record_by_id": "method (self, id: uuid.UUID) -> rangekeeper.schema.index.RecordLocation",
     "relationship": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Relationship",
-    "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.schema.records.Movement",
+    "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.flow.Movement",
     "revise": "method (self, update: rangekeeper.model.update.Update) -> Model",
     "source": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Source",
     "system": "property",
@@ -1239,7 +1239,7 @@
     "__init__": "method (self, *, sources: tuple[Source, ...] | None | Unset = <Unset>, claims: tuple[Claim, ...] | None | Unset = <Unset>, facts: tuple[Fact, ...] | None | Unset = <Unset>, scenarios: tuple[ScenarioRealization, ...] | None | Unset = <Unset>) -> None",
     "claims": "property",
     "facts": "property",
-    "replace": "method (self, *, sources: tuple[Source, ...] | None | Unset = <Unset>, claims: tuple[Claim, ...] | None | Unset = <Unset>, facts: tuple[Fact, ...] | None | Unset = <Unset>, scenarios: tuple[ScenarioRealization, ...] | None | Unset = <Unset>) -> Provenance",
+    "replace": "method (self, *, sources: tuple[Source, ...] | None | Unset = <Unset>, claims: tuple[Claim, ...] | None | Unset = <Unset>, facts: tuple[Fact, ...] | None | Unset = <Unset>, scenarios: tuple[ScenarioRealization, ...] | None | Unset = <Unset>) -> Self",
     "scenarios": "property",
     "sources": "property"
    },
@@ -1258,7 +1258,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *, target: UUID) -> None",
-    "replace": "method (self, *, target: UUID | Unset = <Unset>) -> Reference",
+    "replace": "method (self, *, target: UUID | Unset = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1271,7 +1271,7 @@
     "characteristics": "property",
     "classification": "property",
     "id": "property",
-    "replace": "method (self, *, classification: UUID | Unset = <Unset>, id: UUID | Unset = <Unset>, source: UUID | Unset = <Unset>, target: UUID | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> Relationship",
+    "replace": "method (self, *, classification: UUID | Unset = <Unset>, id: UUID | Unset = <Unset>, source: UUID | Unset = <Unset>, target: UUID | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> Self",
     "source": "property",
     "target": "property"
    },
@@ -1288,7 +1288,7 @@
     "issued_at": "property",
     "name": "property",
     "received_at": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, name: str | Unset = <Unset>, checksum: str | Unset = <Unset>, issued_at: Date | str | None | Unset = <Unset>, received_at: Date | str | None | Unset = <Unset>, author: str | None | Unset = <Unset>) -> Source"
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, name: str | Unset = <Unset>, checksum: str | Unset = <Unset>, issued_at: Date | str | None | Unset = <Unset>, received_at: Date | str | None | Unset = <Unset>, author: str | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, name: str, checksum: str, issued_at: Date | str | None | Unset = <Unset>, received_at: Date | str | None | Unset = <Unset>, author: str | None | Unset = <Unset>) -> None"
@@ -1301,7 +1301,7 @@
     "entities": "property",
     "formulations": "property",
     "relationships": "property",
-    "replace": "method (self, *, entities: tuple[Entity, ...] | None | Unset = <Unset>, relationships: tuple[Relationship, ...] | None | Unset = <Unset>, assemblies: tuple[Assembly, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>) -> System"
+    "replace": "method (self, *, entities: tuple[Entity, ...] | None | Unset = <Unset>, relationships: tuple[Relationship, ...] | None | Unset = <Unset>, assemblies: tuple[Assembly, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, entities: tuple[Entity, ...] | None | Unset = <Unset>, relationships: tuple[Relationship, ...] | None | Unset = <Unset>, assemblies: tuple[Assembly, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>) -> None"
@@ -1315,7 +1315,7 @@
     "definition": "property",
     "id": "property",
     "name": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | Unset = <Unset>, name: str | Unset = <Unset>, definition: str | None | Unset = <Unset>, classifications: tuple[Classification, ...] | Unset = <Unset>) -> Taxonomy"
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, code: str | Unset = <Unset>, name: str | Unset = <Unset>, definition: str | None | Unset = <Unset>, classifications: tuple[Classification, ...] | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, code: str, name: str, definition: str | None | Unset = <Unset>, classifications: tuple[Classification, ...]) -> None"
@@ -1340,7 +1340,7 @@
     "kind": "property",
     "measure": "property",
     "quantity": "property",
-    "replace": "method (self, *, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID | Unset = <Unset>, key: str | Unset = <Unset>, kind: ValueKind | Unset = <Unset>, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>) -> Value"
+    "replace": "method (self, *, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID | Unset = <Unset>, key: str | Unset = <Unset>, kind: ValueKind | Unset = <Unset>, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>) -> None"
@@ -1362,7 +1362,7 @@
     "__init__": "method (self, *, name: str, expression: Expression) -> None",
     "expression": "property",
     "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, expression: Expression | Unset = <Unset>) -> Argument"
+    "replace": "method (self, *, name: str | Unset = <Unset>, expression: Expression | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, name: str, expression: Expression) -> None"
@@ -1374,7 +1374,7 @@
     "arguments": "property",
     "function": "property",
     "named_arguments": "property",
-    "replace": "method (self, *, function: UUID | Unset = <Unset>, arguments: tuple[Expression, ...] | None | Unset = <Unset>, named_arguments: tuple[Argument, ...] | None | Unset = <Unset>) -> Call"
+    "replace": "method (self, *, function: UUID | Unset = <Unset>, arguments: tuple[Expression, ...] | None | Unset = <Unset>, named_arguments: tuple[Argument, ...] | None | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, function: UUID, arguments: tuple[Expression, ...] | None | Unset = <Unset>, named_arguments: tuple[Argument, ...] | None | Unset = <Unset>) -> None"
@@ -1402,7 +1402,7 @@
     "__init__": "method (self, *, key: str, classification: UUID) -> None",
     "classification": "property",
     "key": "property",
-    "replace": "method (self, *, key: str | Unset = <Unset>, classification: UUID | Unset = <Unset>) -> Criterion"
+    "replace": "method (self, *, key: str | Unset = <Unset>, classification: UUID | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, key: str, classification: UUID) -> None"
@@ -1507,7 +1507,7 @@
     "domain": "property",
     "kind": "property",
     "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, domain: Domain | Unset = <Unset>, kind: ParameterKind | Unset = <Unset>, required: bool | Unset = <Unset>) -> Parameter",
+    "replace": "method (self, *, name: str | Unset = <Unset>, domain: Domain | Unset = <Unset>, kind: ParameterKind | Unset = <Unset>, required: bool | Unset = <Unset>) -> Self",
     "required": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1536,7 +1536,7 @@
     "duplicates": "property",
     "filter": "property",
     "projection": "property",
-    "replace": "method (self, *, starting_at: UUID | Unset = <Unset>, steps: tuple[Traversal, ...] | None | Unset = <Unset>, filter: Filter | Unset = <Unset>, projection: Projection | Unset = <Unset>, duplicates: DuplicateHandling | Unset = <Unset>) -> Query",
+    "replace": "method (self, *, starting_at: UUID | Unset = <Unset>, steps: tuple[Traversal, ...] | None | Unset = <Unset>, filter: Filter | Unset = <Unset>, projection: Projection | Unset = <Unset>, duplicates: DuplicateHandling | Unset = <Unset>) -> Self",
     "starting_at": "property",
     "steps": "property"
    },
@@ -1551,7 +1551,7 @@
     "index": "property",
     "kind": "property",
     "member": "property",
-    "replace": "method (self, *, kind: SelectionKind | Unset = <Unset>, base: Expression | Unset = <Unset>, member: str | None | Unset = <Unset>, index: Expression | Unset = <Unset>) -> Selection"
+    "replace": "method (self, *, kind: SelectionKind | Unset = <Unset>, base: Expression | Unset = <Unset>, member: str | None | Unset = <Unset>, index: Expression | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, kind: SelectionKind, base: Expression, member: str | None | Unset = <Unset>, index: Expression | Unset = <Unset>) -> None"
@@ -1572,7 +1572,7 @@
     "depth": "property",
     "direction": "property",
     "kind": "property",
-    "replace": "method (self, *, kind: TraversalKind | Unset = <Unset>, depth: Depth | Unset = <Unset>, classification: UUID | Unset = <Unset>, direction: Direction | Unset = <Unset>) -> Traversal"
+    "replace": "method (self, *, kind: TraversalKind | Unset = <Unset>, depth: Depth | Unset = <Unset>, classification: UUID | Unset = <Unset>, direction: Direction | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, kind: TraversalKind, depth: Depth, classification: UUID | Unset = <Unset>, direction: Direction | Unset = <Unset>) -> None"
@@ -1685,7 +1685,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn]) -> None",
-    "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.schema.records.Quantity | rangekeeper.schema.records.Flow | None",
+    "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.schema.records.Quantity | rangekeeper.flow.Flow | None",
     "cell": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.reduction.AggregateEntry",
     "children": "method (self, column: UUID | PivotColumn | None = None)",
     "column": "method (self, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.PivotColumn",
@@ -1693,7 +1693,7 @@
     "display": "method (self, *, precision: int = 2)",
     "partition": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.Partition",
     "to_table": "method (self) -> Table",
-    "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.schema.records.Quantity | rangekeeper.schema.records.Flow | None"
+    "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.schema.records.Quantity | rangekeeper.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.pivot",
    "signature": "(rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn]) -> None"
@@ -1722,11 +1722,11 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.reduction.AggregateEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None",
-    "available_value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Quantity | rangekeeper.schema.records.Flow | None",
+    "available_value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Quantity | rangekeeper.flow.Flow | None",
     "coverage": "method (self, id: uuid.UUID) -> rangekeeper.model.system.reduction.Coverage",
     "display": "method (self, *, transpose: bool = False, precision: int = 2)",
     "root_value": "property",
-    "value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Quantity | rangekeeper.schema.records.Flow | None"
+    "value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Quantity | rangekeeper.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.reduction",
    "signature": "(hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.reduction.AggregateEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None"
@@ -1834,7 +1834,7 @@
    "members": {
     "__init__": "method (self, *, magnitude: int | float, units: str) -> None",
     "magnitude": "property",
-    "replace": "method (self, *, magnitude: int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Quantity",
+    "replace": "method (self, *, magnitude: int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
     "units": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1888,7 +1888,7 @@
     "document": "property",
     "message": "property",
     "references": "property",
-    "replace": "method (self, *, severity: Severity | Unset = <Unset>, code: str | Unset = <Unset>, message: str | Unset = <Unset>, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>) -> Diagnostic",
+    "replace": "method (self, *, severity: Severity | Unset = <Unset>, code: str | Unset = <Unset>, message: str | Unset = <Unset>, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>) -> Self",
     "residual": "property",
     "severity": "property",
     "target": "property",
@@ -1903,7 +1903,7 @@
     "__init__": "method (self, *, kind: ImplementationKind, name: str, version: str) -> None",
     "kind": "property",
     "name": "property",
-    "replace": "method (self, *, kind: ImplementationKind | Unset = <Unset>, name: str | Unset = <Unset>, version: str | Unset = <Unset>) -> Implementation",
+    "replace": "method (self, *, kind: ImplementationKind | Unset = <Unset>, name: str | Unset = <Unset>, version: str | Unset = <Unset>) -> Self",
     "version": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -1923,7 +1923,7 @@
    "members": {
     "__init__": "method (self, *, status: Status, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> None",
     "diagnostics": "property",
-    "replace": "method (self, *, status: Status | Unset = <Unset>, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> Report",
+    "replace": "method (self, *, status: Status | Unset = <Unset>, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> Self",
     "rule_evidence": "property",
     "runtime": "property",
     "status": "property",
@@ -1952,7 +1952,7 @@
     "__init__": "method (self, *, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, report: Report) -> None",
     "metadata": "property",
     "outputs": "property",
-    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, specification: UUID | Unset = <Unset>, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, report: Report | Unset = <Unset>) -> Run",
+    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, specification: UUID | Unset = <Unset>, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, report: Report | Unset = <Unset>) -> Self",
     "report": "property",
     "spawns": "property",
     "specification": "property"
@@ -1966,7 +1966,7 @@
     "__init__": "method (self, *, started_at: str | None | Unset = <Unset>, finished_at: str | None | Unset = <Unset>, implementations: tuple[Implementation, ...], settings: Settings | Unset = <Unset>) -> None",
     "finished_at": "property",
     "implementations": "property",
-    "replace": "method (self, *, started_at: str | None | Unset = <Unset>, finished_at: str | None | Unset = <Unset>, implementations: tuple[Implementation, ...] | Unset = <Unset>, settings: Settings | Unset = <Unset>) -> Runtime",
+    "replace": "method (self, *, started_at: str | None | Unset = <Unset>, finished_at: str | None | Unset = <Unset>, implementations: tuple[Implementation, ...] | Unset = <Unset>, settings: Settings | Unset = <Unset>) -> Self",
     "settings": "property",
     "started_at": "property"
    },
@@ -1998,7 +1998,7 @@
    "members": {
     "__init__": "method (self, *, completion: CompletionStatus, solution: SolutionStatus) -> None",
     "completion": "property",
-    "replace": "method (self, *, completion: CompletionStatus | Unset = <Unset>, solution: SolutionStatus | Unset = <Unset>) -> Status",
+    "replace": "method (self, *, completion: CompletionStatus | Unset = <Unset>, solution: SolutionStatus | Unset = <Unset>) -> Self",
     "solution": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -2012,7 +2012,7 @@
     "document": "property",
     "kind": "property",
     "message": "property",
-    "replace": "method (self, *, kind: StepKind | Unset = <Unset>, at: str | None | Unset = <Unset>, message: str | Unset = <Unset>, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>) -> Step",
+    "replace": "method (self, *, kind: StepKind | Unset = <Unset>, at: str | None | Unset = <Unset>, message: str | Unset = <Unset>, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -2041,7 +2041,7 @@
    "members": {
     "__init__": "method (self, *, target: Reference, quantity: Quantity) -> None",
     "quantity": "property",
-    "replace": "method (self, *, target: Reference | Unset = <Unset>, quantity: Quantity | Unset = <Unset>) -> Assignment",
+    "replace": "method (self, *, target: Reference | Unset = <Unset>, quantity: Quantity | Unset = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -2065,7 +2065,7 @@
    "members": {
     "__init__": "method (self, *, expression: UUID, sense: ObjectiveKind) -> None",
     "expression": "property",
-    "replace": "method (self, *, expression: UUID | Unset = <Unset>, sense: ObjectiveKind | Unset = <Unset>) -> Objective",
+    "replace": "method (self, *, expression: UUID | Unset = <Unset>, sense: ObjectiveKind | Unset = <Unset>) -> Self",
     "sense": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -2086,7 +2086,7 @@
     "constraint_limit": "property",
     "iteration_limit": "property",
     "relative_tolerance": "property",
-    "replace": "method (self, *, relative_tolerance: int | float | None | Unset = <Unset>, iteration_limit: int | None | Unset = <Unset>, time_limit: int | float | None | Unset = <Unset>, symbol_limit: int | None | Unset = <Unset>, constraint_limit: int | None | Unset = <Unset>) -> Settings",
+    "replace": "method (self, *, relative_tolerance: int | float | None | Unset = <Unset>, iteration_limit: int | None | Unset = <Unset>, time_limit: int | float | None | Unset = <Unset>, symbol_limit: int | None | Unset = <Unset>, constraint_limit: int | None | Unset = <Unset>) -> Self",
     "symbol_limit": "property",
     "time_limit": "property"
    },
@@ -2122,7 +2122,7 @@
     "metadata": "property",
     "model": "property",
     "objectives": "property",
-    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: RuleSet | None | Unset = <Unset>) -> Specification",
+    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: RuleSet | None | Unset = <Unset>) -> Self",
     "rules": "property",
     "settings": "property",
     "unknowns": "property"
@@ -2138,7 +2138,7 @@
     "__init__": "method (self, *, kind: ActionKind, target: Reference | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>) -> None",
     "kind": "property",
     "quantity": "property",
-    "replace": "method (self, *, kind: ActionKind | Unset = <Unset>, target: Reference | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>) -> Action",
+    "replace": "method (self, *, kind: ActionKind | Unset = <Unset>, target: Reference | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -2160,7 +2160,7 @@
     "fallback": "property",
     "id": "property",
     "observations": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, at: Date | Unset = <Unset>, observations: tuple[ObservationBinding, ...] | Unset = <Unset>, rules: tuple[Rule, ...] | Unset = <Unset>, fallback: tuple[Action, ...] | Unset = <Unset>) -> Decision",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, at: Date | Unset = <Unset>, observations: tuple[ObservationBinding, ...] | Unset = <Unset>, rules: tuple[Rule, ...] | Unset = <Unset>, fallback: tuple[Action, ...] | Unset = <Unset>) -> Self",
     "rules": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -2180,7 +2180,7 @@
     "__init__": "method (self, *, name: str, target: Reference, available_at: Date | None | Unset = <Unset>) -> None",
     "available_at": "property",
     "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, target: Reference | Unset = <Unset>, available_at: Date | None | Unset = <Unset>) -> ObservationBinding",
+    "replace": "method (self, *, name: str | Unset = <Unset>, target: Reference | Unset = <Unset>, available_at: Date | None | Unset = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -2193,7 +2193,7 @@
     "available_at": "property",
     "name": "property",
     "quantity": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, target: Reference | Unset = <Unset>, quantity: Quantity | Unset = <Unset>, available_at: Date | Unset = <Unset>) -> ObservedQuantity",
+    "replace": "method (self, *, name: str | Unset = <Unset>, target: Reference | Unset = <Unset>, quantity: Quantity | Unset = <Unset>, available_at: Date | Unset = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
@@ -2206,7 +2206,7 @@
     "actions": "property",
     "condition": "property",
     "id": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, condition: Expression | Unset = <Unset>, actions: tuple[Action, ...] | Unset = <Unset>) -> Rule"
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, condition: Expression | Unset = <Unset>, actions: tuple[Action, ...] | Unset = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, condition: Expression, actions: tuple[Action, ...]) -> None"
@@ -2225,7 +2225,7 @@
     "at": "property",
     "decision": "property",
     "observations": "property",
-    "replace": "method (self, *, decision: UUID | Unset = <Unset>, at: Date | Unset = <Unset>, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...] | Unset = <Unset>, assignments: tuple[Assignment, ...] | Unset = <Unset>, terminated: bool | Unset = <Unset>, termination_reason: str | None | Unset = <Unset>) -> RuleEvidence",
+    "replace": "method (self, *, decision: UUID | Unset = <Unset>, at: Date | Unset = <Unset>, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...] | Unset = <Unset>, assignments: tuple[Assignment, ...] | Unset = <Unset>, terminated: bool | Unset = <Unset>, termination_reason: str | None | Unset = <Unset>) -> Self",
     "rule": "property",
     "terminated": "property",
     "termination_reason": "property"
@@ -2248,7 +2248,7 @@
     "__init__": "method (self, *, id: UUID, targets: tuple[Reference, ...], decisions: tuple[Decision, ...]) -> None",
     "decisions": "property",
     "id": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, targets: tuple[Reference, ...] | Unset = <Unset>, decisions: tuple[Decision, ...] | Unset = <Unset>) -> RuleSet",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, targets: tuple[Reference, ...] | Unset = <Unset>, decisions: tuple[Decision, ...] | Unset = <Unset>) -> Self",
     "targets": "property"
    },
    "module": "rangekeeper.schema.records",

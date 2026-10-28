@@ -3,6 +3,7 @@
 from datetime import date
 from uuid import uuid4
 
+from rangekeeper.duration import Span
 from rangekeeper.flow import (
     AggregationMethod,
     Flow,
@@ -11,7 +12,7 @@ from rangekeeper.flow import (
     Stream,
 )
 from rangekeeper.model import Distribution, ValueKind
-from rangekeeper.schema.records import Assembly, Span, Value
+from rangekeeper.schema.records import Assembly, Value
 
 flow: Flow = Flow.from_events([date(2026, 1, 1)], [1], units="m").check()
 movement: Movement = flow.movements[0].replace(magnitude=2, claims=())

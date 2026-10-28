@@ -29,6 +29,8 @@ JSONValue: TypeAlias = (
     | list["JSONValue"]
     | tuple["JSONValue", ...]
 )
+from rangekeeper.schema.kinds import record_type  # noqa: E402
+
 R = TypeVar("R", bound="Record")
 
 
@@ -164,6 +166,11 @@ class Record:
     __slots__ = ("_data",)
     _kind: str
     _data: Mapping[str, FrozenJSONValue]
+
+    def __new__(cls, *args, **kwargs):
+        """Create an instance of the registered owner class of this kind."""
+        owner = record_type(cls._kind)
+        return object.__new__(owner if issubclass(owner, cls) else cls)
 
     def __setattr__(self, name, value):
         raise AttributeError("records are immutable")

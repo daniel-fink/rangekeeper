@@ -10,6 +10,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.flow import MissingValueHandling as Missing
 from rangekeeper.flow import ResamplingMethod, Stream
 from rangekeeper.model import (
     Assembly,
@@ -23,7 +24,6 @@ from rangekeeper.model import (
     Value,
 )
 from rangekeeper.model.system import Hierarchy, View
-from rangekeeper.schema.behaviors.flow import MissingValueHandling as Missing
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.records import Flow
 

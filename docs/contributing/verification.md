@@ -79,7 +79,7 @@ python tools/schema/typecheck.py
 ```
 
 `check_generator.py` gives the generator slots that it must reject: Python
-keywords, names of record or behaviour methods, more than one record type in
+keywords, names of record methods, more than one record type in
 one slot, enum collections, and classes or slots without a description.
 The native round trip and typing checks also need `mypy==1.18.2`,
 `py-moneyed` and `pint` in that environment. `verify_native.py` generates the

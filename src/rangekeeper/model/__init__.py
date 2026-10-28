@@ -2,6 +2,7 @@
 
 from rangekeeper.model.model import Model as Model
 from rangekeeper.model.update import Update as Update
+from rangekeeper.profile import Distribution as Distribution
 from rangekeeper.schema.records import (
     Assembly as Assembly,
 )
@@ -22,9 +23,6 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.records import (
     Definitions as Definitions,
-)
-from rangekeeper.schema.records import (
-    Distribution as Distribution,
 )
 from rangekeeper.schema.records import (
     Domain as Domain,

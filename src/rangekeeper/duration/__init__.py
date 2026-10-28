@@ -10,13 +10,14 @@ from rangekeeper.duration.calendar import (
     year_fraction,
 )
 from rangekeeper.duration.period import (
+    Period,
+    Span,
     containing_period,
     cover,
     make_period,
     make_periods,
     periods_between,
 )
-from rangekeeper.schema.records import Period, Span
 
 __all__ = [
     "Frequency",

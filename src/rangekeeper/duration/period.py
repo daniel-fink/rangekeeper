@@ -1,4 +1,4 @@
-"""Construct half-open periods from explicit anchors and calendar grids."""
+"""Period and Span, and half-open periods from explicit anchors and calendar grids."""
 
 from __future__ import annotations
 
@@ -15,7 +15,92 @@ from rangekeeper.duration.calendar import (
     require_date,
 )
 from rangekeeper.duration.calendar import PeriodTiming as PeriodTiming
-from rangekeeper.schema.records import Period, Span
+from rangekeeper.schema import records
+from rangekeeper.schema.kinds import register
+
+
+@register
+class Period(records.Period):
+    """Interpret half-open boundaries without storing derived dates."""
+
+    __slots__ = ()
+
+    @property
+    def first(self) -> date:
+        """Return the first included date."""
+        return self.start
+
+    @property
+    def last(self) -> date:
+        """Return the last included date."""
+        return self.end - timedelta(days=1)
+
+    def check(self) -> Period:
+        """Require a positive date interval [start, end)."""
+        if elapsed_days(self.start, self.end) <= 0:
+            raise ValueError("period end must follow start")
+        return self
+
+    def resolve(self, *, timing: PeriodTiming) -> date:
+        """Select the first included date, last included date or excluded boundary."""
+        if not isinstance(timing, PeriodTiming):
+            raise TypeError("timing must be a PeriodTiming")
+        self.check()
+        return {
+            PeriodTiming.FIRST: self.first,
+            PeriodTiming.LAST: self.last,
+            PeriodTiming.END: self.end,
+        }[timing]
+
+
+@register
+class Span(records.Span, Period):
+    """Calendar construction and partition for named extents."""
+
+    __slots__ = ()
+
+    @classmethod
+    def from_duration(
+        cls,
+        *,
+        name: str,
+        start: date,
+        frequency: Frequency,
+        count: int,
+        month_roll: MonthRoll | None = None,
+    ) -> Span:
+        """Create a positive named extent from anchored calendar steps."""
+        if type(count) is not int or count <= 0:
+            raise ValueError("span count must be a positive integer")
+        span = cls(
+            name=name,
+            start=start,
+            end=offset(
+                start,
+                frequency=frequency,
+                count=count,
+                month_roll=MonthRoll.PRESERVE_END if month_roll is None else month_roll,
+            ),
+        )
+        span.check()
+        return span
+
+    def periods(
+        self,
+        frequency: Frequency,
+        *,
+        include_partial: bool = False,
+        month_roll: MonthRoll | None = None,
+    ) -> tuple[Period, ...]:
+        """Partition this extent; a partial final period requires explicit permission."""
+        self.check()
+        return periods_between(
+            self.start,
+            self.end,
+            frequency=frequency,
+            include_partial=include_partial,
+            month_roll=MonthRoll.PRESERVE_END if month_roll is None else month_roll,
+        )
 
 
 def make_period(start: date, end: date) -> Period:
