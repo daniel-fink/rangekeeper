@@ -3,6 +3,8 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 from difflib import get_close_matches
+from types import MappingProxyType
+from typing import TypeVar, cast
 from uuid import UUID, uuid4
 
 from rangekeeper.flow import Movement
@@ -17,6 +19,7 @@ from rangekeeper.schema.records import (
     Entity,
     Formulation,
     Geometry,
+    Label,
     Metadata,
     Provenance,
     Reference,
@@ -38,6 +41,8 @@ from rangekeeper.shared.errors import (
     UnsupportedVersionError,
 )
 
+K = TypeVar("K", Value, Label)
+
 
 @dataclass(frozen=True, init=False, eq=False)
 class Model:
@@ -52,10 +57,13 @@ class Model:
     __slots__ = (
         "_record",
         "_index",
+        "_keys",
         "_units",
     )
     _record: ModelRecord
     _index: RecordIndex
+    # The UUID of each Value and Label by its kind, owner UUID and key.
+    _keys: Mapping[tuple[type, UUID | None, str], UUID]
     _units: UnitSystem
 
     def __init__(
@@ -76,9 +84,16 @@ class Model:
         from rangekeeper.model.validation import _validate
 
         _validate(record, index=index, units=units).raise_if_invalid()
+        # Validation checks that keys are unique within each owner's collection.
+        keys = {
+            (type(item), index.owners[identity], item.key): identity
+            for identity, item in index.records.items()
+            if isinstance(item, (Value, Label))
+        }
         # Publish state only after both structural/local indexes and semantics pass.
         object.__setattr__(self, "_record", record)
         object.__setattr__(self, "_index", index)
+        object.__setattr__(self, "_keys", MappingProxyType(keys))
         object.__setattr__(self, "_units", units)
 
     @classmethod
@@ -247,9 +262,70 @@ class Model:
         """Resolve a Relationship in this revision; wrong kind and missing differ."""
         return self._index.get(id, Relationship)
 
-    def value(self, id: UUID) -> Value:
-        """Resolve a domain-owned or Formulation-local Value, including unresolved ones."""
-        return self._index.get(id, Value)
+    def value(
+        self,
+        id: UUID | None = None,
+        *,
+        owner: UUID | None = None,
+        key: str | None = None,
+    ) -> Value:
+        """Return a Value by its UUID, or by its owner's UUID and its key.
+
+        The owner is the Entity, Assembly, Relationship or Formulation that holds
+        the Value; the key is exact and case-sensitive. Unresolved Values are
+        returned too. A missing Value raises MissingReferenceError.
+        """
+        if id is not None and owner is None and key is None:
+            return self._index.get(id, Value)
+        return self._keyed(Value, id, owner, key)
+
+    def label(
+        self,
+        id: UUID | None = None,
+        *,
+        owner: UUID | None = None,
+        key: str | None = None,
+    ) -> Label:
+        """Return a Label by its UUID, or by its owner's UUID and its key.
+
+        The owner is the Entity, Assembly or Relationship that holds the Label;
+        the key is exact and case-sensitive. A missing Label raises
+        MissingReferenceError.
+        """
+        if id is not None and owner is None and key is None:
+            return self._index.get(id, Label)
+        return self._keyed(Label, id, owner, key)
+
+    def _keyed(self, kind: type[K], id, owner, key) -> K:
+        if id is not None or owner is None or key is None:
+            raise TypeError(
+                f"{kind.__name__.lower()} takes an id, or an owner and a key"
+            )
+        item = self._local(kind, owner, key)
+        if item is None:
+            record = self._index.records[owner]
+            name = getattr(record, "code", None) or owner
+            raise MissingReferenceError(
+                key,
+                kind=kind.__name__,
+                by="key",
+                where=f"{type(record).__name__} {name}",
+                candidates=get_close_matches(
+                    key,
+                    sorted(k for c, o, k in self._keys if c is kind and o == owner),
+                    n=3,
+                ),
+            )
+        return item
+
+    def _local(self, kind: type[K], owner: UUID, key: str) -> K | None:
+        """Return the owner's Value or Label with this key, or None when it has none.
+
+        The owner must exist. Tables and selectors use this for an absent cell.
+        """
+        self._index.get(require_uuid(owner, "owner"), Record)
+        identity = self._keys.get((kind, owner, require_text(key, "key")))
+        return None if identity is None else cast(K, self._index.records[identity])
 
     def movement(self, id: UUID) -> Movement:
         """Resolve one Movement by identity, independently of matching keys."""

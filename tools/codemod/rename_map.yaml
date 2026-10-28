@@ -595,9 +595,23 @@ removed:
     status: agreed
     source: ADR-010
   - name: rangekeeper.model.characteristics
-    replacement: Value and Label access on the owner record; re-exports in rangekeeper.model
+    replacement: >-
+      `Model.value(owner=, key=)` and `Model.label(owner=, key=)`; the records
+      are re-exported in rangekeeper.model
     status: agreed
-    source: ADR-012
+    source: ADR-011, ADR-012, #271
+  - name: rangekeeper.model.characteristics.value
+    replacement: >-
+      `model.value(owner=entity.id, key=)`. A missing key raises
+      MissingReferenceError instead of returning None
+    status: agreed
+    source: ADR-011, #271
+  - name: rangekeeper.model.characteristics.label
+    replacement: >-
+      `model.label(owner=entity.id, key=)`. A missing key raises
+      MissingReferenceError instead of returning None
+    status: agreed
+    source: ADR-011, #271
   - name: rangekeeper.model.scenario.market.ScenarioPlan
     replacement: Path generators and the MarketPaths document
     status: agreed

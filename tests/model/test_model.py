@@ -13,6 +13,7 @@ from rangekeeper.model import (
     Definitions,
     Entity,
     Formulation,
+    Label,
     Measure,
     Metadata,
     Model,
@@ -20,7 +21,6 @@ from rangekeeper.model import (
     Update,
     Value,
     ValueKind,
-    characteristics,
     definitions,
     provenance,
 )
@@ -98,18 +98,49 @@ def test_fixture_factories_detach_and_preserve(name):
 def test_owner_local_values_share_a_measure_without_collapsing():
     model = simple()
     entity = model.find_entities(code="A")[0]
-    gross = characteristics.value(entity.characteristics, "gross")
-    net = characteristics.value(entity.characteristics, "net")
+    gross = model.value(owner=entity.id, key="gross")
+    net = model.value(owner=entity.id, key="net")
     assert gross.measure == net.measure
     assert gross.quantity.magnitude == 0 and net.quantity is None
     assert model.value(gross.id) == gross and model.owner_of(gross.id) == entity.id
-    assert characteristics.value(entity.characteristics, "Gross") is None
-    assert characteristics.value(None, "gross") is None
+    with pytest.raises(MissingReferenceError) as caught:
+        model.value(owner=entity.id, key="Gross")
+    error = caught.value
+    assert (error.requested, error.kind, error.by) == ("Gross", "Value", "key")
+    assert error.where == "Entity A" and error.candidates == ("gross",)
     child = model.system.formulations[0].formulations[0]
+    local = model.value(owner=child.id, key="gross")
+    assert local == child.values[0] and local != gross
     assert model.formulation(child.id) == child
     assert model.owner_of(child.id) == model.system.formulations[0].id
     assert model.owner_of(child.values[0].id) == child.id
     assert model.value(child.values[0].id).key == gross.key
+
+
+def test_labels_by_owner_and_key():
+    model = simple()
+    entity = model.system.entities[0]
+    tagged = entity.replace(
+        characteristics=entity.characteristics.replace(
+            labels=(Label(id=uuid4(), key="use"),)
+        )
+    )
+    revised = model.revise(Update(system=model.system.replace(entities=(tagged,))))
+    label = tagged.characteristics.labels[0]
+    assert revised.label(owner=entity.id, key="use") == label
+    assert revised.label(label.id) == label
+    with pytest.raises(MissingReferenceError) as caught:
+        revised.label(owner=entity.id, key="gross")
+    assert (caught.value.kind, caught.value.by) == ("Label", "key")
+    with pytest.raises(MissingReferenceError):
+        revised.label(owner=uuid4(), key="use")
+    with pytest.raises(ReferenceTypeError):
+        revised.label(entity.characteristics.values[0].id)
+    for selectors in ({}, {"owner": entity.id}, {"id": label.id, "key": "use"}):
+        with pytest.raises(TypeError):
+            revised.label(**selectors)
+    with pytest.raises(TypeError):
+        revised.value(owner=entity.id, key=1)
 
 
 def test_canonical_assembly_search_and_lookup_errors():
