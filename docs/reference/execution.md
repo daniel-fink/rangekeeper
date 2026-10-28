@@ -102,8 +102,12 @@ valuation formulas.
   are rejected rather than silently dropped or interpreted as infinite bounds.
 - Every attempt records its termination, actual available implementation versions,
   effective settings, timing, solver option mapping, observed iteration count,
-  row scaling and ordered trace. A worker killed before returning evidence does
-  not acquire an invented solver result, count or implementation invocation.
+  row scaling and ordered trace. The `values` of the `solver_termination` and
+  `solver_scaling` diagnostics hold this evidence as JSON, and each
+  `settings_adjusted` diagnostic names its settings in `values.settings`
+  ([Run diagnostics](errors.md#run-diagnostics)). A worker killed before returning
+  evidence does not acquire an invented solver result, count or implementation
+  invocation.
 
 Only an independently accepted candidate produces `solution: feasible` and outputs.
 HiGHS's `provenInfeasible` becomes a completed/infeasible conclusion for the compiled

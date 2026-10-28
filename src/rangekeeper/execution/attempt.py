@@ -1,8 +1,9 @@
 """Sequential scalar attempts and batches over immutable revision stores."""
 
-import json
 import time
+from collections.abc import Mapping
 from datetime import UTC, datetime
+from typing import cast
 from uuid import UUID, uuid4
 
 from rangekeeper.execution import (
@@ -39,7 +40,7 @@ from rangekeeper.schema.records import (
     Status,
     Step,
 )
-from rangekeeper.schema.runtime import UNSET, Unset
+from rangekeeper.schema.runtime import UNSET, JSONValue, Unset
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import UnitError, ValidationError
@@ -109,6 +110,7 @@ class Attempt:
         document: UUID | Unset = UNSET,
         target: UUID | Unset = UNSET,
         references: tuple[Reference, ...] | Unset = UNSET,
+        values: Mapping[str, JSONValue] | Unset = UNSET,
     ) -> None:
         """Attach an outcome or adjustment to this attempt's report."""
         self.findings.append(
@@ -119,6 +121,7 @@ class Attempt:
                 document=document,
                 target=target,
                 references=references,
+                values=values,
             )
         )
 
@@ -251,8 +254,9 @@ class Attempt:
             )
         self.diagnose(
             Code.SOLVER_SCALING,
-            json.dumps(
-                [
+            f"Scaled {len(problem.rows)} affine constraints; values.rows gives each divisor and residual unit.",
+            values={
+                "rows": [
                     {
                         "constraint": str(row.assertion.constraint.id),
                         "divisor": row.scale,
@@ -260,7 +264,7 @@ class Attempt:
                     }
                     for row in problem.rows
                 ]
-            ),
+            },
         )
         self.checkpoint()
         return problem
@@ -276,10 +280,12 @@ class Attempt:
         self.implementations.extend(self.result.implementations)
         self.diagnose(
             Code.SOLVER_TERMINATION,
-            json.dumps(
-                {"termination": self.result.termination, **self.result.evidence},
-                allow_nan=False,
-            ),
+            f"Backend returned {self.result.termination}; values gives the solver evidence.",
+            # Backends return finite JSON evidence; the record checks it again.
+            values={
+                "termination": self.result.termination,
+                **cast(Mapping[str, JSONValue], self.result.evidence),
+            },
         )
         self.trace.append(
             Step(
@@ -401,6 +407,10 @@ class Attempt:
                 Code.SETTINGS_ADJUSTED,
                 "relative_tolerance and iteration_limit were not applied by a completed solver invocation; time_limit applies to the parent attempt budget when preparation established it. No infeasibility follows.",
                 severity=Severity.WARNING,
+                values={
+                    "settings": ["relative_tolerance", "iteration_limit"],
+                    "disposition": "not_applied",
+                },
             )
         if self.output is not None:
             self.trace.append(

@@ -491,6 +491,20 @@ public sealed class Diagnostic : WireRecord
         get => ReadOptional<Quantity>("tolerance");
         init => WriteOptional("tolerance", value);
     }
+    /// <summary>Wire field values; missing and null remain distinct.</summary>
+    public Optional<JsonNode> Values
+    {
+        get => ReadOptional<JsonNode>("values");
+        init => WriteOptional("values", value);
+    }
+}
+
+/// <summary>Schema-derived DiagnosticValues wire record. Exports and nested reads are detached.</summary>
+public sealed class DiagnosticValues : WireRecord
+{
+    public DiagnosticValues() { }
+    public DiagnosticValues(JsonObject data) : base(data) { }
+
 }
 
 /// <summary>Schema-derived Distribution wire record. Exports and nested reads are detached.</summary>

@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "3aa3cae77fd746a9578a775f6c7a04abe2b0302395f32d0bfa357e2a0654d0cc",
+    "checks.py": "fe01d8ff52776aaeb6235f9c7c1ac44d602e1418a1b4479259ac9aea19f67a8f",
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "records.py": "5b0f775dbdc3f018686b1bd95d34d64f7c9c45a0ec6a01c6d2f1f8cb88bc90c3",
-    "schema.json": "bf142c181b35980da584bef54538031f10424ee9eb2d8ed67b4ac39e46abc3a4",
-    "slots.json": "8e859e14b7bcdc71d3fd31816f5d244f6e9e90ae7b8854bf8c5e9509762b8bc2"
+    "records.py": "1511ccae01441b9bc697033028b80a326189ee804c32a1bdd27ec02cfc9ed716",
+    "schema.json": "c5bfe9f1d9f799e21af5f0040e4463f375eff5d5ce65fc10cc48a8757eedf367",
+    "slots.json": "218b4a2784ecab650a2272b80aaf84c70dc1245f23a924c3f115a296b3e7b63f"
   },
   "classes": [
     "Action",
@@ -24,6 +24,7 @@
     "Decision",
     "Definitions",
     "Diagnostic",
+    "DiagnosticValues",
     "Distribution",
     "Domain",
     "Entity",
@@ -97,7 +98,8 @@
   },
   "generator_version": 1,
   "opaque_classes": [
-    "Content"
+    "Content",
+    "DiagnosticValues"
   ],
   "sources": {
     "schema/assembly.yaml": "780821a9ae2750975ea9a87c6ba527041f1e28570da2a65e7c62321f90554250",
@@ -123,7 +125,7 @@
     "schema/reference.yaml": "2e554658a7d03b849bddf72a1014317b1144eec9b3bd34fe63874b4059400ced",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
     "schema/rule.yaml": "184d6e3c08d2d5e3c93f7c454c3e47bc66d4161cda6357d200ae410a6c67be89",
-    "schema/run.yaml": "f59b185ba7e1d869fd51aa5b3943cc896e3cad5dc47a4df8dbb3bfbce2cbbe80",
+    "schema/run.yaml": "4be5b8d7374a90c5a01355da6df4013fc381d3ce01b4bf3ed2ab51957bc301bf",
     "schema/scenario.yaml": "2952d83a42d3b8b72a317cf32b392ea877cc3cbb254de4a1276ff6928b1f6726",
     "schema/settings.yaml": "857cfb5fa49ee77e8469f51a3d188714fde401352c23922b055fd8d107f10e96",
     "schema/specification.yaml": "e4e0ccd074b6f610543a1253b4590cae9b92cddd93060377fa101c9b0b1f229b",

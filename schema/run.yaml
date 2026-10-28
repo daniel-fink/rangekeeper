@@ -230,8 +230,11 @@ classes:
     - For numerical evidence, message states the residual definition, scaling, and acceptance comparison.
       This draft does not prescribe a universal residual formula, absolute threshold, or unit registry.
       Informational findings cannot replace required acceptance checks.
-    - Use code settings_adjusted to explain each requested setting changed or not applied, naming it and
-      its disposition in message. Other diagnostic codes are application-defined.
+    - Use code settings_adjusted to explain each requested setting changed or not applied. values.settings
+      lists the names of those settings and values.disposition gives their disposition. Other diagnostic
+      codes are application-defined.
+    - values holds the named inputs and evidence of the finding as one JSON object. Readers use values,
+      never the text of message.
     attributes:
       severity:
         description: Importance of the finding.
@@ -280,6 +283,10 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: true
+      values:
+        description: Named inputs and evidence of the finding, as one JSON object; the code gives the names.
+        range: DiagnosticValues
+        inlined: true
     rules:
     - preconditions:
         slot_conditions:
@@ -307,6 +314,10 @@ classes:
         slot_conditions:
           residual:
             required: true
+  DiagnosticValues:
+    class_uri: linkml:Any
+    description: A JSON object of named diagnostic inputs and evidence; its names depend on the diagnostic
+      code. Numbers are finite.
   Step:
     description: One ordered record of execution activity, without prescribing scheduling or rule logic.
     notes:
