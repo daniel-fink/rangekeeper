@@ -20,7 +20,7 @@ def _reduce(
         raise AggregationError(
             "normalize quantities to identical unit spellings before reduction"
         )
-    numbers = tuple(float(value.magnitude) for value in values)
+    numbers = tuple(value.number for value in values)
     if not all(math.isfinite(value) for value in numbers):
         raise AggregationError("reducer inputs must be finite")
     try:

@@ -6,6 +6,7 @@ here. The walkthrough tests cover plotting.
 
 import math
 from datetime import date, timedelta
+from decimal import Decimal
 from uuid import uuid4
 
 import numpy as np
@@ -43,7 +44,7 @@ from tests.streams import lines
 
 
 def amounts(flow):
-    return tuple(m.magnitude for m in flow.movements)
+    return tuple(m.number for m in flow.movements)
 
 
 @pytest.mark.parametrize("spec", [Distribution.uniform(), Distribution.pert(mode=0.75)])
@@ -74,12 +75,12 @@ def test_flow_construction_detachment_and_negation():
     dates = (date(2000, 1, 2), date(2000, 2, 29), date(2000, 12, 31))
     original = Flow.from_events(dates, (1, 2.3, 456), units="AUD")
     assert original.movements[1].date == dates[1]
-    assert original.movements[1].magnitude == 2.3
+    assert original.movements[1].magnitude == Decimal("2.3")
     detached = original.to_data()
     duplicate = Flow.from_data(detached)
-    detached["movements"][0]["magnitude"] = 100
+    detached["movements"][0]["magnitude"] = "100"
     assert duplicate == original
-    assert original.total().magnitude == pytest.approx(459.3)
+    assert original.total().number == pytest.approx(459.3)
     assert amounts(original.negate()) == pytest.approx((-1, -2.3, -456))
     assert original.movements[0].magnitude == 1
 
@@ -91,7 +92,7 @@ def test_allocation_and_annual_resampling_preserve_total():
     years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
     reduced = flow.negate().resample(years, method=ResamplingMethod.SUM)
     assert amounts(reduced) == pytest.approx((-48, -48, -4))
-    assert reduced.total().magnitude == pytest.approx(-100)
+    assert reduced.total().number == pytest.approx(-100)
 
 
 @pytest.mark.parametrize("frequency", ["day", "month", "quarter", "year"])
@@ -121,7 +122,7 @@ def test_sampling_is_explicit_before_allocation():
         flow = profile.distribute(
             Quantity(magnitude=amount, units="AUD"), periods=periods
         )
-        assert flow.total().magnitude == pytest.approx(amount)
+        assert flow.total().number == pytest.approx(amount)
 
 
 def test_stream_selection_and_mixed_frequency_totals():
@@ -181,9 +182,7 @@ def test_stream_selection_and_mixed_frequency_totals():
         )
         for flow in payments
     )
-    assert lines(annual).aggregate().flow.total().magnitude == pytest.approx(
-        0, abs=1e-12
-    )
+    assert lines(annual).aggregate().flow.total().number == pytest.approx(0, abs=1e-12)
 
 
 def test_product_preserves_units_and_explicit_exposure_removes_time():
@@ -193,11 +192,11 @@ def test_product_preserves_units_and_explicit_exposure_removes_time():
     product = rate.multiply(factor)
     assert product.convert(units="AUD/meter**2/month").movements[
         0
-    ].magnitude == pytest.approx(2 * math.pi)
+    ].number == pytest.approx(2 * math.pi)
     integrated = product.integrate(
         exposures=(Quantity(magnitude=1, units="month"),), units="AUD/meter**2"
     )
-    assert integrated.movements[0].magnitude == pytest.approx(2 * math.pi)
+    assert integrated.movements[0].number == pytest.approx(2 * math.pi)
 
 
 def test_segment_meaning_is_model_content_not_a_second_mutable_tree():

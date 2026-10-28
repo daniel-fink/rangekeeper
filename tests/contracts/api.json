@@ -44,13 +44,15 @@
   "Quantity": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, magnitude: int | float, units: str) -> None",
+    "__init__": "method (self, *, magnitude: Decimal | str | int | float, units: str) -> None",
     "magnitude": "property",
-    "replace": "method (self, *, magnitude: int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
+    "number": "property",
+    "replace": "method (self, *, magnitude: Decimal | str | int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
+    "round": "method (self, *, places: int | None = None, mode: str = 'ROUND_HALF_EVEN') -> Quantity",
     "units": "property"
    },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, magnitude: int | float, units: str) -> None"
+   "module": "rangekeeper.quantity",
+   "signature": "(*, magnitude: Decimal | str | int | float, units: str) -> None"
   },
   "Run": {
    "kind": "class",
@@ -114,6 +116,10 @@
   "model": {
    "kind": "module",
    "module": "rangekeeper.model"
+  },
+  "money": {
+   "kind": "module",
+   "module": "rangekeeper.money"
   },
   "quantity": {
    "kind": "module",
@@ -308,6 +314,8 @@
     "ROLE_MISSING",
     "UNIQUE",
     "UNITS",
+    "AMOUNT_DIGITS",
+    "CURRENCY_AMOUNT",
     "INVARIANT_DISTRIBUTION",
     "INVARIANT_FLOW",
     "INVARIANT_MOVEMENT",
@@ -631,8 +639,8 @@
     "difference": "method (self, *, initial: float | None = None) -> Flow",
     "display": "method (self, *, name: str | None = None, transpose: bool = False, precision: int = 2) -> StreamTable",
     "extent": "method (self, *, include_zeroes: bool = False) -> tuple[date, date] | None",
-    "from_events": "classmethod (cls, dates: Sequence[date], magnitudes: Sequence[int | float | None], *, units: str, keys: Sequence[str | None] | None = None, ids: Sequence[UUID] | None = None) -> Flow",
-    "from_periods": "classmethod (cls, periods: Sequence[Period], magnitudes: Sequence[int | float | None], *, units: str, dates: Sequence[date | None] | None = None, ids: Sequence[UUID] | None = None, keys: Sequence[str | None] | None = None) -> Flow",
+    "from_events": "classmethod (cls, dates: Sequence[date], magnitudes: Sequence[Decimal | str | int | float | None], *, units: str, keys: Sequence[str | None] | None = None, ids: Sequence[UUID] | None = None) -> Flow",
+    "from_periods": "classmethod (cls, periods: Sequence[Period], magnitudes: Sequence[Decimal | str | int | float | None], *, units: str, dates: Sequence[date | None] | None = None, ids: Sequence[UUID] | None = None, keys: Sequence[str | None] | None = None) -> Flow",
     "integrate": "method (self, *, exposures: Sequence[Quantity] | None = None, day_count: DayCount | None = None, units: str | None = None) -> Flow",
     "movements": "property",
     "multiply": "method (self, *others: Flow) -> Flow",
@@ -677,7 +685,7 @@
   "Movement": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, id: UUID, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, id: UUID, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: Decimal | str | int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> None",
     "claims": "property",
     "coordinate": "property",
     "date": "property",
@@ -686,11 +694,11 @@
     "magnitude": "property",
     "number": "property",
     "period": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, key: str | None | Unset | Omit = <Unset>, date: Date | None | Unset | Omit = <Unset>, period: Period | None | Unset | Omit = <Unset>, magnitude: int | float | None | Unset | Omit = <Unset>, claims: tuple[UUID, ...] | None | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, key: str | None | Unset | Omit = <Unset>, date: Date | None | Unset | Omit = <Unset>, period: Period | None | Unset | Omit = <Unset>, magnitude: Decimal | str | int | float | None | Unset | Omit = <Unset>, claims: tuple[UUID, ...] | None | Unset | Omit = <Unset>) -> Self",
     "resolve": "method (self, *, timing: PeriodTiming | None = None) -> date"
    },
    "module": "rangekeeper.flow._flow",
-   "signature": "(*, id: UUID, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> None"
+   "signature": "(*, id: UUID, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: Decimal | str | int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> None"
   },
   "ResamplingMethod": {
    "kind": "enum",
@@ -1783,7 +1791,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn]) -> None",
-    "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.schema.records.Quantity | rangekeeper.flow.Flow | None",
+    "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None",
     "cell": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.reduction.AggregateEntry",
     "children": "method (self, column: UUID | PivotColumn | None = None)",
     "column": "method (self, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.PivotColumn",
@@ -1791,7 +1799,7 @@
     "display": "method (self, *, precision: int = 2)",
     "partition": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.Partition",
     "to_table": "method (self) -> Table",
-    "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.schema.records.Quantity | rangekeeper.flow.Flow | None"
+    "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.pivot",
    "signature": "(rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn]) -> None"
@@ -1807,24 +1815,24 @@
   "Reduction": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, select: collections.abc.Callable[[rangekeeper.model.model.Model, rangekeeper.schema.records.Entity], rangekeeper.schema.records.Value | None], reducer: collections.abc.Callable[[tuple[rangekeeper.schema.records.Quantity, ...]], rangekeeper.schema.records.Quantity] | None, units: str | None, contributors: rangekeeper.model.system.reduction.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] | None = None, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None, _flow: rangekeeper.model.system.reduction._FlowRule | None = None) -> None",
+    "__init__": "method (self, *, select: collections.abc.Callable[[rangekeeper.model.model.Model, rangekeeper.schema.records.Entity], rangekeeper.schema.records.Value | None], reducer: collections.abc.Callable[[tuple[rangekeeper.quantity.Quantity, ...]], rangekeeper.quantity.Quantity] | None, units: str | None, contributors: rangekeeper.model.system.reduction.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] | None = None, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None, _flow: rangekeeper.model.system.reduction._FlowRule | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.reduction.RollupResult",
     "flows": "classmethod (cls, *, key: str, periods: Sequence[Period] | None = None, resampling: ResamplingMethod | None = None, aggregation: AggregationMethod | None = None, weighting: MeanWeighting | None = None, contributors: Contributor | Callable[[Entity], bool] = Contributor.LEAVES, units: str | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None, require_complete: bool = True) -> Reduction",
     "formulate": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, id: uuid.UUID, aggregates: collections.abc.Mapping[uuid.UUID, uuid.UUID])",
     "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False) -> Pivot"
    },
    "module": "rangekeeper.model.system.reduction",
-   "signature": "(*, select: collections.abc.Callable[[rangekeeper.model.model.Model, rangekeeper.schema.records.Entity], rangekeeper.schema.records.Value | None], reducer: collections.abc.Callable[[tuple[rangekeeper.schema.records.Quantity, ...]], rangekeeper.schema.records.Quantity] | None, units: str | None, contributors: rangekeeper.model.system.reduction.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] | None = None, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None, _flow: rangekeeper.model.system.reduction._FlowRule | None = None) -> None"
+   "signature": "(*, select: collections.abc.Callable[[rangekeeper.model.model.Model, rangekeeper.schema.records.Entity], rangekeeper.schema.records.Value | None], reducer: collections.abc.Callable[[tuple[rangekeeper.quantity.Quantity, ...]], rangekeeper.quantity.Quantity] | None, units: str | None, contributors: rangekeeper.model.system.reduction.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] | None = None, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None, _flow: rangekeeper.model.system.reduction._FlowRule | None = None) -> None"
   },
   "RollupResult": {
    "kind": "class",
    "members": {
     "__init__": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.reduction.AggregateEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None",
-    "available_value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Quantity | rangekeeper.flow.Flow | None",
+    "available_value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None",
     "coverage": "method (self, id: uuid.UUID) -> rangekeeper.model.system.reduction.Coverage",
     "display": "method (self, *, transpose: bool = False, precision: int = 2)",
     "root_value": "property",
-    "value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Quantity | rangekeeper.flow.Flow | None"
+    "value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.reduction",
    "signature": "(hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.reduction.AggregateEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None"
@@ -1885,6 +1893,45 @@
    "module": "rangekeeper.model.system.table"
   }
  },
+ "rangekeeper.money": {
+  "CURRENCIES": {
+   "kind": "value",
+   "type": "tuple"
+  },
+  "DIGITS": {
+   "kind": "value",
+   "type": "int"
+  },
+  "MODES": {
+   "kind": "value",
+   "type": "frozenset"
+  },
+  "is_currency": {
+   "kind": "function",
+   "module": "rangekeeper.money",
+   "signature": "(units: str) -> bool"
+  },
+  "minor_unit": {
+   "kind": "function",
+   "module": "rangekeeper.money",
+   "signature": "(code: str) -> int | None"
+  },
+  "round": {
+   "kind": "function",
+   "module": "rangekeeper.money",
+   "signature": "(amount: decimal.Decimal, currency: str, *, places: int | None = None, mode: str = 'ROUND_HALF_EVEN') -> decimal.Decimal"
+  },
+  "to_amount": {
+   "kind": "function",
+   "module": "rangekeeper.shared.amounts",
+   "signature": "(number: float | int) -> decimal.Decimal"
+  },
+  "to_number": {
+   "kind": "function",
+   "module": "rangekeeper.shared.amounts",
+   "signature": "(amount: decimal.Decimal) -> float"
+  }
+ },
  "rangekeeper.profile": {
   "GrowthMethod": {
    "kind": "enum",
@@ -1930,13 +1977,15 @@
   "Quantity": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, magnitude: int | float, units: str) -> None",
+    "__init__": "method (self, *, magnitude: Decimal | str | int | float, units: str) -> None",
     "magnitude": "property",
-    "replace": "method (self, *, magnitude: int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
+    "number": "property",
+    "replace": "method (self, *, magnitude: Decimal | str | int | float | Unset = <Unset>, units: str | Unset = <Unset>) -> Self",
+    "round": "method (self, *, places: int | None = None, mode: str = 'ROUND_HALF_EVEN') -> Quantity",
     "units": "property"
    },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, magnitude: int | float, units: str) -> None"
+   "module": "rangekeeper.quantity",
+   "signature": "(*, magnitude: Decimal | str | int | float, units: str) -> None"
   },
   "UnitSystem": {
    "kind": "class",
@@ -1944,12 +1993,12 @@
     "__init__": "method (self, currencies: tuple[str, ...] = tuple('ADP', 'AED', 'AFA', 'AFN', 'ALK', 'ALL', 'AMD', 'ANG', 'AOA', 'AOK', 'AON', 'AOR', 'ARA', 'ARL', 'ARM', 'ARP', 'ARS', 'ATS', 'AUD', 'AWG', 'AZM', 'AZN', 'BAD', 'BAM', 'BAN', 'BBD', 'BDT', 'BEC', 'BEF', 'BEL', 'BGL', 'BGM', 'BGN', 'BGO', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOL', 'BOP', 'BOV', 'BRB', 'BRC', 'BRE', 'BRL', 'BRN', 'BRR', 'BRZ', 'BSD', 'BTN', 'BUK', 'BWP', 'BYB', 'BYN', 'BYR', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLE', 'CLF', 'CLP', 'CNH', 'CNX', 'CNY', 'COP', 'COU', 'CRC', 'CSD', 'CSK', 'CUC', 'CUP', 'CVE', 'CYP', 'CZK', 'DDM', 'DEM', 'DJF', 'DKK', 'DOP', 'DZD', 'ECS', 'ECV', 'EEK', 'EGP', 'ERN', 'ESA', 'ESB', 'ESP', 'ETB', 'EUR', 'FIM', 'FJD', 'FKP', 'FRF', 'GBP', 'GEK', 'GEL', 'GHC', 'GHS', 'GIP', 'GMD', 'GNF', 'GNS', 'GQE', 'GRD', 'GTQ', 'GWE', 'GWP', 'GYD', 'HKD', 'HNL', 'HRD', 'HRK', 'HTG', 'HUF', 'IDR', 'IEP', 'ILP', 'ILR', 'ILS', 'IMP', 'INR', 'IQD', 'IRR', 'ISJ', 'ISK', 'ITL', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRH', 'KRO', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LTL', 'LTT', 'LUC', 'LUF', 'LUL', 'LVL', 'LVR', 'LYD', 'MAD', 'MAF', 'MCF', 'MDC', 'MDL', 'MGA', 'MGF', 'MKD', 'MKN', 'MLF', 'MMK', 'MNT', 'MOP', 'MRO', 'MRU', 'MTL', 'MTP', 'MUR', 'MVP', 'MVR', 'MWK', 'MXN', 'MXP', 'MXV', 'MYR', 'MZE', 'MZM', 'MZN', 'NAD', 'NGN', 'NIC', 'NIO', 'NLG', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEI', 'PEN', 'PES', 'PGK', 'PHP', 'PKR', 'PLN', 'PLZ', 'PTE', 'PYG', 'QAR', 'RHD', 'ROL', 'RON', 'RSD', 'RUB', 'RUR', 'RWF', 'SAR', 'SBD', 'SCR', 'SDD', 'SDG', 'SDP', 'SEK', 'SGD', 'SHP', 'SIT', 'SKK', 'SLE', 'SLL', 'SOS', 'SRD', 'SRG', 'SSP', 'STD', 'STN', 'SUR', 'SVC', 'SYP', 'SZL', 'THB', 'TJR', 'TJS', 'TMM', 'TMT', 'TND', 'TOP', 'TPE', 'TRL', 'TRY', 'TTD', 'TVD', 'TWD', 'TZS', 'UAH', 'UAK', 'UGS', 'UGX', 'USD', 'USN', 'USS', 'UYI', 'UYP', 'UYU', 'UYW', 'UZS', 'VEB', 'VED', 'VEF', 'VES', 'VND', 'VNN', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XEU', 'XFO', 'XFU', 'XOF', 'XPD', 'XPF', 'XPT', 'XRE', 'XSU', 'XTS', 'XUA', 'XXX', 'YDD', 'YER', 'YUD', 'YUM', 'YUN', 'YUR', 'ZAL', 'ZAR', 'ZMK', 'ZMW', 'ZRN', 'ZRZ', 'ZWD', 'ZWL', 'ZWN', 'ZWR'), definitions: tuple[str, ...] = tuple()) -> None",
     "alias": "method (self, alias: str, unit: str) -> UnitSystem",
     "compatible": "method (self, left: str, right: str) -> bool",
-    "convert": "method (self, quantity: rangekeeper.schema.records.Quantity, *, to: str) -> rangekeeper.schema.records.Quantity",
+    "convert": "method (self, quantity: rangekeeper.schema.records.Quantity, *, to: str) -> rangekeeper.quantity.Quantity",
     "divide": "method (self, numerator: str, denominator: str) -> str",
     "fingerprint": "property",
     "minor_unit": "method (self, code: str) -> int | None",
     "multiply": "method (self, left: str, right: str) -> str",
-    "parse_quantity": "method (self, text: str) -> rangekeeper.schema.records.Quantity",
+    "parse_quantity": "method (self, text: str) -> rangekeeper.quantity.Quantity",
     "register": "method (self, name: str, *, definition: str | None = None, aliases: tuple[str, ...] = tuple()) -> UnitSystem",
     "validate_units": "method (self, text: str) -> None"
    },
@@ -1959,11 +2008,6 @@
   "default_units": {
    "kind": "value",
    "type": "UnitSystem"
-  },
-  "minor_unit": {
-   "kind": "function",
-   "module": "rangekeeper.quantity",
-   "signature": "(code: str) -> int | None"
   },
   "unit_systems": {
    "kind": "value",
@@ -2018,7 +2062,8 @@
    "members": [
     "EVALUATOR",
     "COMPILER",
-    "SOLVER"
+    "SOLVER",
+    "CONVENTION"
    ],
    "module": "rangekeeper.schema.enums"
   },

@@ -12,7 +12,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from rangekeeper import Model, Specification
+from rangekeeper import Model, Quantity, Specification
 from rangekeeper.errors import Code
 from rangekeeper.execution import (
     Executor,
@@ -132,8 +132,8 @@ def test_declared_forward_then_inverse_on_genuine_output(tmp_path, disk):
         ),
     )
     first = output(store, forward)
-    assert first.value(NOI).quantity.magnitude == pytest.approx(550000)
-    assert first.value(CAPITAL).quantity.magnitude == pytest.approx(11000000)
+    assert first.value(NOI).quantity.number == pytest.approx(550000)
+    assert first.value(CAPITAL).quantity.number == pytest.approx(11000000)
     assert first.metadata.previous == original.id
     common = store.load_specification(
         UUID(data("specification-common")["metadata"]["id"])
@@ -150,8 +150,8 @@ def test_declared_forward_then_inverse_on_genuine_output(tmp_path, disk):
     inverse2 = inverse.revise(SpecificationRecord.from_data(changed))
     run2 = execute(store, inverse2)
     second = output(store, run2)
-    assert second.value(RENT).quantity.magnitude == pytest.approx(27500)
-    assert second.value(NOI).quantity.magnitude == pytest.approx(500000)
+    assert second.value(RENT).quantity.number == pytest.approx(27500)
+    assert second.value(NOI).quantity.number == pytest.approx(500000)
     assert second.metadata.previous == first.id
     assert first.value(RENT).quantity.magnitude == 30000
     assert original.to_data() == before
@@ -209,7 +209,7 @@ def test_inputs_and_declared_equations_drive_results(change, expected):
         ]["magnitude"] = 32000
     assert output(store, execute(store, Specification.from_data(payload))).value(
         CAPITAL
-    ).quantity.magnitude == pytest.approx(expected)
+    ).quantity.number == pytest.approx(expected)
 
 
 def test_assignment_unit_conversion_is_checked_and_published_canonically():
@@ -223,15 +223,15 @@ def test_assignment_unit_conversion_is_checked_and_published_canonically():
     }
     result = output(store, execute(store, Specification.from_data(payload)))
     assert result.value(RENT).quantity.units == "AUD/dwelling/year"
-    assert result.value(RENT).quantity.magnitude == pytest.approx(30000)
-    assert result.value(CAPITAL).quantity.magnitude == pytest.approx(11000000)
+    assert result.value(RENT).quantity.number == pytest.approx(30000)
+    assert result.value(CAPITAL).quantity.number == pytest.approx(11000000)
 
 
 def literal(value, units="AUD"):
     return {
         "id": str(uuid4()),
         "kind": "quantity",
-        "quantity": {"magnitude": value, "units": units},
+        "quantity": Quantity(magnitude=value, units=units).to_data(),
     }
 
 

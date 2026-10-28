@@ -58,6 +58,13 @@ classes:
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
 types:
+  Amount:
+    description: Canonical decimal text of a currency amount, with at most 15 significant digits. Plain
+      notation, no exponent, no sign for zero or positive values, no leading zeros and no trailing fractional
+      zeros.
+    typeof: string
+    uri: xsd:decimal
+    pattern: ^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$
   Code:
     description: A case-sensitive name unique within its declared collection. Leading and trailing whitespace
       are forbidden; codes are not silently normalized.

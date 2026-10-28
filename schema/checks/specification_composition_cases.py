@@ -4,6 +4,7 @@ import json
 from copy import deepcopy
 from uuid import NAMESPACE_URL, uuid5
 
+import _library
 import yaml
 from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
@@ -250,7 +251,7 @@ def check_composition(schema, validators, module, model, version, model_version)
         )
     )
     # The native dumper omits the empty local list; included preference order stays.
-    assert check(transported, (criteria,)).effective == result.effective
+    assert check(_library.wire(transported), (criteria,)).effective == result.effective
     competing = record(
         "competing-criteria", objectives=deepcopy(criteria["objectives"])
     )
@@ -337,7 +338,7 @@ def check_composition(schema, validators, module, model, version, model_version)
         assert all(
             isinstance(ref, module.MetadataId) for ref in obj.includes + obj.cases
         )
-        after = json.loads(json_dumper.dumps(obj, inject_type=False))
+        after = _library.dump(obj)
         assert after == doc, (doc, after)
         validators["Specification"].validate(after)
         restored[after["metadata"]["id"]] = after

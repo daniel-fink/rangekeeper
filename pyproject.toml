@@ -101,6 +101,7 @@ layers = [
     "profile",
     "duration",
     "quantity",
+    "money",
     "schema",
     "shared",
 ]

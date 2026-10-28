@@ -17,7 +17,6 @@ import _library
 import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
-from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 
@@ -295,12 +294,15 @@ with TemporaryDirectory(prefix="rk-model-") as temp:
             assert isinstance(record.system.formulations[0], module.Formulation)
         if record.definitions and record.definitions.functions:
             assert isinstance(record.definitions.functions[0], module.Function)
-        after = json.loads(json_dumper.dumps(record, inject_type=False))
-        assert nonempty(document) == nonempty(after), (document, after)
+        after = _library.dump(record)
+        assert _library.stock(nonempty(document)) == _library.stock(nonempty(after)), (
+            document,
+            after,
+        )
         validators["Model"].validate(after)
         check_model(after, VERSION)
         restored = json_loader.loads(json.dumps(after), target_class=module.Model)
-        assert json.loads(json_dumper.dumps(restored, inject_type=False)) == after
+        assert _library.dump(restored) == after
 
 print(
     f"Passed {len(validators)} generated schemas, {len(valid)} valid Models, {len(invalid)} structural rejections,"

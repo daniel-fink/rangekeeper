@@ -322,7 +322,7 @@ def extrapolate(
     return Flow.from_periods(
         periods,
         grow_values(
-            initial.magnitude,
+            initial.number,
             count=len(periods),
             method=method,
             rate=rate,
@@ -366,7 +366,7 @@ def distribute(
         raise ValueError(
             "allocation weights must be finite, nonnegative and sum to one"
         )
-    values = [quantity.magnitude * w for w in weights]
+    values = [quantity.number * w for w in weights]
     # Assign roundoff to the final bucket so total content retains the stated amount.
-    values[-1] += quantity.magnitude - math.fsum(values)
+    values[-1] += quantity.number - math.fsum(values)
     return Flow.from_periods(periods, values, units=quantity.units)

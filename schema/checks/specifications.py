@@ -17,7 +17,6 @@ import _library
 import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
-from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 
@@ -532,15 +531,18 @@ with TemporaryDirectory(prefix="rk-specification-") as temp:
             assert isinstance(assignment.quantity, module.Quantity)
         for objective in record.objectives:
             assert isinstance(objective.expression, module.ExpressionId)
-        after = json.loads(json_dumper.dumps(record, inject_type=False))
+        after = _library.dump(record)
         assert after.get("objectives", []) == document.get("objectives", [])
-        assert nonempty(document) == nonempty(after), (document, after)
+        assert _library.stock(nonempty(document)) == _library.stock(nonempty(after)), (
+            document,
+            after,
+        )
         validators["Specification"].validate(after)
         check_specification(after, snapshot, VERSION, MODEL_VERSION)
         restored = json_loader.loads(
             json.dumps(after), target_class=module.Specification
         )
-        assert json.loads(json_dumper.dumps(restored, inject_type=False)) == after
+        assert _library.dump(restored) == after
 
     from specification_composition_cases import check_composition
 

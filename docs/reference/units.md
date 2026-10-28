@@ -68,10 +68,10 @@ to try instead, when the registry knows any. The message repeats them.
 | `register(name, *, definition=None, aliases=())` | Returns a new system with one more unit. Without a definition, the unit has its own dimension. |
 | `alias(alias, unit)` | Returns a new system with one more spelling of a known unit |
 
-The module function `minor_unit(code)` gives the ISO 4217 minor unit of any
-catalogue code: `AUD` 2, `JPY` 0, `KWD` 3, `CLF` 4. A code that ISO 4217 lists
-without a minor unit, such as `XAU` or `XXX`, gives `None`.
-[ADR-023](../decisions/023-decimal-money.md) uses it for rounding.
+The function `rangekeeper.money.minor_unit(code)` gives the ISO 4217 minor unit
+of any catalogue code: `AUD` 2, `JPY` 0, `KWD` 3, `CLF` 4. A code that ISO 4217
+lists without a minor unit, such as `XAU` or `XXX`, gives `None`.
+[Currency amounts](#currency-amounts) use it for rounding.
 
 ```python
 from rangekeeper.quantity import default_units
@@ -86,6 +86,51 @@ that the system already has.
 
 `UnitSystem.fingerprint` hashes the implementation, the currencies and the
 definitions. Two systems with one fingerprint parse and convert the same units.
+
+## Currency amounts
+
+A **currency amount** is a magnitude whose units are exactly one ISO 4217 code,
+for example `AUD` ([ADR-023](../decisions/023-decimal-money.md)). A Quantity uses
+its own `units`; a Movement uses the `units` of its Flow. Rates such as
+`AUD/m^2` and `AUD/year` are not currency amounts.
+
+- `magnitude` is a `Decimal` for a currency amount, and an `int` or `float` for
+  other units. `number` is always a float64 for calculations.
+- An amount is finite and has at most 15 significant digits. Its **canonical
+  text** has plain notation, no exponent, no sign for zero and no trailing
+  fractional zeros: `Decimal("1.50")` is `"1.5"`.
+- Construction converts an `int` and decimal text exactly, and a `float` through
+  `money.to_amount`: `Quantity(magnitude=0.1 + 0.2, units="AUD")` is `0.3`.
+  Decimal text in other units fails with `Code.CURRENCY_AMOUNT`; more than 15
+  digits fails with `Code.AMOUNT_DIGITS`.
+- `to_data()`, JSON and YAML give the canonical text as a string. The JSON reader
+  is strict: a number, or text that is not canonical, fails and the error gives
+  the canonical text. The YAML reader also takes a plain numeral, such as
+  `1250000.50`, from its source text. A Bundle stores the text in the `string`
+  field of the `Amount` option.
+- Calculations use float64. `money.to_number` converts an amount for a
+  calculation and `money.to_amount` converts a result back, at 15 significant
+  digits, half even. Flow sums use `math.fsum`, so `Flow.total()` of three
+  `0.10 AUD` movements is `0.3`. Copies (`clone`, `trim`, `clean`, same-code
+  `convert`) and `negate` keep each amount exactly. Currencies never convert.
+- Polars frames hold amounts as `Float64`; `io.polars.from_frame` converts them
+  back with `to_amount`.
+
+The library rounds only on request. `Quantity.round(places=None,
+mode=ROUND_HALF_EVEN)` and `money.round(amount, code, ...)` round to the minor
+unit by default. A code without a minor unit needs `places`; a negative `places`
+rounds to tens or hundreds. `mode` is one of the rounding constants of the
+`decimal` module.
+
+```python
+from decimal import ROUND_HALF_UP
+
+from rangekeeper import Quantity
+
+price = Quantity(magnitude="0.125", units="AUD")
+price.round().magnitude  # Decimal('0.12')
+price.round(mode=ROUND_HALF_UP).magnitude  # Decimal('0.13')
+```
 
 ## Named unit systems
 

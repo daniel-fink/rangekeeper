@@ -10,6 +10,7 @@ _P0 = re.compile('^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])')
 _P1 = re.compile('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
 _P2 = re.compile('\\S')
 _P3 = re.compile('^[0-9a-f]{64}$')
+_P4 = re.compile('^(0|-?(0\\.[0-9]*[1-9]|[1-9][0-9]*(\\.[0-9]*[1-9])?))$')
 
 
 def check_Action(d, fields=None):
@@ -993,7 +994,7 @@ def check_Implementation(d, fields=None):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'kind' in d and (fields is None or 'kind' in fields):
         v = d['kind']
-        if not ((v in ('evaluator', 'compiler', 'solver') and (type(v) is str))):
+        if not ((v in ('evaluator', 'compiler', 'solver', 'convention') and (type(v) is str))):
             issues.append(('structure.value', 'invalid kind', '/kind'))
     if 'name' in d and (fields is None or 'name' in fields):
         v = d['name']
@@ -1225,7 +1226,7 @@ def check_Movement(d, fields=None):
             issues.append(('structure.value', 'invalid key', '/key'))
     if 'magnitude' in d and (fields is None or 'magnitude' in fields):
         v = d['magnitude']
-        if not ((_number(v) or v is None)):
+        if not ((((type(v) is not str or _P4.search(v) is not None) and (type(v) is str)) or ((_number(v))) or ((v is None)))):
             issues.append(('structure.value', 'invalid magnitude', '/magnitude'))
     if 'period' in d and (fields is None or 'period' in fields):
         v = d['period']
@@ -1493,7 +1494,7 @@ def check_Quantity(d, fields=None):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'magnitude' in d and (fields is None or 'magnitude' in fields):
         v = d['magnitude']
-        if not ((_number(v))):
+        if not ((((type(v) is not str or _P4.search(v) is not None) and (type(v) is str)) or ((_number(v))))):
             issues.append(('structure.value', 'invalid magnitude', '/magnitude'))
     if 'units' in d and (fields is None or 'units' in fields):
         v = d['units']

@@ -49,6 +49,9 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | --- | --- | --- | --- |
 | Quantity | A magnitude with units; `rk.Quantity` at the root | `quantity` | — |
 | Units | A unit string, such as `AUD per year` | `quantity` | — |
+| Currency amount | A magnitude whose units are one ISO 4217 code, held as a `Decimal` with at most 15 significant digits. See [currency amounts](../reference/units.md#currency-amounts) | `money` | — |
+| Canonical text | The one decimal text of a currency amount, for example `"1.5"`, in records, JSON, YAML and Parquet | `money` | — |
+| Boundary conversion | `to_number` from an amount to float64 for a calculation, and `to_amount` back at 15 significant digits | `money` | — |
 | Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `quantity` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | — |

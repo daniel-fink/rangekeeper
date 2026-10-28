@@ -34,7 +34,7 @@ class Model:
         self.ncf = Flow(units=units, movements=projected_ncf.movements[:-1])
         self.disposition = Flow.from_periods(
             periods[-2:-1],
-            (projected_ncf.movements[-1].magnitude / params["cap_rate"],),
+            (projected_ncf.movements[-1].number / params["cap_rate"],),
             units=units,
         )
         self.ncf_disposition = (

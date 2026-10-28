@@ -68,7 +68,7 @@
             "id": "36628e4b-b9a6-55a9-9c2a-48f535649f90",
             "kind": "quantity",
             "quantity": {
-              "magnitude": 0,
+              "magnitude": "0",
               "units": "AUD"
             }
           }
@@ -125,7 +125,7 @@
             "id": "b56c466b-13fb-5fde-9f40-6d9aced1cb7a",
             "kind": "quantity",
             "quantity": {
-              "magnitude": 0,
+              "magnitude": "0",
               "units": "AUD"
             }
           }

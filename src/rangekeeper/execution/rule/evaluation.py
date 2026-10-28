@@ -7,14 +7,13 @@ from rangekeeper.execution.rule.observation import RuleCapabilityError, _observe
 from rangekeeper.execution.rule.result import RuleResult
 from rangekeeper.model import Model
 from rangekeeper.model._scope import scope_for_model
-from rangekeeper.quantity import UnitSystem
+from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.run._rule.availability import evidence_dates
 from rangekeeper.run._rule.evidence import validate_evidence
 from rangekeeper.run._rule.predicate import evaluate as evaluate_expression
 from rangekeeper.schema.records import (
     ActionKind,
     Assignment,
-    Quantity,
     RuleEvidence,
     RuleSet,
 )

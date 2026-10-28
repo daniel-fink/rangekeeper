@@ -8,6 +8,7 @@ from itertools import pairwise
 from types import MappingProxyType
 from uuid import UUID
 
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.validation import require, require_unique
 
 
@@ -331,7 +332,7 @@ def _check_contents(item, scope):
                         token in availability and availability[token] >= earliest,
                         "scenario observation precedes its period end",
                     )
-                magnitudes = [m["magnitude"] for m in movements]
+                magnitudes = [number(m["magnitude"]) for m in movements]
                 if field == "inputs":
                     captured_arrays[name] = magnitudes
             else:
@@ -340,7 +341,7 @@ def _check_contents(item, scope):
                     quantity is not None and quantity["units"] == "dimensionless",
                     "captured parameter must be a dimensionless Quantity",
                 )
-                magnitudes = [quantity["magnitude"]]
+                magnitudes = [number(quantity["magnitude"])]
             if field == "inputs" and name in parameters:
                 if contract.scalar_parameters:
                     captured[name] = magnitudes[0]
@@ -348,7 +349,8 @@ def _check_contents(item, scope):
                 if parameter.get("quantity") is not None:
                     require(
                         all(
-                            x == parameter["quantity"]["magnitude"] for x in magnitudes
+                            x == number(parameter["quantity"]["magnitude"])
+                            for x in magnitudes
                         ),
                         "captured parameter differs from fixed plan input",
                     )

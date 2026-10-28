@@ -15,6 +15,7 @@ OWNED = {
     "Flow": rk.flow.Flow,
     "Movement": rk.flow.Movement,
     "Period": rk.duration.Period,
+    "Quantity": rk.Quantity,
     "Span": rk.duration.Span,
 }
 

@@ -23,6 +23,7 @@ _LAZY_MODULES = frozenset(
         "execution",
         "flow",
         "quantity",
+        "money",
         "profile",
         "market",
     }

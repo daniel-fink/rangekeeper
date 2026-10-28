@@ -106,7 +106,7 @@ def test_period_timing_is_explicit_and_does_not_change_content():
         financial.calculate_xnpv(flow, rate=0.1, valuation_date=date(2026, 1, 1))
     assert financial.calculate_xnpv(
         flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.END
-    ).magnitude == pytest.approx(100 / 1.1 ** (31 / 365))
+    ).number == pytest.approx(100 / 1.1 ** (31 / 365))
     assert flow.to_data() == original
 
 
@@ -115,7 +115,7 @@ def test_payment_date_is_independent_of_coverage():
     assert flow.movements[0].resolve(timing=PeriodTiming.FIRST) == date(2026, 2, 5)
     assert financial.calculate_xnpv(
         flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.LAST
-    ).magnitude == pytest.approx(100 / 1.1 ** (35 / 365))
+    ).number == pytest.approx(100 / 1.1 ** (35 / 365))
     assert flow.trim(JANUARY) == flow
     assert flow.extent() == (JANUARY.start, JANUARY.end)
     with pytest.raises(ValueError, match="crosses a movement period"):

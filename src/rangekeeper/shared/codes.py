@@ -59,6 +59,11 @@ class Code(StrEnum):
     UNIQUE = "semantic.unique"
     UNITS = "semantic.units"
 
+    # Currency amounts (ADR-023): a magnitude whose type does not match its
+    # units, and an amount with more than 15 significant digits.
+    AMOUNT_DIGITS = "amount_digits"
+    CURRENCY_AMOUNT = "currency_amount"
+
     # The local rules of one value type (ADR-011), as ``invariant.<kind>``.
     INVARIANT_DISTRIBUTION = "invariant.Distribution"
     INVARIANT_FLOW = "invariant.Flow"

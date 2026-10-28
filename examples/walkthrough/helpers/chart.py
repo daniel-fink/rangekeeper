@@ -237,7 +237,7 @@ def plot_flows(
         figure.add_trace(
             go.Scatter(
                 x=[m.resolve(timing=timing) for m in flow.movements],
-                y=[m.magnitude for m in flow.movements],
+                y=[m.number for m in flow.movements],
                 name=label,
                 mode="lines+markers",
                 hovertemplate="%{x|%d %b %Y}<br>%{y:,.2f} "

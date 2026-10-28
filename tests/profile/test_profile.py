@@ -44,5 +44,5 @@ def test_pert_allocation_preserves_mass_without_padding_observations():
         periods=periods,
         distribution=Distribution.pert(),
     )
-    assert flow.total().magnitude == pytest.approx(1)
+    assert flow.total().number == pytest.approx(1)
     assert tuple(m.period for m in flow.movements) == periods

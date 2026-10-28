@@ -8,5 +8,5 @@ operands:
 - id: 8a82e02f-9fdd-4ff7-a68e-387a6279ed32
   kind: quantity
   quantity:
-    magnitude: 10000000
+    magnitude: "10000000"
     units: AUD

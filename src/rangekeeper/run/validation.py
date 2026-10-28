@@ -7,7 +7,7 @@ from uuid import UUID
 from rangekeeper.model._scope import resolve_reference
 from rangekeeper.model.model import Model
 from rangekeeper.model.validation import check_model
-from rangekeeper.quantity import UnitSystem, default_units
+from rangekeeper.quantity import Quantity, UnitSystem, default_units
 from rangekeeper.run.outputs import validate_outputs
 from rangekeeper.run.report import (
     check_non_batch_status,
@@ -16,7 +16,7 @@ from rangekeeper.run.report import (
 )
 from rangekeeper.schema.enums import CompletionStatus
 from rangekeeper.schema.index import walk_data
-from rangekeeper.schema.records import Diagnostic, Quantity, Step
+from rangekeeper.schema.records import Diagnostic, Step
 from rangekeeper.schema.runtime import Record, exact_equal
 from rangekeeper.schema.validation import checked, document_version, supports_version
 from rangekeeper.shared.diagnostics import Issue, ValidationReport

@@ -5,6 +5,7 @@ from uuid import UUID
 
 from rangekeeper.model._scope import numerical_units, reference_key
 from rangekeeper.model.expression.validation import analyze_expressions
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.validation import require
 
 
@@ -78,7 +79,8 @@ def validate_rules(rules, *, scope, units_compatible=None):
                 )
                 actual = action["quantity"]
                 require(
-                    math.isfinite(actual["magnitude"]), "non-finite rule assignment"
+                    math.isfinite(number(actual["magnitude"])),
+                    "non-finite rule assignment",
                 )
                 require(
                     (

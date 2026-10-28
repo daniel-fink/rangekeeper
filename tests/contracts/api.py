@@ -24,6 +24,7 @@ SNAPSHOT = Path(__file__).with_name("api.json")
 PACKAGES = (
     "rangekeeper",
     "rangekeeper.quantity",
+    "rangekeeper.money",
     "rangekeeper.duration",
     "rangekeeper.profile",
     "rangekeeper.flow",

@@ -17,8 +17,9 @@ from rangekeeper.execution.preparation import Assertion, Prepared
 from rangekeeper.model.expression.evaluation import (
     evaluate as numerical,
 )
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.index import walk
-from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
+from rangekeeper.schema.records import Expression, ExpressionKind, Operator
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import UnitError
 
@@ -77,9 +78,9 @@ class Compiler:
         one = self.prepared.units.convert(
             Quantity(magnitude=1, units=value.units), to=units
         )
-        if zero.magnitude != 0:
+        if zero.number != 0:
             raise UnsupportedError("offset unit arithmetic is not supported")
-        return self.scale(value, float(one.magnitude), units)
+        return self.scale(value, one.number, units)
 
     @staticmethod
     def scale(value: Affine, factor: float, units: str) -> Affine:
@@ -103,13 +104,13 @@ class Compiler:
         self.checkpoint()
         if node.kind == ExpressionKind.QUANTITY:
             assert node.quantity is not None
-            return _affine(float(node.quantity.magnitude), {}, node.quantity.units)
+            return _affine(node.quantity.number, {}, node.quantity.units)
         if node.kind == ExpressionKind.REFERENCE:
             assert node.target is not None
             token = node.target.target
             if token in self.prepared.assignments:
                 assigned = self.prepared.assignments[token]
-                return _affine(float(assigned.magnitude), {}, assigned.units)
+                return _affine(assigned.number, {}, assigned.units)
             if token in self.prepared.unknowns:
                 return _affine(0, {token: 1}, self.prepared.value_units[token])
             raise UnsupportedError("expression reference has no explicit solve role")
@@ -218,7 +219,7 @@ class Compiler:
             compare = (
                 operator.lt if node.operator is Operator.LESS_THAN else operator.gt
             )
-            if not compare(left.magnitude, right.magnitude):
+            if not compare(left.number, right.number):
                 raise UnsupportedError("fixed strict predicate is false")
             return ()
         if node.kind != ExpressionKind.BINARY or node.operator not in {

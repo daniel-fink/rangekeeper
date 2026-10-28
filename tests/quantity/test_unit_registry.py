@@ -25,7 +25,8 @@ from rangekeeper.model.system import View, reducers
 from rangekeeper.model.system.reduction import Reduction
 from rangekeeper.model.system.selection import select_value
 from rangekeeper.model.system.table import ValueColumn, to_table
-from rangekeeper.quantity import Quantity, UnitSystem, default_units, minor_unit
+from rangekeeper.money import minor_unit
+from rangekeeper.quantity import Quantity, UnitSystem, default_units
 from rangekeeper.shared.errors import UnitError, ValidationError
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -117,7 +118,7 @@ def test_unit_text_round_trips(text):
     assert default_units.multiply(canonical, "dimensionless") == canonical
     assert default_units.compatible(text, canonical)
     converted = default_units.convert(Quantity(magnitude=1, units=text), to=canonical)
-    assert converted.magnitude == pytest.approx(1)
+    assert converted.number == pytest.approx(1)
 
 
 @pytest.mark.parametrize(
@@ -148,13 +149,13 @@ def test_unit_text_round_trips(text):
 )
 def test_aliases(alias, canonical, factor):
     converted = default_units.convert(Quantity(magnitude=1, units=alias), to=canonical)
-    assert converted.magnitude == pytest.approx(factor)
+    assert converted.number == pytest.approx(factor)
 
 
 def test_per_annum_is_per_year_not_picoyear():
     seven = default_units.parse_quantity("7 % pa")
     assert seven == Quantity(magnitude=7.0, units="% pa")
-    assert default_units.convert(seven, to="1/year").magnitude == pytest.approx(0.07)
+    assert default_units.convert(seven, to="1/year").number == pytest.approx(0.07)
     assert default_units.compatible("AUD pa", "AUD/year")
     assert not default_units.compatible("AUD pa", "AUD")
 
@@ -286,7 +287,7 @@ def test_register_and_alias_return_new_systems():
     land = default_units.register("rood", definition="1011.7141056 * sqm")
     assert land.convert(
         Quantity(magnitude=1, units="rood"), to="sqm"
-    ).magnitude == pytest.approx(1011.7141056)
+    ).number == pytest.approx(1011.7141056)
     with pytest.raises(UnitError):
         default_units.validate_units("storey")
     assert extended != default_units and default_units.definitions == ()

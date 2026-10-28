@@ -4,8 +4,9 @@ from collections.abc import Sequence
 from uuid import UUID
 
 from rangekeeper.model import Model
+from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import ValueKind
-from rangekeeper.schema.records import Assignment, Quantity, Reference
+from rangekeeper.schema.records import Assignment, Reference
 
 
 def _select(model: Model, value: UUID, ids: Sequence[UUID] | None):

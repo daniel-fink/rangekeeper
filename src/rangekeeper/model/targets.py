@@ -8,7 +8,8 @@ over raw wire mappings, which run before a Model exists, are in
 from typing import TYPE_CHECKING
 
 from rangekeeper.flow import Movement
-from rangekeeper.schema.records import Measure, Quantity, Reference, Value, ValueKind
+from rangekeeper.quantity import Quantity
+from rangekeeper.schema.records import Measure, Reference, Value, ValueKind
 from rangekeeper.shared.validation import require
 
 if TYPE_CHECKING:

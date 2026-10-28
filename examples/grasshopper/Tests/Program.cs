@@ -9,7 +9,7 @@ var model=Codec.Decode<Model>(File.ReadAllText(args[0]));
 Validator.Require(model);
 var before=Codec.Encode(model);
 var movementId=Guid.NewGuid();
-var movement=new Movement {Id=movementId,Date=new DateOnly(2026,1,1),Magnitude=0};
+var movement=new Movement {Id=movementId,Date=new DateOnly(2026,1,1),Magnitude=JsonValue.Create(0)};
 Require(!movement.Key.IsPresent,"omitted matching key was invented");
 Require(Codec.Decode<Movement>(Codec.Encode(movement)).Id==movementId,"Movement UUID changed");
 var reference=new Reference {Target=movementId};
@@ -29,7 +29,13 @@ var value=new Value { Id=Guid.NewGuid(),Key="zero",Kind="measurement",Quantity=n
 Require(!value.Measure.IsPresent,"omission lost");
 var nullable=new Value {Id=value.Id,Key="null",Kind="measurement",Quantity=Optional<Quantity>.Null};
 Require(nullable.Quantity.IsPresent && nullable.Quantity.IsNull,"null lost");
-Require(Codec.Decode<Value>(Codec.Encode(value)).Quantity.Value.Magnitude==0,"zero lost");
+Require(Codec.Decode<Value>(Codec.Encode(value)).Quantity.Value.Magnitude.GetValue<int>()==0,"zero lost");
+var amount=new Quantity {Magnitude=Amounts.ToNode(1250000.50m),Units="AUD"};
+Require(Codec.Encode(amount).Contains("\"1250000.5\""),"amount not canonical text");
+Require(Amounts.ToDecimal(Codec.Decode<Quantity>(Codec.Encode(amount)).Magnitude)==1250000.5m,"amount changed");
+Require(Amounts.ToDecimal(Amounts.ToNode(-0.00m)).ToString(System.Globalization.CultureInfo.InvariantCulture)=="0","negative zero kept");
+foreach (var text in new[] {"1.50","1e3","-0"}) { try { Amounts.ToDecimal(JsonValue.Create(text)!);throw new Exception("non-canonical amount accepted: "+text); } catch(global::System.Text.Json.JsonException) { } }
+try { Amounts.ToDecimal(JsonValue.Create(1.5)!);throw new Exception("number accepted as amount"); } catch(global::System.Text.Json.JsonException) { }
 Require(Compose.Clone(value,true).Id==value.Id,"reuse identity changed");
 Require(Compose.Clone(value,false).Id!=value.Id,"new identity reused");
 var nested=model.System.Value.ToData();nested["entities"]!.AsArray().Clear();

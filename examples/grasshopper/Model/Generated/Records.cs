@@ -1346,9 +1346,9 @@ public sealed class Movement : WireRecord
         init => WriteOptional("key", value);
     }
     /// <summary>Wire field magnitude; missing and null remain distinct.</summary>
-    public Optional<decimal> Magnitude
+    public Optional<JsonNode> Magnitude
     {
-        get => ReadOptional<decimal>("magnitude");
+        get => ReadOptional<JsonNode>("magnitude");
         init => WriteOptional("magnitude", value);
     }
     /// <summary>Wire field period; missing and null remain distinct.</summary>
@@ -1630,9 +1630,9 @@ public sealed class Quantity : WireRecord
     public Quantity(JsonObject data) : base(data) { }
 
     /// <summary>Wire field magnitude; missing and null remain distinct.</summary>
-    public decimal Magnitude
+    public JsonNode Magnitude
     {
-        get => Read<decimal>("magnitude");
+        get => Read<JsonNode>("magnitude");
         init => Write("magnitude", value);
     }
     /// <summary>Wire field units; missing and null remain distinct.</summary>
@@ -2172,9 +2172,9 @@ public sealed class Settings : WireRecord
         init => WriteOptional("iteration_limit", value);
     }
     /// <summary>Wire field relative_tolerance; missing and null remain distinct.</summary>
-    public Optional<decimal> RelativeTolerance
+    public Optional<double> RelativeTolerance
     {
-        get => ReadOptional<decimal>("relative_tolerance");
+        get => ReadOptional<double>("relative_tolerance");
         init => WriteOptional("relative_tolerance", value);
     }
     /// <summary>Wire field symbol_limit; missing and null remain distinct.</summary>
@@ -2184,9 +2184,9 @@ public sealed class Settings : WireRecord
         init => WriteOptional("symbol_limit", value);
     }
     /// <summary>Wire field time_limit; missing and null remain distinct.</summary>
-    public Optional<decimal> TimeLimit
+    public Optional<double> TimeLimit
     {
-        get => ReadOptional<decimal>("time_limit");
+        get => ReadOptional<double>("time_limit");
         init => WriteOptional("time_limit", value);
     }
 }

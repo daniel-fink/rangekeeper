@@ -484,6 +484,12 @@ symbols:
     new_module: rangekeeper.model.targets
     status: agreed
     source: ADR-010, #161
+  - module: rangekeeper.quantity
+    name: minor_unit
+    new_module: rangekeeper.money
+    status: agreed
+    source: ADR-023, #117
+    note: The money module owns the ISO 4217 catalogue, boundaries and rounding.
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it

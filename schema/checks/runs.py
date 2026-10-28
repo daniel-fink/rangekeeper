@@ -17,7 +17,6 @@ import _library
 import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
-from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 
@@ -305,7 +304,7 @@ def optimization(bundle, run):
             r["quantity"]["magnitude"] = {
                 "annual_rent_per_home": 32000,
                 "NOI": 590000,
-                "capital_value": 11800000,
+                "capital_value": "11800000",
             }[r["key"]]
     run["report"]["trace"].insert(
         -1,
@@ -434,7 +433,7 @@ bad(
 )
 bad(
     "unit conversion requires adapter",
-    lambda b, r: r["report"]["diagnostics"][0]["tolerance"].update(units="USD"),
+    lambda b, r: r["report"]["diagnostics"][0]["tolerance"].update(units="USD/year"),
 )
 bad("trace times out of order", lambda b, r: r["report"]["trace"].reverse())
 bad(
@@ -516,7 +515,7 @@ for name, rent, noi, capital in (
     }
     assert values["annual_rent_per_home"] == rent
     assert values["NOI"] == noi == 20 * rent - 50000
-    assert values["capital_value"] == capital and capital * 0.05 == noi
+    assert int(values["capital_value"]) == capital and capital * 0.05 == noi
 
 
 def normalized(value, key=None):
@@ -553,8 +552,13 @@ with TemporaryDirectory(prefix="rk-run-check-") as temp:
             assert all(
                 isinstance(ref, module.MetadataId) for ref in obj.spawns + obj.outputs
             )
-            after = json.loads(json_dumper.dumps(obj, inject_type=False))
-            assert normalized(after) == normalized(doc), (doc, after)
+            after = _library.dump(obj)
+            assert _library.stock(normalized(after)) == _library.stock(
+                normalized(doc)
+            ), (
+                doc,
+                after,
+            )
             bundle["runs"][key] = after
             roundtrips += 1
         check(root, bundle)

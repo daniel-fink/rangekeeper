@@ -9,10 +9,10 @@ from datetime import date
 from uuid import UUID
 
 from rangekeeper.model._scope import recorded_quantity, reference_key, resolve_reference
-from rangekeeper.quantity import default_units
+from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.run._rule.availability import available_on, evidence_dates
 from rangekeeper.run._rule.predicate import evaluate
-from rangekeeper.schema.records import Expression, Quantity
+from rangekeeper.schema.records import Expression
 from rangekeeper.shared.validation import require
 
 

@@ -9,7 +9,7 @@ from rangekeeper.schema.records import Entity, Expression, Location, Quantity
 Entity()  # Missing required identity.
 Entity(id="not a UUID")
 Entity(id=uuid4(), unknown=True)
-Quantity(magnitude="1", units="m")
+Quantity(magnitude=[1], units="m")  # A magnitude is a number or decimal text.
 Expression(id=uuid4(), kind="boolean")  # Valid wire text is not a typed Enum member.
 Expression(id=uuid4(), kind=ValueKind.MEASUREMENT)  # Unrelated enums remain distinct.
 Expression(id=uuid4(), kind=ExpressionKind.QUANTITY, quantity=Entity(id=uuid4()))

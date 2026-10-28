@@ -10,11 +10,10 @@ from datetime import date
 from uuid import uuid4
 
 from rangekeeper.duration import Period
-from rangekeeper.flow._flow import Flow, Movement
+from rangekeeper.flow._flow import Flow, Movement, _number
 from rangekeeper.flow._mapping import period_indices, weights
 from rangekeeper.flow._options import MissingValueHandling as Missing
-from rangekeeper.quantity import default_units
-from rangekeeper.schema.records import Quantity
+from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.shared.optional import requires
 
 
@@ -131,7 +130,7 @@ class Batch:
                 line_ids.append(line)
                 coordinate_ids.append(lookup[key])
                 orders.append(order)
-                values.append(movement.magnitude)
+                values.append(_number(movement.magnitude))
                 rows.append(movement)
         frame = pl.DataFrame(
             {
@@ -223,7 +222,7 @@ class Batch:
                 if isinstance(source, Derived)
                 else (
                     source
-                    if source.magnitude == magnitude
+                    if _number(source.magnitude) == magnitude
                     else source.replace(magnitude=magnitude)
                 )
             )
@@ -355,10 +354,10 @@ class Batch:
                 else:
                     zero = default_units.convert(
                         Quantity(magnitude=0, units=source), to=unit
-                    ).magnitude
+                    ).number
                     one = default_units.convert(
                         Quantity(magnitude=1, units=source), to=unit
-                    ).magnitude
+                    ).number
                     conversions[source] = (one - zero, zero)
             factor, offset = conversions[source]
             factors.append(factor)

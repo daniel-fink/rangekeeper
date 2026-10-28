@@ -60,7 +60,7 @@ def generate():
                         "date": "DateOnly",
                         "datetime": "DateTimeOffset",
                         "double": "double",
-                        "decimal": "decimal",
+                        "Amount": "decimal",
                     }[k]
             if slot["mapping"]:
                 t = "JsonObject"

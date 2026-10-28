@@ -3,6 +3,7 @@
 import json as _json
 from pathlib import Path
 
+from rangekeeper.io._amounts import amounts, strict
 from rangekeeper.io._document import D, Document, require_kind, restore, trusted
 from rangekeeper.io.atomic import write_new
 from rangekeeper.schema.runtime import copy_json
@@ -24,9 +25,11 @@ def loads(text: str, *, kind: type[D]) -> D:
 
     Malformed/ambiguous text raises DecodeError; valid JSON with an invalid document
     retains its ValidationError or version/domain error. There is no kind guessing.
+    A currency amount must be a string with its canonical text (ADR-023); the
+    error for other text gives the canonical text.
     """
     require_kind(kind)
-    return restore(_parse(text), kind)
+    return restore(amounts(kind.__name__, _parse(text), strict), kind)
 
 
 def dumps(document: Document) -> str:

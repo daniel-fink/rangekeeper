@@ -12,45 +12,28 @@ import difflib
 import math
 import re
 from dataclasses import dataclass, replace
+from decimal import Decimal
 from functools import lru_cache
 from importlib.metadata import version
 from typing import ClassVar
 
-from moneyed import list_all_currencies
-
-from rangekeeper.schema.records import Quantity
+from rangekeeper.money import (
+    CURRENCIES,
+    ROUND_HALF_EVEN,
+    _encoded,
+    _require,
+    is_currency,
+    minor_unit,
+    to_number,
+)
+from rangekeeper.money import round as _round
+from rangekeeper.schema import records
+from rangekeeper.schema.kinds import register
 from rangekeeper.shared.errors import UnitError
 from rangekeeper.shared.fingerprints import manifest_digest
 from rangekeeper.shared.registry import Registry
 
-_CURRENCIES = tuple(currency.code for currency in list_all_currencies())
-
-# ISO 4217 lists no minor unit ("N.A.") for these codes; py-moneyed gives 1.
-_NO_MINOR_UNIT = frozenset(
-    {
-        "XAG",
-        "XAU",
-        "XBA",
-        "XBB",
-        "XBC",
-        "XBD",
-        "XDR",
-        "XPD",
-        "XPT",
-        "XSU",
-        "XTS",
-        "XUA",
-        "XXX",
-    }
-)
-_MINOR_UNITS: dict[str, int | None] = {
-    currency.code: (
-        None
-        if currency.code in _NO_MINOR_UNIT
-        else round(math.log10(currency.sub_unit))
-    )
-    for currency in list_all_currencies()
-}
+_CURRENCIES = CURRENCIES
 
 _SI_PREFIXES = (
     ("quetta", ("Q",), "1e30"),
@@ -209,6 +192,56 @@ def _registry(currencies: tuple[str, ...], definitions: tuple[str, ...] = ()):
     return registry
 
 
+@register
+class Quantity(records.Quantity):
+    """A finite magnitude with explicit units.
+
+    In ISO 4217 currency units the magnitude is a currency amount: a
+    ``Decimal`` with at most 15 significant digits (ADR-023). Construction
+    converts an ``int`` exactly, decimal text exactly and a ``float`` through
+    ``money.to_amount``. In other units the magnitude is an ``int`` or a
+    ``float``.
+    """
+
+    __slots__ = ()
+
+    @classmethod
+    def _coerce(cls, data: dict[str, object]) -> dict[str, object]:
+        units = data.get("units")
+        if not isinstance(units, str) or not is_currency(units):
+            return data
+        magnitude = data.get("magnitude")
+        encoded = _encoded(magnitude)
+        return data if encoded is magnitude else {**data, "magnitude": encoded}
+
+    def _invariants(self) -> None:
+        """Require a currency amount in currency units and a number in other units."""
+        _require(self._data["magnitude"], self.units)
+
+    @property
+    def number(self) -> float:
+        """Return the magnitude as a float64 for a calculation."""
+        magnitude = self.magnitude
+        return (
+            to_number(magnitude) if isinstance(magnitude, Decimal) else float(magnitude)
+        )
+
+    def round(
+        self, *, places: int | None = None, mode: str = ROUND_HALF_EVEN
+    ) -> "Quantity":
+        """Return the amount rounded to ``places``, by default the minor unit.
+
+        Only currency amounts round. See ``rangekeeper.money.round``.
+        """
+        magnitude = self.magnitude
+        if not isinstance(magnitude, Decimal):
+            raise UnitError(f"{self.units!r} is not a currency; only amounts round")
+        return Quantity(
+            magnitude=_round(magnitude, self.units, places=places, mode=mode),
+            units=self.units,
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class UnitSystem:
     """Immutable curated unit catalogue with a private lazy Pint registry.
@@ -364,17 +397,22 @@ class UnitSystem:
         """Return quotient units; callers remain responsible for quantity meaning."""
         return str(self._parse(numerator) / self._parse(denominator))
 
-    def convert(self, quantity: Quantity, *, to: str) -> Quantity:
-        """Return a new finite Quantity; leave the original units and value untouched."""
-        if not isinstance(quantity, Quantity):
+    def convert(self, quantity: records.Quantity, *, to: str) -> Quantity:
+        """Return a new finite Quantity; leave the original units and value untouched.
+
+        Currencies never convert; a currency amount is copied without change.
+        """
+        if not isinstance(quantity, records.Quantity):
             raise TypeError("quantity must be a schema Quantity")
         source, destination = self._parse(quantity.units), self._parse(to)
         if source.dimensionality != destination.dimensionality:
             raise UnitError(f"incompatible units: {quantity.units!r} and {to!r}")
+        if is_currency(quantity.units) and is_currency(to):
+            return Quantity(magnitude=quantity.magnitude, units=to)
         try:
             magnitude = (
                 _registry(self.currencies, self.definitions)
-                .Quantity(quantity.magnitude, source)
+                .Quantity(float(quantity.magnitude), source)
                 .to(destination)
                 .magnitude
             )
@@ -418,13 +456,16 @@ class UnitSystem:
                 f"did you mean {suggestion!r}?",
                 suggestions=(suggestion,),
             ) from error
-        return Quantity(magnitude=magnitude, units=units)
+        # A currency amount is read from its text, never through float.
+        return Quantity(
+            magnitude=match[1] if is_currency(units) else magnitude, units=units
+        )
 
     def minor_unit(self, code: str) -> int | None:
         """Return the ISO 4217 minor unit of a currency in this system, or None if it has none."""
         if code not in self.currencies:
             raise UnitError(f"{code!r} is not a currency in this unit system")
-        return _MINOR_UNITS[code]
+        return minor_unit(code)
 
     def register(
         self,
@@ -475,13 +516,6 @@ class UnitSystem:
         return system
 
 
-def minor_unit(code: str) -> int | None:
-    """Return the ISO 4217 minor unit of a currency code, or None if it has none."""
-    if code not in _MINOR_UNITS:
-        raise UnitError(f"{code!r} is not an ISO 4217 currency code")
-    return _MINOR_UNITS[code]
-
-
 default_units = UnitSystem()
 
 # Named unit systems (ADR-013, ADR-016). An installed distribution can add one in
@@ -491,4 +525,4 @@ unit_systems: Registry[UnitSystem] = Registry(
 )
 unit_systems.register("default", default_units)
 
-__all__ = ["Quantity", "UnitSystem", "default_units", "minor_unit", "unit_systems"]
+__all__ = ["Quantity", "UnitSystem", "default_units", "unit_systems"]

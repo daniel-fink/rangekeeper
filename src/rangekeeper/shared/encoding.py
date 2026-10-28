@@ -3,10 +3,12 @@
 import json
 import math
 from datetime import date, datetime, time, timedelta, timezone
+from decimal import Decimal
 from hashlib import sha256
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from rangekeeper.shared import amounts
 from rangekeeper.shared.errors import DecodeError, EncodingError
 
 
@@ -68,6 +70,11 @@ def encode(value: object) -> object:
         return ["float", value.hex()]
     if type(value) is str:
         return ["str", value]
+    if type(value) is Decimal:
+        if not value.is_finite():
+            raise EncodingError("Non-finite Decimal")
+        # Equal amounts encode alike: 1.50 and 1.5 are one value (ADR-023).
+        return ["decimal", amounts.text(value)]
     if type(value) is UUID:
         return ["uuid", value.hex]
     if isinstance(value, (datetime, time)) and kind in (datetime, time):

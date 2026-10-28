@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Self, cast
 from collections.abc import Mapping
 from uuid import UUID
 from datetime import date as Date
+from decimal import Decimal
 from .runtime import (
     EMPTY,
     OMIT,
@@ -33,6 +34,7 @@ if TYPE_CHECKING:
     from rangekeeper.flow import Flow as _Flow
     from rangekeeper.flow import Movement as _Movement
     from rangekeeper.duration import Period as _Period
+    from rangekeeper.quantity import Quantity as _Quantity
     from rangekeeper.duration import Span as _Span
 
 from .enums import ActionKind as ActionKind
@@ -135,9 +137,9 @@ class Action(Record):
         return cast('Reference | None', self._child('target', Reference, False))
 
     @property
-    def quantity(self) -> Quantity | None:
+    def quantity(self) -> _Quantity | None:
         'Finite quantity to assign, with units compatible with the target; required for assign and absent for terminate.'
-        return cast('Quantity | None', self._child('quantity', Quantity, False))
+        return cast('_Quantity | None', self._child('quantity', Quantity, False))
 
 
 class Argument(Record):
@@ -515,9 +517,9 @@ class Assignment(Record):
         return cast('Reference', self._child('target', Reference, False))
 
     @property
-    def quantity(self) -> Quantity:
+    def quantity(self) -> _Quantity:
         'Explicit finite magnitude and compatible units; omission or null is not a supplied amount.'
-        return cast('Quantity', self._child('quantity', Quantity, False))
+        return cast('_Quantity', self._child('quantity', Quantity, False))
 
 
 class Binding(Record):
@@ -1572,14 +1574,14 @@ class Diagnostic(Record):
         return cast('UUID | None', _decode_uuid(self._data.get('target')))
 
     @property
-    def residual(self) -> Quantity | None:
+    def residual(self) -> _Quantity | None:
         'Finite signed residual under the stated convention.'
-        return cast('Quantity | None', self._child('residual', Quantity, False))
+        return cast('_Quantity | None', self._child('residual', Quantity, False))
 
     @property
-    def tolerance(self) -> Quantity | None:
+    def tolerance(self) -> _Quantity | None:
         'Finite nonnegative tolerance in compatible units.'
-        return cast('Quantity | None', self._child('tolerance', Quantity, False))
+        return cast('_Quantity | None', self._child('tolerance', Quantity, False))
 
     @property
     def references(self) -> tuple[Reference, ...] | None:
@@ -2077,9 +2079,9 @@ class Expression(Record):
         return cast('ExpressionKind', _decode_enum(self._data.get('kind'), ExpressionKind))
 
     @property
-    def quantity(self) -> Quantity | None:
+    def quantity(self) -> _Quantity | None:
         'Numerical literal with an explicit magnitude and units, independent of any Measure. Use dimensionless for unitless content. Zero is a literal, not absence.'
-        return cast('Quantity | None', self._child('quantity', Quantity, False))
+        return cast('_Quantity | None', self._child('quantity', Quantity, False))
 
     @property
     def boolean(self) -> bool | None:
@@ -3873,7 +3875,8 @@ class Movement(Record):
                     'nullable': True,
                     'ordered': False,
                     'lineage': False},
-         'magnitude': {'options': [{'kind': 'decimal', 'category': 'primitive'}],
+         'magnitude': {'options': [{'kind': 'Amount', 'category': 'primitive'},
+                                   {'kind': 'double', 'category': 'primitive'}],
                        'required': False,
                        'many': False,
                        'mapping': False,
@@ -3894,7 +3897,7 @@ class Movement(Record):
         key: str | None | Unset = UNSET,
         date: Date | None | Unset = UNSET,
         period: Period | None | Unset = UNSET,
-        magnitude: int | float | None | Unset = UNSET,
+        magnitude: Decimal | str | int | float | None | Unset = UNSET,
         claims: tuple[UUID, ...] | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
@@ -3906,7 +3909,7 @@ class Movement(Record):
         if period is not UNSET:
             data['period'] = _encode_record(period, Period, 'period')
         if magnitude is not UNSET:
-            data['magnitude'] = copy_json(magnitude)
+            data['magnitude'] = self._encode_field('magnitude', magnitude)
         if claims is not UNSET:
             data['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
         self._set_checked(data)
@@ -3916,7 +3919,7 @@ class Movement(Record):
         key: str | None | Unset | Omit = UNSET,
         date: Date | None | Unset | Omit = UNSET,
         period: Period | None | Unset | Omit = UNSET,
-        magnitude: int | float | None | Unset | Omit = UNSET,
+        magnitude: Decimal | str | int | float | None | Unset | Omit = UNSET,
         claims: tuple[UUID, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
@@ -3938,7 +3941,7 @@ class Movement(Record):
         if magnitude is OMIT:
             changes['magnitude'] = OMIT
         elif magnitude is not UNSET:
-            changes['magnitude'] = copy_json(magnitude)
+            changes['magnitude'] = self._encode_field('magnitude', magnitude)
         if claims is OMIT:
             changes['claims'] = OMIT
         elif claims is not UNSET:
@@ -3966,9 +3969,9 @@ class Movement(Record):
         return cast('_Period | None', self._child('period', Period, False))
 
     @property
-    def magnitude(self) -> int | float | None:
+    def magnitude(self) -> Decimal | int | float | None:
         'Amount in the Flow units; absent or null means unresolved, and zero is a known amount.'
-        return cast('int | float | None', self._data.get('magnitude'))
+        return cast('Decimal | int | float | None', self._field('magnitude'))
 
     @property
     def claims(self) -> tuple[UUID, ...] | None:
@@ -4232,9 +4235,9 @@ class ObservedQuantity(Record):
         return cast('Reference', self._child('target', Reference, False))
 
     @property
-    def quantity(self) -> Quantity:
+    def quantity(self) -> _Quantity:
         'Exact quantity supplied to the rule conditions.'
-        return cast('Quantity', self._child('quantity', Quantity, False))
+        return cast('_Quantity', self._child('quantity', Quantity, False))
 
     @property
     def available_at(self) -> Date:
@@ -4739,7 +4742,8 @@ class Quantity(Record):
     __slots__ = ()
     _kind = 'Quantity'
     _SLOTS = _freeze(
-        {'magnitude': {'options': [{'kind': 'decimal', 'category': 'primitive'}],
+        {'magnitude': {'options': [{'kind': 'Amount', 'category': 'primitive'},
+                                   {'kind': 'double', 'category': 'primitive'}],
                        'required': True,
                        'many': False,
                        'mapping': False,
@@ -4756,30 +4760,30 @@ class Quantity(Record):
     )
 
     def __init__(self, *,
-        magnitude: int | float,
+        magnitude: Decimal | str | int | float,
         units: str,
     ) -> None:
         data: dict[str, object] = {}
-        data['magnitude'] = copy_json(magnitude)
+        data['magnitude'] = self._encode_field('magnitude', magnitude)
         data['units'] = copy_json(units)
         self._set_checked(data)
 
     def replace(self, *,
-        magnitude: int | float | Unset = UNSET,
+        magnitude: Decimal | str | int | float | Unset = UNSET,
         units: str | Unset = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if magnitude is not UNSET:
-            changes['magnitude'] = copy_json(magnitude)
+            changes['magnitude'] = self._encode_field('magnitude', magnitude)
         if units is not UNSET:
             changes['units'] = copy_json(units)
         return self._replace(changes)
 
     @property
-    def magnitude(self) -> int | float:
+    def magnitude(self) -> Decimal | int | float:
         'Finite numerical magnitude expressed in the accompanying units.'
-        return cast('int | float', self._data.get('magnitude'))
+        return cast('Decimal | int | float', self._field('magnitude'))
 
     @property
     def units(self) -> str:
@@ -5842,9 +5846,9 @@ class ScenarioParameter(Record):
         return cast('str', self._data.get('name'))
 
     @property
-    def quantity(self) -> Quantity | None:
+    def quantity(self) -> _Quantity | None:
         'Fixed quantity; give this or distribution, not both.'
-        return cast('Quantity | None', self._child('quantity', Quantity, False))
+        return cast('_Quantity | None', self._child('quantity', Quantity, False))
 
     @property
     def distribution(self) -> _Distribution | None:
@@ -6249,7 +6253,7 @@ class Settings(Record):
     __slots__ = ()
     _kind = 'Settings'
     _SLOTS = _freeze(
-        {'relative_tolerance': {'options': [{'kind': 'decimal',
+        {'relative_tolerance': {'options': [{'kind': 'double',
                                              'category': 'primitive'}],
                                 'required': False,
                                 'many': False,
@@ -6264,7 +6268,7 @@ class Settings(Record):
                              'nullable': True,
                              'ordered': False,
                              'lineage': False},
-         'time_limit': {'options': [{'kind': 'decimal', 'category': 'primitive'}],
+         'time_limit': {'options': [{'kind': 'double', 'category': 'primitive'}],
                         'required': False,
                         'many': False,
                         'mapping': False,
@@ -7406,9 +7410,9 @@ class Value(Record):
         return cast('UUID | None', _decode_uuid(self._data.get('measure')))
 
     @property
-    def quantity(self) -> Quantity | None:
+    def quantity(self) -> _Quantity | None:
         "Optional recorded numerical content. Its units must be compatible with the Measure's canonical units. Omission or null denotes unresolved content."
-        return cast('Quantity | None', self._child('quantity', Quantity, False))
+        return cast('_Quantity | None', self._child('quantity', Quantity, False))
 
     @property
     def id(self) -> UUID:
@@ -7602,6 +7606,7 @@ _OWNERS = {
     'Flow': 'rangekeeper.flow',
     'Movement': 'rangekeeper.flow',
     'Period': 'rangekeeper.duration',
+    'Quantity': 'rangekeeper.quantity',
     'Span': 'rangekeeper.duration',
 }
 

@@ -60,15 +60,15 @@ def test_design_financial_components_and_provenance():
         for key, amount in row.items():
             expected[key].append(amount)
     for key, amounts in expected.items():
-        assert [m.magnitude for m in v[key].flow.movements] == pytest.approx(amounts)
+        assert [m.number for m in v[key].flow.movements] == pytest.approx(amounts)
     reversion = expected["nacf"][10] / 0.05
     total = expected["nacf"][:10]
     total[-1] += reversion
-    assert [m.magnitude for m in v["total"].flow.movements] == pytest.approx(total)
-    assert v["pv"].quantity.magnitude == pytest.approx(
+    assert [m.number for m in v["total"].flow.movements] == pytest.approx(total)
+    assert v["pv"].quantity.number == pytest.approx(
         sum(x / 1.07 ** (i + 1) for i, x in enumerate(total))
     )
-    assert [m.magnitude for m in v["reversion"].flow.movements] == pytest.approx(
+    assert [m.number for m in v["reversion"].flow.movements] == pytest.approx(
         [0] * 9 + [reversion]
     )
     assert [m.date.year for m in v["capex"].flow.movements if m.magnitude] == [

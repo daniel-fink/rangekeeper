@@ -75,6 +75,9 @@ records every retained file's size and SHA-256; it does not hash itself.
 
 Schema-derived columns retain absent/null/present states, typed unions, exact
 integers, floating representations, collection order and opaque schema content.
+A currency amount is the `Amount` option of the magnitude union: a `string`
+field with its canonical text ([currency amounts](units.md#currency-amounts)).
+A reader casts it to `DECIMAL(38, s)` or `DOUBLE` for analysis.
 Record/reference indexes are checked against reconstruction. No canonical root is
 stored as an opaque JSON fallback.
 

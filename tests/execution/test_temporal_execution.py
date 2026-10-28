@@ -138,13 +138,13 @@ def test_forward_then_inverse_temporal_oracle():
     assert [
         m.magnitude for m in result.value(ids["cash"]).flow.movements
     ] == pytest.approx([100, 110, 121])
-    assert result.value(ids["pv"]).quantity.magnitude == pytest.approx(3000 / 11)
+    assert result.value(ids["pv"]).quantity.number == pytest.approx(3000 / 11)
     inverse = Executor(store).execute(investigate(result, ids, inverse=True))
     assert inverse.report.status.solution == SolutionStatus.FEASIBLE, (
         inverse.report.to_data()
     )
     output = store.load_model(inverse.record.outputs[0])
-    assert output.value(ids["initial"]).quantity.magnitude == pytest.approx(110)
+    assert output.value(ids["initial"]).quantity.number == pytest.approx(110)
     assert output.metadata.previous == result.id
     assert all(m.magnitude is None for m in model.value(ids["cash"]).flow.movements)
 
@@ -159,9 +159,9 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
         for v in data["entities"][0]["characteristics"]["values"]
         if v["id"] == str(ids["cash"])
     )
-    cash["flow"]["movements"][0]["magnitude"] = 0
+    cash["flow"]["movements"][0]["magnitude"] = "0"
     cash["flow"]["movements"][1]["magnitude"] = None
-    cash["flow"]["movements"][2]["magnitude"] = 99
+    cash["flow"]["movements"][2]["magnitude"] = "99"
     model = model.revise(Update(system=System.from_data(data)))
     assert (
         assign_flow(
@@ -309,13 +309,13 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
                             if m.key == "y1"
                         )
                     ).to_data(),
-                    quantity=dict(magnitude=1, units="AUD"),
+                    quantity=dict(magnitude="1", units="AUD"),
                 )
             )
         elif modify == "missing":
             data["unknowns"][1]["target"] = str(uuid4())
         else:
-            data["assignments"][0]["quantity"]["units"] = "m"
+            data["assignments"][0]["quantity"] = dict(magnitude=100, units="m")
         try:
             spec = Specification.from_data(data)
         except ValidationError:
@@ -504,7 +504,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
         "reversion": [900, 950, 1100],
     }.items():
         assert [
-            m.magnitude for m in output.value(ids[name]).flow.movements
+            m.number for m in output.value(ids[name]).flow.movements
         ] == pytest.approx(expected)
     with pytest.raises(ValueError, match="overdraft"):
         financial.interest(

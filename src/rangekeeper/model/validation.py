@@ -9,12 +9,11 @@ from rangekeeper.model.definitions import check_definitions
 from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.model.provenance import check_provenance
 from rangekeeper.model.system.validation import check_system
-from rangekeeper.quantity import UnitSystem, default_units
+from rangekeeper.quantity import Quantity, UnitSystem, default_units
 from rangekeeper.schema.index import RecordIndex, walk, walk_data
 from rangekeeper.schema.records import (
     Domain,
     Measure,
-    Quantity,
     Value,
 )
 from rangekeeper.schema.records import (

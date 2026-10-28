@@ -24,7 +24,9 @@ classes:
     attributes:
       magnitude:
         description: Finite numerical magnitude expressed in the accompanying units.
-        range: decimal
+        any_of:
+        - range: Amount
+        - range: double
         required: true
       units:
         description: Explicit units for this magnitude, such as m^2, AUD/year, or dimensionless.

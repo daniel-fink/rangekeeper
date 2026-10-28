@@ -108,6 +108,7 @@ class ImplementationKind(Enum):
     EVALUATOR = 'evaluator'
     COMPILER = 'compiler'
     SOLVER = 'solver'
+    CONVENTION = 'convention'
 
 @unique
 class MissingHandling(Enum):

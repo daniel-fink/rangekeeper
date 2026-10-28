@@ -410,6 +410,9 @@ enums:
         description: Translates definitions into an executable or solver representation.
       solver:
         description: Attempts a numerical solution or optimization.
+      convention:
+        description: A numerical convention that affects results, such as the conversion and summation
+          rules for currency amounts.
   Severity:
     permissible_values:
       info:

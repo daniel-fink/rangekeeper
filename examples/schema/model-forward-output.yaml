@@ -137,7 +137,7 @@ system:
         kind: measurement
         measure: b948be16-6e79-5592-8bb7-ad56f547053a
         quantity:
-          magnitude: 11000000
+          magnitude: "11000000"
           units: AUD
       - id: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
         key: capitalization_rate

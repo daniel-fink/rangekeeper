@@ -13,6 +13,7 @@ from uuid import UUID
 from rangekeeper.model._scope import numerical_units, recorded_quantity, reference_key
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.runtime import exact_equal
+from rangekeeper.shared.amounts import number
 from rangekeeper.shared.validation import require
 
 
@@ -91,7 +92,10 @@ def validate_outputs(
                 == numerical_units(target, scope.targets, scope.measures),
                 "output unit conversion requires adapter",
             )
-            require(math.isfinite(quantity["magnitude"]), "non-finite output quantity")
+            require(
+                math.isfinite(number(quantity["magnitude"])),
+                "non-finite output quantity",
+            )
         for assignment in assignments:
             actual = recorded_quantity(
                 assignment["target"], output_scope.targets, output_scope.measures
