@@ -439,11 +439,11 @@
   "Executor": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, store: rangekeeper.io.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | None = None, units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None",
+    "__init__": "method (self, store: rangekeeper.shared.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | None = None, units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None",
     "execute": "method (self, specification: rangekeeper.specification.specification.Specification) -> rangekeeper.run.run.Run"
    },
    "module": "rangekeeper.execution.executor",
-   "signature": "(store: rangekeeper.io.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | None = None, units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None"
+   "signature": "(store: rangekeeper.shared.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | None = None, units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None"
   },
   "Tolerances": {
    "kind": "class",
@@ -684,9 +684,9 @@
     "load_model": "method (self, id: uuid.UUID) -> Model",
     "load_run": "method (self, id: uuid.UUID) -> Run",
     "load_specification": "method (self, id: uuid.UUID) -> Specification",
-    "put": "method (self, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run) -> uuid.UUID"
+    "put": "method (self, document: Model | Specification | Run) -> uuid.UUID"
    },
-   "module": "rangekeeper.io.store",
+   "module": "rangekeeper.shared.store",
    "signature": "(*args, **kwargs)"
   },
   "json": {

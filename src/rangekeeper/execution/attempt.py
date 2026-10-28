@@ -21,7 +21,6 @@ from rangekeeper.execution.errors import (
     UnsupportedError,
 )
 from rangekeeper.execution.implementation import fingerprint
-from rangekeeper.io.store import RecordStore
 from rangekeeper.model import Model
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.run import ImplementationKind, Run, RunRecord, StepKind
@@ -44,6 +43,7 @@ from rangekeeper.schema.runtime import UNSET, Unset
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import UnitError, ValidationError
+from rangekeeper.shared.store import RecordStore
 from rangekeeper.specification import Composition, Specification
 
 
