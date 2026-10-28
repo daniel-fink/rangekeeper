@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from rangekeeper.duration import Frequency, Span
 from rangekeeper.execution import Executor
-from rangekeeper.flow import Flow, ResamplingMethod, Stream
+from rangekeeper.flow import Flow, ResampleMethod, Stream
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
     Assembly,
@@ -32,13 +32,13 @@ def collection():
     )
     monthly = extent.periods(frequency=Frequency.MONTH)
     stream = Stream(
-        {
+        flows={
             "Rent": Flow.from_periods(monthly, [100.0] * len(monthly), units="AUD"),
             "Vacancy": Flow.from_periods(monthly, [-20.0] * len(monthly), units="AUD"),
         }
     )
     annual = stream.resample(
-        extent.periods(frequency=Frequency.YEAR), method=ResamplingMethod.SUM
+        periods=extent.periods(frequency=Frequency.YEAR), method=ResampleMethod.SUM
     )
     assert all(m.number == 960 for m in annual.sum().movements)
     return annual
@@ -111,7 +111,7 @@ def hierarchy_model():
                 id=uuid4(),
                 sequence=ids[f"{name}_net"],
                 resampled=ids[f"{name}_annual"],
-                method=ResamplingMethod.SUM,
+                method=ResampleMethod.SUM,
             )
         )
     hierarchy = Hierarchy(View(model), membership_root=root.id)

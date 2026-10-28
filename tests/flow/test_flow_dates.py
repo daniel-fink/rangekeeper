@@ -14,7 +14,7 @@ from rangekeeper.duration import (
     offset,
 )
 from rangekeeper.finance import financial
-from rangekeeper.flow import Flow, Movement, ResamplingMethod
+from rangekeeper.flow import AlignmentJoin, Flow, Movement, ResampleMethod
 from rangekeeper.shared.errors import ValidationError
 from tests.streams import lines
 
@@ -116,19 +116,19 @@ def test_payment_date_is_independent_of_coverage():
     assert financial.calculate_xnpv(
         flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.LAST
     ).number == pytest.approx(100 / 1.1 ** (35 / 365))
-    assert flow.trim(JANUARY) == flow
+    assert flow.trim(span=JANUARY) == flow
     assert flow.extent() == (JANUARY.start, JANUARY.end)
     with pytest.raises(ValueError, match="crosses a movement period"):
-        flow.trim(make_period(date(2026, 1, 2), JANUARY.end))
+        flow.trim(span=make_period(date(2026, 1, 2), JANUARY.end))
     # Period aggregation states coverage, rather than inventing one payment date.
-    aggregated = flow.resample([JANUARY], method=ResamplingMethod.SUM)
+    aggregated = flow.resample(periods=[JANUARY], method=ResampleMethod.SUM)
     assert aggregated.movements[0].magnitude == 100
     assert "date" not in aggregated.movements[0].field_names()
     conflicting = Flow.from_periods(
         [JANUARY], [100], units="AUD", dates=[date(2026, 2, 6)]
     )
     with pytest.raises(ValueError, match="coordinates differ"):
-        lines([flow, conflicting]).align()
+        lines([flow, conflicting], join=AlignmentJoin.EXACT).align()
 
 
 def test_period_irr_requires_timing_and_resolves_payment_order():

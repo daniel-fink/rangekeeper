@@ -38,13 +38,20 @@ from rangekeeper.errors import MissingReferenceError
 from rangekeeper.model import Metadata, Reference
 from rangekeeper.specification import Specification, SpecificationRecord
 
-shared = Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
-    model=model.id, unknowns=(Reference(target=gross.id),),
-))
-investigation = Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="1.0.0"), includes=(shared.id,),
-))
+shared = Specification(
+    SpecificationRecord(
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
+        model=model.id,
+        unknowns=(Reference(target=gross.id),),
+    )
+)
+investigation = Specification(
+    SpecificationRecord(
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
+        includes=(shared.id,),
+    )
+)
+
 
 class Inputs:
     # A read-only dependency supplied by the caller; no store implementation needed.
@@ -57,6 +64,7 @@ class Inputs:
         if id != shared.id:
             raise MissingReferenceError(str(id))
         return shared
+
 
 composition = investigation.compose(resolver=Inputs())
 assert composition.sources[("unknowns", str(gross.id))].document_id == shared.id

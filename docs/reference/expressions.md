@@ -282,10 +282,17 @@ from rangekeeper.model import Reference
 capitalisation = declare(
     relation_id,
     "capitalisation",
-    [(str(value_movement.id), equal(
-        reference(Reference(target=value_movement.id)),
-        divide(reference(Reference(target=income_movement.id)), reference(rate)),
-    ))],
+    [
+        (
+            str(value_movement.id),
+            equal(
+                reference(Reference(target=value_movement.id)),
+                divide(
+                    reference(Reference(target=income_movement.id)), reference(rate)
+                ),
+            ),
+        )
+    ],
     [value_id, income_id, rate_value_id],
 )
 ```

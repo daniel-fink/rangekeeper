@@ -159,7 +159,9 @@ the real cells.
 import rangekeeper as rk
 
 holding = rk.duration.Span.years(start=date(2001, 1, 1), count=10)
-pgi = rk.flow.Flow.grow(rk.units.q("100 USD"), periods=holding.extend(years=1), rate=0.02)
+pgi = rk.flow.Flow.grow(
+    rk.units.q("100 USD"), periods=holding.extend(years=1), rate=0.02
+)
 noi = rk.flow.Stream({"PGI": pgi, "Vacancy": -0.05 * pgi, "OPEX": -0.35 * pgi}).sum()
 value = rk.finance.npv(cashflows, rate=0.07, on=holding.start)
 ```
@@ -326,8 +328,9 @@ outcome.distribution("equity_npv")
 
 ```python
 wait = base.policy("Wait to start").when("rent_index >= 1.05", do="start_shared_works")
-start_b = wait.policy("Start B").when("rent_index >= 1.10 and funding_ok", do="start_b",
-                                       latest=date(2033, 1, 1))
+start_b = wait.policy("Start B").when(
+    "rent_index >= 1.10 and funding_ok", do="start_b", latest=date(2033, 1, 1)
+)
 outcome = rk.execution.solve(start_b.across(paths, assign={"rent_index": "rent_index"}))
 outcome.compare(rk.execution.solve(base.across(paths, ...)), "equity_npv")
 ```
@@ -396,10 +399,21 @@ feasibility = feasibility_model.edit().fix_from(gfa_by_use).commit()
   (implementation) and #215. The lesson is not authored until #216 is verified.
 
 ```python
-switch = model.edit().variant("B as hotel", replace={"Building B/residential": hotel_spaces},
-                              provision="2.5e6 AUD").commit()
-strategy = start_b.policy("Use switch").when("hotel_index > residential_index", do="B as hotel")
-rk.execution.solve(strategy.across(paths, ...)).compare(fixed, "equity_npv", "completion", "use_mix")
+switch = (
+    model.edit()
+    .variant(
+        "B as hotel",
+        replace={"Building B/residential": hotel_spaces},
+        provision="2.5e6 AUD",
+    )
+    .commit()
+)
+strategy = start_b.policy("Use switch").when(
+    "hotel_index > residential_index", do="B as hotel"
+)
+rk.execution.solve(strategy.across(paths, ...)).compare(
+    fixed, "equity_npv", "completion", "use_mix"
+)
 ```
 
 ### Developer-experience principles

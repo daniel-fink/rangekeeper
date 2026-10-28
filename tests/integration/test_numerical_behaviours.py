@@ -22,7 +22,7 @@ from rangekeeper.duration import (
     offset,
 )
 from rangekeeper.duration.calendar import elapsed_days
-from rangekeeper.flow import Flow, MissingValueHandling, ResamplingMethod, Stream
+from rangekeeper.flow import Flow, MissingValueHandling, ResampleMethod, Stream
 from rangekeeper.model import (
     Assembly,
     Characteristics,
@@ -90,7 +90,7 @@ def test_allocation_and_annual_resampling_preserve_total():
     flow = profile.distribute(Quantity(magnitude=100, units="AUD"), periods=periods)
     assert amounts(flow) == pytest.approx((4,) * 25)
     years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
-    reduced = flow.negate().resample(years, method=ResamplingMethod.SUM)
+    reduced = flow.negate().resample(periods=years, method=ResampleMethod.SUM)
     assert amounts(reduced) == pytest.approx((-48, -48, -4))
     assert reduced.total().number == pytest.approx(-100)
 
@@ -107,7 +107,7 @@ def test_resampling_uses_declared_calendar_bins(frequency):
         date(2020, 1, 1), frequency=Frequency(frequency), count=count
     )
     result = source.resample(
-        periods, method=ResamplingMethod.SUM, missing=MissingValueHandling.ZERO
+        periods=periods, method=ResampleMethod.SUM, missing=MissingValueHandling.ZERO
     )
     assert result.total().magnitude == 6
     assert tuple(m.period for m in result.movements) == periods
@@ -166,7 +166,7 @@ def test_stream_selection_and_mixed_frequency_totals():
     # explicitly; a bounded coverage interval must not be assigned by accident.
     with pytest.raises(ValueError, match="crosses"):
         flows[1].resample(
-            years, method=ResamplingMethod.SUM, missing=MissingValueHandling.ZERO
+            periods=years, method=ResampleMethod.SUM, missing=MissingValueHandling.ZERO
         )
     payments = tuple(
         Flow.from_events(
@@ -178,7 +178,7 @@ def test_stream_selection_and_mixed_frequency_totals():
     )
     annual = tuple(
         flow.resample(
-            years, method=ResamplingMethod.SUM, missing=MissingValueHandling.ZERO
+            periods=years, method=ResampleMethod.SUM, missing=MissingValueHandling.ZERO
         )
         for flow in payments
     )

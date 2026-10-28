@@ -222,6 +222,11 @@ class _Product:
     factor: float
     units: str
 
+    def apply(self, left: float, right: float, divide: bool) -> float:
+        """Return the magnitude of ``left * right`` or ``left / right`` in ``units``."""
+        a, b = left * self.left, right * self.right
+        return (a / b if divide else a * b) * self.factor
+
 
 def _plain(registry, units: str):
     """Return the scale and Pint units of one unit; a dimensionless unit is plain."""
@@ -402,9 +407,8 @@ class Quantity(records.Quantity):
         else:
             return NotImplemented
         product = _product(left.units, right.units, divide)
-        a, b = left.number * product.left, right.number * product.right
         return self._result(
-            (a / b if divide else a * b) * product.factor, product.units
+            product.apply(left.number, right.number, divide), product.units
         )
 
     @staticmethod

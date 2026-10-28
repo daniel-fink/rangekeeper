@@ -585,8 +585,7 @@ def available_on(
     period_end: date | None = None,
     scenario_dates: Iterable[date] = (),
     declared: date | None = None,
-) -> date | None:
-    ...
+) -> date | None: ...
 ```
 
 Keep reference resolution and quantity extraction in the callers. Normalize
@@ -2933,14 +2932,13 @@ def to_table(
     *,
     columns: Iterable[Column] = DEFAULT_COLUMNS,
     units: UnitSystem = default_units,
-) -> Table:
-    ...
+) -> Table: ...
 ```
 
 ```python
-to_table(view)             # Flat rows in View order.
-to_table(hierarchy)        # Preorder rows with parent_id.
-to_table(hierarchy.view)   # Flat projection of the same selected Entities.
+to_table(view)  # Flat rows in View order.
+to_table(hierarchy)  # Preorder rows with parent_id.
+to_table(hierarchy.view)  # Flat projection of the same selected Entities.
 ```
 
 Compose the implementation through direct steps:
@@ -4416,8 +4414,8 @@ january = Period(
 )
 
 january.first  # 2026-01-01
-january.last   # 2026-01-31
-january.end    # 2026-02-01
+january.last  # 2026-01-31
+january.end  # 2026-02-01
 
 assert january.resolve(timing=PeriodTiming.LAST) == january.last
 assert january.resolve(timing=PeriodTiming.END) == january.end_exclusive

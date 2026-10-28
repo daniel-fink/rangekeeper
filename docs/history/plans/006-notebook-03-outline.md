@@ -126,12 +126,14 @@ construction = Flow.from_events(
     units="AUD",
 )
 
-cashflows = Stream({
-    "Land": land_payments,
-    "Construction": construction,
-    "Operations": operating_cashflows,
-    "Sale": sale_proceeds,
-}).resample(
+cashflows = Stream(
+    {
+        "Land": land_payments,
+        "Construction": construction,
+        "Operations": operating_cashflows,
+        "Sale": sale_proceeds,
+    }
+).resample(
     periods=periods,
     method=ResamplingMethod.SUM,
     missing=MissingValueHandling.ZERO,
@@ -190,20 +192,26 @@ relations = declare(
     id=uuid4(),
     name="Development feasibility",
     equations=[
-        ("cost", equal(
-            left=symbols["total_cost"],
-            right=add(
-                left=symbols["land_cost"],
-                right=symbols["works_cost"],
+        (
+            "cost",
+            equal(
+                left=symbols["total_cost"],
+                right=add(
+                    left=symbols["land_cost"],
+                    right=symbols["works_cost"],
+                ),
             ),
-        )),
-        ("income", equal(
-            left=symbols["effective_income"],
-            right=multiply(
-                left=symbols["rent_factor"],
-                right=symbols["reference_income"],
+        ),
+        (
+            "income",
+            equal(
+                left=symbols["effective_income"],
+                right=multiply(
+                    left=symbols["rent_factor"],
+                    right=symbols["reference_income"],
+                ),
             ),
-        )),
+        ),
         # Show the four intervening relations in a second short cell.
     ],
     values=tuple(value_ids.values()),

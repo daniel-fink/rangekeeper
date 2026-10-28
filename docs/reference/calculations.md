@@ -28,14 +28,78 @@ assert flow.check(resolved=True).movements[0].number == 100.0
 assert flow.scale(2).total().magnitude == 200
 ```
 
-A Flow owns conversion, scaling, negation, totals, `trim(span)`,
-`resample(periods, *, method, ...)`, `integrate`, `multiply`, differences, collapse
-and extent. A Stream owns the operations on several Flows: `align`, `trim`,
-`resample`, `aggregate`, `sum`, `min` and `max`. `trim` and `resample` take the
-same arguments on Flow and Stream. `FlowAggregate` returns the reduced Flow with
-its coverage. Join and missing-data policies are explicit. A coordinate absent from one input is distinct from a
-movement whose magnitude is unresolved. A requested absent zero stays zero in the
-destination unit.
+A Flow owns conversion, scaling, negation, totals, `at(on=)`, `shift(by=)`,
+`trim(span=)`, `resample(periods= or frequency=, method=, ...)`, `integrate`,
+`multiply`, differences, collapse and extent. A Stream owns the operations on
+several Flows: `align`, `trim`, `resample`, `aggregate`, `sum`, `min` and `max`.
+`trim` and `resample` take the same arguments on Flow and Stream.
+`FlowAggregate` returns the reduced Flow with its coverage. Join and
+missing-data policies are explicit. A coordinate absent from one input is
+distinct from a movement whose magnitude is unresolved. A requested absent zero
+stays zero in the destination unit.
+
+### Make and read a Flow
+
+`Flow(amounts=, units=None)` takes a mapping of Periods, or of dates, to
+amounts: numbers, currency amounts, Quantities or Quantity text. With Quantities,
+the units come from them and other compatible units convert. `Flow(units=,
+movements=)`, `from_periods` and `from_events` remain. Periods and Spans are
+hashable, so they can key the mapping.
+
+```python
+from datetime import date
+
+import rangekeeper as rk
+
+years = rk.duration.Span(start=date(2001, 1, 1), length="11 years").periods(
+    frequency=rk.duration.Frequency.YEAR
+)
+pgi = rk.flow.Flow(amounts={years[0]: 100, years[1]: 102}, units="USD")
+purchase = rk.flow.Flow(amounts={date(2001, 1, 1): rk.Quantity(text="-950 USD")})
+pgi.at(on=date(2002, 6, 30))  # Quantity(text='102 USD')
+```
+
+`at(on=)` returns the amount of the Period that contains the date, or of the
+event on that date, as a Quantity. A date with no amount raises
+`MissingReferenceError`, several events on it raise `AmbiguousReferenceError`, and
+an unresolved amount raises `NumericalError`.
+
+### Flow arithmetic
+
+| Operation | Result |
+| --- | --- |
+| `2 * flow`, `flow * 2`, `flow / 2` | Each amount scaled; the same units |
+| `flow * quantity`, `quantity * flow`, `flow / quantity` | Each amount combined with the Quantity, with the [Quantity rules](units.md#quantities): `nacf / Quantity(text="5 %")` stays in `USD` |
+| `a + b`, `a - b` | Amounts on matching coordinates added; a coordinate that only one Flow has keeps its amount, because the other Flow has nothing there. Compatible units; the result has the units of `a`. Dated and period Flows do not mix; `Stream.sum` dates the period amounts |
+| `a * b`, `a / b` | Exact matching coordinates only; the units combine |
+| `-flow` | `negate()` |
+
+An unresolved amount gives an unresolved result. Each result has new Movement
+UUIDs. Currency amounts use float64 inside and `to_amount` for each result
+([ADR-023](../decisions/023-decimal-money.md)).
+
+### Shift, trim and resample
+
+`shift(by=)` moves each amount by whole Periods and keeps the Periods: with
+`by=-1`, each Period holds the next Period's amount, and the last Period is
+unresolved. Amounts that move past the ends are left out. The Periods must be
+gap-free; a dated Flow does not shift. `trim(span=)` takes a Period or a Span.
+
+`resample(frequency=, method=)` makes the target Periods from the start of the
+first Period to the end of the last; they must fit exactly. `periods=` gives the
+target Periods directly. `ResampleMethod.SPLIT` divides each amount equally over
+the shorter Periods inside its Period, and the last part takes the remainder, so
+the parts add up to the amount. `SUM`, `FIRST`, `LAST`, `MEAN`, `MIN` and `MAX`
+reduce the movements inside each longer Period.
+
+```python
+quarters = pgi.resample(
+    frequency=rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT
+)
+assert quarters.resample(
+    frequency=rk.duration.Frequency.YEAR, method=rk.flow.ResampleMethod.SUM
+) == pgi
+```
 
 Dimensional compatibility is necessary but does not prove the intended economics.
 The caller chooses additive totals, weighted means, integration or compounding.
@@ -54,32 +118,47 @@ with `rangekeeper.quantity.isclose`, which also takes two Flows
 
 ## Coordinate flows with Stream
 
-`flow.Stream` accepts an ordered name-to-Flow mapping. It retains default
-`missing` and `join` policies. Model-backed selections use
+`flow.Stream(flows=)` takes an ordered name-to-Flow mapping. It retains default
+`missing` and `join` policies: `MissingValueHandling.ERROR` and
+`AlignmentJoin.UNION`. Model-backed selections use
 `Stream.from_values(model, value_ids, names=None)`. Duplicate source IDs and
-ambiguous names are errors. `select(names)` or `select(value_ids=...)` retains
-selection order; `merge` requires compatible policies and exact Model revisions.
+ambiguous names are errors. `stream[name]` returns one Flow.
+`select("a", "b")` or `select(value_ids=...)` retains selection order.
+`with_flows(flows=)` returns a Stream with more named Flows; a name that is
+already there gets the new Flow in its place. `merge` requires compatible
+policies and exact Model revisions.
 
 ```python
 from rangekeeper.flow import Stream
 from rangekeeper.duration import Span, Frequency
-from rangekeeper.flow import ResamplingMethod
+from rangekeeper.flow import ResampleMethod
 
 span = Span.from_duration(
-    name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1,
+    name="Operations",
+    start=date(2027, 1, 1),
+    frequency=Frequency.YEAR,
+    count=1,
 )
 monthly = span.periods(frequency=Frequency.MONTH)
-income = Stream({
-    "Rent": Flow.from_periods(monthly, [100] * 12, units="AUD"),
-    "Vacancy": Flow.from_periods(monthly, [-20] * 12, units="AUD"),
-})
-annual = income.resample(span.periods(frequency=Frequency.YEAR), method=ResamplingMethod.SUM)
+income = Stream(
+    flows={
+        "Rent": Flow.from_periods(monthly, [100] * 12, units="AUD"),
+        "Vacancy": Flow.from_periods(monthly, [-20] * 12, units="AUD"),
+    }
+)
+annual = income.resample(
+    periods=span.periods(frequency=Frequency.YEAR), method=ResampleMethod.SUM
+)
 annual.display()
 assert annual.sum().movements[0].number == 960
 ```
 
 `sum`, `min` and `max` return Flow records. `aggregate(method=..., units=...,
-missing=..., join=...)` also returns coverage. `trim(span)` keeps whole periods.
+missing=..., join=..., timing=None)` also returns coverage. A coordinate that a
+line does not have adds nothing; only an unresolved amount follows `missing`.
+When the lines mix dated and period Flows, each period amount is dated at its
+recorded date, or else by `timing`: by default the end of its Period, the
+convention of `rk.finance`. `trim(span=)` keeps whole periods.
 Resampling accepts one method or a complete label-to-method mapping. Means require
 `MeanWeighting.OBSERVATIONS` or `ELAPSED`; a weighting mapping covers exactly the
 mean lines. `stream.coverage` describes the last resampling step; aggregation
@@ -159,13 +238,13 @@ Flow before placing an independent copy under a second Value.
 
 ## Alignment and reduction
 
-`Stream(flows, join=..., missing=...).align()` returns a Stream whose lines share
+`Stream(flows=flows, join=..., missing=...).align()` returns a Stream whose lines share
 coordinates. It keeps the original known-value coverage and the missing policy.
 `Stream.aggregate(method=AggregationMethod.SUM, units=...)` shares unit conversion,
 Claim collection and coverage calculation, on an aligned or an unaligned Stream.
 Each aggregation returns `FlowAggregate(flow, coverage)`.
 
-`AlignmentJoin.EXACT` is the default. `UNION` and `INTERSECTION` are explicit.
+`AlignmentJoin.UNION` is the default. `EXACT` and `INTERSECTION` are explicit.
 Missing choices use `MissingValueHandling`; reducer choices use `AggregationMethod`. Zero filling
 applies to absent coordinates; an explicitly unresolved movement remains unresolved.
 Skip can reduce a partly known group; an entirely unknown group remains unresolved.

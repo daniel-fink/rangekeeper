@@ -458,7 +458,7 @@ from rangekeeper.flow import Stream
 from rangekeeper.flow import AlignmentJoin
 sparse = Flow.from_events([date(2026, 1, 1), date(2026, 1, 2)], [0, None], units='AUD')
 full = Flow.from_events([date(2026, 1, day) for day in range(1, 13)], [1234.567] * 12, units='AUD')
-display_stream = Stream({'Receipts': sparse, 'Balance': full}, join=AlignmentJoin.UNION)
+display_stream = Stream(flows={'Receipts': sparse, 'Balance': full}, join=AlignmentJoin.UNION)
 with pl.Config(tbl_rows=2, tbl_cols=1, float_precision=0):
     config = pl.Config.state()
     for transpose in (False, True):

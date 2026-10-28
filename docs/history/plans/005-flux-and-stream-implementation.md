@@ -421,10 +421,12 @@ operations = Span.from_duration(
 )
 annual_periods = operations.periods(Frequency.YEAR)
 
-income = Stream({
-    "Potential gross income": potential_gross_income,
-    "Vacancy allowance": vacancy,
-})
+income = Stream(
+    {
+        "Potential gross income": potential_gross_income,
+        "Vacancy allowance": vacancy,
+    }
+)
 
 annual_income = income.resample(
     annual_periods,
@@ -504,8 +506,7 @@ def sum(
     id: UUID,
     summands: Stream | Sequence[UUID],
     total: UUID,
-) -> Formulation:
-    ...
+) -> Formulation: ...
 ```
 
 For `flow.sum`, accept an original Model-backed Stream selection or ordered

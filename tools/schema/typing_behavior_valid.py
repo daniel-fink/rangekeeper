@@ -24,9 +24,9 @@ value: Value = Value(
 if value.flow is not None:
     copied: Flow = value.flow.replace(movements=(movement,)).check(resolved=True)
 result: FlowAggregate = (
-    Stream({"a": flow, "b": flow}).align().aggregate(method=AggregationMethod.MAX)
+    Stream(flows={"a": flow, "b": flow}).align().aggregate(method=AggregationMethod.MAX)
 )
-trimmed: Flow = flow.trim(Span(start=date(2026, 1, 1), end=date(2027, 1, 1)))
+trimmed: Flow = flow.trim(span=Span(start=date(2026, 1, 1), end=date(2027, 1, 1)))
 probabilities: tuple[float, ...] = Distribution.pert().cdf([0.0, 1.0])
 assembly: Assembly = Assembly(id=uuid4()).replace(name="Group")
 span: Span = Span(start=date(2026, 1, 1), end=date(2027, 1, 1)).replace(name="Year")

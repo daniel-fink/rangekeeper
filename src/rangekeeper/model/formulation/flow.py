@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
+    from rangekeeper.flow._options import MeanWeighting, ResampleMethod
 from uuid import UUID
 
 from rangekeeper.flow import Flow, MissingValueHandling, Movement, Stream
@@ -185,12 +185,12 @@ def accumulate(
 def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
     """Use fixed structural membership, never known-only numerical masks."""
     from rangekeeper.flow._mapping import period_indices, weights
-    from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
+    from rangekeeper.flow._options import MeanWeighting, ResampleMethod
     from rangekeeper.model.expression.authoring import literal
 
-    if not isinstance(method, ResamplingMethod):
-        raise TypeError("method must be a ResamplingMethod")
-    if method in (ResamplingMethod.MIN, ResamplingMethod.MAX):
+    if not isinstance(method, ResampleMethod):
+        raise TypeError("method must be a ResampleMethod")
+    if method in (ResampleMethod.MIN, ResampleMethod.MAX):
         raise ValueError(
             "MIN/MAX formulations require an unsupported piecewise solver capability"
         )
@@ -200,7 +200,7 @@ def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
         )
     if weighting is not None and not isinstance(weighting, MeanWeighting):
         raise TypeError("weighting must be a MeanWeighting")
-    if (method is ResamplingMethod.MEAN) != (weighting is not None):
+    if (method is ResampleMethod.MEAN) != (weighting is not None):
         raise ValueError(
             "means require explicit weighting; weighting applies only to means"
         )
@@ -219,15 +219,15 @@ def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
                 raise ValueError("empty target period requires explicit ZERO policy")
             expressions.append(literal(0, sequence.units))
             continue
-        if method is ResamplingMethod.FIRST:
+        if method is ResampleMethod.FIRST:
             group = group[:1]
-        elif method is ResamplingMethod.LAST:
+        elif method is ResampleMethod.LAST:
             group = group[-1:]
         denominator = math.fsum(weight for _, weight in group)
         terms = []
         for movement, weight in group:
             term = reference(Reference(target=movement.id))
-            if method is ResamplingMethod.MEAN:
+            if method is ResampleMethod.MEAN:
                 term = multiply(term, literal(weight / denominator))
             terms.append(term)
         expressions.append(expression_sum(terms))
@@ -240,7 +240,7 @@ def resample(
     id: UUID,
     sequence: UUID,
     resampled: UUID,
-    method: "ResamplingMethod",
+    method: "ResampleMethod",
     weighting: "MeanWeighting | None" = None,
     missing: MissingValueHandling = MissingValueHandling.ERROR,
 ) -> Formulation:

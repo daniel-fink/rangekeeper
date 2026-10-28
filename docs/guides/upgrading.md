@@ -266,6 +266,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scope.target_units` | `rangekeeper.model.targets.target_units` | agreed |  |
 | `rangekeeper.model.scope.recorded_scalar` | `rangekeeper.model.targets.recorded_scalar` | agreed |  |
 | `rangekeeper.quantity.minor_unit` | `rangekeeper.money.minor_unit` | agreed | The money module owns the ISO 4217 catalogue, boundaries and rounding. |
+| `rangekeeper.flow.ResamplingMethod` | `ResampleMethod` | agreed | The enum also gains SPLIT, which divides each amount over shorter Periods. |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |

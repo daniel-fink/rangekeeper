@@ -29,7 +29,7 @@ from rangekeeper.model.system import View, Hierarchy
 from rangekeeper.model.system.membership import entities_in, containing_assemblies
 
 view = View(model, assembly=assembly_id)
-children = view.successors(parent_id)   # selected Relationships only
+children = view.successors(parent_id)  # selected Relationships only
 members = entities_in(model, assembly_id, recursive=True)
 parents = containing_assemblies(model, entity_id, recursive=True)
 
@@ -203,10 +203,10 @@ launch_price = Reduction(
 )
 pivot = launch_price.pivot(levels, by=apartment_id, depth=1, only=None)
 
-pivot.value(level_id)               # the "All" column
-pivot.value(level_id, two_bed_id)   # 2B, with its sub-types
-pivot.cell(level_id, two_bed_id)    # AggregateEntry(available, coverage)
-pivot.partition(level_id)           # do the 2B, 3B ... columns add up to All?
+pivot.value(level_id)  # the "All" column
+pivot.value(level_id, two_bed_id)  # 2B, with its sub-types
+pivot.cell(level_id, two_bed_id)  # AggregateEntry(available, coverage)
+pivot.partition(level_id)  # do the 2B, 3B ... columns add up to All?
 pivot.display()
 ```
 
@@ -285,11 +285,13 @@ Consumers interpret their source data and create Models through public RK APIs.
 
 ```python
 from rangekeeper.model.system import Reduction, Contributor
-from rangekeeper.flow import ResamplingMethod
+from rangekeeper.flow import ResampleMethod
 
 rollup = Reduction.flows(
-    key="cashflow", periods=annual_periods,
-    resampling=ResamplingMethod.SUM, contributors=Contributor.LEAVES,
+    key="cashflow",
+    periods=annual_periods,
+    resampling=ResampleMethod.SUM,
+    contributors=Contributor.LEAVES,
 )
 result = rollup.execute(hierarchy)
 portfolio = result.root_value

@@ -39,9 +39,14 @@ class AggregationMethod(Enum):
 
 
 @unique
-class ResamplingMethod(Enum):
-    """Select how movements in one period reduce to one value."""
+class ResampleMethod(Enum):
+    """Select how movements in one period reduce to one value, or split into shorter ones.
 
+    ``SPLIT`` divides each amount equally over the shorter Periods inside its
+    Period; the others reduce the movements inside each longer Period.
+    """
+
+    SPLIT = "split"
     SUM = "sum"
     FIRST = "first"
     LAST = "last"

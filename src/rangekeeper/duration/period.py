@@ -60,6 +60,10 @@ class Period(records.Period):
 
     __slots__ = ()
 
+    def __hash__(self) -> int:  # type: ignore[override]
+        """Hash the dates, so a Period or Span can key a mapping of amounts."""
+        return hash((self._kind, self.start, self.end))
+
     @property
     def first(self) -> date:
         """Return the first included date."""

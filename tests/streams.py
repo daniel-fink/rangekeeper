@@ -5,4 +5,4 @@ from rangekeeper.flow import Stream
 
 def lines(flows, **policies):
     """Return a Stream whose line names are the positions of the Flows."""
-    return Stream({str(i): flow for i, flow in enumerate(flows)}, **policies)
+    return Stream(flows={str(i): flow for i, flow in enumerate(flows)}, **policies)
