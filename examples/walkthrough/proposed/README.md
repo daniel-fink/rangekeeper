@@ -12,7 +12,9 @@ cannot support a cell is a gap, filed under
 These files are not notebooks and do not run. The lessons
 ([#203](https://github.com/daniel-fink/rangekeeper/issues/203)–[#208](https://github.com/daniel-fink/rangekeeper/issues/208),
 [#244](https://github.com/daniel-fink/rangekeeper/issues/244)) are authored from them
-when the library work lands.
+when the library work lands. Lesson 01 is authored: its notebook runs the cells of
+[01_basic_dcf.md](01_basic_dcf.md), which lists where they differ from the first
+proposal.
 
 | Lesson | File | Core cells |
 | --- | --- | --- |

@@ -4,8 +4,19 @@ Issue: [#203](https://github.com/daniel-fink/rangekeeper/issues/203). Plan:
 [ADR-020 §01](../../../docs/decisions/020-walkthrough-plan-v2.md#01-basic-discounted-cash-flow).
 API conventions and the gap list: [README](README.md).
 
-These are the cells that a reader types. They use the 1.0 API, not today's code. The
+These are the cells that a reader types. They use the 1.0 API. The
 rule check at the end names each gap from the [gap list](README.md#gap-list).
+
+The lesson notebook [`01_basic_dcf.ipynb`](../01_basic_dcf.ipynb) runs these cells
+([#203](https://github.com/daniel-fink/rangekeeper/issues/203)). Two places differ
+from the first proposal, and this file now shows the notebook's form:
+
+- The "Under the hood" note of section 2: `5 %` and `0.05 ratio` are the same amount
+  in different units, so they compare equal with `rk.quantity.isclose`, not with
+  `==`, which compares the units text ([#274](https://github.com/daniel-fink/rangekeeper/issues/274)).
+- The first check of cell 21 uses `rk.quantity.isclose`. `Stream.sum` adds the lines
+  in one compensated sum and `+` rounds after each addition (ADR-023), so the two
+  can differ in the 15th significant digit (years 2008–2011 here).
 
 ## Goals box
 
@@ -62,8 +73,9 @@ rate * rk.Quantity(text="1 year")  # 0.02, a dimensionless ratio
 ```
 
 > **Under the hood.** `rk.Quantity(text="5 %")` and
-> `rk.Quantity(magnitude=0.05, units="ratio")` make the same Quantity. Most functions also accept the text directly, for example
-> `rate="2 % pa"`. The `rk.quantity` namespace holds the unit system and its
+> `rk.Quantity(magnitude=0.05, units="ratio")` are the same amount in different
+> units: `rk.quantity.isclose` compares them in converted units. Most functions
+> also accept the text directly, for example `rate="2 % pa"`. The `rk.quantity` namespace holds the unit system and its
 > registry. The registry is curated: an unknown or misspelt unit fails with a
 > suggestion. `"pa"` never becomes a picoyear.
 
@@ -318,9 +330,15 @@ assert rk.finance.irr(flow=overpay) < discount_rate
 
 ## Checks and recap
 
+Narrative: `operations.sum()` adds the three lines in one compensated sum; `+` rounds
+the amounts after each addition. The two can differ in the 15th significant digit,
+so the first check compares them with `rk.quantity.isclose`, as the IRR check does.
+
 ```python
 # cell 21 (checks)
-assert table["NOI"] == table["PGI"] + table["Vacancy"] + table["OPEX"]
+assert rk.quantity.isclose(
+    actual=table["NOI"], expected=table["PGI"] + table["Vacancy"] + table["OPEX"]
+)
 assert terminal_value.total() == exit_values.at(on=date(2010, 1, 1))
 assert rk.quantity.isclose(
     actual=rk.finance.irr(flow=investment), expected=discount_rate
