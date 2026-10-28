@@ -59,6 +59,7 @@ jobs:
           uv pip install --python .schema-env -r tools/schema/requirements.txt \
             "mypy==1.18.2" "py-moneyed>=3,<4" "pint>=0.24"
       - run: .schema-env/bin/python tools/schema/generate.py --check
+      - run: .schema-env/bin/python tools/schema/check_generator.py
       - run: .schema-env/bin/python tools/schema/generate_csharp.py --check
       - run: .schema-env/bin/python tools/schema/verify_native.py
       - run: .schema-env/bin/python tools/schema/typecheck.py
