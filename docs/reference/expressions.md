@@ -307,9 +307,9 @@ nonzero-rate domain, a product equation can permit solving the rate when the val
 is fixed. Do not rewrite saved quotient equations; an unknown divisor is outside
 the current executor's supported slice.
 
-`Reduction.flows(...).formulate(hierarchy, id=..., aggregates=...)` declares SUM
-relationships from the same original contributors used by numerical reduction.
+`FlowRollup(...).formulate(hierarchy, id=..., aggregates=...)` declares SUM
+relationships from the same original contributors used by the numerical rollup.
 Aggregate Flow Values must already exist on their named entities. Use explicit
 intermediate Flow equations when those intermediate quantities need individual
-roles. See [system reductions](system.md#flow-hierarchy-reduction) and the
+roles. See [Flow rollups](system.md#flow-rollups) and the
 [executable example](../../examples/rangekeeper_examples/flux.py).

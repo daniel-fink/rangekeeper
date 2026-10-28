@@ -165,6 +165,11 @@ modules:
     status: draft
     source: "ADR-010, #255 D29"
     note: Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name.
+  - old: rangekeeper.model.system.reduction
+    new: rangekeeper.model.system.rollup
+    status: agreed
+    source: "ADR-012, #158"
+    note: "`QuantityRollup` and `FlowRollup` replace `Reduction`; see the symbol entries."
   - old: rangekeeper.model.scope
     new: rangekeeper.model._scope
     status: agreed
@@ -201,10 +206,24 @@ symbols:
   - module: rangekeeper.model.system.reduction
     name: Reduction
     new_name: QuantityRollup
-    status: draft
-    source: ADR-012
+    new_module: rangekeeper.model.system.rollup
+    status: agreed
+    source: "ADR-012, #158"
     requires: [refactor]
-    note: The scalar and Flow modes split into QuantityRollup and FlowRollup, with one Reducer enum.
+    note: >-
+      The scalar and Flow modes split. `Reduction(select=select_value(key),
+      reducer=reducers.sum, units=)` becomes `QuantityRollup(key=, units=,
+      reducer=Reducer.SUM)`; `Reduction.flows(key=, aggregation=, ...)` becomes
+      `FlowRollup(key=, reducer=, ...)`. Both default to `Contributor.LEAVES`;
+      the scalar default was every node. Custom selectors and reducers are
+      removed.
+  - module: rangekeeper.model.system.reduction
+    name: AggregateEntry
+    new_name: RollupEntry
+    new_module: rangekeeper.model.system.rollup
+    status: agreed
+    source: "ADR-012, #158, #255 D38"
+    note: "`aggregate` is the word for combining Flows (D38)."
   - module: rangekeeper.model.duration.calendar
     name: measure
     new_name: count_steps
@@ -565,6 +584,19 @@ attributes:
     apply: all
     status: agreed
     source: "ADR-013, #125"
+  - owner: rangekeeper.model.system.view.View
+    name: aggregate
+    new_name: rollup
+    apply: review
+    status: agreed
+    source: "#158, #255 D38"
+    note: "`view.aggregate(reduction)` becomes `view.rollup(definition=rollup)`."
+  - owner: rangekeeper.model.system.pivot.PivotColumn
+    name: aggregation
+    new_name: result
+    apply: review
+    status: agreed
+    source: "#158, #255 D38"
   - owner: rangekeeper.specification.specification.Specification
     name: lock
     new_name: fix
@@ -671,6 +703,12 @@ parameters:
 # uses; it lists them with the replacement. Entries with `requires: [refactor]`
 # are removed by later work; the codemod lists them only with `--with refactor`.
 removed:
+  - name: rangekeeper.model.system.reducers
+    replacement: >-
+      The `rangekeeper.model.system.Reducer` enum: `SUM`, `MEAN`, `MIN`, `MAX`
+      and `COUNT`, passed as `reducer=` to `QuantityRollup` or `FlowRollup`
+    status: agreed
+    source: "ADR-012, #158"
   - name: rangekeeper.calculations.account
     replacement: >-
       Compose the funding with Flows: a balance is `cumulative()`. Interest is

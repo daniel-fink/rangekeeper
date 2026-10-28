@@ -1,10 +1,26 @@
-"""Explicit recorded-Value reductions, coverage, and immutable results.
+"""Rollups of recorded Values over a Hierarchy, with coverage and immutable results.
 
-These operations neither solve equations nor write quantities into Models.
+A ``QuantityRollup`` combines measurement Values and a ``FlowRollup`` combines Flow
+Values. Both select their contributors in the same way, take one ``Reducer`` and
+return a ``RollupResult``. These operations neither solve equations nor write
+quantities into Models.
 """
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass, field
+from enum import Enum, unique
+from types import MappingProxyType
 from typing import TYPE_CHECKING
+from uuid import UUID
+
+from rangekeeper.flow import Flow
+from rangekeeper.model import Entity, Measure, Model, Value, ValueKind
+from rangekeeper.model.system import _reducers
+from rangekeeper.model.system.errors import AggregationError
+from rangekeeper.model.system.hierarchy import Hierarchy
+from rangekeeper.model.system.selection import _local_value, _recorded_quantity
+from rangekeeper.quantity import Quantity, UnitSystem
+from rangekeeper.shared.arguments import require_text, require_uuid
 
 if TYPE_CHECKING:
     from rangekeeper.duration import Period
@@ -16,36 +32,40 @@ if TYPE_CHECKING:
         ResampleMethod,
     )
     from rangekeeper.model.system.pivot import Pivot
-from dataclasses import dataclass, replace
-from enum import Enum, unique
-from types import MappingProxyType
-from uuid import UUID
-
-from rangekeeper.flow import Flow
-from rangekeeper.model import Entity, Model, Value, ValueKind
-from rangekeeper.model.system import reducers
-from rangekeeper.model.system.errors import AggregationError, SelectionError
-from rangekeeper.model.system.hierarchy import Hierarchy
-from rangekeeper.model.system.selection import ValueSelector, _recorded_quantity
-from rangekeeper.quantity import Quantity, UnitSystem
 
 
 @unique
 class Contributor(Enum):
-    """Hierarchy nodes whose Values a Reduction selects: leaves only, or all nodes."""
+    """Hierarchy nodes whose Values a rollup selects: leaves only, or all nodes."""
 
     LEAVES = "leaves"
     ALL = "all"
 
 
-@dataclass(frozen=True)
-class _FlowRule:
-    periods: tuple | None
-    resampling: object
-    aggregation: object
-    weighting: object
-    missing: object
-    join: object
+@unique
+class Reducer(Enum):
+    """How a rollup combines the Values of its contributors.
+
+    ``SUM``, ``MIN`` and ``MAX`` apply to Quantities and Flows. ``MEAN`` and
+    ``COUNT`` apply to Quantities. A mean uses the raw contributors of each
+    subtree, never the means of its sub-trees. ``COUNT`` counts the contributors
+    that have a value and returns a dimensionless whole number.
+    """
+
+    SUM = "sum"
+    MEAN = "mean"
+    MIN = "min"
+    MAX = "max"
+    COUNT = "count"
+
+
+_QUANTITY_REDUCERS = {
+    Reducer.SUM: _reducers.sum,
+    Reducer.MEAN: _reducers.mean,
+    Reducer.MIN: _reducers.min,
+    Reducer.MAX: _reducers.max,
+    Reducer.COUNT: _reducers.count,
+}
 
 
 @unique
@@ -98,8 +118,8 @@ class Coverage:
 
 
 @dataclass(frozen=True)
-class AggregateEntry:
-    """Available reduction and its contributor coverage."""
+class RollupEntry:
+    """The result over the measured contributors of one node, and its coverage."""
 
     available: Quantity | Flow | None
     coverage: Coverage
@@ -129,10 +149,13 @@ class AggregateEntry:
 
 @dataclass(frozen=True)
 class RollupResult:
-    """Immutable entries and selected Value identities, pinned to a Hierarchy."""
+    """Immutable entries and selected Value identities, pinned to a Hierarchy.
+
+    ``QuantityRollup`` and ``FlowRollup`` both return this type.
+    """
 
     hierarchy: Hierarchy
-    entries: Mapping[UUID, AggregateEntry]
+    entries: Mapping[UUID, RollupEntry]
     value_ids: Mapping[UUID, UUID]
     require_complete: bool
 
@@ -144,9 +167,7 @@ class RollupResult:
         order = self.hierarchy.preorder()
         entries, value_ids = dict(self.entries), dict(self.value_ids)
         if set(entries) != set(order):
-            raise AggregationError(
-                "aggregation entries must exactly match the hierarchy"
-            )
+            raise AggregationError("rollup entries must exactly match the hierarchy")
         # Each subtree is a contiguous preorder interval; no repeated subtree walks.
         positions = {uid: position for position, uid in enumerate(order)}
         ends: dict[UUID, int] = {}
@@ -154,8 +175,8 @@ class RollupResult:
             children = self.hierarchy.children(uid)
             ends[uid] = ends[children[-1]] if children else positions[uid] + 1
         for uid, entry in entries.items():
-            if not isinstance(entry, AggregateEntry):
-                raise TypeError("entries must contain AggregateEntry objects")
+            if not isinstance(entry, RollupEntry):
+                raise TypeError("entries must contain RollupEntry objects")
             if any(
                 owner not in positions
                 or not positions[uid] <= positions[owner] < ends[uid]
@@ -206,7 +227,7 @@ class RollupResult:
         return self.entries[id].coverage
 
     def available_value(self, id: UUID) -> Quantity | Flow | None:
-        """Return the reduction over measured contributors, despite missing ones."""
+        """Return the result over measured contributors, despite missing ones."""
         self.hierarchy.view.entity(id)
         return self.entries[id].available
 
@@ -220,7 +241,7 @@ class RollupResult:
             if value is None:
                 continue
             if not isinstance(value, Flow):
-                raise TypeError("display requires Flow aggregation results")
+                raise TypeError("display requires Flow rollup results")
             entity = self.hierarchy.view.entity(identity)
             label = entity.name or entity.code or f"Entity {index + 1}"
             if label in flows:
@@ -251,15 +272,6 @@ def classified(
         return entity.classification in classes
 
     return contributes
-
-
-def _reduce_quantities(values, reducer, units, unit_system):
-    if not values:
-        return None
-    result = reducer(values)
-    if not isinstance(result, Quantity):
-        raise TypeError("reducer must return a schema Quantity")
-    return result if units is None else unit_system.convert(result, to=units)
 
 
 @dataclass(frozen=True)
@@ -304,91 +316,36 @@ def _combine_coverage(parts: tuple[Coverage, ...]) -> Coverage:
 
 
 @dataclass(frozen=True, kw_only=True)
-class Reduction:
-    """Choose one Value per eligible Entity, normalize units, then combine explicitly.
+class _Rollup:
+    """Fields and contributor selection that both rollups share."""
 
-    The default includes every selected Entity with complete coverage required.
-    ``reducers.count`` takes no ``units``: it counts measured contributors and
-    returns a dimensionless Quantity.
-    Supply contributors to select leaves or a classification when parent values
-    represent totals. Nothing infers physical population or additive semantics.
-    Callbacks must be pure; all records supplied to them are immutable.
-    Without ``unit_system``, ``execute`` uses the unit system of the hierarchy's Model.
-    """
-
-    select: ValueSelector
-    reducer: Callable[[tuple[Quantity, ...]], Quantity] | None
-    units: str | None
-    contributors: Contributor | Callable[[Entity], bool] | None = None
+    key: str
+    reducer: Reducer = Reducer.SUM
+    units: str | None = None
+    measure: UUID | None = None
+    contributors: Contributor | Callable[[Entity], bool] = Contributor.LEAVES
     require_complete: bool = True
-    unit_system: UnitSystem | None = None
-    _flow: _FlowRule | None = None
+
+    _kind = ValueKind.MEASUREMENT
 
     def __post_init__(self) -> None:
-        if (
-            not callable(self.select)
-            or self._flow is None
-            and not callable(self.reducer)
+        require_text(self.key, "key")
+        if self.measure is not None:
+            require_uuid(self.measure, "measure")
+        if not isinstance(self.reducer, Reducer):
+            raise TypeError("reducer must be a Reducer")
+        if not isinstance(self.contributors, Contributor) and not callable(
+            self.contributors
         ):
-            raise TypeError("select and reducer must be callable")
-        if (
-            self.contributors is not None
-            and not isinstance(self.contributors, Contributor)
-            and not callable(self.contributors)
-        ):
-            raise TypeError("contributors must be callable")
-        if not isinstance(self.require_complete, bool):
+            raise TypeError("contributors must be a Contributor or callable")
+        if type(self.require_complete) is not bool:
             raise TypeError("require_complete must be a bool")
-        if self.unit_system is not None and not isinstance(
-            self.unit_system, UnitSystem
-        ):
-            raise TypeError("unit_system must be a UnitSystem")
-        if self.reducer is reducers.count:
-            if self.units is not None:
-                raise TypeError("count reductions take no units")
-        elif self.units is not None:
-            # Without a unit system, execute checks units against the Model's.
-            if self.unit_system is not None:
-                self.unit_system.validate_units(self.units)
-        elif self._flow is None:
-            raise TypeError("scalar reductions require units")
+        if self.units is not None:
+            require_text(self.units, "units")
 
     def execute(self, hierarchy: Hierarchy) -> RollupResult:
-        """Return a detached derived result; never revise, persist, or execute a Model.
-
-        Selectors must return a Value actually owned by the supplied Entity in this
-        revision. That rejects stale, cross-owner and Formulation-local shortcuts.
-        Raw contributors are combined at each subtree so means remain correctly
-        weighted. Missing keys and unresolved quantities count as missing, not zero.
-        """
-        if not isinstance(hierarchy, Hierarchy):
-            raise TypeError("hierarchy must be a Hierarchy")
-        if self.unit_system is None:
-            return replace(self, unit_system=hierarchy.view.model.unit_system).execute(
-                hierarchy
-            )
-        if self._flow is not None:
-            return self._execute_flows(hierarchy)
-        raw: dict[UUID, tuple[Quantity, ...]] = {}
-        entries: dict[UUID, AggregateEntry] = {}
-        value_ids: dict[UUID, UUID] = {}
-        for id in hierarchy.postorder():
-            own = self._contribution(
-                hierarchy.view.model,
-                hierarchy.view.entity(id),
-                leaf=not hierarchy.children(id),
-            )
-            value_ids.update(own.value_ids)
-            children = hierarchy.children(id)
-            raw[id] = (*own.quantities, *(q for child in children for q in raw[child]))
-            coverage = _combine_coverage(
-                (own.coverage, *(entries[child].coverage for child in children))
-            )
-            entries[id] = AggregateEntry(
-                _reduce_quantities(raw[id], self.reducer, self.units, self.unit_system),
-                coverage,
-            )
-        return RollupResult(hierarchy, entries, value_ids, self.require_complete)
+        """Return a detached derived result over ``hierarchy``."""
+        raise NotImplementedError
 
     def pivot(
         self,
@@ -399,13 +356,13 @@ class Reduction:
         only: UUID | None = None,
         exclusive: bool = False,
     ) -> "Pivot":
-        """Reduce over ``hierarchy`` once per column of a Taxonomy below ``by``.
+        """Roll up over ``hierarchy`` once per column of a Taxonomy below ``by``.
 
-        The "All" column uses this Reduction's contributors, narrowed by ``only``.
+        The "All" column uses this rollup's contributors, narrowed by ``only``.
         Each further column also requires the column's Classification. Columns are
         the Classifications up to ``depth`` levels below ``by``, in Taxonomy order.
         Classifications include their sub-types unless ``exclusive``. Each cell is
-        an ``AggregateEntry`` from ``execute``, so means stay correctly weighted.
+        a ``RollupEntry`` from ``execute``, so means stay correctly weighted.
         """
         from rangekeeper.model.system.pivot import pivot
 
@@ -413,118 +370,199 @@ class Reduction:
             self, hierarchy, by=by, depth=depth, only=only, exclusive=exclusive
         )
 
-    def _contribution(self, model, entity, *, leaf=True) -> QuantityPopulation:
-        unit_system = (
-            model.unit_system if self.unit_system is None else self.unit_system
-        )
-        if not self._eligible(entity, leaf=leaf):
-            return _collect_quantities((), self.units, unit_system)
-        selected = self._selection(model, entity)
-        return _collect_quantities(((entity, selected),), self.units, unit_system)
-
-    @classmethod
-    def flows(
-        cls,
-        *,
-        key: str,
-        periods: "Sequence[Period] | None" = None,
-        resampling: "ResampleMethod | None" = None,
-        aggregation: "AggregationMethod | None" = None,
-        weighting: "MeanWeighting | None" = None,
-        contributors: "Contributor | Callable[[Entity], bool]" = Contributor.LEAVES,
-        units: str | None = None,
-        missing: "MissingValueHandling | None" = None,
-        join: "AlignmentJoin | None" = None,
-        require_complete: bool = True,
-    ) -> "Reduction":
-        """Select owner-local Flow Values and combine original contributors per subtree."""
-        from rangekeeper.flow import MissingValueHandling
-        from rangekeeper.flow._options import (
-            AggregationMethod,
-            AlignmentJoin,
-            ResampleMethod,
-        )
-        from rangekeeper.model.system.selection import select_value
-
-        if (periods is None) != (resampling is None):
-            raise ValueError("supply both periods and resampling, or neither")
-        if resampling is not None and not isinstance(resampling, ResampleMethod):
-            raise TypeError("resampling must be a ResampleMethod")
-        rule = _FlowRule(
-            None if periods is None else tuple(periods),
-            resampling,
-            AggregationMethod.SUM if aggregation is None else aggregation,
-            weighting,
-            MissingValueHandling.ERROR if missing is None else missing,
-            AlignmentJoin.EXACT if join is None else join,
-        )
-        if (
-            not isinstance(rule.aggregation, AggregationMethod)
-            or not isinstance(rule.missing, MissingValueHandling)
-            or not isinstance(rule.join, AlignmentJoin)
-        ):
-            raise TypeError("aggregation, missing and join require their enum types")
-        return cls(
-            select=select_value(key),
-            reducer=None,
-            units=units,
-            contributors=contributors,
-            require_complete=require_complete,
-            _flow=rule,
-        )
-
-    def _eligible(self, entity, *, leaf):
+    def _eligible(self, entity: Entity, *, leaf: bool) -> bool:
         eligible = (
             leaf
             if self.contributors is Contributor.LEAVES
-            else (
-                True
-                if self.contributors in (None, Contributor.ALL)
-                else self.contributors(entity)
-            )
+            else True
+            if self.contributors is Contributor.ALL
+            else self.contributors(entity)
         )
         if type(eligible) is not bool:
             raise TypeError("contributors must return bool")
         return eligible
 
-    def _selection(self, model, entity):
-        selected = self.select(model, entity)
-        if selected is not None:
-            if not isinstance(selected, Value):
-                raise TypeError("select must return a schema Value or None")
-            if (
-                model.owner_of(selected.id) != entity.id
-                or model.value(selected.id) != selected
-            ):
-                raise SelectionError(
-                    f"selector returned a stale or nonlocal Value {selected.id} for {entity.id}"
-                )
-            kind = ValueKind.FLOW if self._flow is not None else ValueKind.MEASUREMENT
-            if selected.kind is not kind:
-                raise AggregationError(f"expected {kind.value} Values")
+    def _selection(self, model: Model, entity: Entity) -> Value | None:
+        selected = _local_value(model, entity, self.key, self.measure)
+        if selected is not None and selected.kind is not self._kind:
+            raise AggregationError(f"expected {self._kind.value} Values")
         return selected
 
-    def _flow_population(self, hierarchy):
+    def _population(self, hierarchy: Hierarchy):
+        """Select each eligible owner's Value once; list each subtree's owners."""
         if not isinstance(hierarchy, Hierarchy):
             raise TypeError("hierarchy must be a Hierarchy")
-        selected = {}
-        populations = {}
+        model = hierarchy.view.model
+        if self.measure is not None:
+            # A supplied Measure must exist even when no owner has the key.
+            model._index.get(self.measure, Measure)
+        selected: dict[UUID, Value | None] = {}
+        populations: dict[UUID, tuple[UUID, ...]] = {}
         for identity in hierarchy.postorder():
             entity = hierarchy.view.entity(identity)
             children = hierarchy.children(identity)
-            own = ()
+            own: tuple[UUID, ...] = ()
             if self._eligible(entity, leaf=not children):
-                selected[identity] = self._selection(hierarchy.view.model, entity)
+                selected[identity] = self._selection(model, entity)
                 own = (identity,)
             populations[identity] = own + tuple(
                 owner for child in children for owner in populations[child]
             )
         return selected, populations
 
-    def _execute_flows(self, hierarchy):
+
+@dataclass(frozen=True, kw_only=True)
+class QuantityRollup(_Rollup):
+    """Roll up one measurement Value, by owner-local key, over a Hierarchy.
+
+    Each contributor's Value with ``key`` converts to ``units``, then the
+    ``reducer`` combines the raw contributors of each subtree. ``Reducer.COUNT``
+    takes no ``units``; every other reducer requires them. ``measure`` asserts
+    the Measure UUID of each selected Value; it never selects a Value by itself.
+    Contributors default to the leaves, so a parent that records a total is not
+    counted twice. Missing Values and unresolved Quantities count as missing,
+    never as zero. Without ``unit_system``, ``execute`` uses the Model's.
+    """
+
+    unit_system: UnitSystem | None = None
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if self.unit_system is not None and not isinstance(
+            self.unit_system, UnitSystem
+        ):
+            raise TypeError("unit_system must be a UnitSystem")
+        if self.reducer is Reducer.COUNT:
+            if self.units is not None:
+                raise TypeError("count rollups take no units")
+        elif self.units is None:
+            raise TypeError("quantity rollups require units")
+        elif self.unit_system is not None:
+            # Without a unit system, execute checks units against the Model's.
+            self.unit_system.validate_units(self.units)
+
+    def execute(self, hierarchy: Hierarchy) -> RollupResult:
+        """Return a detached derived result; never revise, persist or solve a Model.
+
+        Raw contributors are combined at each subtree, so means stay correctly
+        weighted. Missing keys and unresolved quantities count as missing.
+        """
+        selected, populations = self._population(hierarchy)
+        unit_system = (
+            hierarchy.view.model.unit_system
+            if self.unit_system is None
+            else self.unit_system
+        )
+        if self.units is not None:
+            unit_system.validate_units(self.units)
+        quantities = {
+            owner: quantity
+            for owner, value in selected.items()
+            if (quantity := _recorded_quantity(value, self.units, unit_system))
+            is not None
+        }
+        reduce = _QUANTITY_REDUCERS[self.reducer]
+        entries = {}
+        for node, population in populations.items():
+            measured = tuple(owner for owner in population if owner in quantities)
+            missing = tuple(owner for owner in population if owner not in quantities)
+            available = None
+            if measured:
+                result = reduce(tuple(quantities[owner] for owner in measured))
+                available = (
+                    result
+                    if self.units is None
+                    else unit_system.convert(result, to=self.units)
+                )
+            entries[node] = RollupEntry(
+                available, Coverage(population, measured, missing)
+            )
+        value_ids = {
+            owner: value.id for owner, value in selected.items() if value is not None
+        }
+        return RollupResult(hierarchy, entries, value_ids, self.require_complete)
+
+
+@dataclass(frozen=True)
+class _FlowRule:
+    periods: "tuple[Period, ...] | None"
+    resampling: "ResampleMethod | None"
+    aggregation: "AggregationMethod"
+    weighting: "MeanWeighting | None"
+    missing: "MissingValueHandling"
+    join: "AlignmentJoin"
+
+
+@dataclass(frozen=True, kw_only=True)
+class FlowRollup(_Rollup):
+    """Roll up one Flow Value, by owner-local key, over a Hierarchy.
+
+    The Flows of each subtree's raw contributors combine at each coordinate with
+    ``Reducer.SUM``, ``MIN`` or ``MAX``. With ``periods`` and ``resampling``,
+    each Flow is resampled first. ``missing`` and ``join`` treat unknown
+    Movements and coordinates that only some Flows have. ``units`` converts the
+    results; without it the Flows keep their own units. Contributors default to
+    the leaves, as for ``QuantityRollup``. A contributor without a Flow counts as
+    missing.
+    """
+
+    periods: "Sequence[Period] | None" = None
+    resampling: "ResampleMethod | None" = None
+    weighting: "MeanWeighting | None" = None
+    missing: "MissingValueHandling | None" = None
+    join: "AlignmentJoin | None" = None
+    _rule: _FlowRule = field(init=False, repr=False, compare=False)
+
+    _kind = ValueKind.FLOW
+
+    def __post_init__(self) -> None:
+        from rangekeeper.flow import MissingValueHandling
+        from rangekeeper.flow._options import (
+            AggregationMethod,
+            AlignmentJoin,
+            MeanWeighting,
+            ResampleMethod,
+        )
+
+        super().__post_init__()
+        if self.reducer not in (Reducer.SUM, Reducer.MIN, Reducer.MAX):
+            raise ValueError("Flow rollups take Reducer.SUM, MIN or MAX")
+        if (self.periods is None) != (self.resampling is None):
+            raise ValueError("supply both periods and resampling, or neither")
+        if self.resampling is not None and not isinstance(
+            self.resampling, ResampleMethod
+        ):
+            raise TypeError("resampling must be a ResampleMethod")
+        if self.weighting is not None and not isinstance(self.weighting, MeanWeighting):
+            raise TypeError("weighting must be a MeanWeighting")
+        missing = MissingValueHandling.ERROR if self.missing is None else self.missing
+        join = AlignmentJoin.EXACT if self.join is None else self.join
+        if not isinstance(missing, MissingValueHandling) or not isinstance(
+            join, AlignmentJoin
+        ):
+            raise TypeError("missing and join require their enum types")
+        object.__setattr__(
+            self,
+            "_rule",
+            _FlowRule(
+                None if self.periods is None else tuple(self.periods),
+                self.resampling,
+                AggregationMethod(self.reducer.value),
+                self.weighting,
+                missing,
+                join,
+            ),
+        )
+
+    def execute(self, hierarchy: Hierarchy) -> RollupResult:
+        """Return a detached derived result; never revise, persist or solve a Model.
+
+        Each owner's Flow is selected once, and the collection is prepared once.
+        All subtree results are then batched over the original contributors.
+        """
         from rangekeeper.flow import Stream
 
-        selected, populations = self._flow_population(hierarchy)
+        selected, populations = self._population(hierarchy)
         available = {
             owner: value
             for owner, value in selected.items()
@@ -544,8 +582,8 @@ class Reduction:
             stream = Stream(
                 flows={str(i): available[owner].flow for i, owner in enumerate(owners)}
             )
-            rule = self._flow
-            if rule.periods is not None:
+            rule = self._rule
+            if rule.periods is not None and rule.resampling is not None:
                 stream = stream.resample(
                     periods=rule.periods,
                     method=rule.resampling,
@@ -571,7 +609,7 @@ class Reduction:
             measured = tuple(owner for owner in population if owner in available)
             missing = tuple(owner for owner in population if owner not in available)
             result = results.get(node)
-            entries[node] = AggregateEntry(
+            entries[node] = RollupEntry(
                 None if result is None else result.flow,
                 Coverage(population, measured, missing),
                 () if result is None else result.coverage,
@@ -586,32 +624,33 @@ class Reduction:
         aggregates: Mapping[UUID, UUID],
     ):
         """Declare hierarchy sums over the same original structural contributors."""
-        from rangekeeper.flow._options import AggregationMethod
         from rangekeeper.model.formulation.hierarchy import formulate
 
-        if self._flow is None or self._flow.aggregation is not AggregationMethod.SUM:
-            raise ValueError("formulate requires a built-in Flow SUM rule")
-        if callable(self.contributors):
+        if self.reducer is not Reducer.SUM:
+            raise ValueError("formulate requires Reducer.SUM")
+        if not isinstance(self.contributors, Contributor):
             raise ValueError(
                 "symbolic selection requires Contributor.LEAVES or ALL; select a structural View explicitly"
             )
-        selected, populations = self._flow_population(hierarchy)
+        selected, populations = self._population(hierarchy)
         return formulate(
             hierarchy,
             id=id,
             aggregates=aggregates,
             selected=selected,
             populations=populations,
-            rule=self._flow,
+            rule=self._rule,
         )
 
 
 __all__ = [
     "RollupResult",
-    "AggregateEntry",
+    "RollupEntry",
     "Coverage",
     "CoverageStatus",
     "Contributor",
-    "Reduction",
+    "Reducer",
+    "QuantityRollup",
+    "FlowRollup",
     "classified",
 ]

@@ -266,7 +266,7 @@ with TemporaryDirectory() as directory:
             store.put(doc)
             assert json.loads(json.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
         assert store.load_run(failed.id).to_data() == failed.to_data()
-for prefix in ('yaml', 'pint', 'pandas', 'numpy', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction'):
+for prefix in ('yaml', 'pint', 'pandas', 'numpy', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.rollup'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: all public roots, JSON and both revision stores passed without optional imports')
 from rangekeeper.model.system import View, Hierarchy
@@ -330,13 +330,11 @@ for store in (MemoryStore(), DirectoryStore(Path('revisions'))):
     assert unavailable.report.status.completion is CompletionStatus.FAILED
     assert unavailable.report.status.solution is SolutionStatus.NOT_ASSESSED
     assert any(d.code == 'backend_unavailable' for d in unavailable.report.diagnostics)
-for prefix in ('linkml', 'linkml_runtime', 'numpy', 'pandas', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction'):
+for prefix in ('linkml', 'linkml_runtime', 'numpy', 'pandas', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.rollup'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: all unit-bearing Model/Specification/Run fixtures, composition, JSON/YAML and both stores passed')
 from uuid import uuid4
-from rangekeeper.model.system import View, Hierarchy, Reduction
-from rangekeeper.model.system.selection import select_value
-from rangekeeper.model.system import reducers
+from rangekeeper.model.system import View, Hierarchy, QuantityRollup
 from rangekeeper.model import Metadata, Definitions, Measure, System, Entity, Assembly, Characteristics, Value, ValueKind
 from rangekeeper.quantity import Quantity
 measure = Measure(id=uuid4(), code='area', name='Area', units='meter ** 2')
@@ -345,13 +343,13 @@ entity = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
 group = Assembly(id=uuid4(), entities=(entity.id,))
 model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version='1.0.0'), definitions=Definitions(measures=(measure,)), system=System(entities=(entity,), assemblies=(group,)))
 hierarchy = Hierarchy.from_membership(View(model, assembly=group.id), root=group.id)
-result = Reduction(select=select_value('net'), reducer=reducers.sum, units='centimeter ** 2', contributors=lambda item: item.id == entity.id).execute(hierarchy)
+result = QuantityRollup(key='net', units='centimeter ** 2', contributors=lambda item: item.id == entity.id).execute(hierarchy)
 assert result.root_value.magnitude == 120000 and result.coverage(group.id).complete
 assert result.value_ids[entity.id] == value.id
 assert json.loads(json.dumps(model), kind=rk.Model).to_data() == model.to_data()
 for prefix in ('networkx', 'pandas', 'rangekeeper.legacy', 'rangekeeper.graph', 'pyomo', 'highspy'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
-print('Installed wheel: canonical membership, explicit Value reduction, coverage and conversion passed')
+print('Installed wheel: canonical membership, explicit Value rollup, coverage and conversion passed')
 """
     subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
     if args.financial_python:
@@ -404,7 +402,7 @@ import rangekeeper as rk
 from rangekeeper.io import yaml, DirectoryStore
 from rangekeeper.execution import execute
 from rangekeeper.run import validate, CompletionStatus, SolutionStatus
-for prefix in ('pyomo', 'highspy', 'numpy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction'):
+for prefix in ('pyomo', 'highspy', 'numpy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.rollup'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 store = DirectoryStore(Path('executed'))
 model = yaml.read(Path('examples/model.yaml'), kind=rk.Model)

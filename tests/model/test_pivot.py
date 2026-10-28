@@ -27,12 +27,11 @@ from rangekeeper.model.system import (
     Hierarchy,
     Pivot,
     PivotColumn,
-    Reduction,
+    QuantityRollup,
+    Reducer,
     View,
     classified,
-    reducers,
 )
-from rangekeeper.model.system.selection import select_value
 from rangekeeper.quantity import Quantity
 from rangekeeper.shared.errors import MissingReferenceError
 
@@ -137,9 +136,9 @@ def project(*, missing=()):
     return model, rows, kinds, ids
 
 
-def price(reducer=reducers.sum, **kw):
-    return Reduction(
-        select=select_value("price"),
+def price(reducer=Reducer.SUM, **kw):
+    return QuantityRollup(
+        key="price",
         reducer=reducer,
         units="AUD",
         contributors=Contributor.LEAVES,
@@ -162,7 +161,7 @@ def test_single_column_pivot_is_the_same_as_execute():
     expected = reduction.execute(rows)
     for pivot in (reduction.pivot(rows), reduction.pivot(rows, by=kinds["2B+S"])):
         assert [column.classification for column in pivot.columns] == [None]
-        assert pivot.column().aggregation == expected
+        assert pivot.column().result == expected
         for id in rows.preorder():
             assert pivot.cell(id) == expected.entries[id]
             assert pivot.value(id) == expected.value(id)
@@ -281,7 +280,7 @@ def test_incomplete_coverage_stays_visible_per_cell():
 
 def test_means_use_raw_contributors_in_every_cell():
     model, rows, kinds, ids = project()
-    pivot = price(reducers.mean).pivot(rows, by=kinds["apartment"])
+    pivot = price(Reducer.MEAN).pivot(rows, by=kinds["apartment"])
     prices = {code: amount for code, _, _, amount in UNITS}
     level_means = [magnitude(pivot, ids[level]) for level in ("L1", "L2")]
     assert magnitude(pivot, ids["building"]) == pytest.approx(fmean(prices.values()))
@@ -319,9 +318,9 @@ def test_only_narrows_every_column_including_a_different_taxonomy():
 
 def test_count_pivot_counts_each_column():
     model, rows, kinds, ids = project()
-    pivot = Reduction(
-        select=select_value("price"),
-        reducer=reducers.count,
+    pivot = QuantityRollup(
+        key="price",
+        reducer=Reducer.COUNT,
         units=None,
         contributors=Contributor.LEAVES,
     ).pivot(rows, by=kinds["apartment"])

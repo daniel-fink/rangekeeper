@@ -6,8 +6,8 @@ Views select canonical Model objects. Membership and hierarchy are explicit proj
 
 The [architecture map](../concepts/architecture.md) places these operations under
 `rangekeeper.model.system`. `View` owns selection, `Hierarchy` owns explicit tree
-projection, `Reduction` owns recorded-Value aggregation, and `Pivot` holds one
-Reduction per column of a Taxonomy. `membership` provides
+projection, `QuantityRollup` and `FlowRollup` own rollups of recorded Values, and
+`Pivot` holds one rollup result per column of a Taxonomy. `membership` provides
 Assembly traversal; `selection` provides owner-local Value selection. None of
 these operations owns canonical field declarations.
 
@@ -152,61 +152,78 @@ the passed Entities and the selected Relationships between them. Unknown
 Classification UUIDs raise `MissingReferenceError`. An empty `Filter()` passes
 every Entity.
 
-## Explicit recorded-Value reduction
+## Rollups of recorded Values
 
 ```python
-from rangekeeper.model.system import Reduction
-from rangekeeper.model.system.selection import select_value
-from rangekeeper.model.system import reducers
+from rangekeeper.model.system import QuantityRollup, Reducer
 
-reduction = Reduction(
-    select=select_value("annual_rent", measure=rent_measure_id),
-    reducer=reducers.sum,
+rent = QuantityRollup(
+    key="annual_rent",
     units="AUD/year",
+    reducer=Reducer.SUM,  # the default
+    measure=rent_measure_id,  # optional: asserts each Value's Measure
     contributors=lambda entity: entity.classification == dwelling_classification_id,
-    require_complete=True,
+    require_complete=True,  # the default
 )
 
-result = view.aggregate(reduction)  # validates a relationship hierarchy
-# Or: result = reduction.execute(membership_tree)
+result = view.rollup(definition=rent)  # validates a relationship hierarchy
+# Or: result = rent.execute(membership_tree)
 quantity = result.value(parent_id)
 coverage = result.coverage(parent_id)
 available = result.available_value(parent_id)
 ```
 
-The selector chooses one Value by its owner-local key. Optional `measure=` asserts
-its Measure UUID; it never chooses the first Value sharing that Measure. Multiple
-Values using one Measure remain independent. A supplied Measure must exist even
-when the local key is missing. A custom selector must return a current Value owned
-by that Entity; cross-owner, Formulation-local and stale quantities are rejected.
+A rollup selects one Value for each contributor by its owner-local `key`.
+Optional `measure=` asserts its Measure UUID; it never chooses the first Value
+sharing that Measure, and a different Measure raises `SelectionError`. A supplied
+Measure must exist even when no owner has the key. A Value of the wrong kind (a
+Flow for a `QuantityRollup`) raises `AggregationError`.
 
-All selected quantities convert explicitly to `units` before reduction. The
-`unit_system` parameter defaults to `None`: `execute` then uses
+`QuantityRollup` and `FlowRollup` share their fields and their contributor rules,
+and both return a `RollupResult`:
+
+| Field | Meaning | Default |
+| --- | --- | --- |
+| `key` | Owner-local Value key | required |
+| `reducer` | A `Reducer`: `SUM`, `MEAN`, `MIN`, `MAX` or `COUNT` | `Reducer.SUM` |
+| `units` | Units of the results | required for a `QuantityRollup`, except `COUNT` |
+| `measure` | Measure UUID that each selected Value must use | none |
+| `contributors` | `Contributor.LEAVES`, `Contributor.ALL` or a callable that returns bool | `Contributor.LEAVES` |
+| `require_complete` | Whether `value` needs complete coverage | `True` |
+
+Both rollups select leaf contributors by default, so a parent that records a total
+is not counted with its children. `Contributor.ALL` includes every node, also
+Assemblies; select it only when parent Values are independent contributions. A
+callable contributor rule selects any node for which it returns True. The library
+does not infer which amounts are additive or certify physical population
+completeness.
+
+### Quantity rollups
+
+All selected quantities convert explicitly to `units` before the reducer combines
+them. The `unit_system` field defaults to `None`: `execute` then uses
 `Model.unit_system` of the hierarchy's Model ([units](units.md)). A supplied unit
-system checks `units` when the Reduction is created; otherwise `execute` checks them. Results are immutable
-schema Quantities. Custom reducers must return a compatible finite Quantity;
-programming errors from callbacks propagate to the caller.
+system checks `units` when the rollup is created; otherwise `execute` checks them.
+Results are immutable schema Quantities.
 
-Built-in `reducers.sum`, `reducers.mean`, `reducers.min` and `reducers.max`
-operate on nonempty tuples already normalized to identical unit spellings. Means
-use raw contributors, avoiding the incorrect mean-of-subtree-means result. Overflow
-is rejected. Empty populations remain unavailable rather than becoming zero.
+The reducers operate on the raw contributors of each subtree. A mean is never a
+mean of sub-tree means. Overflow and non-finite results raise `AggregationError`.
+Empty populations remain unavailable rather than becoming zero.
 
-`reducers.count` counts the contributors that have a value. It returns a
+`Reducer.COUNT` counts the contributors that have a value. It returns a
 `Quantity` with `units="dimensionless"` and a whole-number magnitude. A count
-`Reduction` takes no `units`; supplying them raises `TypeError`. Selected
-quantities are not converted, so contributors can record different units.
-Missing keys and unresolved quantities are missing contributors and are not
-counted; a recorded zero is counted. Under `require_complete=True` an incomplete
-population has no `value`, and `available_value` gives the count of measured
-contributors. A population with no measured contributor has no count, as for the
-other reducers; its `Coverage` still lists the selected and missing owners.
+rollup takes no `units`; supplying them raises `TypeError`. Selected quantities
+are not converted, so contributors can record different units. Missing keys and
+unresolved quantities are missing contributors and are not counted; a recorded
+zero is counted. Under `require_complete=True` an incomplete population has no
+`value`, and `available_value` gives the count of measured contributors. A
+population with no measured contributor has no count, as for the other reducers;
+its `Coverage` still lists the selected and missing owners.
 
 ```python
-units_with_price = Reduction(
-    select=select_value("launch_price"),
-    reducer=reducers.count,
-    units=None,
+units_with_price = QuantityRollup(
+    key="launch_price",
+    reducer=Reducer.COUNT,
     contributors=classified(model, two_bed_id),
 )
 ```
@@ -217,9 +234,8 @@ for Entities in a Classification. It uses the same sub-type rule as `View.filter
 ```python
 from rangekeeper.model.system import classified
 
-two_bed_price = Reduction(
-    select=select_value("launch_price"),
-    reducer=reducers.sum,
+two_bed_price = QuantityRollup(
+    key="launch_price",
     units="AUD",
     contributors=classified(model, two_bed_id),  # 2B, 2B+S, 2B Courtyard ...
 )
@@ -227,20 +243,17 @@ two_bed_price = Reduction(
 
 Unclassified Entities never match. The UUID must exist in the Model.
 
-The default contributor policy includes every selected Entity, including Assemblies.
-The default requires complete coverage. If parents already record totals, select
-leaves or a domain classification explicitly to avoid counting both parents and
-children. The library does not infer which amounts are additive or certify physical
-population completeness.
+### Results
 
-`Aggregation` exposes:
+`RollupResult` exposes:
 
 - `value(id)` / `result[id]`, and `root_value`: the result under the coverage policy.
 - `coverage(id)`: selected, measured and missing owner UUIDs, with a
   `CoverageStatus` member: `EMPTY`, `COMPLETE` or `INCOMPLETE`.
-- `available_value(id)`: reduction over measured contributors despite missing values,
-  for every reducer, including wrapped and custom reducers.
-- `entries`: one immutable `AggregateEntry(available, coverage)` per hierarchy node.
+- `available_value(id)`: the result over measured contributors despite missing
+  values, for every reducer.
+- `entries`: one immutable `RollupEntry(available, coverage, period_coverage)`
+  per hierarchy node.
 - `require_complete`: the policy used to derive `value` from each entry.
 - `value_ids`: immutable owner-to-selected-Value IDs, including unresolved Values.
 - `hierarchy`: the selection/revision that produced the derived results.
@@ -254,57 +267,52 @@ scalar executor for mathematical investigation.
 ## Pivot over a Taxonomy
 
 ```python
-from rangekeeper.model.system import Contributor, Reduction, reducers
-from rangekeeper.model.system.selection import select_value
+from rangekeeper.model.system import QuantityRollup
 
-launch_price = Reduction(
-    select=select_value("launch_price"),
-    reducer=reducers.sum,
-    units="AUD",
-    contributors=Contributor.LEAVES,
-)
+launch_price = QuantityRollup(key="launch_price", units="AUD")
 pivot = launch_price.pivot(levels, by=apartment_id, depth=1, only=None)
 
 pivot.value(level_id)  # the "All" column
 pivot.value(level_id, two_bed_id)  # 2B, with its sub-types
-pivot.cell(level_id, two_bed_id)  # AggregateEntry(available, coverage)
+pivot.cell(level_id, two_bed_id)  # RollupEntry(available, coverage)
 pivot.partition(level_id)  # do the 2B, 3B ... columns add up to All?
 pivot.display()
 ```
 
-`Reduction.pivot(hierarchy, *, by=None, depth=1, only=None, exclusive=False)`
-returns a detached `Pivot` from `rangekeeper.model.system.pivot`. It runs
-`Reduction.execute` once per column, so every cell is an `AggregateEntry` and the
+`QuantityRollup.pivot(hierarchy, *, by=None, depth=1, only=None, exclusive=False)`,
+and `FlowRollup.pivot` with the same arguments, return a detached `Pivot` from
+`rangekeeper.model.system.pivot`. It runs the rollup's `execute` once per column,
+so every cell is a `RollupEntry` and the
 pivot adds no arithmetic. Means stay correctly weighted: each cell reduces the raw
 contributors of its subtree.
 
-- The "All" column (`classification=None`) uses the Reduction's own contributors.
+- The "All" column (`classification=None`) uses the rollup's own contributors.
   With `only`, it also requires that Classification.
 - `by` is a Classification. Its descendants down to `depth` levels become further
   columns, in Taxonomy preorder. `by` itself is not a column. Each column requires
-  the Reduction's contributors, `only` and its own Classification.
+  the rollup's contributors, `only` and its own Classification.
 - A Classification includes its sub-types, as in
   [`View.filter`](#selection-and-traversal). `exclusive=True` applies to `only` and
   to every column: each then matches only that Classification.
 - `by=None`, or a `by` with no sub-types, gives the "All" column alone. Its
-  Aggregation equals `execute(hierarchy)` when `only` is None.
+  RollupResult equals `execute(hierarchy)` when `only` is None.
 
 An Entity has one Classification. When `only` and `by` come from different
 Taxonomies, no Entity matches both, so the class columns are empty. Labels are not
 read.
 
-`PivotColumn(classification, parent, depth, aggregation)` describes one column.
+`PivotColumn(classification, parent, depth, result)` describes one column.
 The "All" column has depth 0 and no parent. A `parent` of None on a depth-1 column
 means "All". `Pivot(rows, columns)` keeps column order and requires one "All"
 column, unique Classifications, a parent column one level up for each column, and
-Aggregations over `rows`. Unknown Classification UUIDs raise
+RollupResults over `rows`. Unknown Classification UUIDs raise
 `MissingReferenceError`; a malformed column set raises `AggregationError`.
 
 A `Pivot` exposes:
 
 - `columns`, `column(id)` and `children(id)`. `None` names the "All" column.
-- `cell(row, column=None)`: the column's `AggregateEntry` for that row.
-- `value`, `coverage` and `available_value`, as on `Aggregation`, for one column.
+- `cell(row, column=None)`: the column's `RollupEntry` for that row.
+- `value`, `coverage` and `available_value`, as on `RollupResult`, for one column.
 - `partition(row, column=None)`: a `Partition(complete, overlap, uncovered,
   outside)` that compares the column's `Coverage.selected` with its sub-columns'.
   `overlap` lists records in more than one sub-column, `uncovered` lists records
@@ -335,7 +343,7 @@ an index. See [the consumer guide](tables.md) for examples and errors.
 
 ## Legacy boundary
 
-`model.system.View` and `model.system.reduction` are Model-backed operations and reject old
+`model.system.View` and `model.system.rollup` are Model-backed operations and reject old
 Graph inputs. New records come from `rangekeeper.model`. See [tables](tables.md)
 for projections of these views.
 
@@ -343,37 +351,38 @@ The old Graph domain, its View, table projection and JSON codec are removed.
 No implicit Graph-to-Model conversion or compatibility constructors remain.
 Consumers interpret their source data and create Models through public RK APIs.
 
-## Flow hierarchy reduction
+## Flow rollups
 
 ```python
-from rangekeeper.model.system import Reduction, Contributor
 from rangekeeper.flow import ResampleMethod
+from rangekeeper.model.system import FlowRollup
 
-rollup = Reduction.flows(
+cashflow = FlowRollup(
     key="cashflow",
     periods=annual_periods,
     resampling=ResampleMethod.SUM,
-    contributors=Contributor.LEAVES,
 )
-result = rollup.execute(hierarchy)
+result = cashflow.execute(hierarchy)
 portfolio = result.root_value
 result.display()
 ```
 
-The factory defaults to leaf contributors and SUM aggregation. `Contributor.ALL`
-is explicit; it can include stored parent values, so select it only when those are
-independent contributions. Scalar Reduction keeps its existing callable reducer.
-Predicate contributors remain available for numerical work.
+A `FlowRollup` takes `Reducer.SUM` (the default), `MIN` or `MAX`; `MEAN` and
+`COUNT` raise `ValueError`. It selects leaf contributors by default, as a
+`QuantityRollup` does. `periods` and `resampling` go together: each Flow is
+resampled before the rollup, with an optional `weighting`. `units` converts the
+results; without it the Flows keep their units. Contributors without a Flow appear
+as missing in owner coverage.
 
-Flow reduction selects owner-local Values once, prepares/resamples the collection
-once, and batches all subtree reductions over original contributors. Missing Flow
-shapes appear in owner coverage. Unknown Movements and missing coordinates follow
-`missing=` and `join=`. `entries[entity_id].period_coverage` records the known input
-fraction at each coordinate. This is separate from selected/measured/missing owner
-coverage. `value_ids` records the chosen source Values.
+A Flow rollup selects owner-local Values once, prepares/resamples the collection
+once, and batches all subtree results over original contributors. Unknown
+Movements and missing coordinates follow `missing=` and `join=`.
+`entries[entity_id].period_coverage` records the known input fraction at each
+coordinate. This is separate from selected/measured/missing owner coverage.
+`value_ids` records the chosen source Values.
 
-`rollup.formulate(hierarchy, id=..., aggregates={entity_id: flow_value_id})` returns
-passive equations for the built-in SUM rule. It supports fixed SUM/MEAN/FIRST/LAST
+`cashflow.formulate(hierarchy, id=..., aggregates={entity_id: flow_value_id})`
+returns passive equations for `Reducer.SUM`. It supports fixed SUM/MEAN/FIRST/LAST
 resampling over original Movement references. Every selected source needs a shape,
 but its amounts can be unknown. Aggregate Values must be owned by their named
 entities. Self-contributions, incomplete source selection, callable symbolic

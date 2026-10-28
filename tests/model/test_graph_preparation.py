@@ -5,9 +5,10 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.model.system import Coverage, Hierarchy, View, reducers
+from rangekeeper.model.system import Coverage, Hierarchy, View
+from rangekeeper.model.system import _reducers as reducers
 from rangekeeper.model.system.errors import AggregationError
-from rangekeeper.model.system.reduction import AggregateEntry, RollupResult
+from rangekeeper.model.system.rollup import RollupEntry, RollupResult
 from rangekeeper.model.system.table import (
     EntityField,
     FieldColumn,
@@ -61,19 +62,10 @@ def test_aggregate_entries_enforce_structure_without_reducing_again():
     result = reduction().execute(hierarchy)
     assert result.root_value is None
     assert result.available_value(root.id).magnitude == 10
-    calls = []
-
-    def wrapped(values):
-        calls.append(values)
-        return reducers.sum(values)
-
-    wrapped_result = reduction(reducer=wrapped).execute(hierarchy)
-    assert wrapped_result.available_value(root.id).magnitude == 10
-    observed = len(calls)
-    copied = replace(wrapped_result, entries=dict(wrapped_result.entries))
-    assert len(calls) == observed and copied == wrapped_result
+    copied = replace(result, entries=dict(result.entries))
+    assert copied == result
     with pytest.raises(AggregationError, match="available"):
-        AggregateEntry(None, Coverage((a.id,), (a.id,), ()))
+        RollupEntry(None, Coverage((a.id,), (a.id,), ()))
     with pytest.raises(AggregationError, match="exactly"):
         RollupResult(hierarchy, {}, result.value_ids, True)
 
@@ -95,41 +87,17 @@ def test_table_constructs_each_raw_mapping_row_once(monkeypatch):
     assert table.column("a") == (1,)
 
 
-def test_reduction_preserves_callback_interleaving_and_raw_contributor_order():
-    from rangekeeper.model.system.selection import select_value
-
+def test_rollup_asks_each_contributor_rule_once_in_postorder():
     model, *_ = fixture()
     events = []
-    selector = select_value("net")
 
     def eligible(entity):
-        events.append(("eligible", entity.code))
+        events.append(entity.code)
         return entity.code != "root"
 
-    def select(model, entity):
-        events.append(("select", entity.code))
-        return selector(model, entity)
-
-    def reduce(values):
-        events.append(("reduce", tuple(q.magnitude for q in values)))
-        return reducers.sum(values)
-
-    View(model).aggregate(
-        reduction(select=select, reducer=reduce, contributors=eligible)
-    )
-    assert events == [
-        ("eligible", "a"),
-        ("select", "a"),
-        ("reduce", (10,)),
-        ("eligible", "b"),
-        ("select", "b"),
-        ("reduce", (20,)),
-        ("eligible", "c"),
-        ("select", "c"),
-        ("reduce", (0,)),
-        ("eligible", "root"),
-        ("reduce", (10, 20, 0)),
-    ]
+    result = View(model).rollup(definition=reduction(contributors=eligible))
+    assert events == ["a", "b", "c", "root"]
+    assert result.root_value.magnitude == 30
 
 
 def test_shared_population_keeps_flat_and_hierarchy_policies_distinct():
@@ -142,7 +110,7 @@ def test_shared_population_keeps_flat_and_hierarchy_policies_distinct():
     from operator import add
 
     assert reduce(add, (q.magnitude for q in population.quantities), 0.0) == 0
-    assert View(model).aggregate(reduction()).root_value.magnitude == 1
+    assert View(model).rollup(definition=reduction()).root_value.magnitude == 1
 
 
 def test_projection_preflights_each_measure_once_and_reserved_name_first(monkeypatch):
@@ -185,7 +153,7 @@ def test_aggregate_mapping_copy_and_subtree_ownership():
     entries.clear()
     assert copied.root_value == result.root_value
     wrong = dict(result.entries)
-    wrong[a.id] = AggregateEntry(
+    wrong[a.id] = RollupEntry(
         result.available_value(b.id), Coverage((b.id,), (b.id,), ())
     )
     with pytest.raises(AggregationError, match="subtree"):

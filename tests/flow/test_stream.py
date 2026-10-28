@@ -19,7 +19,7 @@ from rangekeeper.flow import ResampleMethod as R
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import Reference, Update
 from rangekeeper.model.formulation import flow
-from rangekeeper.model.system import Hierarchy, Reduction, View
+from rangekeeper.model.system import FlowRollup, Hierarchy, View
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import SolutionStatus
 from rangekeeper_examples.flux import (
@@ -351,7 +351,7 @@ def test_model_selections_cannot_hide_numerical_transformations():
 def test_forward_reverse_hierarchy_and_numeric_parity():
     solved, ids = solve_example()
     hierarchy = Hierarchy(View(solved), membership_root=ids["root"])
-    results = Reduction.flows(key="annual").execute(hierarchy)
+    results = FlowRollup(key="annual").execute(hierarchy)
     assert results.root_value.movements[0].number == 2880
     assert results.value(ids["A"]).movements[0].number == 1080
     assert results.entries[ids["root"]].period_coverage == (1.0,)
@@ -362,7 +362,7 @@ def test_forward_reverse_hierarchy_and_numeric_parity():
 def test_flow_reductions_pivot_with_the_same_cells_as_execute():
     solved, ids = solve_example()
     hierarchy = Hierarchy(View(solved), membership_root=ids["root"])
-    rollup = Reduction.flows(key="annual")
+    rollup = FlowRollup(key="annual")
     pivot = rollup.pivot(hierarchy)
     expected = rollup.execute(hierarchy)
     for node in hierarchy.preorder():

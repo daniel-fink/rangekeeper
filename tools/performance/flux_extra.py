@@ -91,9 +91,9 @@ def hierarchy_case(legacy):
         total = results[root.id]
         first = results[buildings[0].id]
     else:
-        from rangekeeper.model.system import Reduction
+        from rangekeeper.model.system import FlowRollup
 
-        result = Reduction.flows(
+        result = FlowRollup(
             key="cashflow", periods=years, resampling=ResampleMethod.SUM
         ).execute(hierarchy)
         total = result.root_value

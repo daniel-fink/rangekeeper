@@ -21,9 +21,7 @@ from rangekeeper.model import (
     Value,
     ValueKind,
 )
-from rangekeeper.model.system import View, reducers
-from rangekeeper.model.system.reduction import Reduction
-from rangekeeper.model.system.selection import select_value
+from rangekeeper.model.system import QuantityRollup, View
 from rangekeeper.model.system.table import ValueColumn, to_table
 from rangekeeper.money import minor_unit
 from rangekeeper.quantity import Quantity, UnitSystem, default_units
@@ -349,10 +347,8 @@ def test_derived_operations_default_to_the_model_unit_system():
     assert [q.magnitude for q in population.quantities] == [12]
     table = to_table(view, columns=(ValueColumn("levels", "levels", "level"),))
     assert table.rows[0].values["levels"] == 12
-    aggregation = view.aggregate(
-        Reduction(select=select_value("levels"), reducer=reducers.sum, units="level")
-    )
-    assert aggregation[model.find_entities(code="A")[0].id].magnitude == 12
+    result = view.rollup(definition=QuantityRollup(key="levels", units="level"))
+    assert result[model.find_entities(code="A")[0].id].magnitude == 12
     with pytest.raises(UnitError):
         to_table(
             view,

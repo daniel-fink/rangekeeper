@@ -20,7 +20,7 @@ from rangekeeper.model import (
     Value,
 )
 from rangekeeper.model.formulation import flow
-from rangekeeper.model.system import Hierarchy, Reduction, View
+from rangekeeper.model.system import FlowRollup, Hierarchy, View
 from rangekeeper.schema.enums import SolutionStatus, ValueKind
 from rangekeeper.specification import Specification, SpecificationRecord
 from rangekeeper.specification.targets import assign_flow, unknown_flow
@@ -116,7 +116,7 @@ def hierarchy_model():
         )
     hierarchy = Hierarchy(View(model), membership_root=root.id)
     equations.append(
-        Reduction.flows(key="annual").formulate(
+        FlowRollup(key="annual").formulate(
             hierarchy, id=uuid4(), aggregates={root.id: total.id}
         )
     )

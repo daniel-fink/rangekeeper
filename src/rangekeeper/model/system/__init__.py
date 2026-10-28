@@ -26,34 +26,30 @@ if TYPE_CHECKING:
     from .pivot import (
         PivotColumn as PivotColumn,
     )
-    from .reduction import (
-        Contributor as Contributor,
-    )
-    from .reduction import (
-        Coverage as Coverage,
-    )
-    from .reduction import (
-        CoverageStatus as CoverageStatus,
-    )
-    from .reduction import (
-        Reduction as Reduction,
-    )
-    from .reduction import RollupResult as RollupResult
-    from .reduction import (
-        classified as classified,
-    )
+    from .rollup import Contributor as Contributor
+    from .rollup import Coverage as Coverage
+    from .rollup import CoverageStatus as CoverageStatus
+    from .rollup import FlowRollup as FlowRollup
+    from .rollup import QuantityRollup as QuantityRollup
+    from .rollup import Reducer as Reducer
+    from .rollup import RollupEntry as RollupEntry
+    from .rollup import RollupResult as RollupResult
+    from .rollup import classified as classified
     from .view import View as View
 
 _EXPORTS = {
     "View": "view",
     "Hierarchy": "hierarchy",
     "HierarchyKind": "hierarchy",
-    "Reduction": "reduction",
-    "Contributor": "reduction",
-    "RollupResult": "reduction",
-    "Coverage": "reduction",
-    "CoverageStatus": "reduction",
-    "classified": "reduction",
+    "QuantityRollup": "rollup",
+    "FlowRollup": "rollup",
+    "Reducer": "rollup",
+    "Contributor": "rollup",
+    "RollupResult": "rollup",
+    "RollupEntry": "rollup",
+    "Coverage": "rollup",
+    "CoverageStatus": "rollup",
+    "classified": "rollup",
     "Match": "matching",
     "Pivot": "pivot",
     "PivotColumn": "pivot",
@@ -64,11 +60,10 @@ _EXPORTS = {
 }
 _MODULES = {
     "matching",
-    "reduction",
+    "rollup",
     "table",
     "membership",
     "selection",
-    "reducers",
     "pivot",
 }
 __all__ = [*_EXPORTS, *sorted(_MODULES)]
