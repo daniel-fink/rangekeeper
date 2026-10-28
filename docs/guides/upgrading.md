@@ -122,8 +122,9 @@ a number. The conversion tool rewrites stored documents. In code:
 | `movement.magnitude` in arithmetic | `movement.number` |
 | `{"magnitude": 100.0, "units": "AUD"}` in data | `{"magnitude": "100", "units": "AUD"}` |
 | `rangekeeper.quantity.minor_unit` | `rangekeeper.money.minor_unit` (the codemod moves it) |
-| Rounding by hand | `Quantity.round()`, `money.round()`; the library never rounds on its own | A scenario realization saved before
-1.0.0a2 stays readable as data, but `replay` raises `ReplayUnavailableError` for
+| Rounding by hand | `Quantity.round()`, `money.round()`; the library never rounds on its own |
+
+A scenario realization saved before 1.0.0a2 stays readable as data, but `replay` raises `ReplayUnavailableError` for
 it; generate it again.
 
 ### Breaking surface for 1.x consumers
@@ -193,7 +194,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.series` | `rangekeeper.flow` | agreed | The module is removed (#103). Its options and FlowAggregate are in `rangekeeper.flow`; Flow and Stream methods replace its functions (see the removed names). |
 | `rangekeeper.schema.behaviors.flow` | `rangekeeper.flow` | agreed | The behaviour modules are removed; generated records contain data only. Flow, Movement and MissingValueHandling are in `rangekeeper.flow`. Period and Span are in `rangekeeper.duration`; Distribution stays in `rangekeeper.model`. |
 | `rangekeeper.calculations` | `rangekeeper.finance` | agreed |  |
-| `rangekeeper.calculations.projection` | `rangekeeper.profile` | agreed | Growth and distribution profiles. The word "projection" is not used. Profile classes and `Flow.from_profile` follow (#298). |
+| `rangekeeper.calculations.projection` | `rangekeeper.profile` | agreed | Growth and distribution profiles. The word "projection" is not used. Profile classes and `Flow.from_profile` follow (#303). |
 | `rangekeeper.calculations.dynamics` | `rangekeeper.market.dynamics` | agreed | Path generators are series maths, so they leave `finance`. `rk.market.Dynamics` follows (#299). |
 | `rangekeeper.run.execution` | `rangekeeper.execution` | agreed |  |
 | `rangekeeper.specification.policy` | `rangekeeper.specification.rule` | agreed | "Policy" is not used. The rule queries of ADR-021 replace the records later (#215). |
@@ -205,7 +206,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.shared.units` | `rangekeeper.quantity` | agreed | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
 | `rangekeeper.io.store` | `rangekeeper.io` | agreed | The `RecordStore` protocol is defined in the internal `shared.store`, so `execution` does not import `io`. Import `RecordStore` and `Document` from `rangekeeper.io`. |
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
-| `rangekeeper.model.scenario` | `rangekeeper.market` | agreed | The generators, paths and replay move as they are. `rk.market.Paths` and the MarketPaths document replace the scenario plan (#299, #303). |
+| `rangekeeper.model.scenario` | `rangekeeper.market` | agreed | The generators, paths and replay move as they are. `rk.market.Paths` and the MarketPaths document replace the scenario plan (#298, #299). |
 | `rangekeeper.model.scenario.market` | `rangekeeper.market.generation` | draft | Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name. |
 | `rangekeeper.model.scope` | `rangekeeper.model._scope` | agreed | Internal. The checks over raw mappings become private; the typed target lookups move to `rangekeeper.model.targets`. |
 | `src/tests/` | `tests/` | agreed | The pass moves the suite to the top level. #177 adds the sub-folders that mirror the packages, and tests/contracts, tests/integration and tests/walkthrough. |
@@ -241,8 +242,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.financial.calculate_pv` | `pv` | agreed (needs refactor) | `rangekeeper.finance.pv(flow=, rate=, on=)`, with keyword-only arguments (#167). |
 | `rangekeeper.calculations.financial.calculate_xnpv` | `npv` | agreed (needs refactor) | `rangekeeper.finance.npv(flow=, rate=, on=)`, with keyword-only arguments (#167). |
 | `rangekeeper.calculations.financial.calculate_irr` | `irr` | agreed (needs refactor) | `rangekeeper.finance.irr(flow=)`, also an equation function (#164, #167). |
-| `rangekeeper.calculations.projection.ProjectionMethod` | `GrowthMethod` | draft | The word "projection" is not used. Profile classes replace the enum (#298). |
-| `rangekeeper.calculations.projection.project_values` | `grow_values` | draft | The word "projection" is not used. `Flow.from_profile` replaces it (#298). |
+| `rangekeeper.calculations.projection.ProjectionMethod` | `GrowthMethod` | draft | The word "projection" is not used. Profile classes replace the enum (#303). |
+| `rangekeeper.calculations.projection.project_values` | `grow_values` | draft | The word "projection" is not used. `Flow.from_profile` replaces it (#303). |
 | `rangekeeper.model.formulation.account.interest` | `rangekeeper.model.formulation.financial.interest` | draft | The account module is removed; passive interest stays with the other financial equations. |
 | `rangekeeper.model.scenario.replay.replay` | `rangekeeper.market.replay` | agreed | One canonical path for each public name. |
 | `rangekeeper.model.scenario.replay.ReplayUnavailableError` | `rangekeeper.market.ReplayUnavailableError` | agreed | One canonical path for each public name. |
@@ -285,7 +286,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 
 | Current | Use instead | Status |
 | --- | --- | --- |
-| `rangekeeper.calculations.account` | Compose the funding with Flows: a balance is `cumulative()`, and interest is `rangekeeper.finance.interest` (#255 D2, D23). A how-to recipe follows (#194) | agreed |
+| `rangekeeper.calculations.account` | Compose the funding with Flows: a balance is `cumulative()`. Interest is the Model equation `rangekeeper.model.formulation.financial.interest`; `rx.finance.interest` in equation text follows (#255 D2, D23, #278). A how-to recipe follows (#194) | agreed |
 | `rangekeeper.model.formulation.account.schedule` | Equations over Flows, such as `funding_need = -(net_cash_flow + loan_interest).cumulative()`. A Model declares no account (#255 D2) | agreed |
 | `rangekeeper.model.expression.authoring.sum` | Equation text or `rangekeeper.expressions` on entity handles (#255 D6, D18, D32). ADR-012 forbids public names that shadow builtins | agreed (needs refactor) |
 | `rangekeeper.model.formulation.authoring.declare` | `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)`, `date(...)` and `equations(...)` (#255 D6, D16) | agreed (needs refactor) |
@@ -320,16 +321,16 @@ them; the issues that the table names make the changes.
 | Specification calls | `fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. | #255 D7, D8 |
 | Loan payment | `rangekeeper.finance.payment(principal=, rate=, term=, frequency=)` (#167). | #255 D19 |
 | Funding accounts | There is no account class and no account declaration. A balance is `cumulative()` of a Flow. | #255 D2, D23 |
-| Growth and distribution profiles | `rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#298). | #255 D12 |
-| Market paths | `rk.market.Dynamics`, `rk.market.generate` and `rk.market.Paths` replace the scenario plan and the trend and cycle kernels (#299, #303). | #255 D29, D31 |
+| Growth and distribution profiles | `rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#303). | #255 D12 |
+| Market paths | `rk.market.Dynamics`, `rk.market.generate` and `rk.market.Paths` replace the scenario plan and the trend and cycle kernels (#298, #299). | #255 D29, D31 |
 | Fixed words are enums | Diagnostic codes are `rk.errors.Code` (#154); "the event does not happen" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings. | #255 D26 |
-| Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215). | ADR-021, |
+| Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215). | ADR-021, #255 D41, D42 |
 
 <!-- rename-map:end -->
 
-## Upgrade to 0.9
+## Upgrade from 0.8 to 1.0.0a1
 
-This is a breaking library change.
+There was no 0.9 release. This is a breaking library change.
 
 | Previous import | Current owner and import |
 | --- | --- |
@@ -349,10 +350,13 @@ Use the [walkthrough environment](walkthroughs.md#explore-the-lessons) for the w
 For scalar CSV output, call `rangekeeper.io.polars.text_frame(table).write_csv(path)`.
 Supply read dtypes explicitly. CSV does not preserve a complete canonical Model.
 
-The old Python and C# runtimes, `migration` package and draft schema upgraders are removed.
-Current Model, Specification and Run artifacts remain readable. Retained historical source
-formats require explicit conversion supplied by the consumer. Historical evidence and source files
-remain in the repository. They do not restore removed APIs.
+The old Python and C# runtimes, the `migration` package and the draft schema
+upgraders are removed. From 1.0.0a2, 1.x does not read 0.x Model, Specification
+and Run documents, because the formats reset to 1.0.0. Rebuild them, or convert
+them with `python -m tools.upgrade`; see
+[document formats 1.0.0](#document-formats-100). Retained historical source
+formats require explicit conversion supplied by the consumer. Historical evidence
+and source files remain in the repository. They do not restore removed APIs.
 
 Generic Grasshopper authoring stays in RK. Source-specific extraction belongs to
 the consumer. See the [Grasshopper example](../../examples/grasshopper/README.md).

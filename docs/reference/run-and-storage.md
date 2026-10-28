@@ -30,7 +30,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import uuid4
 import rangekeeper as rk
-from rangekeeper.schema import Metadata
+from rangekeeper.model import Metadata
 from rangekeeper.specification import SpecificationRecord
 from rangekeeper.run import RunRecord, Report, Status, Diagnostic, CompletionStatus, SolutionStatus, Severity, validate as validate_run
 from rangekeeper.io import MemoryStore, DirectoryStore, json

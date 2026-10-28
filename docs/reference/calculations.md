@@ -128,8 +128,9 @@ a dataframe library or SciPy.
 
 The [table reference](tables.md) owns lossless Flow-to-Polars conversion,
 `_present` metadata, detached date projections and textual CSV rules. These
-projections do not change the Model. Plot adapters return figures so callers
-choose display and storage.
+projections do not change the Model. The library has no plot adapters: they
+moved to the [walkthrough helpers](../../examples/walkthrough/helpers/README.md)
+in 1.0.0a1. The helpers return figures, so callers choose display and storage.
 
 ## Movement naming
 

@@ -75,7 +75,7 @@ modules:
   - old: rangekeeper.schema.behaviors.flow
     new: rangekeeper.flow
     status: agreed
-    source: ADR-011, #106
+    source: "ADR-011, #106"
     note: >-
       The behaviour modules are removed; generated records contain data only.
       Flow, Movement and MissingValueHandling are in `rangekeeper.flow`.
@@ -88,14 +88,14 @@ modules:
   - old: rangekeeper.calculations.projection
     new: rangekeeper.profile
     status: agreed
-    source: ADR-010, #255 D12
+    source: "ADR-010, #255 D12"
     note: >-
       Growth and distribution profiles. The word "projection" is not used.
-      Profile classes and `Flow.from_profile` follow (#298).
+      Profile classes and `Flow.from_profile` follow (#303).
   - old: rangekeeper.calculations.dynamics
     new: rangekeeper.market.dynamics
     status: agreed
-    source: ADR-010, #255 D29
+    source: "ADR-010, #255 D29"
     note: Path generators are series maths, so they leave `finance`. `rk.market.Dynamics` follows (#299).
   - old: rangekeeper.run.execution
     new: rangekeeper.execution
@@ -104,39 +104,39 @@ modules:
   - old: rangekeeper.specification.policy
     new: rangekeeper.specification.rule
     status: agreed
-    source: ADR-021, #255 D41
+    source: "ADR-021, #255 D41"
     note: '"Policy" is not used. The rule queries of ADR-021 replace the records later (#215).'
   - old: rangekeeper.specification.policy.evaluation
     new: rangekeeper.execution.rule.evaluation
     status: agreed
-    source: ADR-010, #102
+    source: "ADR-010, #102"
     note: >-
       Rule evaluation moves to `execution`. `specification.rule` keeps the
       declarations. Import `evaluate` from `rangekeeper.execution.rule`.
   - old: rangekeeper.specification.policy.observation
     new: rangekeeper.execution.rule.observation
     status: agreed
-    source: ADR-010, #102
+    source: "ADR-010, #102"
   - old: rangekeeper.specification.policy.result
     new: rangekeeper.execution.rule.result
     status: agreed
-    source: ADR-010, #102
+    source: "ADR-010, #102"
   - old: rangekeeper.specification.policy.predicate
     new: rangekeeper.run._rule.predicate
     status: draft
-    source: ADR-021, #102
+    source: "ADR-021, #102"
     note: >-
       Internal. The exact Boolean truth of a condition is shared by the
       evaluator and the trace check of a stored Run, so it is below `execution`.
   - old: rangekeeper.specification.policy._availability
     new: rangekeeper.run._rule.availability
     status: draft
-    source: ADR-021, #102
+    source: "ADR-021, #102"
     note: Internal. Shared by the evaluator and the trace check of a stored Run.
   - old: rangekeeper.shared.units
     new: rangekeeper.quantity
     status: agreed
-    source: ADR-010, #255 D13
+    source: "ADR-010, #255 D13"
     note: >-
       The namespace that holds the unit system, the registry and `isclose` is
       `rangekeeper.quantity`, so "units" keeps one meaning: a unit string.
@@ -144,7 +144,7 @@ modules:
   - old: rangekeeper.io.store
     new: rangekeeper.io
     status: agreed
-    source: ADR-010, #98
+    source: "ADR-010, #98"
     note: >-
       The `RecordStore` protocol is defined in the internal `shared.store`, so
       `execution` does not import `io`. Import `RecordStore` and `Document`
@@ -156,19 +156,19 @@ modules:
   - old: rangekeeper.model.scenario
     new: rangekeeper.market
     status: agreed
-    source: ADR-010, ADR-014, #255 D29
+    source: "ADR-010, ADR-014, #255 D29"
     note: >-
       The generators, paths and replay move as they are. `rk.market.Paths`
-      and the MarketPaths document replace the scenario plan (#299, #303).
+      and the MarketPaths document replace the scenario plan (#298, #299).
   - old: rangekeeper.model.scenario.market
     new: rangekeeper.market.generation
     status: draft
-    source: ADR-010, #255 D29
+    source: "ADR-010, #255 D29"
     note: Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name.
   - old: rangekeeper.model.scope
     new: rangekeeper.model._scope
     status: agreed
-    source: ADR-010, #161
+    source: "ADR-010, #161"
     note: >-
       Internal. The checks over raw mappings become private; the typed
       target lookups move to `rangekeeper.model.targets`.
@@ -219,7 +219,7 @@ symbols:
     name: Quantity
     new_module: rangekeeper.quantity
     status: agreed
-    source: ADR-010, #255 D13
+    source: "ADR-010, #255 D13"
     note: "`rangekeeper.Quantity` at the root also gives the record."
   - module: rangekeeper.model.measure
     name: Measure
@@ -242,85 +242,85 @@ symbols:
     name: System
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.system
     name: Entity
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.system
     name: Assembly
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.system
     name: Relationship
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.expression
     name: Expression
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.expression
     name: Reference
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.expression
     name: Function
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.expression
     name: Domain
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.expression
     name: Constraint
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.formulation
     name: Formulation
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.formulation
     name: Binding
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.scenario
     name: Binding
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model.scenario
     name: Distribution
     new_module: rangekeeper.model
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.model
     name: Quantity
     new_module: rangekeeper.quantity
     status: agreed
-    source: ADR-017, #269
+    source: "ADR-017, #269"
     note: One canonical path for each public name.
   - module: rangekeeper.schema.behaviors.flow
     name: MissingValueHandling
@@ -331,35 +331,35 @@ symbols:
     name: calculate_pv
     new_name: pv
     status: agreed
-    source: ADR-012, #255 D14, D19
+    source: "ADR-012, #255 D14, D19"
     requires: [refactor]
     note: "`rangekeeper.finance.pv(flow=, rate=, on=)`, with keyword-only arguments (#167)."
   - module: rangekeeper.calculations.financial
     name: calculate_xnpv
     new_name: npv
     status: agreed
-    source: ADR-012, #255 D19
+    source: "ADR-012, #255 D19"
     requires: [refactor]
     note: "`rangekeeper.finance.npv(flow=, rate=, on=)`, with keyword-only arguments (#167)."
   - module: rangekeeper.calculations.financial
     name: calculate_irr
     new_name: irr
     status: agreed
-    source: ADR-012, #255 D4
+    source: "ADR-012, #255 D4"
     requires: [refactor]
     note: "`rangekeeper.finance.irr(flow=)`, also an equation function (#164, #167)."
   - module: rangekeeper.calculations.projection
     name: ProjectionMethod
     new_name: GrowthMethod
     status: draft
-    source: ADR-012, #255 D12
-    note: The word "projection" is not used. Profile classes replace the enum (#298).
+    source: "ADR-012, #255 D12"
+    note: The word "projection" is not used. Profile classes replace the enum (#303).
   - module: rangekeeper.calculations.projection
     name: project_values
     new_name: grow_values
     status: draft
-    source: ADR-012, #255 D12
-    note: The word "projection" is not used. `Flow.from_profile` replaces it (#298).
+    source: "ADR-012, #255 D12"
+    note: The word "projection" is not used. `Flow.from_profile` replaces it (#303).
   - module: rangekeeper.model.formulation.account
     name: interest
     new_module: rangekeeper.model.formulation.financial
@@ -370,19 +370,19 @@ symbols:
     name: replay
     new_module: rangekeeper.market
     status: agreed
-    source: ADR-017, #255 D29
+    source: "ADR-017, #255 D29"
     note: One canonical path for each public name.
   - module: rangekeeper.model.scenario.replay
     name: ReplayUnavailableError
     new_module: rangekeeper.market
     status: agreed
-    source: ADR-017, #255 D29
+    source: "ADR-017, #255 D29"
     note: One canonical path for each public name.
   - module: rangekeeper.schema.records
     name: Policy
     new_name: RuleSet
     status: draft
-    source: ADR-021, #255 D41
+    source: "ADR-021, #255 D41"
     requires: [schema]
     note: >-
       The record that a Specification holds as `rules`. The schema module
@@ -392,7 +392,7 @@ symbols:
     name: DecisionOutcome
     new_name: RuleEvidence
     status: draft
-    source: ADR-021, #255 D41
+    source: "ADR-021, #255 D41"
     requires: [schema]
     note: The evidence of one rule decision, in `Report.rule_evidence`.
   - module: rangekeeper.specification.policy.result
@@ -423,18 +423,18 @@ symbols:
     name: evaluate
     new_module: rangekeeper.execution.rule
     status: agreed
-    source: ADR-010, #102
+    source: "ADR-010, #102"
     note: "`specification.rule` exports only the declarations."
   - module: rangekeeper.specification.policy
     name: observe
     new_module: rangekeeper.execution.rule
     status: agreed
-    source: ADR-010, #102
+    source: "ADR-010, #102"
   - module: rangekeeper.specification.policy
     name: Observation
     new_module: rangekeeper.execution.rule
     status: agreed
-    source: ADR-010, #102
+    source: "ADR-010, #102"
   - module: rangekeeper.specification.policy
     name: PolicyResult
     new_name: RuleResult
@@ -451,7 +451,7 @@ symbols:
     name: UnsupportedProblem
     new_name: UnsupportedError
     status: agreed
-    source: ADR-016, #255 D26
+    source: "ADR-016, #255 D26"
     note: Every error name ends in `Error`.
   - module: rangekeeper.model.expression.evaluation
     name: UnsupportedExpression
@@ -473,22 +473,22 @@ symbols:
     name: target_value
     new_module: rangekeeper.model.targets
     status: agreed
-    source: ADR-010, #161
+    source: "ADR-010, #161"
   - module: rangekeeper.model.scope
     name: target_units
     new_module: rangekeeper.model.targets
     status: agreed
-    source: ADR-010, #161
+    source: "ADR-010, #161"
   - module: rangekeeper.model.scope
     name: recorded_scalar
     new_module: rangekeeper.model.targets
     status: agreed
-    source: ADR-010, #161
+    source: "ADR-010, #161"
   - module: rangekeeper.quantity
     name: minor_unit
     new_module: rangekeeper.money
     status: agreed
-    source: ADR-023, #117
+    source: "ADR-023, #117"
     note: The money module owns the ISO 4217 catalogue, boundaries and rounding.
 
 # Renames of attributes, methods and fields on one class. `apply: all`
@@ -538,7 +538,7 @@ attributes:
     new_name: rules
     apply: review
     status: draft
-    source: ADR-021, #255 D41
+    source: "ADR-021, #255 D41"
     requires: [schema]
     note: The Specification field and its wire key. `spec.rules` holds all of a Specification's rules.
   - owner: rangekeeper.schema.records.Report
@@ -546,7 +546,7 @@ attributes:
     new_name: rule_evidence
     apply: review
     status: draft
-    source: ADR-021, #255 D41
+    source: "ADR-021, #255 D41"
     requires: [schema]
     note: The Run report field and its wire key.
   - owner: rangekeeper.specification.policy.result.PolicyResult
@@ -604,8 +604,10 @@ parameters:
 removed:
   - name: rangekeeper.calculations.account
     replacement: >-
-      Compose the funding with Flows: a balance is `cumulative()`, and interest
-      is `rangekeeper.finance.interest` (#255 D2, D23). A how-to recipe follows (#194)
+      Compose the funding with Flows: a balance is `cumulative()`. Interest is
+      the Model equation `rangekeeper.model.formulation.financial.interest`;
+      `rx.finance.interest` in equation text follows (#255 D2, D23, #278). A
+      how-to recipe follows (#194)
     status: agreed
     source: "#255 D2"
   - name: rangekeeper.model.formulation.account.schedule
@@ -619,14 +621,14 @@ removed:
       Equation text or `rangekeeper.expressions` on entity handles (#255 D6,
       D18, D32). ADR-012 forbids public names that shadow builtins
     status: agreed
-    source: ADR-012, #255 D18
+    source: "ADR-012, #255 D18"
     requires: [refactor]
   - name: rangekeeper.model.formulation.authoring.declare
     replacement: >-
       `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=,
       units=)`, `flow(...)`, `date(...)` and `equations(...)` (#255 D6, D16)
     status: agreed
-    source: ADR-015, #255 D6
+    source: "ADR-015, #255 D6"
     requires: [refactor]
   - name: rangekeeper.calculations.series.align
     replacement: Stream(flows, join=, missing=).align()
@@ -657,19 +659,19 @@ removed:
       `Model.value(owner=, key=)` and `Model.label(owner=, key=)`; the records
       are re-exported in rangekeeper.model
     status: agreed
-    source: ADR-011, ADR-012, #271
+    source: "ADR-011, ADR-012, #271"
   - name: rangekeeper.model.characteristics.value
     replacement: >-
       `model.value(owner=entity.id, key=)`. A missing key raises
       MissingReferenceError instead of returning None
     status: agreed
-    source: ADR-011, #271
+    source: "ADR-011, #271"
   - name: rangekeeper.model.characteristics.label
     replacement: >-
       `model.label(owner=entity.id, key=)`. A missing key raises
       MissingReferenceError instead of returning None
     status: agreed
-    source: ADR-011, #271
+    source: "ADR-011, #271"
   - name: rangekeeper.model.scenario.market.ScenarioPlan
     replacement: Path generators and the MarketPaths document
     status: agreed
@@ -739,18 +741,18 @@ notes:
   - topic: Growth and distribution profiles
     status: agreed
     source: "#255 D12"
-    note: "`rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#298)."
+    note: "`rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#303)."
   - topic: Market paths
     status: agreed
     source: "#255 D29, D31"
-    note: "`rk.market.Dynamics`, `rk.market.generate` and `rk.market.Paths` replace the scenario plan and the trend and cycle kernels (#299, #303)."
+    note: "`rk.market.Dynamics`, `rk.market.generate` and `rk.market.Paths` replace the scenario plan and the trend and cycle kernels (#298, #299)."
   - topic: Fixed words are enums
     status: agreed
     source: "#255 D26"
     note: "Diagnostic codes are `rk.errors.Code` (#154); \"the event does not happen\" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings."
   - topic: Rules
     status: agreed
-    source: ADR-021, #255 D41, D42
+    source: "ADR-021, #255 D41, D42"
     note: "A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215)."
 
 # Exact text edits for cases that the rules do not cover. Each edit applies

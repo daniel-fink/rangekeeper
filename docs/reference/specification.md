@@ -34,10 +34,9 @@ The short example below uses `model` and `gross` from the
 
 ```python
 from uuid import uuid4
-from rangekeeper.schema import Metadata
-from rangekeeper.shared.errors import MissingReferenceError
+from rangekeeper.errors import MissingReferenceError
+from rangekeeper.model import Metadata, Reference
 from rangekeeper.specification import Specification, SpecificationRecord
-from rangekeeper.model import Reference
 
 shared = Specification(SpecificationRecord(
     metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
@@ -122,10 +121,10 @@ references, domains and solve roles. It does not execute queries, certify numeri
 feasibility or establish backend support. A structurally valid objective or
 Function can still be unsupported by the selected executor.
 
-## Lock and unlock quantities
+## Fix and free quantities
 
-`specification.lock(target, quantity, id=..., model=...)` returns a new revision
-with explicit assignments. `unlock(target, id=..., model=...)` removes matching
+`specification.fix(target, quantity, id=..., model=...)` returns a new revision
+with explicit assignments. `free(target, id=..., model=...)` removes matching
 local assignments and declares unknowns. Both retain the equations and unrelated
 Specification content. The new metadata records `previous=specification.id`.
 Neither method saves or executes the revision.
@@ -136,7 +135,7 @@ Quantity applies to every selected target, or a mapping supplies a Quantity per
 selected UUID. Use `recorded=True` instead of quantity to copy recorded values
 explicitly; unresolved amounts fail. An omitted quantity never means reuse.
 
-A lock removes matching local unknowns and estimates. Role editing requires the
+`fix` removes matching local unknowns and estimates. Role editing requires the
 pinned Model. Included contributions require `resolver=`; inherited roles and
 rule-controlled targets must be edited at their owner. Composition is checked
 after editing, and normal execution still performs full effective validation.

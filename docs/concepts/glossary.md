@@ -3,7 +3,8 @@
 This page defines the words that Rangekeeper uses. Each word has one meaning. The
 **Owner** column gives the 1.0 package ([ADR-010](../decisions/010-layers-and-packages.md)).
 The **Current name** column shows the name that the code uses now, where it is
-different. The [rename map](../guides/upgrading.md#100a2-rename-map) gives each
+different, and "—" when the code uses the term as written. "None (planned,
+#NNN)" marks a 1.0 name that does not exist yet; the issue tracks it. The [rename map](../guides/upgrading.md#100a2-rename-map) gives each
 move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 ## Documents
@@ -14,7 +15,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Model | Project knowledge: definitions, system, provenance and an optional geometry pin | `model` | — |
 | Specification | An investigation of one Model revision: fixed and free values, estimates, bounds, objectives, rules, includes and cases | `specification` | — |
 | Run | Finalized evidence of one attempt or batch: status, report, output Models and child Runs | `run` | — |
-| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record | `market` | `ScenarioPlan` and `ScenarioRealization`, inside Model provenance |
+| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record | `market` | `rk.market.Paths`: none (planned, #298). Now `ScenarioPlan` and `ScenarioRealization`, inside Model provenance |
 | Bundle | A delivered set of documents with their exact dependencies | `io` | — |
 | Revision | One immutable version of a document, identified by its Metadata UUID | `schema` | — |
 
@@ -35,10 +36,10 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Characteristics | The Values, Labels and properties that an Entity owns | `model` | — |
 | Value | One owned datum: a Measurement, a Flow or Content | `model` | — |
 | Key | The name of a Value, unique within its owner | `model` | — |
-| Code | A catalogue identifier, such as a Classification code | `model` | — |
+| Code | A catalogue identifier, such as a Classification code. Not `rk.errors.Code`; see [words with one meaning only](#words-with-one-meaning-only) | `model` | — |
 | Label | A Classification attached to an Entity in addition to its main Classification | `model` | — |
-| Formulation | A named set of equations over Values, such as "Funding". It does not say which values are known. `project.add_formulation(name=)` makes one and `project.formulation(name=)` finds one; each takes `equations(...)` | `model` | — |
-| Equation | One relation that must hold between values: an equality, or a bound such as `b_start >= shared_start + 1 year`. It is written as text or in Python with `rx` (`rangekeeper.expressions`), and stored as a Constraint over Expressions in a Formulation. It has no calculation direction | `model` | — |
+| Formulation | A named set of equations over Values, such as "Funding". It does not say which values are known. `project.add_formulation(name=)` makes one and `project.formulation(name=)` finds one; each takes `equations(...)` | `model` | The `Formulation` record. The handles: none (planned, #305) |
+| Equation | One relation that must hold between values: an equality, or a bound such as `b_start >= shared_start + 1 year`. It is written as text or in Python with `rx` (`rangekeeper.expressions`), and stored as a Constraint over Expressions in a Formulation. It has no calculation direction | `model` | The `Constraint` record. `rx`: none (planned, #309) |
 | Expression | One mathematical expression in an equation | `model` | — |
 | Provenance | Sources, Claims and Facts that support recorded content | `model` | — |
 | Geometry pin | An exact link to native geometry files and their Entity mappings | `model` | — |
@@ -57,7 +58,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Period | One half-open time interval with `start` and `end` | `duration` | — |
 | Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | `tuple[Period, ...]`; `PeriodIndex` in 0.8 |
 | Span | A named half-open range of time | `duration` | — |
-| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | — |
+| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | None (planned, #280) |
 | Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | The `extrapolate` and `distribute` functions, with `GrowthMethod` |
 | Movement | One dated or period-based amount | `flow` | — |
 | Flow | An ordered series of Movements in one unit | `flow` | — |
@@ -67,25 +68,25 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
-| Role | What a Specification says about a value: fixed, free, decided, estimate or bound. `Specification.roles` lists them | `specification` | — |
-| Fix | Supply a known value for an investigation (an Assignment) | `specification` | — |
-| Free | Make a value an unknown that the solve finds. A value that is not fixed is free | `specification` | — |
+| Role | What a Specification says about a value: fixed, free, decided, estimate or bound. `Specification.roles` lists them | `specification` | `Specification.roles`: none (planned, #290) |
+| Fix | Supply a known value for an investigation (an Assignment) | `specification` | `Specification.fix` |
+| Free | Make a value an unknown that the solve finds. A value that is not fixed is free | `specification` | `Specification.free` |
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |
 | Composition | The effective investigation after included Specifications are combined | `specification` | — |
 | Case | One entry in a batch Specification, for example one market path | `specification` | — |
 | Rule | A query that fixes one value during the solve: the first date in a `Window` when a condition holds, or a default, written `window.where(condition=...).first(otherwise=...)` and fixed by key ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word "policy" is not used | `specification` | `RuleSet`, with `Decision`, `Rule` and `Action` records, in `specification.rule` |
 | Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | A target of the `RuleSet` |
-| Window | The dates on which a rule may act: by default, each date on which a value that its condition reads becomes known, or the first day of each of its `Periods`; between optional `earliest` and `latest` bounds | `specification` | Review dates, window |
-| Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | — |
-| Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | — |
+| Window | The dates on which a rule may act: by default, each date on which a value that its condition reads becomes known, or the first day of each of its `Periods`; between optional `earliest` and `latest` bounds | `specification` | None (planned, #300). Now each `Decision` record has one date (`at`) |
+| Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | None (planned, #302) |
+| Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | None (planned, #297) |
 | Availability | The earliest date at which a value can be observed | `specification` | — |
-| Solve | Calculate an `Outcome` without writing to a store | `execution` | Part of `Executor.execute` |
+| Solve | Calculate an `Outcome` without writing to a store | `execution` | Part of `Executor.execute`; `solve`: none (planned, #126) |
 | Execute | Solve and then publish to a store | `execution` | `Executor.execute` |
-| Affine problem | The linear problem that a backend receives | `execution` | `Compiled` request |
+| Affine problem | The linear problem that a backend receives | `execution` | `Compiled` request; `AffineProblem`: none (planned, #129) |
 | Backend | A registered solver implementation | `execution` | — |
 | Termination | How a backend finished: feasible candidate, proven infeasible, limit, error or unknown | `execution` | Pyomo status strings |
 | Verification | Independent check of a candidate against the original equations | `execution` | Acceptance |
-| Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | — |
+| Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | None (planned, #127). Now the Run and the output Model |
 | Underdetermined | A result with free unknowns that the equations do not fix | `execution` | Feasible with a warning |
 | Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | — |
 | Diagnostic | One coded finding with structured fields | `shared` | Also `findings` and `issues` |
@@ -98,7 +99,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | View | A selection of Entities and Relationships from a Model | `model` | — |
 | Hierarchy | A tree built from Relationships or memberships | `model` | — |
 | Rollup | Totals of values over a Hierarchy | `model` | `Reduction` |
-| Rollup definition | `rk.model.Rollup(of=, over=, roots=, contributors=)`: what a rollup adds up, over which relationship, from which roots and contributors. `value(..., rollup=)` declares a value with it | `model` | — |
+| Rollup definition | `rk.model.Rollup(of=, over=, roots=, contributors=)`: what a rollup adds up, over which relationship, from which roots and contributors. `value(..., rollup=)` declares a value with it | `model` | None (planned, #285) |
 | Rollup result | The value and coverage of a rollup | `model` | — |
 | Flow aggregate | The result of aggregating Flows, with coverage | `flow` | — |
 | Coverage | Which contributors had a value, and which did not | `model`, `flow` | Four different types |
@@ -111,16 +112,17 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
-| Draft | A mutable set of additions or changes to a Model, from `model.edit()`. `commit()` checks it once and returns a new revision | `model` | Builder |
-| Namespace | A UUID that makes the IDs of a Model and its drafts deterministic | `model` | — |
-| Handle | A draft's reference to an object, such as an entity, that does not have a UUID yet. A value's handle also builds equations with Python operators | `model`, `expressions` | — |
-| Expressions (`rx`) | The Python form of equations: `import rangekeeper.expressions as rx`. It mirrors the equation functions of the text form and makes the same records | `expressions` | Nested `equal(left=..., right=add(...))` constructors |
+| Draft | A mutable set of additions or changes to a Model, from `model.edit()`. `commit()` checks it once and returns a new revision | `model` | None (planned, #141, #281). Now `model.revise(Update(...))` |
+| Namespace | A UUID that makes the IDs of a Model and its drafts deterministic | `model` | None (planned, #147, #281) |
+| Handle | A draft's reference to an object, such as an entity, that does not have a UUID yet. A value's handle also builds equations with Python operators | `model`, `expressions` | None (planned, #281, #305) |
+| Expressions (`rx`) | The Python form of equations: `import rangekeeper.expressions as rx`. It mirrors the equation functions of the text form and makes the same records | `expressions` | None (planned, #309). Now nested `equal(left=..., right=add(...))` constructors in `rangekeeper.model.expression.authoring` |
 
 ## Words with one meaning only
 
 | Word | Use only for |
 | --- | --- |
 | Target | `Reference.target`, the UUID of a referenced Value or Movement |
+| Code | A catalogue identifier, such as a Classification or Entity code. `rk.errors.Code` is a different thing: the enum of diagnostic and error codes on a `Diagnostic` or a `RangekeeperError`. Say "error code" or "diagnostic code" for it |
 | Accept, acceptance | Not a term for result checks. Use "verify" for the independent check of a solved candidate. The plain sense, such as "a reader accepts a format", is permitted |
 | Projection | Not used. Use "profile" (growth or distribution) for time shapes and "table" for exports |
 | Scenario | Not used for generated futures. Use "path" |

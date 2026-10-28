@@ -37,15 +37,16 @@ in for execution results.
 
 | Module | Responsibility |
 | --- | --- |
-| `run/execution/preparation.py` | Reuse the prepared exact composition and Model, retain contributor scope, collect imposed predicates and normalize assignments to Measure units. |
-| `run/execution/compiler.py` | Derive affine coefficients after assignments; check arithmetic capability and dimensions; retain original Constraint identity and row scaling. No Pyomo dependency. |
-| `run/execution/acceptance.py` | Check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
-| `run/execution/publication.py` | Construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
-| `run/execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
-| `run/execution/backends/base.py` | Narrow problem/result protocol; a backend candidate is a claim awaiting acceptance. |
-| `run/execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
-| `run/execution/executor.py`, `planning.py` | Sequential batches, reference resolution and one composition per leaf. |
-| `run/execution/attempt.py` | Per-attempt deadline, preparation, backend result, independent acceptance and output-before-Run persistence. |
+| `execution/preparation.py` | Reuse the prepared exact composition and Model, retain contributor scope, collect imposed predicates and normalize assignments to Measure units. |
+| `execution/compiler.py` | Derive affine coefficients after assignments; check arithmetic capability and dimensions; retain original Constraint identity and row scaling. No Pyomo dependency. |
+| `execution/acceptance.py` | Check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
+| `execution/publication.py` | Construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
+| `execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
+| `execution/backends/base.py` | Narrow problem/result protocol; a backend candidate is a claim awaiting acceptance. |
+| `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
+| `execution/executor.py`, `planning.py` | Sequential batches, reference resolution and one composition per leaf. |
+| `execution/attempt.py` | Per-attempt deadline, preparation, backend result, independent acceptance and output-before-Run persistence. |
+| `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
 
 Derived preparation/compiler/result objects are runtime operations, not a second
 authoritative field schema. Domain classes do not import execution or solvers.

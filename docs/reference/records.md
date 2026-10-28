@@ -206,9 +206,10 @@ generator. Point masses retain the existing deterministic sampling convention.
 
 ## Operations across records
 
-Use [calculations](calculations.md) for alignment, aggregation, accounts and
-financial valuation; [Model](model.md) for document lookup and revision;
-and [Specification](specification.md) for additive composition.
+Use [calculations](calculations.md) for alignment, aggregation and financial
+valuation. There is no account record: a funding balance is the `cumulative()`
+sum of a Flow ([D2](../../examples/walkthrough/proposed/README.md#decisions)).
+Use [Model](model.md) for document lookup and revision, and [Specification](specification.md) for additive composition.
 These operations have no single nested record owner. They do not add another
 field schema or change a record's intrinsic methods.
 

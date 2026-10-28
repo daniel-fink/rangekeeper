@@ -1,6 +1,9 @@
 # Tables and detached projections
 
-`rangekeeper.shared.table` owns `Row`, `Table` and `TableError`. Tables provide
+`rangekeeper.shared.table` owns `Row`, `Table` and `TableError`. `shared` is
+internal, and `Row` and `Table` have no public path yet
+([#101](https://github.com/daniel-fink/rangekeeper/issues/101)); import
+`TableError` from `rangekeeper.errors`. Tables provide
 ordered, domain-independent data for inspection and interchange. They are not
 Model persistence or a general dataframe API. Preserve source support through
 the [canonical provenance records](../../schema/provenance.yaml). Use

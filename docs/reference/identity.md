@@ -37,7 +37,7 @@ identities. Changing a label or coordinate does not break a UUID reference.
 | `Movement.replace`, Model revision, solver publication | Preserve existing IDs |
 | Unit conversion, trimming, filtering and cleaning | Preserve retained IDs |
 | `Flow.clone()` | Fresh IDs for an independent Value |
-| Scaling, difference, collapse, aggregation, products, integration, resampling, valuation and account calculations | Fresh IDs for result movements |
+| Scaling, difference, collapse, aggregation, products, integration (such as a `cumulative()` funding balance), resampling and valuation calculations | Fresh IDs for result movements |
 | Alignment | Preserve existing IDs; create IDs for missing placeholders |
 | Scenario generation | Deterministic IDs from the owning Value UUID and period |
 

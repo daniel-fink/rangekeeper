@@ -169,10 +169,12 @@ or the documentation site. Run those
 
 ## Layer rules
 
-`src/rangekeeper` has 12 layers ([ADR-010](../decisions/010-layers-and-packages.md),
-[architecture](../concepts/architecture.md#layers)). A module imports only from
-its own layer or a lower layer. The import-linter contract in `pyproject.toml`
-encodes the order. Run it from the repository root:
+`src/rangekeeper` has 12 numbered layers ([ADR-010](../decisions/010-layers-and-packages.md),
+[architecture](../concepts/architecture.md#layers)). `money` and `quantity` sit
+between `schema` and `duration`; `money` is below `quantity`. A module imports
+only from its own layer or a lower layer. The import-linter contract in
+`pyproject.toml` lists all 14 packages in this order. Run it from the repository
+root:
 
 ```sh
 uv run --locked lint-imports

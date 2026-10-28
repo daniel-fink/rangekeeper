@@ -161,14 +161,15 @@ unit system:
 
 - `View.quantities`, `to_table` and `Reduction.execute` (and so `View.aggregate`
   and pivots);
-- `Specification.lock`;
+- `Specification.fix` and `Specification.free`;
 - `Composition.validate` and Specification preparation;
 - `execution.rule.evaluate`;
 - `Executor` and execution preparation;
 - `run.validate`, which uses the unit system of the root's input Model.
 
-Operations on records without a Model, such as `Flow.check`, `Flow.convert`,
-Flow and Stream operations and `Account`, use `default_units`.
+Operations on records without a Model, such as `Flow.check`, `Flow.convert`
+and other Flow and Stream operations, use `default_units`. There is no Account
+class: a funding balance is the `cumulative()` sum of a Flow ([D2](../../examples/walkthrough/proposed/README.md#decisions)).
 
 Importing domain APIs does not import Pint. The first unit operation builds the
 private registry.
