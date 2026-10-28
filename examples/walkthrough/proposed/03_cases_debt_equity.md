@@ -141,8 +141,10 @@ project.value(key="discount_rate", units="% pa")
 
 Narrative: some Flows are made from amounts, by a profile or an event. Nothing in
 their equations says which Periods they cover, so declare them here, each with its
-Periods. Every other value takes its units and Periods from its equation: a sum of
+Periods. Every other value takes its units and Periods from its equations: a sum of
 yearly Flows is yearly, and `commit()` names any value that it cannot work out.
+Declare every input, and every result that you will rely on. A declaration is a
+check: `commit()` fails if an equation gives the value other units.
 
 ```python
 # cell 5c
@@ -216,6 +218,7 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as equations
 
 ```python
 # cell 8
+project.value(key="unlevered_npv", units="AUD")  # a result we rely on: checked
 sale_and_value = project.add_formulation(name="Sale and value")
 sale_and_value.equations(
     "exit_value = operating.at(on=sale_date + 1 year) / exit_cap_rate",
@@ -225,6 +228,7 @@ sale_and_value.equations(
     "unlevered_npv = rx.finance.npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
 )
 model = draft.commit()
+model.entity(code="project").values  # units of each value: declared or inferred
 ```
 
 ## 4. The base case
@@ -296,6 +300,8 @@ project.value(key="equity", units="AUD")
 project.value(key="loan_limit", units="AUD")
 project.value(key="loan_rate", units="% pa")
 project.value(key="equity_rate", units="% pa")
+project.value(key="equity_npv", units="AUD")  # results we rely on: checked
+project.value(key="equity_irr", units="% pa")
 funding = project.add_formulation(name="Funding")
 funding.equations(
     "funding_need = -(net_cash_flow + loan_interest).cumulative()",
@@ -409,6 +415,7 @@ pay for Building B, so the need includes the operating cash flow.
 # cell 18
 draft = model.edit()
 project = draft.entity(code="project")
+project.value(key="peak_shortfall", units="AUD")  # a result we rely on: checked
 funding = project.formulation(name="Funding")
 funding.equations(
     "equity_available = rx.max(0 AUD, equity - funding_need)",
@@ -578,7 +585,7 @@ follow `ruff format` (D15).
 | --- | --- | --- |
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
-| 5–5c | 2, 5 | G08 (entity handles); G72: the "Dates" formulation; G15: date-valued Values; G16: Flows made from amounts declare their Periods, other values take units and shape from their equations |
+| 5–5c, 8, 12, 18 | 2, 5 | G16: inputs and relied-on results declared, the rest inferred; `Entity.values` shows units as declared or inferred (D44); G08 (entity handles); G72: the "Dates" formulation; G15: date-valued Values; G16: Flows made from amounts declare their Periods, other values take units and shape from their equations |
 | 6–8 | 3, 6 | G72: formulation handles, `add_formulation(name=)` and `formulation(name=)`, with `equations(...)` (D43); G17: functions in equations (`rx.flow.event`, `rx.profile.uniform`, `rx.profile.compounding`, `rk.finance.npv`, and the methods `at` and `trim`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
@@ -593,9 +600,3 @@ follow `ruff format` (D15).
 | 20 | 10 | Helper draws named Flows only (`plot_flows`) |
 | 22–23 | 1, 4 | `execute` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126)); G25: `rk.execution.replay` and `store.find_runs(specification=name)` |
 | 24 | 5, 8 | G06 |
-
-## Open choices for review
-
-- **Unit inference (G16).** Lesson 02 declares every value. From lesson 03, only
-  inputs are declared. The alternative is to declare every Flow, which adds about
-  15 lines to cells 6–8.

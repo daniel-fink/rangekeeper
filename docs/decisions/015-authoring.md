@@ -23,6 +23,10 @@ lesson 03:
   that a profile or an event makes from amounts is declared with its Periods, and
   other Flows take their Periods from their operands. The Model records the unit
   system in use; it is not an argument (#201, decision D20).
+- A value that an equation defines takes its units and shape from its equations
+  unless it is declared. A declaration is a check: `commit()` fails when an equation
+  gives the value other units. The cells declare inputs and the results that they
+  rely on (#201, decision D44).
 - `model.edit()` returns a draft (`ModelDraft`), the builder for that revision.
 - The draft adds measures, classifications, entities, assemblies and
   relationships. `draft.add_entity(...)` makes an entity and returns its handle;
