@@ -42,6 +42,16 @@ The caller chooses additive totals, weighted means, integration or compounding.
 Recorded Claims survive supported operations; derived results retain their declared
 contribution boundaries. See [record methods](records.md).
 
+## Equality
+
+Flows and Quantities compare by value. Two Flows are equal when they have the
+same units and, in order, the same coordinates, matching keys and amounts.
+Movement UUIDs and Claims are identity and evidence, not value, so `flow.clone()
+== flow`. `equivalent()` and `to_data()` compare the records. Floating-point
+results that took different paths can differ in the last digit; compare them
+with `rangekeeper.quantity.isclose`, which also takes two Flows
+([units](units.md#equality-and-isclose)).
+
 ## Coordinate flows with Stream
 
 `flow.Stream` accepts an ordered name-to-Flow mapping. It retains default

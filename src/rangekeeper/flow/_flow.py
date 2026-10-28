@@ -42,6 +42,19 @@ def _number(magnitude: Decimal | int | float | None) -> float | None:
     return magnitude
 
 
+def _values(flow: records.Flow) -> list[tuple]:
+    """Return the coordinate, key and amount of each Movement, without identity."""
+    return [
+        (
+            None if m.period is None else (m.period.start, m.period.end),
+            m.date,
+            m.key,
+            m.magnitude,
+        )
+        for m in flow.movements
+    ]
+
+
 @register
 class Movement(records.Movement):
     """Coordinate and numerical access without changing recorded evidence."""
@@ -127,6 +140,20 @@ class Flow(records.Flow):
 
     def _repr_html_(self) -> str:
         return self.display()._repr_html_()
+
+    def __eq__(self, other: object) -> bool:
+        """Compare values: the units, and each Movement's coordinate and amount.
+
+        Movement IDs and Claims are identity and evidence, not value, so a
+        calculation that gives the same amounts on the same coordinates gives
+        an equal Flow. ``equivalent`` and ``to_data`` compare the records.
+        ``rangekeeper.quantity.isclose`` compares with a tolerance.
+        """
+        if not isinstance(other, records.Flow):
+            return NotImplemented
+        return self.units == other.units and _values(self) == _values(other)
+
+    __hash__ = None  # type: ignore[assignment]
 
     def coordinate_index(self) -> dict[tuple, Movement]:
         """Index exact coordinates in encounter order, rejecting ambiguous matches.
