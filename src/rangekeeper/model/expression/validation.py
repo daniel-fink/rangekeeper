@@ -12,6 +12,7 @@ from rangekeeper.model.expression.domains import (
     infer_selection_domain,
 )
 from rangekeeper.model.scope import Scope, resolve_reference
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError
 from rangekeeper.shared.validation import require
 
@@ -213,7 +214,7 @@ def _require_constraint_identities(constraints, *, scope: Scope) -> set[UUID]:
         require(
             identity not in seen,
             "duplicate Constraint identity",
-            code="semantic.identity",
+            code=Code.IDENTITY,
             path=f"/constraints/{index}/id",
         )
         seen.add(identity)
@@ -249,13 +250,13 @@ def validate_constraint_predicates(
         require(
             predicate in analysis.nodes_by_id,
             "unknown or non-Expression Constraint predicate",
-            code="reference.predicate",
+            code=Code.REFERENCE_PREDICATE,
             path=path,
         )
         require(
             analysis.domains_by_id[predicate]["kind"] == "boolean",
             "Constraint predicate must be Boolean",
-            code="semantic.predicate",
+            code=Code.PREDICATE,
             path=path,
         )
     return analysis
@@ -278,7 +279,7 @@ def _analyze_node(node, seen, *, scope, analysis, path):
     except ContractError as error:
         if error.path:
             raise
-        raise ContractError(str(error), code=error.code, path=path) from error
+        raise error.at(path) from error
     identity = UUID(node["id"])
     analysis[0][identity] = node
     analysis[1][identity] = result

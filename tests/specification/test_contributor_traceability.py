@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from rangekeeper.errors import Code
 from rangekeeper.model import Model, Value
 from rangekeeper.model.formulation.validation import validate_formulation_names
 from rangekeeper.schema.index import RecordIndex
@@ -112,10 +113,11 @@ def test_local_wrong_reference_kind_is_a_structured_semantic_failure(raw):
         report = failure.value.report
     assert not report.valid
     issue = report.issues[0]
-    assert issue.code == "reference.kind"
+    assert issue.code is Code.REFERENCE_KIND
     assert issue.path == "/unknowns/0/target"
     assert issue.document_id == UUID(data["metadata"]["id"])
-    assert all(name in issue.message for name in ("Value", "Movement", "Formulation"))
+    assert issue.values["expected"] == ("Value", "Movement")
+    assert issue.values["actual"] == "Formulation"
 
 
 def test_direct_lookup_keeps_its_wrong_kind_exception():

@@ -42,6 +42,7 @@ PACKAGES = (
     "rangekeeper.execution",
     "rangekeeper.execution.backends",
     "rangekeeper.io",
+    "rangekeeper.errors",
 )
 
 # Base classes whose members every record shares; they are listed once.

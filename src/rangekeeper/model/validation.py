@@ -22,6 +22,7 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.runtime import Record
 from rangekeeper.schema.validation import document_version, supports_version
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import UnitError
 from rangekeeper.shared.validation import (
@@ -123,6 +124,7 @@ def recorded_unit_issues(
     issues = []
     for item, _, path in walk(root):
         issue_path = path
+        fields: dict[str, object] = {}
         try:
             if (
                 isinstance(item, (Domain, Measure, Quantity, Flow))
@@ -135,16 +137,39 @@ def recorded_unit_issues(
                 assert item.measure is not None
                 expected = measure(item.measure)
                 if not units.compatible(item.quantity.units, expected.units):
+                    fields = {
+                        "units": item.quantity.units,
+                        "expected": expected.units,
+                    }
                     raise UnitError(
-                        "recorded Value quantity is incompatible with its Measure"
+                        f"recorded quantity of Value {_named(item)} is incompatible "
+                        f"with its Measure: {item.quantity.units} is not "
+                        f"{expected.units}"
                     )
             if isinstance(item, Value) and item.flow is not None:
                 issue_path = path + "/flow/units"
                 assert item.measure is not None
-                if not units.compatible(item.flow.units, measure(item.measure).units):
-                    raise UnitError("recorded Flow is incompatible with its Measure")
+                expected = measure(item.measure)
+                if not units.compatible(item.flow.units, expected.units):
+                    fields = {"units": item.flow.units, "expected": expected.units}
+                    raise UnitError(
+                        f"recorded Flow of Value {_named(item)} is incompatible "
+                        f"with its Measure: {item.flow.units} is not "
+                        f"{expected.units}"
+                    )
         except UnitError as error:
-            issues.append(Issue("semantic.units", str(error), document_id, issue_path))
+            if error.suggestions:
+                fields["suggestions"] = error.suggestions
+            issues.append(
+                Issue(
+                    Code.UNITS,
+                    str(error),
+                    document_id,
+                    issue_path,
+                    (item.id,) if isinstance(item, Value) else (),
+                    fields,
+                )
+            )
     return tuple(issues)
 
 
@@ -190,3 +215,8 @@ def check_model(model, schema_version, history=(), *, index=None):
         "revision history",
     )
     return scope
+
+
+def _named(value) -> str:
+    """Name a Value by its key and UUID."""
+    return f"{value.key} ({value.id})" if value.key else str(value.id)

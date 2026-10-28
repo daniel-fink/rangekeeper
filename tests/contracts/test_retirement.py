@@ -29,7 +29,6 @@ RETIRED = (
     "units",
     "references",
     "diagnostics",
-    "errors",
     "validate",
     "metadata",
     "graph",

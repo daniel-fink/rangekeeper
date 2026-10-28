@@ -6,10 +6,11 @@ This module imports no Model, Specification, Run, solver, or storage behavior.
 """
 
 from collections.abc import Callable, Hashable, Iterable, Mapping
-from typing import TypeVar
+from typing import Any, TypeVar
 from uuid import UUID
 
 from rangekeeper.schema.runtime import Record
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import ContractError
 
@@ -20,12 +21,22 @@ def require(
     condition: object,
     message: str,
     *,
-    code: str = "semantic.contract",
+    code: Code = Code.CONTRACT,
     path: str = "",
+    targets: Iterable[UUID] = (),
+    values: Mapping[str, Any] | None = None,
+    evidence: Mapping[str, Any] | None = None,
 ) -> None:
     """Raise ContractError with diagnostic context when a condition is false."""
     if not condition:
-        raise ContractError(message, code=code, path=path)
+        raise ContractError(
+            message,
+            code=code,
+            path=path,
+            targets=targets,
+            values=values,
+            evidence=evidence,
+        )
 
 
 def require_unique(
@@ -49,7 +60,8 @@ def require_unique(
             require(
                 value not in seen,
                 f"duplicate {label}: {value}",
-                code="semantic.unique",
+                code=Code.UNIQUE,
+                values={"field": field, "value": value},
                 path=f"{path}/{index}/{token}",
             )
             seen.add(value)
@@ -70,9 +82,7 @@ def require_acyclic(
     complete: set[K] = set()
 
     def visit(node: K) -> None:
-        require(
-            node not in visiting, f"{label} cycle", code="semantic.cycle", path=path
-        )
+        require(node not in visiting, f"{label} cycle", code=Code.CYCLE, path=path)
         if node in complete:
             return
         visiting.add(node)
@@ -101,7 +111,7 @@ def require_ownership(document: object, *, path: str = "") -> None:
         require(
             id(node) not in active,
             "cyclic containment",
-            code="semantic.containment",
+            code=Code.CONTAINMENT,
             path=current,
         )
         active.add(id(node))
@@ -112,7 +122,8 @@ def require_ownership(document: object, *, path: str = "") -> None:
                 require(
                     identity not in identities,
                     f"duplicate identity: {identity}",
-                    code="semantic.identity",
+                    code=Code.IDENTITY,
+                    values={"identity": identity},
                     path=current + "/id",
                 )
                 identities.add(identity)
@@ -139,7 +150,8 @@ def require_declarations(documents):
                 require(
                     identity not in identities,
                     f"duplicate identity: {identity}",
-                    code="semantic.identity",
+                    code=Code.IDENTITY,
+                    values={"identity": identity},
                     path=path + "/id",
                 )
                 identities.add(identity)
@@ -163,7 +175,9 @@ def checked_record(kind, value, label, issues):
             return value
         issues.append(
             Issue(
-                "structure.kind", f"expected {kind}, received {value._kind}", path=label
+                Code.STRUCTURE_KIND,
+                f"expected {kind}, received {value._kind}",
+                path=label,
             )
         )
         return None
@@ -171,11 +185,13 @@ def checked_record(kind, value, label, issues):
         return _TYPES[kind].from_data(value)
     except ValidationError as error:
         issues.extend(
-            Issue(issue.code, issue.message, _document_id(value), label + issue.path)
+            issue.replace(document_id=_document_id(value), path=label + issue.path)
             for issue in error.report.issues
         )
     except (ValueError, TypeError) as error:
-        issues.append(Issue("structure.json", str(error), _document_id(value), label))
+        issues.append(
+            Issue(Code.STRUCTURE_JSON, str(error), _document_id(value), label)
+        )
     return None
 
 
@@ -205,14 +221,7 @@ def bounded(
         try:
             operation()
         except ContractError as error:
-            issues.append(
-                Issue(
-                    error.code,
-                    str(error),
-                    error.document_id or _document_id(document),
-                    error.path,
-                )
-            )
+            issues.append(Issue.from_error(error, document_id=_document_id(document)))
     return ValidationReport(tuple(issues))
 
 
@@ -245,11 +254,14 @@ def validate_known_reference_types(root: Record, *, index) -> None:
             for position, identity in entries:
                 if isinstance(identity, UUID) and identity in index.records:
                     actual = index.records[identity]
-                    expected = ", ".join(kind.__name__ for kind in types)
+                    expected = tuple(kind.__name__ for kind in types)
                     require(
                         isinstance(actual, types),
-                        f"{identity} targets {actual._kind}; expected {expected}",
-                        code="reference.kind",
+                        f"{identity} targets {actual._kind}; "
+                        f"expected {', '.join(expected)}",
+                        code=Code.REFERENCE_KIND,
+                        targets=(identity,),
+                        values={"expected": expected, "actual": actual._kind},
                         path=f"{path}/{name}"
                         + (f"/{position}" if position is not None else ""),
                     )

@@ -2,14 +2,22 @@
 
 from uuid import UUID
 
+from rangekeeper.shared.codes import Code
+
 
 class UnsupportedProblem(ValueError):
     """The declared problem falls outside the supported scalar capability."""
 
     def __init__(
-        self, message: str, *, document: UUID | None = None, target: UUID | None = None
+        self,
+        message: str,
+        *,
+        code: Code = Code.UNSUPPORTED_CAPABILITY,
+        document: UUID | None = None,
+        target: UUID | None = None,
     ) -> None:
         super().__init__(message)
+        self.code = Code(code)
         self.document = document
         self.target = target
 

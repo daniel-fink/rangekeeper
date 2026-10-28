@@ -294,7 +294,9 @@ class UnitSystem:
                 suggestions=suggestions,
             ) from error
         except ValueError as error:
-            if "scaling factor" not in str(error):
+            # Pint rejects a scale factor with a ValueError; find the number in
+            # the text instead of reading Pint's message.
+            if not _SCALE_FACTOR.search(text):
                 raise UnitError(f"invalid units {text!r}: {error}") from error
             suggestion = self._rescaled(1, text)
             hint = f"; did you mean {suggestion!r}?" if suggestion else ""

@@ -14,6 +14,7 @@ from uuid import UUID, uuid4
 import pytest
 
 from rangekeeper import Model, Specification
+from rangekeeper.errors import Code
 from rangekeeper.execution import (
     Executor,
     Tolerances,
@@ -267,7 +268,8 @@ def test_temporary_bounds_and_inconsistent_equations(operator, bound, feasible):
         )
     else:
         assert not run.record.outputs
-        assert any("provenInfeasible" in d.message for d in run.report.diagnostics)
+        assert run.report.status.solution == SolutionStatus.INFEASIBLE
+        assert any(d.code == Code.SOLVER_TERMINATION for d in run.report.diagnostics)
 
 
 @pytest.mark.parametrize(
@@ -563,9 +565,9 @@ def test_unconstrained_unknown_has_explicit_choice_evidence():
     )
     run = execute(store, investigation)
     assert output(store, run).value(area).quantity.magnitude == 0
-    assert any(d.code == "underdetermined" for d in run.report.diagnostics)
     assert any(
-        str(area) in d.message and "initialized_to_zero" in d.message
+        d.code == Code.UNDERDETERMINED
+        and area in {reference.target for reference in d.references or ()}
         for d in run.report.diagnostics
     )
 

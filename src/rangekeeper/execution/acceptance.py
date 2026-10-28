@@ -24,6 +24,7 @@ from rangekeeper.schema.records import (
     Operator,
     Quantity,
 )
+from rangekeeper.shared.codes import Code
 
 
 @dataclass(frozen=True)
@@ -81,7 +82,7 @@ def check(
             diagnostics.append(
                 Diagnostic(
                     severity=Severity.ERROR,
-                    code="assignment_rejected",
+                    code=Code.ASSIGNMENT_REJECTED.value,
                     message="Candidate changed an explicit assignment.",
                     document=prepared.model.id,
                     target=prepared.references[id].target,
@@ -126,7 +127,7 @@ def check(
             diagnostics.append(
                 Diagnostic(
                     severity=Severity.INFO if valid else Severity.ERROR,
-                    code="constraint_residual",
+                    code=Code.CONSTRAINT_RESIDUAL.value,
                     message=(
                         f"Independent original-expression check: {relation}; signed residual left-right, "
                         f"unscaled in left-side units; tolerance = {tolerances.absolute} + "

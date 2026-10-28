@@ -18,6 +18,7 @@ from rangekeeper.schema.records import (
     Status,
 )
 from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ValidationError
 from rangekeeper.specification import Composition, Specification
 
@@ -102,7 +103,7 @@ class Executor:
                                     if completion is CompletionStatus.COMPLETED
                                     else Severity.WARNING
                                 ),
-                                code="batch_accounting",
+                                code=Code.BATCH_ACCOUNTING.value,
                                 message=f"Sequential batch accounted for all {len(children)} direct cases; outputs are their unique accepted union.",
                             ),
                         ),

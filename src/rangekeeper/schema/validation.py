@@ -12,6 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.protocols import Validator
 from jsonschema.validators import extend
 
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 
 
@@ -162,7 +163,7 @@ def validate(kind: str, data: object) -> ValidationReport:
     try:
         data = copy_json(data)
     except (TypeError, ValueError) as error:
-        return ValidationReport((Issue("structure.json", str(error)),))
+        return ValidationReport((Issue(Code.STRUCTURE_JSON, str(error)),))
     return _validate_json(kind, data)
 
 
@@ -174,9 +175,26 @@ def _validate_json(kind: str, data: object) -> ValidationReport:
             "/" + str(part).replace("~", "~0").replace("/", "~1")
             for part in schema_error.absolute_path
         )
+        code = _structure_code(schema_error.validator)
         issues.append(
             Issue(
-                f"structure.{schema_error.validator}", schema_error.message, path=path
+                code,
+                schema_error.message,
+                path=path,
+                # A keyword without its own code keeps its name as a field.
+                values=(
+                    {"keyword": schema_error.validator}
+                    if code is Code.STRUCTURE
+                    else None
+                ),
             )
         )
     return ValidationReport(tuple(issues))
+
+
+def _structure_code(keyword: object) -> Code:
+    """Return the code of a failed JSON Schema keyword."""
+    try:
+        return Code(f"structure.{keyword}")
+    except ValueError:
+        return Code.STRUCTURE

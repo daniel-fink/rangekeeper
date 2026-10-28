@@ -77,7 +77,8 @@ valuation formulas.
 ## Settings, limits and conclusions
 
 - Default limits are **30 seconds**, **100,000 simplex iterations**, **10,000 symbols**
-  and **20,000 affine constraints** per leaf.
+  and **20,000 affine constraints** per leaf. An attempt that exceeds the symbol or
+  constraint limit fails with a `symbol_limit` or `constraint_limit` diagnostic.
   Requested `iteration_limit` maps to HiGHS simplex iterations; presolve reductions
   are separate. Requests exceeding HiGHS's integer maximum are clamped with a
   `settings_adjusted` diagnostic.
