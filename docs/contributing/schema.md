@@ -10,9 +10,10 @@ it must not redeclare persistent fields. Read the
 
 Keep schema modules divided by domain responsibility. Change YAML descriptions
 at their source so generated record/property docstrings change with the contract.
-Python behaviors under `src/rangekeeper/schema/behaviors/` declare no fields. The
-generator attaches those behaviors to selected records and generates typed
-`replace()` methods.
+Generated records contain data only. The owner of a value type adds behaviour
+with a subclass that it registers in `rangekeeper.schema.kinds`; the subclass
+declares no fields. `OWNERS` in the generator names the owner module of each
+value type.
 
 | Material | Owner |
 | --- | --- |
@@ -25,7 +26,7 @@ generator attaches those behaviors to selected records and generates typed
 
 The generator is a set of small functions: it loads the bundle, derives the
 slot metadata, checks it, emits the records and writes the manifest. It stops
-when a slot name is a Python keyword or shadows a record or behaviour method,
+when a slot name is a Python keyword or shadows a record method,
 or when one slot has more than one record type.
 
 Do not edit generated files by hand. Create a separate environment with

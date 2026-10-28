@@ -59,9 +59,8 @@ def check_calculations() -> None:
     from uuid import uuid4
 
     from rangekeeper.finance.financial import calculate_xnpv
-    from rangekeeper.flow import Flow
+    from rangekeeper.flow import Flow, Movement
     from rangekeeper.io.polars import to_frame
-    from rangekeeper.schema.records import Movement
 
     flow = Flow(
         units="AUD",

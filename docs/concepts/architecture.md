@@ -134,11 +134,11 @@ contents are not yet in their 1.0 owner:
 | Package | Contents now | Moves that follow |
 | --- | --- | --- |
 | `shared` | Errors, diagnostics, validation helpers, encoding, references, tables and fingerprints | The store and resolver protocols arrive from `io` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
-| `schema` | Generated records, enums, the record runtime, structural validation and record behaviours | The Flow and Movement behaviours move to `flow` ([#106](https://github.com/daniel-fink/rangekeeper/issues/106)) |
+| `schema` | Data-only generated records, enums, the record runtime, the kind registry and structural validation | — |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
-| `profile` | Growth and distribution of known amounts over Periods: `extrapolate`, `distribute` and `GrowthMethod` | Profile classes and `Flow.from_profile` replace the functions ([#298](https://github.com/daniel-fink/rangekeeper/issues/298)) |
-| `flow` | Stream, the Flow re-exports, their options, table display and the private engine | — |
+| `profile` | Growth and distribution of known amounts over Periods: `extrapolate`, `distribute` and `GrowthMethod`; the Distribution owner (public as `rangekeeper.model.Distribution`) | Profile classes and `Flow.from_profile` replace the functions ([#298](https://github.com/daniel-fink/rangekeeper/issues/298)) |
+| `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
 | `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#299](https://github.com/daniel-fink/rangekeeper/issues/299), [#303](https://github.com/daniel-fink/rangekeeper/issues/303)). Generation, `Market` and replay still import `model`, above `market` |
 | `finance` | Financial valuation: PV, NPV, IRR and day counts | `pv`, `npv`, `irr` and `payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry | — |

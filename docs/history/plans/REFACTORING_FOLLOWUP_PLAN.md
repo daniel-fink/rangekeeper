@@ -296,13 +296,13 @@ when each entry retains its boundary and construction copies its input only once
 
 ## RF-026 Flow operations and callers
 
-**Problem and evidence.** [`_coordinates.py`](../../../src/rangekeeper/schema/behaviors/flow.py)
+**Problem and evidence.** `_coordinates.py` (later `schema/behaviors/flow.py`, removed by #106)
 has three production importers, all passing a whole Flow. Its owner is the Flow,
 not an arbitrary package-root helper. Example authoring also repeats an existing
 constructor, while series/projection repeat exhaustive enum checks.
 
 **Implementation.** Add `coordinate_index()` to existing
-[`FlowBehavior`](../../../src/rangekeeper/schema/behaviors/flow.py). Replace calls in
+`FlowBehavior`. Replace calls in
 `calculations/account.py`, `calculations/series.py` and `formulations/flow.py`.
 Keep coordinate equality independent of Movement identity and retain duplicate
 rejection and encounter order. Replace the applicable Movement loops in

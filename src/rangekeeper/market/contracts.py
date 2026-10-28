@@ -179,7 +179,7 @@ def check_inputs(name, parameters, arrays):
 
 def validate_plan(plan):
     """Check the complete passive plan against its market method contract."""
-    from rangekeeper.schema.records import Distribution
+    from rangekeeper.profile import Distribution
 
     contract = method(plan["method"])
     periods = plan["periods"]

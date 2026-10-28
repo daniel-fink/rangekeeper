@@ -16,21 +16,27 @@ the shared record layer and its method ownership.
 | Location | Responsibility |
 | --- | --- |
 | `schema/*.yaml` | Authoritative field, enum, inheritance and description definitions |
-| `tools/schema/generate.py` | Explicit constructors, properties, typed replacement signatures and selected behaviour inheritance |
+| `tools/schema/generate.py` | Explicit constructors, properties, typed replacement signatures and the owner table |
 | `rangekeeper/schema/enums.py` | Canonical plain Enum classes; typed fields decode members and wire data retains strings |
-| `rangekeeper/schema/records.py` | Canonical immutable classes, including the registry used for nested decoding |
+| `rangekeeper/schema/records.py` | Data-only immutable classes and the owner module of each value type |
+| `rangekeeper/schema/kinds.py` | The kind registry: the owner class that each kind constructs and decodes to |
 | `rangekeeper/schema/runtime.py` | Shared field encoding, strict JSON copying, freezing, replacement, field presence and schema equivalence |
-| `rangekeeper/schema/behaviors/` | Handwritten methods for Flow, Movement, Period and Distribution; no field declarations |
+| `rangekeeper/flow`, `rangekeeper/duration`, `rangekeeper.profile` | Owner subclasses with the methods of Flow and Movement, Period and Span, and Distribution; no field declarations |
 | `rangekeeper/schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
 | `model`, `specification`, `run` | Document-wide validation, references and revision rules |
 | `flow`, `finance` | Operations that combine records or require an explicit financial or temporal interpretation |
 
-The generator explicitly attaches field-free behaviour mixins. It does not patch
-classes after import. Direct construction, `from_data`, `from_json` and nested
-property decoding therefore return the same class with the same methods. Schema
-inheritance remains intact: `Assembly` is an `Entity`; `Span` is a `Period`.
-Workflow computation fingerprints include the behaviour modules, so changes to
-these methods affect recorded computation identity.
+Generated records contain data only ([ADR-011](../decisions/011-records-and-validation.md)).
+The owner of a value type subclasses its generated record, for example
+`class Flow(records.Flow)` in `flow`, and registers it with
+`rangekeeper.schema.kinds.register`. Direct construction (also of the generated
+class), `from_data`, `from_json`, nested property decoding and traversal
+therefore return the owner class with its methods. The generated `_OWNERS` table
+names each owner module, so a decode loads the owner on first use. An owner keeps
+`__slots__ = ()` and the generated constructor, and does not shadow a field.
+Schema inheritance remains intact: `Assembly` is an `Entity`; `Span` is a
+`Period`. Workflow computation fingerprints include the owner modules, so changes
+to these methods affect recorded computation identity.
 
 Handwritten methods use local imports for schema constructors and optional
 numerical libraries. Importing records does not load a solver, dataframe, plotting
