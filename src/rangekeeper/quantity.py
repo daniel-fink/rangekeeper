@@ -20,6 +20,8 @@ from moneyed import list_all_currencies
 
 from rangekeeper.schema.records import Quantity
 from rangekeeper.shared.errors import UnitError
+from rangekeeper.shared.fingerprints import manifest_digest
+from rangekeeper.shared.registry import Registry
 
 _CURRENCIES = tuple(currency.code for currency in list_all_currencies())
 
@@ -235,6 +237,19 @@ class UnitSystem:
             f"UnitSystem(implementation={self.implementation!r}, "
             f"currencies={len(self.currencies)}{extra})"
         )
+
+    @property
+    def fingerprint(self) -> str:
+        """Return a digest of the implementation, the currencies and the definitions.
+
+        Two systems with the same fingerprint parse and convert the same units.
+        """
+        manifest = {
+            "implementation": self.implementation,
+            "currencies": list(self.currencies),
+            "definitions": list(self.definitions),
+        }
+        return "unit-system/v1:" + manifest_digest(manifest)
 
     def _spellings(self) -> tuple[str, ...]:
         return (*_spellings(self.definitions), *self.currencies)
@@ -469,4 +484,11 @@ def minor_unit(code: str) -> int | None:
 
 default_units = UnitSystem()
 
-__all__ = ["Quantity", "UnitSystem", "default_units", "minor_unit"]
+# Named unit systems (ADR-013, ADR-016). An installed distribution can add one in
+# the entry point group ``rangekeeper.unit_systems``.
+unit_systems: Registry[UnitSystem] = Registry(
+    "unit_systems", UnitSystem, fingerprint=lambda system: system.fingerprint
+)
+unit_systems.register("default", default_units)
+
+__all__ = ["Quantity", "UnitSystem", "default_units", "minor_unit", "unit_systems"]

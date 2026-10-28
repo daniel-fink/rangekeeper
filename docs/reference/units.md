@@ -82,9 +82,27 @@ default_units.register("rood", definition="1011.7141056 * sqm")
 ```
 
 `register` and `alias` do not change the original system. They refuse a spelling
-that the system already has. The full extension registry
-([#131](https://github.com/daniel-fink/rangekeeper/issues/131)) replaces this hook
-later.
+that the system already has.
+
+`UnitSystem.fingerprint` hashes the implementation, the currencies and the
+definitions. Two systems with one fingerprint parse and convert the same units.
+
+## Named unit systems
+
+`rangekeeper.quantity.unit_systems` holds unit systems by name. It follows the
+[extension pattern](extensions.md). `default` is `default_units`. An installed
+distribution can add a system in the entry point group `rangekeeper.unit_systems`.
+
+```python
+from rangekeeper.quantity import default_units, unit_systems
+
+unit_systems.register("storeys", default_units.register("storey"))
+unit_systems.get("storeys").validate_units("storey")
+```
+
+A Run that reaches acceptance records the unit system as an `evaluator`
+implementation: `rangekeeper.unit_systems:<name>` with its fingerprint, or
+`rangekeeper.quantity:UnitSystem` for an unregistered system.
 
 ## The Model's unit system
 

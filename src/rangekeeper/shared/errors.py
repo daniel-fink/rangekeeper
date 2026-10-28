@@ -205,3 +205,22 @@ class AttemptDeadlineError(RangekeeperError, RuntimeError):
     """The attempt budget expired at a preparation or compilation checkpoint."""
 
     code = Code.ATTEMPT_DEADLINE
+
+
+class UnknownExtensionError(RangekeeperError, LookupError):
+    """An extension point has no implementation with the requested name.
+
+    ``suggestions`` gives the registered names to try instead, when any are close.
+    """
+
+    code = Code.EXTENSION_UNKNOWN
+
+    def __init__(self, message: str, *, suggestions: tuple[str, ...] = ()) -> None:
+        super().__init__(message)
+        self.suggestions = tuple(suggestions)
+
+
+class ExtensionConflictError(RangekeeperError, ValueError):
+    """Two implementations claim one name at one extension point."""
+
+    code = Code.EXTENSION_CONFLICT

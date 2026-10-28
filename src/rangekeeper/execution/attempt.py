@@ -12,7 +12,7 @@ from rangekeeper.execution import (
     publication,
     settings,
 )
-from rangekeeper.execution.backends import Backend
+from rangekeeper.execution.backends import Backend, registry
 from rangekeeper.execution.backends.base import Result
 from rangekeeper.execution.errors import (
     AttemptDeadlineError,
@@ -22,7 +22,7 @@ from rangekeeper.execution.errors import (
 )
 from rangekeeper.execution.implementation import fingerprint
 from rangekeeper.model import Model
-from rangekeeper.quantity import UnitSystem
+from rangekeeper.quantity import UnitSystem, unit_systems
 from rangekeeper.run import ImplementationKind, Run, RunRecord, StepKind
 from rangekeeper.run import validate as validate_run
 from rangekeeper.schema.records import (
@@ -80,12 +80,18 @@ class Attempt:
         self.run_id, self.started, self.clock = uuid4(), _now(), time.monotonic()
         self.findings: list[Diagnostic] = []
         self.trace: list[Step] = []
+        solver = registry.describe(backend)
         self.implementations = [
             Implementation(
                 kind=ImplementationKind.COMPILER,
                 name="rangekeeper.scalar",
                 version=fingerprint("compiler"),
-            )
+            ),
+            Implementation(
+                kind=ImplementationKind.SOLVER,
+                name=solver.qualified_name,
+                version=solver.fingerprint,
+            ),
         ]
         self.limits: settings.Limits | None = None
         self.prepared: preparation.Prepared | None = None
@@ -308,11 +314,19 @@ class Attempt:
             checked = acceptance.check(
                 self.prepared, candidate, tolerances=self.tolerances
             )
-            self.implementations.append(
-                Implementation(
-                    kind=ImplementationKind.EVALUATOR,
-                    name="rangekeeper.scalar.original_expressions",
-                    version=fingerprint("evaluator"),
+            units = unit_systems.describe(self.prepared.units)
+            self.implementations.extend(
+                (
+                    Implementation(
+                        kind=ImplementationKind.EVALUATOR,
+                        name="rangekeeper.scalar.original_expressions",
+                        version=fingerprint("evaluator"),
+                    ),
+                    Implementation(
+                        kind=ImplementationKind.EVALUATOR,
+                        name=units.qualified_name,
+                        version=units.fingerprint,
+                    ),
                 )
             )
             self.findings.extend(checked.diagnostics)

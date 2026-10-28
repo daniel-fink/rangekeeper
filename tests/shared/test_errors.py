@@ -32,6 +32,7 @@ ERRORS = tuple(sorted(public_errors(), key=lambda error: error.__name__))
 # The built-in types that callers caught before the hierarchy existed.
 BUILT_IN = {
     errors.MissingReferenceError: LookupError,
+    errors.UnknownExtensionError: LookupError,
     errors.ReferenceTypeError: TypeError,
     errors.PublishedFileError: OSError,
     errors.BackendUnavailableError: RuntimeError,

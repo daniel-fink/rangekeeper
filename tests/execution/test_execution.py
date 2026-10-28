@@ -19,11 +19,13 @@ from rangekeeper.execution import (
     Executor,
     Tolerances,
     acceptance,
+    backends,
     preparation,
     publication,
 )
 from rangekeeper.execution.backends import PyomoHighs, Result
 from rangekeeper.io import DirectoryStore, MemoryStore, yaml
+from rangekeeper.quantity import default_units
 from rangekeeper.run import (
     CompletionStatus,
     ImplementationKind,
@@ -31,7 +33,12 @@ from rangekeeper.run import (
     SolutionStatus,
     validate,
 )
-from rangekeeper.shared.errors import MissingReferenceError, ValidationError
+from rangekeeper.shared.errors import (
+    MissingReferenceError,
+    UnknownExtensionError,
+    ValidationError,
+)
+from rangekeeper.shared.registry import Registry
 from rangekeeper.specification import SpecificationRecord
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
@@ -172,6 +179,13 @@ def test_declared_forward_then_inverse_on_genuine_output(tmp_path, disk):
         ImplementationKind.SOLVER,
         ImplementationKind.EVALUATOR,
     }
+    named = {item.name: item for item in forward.report.runtime.implementations}
+    assert named["rangekeeper.backends:pyomo-highs"].version == (
+        backends.registry.registration("pyomo-highs").fingerprint
+    )
+    assert named["rangekeeper.unit_systems:default"].version == (
+        default_units.fingerprint
+    )
     assert any(
         d.code == "constraint_residual" and d.tolerance is not None
         for d in run2.report.diagnostics
@@ -338,6 +352,33 @@ class WrongCandidate:
         values = dict(result.candidate)
         values[CAPITAL] += 1000000
         return replace(result, candidate=values)
+
+
+def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
+    store, model = setup()
+    specification = spec()
+    store.put(specification)
+    with pytest.raises(UnknownExtensionError, match="pyomo-highs"):
+        Executor(store, backend="pyomo")
+    registry: Registry[backends.Backend] = Registry("backends", backends.Backend)
+    registry.register("wrong", WrongCandidate())
+    monkeypatch.setattr(backends, "registry", registry)
+    monkeypatch.setattr("rangekeeper.execution.executor.registry", registry)
+    monkeypatch.setattr("rangekeeper.execution.attempt.registry", registry)
+    run = Executor(store, backend="wrong").execute(specification)
+    solvers = {
+        item.name: item.version
+        for item in run.report.runtime.implementations
+        if item.kind == ImplementationKind.SOLVER
+    }
+    assert solvers["rangekeeper.backends:wrong"].startswith("extension/v1:")
+    other = spec()
+    store.put(other)
+    unregistered = Executor(store, backend=PyomoHighs()).execute(other)
+    assert any(
+        item.name == "rangekeeper.execution.backends.pyomo:PyomoHighs"
+        for item in unregistered.report.runtime.implementations
+    )
 
 
 def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():

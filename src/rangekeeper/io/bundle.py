@@ -16,6 +16,7 @@ from uuid import UUID
 from rangekeeper import Model, Run, Specification
 from rangekeeper.io._document import require_revision, require_same, snapshot
 from rangekeeper.io.atomic import write_new
+from rangekeeper.io.geometry import find as find_provider
 from rangekeeper.model.geometry import safe_path
 from rangekeeper.run.validation import validate as validate_run
 from rangekeeper.schema.runtime import comparison_data
@@ -469,7 +470,7 @@ def write(
         if pin is None:
             continue
         key = (pin["provider"], pin["format"], pin["format_version"])
-        adapter = provider_map.get(key, provider)
+        adapter = provider_map.get(key, provider) or find_provider(pin["provider"])
         if adapter is None:
             raise ValueError("Geometry needs an explicit provider")
         # Equal complete pins share bytes. A dependency can reuse a supplied pin.
@@ -890,7 +891,9 @@ class Reader(_Documents):
             if pin is None or digest(pin) in checked:
                 continue
             key = (pin["provider"], pin["format"], pin["format_version"])
-            provider = self.providers.get(key, self.provider)
+            provider = self.providers.get(key, self.provider) or find_provider(
+                pin["provider"]
+            )
             if provider is None:
                 raise ValueError("Unsupported Geometry: supply its explicit provider")
             provider.validate(self.geometry_path(document.id), document.geometry)

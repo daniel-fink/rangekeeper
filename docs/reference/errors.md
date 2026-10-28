@@ -90,6 +90,8 @@ except rk.errors.ValidationError as error:
 | `UnitError` | `ValueError` | `UNITS`. `suggestions` gives spellings to try |
 | `DecodeError`, `EncodingError` | `ValueError` | `DECODE`, `ENCODING` |
 | `TableError` | `ValueError` | `TABLE` |
+| `UnknownExtensionError` | `LookupError` | `EXTENSION_UNKNOWN`. `suggestions` gives registered names to try ([extension points](extensions.md)) |
+| `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
 | `model.system`: `SelectionError`, `AggregationError` | `ValueError` | `SELECTION`, `AGGREGATION` |
 | `market`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
 | `specification.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
