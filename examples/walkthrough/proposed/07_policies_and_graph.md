@@ -70,7 +70,6 @@ all rent growth.
 
 ```python
 # cell 3
-yearly = rk.duration.Frequency.YEAR
 base = rk.io.load(path=helpers.data_path(name="04_base_case.specification.json"))
 fixed = (
     base.on(model=residential)
@@ -149,43 +148,49 @@ Otherwise build residential. The provision is paid when the site is bought.
 ```python
 # cell 7
 timing = rk.io.load(path=helpers.data_path(name="05_strategy.specification.json")).rules
-design_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).periods(
-    frequency=yearly
-)
-timing  # lesson 05's three rules, as written there
+timing  # lesson 05's three rules by key, each with the triggers it reads
 ```
 
 Narrative: the rule reads the Model's keyed index, one member for each use. The
-trigger is a value in the Specification, so section 7 can test several triggers as cases. Building B's
-design is reviewed each January from 2028, from a year after the shared works start
-until the year before Building B starts.
+trigger is a value in the Specification, so section 7 can test several triggers as
+cases. The window opens a year after the shared works start and closes the year
+before Building B starts. When the condition holds, the rule chooses the hotel
+(`then=`); otherwise Building B stays residential.
 
 ```python
 # cell 7b
+design_window = rk.specification.Window(
+    earliest="shared_start + 1 year", latest="b_start - 1 year"
+)
+design_rule = design_window.where(
+    condition='use_index["hotel"] >= switch_trigger * use_index["residential"]'
+).first(then="hotel", otherwise="residential")
 switch = (
     fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
     .fix(provision="2.5e6 AUD")
     .parameters(switch_trigger=1.10)
-    .decide(
-        key="b_design",
-        when='use_index["hotel"] >= switch_trigger * use_index["residential"]',
-        periods=design_reviews,
-        earliest="shared_start + 1 year",
-        latest="b_start - 1 year",
-        then="hotel",
-        otherwise="residential",
-    )
+    .fix(b_design=design_rule)
 )
 ```
 
 ```python
 # cell 8
-strategies = {
-    "fixed": fixed,
-    "timing": fixed.with_rules(rules=timing),
-    "switch": switch,
-    "both": switch.with_rules(rules=timing),
-}
+timing_only = fixed.fix(
+    start_date=timing["start_date"],
+    b_start=timing["b_start"],
+    b_sale_date=timing["b_sale_date"],
+)
+# lesson 05's rules after the design rule: rules run in the order they are fixed
+both = switch.fix(
+    start_date=timing["start_date"],
+    b_start=timing["b_start"],
+    b_sale_date=timing["b_sale_date"],
+)
+```
+
+```python
+# cell 8b
+strategies = {"fixed": fixed, "timing": timing_only, "switch": switch, "both": both}
 strategy_outcomes = {}
 for name, strategy in strategies.items():
     on_paths = strategy.across(paths=use_paths, series=use_series)
@@ -340,8 +345,8 @@ chosen = trigger_cases.case(key=best)
 test_outcome = rk.execution.solve(
     specification=chosen.across(paths=fresh, series=use_series)
 )
-timing_only = strategies["timing"].across(paths=fresh, series=use_series)
-baseline_outcome = rk.execution.solve(specification=timing_only)
+timing_on_fresh = strategies["timing"].across(paths=fresh, series=use_series)
+baseline_outcome = rk.execution.solve(specification=timing_on_fresh)
 # usually less than in training
 rk.execution.compare(
     outcomes={"Chosen": test_outcome, "Timing": baseline_outcome},
@@ -397,21 +402,18 @@ expanded = draft.commit()
 
 ```python
 # cell 18
-expansion_reviews = rk.duration.Span(
-    start=date(2030, 1, 1), end=date(2035, 1, 1)
-).periods(frequency=yearly)
+expansion_window = rk.specification.Window(
+    earliest="a_open + 3 years", latest=date(2034, 1, 1)
+)
+expansion_rule = expansion_window.where(
+    condition='use_index["residential"] >= expansion_trigger'
+).first(otherwise=rk.duration.NEVER)
 expand = (
     strategies["both"]
     .alternatives(a_design={"base": residential, "expanded": expanded})
     .fix(a_provision="1.5e6 AUD")
     .parameters(expansion_trigger=1.25)
-    .decide(
-        key="expansion_date",
-        when='use_index["residential"] >= expansion_trigger',
-        periods=expansion_reviews,
-        earliest="a_open + 3 years",
-        otherwise=rk.duration.NEVER,
-    )
+    .fix(expansion_date=expansion_rule)
 )
 ```
 
@@ -502,7 +504,7 @@ how-to guides.
 
 ## Cell budget
 
-22 core code cells, 5 optional cells and 1 check cell (budget 20–25), 3 exercise
+23 core code cells, 5 optional cells and 1 check cell (budget 20–25), 3 exercise
 solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 `ruff format` (D15).
 
@@ -515,9 +517,9 @@ solutions. The longest cell has 17 lines (optional cell 18). Cells follow
 | 4 | 2, 7 | G61: `edit(name=)`, `relabel(filter, **labels)`, `include(fragment)`; `Filter(within=)` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)) |
 | 5 | 7 | G62: `rk.model.diff(a, b)` with typed parts |
 | 6 | 7, 8 | G74: `rk.model.compare(models=, keys=)` gives one table of declared rollups by design |
-| 7b | 2, 6 | G63: `Specification.alternatives(key={name: Model})` and a decided Model choice with `then=` (ADR-022); G49 (`periods=`), G55 (`earliest=`, `latest=`), G57 (`parameters`); keyed members in rule text (`use_index["hotel"]`) |
-| 7 | 1, 10 | G64: `Specification.rules` reads the rules of a saved Specification, so lesson 05's rules are loaded as a document, not from a helper |
-| 8 | 2 | G65: `Specification.with_rules(rules)` |
+| 7b | 2, 6 | G63: `Specification.alternatives(key={name: Model})` and a decided Model choice: a rule with `first(then=, otherwise=)` (ADR-022, D42); G55 (a window's `earliest` and `latest` as expressions), G57 (`parameters`); keyed members in rule text (`use_index["hotel"]`) |
+| 7 | 1, 10 | G64: `Specification.rules` reads the rules of a saved Specification by key, each with the triggers it reads, so lesson 05's rules are loaded as a document, not from a helper |
+| 8–8b | 2 | G65: rules reused by key with `fix(start_date=timing["start_date"], ...)`; rules run in the order they are fixed (D42) |
 | 9–10 | 8 | G66: `rk.execution.compare(outcomes=, keys=, baseline=)` for several strategies |
 | 11 | 8 | G31: `distribution(key=).counts()` for a decided choice |
 | 12 | 7, 8 | G46 for batches: `Outcome.rollup(...)` over each case's realised Model |
@@ -538,7 +540,7 @@ The design for structural variants must support:
   make each option (cell 4). The options share the project entity and the equations; they
   differ in structure.
 - **A bounded choice in the Specification.** `alternatives(key={name: Model})` pins
-  each option's revision. The choice is a decided value with review Periods, bounds and a
+  each option's revision. The choice is a decided value: a rule over a window, with a
   default (cell 7b). Several choices can be open at once (cell 18).
 - **Realised structure per path.** Each case's Outcome carries the realised Model, so
   rollups and pivots work per path and across the batch (cells 11–12).

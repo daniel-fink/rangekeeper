@@ -10,7 +10,8 @@ API conventions and the gap list: [README](README.md).
 Decision used here (D9 in the [README](README.md#decisions)): if a value can change,
 it belongs in the Specification; if it is part of the modelling, it belongs in the
 Model. The Model declares the date equations (lesson 03). A rule **decides**
-one value: it fixes the value on the first review date on which its condition holds.
+one value: it fixes the value on the first date in its window on which its condition
+holds (D42).
 "Decided" is a role beside fixed and free. There is no separate action concept.
 
 The lesson is not authored until #215 is verified (ADR-020).
@@ -84,31 +85,30 @@ fixed_stories_outcome.table("equity_npv", "peak_shortfall")
 
 ## 3. A rule: wait to start
 
-Narrative: in place of a fixed start date, decide it. Each January from 2027 to
-2030, read the latest rent index. Start when it reaches 1.05. If it never does, do
-not buy the site. `decide` replaces the fixed start date with a rule. The reviews are
-a `Periods`: the rule looks on the first day of each Period. The trigger, 1.05, is a
-value in the Specification, so you can change it later without rewriting the rule.
-`rk.duration.NEVER` means the event does not happen.
+Narrative: in place of a fixed start date, fix it with a rule. From 2027 to 2030,
+read the latest rent index as soon as it is known, each January. Start on the first
+date when it reaches 1.05. If it never does, do not buy the site. A rule is a query
+over a window of dates: the first date in the window where a condition holds, or a
+default. A window acts each time a value that the condition reads becomes known;
+`earliest` and `latest` bound it. The trigger, 1.05, is a value in the Specification,
+so you can change it later without rewriting the rule. `rk.duration.NEVER` means the
+event does not happen.
 
 ```python
 # cell 6
-yearly = rk.duration.Frequency.YEAR
-start_reviews = rk.duration.Span(start=date(2027, 1, 1), end=date(2031, 1, 1)).periods(
-    frequency=yearly
+start_window = rk.specification.Window(
+    earliest=date(2027, 1, 1), latest=date(2030, 1, 1)
 )
-wait = fixed.parameters(start_trigger=1.05).decide(
-    key="start_date",
-    when="rent_index >= start_trigger",
-    periods=start_reviews,
-    otherwise=rk.duration.NEVER,
+start_rule = start_window.where(condition="rent_index >= start_trigger").first(
+    otherwise=rk.duration.NEVER
 )
+wait = fixed.parameters(start_trigger=1.05).fix(start_date=start_rule)
 wait_outcome = rk.execution.solve(specification=wait.across(paths=stories))
 wait_outcome.table("start_date", "b_start", "equity_npv")
 ```
 
-Narrative: the trace shows each review: the date, what was observed, when it became
-known, and the result. Building B's start is still fixed at 2030. **Predict:** what
+Narrative: the trace shows each date in the window: what was observed, when it
+became known, and the result. Building B's start is still fixed at 2030. **Predict:** what
 happens on a history where the project starts in 2030? Building B would start
 before the shared works finish. The Model's constraint `b_start >= shared_start +
 1 year` catches this: the case is infeasible, and the diagnostic names the
@@ -117,7 +117,7 @@ constraint. The rule for Building B must follow the rule for the start.
 ```python
 # cell 7
 downturn = wait_outcome.case(key="long downturn")
-downturn.trace  # each review: date, observed value, when it was known, result
+downturn.trace  # each window date: observed value, when it was known, result
 ```
 
 ```python
@@ -138,12 +138,10 @@ made, before any solve.
 ```python
 # cell 8
 try:
-    fixed.decide(
-        key="start_date",
-        when="rent_index.shift(by=-1) >= 1.05",
-        periods=start_reviews,
-        otherwise=rk.duration.NEVER,
+    look_ahead = start_window.where(condition="rent_index.shift(by=-1) >= 1.05").first(
+        otherwise=rk.duration.NEVER
     )
+    fixed.fix(start_date=look_ahead)
 except rk.errors.AvailabilityError as error:
     print(error.code, error.key, error.available_on, error.decision_date)
 ```
@@ -153,26 +151,22 @@ except rk.errors.AvailabilityError as error:
 
 ## 5. Start Building B when the market and funding allow
 
-Narrative: decide Building B's start too. Start B when the index reaches its own
-trigger, 1.10, and
-the available equity and the available loan cover B's whole budget. Both come from
-lesson 03's funding equations, with the decisions made so far. Building B cannot
-start before the shared works finish, so `earliest=` skips the reviews before that
-date on each path.
+Narrative: a rule for Building B's start too. Start B when the index reaches its
+own trigger, 1.10, and the available equity and the available loan cover B's whole
+budget. Both come from lesson 03's funding equations, with the decisions made so far.
+Building B cannot start before the shared works finish, so the window's `earliest`
+is an expression: on each path, it skips the dates before the shared works finish.
 
 ```python
 # cell 9
-b_reviews = rk.duration.Span(start=date(2028, 1, 1), end=date(2033, 1, 1)).periods(
-    frequency=yearly
+b_window = rk.specification.Window(
+    earliest="shared_start + 1 year", latest=date(2032, 1, 1)
 )
-start_b = wait.parameters(b_start_trigger=1.10).decide(
-    key="b_start",
-    when="rent_index >= b_start_trigger and equity_available + loan_available >= b_cost",
-    periods=b_reviews,
-    earliest="shared_start + 1 year",
-    otherwise=rk.duration.NEVER,
-)
-# the decided values, their rules and their review Periods
+b_rule = b_window.where(
+    condition="rent_index >= b_start_trigger and equity_available + loan_available >= b_cost"
+).first(otherwise=rk.duration.NEVER)
+start_b = wait.parameters(b_start_trigger=1.10).fix(b_start=b_rule)
+# the decided values, their rules and their windows
 helpers.show_decisions(of=start_b)
 ```
 
@@ -185,6 +179,7 @@ decided value.
 
 ```python
 # cell 10
+yearly = rk.duration.Frequency.YEAR
 years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
     frequency=yearly
 )
@@ -203,25 +198,19 @@ model = draft.commit()
 
 ```python
 # cell 11
-sale_reviews = rk.duration.Span(start=date(2033, 1, 1), end=date(2034, 1, 1)).periods(
-    frequency=yearly
+sale_window = rk.specification.Window(
+    earliest=date(2033, 1, 1), latest=date(2033, 1, 1)
 )
-strategy = (
-    start_b.on(model=model)
-    .fix(b_land_share="40 %")
-    .decide(
-        key="b_sale_date",
-        when="b_start == NEVER",
-        periods=sale_reviews,
-        otherwise=rk.duration.NEVER,
-    )
+sale_rule = sale_window.where(condition="b_start == NEVER").first(
+    otherwise=rk.duration.NEVER
 )
+strategy = start_b.on(model=model).fix(b_land_share="40 %", b_sale_date=sale_rule)
 ```
 
 ```python
 # cell 11b
 stories_outcome = rk.execution.solve(specification=strategy.across(paths=stories))
-stories_outcome.decisions  # one row for each case and review
+stories_outcome.decisions  # one row for each case and window date
 ```
 
 ```python
@@ -327,13 +316,10 @@ loan (lesson 03, optional section 11).
 
 ```python
 # solution
-reckless = strategy.decide(
-    key="b_start",
-    when="rent_index >= b_start_trigger",
-    periods=b_reviews,
-    earliest="shared_start + 1 year",
-    otherwise=rk.duration.NEVER,
+reckless_rule = b_window.where(condition="rent_index >= b_start_trigger").first(
+    otherwise=rk.duration.NEVER
 )
+reckless = strategy.fix(b_start=reckless_rule)  # replaces the rule for b_start
 reckless_outcome = rk.execution.solve(specification=reckless.across(paths=paths))
 gaps = reckless_outcome.distribution(key="commitment_gap")
 gaps.probability(above="0 AUD")
@@ -361,7 +347,7 @@ cheap_difference.where(b_start=rk.duration.NEVER).summary()
 assert strategy_outcome.run.paths == fixed_outcome.run.paths == paths.id
 for row in strategy_outcome.decisions.observations:
     assert row.available_on <= row.decision_date
-decided = rk.execution.ReviewResult.DECIDED
+decided = rk.execution.DecisionResult.DECIDED
 for row in strategy_outcome.decisions.where(key="b_start", result=decided):
     available = row.observed["equity_available"] + row.observed["loan_available"]
     assert available >= row.observed["b_cost"]
@@ -391,17 +377,17 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | --- | --- | --- |
 | 2 | 1, 10 | G26; G47: `equations.where(formulation=)`; D40 |
 | 4 | 10 | G48: `rk.market.Paths` from explicit Flows (the three histories are data, made once) |
-| 6 | 2, 6 | D1–D2 of the review: `rk.duration.Periods` from `Span.periods`; G49: `Specification.decide(key=, when=, periods=, earliest=, latest=, otherwise=)`, the "decided" role, rules as strings; G57: `parameters` for a rule's trigger |
+| 6 | 2, 6 | G49: a rule as a query, `rk.specification.Window(earliest=, latest=, periods=None).where(condition=).first(otherwise=, then=None)`, fixed with `fix(key=rule)`; the "decided" role; rules as strings (D42); G57: `parameters` for a rule's trigger |
 | 6, 11, 13 | 5 | G50: `rk.duration.NEVER` for date values, `NEVER` in rule text; functions treat a `NEVER` date as "no flow" |
 | 7–7b, 11b, 12 | 8, 9 | G51: `Outcome.trace` and `Outcome.decisions` tables; infeasible decided values name the constraint (G52) |
 | 8 | 9 | G53: `AvailabilityError` (with `key`) at Specification validation ([#139](https://github.com/daniel-fink/rangekeeper/issues/139)) |
 | 9 | 6 | G54: sequential solve: a rule observes solved values (funding) under the decisions so far ([#213](https://github.com/daniel-fink/rangekeeper/issues/213)) |
-| 9, 11 | 3 | G55: `earliest=` and `latest=` expression bounds on the reviews; rules that observe earlier decisions (`b_start == never`) |
+| 9, 11 | 3 | G55: a window's `earliest` and `latest` as expressions; rules that observe earlier decisions (`b_start == never`) |
 | 10 | 2, 3 | G27 (`add_to(key=, term=)`); G17 (`at`, `rx.flow.event`) |
 | 13–16 | 8 | G56, G66: `rk.execution.compare(outcomes=, keys=, baseline=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |
 | 17–17b, Try it 1 | 2 | G57: a rule's trigger fixed and tested as cases like any Specification value; cases × paths |
-| 18 | 8 | G58: rule evidence in the Run (`rule_evidence.verified`), observations with `available_on`; `rk.execution.ReviewResult` |
+| 18 | 8 | G58: rule evidence in the Run (`rule_evidence.verified`), observations with `available_on`; `rk.execution.DecisionResult` |
 
 ## Cells for #213
 
@@ -410,21 +396,22 @@ The design for sequential decisions must support:
 - **Observations.** A rule names Model values (`rent_index`, `equity_available`,
   `loan_available`,
   `b_cost`) and earlier decided values (`b_start == NEVER`). The value read is the
-  latest one available on the review date.
+  latest one available on the window date.
 - **Availability.** Market path Flows carry availability dates (period end by
-  default). Solved values, such as the available loan, are available on the review date
+  default). Solved values, such as the available loan, are available on the window date
   when they depend only on Movements up to that date. Validation rejects a rule that
   reads a later value (cell 8).
 - **Decided values.** A date value, or `rk.duration.NEVER`. The decision fixes the
   value; the Model's equations, equalities and bounds, move the dependent dates
   (cells 6, 9, 11).
-- **Reviews.** A `Periods`: the rule looks on the first day of each Period.
-  `earliest=` and `latest=` skip reviews outside bounds that are expressions of
+- **Windows.** A rule acts on the dates of its window: by default, each date on which
+  a value that its condition reads becomes known; or the first day of each Period of
+  `periods=`. `earliest` and `latest` bound the window, and can be expressions of
   earlier decisions (cell 9).
 - **Funding.** The rule observes the funding values (`equity_available`,
-  `loan_available`) under the decisions made so far, so evaluation alternates review
-  and solve in date order (cell 9).
-- **Traces.** For each case and review: date, decided value, observations with their
+  `loan_available`) under the decisions made so far, so evaluation alternates checks
+  and solves in date order (cell 9).
+- **Traces.** For each case and window date: decided value, observations with their
   availability dates, the rule's truth and the result (cells 7, 11).
 - **Paired comparison.** Two Outcomes on the same pinned `rk.market.Paths`, matched by
  path key (cells 13–16).

@@ -22,7 +22,7 @@ when the library work lands.
 | 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 17 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 18 + 2 optional |
 | 06 Project structure | [06_project_structure.md](06_project_structure.md) | 25 + 1 optional |
-| 07 Rules and design options | [07_policies_and_graph.md](07_policies_and_graph.md) | 22 + 5 optional |
+| 07 Rules and design options | [07_policies_and_graph.md](07_policies_and_graph.md) | 23 + 5 optional |
 
 Each lesson file has the goals box, the narrative outline, the cells, the exercises
 with solutions, the checks and recap, the cell budget and a rule check. The rule
@@ -44,8 +44,8 @@ pass.
 | D5 | When do the inverse rewrites land? | In 1.0. A fixed IRR becomes an NPV row at that rate, and a bound on a minimum becomes one row for each period. The target-IRR land price is a core cell of lesson 03 | 03 |
 | D6 | How is a Model made and changed? | One way each. `rk.Model(name=...)` makes an empty, immutable Model. `model.edit()` gives a `ModelDraft`; `commit()` checks it once and returns a new revision. There is no implicit entity: `draft.add_entity(code=, classification=)` makes one and `draft.entity(code=)` finds one. Values, Flows, equations and rollups are declared on the entity handle, and its equations use bare keys. Other entities use dotted paths, such as `building_a.income`. `roots=` keeps its meaning in rollups (D38) | 02–07 |
 | D7 | Must every unknown be named with `free()`? | No. A value that is not fixed is free. `free()` releases a value that was fixed before. An underdetermined solve names the free unknowns | 02–07 |
-| D8 | Specification builder or chained calls? | Chained calls. `fix`, `free`, `cases`, `across` and `decide` each return a new immutable Specification, because each step is valid on its own. A Model change is often invalid until it is complete, so the Model uses a draft and `commit()` | 02–07 |
-| D9 | How does a rule change the plan? | If a value can change, it belongs in the Specification. If it is part of the modelling, it belongs in the Model. The Model declares the equations between dates (lesson 03). A rule **decides** one value: it fixes the value on the first review date on which its condition holds. "Decided" is a role beside fixed and free. There is no separate action concept | 03, 05, 07 |
+| D8 | Specification builder or chained calls? | Chained calls. `fix`, `free`, `cases`, `across` and `parameters` each return a new immutable Specification, because each step is valid on its own. A Model change is often invalid until it is complete, so the Model uses a draft and `commit()` | 02–07 |
+| D9 | How does a rule change the plan? | If a value can change, it belongs in the Specification. If it is part of the modelling, it belongs in the Model. The Model declares the equations between dates (lesson 03). A rule **decides** one value: it fixes the value on the first date in its window on which its condition holds (D42). "Decided" is a role beside fixed and free. There is no separate action concept | 03, 05, 07 |
 | D10 | How is a design variant declared? | Each option is its own Model revision. The Specification lists the alternatives, and the choice between them is a decided value. A provision cost is a fixed value in the Specification | 07 |
 | D11 | Rates by use on each floor (lesson 06) | Keyed values (`by="use"`) and floor equations (`draft.entities.where(condition=).equations(...)`). The reference income is a rollup of floor income, so income traces to floors | 06, 07 |
 | D12 | Where does growth live, and what replaces "projection"? | A **profile** says how an amount develops over Periods. Profiles live in a new public namespace, `rk.profile`: growth profiles (`Constant`, `Linear`, `Compounding`) take an `initial=` amount; distribution profiles (`Uniform`, `SCurve`) take a `total=` amount. `rk.flow.Flow.from_profile(profile, periods=, initial= or total=)` makes the Flow. Growth is series maths, not finance, so it is not in `rk.finance` | 01, 03 |
@@ -61,8 +61,8 @@ pass.
 | D22 | ~~How does a known-data Account take transactions?~~ | Withdrawn with the Account (D2) | — |
 | D23 | When is something a library function, and when is it composition? | Compose when it is plain arithmetic on Flows: a balance is `cumulative()`, a repayment at sale is `rx.flow.event(amount=loan_principal.at(on=sale_date), on=sale_date)`, a terminal value is `shift`, divide and `trim`. Keep a library function when it carries a real convention: `rk.finance.interest(..., method=)` (`rx.finance.interest` in an equation) (compounding, day count), `npv`, `irr`, `payment`, profiles. So there is no `settle`, no account and no reversion helper | 01–07 |
 | D24 | How much Python may a cell use? | Plain Python only. Cells use no `**` unpacking, no comprehensions or generator expressions, and no f-strings that build keys. A `for` loop may repeat a calculation, a display or a check over a short list; it never declares values (D16). Where a few cases differ, write each one out by key. A helper takes the batch it draws (`plot_target_curve(outcomes=, key=)`), so the cell does not build a mapping for it | 01–07 |
-| D25 | How is a sequence of Periods held and named? | `rk.duration.Periods`: an ordered, gap-free sequence of Periods with one frequency, like rk 0.8's `PeriodIndex`. `Span.periods(frequency=)` returns one. An argument that takes one is always `periods=`; one date is `on=`; a move by whole periods is `by=` (`x.shift(by=-1)`); a Span is `span=`, and a Period counts as a one-step Span. A length of time is Quantity text: `Span(start=, length="10 years")`, `extend(by="1 year")`, `rx.profile.uniform(..., length=2 years)`. `decide` takes its reviews as `periods=`, reviewed on the first day of each Period, with optional `earliest=` and `latest=` expressions in place of a window tuple. Not `Sequence`, which is Python's abstract type | 04–07 |
-| D26 | Strings or enums for fixed words? | A fixed list of words that rangekeeper defines is an enum (`rk.duration.Frequency`, `rk.specification.Role`, `rk.execution.ReviewResult`, `rk.execution.Status`, `rk.model.Direction`, `rk.errors.Code`). Words that the data or the user defines stay strings: classifications, labels, relationship names, case keys, formulation names, units and equation text. "This event does not happen" is the constant `rk.duration.NEVER` (a one-member enum inside), written `NEVER` in equation text too; it is not `None`, which means missing | 05–07 |
+| D25 | How is a sequence of Periods held and named? | `rk.duration.Periods`: an ordered, gap-free sequence of Periods with one frequency, like rk 0.8's `PeriodIndex`. `Span.periods(frequency=)` returns one. An argument that takes one is always `periods=`; one date is `on=`; a move by whole periods is `by=` (`x.shift(by=-1)`); a Span is `span=`, and a Period counts as a one-step Span. A length of time is Quantity text: `Span(start=, length="10 years")`, `extend(by="1 year")`, `rx.profile.uniform(..., length=2 years)`. A rule's dates are a `Window` (D42). Not `Sequence`, which is Python's abstract type | 04–07 |
+| D26 | Strings or enums for fixed words? | A fixed list of words that rangekeeper defines is an enum (`rk.duration.Frequency`, `rk.specification.Role`, `rk.execution.DecisionResult`, `rk.execution.Status`, `rk.model.Direction`, `rk.errors.Code`). Words that the data or the user defines stay strings: classifications, labels, relationship names, case keys, formulation names, units and equation text. "This event does not happen" is the constant `rk.duration.NEVER` (a one-member enum inside), written `NEVER` in equation text too; it is not `None`, which means missing | 05–07 |
 | D27 | How are results named in the cells? | A Specification is named for its question (`base`, `funded`, `strategy`); its result is the same name with `_outcome`, also for a batch; a dict of results ends in `_outcomes` | 03–07 |
 | D28 | What stays as it is? | `rk.execution.solve(specification=)` stays a function (a method would make `specification` depend on `execution`); amounts such as `"2.5e6 AUD"` keep `e` notation; `fix` takes a bare number for a ratio (`coverage=1.25`) | 02–07 |
 | D29 | How do path generators and relationships read? | Path generators are series maths, like profiles (D12), so they leave `finance` for `rk.market` (`Dynamics`, `Paths`). Correlations are given by name. Relationships have one snake_case name each (`contains`, `serves`); the other direction is `direction=rk.model.Direction.INCOMING`. The data package maps the source names | 04–07 |
@@ -77,9 +77,10 @@ pass.
 | D38 | Rollup or aggregate, and one root or several? | `rollup`: totals over a hierarchy, as ADR-012 named it. `aggregate` stays the word for combining Flows (`Stream.aggregate`), and in LINQ it means a fold. A rollup takes `roots=[...]`, a list for one root or several, so the call does not change with the count; `trace(roots=)` follows. `result.value` counts shared contributors once; `result.by_root` gives each root's part | 06, 07 |
 | D39 | Does `rollup` declare or compute? | It computes: `model.rollup(...)` and `outcome.rollup(...)` return a result now. A declared rollup is a value: `project.value(key=, units=, rollup=rk.model.Rollup(of=, over=, roots=, contributors=))`, with the definition built once and injected. A declared rollup's result is read from a collection, `outcome.rollups[key]` or `model.rollups[key]`; its value is `outcome[key]` like any value | 06, 07 |
 | D40 | What does `where` take? | Two forms, alone or together (both must hold). Named arguments match columns: `column=value` means equals, `column=[a, b]` means any of, and a column that holds several values matches when it contains the value (`model.equations.where(keys="use_index")`, `outcome.decisions.where(key="b_start", result=...)`, `model.entities.where(classification="floor")`). `condition=` takes condition text, an `rx` condition, or for entities a reusable `Filter` (`model.entities.where(condition=floors)`). An equation's `key` names it (by default, the value on its left side); its `keys` are every value key that appears in it, on either side, so `where(keys=...)` finds the equations that contain a value. Not `uses`, `mentions`, `term`, `variable` or `name`: equations have no direction, `term=` is an expression in `add_to`, a variable suggests an unknown, and names belong to entities and path series | 05–07 |
-| D41 | Policy or rule? | Rule. A rule decides one value (`decide`); all of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. "Policy" is not used: not in reader text, and not in the API (`run.rule_evidence`, `RuleEvidence`). It matches de Neufville and Geltner's decision rules. Lesson 07 is "Rules and design options"; its file names stay until the lesson is authored (#244) | 05–07 |
+| D41 | Policy or rule? | Rule. A rule decides one value (D42); all of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. "Policy" is not used: not in reader text, and not in the API (`run.rule_evidence`, `RuleEvidence`). It matches de Neufville and Geltner's decision rules. Lesson 07 is "Rules and design options"; its file names stay until the lesson is authored (#244) | 05–07 |
+| D42 | How is a rule written? | As a query, composed from what readers already know: `rk.specification.Window(earliest=, latest=, periods=None).where(condition=...).first(otherwise=..., then=None)`, fixed by key with `fix(start_date=rule)`, so a decided value is a fixed value whose value the solve finds (D9). A window acts each time a value that the condition reads becomes known, unless `periods=` sets a calendar; `earliest` and `latest` bound it and can be expressions. The first date that meets the condition is the decision date; otherwise the default applies. Rules run in the order they are fixed; `spec.rules[key]` returns a rule with the triggers it reads. There is no `decide`, no `Rule` class to build by hand and no `with_rules`; "review" is not used. As in SQL (`COALESCE(MIN(date) WHERE …)`) and LINQ (`Where(...).FirstOrDefault(...)`) | 05, 07 |
 
-One choice in the cells is open for review. It does not change the API shape:
+One choice in the cells is still open. It does not change the API shape:
 
 - **Unit inference (G16).** Lesson 02 declares every value. From lesson 03, only
   inputs are declared, and the draft infers the units of the other values. Without
@@ -233,20 +234,16 @@ spec.free("land_cost"), spec.roles, spec.on(model=new_model)  # G11, G21
 spec.cases(cases={"weak": {...}, "strong": {...}}), spec.case(key="weak")  # G20, G75
 spec.across(paths=paths)  # #138, G73: path series match Model values by key
 spec.across(paths=use_paths, series={"use_factor": {"hotel": "hotel_factor"}})  # G73
-spec.parameters(start_trigger=1.05).decide(
-    key="start_date",
-    when="rent_index >= start_trigger",
-    periods=reviews,  # an rk.duration.Periods; reviewed on the first day of each
-    earliest=None,  # or an expression, such as "shared_start + 1 year"
-    latest=None,
-    timing=rk.duration.PeriodTiming.FIRST,
-    otherwise=rk.duration.NEVER,
-)  # G49, G55, G57
-(
-    spec.fix(start_trigger=1.02),
-    spec.rules,
-    spec.with_rules(rules=rules),
-)  # G57, G64, G65
+window = rk.specification.Window(
+    earliest=date(2027, 1, 1),  # or an expression, such as "shared_start + 1 year"
+    latest=date(2030, 1, 1),
+    periods=None,  # default: each date when a value the condition reads becomes known
+)  # G49, G55
+start_rule = window.where(condition="rent_index >= start_trigger").first(
+    otherwise=rk.duration.NEVER  # first(then="hotel", otherwise=...) for a choice
+)  # D42: a rule is a query
+spec.parameters(start_trigger=1.05).fix(start_date=start_rule)  # G57; role DECIDED
+spec.fix(start_trigger=1.02), spec.rules, spec.rules["start_date"]  # G57, G64, G65
 spec.roles  # the role column holds rk.specification.Role: FIXED, FREE, DECIDED (G76)
 spec.alternatives(b_design={"residential": residential, "hotel": hotel})  # G63
 ```
@@ -275,7 +272,9 @@ outcome = rk.execution.solve(specification=spec)  # #126, G12
 gain.distribution(
     outcome="No premium", key="equity_npv"
 )  # G79: paired differences of one Outcome
-outcome.decisions.where(key="b_start", result=rk.execution.ReviewResult.DECIDED)  # G51
+outcome.decisions.where(
+    key="b_start", result=rk.execution.DecisionResult.DECIDED
+)  # G51
 outcome.status == rk.execution.Status.INFEASIBLE, error.code  # rk.errors.Code; G76
 (
     outcome.trace,
@@ -403,14 +402,14 @@ use. **Issue** is filled in when the issue is filed.
 | 28 | — | One comparison call for two or more Outcomes: `rk.execution.compare(outcomes=, keys=, baseline=None)`. Without a baseline it shows the values side by side; with one it gives differences paired by path, with `summary`, `by`, `by_case`, `where`, `select`, `distribution(outcome=, key=)` for the paired differences of one Outcome (G79). `by_case` is a query table (G80, D37). No `Outcome.compare` and no `rk.execution.table` (G13 merged) | G13, G56, G66, G79 | `execution` | 02·15; 03 Try it 1; 04·14; 05·14–17; 07·9, 14–18b | #138, #213, #214 |
 | 29 | — | `rk.market.Paths` access and construction; `regenerate(seed=)` | G30, G33, G48, G69 | `market` | 04·10, 19; 05·4; 07·16 | #137 |
 | 30 | — | `rk.market.Dynamics` parameters, and `rk.market.generate(dynamics={name: Dynamics}, periods=, seed=, count=)` for one named series or several, each independent; no correlation argument (D31); `generate` requires `seed=` only when the dynamics have a random component (volatility, noise or shocks), and raises an error that names those components when it is missing; fixed dynamics take no seed | G29, G32 | `market` | 04·5–7, 17–18 | #136 |
-| 31 | — | Rules that decide values: `decide(key=, when=, periods=, earliest=, latest=, timing=, otherwise=)`, traces, `decisions.where(key=, result=rk.execution.ReviewResult)`, availability errors with `key` | G49, G51, G53, G55, G64, G65 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
+| 31 | — | Rules as queries: `rk.specification.Window(earliest=, latest=, periods=None)`, `where(condition=)`, `first(otherwise=, then=None)`, fixed with `fix(key=rule)`; the window acts when a value the condition reads becomes known, unless `periods=` sets a calendar; rules run in the order they are fixed; traces, `outcome.decisions.where(key=, result=rk.execution.DecisionResult)`, availability errors with `key`; `spec.rules[key]` brings the triggers it reads | G49, G51, G53, G55, G64, G65 | `specification`, `execution` | 05·6–12; 07·7–8, 18 | #102, #139, #213, #215 |
 | 32 | — | Specification parameters for rule triggers, fixed and tested as cases like other values, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
 | 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
 | 35 | — | `rk.Quantity` at the root, text in the constructor, and the `rk.quantity` namespace | G71 | `quantity` | 01·2–3, 10, 17; 02·22; 03·24 | #148, #149, #150 |
 | 36 | — | Named formulations: `equations(..., formulation=)`, a default Formulation for each entity, and equations grouped by formulation in displays and traces | G72 | `model` | 03·6–8, 12, 21 | #141, #145 |
 | 37 | — | `across` matching: each path series fixes the Model value with the same key. `series=` maps a value whose key differs, or the members of a keyed value, to path series. A series that matches no value, a value that `series=` names but the paths lack, or a value with two sources raises an error that lists the path series and the Model keys | G73 | `specification` | 04·11; 05·5; 07·3b | #138 |
-| 38 | — | Enums for the words rangekeeper defines: `rk.specification.Role`, `rk.execution.ReviewResult`, `rk.execution.Status`, `rk.errors.Code`; `rk.model.Direction` made public (D26) | G76 | `specification`, `execution`, `errors`, `model` | 02·18–21; 05·8, 18; 06·13; 07·14 | #134, #154 |
+| 38 | — | Enums for the words rangekeeper defines: `rk.specification.Role`, `rk.execution.DecisionResult`, `rk.execution.Status`, `rk.errors.Code`; `rk.model.Direction` made public (D26) | G76 | `specification`, `execution`, `errors`, `model` | 02·18–21; 05·8, 18; 06·13; 07·14 | #134, #154 |
 | 39 | — | Piecewise equations with a free value: the solve picks the active side of each `max` or `min` (for example the equity-first cascade), solves the affine problem and verifies the choice; a wrong choice is reported, not hidden | G77 | `execution` | 03·15 | #125, #152, #164 |
 | 40 | — | One registry of equation functions (name, named parameters with kinds and units, result, evaluation stage, availability rule, the value function it mirrors); the parser table, `rangekeeper.expressions` (`rx`) with typed stubs, and the docs function table generated from it; handles from declarations and `project.ref(key=)`; operators, `rx.max`, `&`, `\|`, `~`; Flow methods on handles; checks when an equation is written, with suggestions; equivalence tests (text and `rx` give identical records, text round-trips, a symbolic function on fixed data equals its value function) | G78 | `model` | 02 aside | #143, #145, #163 |
 | 41 | — | Search as a query (ADR-024): `rk.specification.Range(key=, first=, last=)` as a source of cases; deferred Outcomes over a range (`range_not_materialised`); the by-case table with `where(condition=)`, `order_by(key=, descending=)`, `first()`, `max(key=, tolerance=)`, `min(...)`, `summary()` and `explain()`; conditions as text or `rx`, with statistics as methods on a compared key; the exact and bracketed plan, with `value`, `method`, `bracket` and `tested` in the result and the Run; `range_over_rule_input` | G80 | `specification`, `execution` | 07·15c, Try it 2 | #214, #216 |
@@ -535,7 +534,7 @@ The sketches in ADR-020 were not binding. The cells differ from them here:
   `rk.quantity` (D13).
 - Values are declared one call each, `project.value(key=, units=)` (D16), not as
   `values(land_cost="AUD", ...)`, and rates per year are `"% pa"`, not `"%/year"`.
-- Rules use `Specification.decide(key=, ...)` (D9), not `base.policy(...).when(..., do=...)`.
+- Rules are queries fixed by key (D42), not `base.policy(...).when(..., do=...)`.
 - Lesson 06 declares the rollup as a Value (D3), not `edit().fix_from(...)`.
 - Lesson 07 uses separate Model revisions for options (D10), not
   `edit().variant(...)`.

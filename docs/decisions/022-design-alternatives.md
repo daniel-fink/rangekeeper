@@ -1,7 +1,7 @@
 # ADR-022: Choose between design alternatives with rules
 
 Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27. Amended
-2026-10-27 by #201 decisions D2, D24, D25 and D26 (reviews as `Periods`, `NEVER`,
+2026-10-27 by #201 decisions D2, D24, D25 and D26 (`Periods`, `NEVER`,
 enums, keyed members in rule text, the equity-first funding names). Amended
 2026-10-28 by [ADR-024](024-search-as-query.md): the premium question and "best
 tested" are queries; `breakeven`, `best` and `same_across_cases` are removed.
@@ -65,10 +65,10 @@ spec.alternatives(keys=("b_design", "a_design"), models={
 These rules apply:
 
 - **A choice key is a Specification value,** not a Model value. Its role is fixed
-  (`fix(b_design="hotel")`) or decided (`decide(key="b_design", ...)`). A free
+  (`fix(b_design="hotel")`) or decided (`fix(b_design=window.where(...).first(...))`). A free
   choice key is rejected, because that would be optimisation.
-- **A rule for a choice key must give `then=`**, for example
-  `then="hotel", otherwise="residential"` (ADR-021).
+- **A rule for a choice key must give `then=`** in `first(...)`, for example
+  `first(then="hotel", otherwise="residential")` (ADR-021).
 - **Each reachable combination must have a Model.** A fixed key reaches one option.
   A decided key reaches its `then` and `otherwise` options. A missing combination
   gives `ValidationError` with the code `missing_alternative`, which names it.
@@ -96,7 +96,7 @@ A rule decides a choice key in the same way that it decides a date (ADR-021):
   at the site purchase, and B's works start after the choice.
 - **The written order matters.** Choose the design before the rule that reads its
   cost. If a rule reads a solved value that a later rule's choice can change,
-  `decide` rejects it with `rule_order`.
+  `fix` rejects it with `rule_order`.
 
 ### Realised structure for each path
 
@@ -161,25 +161,27 @@ These come from the proposed cells of lesson 07 (#201). Amounts are illustrative
 **A rule chooses the design (cell 7, with `then`).**
 
 ```python
+design_window = rk.specification.Window(
+    earliest="shared_start + 1 year", latest="b_start - 1 year"
+)
+design_rule = design_window.where(
+    condition='use_index["hotel"] >= switch_trigger * use_index["residential"]'
+).first(then="hotel", otherwise="residential")
 switch = (
     fixed.alternatives(b_design={"residential": residential, "hotel": hotel})
     .fix(provision="2.5e6 AUD")
     .parameters(switch_trigger=1.10)
-    .decide(
-        key="b_design",
-        when='use_index["hotel"] >= switch_trigger * use_index["residential"]',
-        periods=design_reviews,
-        earliest="shared_start + 1 year",
-        latest="b_start - 1 year",
-        then="hotel",
-        otherwise="residential",
-    )
+    .fix(b_design=design_rule)
 )
-both = switch.with_rules(rules=timing)  # start_date, b_start, b_sale_date follow
+# lesson 05's rules follow the design rule
+both = switch.fix(
+    start_date=timing["start_date"],
+    b_start=timing["b_start"],
+    b_sale_date=timing["b_sale_date"],
+)
 ```
 
-`design_reviews` and, below, `expansion_reviews` are `rk.duration.Periods`, as in
-lesson 07. A rule reads one member of the keyed `use_index` by name.
+A rule reads one member of the keyed `use_index` by name.
 
 **The design before the start, on one date.** In `both`, the design rule is
 written first. In January 2030 on one path:
@@ -192,14 +194,14 @@ written first. In January 2030 on one path:
 | `b_cost` as residential, as hotel | 35 M AUD, 42 M AUD |
 
 1. The design rule runs. Its `latest` bound refers to `b_start`, which is
-   undecided, so the review is open. The condition is true: `b_design = "hotel"`.
+   undecided, so the window is open. The condition is true: `b_design = "hotel"`.
 2. B's rule runs. The state changed, so the executor solves again with the hotel
    Model. `b_cost` is 42 M AUD, more than the available equity and loan. B does
    not start.
 
 If the design condition were false, B's rule would read the residential cost of
 35 M AUD and start B. The design rule's `latest` bound would then have passed, and
-`otherwise` would fix `"residential"`. If the timing rules came first, `decide`
+`otherwise` would fix `"residential"`. If the timing rules came first, `fix`
 would reject the Specification: B's rule reads `b_cost`, which a later rule's
 choice can change.
 
@@ -215,9 +217,9 @@ expand = (both.alternatives(keys=("b_design", "a_design"), models={
               ("residential", "expanded"): add_expansion(residential),
               ("hotel", "expanded"): add_expansion(hotel)})
           .fix(a_design="expanded", a_provision="1.5e6 AUD")
-          .decide(key="expansion_date", when='use_index["residential"] >= 1.25',
-                  periods=expansion_reviews, earliest="a_open + 3 years",
-                  otherwise=rk.duration.NEVER))
+          .fix(expansion_date=expansion_window.where(
+              condition='use_index["residential"] >= 1.25'
+          ).first(otherwise=rk.duration.NEVER)))
 ```
 
 **The largest justified premium (cells 13 to 14b, and exercise 2).** The cells
@@ -256,7 +258,7 @@ If the premium changes a decision on some paths, the plan is bracketed, and
    before B starts. On every path, the realised Model is one of the two
    alternatives (cell 19).
 4. The January 2030 example above runs as a unit test with a fake backend. With
-   the timing rules first, `decide` raises `rule_order`.
+   the timing rules first, `fix` raises `rule_order`.
 5. An alternative whose Movements differ before the decision date fails with
    `decision_changes_past`.
 6. `outcome.rollup` over a batch gives each case's rollup on its realised Model.

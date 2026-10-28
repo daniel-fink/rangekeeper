@@ -69,9 +69,9 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |
 | Composition | The effective investigation after included Specifications are combined | `specification` | — |
 | Case | One entry in a batch Specification, for example one market path | `specification` | — |
-| Rule | A declaration that decides one value during the solve: `decide(key=, when=, periods=, earliest=, latest=, otherwise=)` ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word "policy" is not used | `specification` | `Decision`, `Rule` and `Action` records |
+| Rule | A query that fixes one value during the solve: the first date in a `Window` when a condition holds, or a default, written `window.where(condition=...).first(otherwise=...)` and fixed by key ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word "policy" is not used | `specification` | `Decision`, `Rule` and `Action` records |
 | Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | Policy control |
-| Review date | A date on which a rule tests its condition: the first day of each of its `Periods`, between optional `earliest` and `latest` bounds | `specification` | Decision date, window |
+| Window | The dates on which a rule may act: by default, each date on which a value that its condition reads becomes known, or the first day of each of its `Periods`; between optional `earliest` and `latest` bounds | `specification` | Review dates, window |
 | Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | — |
 | Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | — |
 | Availability | The earliest date at which a value can be observed | `specification` | — |
