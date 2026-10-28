@@ -26,6 +26,7 @@ from rangekeeper.schema.validation import (
     require_declarations,
     supports_version,
 )
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -113,22 +114,12 @@ def validate_specification(
         )
     except ContractError as error:
         issue = _source_issue(
-            Issue(
-                error.code,
-                str(error),
-                error.document_id or composition.root_id,
-                error.path,
-            ),
+            Issue.from_error(error, document_id=composition.root_id),
             composition,
             UUID(model["metadata"]["id"]),
             formulation_prefix="/additional_formulations/",
         )
-        raise ContractError(
-            issue.message,
-            code=issue.code,
-            path=issue.path,
-            document_id=issue.document_id,
-        ) from error
+        raise ContractError.from_issue(issue) from error
 
 
 def validate_batch(
@@ -306,9 +297,14 @@ def _validate_concrete(
             )
             if node.get("kind") == "reference":
                 required.add(reference_key(node["target"]))
+    missing = sorted(required - (assigned | unknowns | controlled), key=str)
     require(
-        required <= assigned | unknowns | controlled,
-        "missing solve role for required Value",
+        not missing,
+        "missing solve role for required Value "
+        + ", ".join(_named(scope, identity) for identity in missing),
+        code=Code.ROLE_MISSING,
+        targets=missing,
+        values={"keys": tuple(_key(scope, identity) for identity in missing)},
     )
 
     from rangekeeper.specification.composition import validate_settings
@@ -340,7 +336,7 @@ def validate_records(
             if value and value["metadata"]["id"] != key:
                 issues.append(
                     Issue(
-                        "semantic.identity",
+                        Code.IDENTITY,
                         "catalogue key differs from revision identity",
                     )
                 )
@@ -396,14 +392,12 @@ def _source_issue(
         _, _, position, *tail = issue.path.split("/")
         formulation = (composition.requirements.formulations or ())[int(position)]
         source = composition.sources[("formulations", str(formulation.id))]
-        return Issue(
-            issue.code,
-            issue.message,
-            source.document_id,
-            source.path + ("/" + "/".join(tail) if tail else ""),
+        return issue.replace(
+            document_id=source.document_id,
+            path=source.path + ("/" + "/".join(tail) if tail else ""),
         )
     if issue.path.startswith("/system/"):
-        return Issue(issue.code, issue.message, model_id, issue.path)
+        return issue.replace(document_id=model_id)
     return issue
 
 
@@ -428,7 +422,7 @@ def prepare(
             ValidationReport(
                 (
                     Issue(
-                        "semantic.model",
+                        Code.MODEL_MISSING,
                         "composition has no input Model",
                         composition.root_id,
                     ),
@@ -508,10 +502,10 @@ def prepare(
         UnitError,
     ) as error:
         codes = {
-            MissingReferenceError: "reference.missing",
-            ReferenceTypeError: "reference.kind",
-            IdentityConflictError: "reference.identity",
-            UnitError: "semantic.units",
+            MissingReferenceError: Code.REFERENCE_MISSING,
+            ReferenceTypeError: Code.REFERENCE_KIND,
+            IdentityConflictError: Code.REFERENCE_IDENTITY,
+            UnitError: Code.UNITS,
         }
         code = next(value for kind, value in codes.items() if isinstance(error, kind))
         return PreparedValidation(
@@ -519,3 +513,15 @@ def prepare(
             composition,
             model,
         )
+
+
+def _key(scope: Scope, identity: UUID) -> str | None:
+    """Return the key of a Value or Movement target, if it has one."""
+    value, movement = scope.targets.get(identity, ({}, None))
+    return (movement or value).get("key")
+
+
+def _named(scope: Scope, identity: UUID) -> str:
+    """Name a target by its key and UUID."""
+    key = _key(scope, identity)
+    return f"{key} ({identity})" if key else str(identity)

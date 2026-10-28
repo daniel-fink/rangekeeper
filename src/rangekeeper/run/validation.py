@@ -19,6 +19,7 @@ from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.records import Diagnostic, Quantity, Step
 from rangekeeper.schema.runtime import Record, exact_equal
 from rangekeeper.schema.validation import checked, document_version, supports_version
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -146,12 +147,12 @@ def validate(
         )
     except (MissingReferenceError, ReferenceTypeError, IdentityConflictError) as error:
         code = (
-            "reference.missing"
+            Code.REFERENCE_MISSING
             if isinstance(error, MissingReferenceError)
             else (
-                "reference.kind"
+                Code.REFERENCE_KIND
                 if isinstance(error, ReferenceTypeError)
-                else "reference.identity"
+                else Code.REFERENCE_IDENTITY
             )
         )
         return ValidationReport((Issue(code, str(error), run.id),))

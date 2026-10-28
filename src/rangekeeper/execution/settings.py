@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from rangekeeper.run import Severity
 from rangekeeper.schema.records import Diagnostic, Settings
+from rangekeeper.shared.codes import Code
 
 
 @dataclass(frozen=True)
@@ -49,7 +50,7 @@ def resolve(requested: Settings | None) -> tuple[Limits, tuple[Diagnostic, ...]]
         findings.append(
             Diagnostic(
                 severity=Severity.WARNING,
-                code="settings_adjusted",
+                code=Code.SETTINGS_ADJUSTED.value,
                 message="iteration_limit clamped to HiGHS maximum 2147483647.",
             )
         )
@@ -57,7 +58,7 @@ def resolve(requested: Settings | None) -> tuple[Limits, tuple[Diagnostic, ...]]
         findings.append(
             Diagnostic(
                 severity=Severity.WARNING,
-                code="settings_adjusted",
+                code=Code.SETTINGS_ADJUSTED.value,
                 message=(
                     f"relative_tolerance={requested.relative_tolerance} is not applied: this scalar LP adapter "
                     "uses explicit absolute primal/dual solver tolerances, not a relative convergence criterion. "

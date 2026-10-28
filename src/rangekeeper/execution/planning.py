@@ -3,6 +3,7 @@
 from uuid import UUID
 
 from rangekeeper.model import Model
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     IdentityConflictError,
@@ -81,7 +82,7 @@ class Plan:
                         ValidationReport(
                             (
                                 Issue(
-                                    "batch.model",
+                                    Code.BATCH_MODEL,
                                     "batch input Model assertion mismatch",
                                     current.id,
                                 ),

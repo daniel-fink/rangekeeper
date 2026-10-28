@@ -8,6 +8,7 @@ import pytest
 
 from rangekeeper.duration import Frequency
 from rangekeeper.duration.period import make_periods
+from rangekeeper.errors import Code
 from rangekeeper.execution import Executor
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.io import MemoryStore
@@ -346,7 +347,7 @@ def test_movement_candidate_rejection_and_expansion_limits():
     data["settings"] = dict(symbol_limit=2, constraint_limit=2)
     run = Executor(store).execute(Specification.from_data(data))
     assert not run.record.outputs
-    assert any("symbol limit" in d.message for d in run.report.diagnostics)
+    assert any(d.code == Code.SYMBOL_LIMIT for d in run.report.diagnostics)
 
 
 def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypatch):
@@ -365,7 +366,7 @@ def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypa
         Specification.from_data(spec)
     )
     assert not run.record.outputs
-    assert any("constraint limit" in d.message for d in run.report.diagnostics)
+    assert any(d.code == Code.CONSTRAINT_LIMIT for d in run.report.diagnostics)
     spec["metadata"]["id"] = str(uuid4())
     spec["settings"] = dict(time_limit=0.001)
     run = Executor(store, backend=ForbiddenBackend()).execute(

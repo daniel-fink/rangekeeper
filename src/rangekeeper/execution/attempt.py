@@ -30,6 +30,7 @@ from rangekeeper.schema.records import (
     Diagnostic,
     Implementation,
     Metadata,
+    Reference,
     Report,
     Runtime,
     Settings,
@@ -40,6 +41,7 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.runtime import UNSET, Unset
 from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import UnitError, ValidationError
 from rangekeeper.shared.store import RecordStore
 from rangekeeper.specification import Composition, Specification
@@ -94,21 +96,23 @@ class Attempt:
 
     def diagnose(
         self,
-        code: str,
+        code: Code,
         message: str,
         *,
         severity: Severity = Severity.INFO,
         document: UUID | Unset = UNSET,
         target: UUID | Unset = UNSET,
+        references: tuple[Reference, ...] | Unset = UNSET,
     ) -> None:
         """Attach an outcome or adjustment to this attempt's report."""
         self.findings.append(
             Diagnostic(
                 severity=severity,
-                code=code,
+                code=Code(code).value,
                 message=message,
                 document=document,
                 target=target,
+                references=references,
             )
         )
 
@@ -133,7 +137,7 @@ class Attempt:
                 CompletionStatus.LIMITED,
                 SolutionStatus.NOT_ASSESSED,
             )
-            self.diagnose("attempt_deadline", str(error), severity=Severity.WARNING)
+            self.diagnose(Code.ATTEMPT_DEADLINE, str(error), severity=Severity.WARNING)
         except ValidationError as error:
             self.completion, self.solution = (
                 CompletionStatus.FAILED,
@@ -145,9 +149,9 @@ class Attempt:
             )
             self.diagnose(
                 (
-                    "specification_invalid"
+                    Code.SPECIFICATION_INVALID
                     if self.prepared is None
-                    else "numerical_rejection"
+                    else Code.NUMERICAL_REJECTION
                 ),
                 str(error),
                 severity=Severity.ERROR,
@@ -162,7 +166,11 @@ class Attempt:
                 ),
             )
             self.diagnose(
-                "unsupported_capability",
+                (
+                    error.code
+                    if isinstance(error, UnsupportedProblem)
+                    else Code.UNSUPPORTED_CAPABILITY
+                ),
                 str(error),
                 severity=Severity.ERROR,
                 document=(
@@ -177,13 +185,13 @@ class Attempt:
                 ),
             )
         except BackendUnavailable as error:
-            self.diagnose("backend_unavailable", str(error), severity=Severity.ERROR)
+            self.diagnose(Code.BACKEND_UNAVAILABLE, str(error), severity=Severity.ERROR)
         except (NumericalError, ArithmeticError) as error:
             self.completion, self.solution = (
                 CompletionStatus.FAILED,
                 SolutionStatus.UNKNOWN,
             )
-            self.diagnose("numerical_failure", str(error), severity=Severity.ERROR)
+            self.diagnose(Code.NUMERICAL_FAILURE, str(error), severity=Severity.ERROR)
 
         return self.finish()
 
@@ -209,14 +217,20 @@ class Attempt:
             )
         )
         if len(self.prepared.references) > self.limits.symbol_limit:
-            raise UnsupportedProblem("expanded symbol limit exceeded")
+            raise UnsupportedProblem(
+                f"expanded symbol limit {self.limits.symbol_limit} exceeded",
+                code=Code.SYMBOL_LIMIT,
+            )
         problem = compiler.compile(
             self.prepared,
             checkpoint=self.checkpoint,
             constraint_limit=self.limits.constraint_limit,
         )
         if len(problem.rows) > self.limits.constraint_limit:
-            raise UnsupportedProblem("expanded constraint limit exceeded")
+            raise UnsupportedProblem(
+                f"expanded constraint limit {self.limits.constraint_limit} exceeded",
+                code=Code.CONSTRAINT_LIMIT,
+            )
         self.trace.append(
             Step(
                 kind=StepKind.FORMULATION,
@@ -226,11 +240,11 @@ class Attempt:
         )
         if self.view.requirements.estimates:
             self.diagnose(
-                "estimates_unused",
+                Code.ESTIMATES_UNUSED,
                 "Simplex feasibility uses no initial primal estimate; estimates are not assignments.",
             )
         self.diagnose(
-            "solver_scaling",
+            Code.SOLVER_SCALING,
             json.dumps(
                 [
                     {
@@ -255,7 +269,7 @@ class Attempt:
         )
         self.implementations.extend(self.result.implementations)
         self.diagnose(
-            "solver_termination",
+            Code.SOLVER_TERMINATION,
             json.dumps(
                 {"termination": self.result.termination, **self.result.evidence},
                 allow_nan=False,
@@ -305,7 +319,7 @@ class Attempt:
             if checked.accepted:
                 self.output, self.solution = candidate, SolutionStatus.FEASIBLE
                 self.diagnose(
-                    "feasible_candidate",
+                    Code.FEASIBLE_CANDIDATE,
                     "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made.",
                 )
                 rank, count = (
@@ -313,19 +327,38 @@ class Attempt:
                     result.evidence.get("unknown_count"),
                 )
                 if isinstance(rank, int) and isinstance(count, int) and rank < count:
+                    # Unknowns that no row constrains were set to zero; name them.
+                    unconstrained = result.evidence.get(
+                        "unconstrained_values_initialized_to_zero"
+                    )
+                    free = [
+                        self.prepared.references[UUID(id)]
+                        for id in (
+                            unconstrained if isinstance(unconstrained, list) else ()
+                        )
+                    ]
                     self.diagnose(
                         (
-                            "underdetermined"
+                            Code.UNDERDETERMINED
                             if not result.evidence.get("has_bounds")
-                            else "uniqueness_not_assessed"
+                            else Code.UNIQUENESS_NOT_ASSESSED
                         ),
-                        f"Numerical equality rank {rank} for {count} unknowns (NumPy SVD default threshold). Bounds may restrict freedom; this is one accepted candidate, not a uniqueness proof.",
+                        f"Numerical equality rank {rank} for {count} unknowns (NumPy SVD default threshold). Bounds may restrict freedom; this is one accepted candidate, not a uniqueness proof."
+                        + (
+                            " Unconstrained unknowns initialized to zero: "
+                            + ", ".join(str(ref.target) for ref in free)
+                            + "."
+                            if free
+                            else ""
+                        ),
                         severity=Severity.WARNING,
+                        document=self.prepared.model.id if free else UNSET,
+                        references=tuple(free) if free else UNSET,
                     )
             else:
                 self.completion = CompletionStatus.FAILED
                 self.diagnose(
-                    "numerical_rejection",
+                    Code.NUMERICAL_REJECTION,
                     "Serialized candidate failed independent acceptance; no output was published.",
                     severity=Severity.ERROR,
                 )
@@ -351,7 +384,7 @@ class Attempt:
         )
         if self.result is None or self.result.termination == "worker_deadline":
             self.diagnose(
-                "settings_adjusted",
+                Code.SETTINGS_ADJUSTED,
                 "relative_tolerance and iteration_limit were not applied by a completed solver invocation; time_limit applies to the parent attempt budget when preparation established it. No infeasibility follows.",
                 severity=Severity.WARNING,
             )
@@ -365,7 +398,7 @@ class Attempt:
                 )
             )
         self.diagnose(
-            "attempt_timing",
+            Code.ATTEMPT_TIMING,
             f"Elapsed monotonic time before persistence: {time.monotonic() - self.clock:.9f} seconds.",
         )
         run = Run(
