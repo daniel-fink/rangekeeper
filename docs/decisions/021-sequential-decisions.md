@@ -20,7 +20,7 @@ The current library cannot do this:
 
 - **The policy slice is exogenous.** `specification.policy.evaluate` runs once,
   before compilation, on recorded values. It rejects a solved observation, such as
-  the available loan ([scenarios and policies](../reference/scenarios-and-policies.md)).
+  the available loan ([scenarios and policies](../reference/market-paths-and-rules.md)).
 - **It has an action concept.** Decision D9 of #201 removes it: if a value can
   change, it belongs in the Specification; if it is part of the modelling, it
   belongs in the Model. A rule decides one value. There is no action.
@@ -379,7 +379,7 @@ case name and the path member key ([ADR-014](014-market-paths.md)).
    On the three histories, the decisions and equity NPVs agree with an
    independent calculation of the rules on known data.
 10. The old policy slice is removed, and the investment example and its tests use
-    rules. The [scenario reference](../reference/scenarios-and-policies.md) and
+    rules. The [scenario reference](../reference/market-paths-and-rules.md) and
     the glossary describe the new terms.
 
 ## API names added
@@ -440,7 +440,7 @@ write each rule as a query over a window. The rename pass
 - Proposed cells for lesson 05 and decisions D2, D8, D9, D25 and D26:
   `examples/walkthrough/proposed/` (#201,
   [#255](https://github.com/daniel-fink/rangekeeper/pull/255)).
-- [Scenarios and policies reference](../reference/scenarios-and-policies.md), which
+- [Scenarios and policies reference](../reference/market-paths-and-rules.md), which
   changes when #215 lands.
 - Issues: [#213](https://github.com/daniel-fink/rangekeeper/issues/213) (this
   design), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)

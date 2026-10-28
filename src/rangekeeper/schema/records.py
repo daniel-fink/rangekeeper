@@ -711,7 +711,7 @@ class Criterion(Record):
 
 
 class Decision(Record):
-    'One dated policy decision with explicit observations, first-match rules and fallback.'
+    'One dated rule decision with explicit observations, first-match rules and fallback.'
     __slots__ = ()
     _kind = 'Decision'
 
@@ -770,86 +770,6 @@ class Decision(Record):
     def fallback(self) -> tuple[Action, ...]:
         'Fallback.'
         return cast('tuple[Action, ...]', self._field('fallback'))
-
-
-class DecisionOutcome(Record):
-    'Recorded outcome of one evaluated decision; absence of a rule means fallback.'
-    __slots__ = ()
-    _kind = 'DecisionOutcome'
-
-    def __init__(self, *,
-        decision: UUID,
-        at: Date,
-        rule: UUID | None | Unset = UNSET,
-        observations: tuple[ObservedQuantity, ...],
-        assignments: tuple[Assignment, ...],
-        terminated: bool,
-        termination_reason: str | None | Unset = UNSET,
-    ) -> None:
-        self._initialize({
-            'decision': decision,
-            'at': at,
-            'rule': rule,
-            'observations': observations,
-            'assignments': assignments,
-            'terminated': terminated,
-            'termination_reason': termination_reason,
-        })
-
-    def replace(self, *,
-        decision: UUID | Unset = UNSET,
-        at: Date | Unset = UNSET,
-        rule: UUID | None | Unset = UNSET,
-        observations: tuple[ObservedQuantity, ...] | Unset = UNSET,
-        assignments: tuple[Assignment, ...] | Unset = UNSET,
-        terminated: bool | Unset = UNSET,
-        termination_reason: str | None | Unset = UNSET,
-    ) -> DecisionOutcome:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'decision': decision,
-            'at': at,
-            'rule': rule,
-            'observations': observations,
-            'assignments': assignments,
-            'terminated': terminated,
-            'termination_reason': termination_reason,
-        })
-
-    @property
-    def decision(self) -> UUID:
-        'Decision.'
-        return cast('UUID', self._field('decision'))
-
-    @property
-    def at(self) -> Date:
-        'At.'
-        return cast('Date', self._field('at'))
-
-    @property
-    def rule(self) -> UUID | None:
-        'Rule.'
-        return cast('UUID | None', self._field('rule'))
-
-    @property
-    def observations(self) -> tuple[ObservedQuantity, ...]:
-        'Observations.'
-        return cast('tuple[ObservedQuantity, ...]', self._field('observations'))
-
-    @property
-    def assignments(self) -> tuple[Assignment, ...]:
-        'Assignments.'
-        return cast('tuple[Assignment, ...]', self._field('assignments'))
-
-    @property
-    def terminated(self) -> bool:
-        'Terminated.'
-        return cast('bool', self._field('terminated'))
-
-    @property
-    def termination_reason(self) -> str | None:
-        'Reason for termination, required when terminated is true.'
-        return cast('str | None', self._field('termination_reason'))
 
 
 class Definitions(Record):
@@ -2357,7 +2277,7 @@ class Objective(Record):
 
 
 class ObservationAvailability(Record):
-    'Earliest date a recorded Value or Movement may be supplied to a policy.'
+    'Earliest date a recorded Value or Movement may be supplied to a rule.'
     __slots__ = ()
     _kind = 'ObservationAvailability'
 
@@ -2574,50 +2494,6 @@ class Period(PeriodBehavior, Record):
     def end(self) -> Date:
         'End.'
         return cast('Date', self._field('end'))
-
-
-class Policy(Record):
-    'Finite policy owning explicit controlled targets and ordered dated decisions.'
-    __slots__ = ()
-    _kind = 'Policy'
-
-    def __init__(self, *,
-        id: UUID,
-        targets: tuple[Reference, ...],
-        decisions: tuple[Decision, ...],
-    ) -> None:
-        self._initialize({
-            'id': id,
-            'targets': targets,
-            'decisions': decisions,
-        })
-
-    def replace(self, *,
-        id: UUID | Unset = UNSET,
-        targets: tuple[Reference, ...] | Unset = UNSET,
-        decisions: tuple[Decision, ...] | Unset = UNSET,
-    ) -> Policy:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'targets': targets,
-            'decisions': decisions,
-        })
-
-    @property
-    def id(self) -> UUID:
-        'Id.'
-        return cast('UUID', self._field('id'))
-
-    @property
-    def targets(self) -> tuple[Reference, ...]:
-        'Targets.'
-        return cast('tuple[Reference, ...]', self._field('targets'))
-
-    @property
-    def decisions(self) -> tuple[Decision, ...]:
-        'Decisions.'
-        return cast('tuple[Decision, ...]', self._field('decisions'))
 
 
 class Projection(Record):
@@ -3080,14 +2956,14 @@ class Report(Record):
         runtime: Runtime | Unset = UNSET,
         diagnostics: tuple[Diagnostic, ...] | None | Unset = UNSET,
         trace: tuple[Step, ...] | None | Unset = UNSET,
-        outcomes: tuple[DecisionOutcome, ...] | None | Unset = UNSET,
+        rule_evidence: tuple[RuleEvidence, ...] | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'status': status,
             'runtime': runtime,
             'diagnostics': diagnostics,
             'trace': trace,
-            'outcomes': outcomes,
+            'rule_evidence': rule_evidence,
         })
 
     def replace(self, *,
@@ -3095,7 +2971,7 @@ class Report(Record):
         runtime: Runtime | Unset = UNSET,
         diagnostics: tuple[Diagnostic, ...] | None | Unset = UNSET,
         trace: tuple[Step, ...] | None | Unset = UNSET,
-        outcomes: tuple[DecisionOutcome, ...] | None | Unset = UNSET,
+        rule_evidence: tuple[RuleEvidence, ...] | None | Unset = UNSET,
     ) -> Report:
         """Return a validated copy; omitted arguments preserve field presence and value."""
         return self._replace({
@@ -3103,7 +2979,7 @@ class Report(Record):
             'runtime': runtime,
             'diagnostics': diagnostics,
             'trace': trace,
-            'outcomes': outcomes,
+            'rule_evidence': rule_evidence,
         })
 
     @property
@@ -3127,9 +3003,9 @@ class Report(Record):
         return cast('tuple[Step, ...] | None', self._field('trace'))
 
     @property
-    def outcomes(self) -> tuple[DecisionOutcome, ...] | None:
-        'Outcomes.'
-        return cast('tuple[DecisionOutcome, ...] | None', self._field('outcomes'))
+    def rule_evidence(self) -> tuple[RuleEvidence, ...] | None:
+        'Rule evidence.'
+        return cast('tuple[RuleEvidence, ...] | None', self._field('rule_evidence'))
 
 
 class Rule(Record):
@@ -3174,6 +3050,130 @@ class Rule(Record):
     def actions(self) -> tuple[Action, ...]:
         'Actions.'
         return cast('tuple[Action, ...]', self._field('actions'))
+
+
+class RuleEvidence(Record):
+    'Recorded evidence of one evaluated decision; absence of a rule means fallback.'
+    __slots__ = ()
+    _kind = 'RuleEvidence'
+
+    def __init__(self, *,
+        decision: UUID,
+        at: Date,
+        rule: UUID | None | Unset = UNSET,
+        observations: tuple[ObservedQuantity, ...],
+        assignments: tuple[Assignment, ...],
+        terminated: bool,
+        termination_reason: str | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'decision': decision,
+            'at': at,
+            'rule': rule,
+            'observations': observations,
+            'assignments': assignments,
+            'terminated': terminated,
+            'termination_reason': termination_reason,
+        })
+
+    def replace(self, *,
+        decision: UUID | Unset = UNSET,
+        at: Date | Unset = UNSET,
+        rule: UUID | None | Unset = UNSET,
+        observations: tuple[ObservedQuantity, ...] | Unset = UNSET,
+        assignments: tuple[Assignment, ...] | Unset = UNSET,
+        terminated: bool | Unset = UNSET,
+        termination_reason: str | None | Unset = UNSET,
+    ) -> RuleEvidence:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'decision': decision,
+            'at': at,
+            'rule': rule,
+            'observations': observations,
+            'assignments': assignments,
+            'terminated': terminated,
+            'termination_reason': termination_reason,
+        })
+
+    @property
+    def decision(self) -> UUID:
+        'Decision.'
+        return cast('UUID', self._field('decision'))
+
+    @property
+    def at(self) -> Date:
+        'At.'
+        return cast('Date', self._field('at'))
+
+    @property
+    def rule(self) -> UUID | None:
+        'Rule.'
+        return cast('UUID | None', self._field('rule'))
+
+    @property
+    def observations(self) -> tuple[ObservedQuantity, ...]:
+        'Observations.'
+        return cast('tuple[ObservedQuantity, ...]', self._field('observations'))
+
+    @property
+    def assignments(self) -> tuple[Assignment, ...]:
+        'Assignments.'
+        return cast('tuple[Assignment, ...]', self._field('assignments'))
+
+    @property
+    def terminated(self) -> bool:
+        'Terminated.'
+        return cast('bool', self._field('terminated'))
+
+    @property
+    def termination_reason(self) -> str | None:
+        'Reason for termination, required when terminated is true.'
+        return cast('str | None', self._field('termination_reason'))
+
+
+class RuleSet(Record):
+    'The rules of a Specification, owning explicit controlled targets and ordered dated decisions.'
+    __slots__ = ()
+    _kind = 'RuleSet'
+
+    def __init__(self, *,
+        id: UUID,
+        targets: tuple[Reference, ...],
+        decisions: tuple[Decision, ...],
+    ) -> None:
+        self._initialize({
+            'id': id,
+            'targets': targets,
+            'decisions': decisions,
+        })
+
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        targets: tuple[Reference, ...] | Unset = UNSET,
+        decisions: tuple[Decision, ...] | Unset = UNSET,
+    ) -> RuleSet:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'targets': targets,
+            'decisions': decisions,
+        })
+
+    @property
+    def id(self) -> UUID:
+        'Id.'
+        return cast('UUID', self._field('id'))
+
+    @property
+    def targets(self) -> tuple[Reference, ...]:
+        'Targets.'
+        return cast('tuple[Reference, ...]', self._field('targets'))
+
+    @property
+    def decisions(self) -> tuple[Decision, ...]:
+        'Decisions.'
+        return cast('tuple[Decision, ...]', self._field('decisions'))
 
 
 class Run(Record):
@@ -3750,7 +3750,7 @@ class Specification(Record):
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
         settings: Settings | Unset = UNSET,
-        policy: Policy | None | Unset = UNSET,
+        rules: RuleSet | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'metadata': metadata,
@@ -3763,7 +3763,7 @@ class Specification(Record):
             'formulations': formulations,
             'objectives': objectives,
             'settings': settings,
-            'policy': policy,
+            'rules': rules,
         })
 
     def replace(self, *,
@@ -3777,7 +3777,7 @@ class Specification(Record):
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
         settings: Settings | Unset = UNSET,
-        policy: Policy | None | Unset = UNSET,
+        rules: RuleSet | None | Unset = UNSET,
     ) -> Specification:
         """Return a validated copy; omitted arguments preserve field presence and value."""
         return self._replace({
@@ -3791,7 +3791,7 @@ class Specification(Record):
             'formulations': formulations,
             'objectives': objectives,
             'settings': settings,
-            'policy': policy,
+            'rules': rules,
         })
 
     @property
@@ -3821,7 +3821,7 @@ class Specification(Record):
 
     @property
     def unknowns(self) -> tuple[Reference, ...] | None:
-        'Unique scalar or Movement unknowns; explicit and disjoint from assignments and policy targets.'
+        'Unique scalar or Movement unknowns; explicit and disjoint from assignments and rule targets.'
         return cast('tuple[Reference, ...] | None', self._field('unknowns'))
 
     @property
@@ -3845,9 +3845,9 @@ class Specification(Record):
         return cast('Settings | None', self._field('settings'))
 
     @property
-    def policy(self) -> Policy | None:
-        'Policy.'
-        return cast('Policy | None', self._field('policy'))
+    def rules(self) -> RuleSet | None:
+        'Rules.'
+        return cast('RuleSet | None', self._field('rules'))
 
 
 class Status(Record):
@@ -3886,7 +3886,7 @@ class Status(Record):
 
 
 class Step(Record):
-    'One ordered record of execution activity, without prescribing scheduling or policy logic.'
+    'One ordered record of execution activity, without prescribing scheduling or rule logic.'
     __slots__ = ()
     _kind = 'Step'
 
@@ -4219,7 +4219,6 @@ _TYPES = {
     'ContentEntry': ContentEntry,
     'Criterion': Criterion,
     'Decision': Decision,
-    'DecisionOutcome': DecisionOutcome,
     'Definitions': Definitions,
     'Diagnostic': Diagnostic,
     'Distribution': Distribution,
@@ -4252,7 +4251,6 @@ _TYPES = {
     'ObservedQuantity': ObservedQuantity,
     'Parameter': Parameter,
     'Period': Period,
-    'Policy': Policy,
     'Projection': Projection,
     'PropertyContent': PropertyContent,
     'Provenance': Provenance,
@@ -4264,6 +4262,8 @@ _TYPES = {
     'Relationship': Relationship,
     'Report': Report,
     'Rule': Rule,
+    'RuleEvidence': RuleEvidence,
+    'RuleSet': RuleSet,
     'Run': Run,
     'Runtime': Runtime,
     'ScenarioParameter': ScenarioParameter,
@@ -4282,4 +4282,4 @@ _TYPES = {
     'Value': Value,
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionOutcome', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']

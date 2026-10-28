@@ -215,6 +215,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.schema.records.DecisionOutcome` | `RuleEvidence` | draft (needs schema) | The evidence of one rule decision, in `Report.rule_evidence`. |
 | `rangekeeper.specification.policy.result.PolicyResult` | `RuleResult` | agreed |  |
 | `rangekeeper.specification.policy.observation.PolicyCapabilityError` | `RuleCapabilityError` | agreed |  |
+| `rangekeeper.specification.policy.validation.validate_policy` | `validate_rules` | agreed |  |
+| `rangekeeper.specification.policy.validation.validate_outcomes` | `validate_evidence` | agreed | It checks the `RuleEvidence` records of a Run report. |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |
@@ -222,10 +224,12 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.flux.Stream.labels` | `names` | draft | Each use needs review. Classification `labels` keep their name. The package pass renamed the Stream field by hand; the consumer pass lists the uses to check. |
 | `rangekeeper.schema.records.Specification.policy` | `rules` | draft (needs schema) | Each use needs review. The Specification field and its wire key. `spec.rules` holds all of a Specification's rules. |
 | `rangekeeper.schema.records.Report.outcomes` | `rule_evidence` | draft (needs schema) | Each use needs review. The Run report field and its wire key. |
+| `rangekeeper.specification.policy.result.PolicyResult.outcomes` | `evidence` | agreed | Each use needs review. The `RuleEvidence` records of one evaluation. |
 | `findings` | `diagnostics` | draft | Each use needs review. |
 | `issues` | `diagnostics` | draft | Each use needs review. |
 | Any call: `start_inclusive=` | `start=` | agreed |  |
 | Any call: `end_exclusive=` | `end=` | agreed |  |
+| `rangekeeper.specification.policy.evaluation.evaluate`: `policy=` | `rules=` | agreed |  |
 | `rangekeeper.model.flux.Stream.select`: `labels=` | `names=` | draft |  |
 | `rangekeeper.model.flux.Stream.from_values`: `labels=` | `names=` | draft |  |
 

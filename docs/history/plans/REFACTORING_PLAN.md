@@ -655,7 +655,7 @@ last included day from the period. Document the preserved implementation.
 
 Change the files in the intended structure, the relevant tests, and current
 documentation. Update the ownership tree in
-[Scenarios and policies](../../reference/scenarios-and-policies.md), and clarify the pure policy
+[Scenarios and policies](../../reference/market-paths-and-rules.md), and clarify the pure policy
 dependency in [Library architecture](../../concepts/architecture.md).
 
 This item does not change persistent schemas, record fields, public policy names,

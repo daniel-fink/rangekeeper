@@ -537,7 +537,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
     assert result == pytest.approx(expected)
 
 
-def test_policy_and_scalar_role_editing():
+def test_rule_and_scalar_role_editing():
 
     from tests.execution.test_temporal_execution import investigate, oracle
 
@@ -564,8 +564,8 @@ def test_policy_and_scalar_role_editing():
         )
 
 
-def test_role_edit_rejects_policy_control_without_changing_the_specification():
-    from rangekeeper.schema.records import Policy
+def test_role_edit_rejects_rule_control_without_changing_the_specification():
+    from rangekeeper.schema.records import RuleSet
     from rangekeeper.specification import Specification
     from tests.execution.test_temporal_execution import investigate, oracle
 
@@ -575,13 +575,13 @@ def test_role_edit_rejects_policy_control_without_changing_the_specification():
         assignments=tuple(
             a for a in base.record.assignments if a.target.target != ids["initial"]
         ),
-        policy=Policy(
+        rules=RuleSet(
             id=uuid4(), targets=(Reference(target=ids["initial"]),), decisions=()
         ),
     )
     controlled = Specification(record)
     before = controlled.to_data()
-    with pytest.raises(ValueError, match="policy-controlled"):
+    with pytest.raises(ValueError, match="rule-controlled"):
         controlled.free(Reference(target=ids["initial"]), id=uuid4(), model=model)
     assert controlled.to_data() == before
 

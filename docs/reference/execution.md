@@ -70,7 +70,7 @@ require unsupported offset-unit handling is rejected.
 The adapter explicitly rejects nonlinear unknown products/divisors/powers, strict
 comparisons involving unknowns, disjunctions, function calls, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
-Values and scenario generation follow the [temporal contract](scenarios-and-policies.md).
+Values and market path generation follow the [temporal contract](market-paths-and-rules.md).
 Structural interventions are unsupported. The executor never substitutes hard-coded
 valuation formulas.
 

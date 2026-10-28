@@ -99,7 +99,7 @@ unit system:
   and pivots);
 - `Specification.lock`;
 - `Composition.validate` and Specification preparation;
-- `policy.evaluate`;
+- `rule.evaluate`;
 - `Executor` and execution preparation;
 - `run.validate`, which uses the unit system of the root's input Model.
 

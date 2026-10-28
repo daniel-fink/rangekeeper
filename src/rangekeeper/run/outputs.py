@@ -29,13 +29,13 @@ def validate_outputs(
     """Check prepared outputs without owning tree traversal or producer state."""
     input_id = model["metadata"]["id"]
     assignments = list(effective.get("assignments") or [])
-    decisions = run["report"].get("outcomes") or []
-    if effective.get("policy"):
-        from rangekeeper.specification.policy.validation import validate_outcomes
+    decisions = run["report"].get("rule_evidence") or []
+    if effective.get("rules"):
+        from rangekeeper.specification.rule.validation import validate_evidence
 
         assignments.extend(
-            validate_outcomes(
-                effective["policy"],
+            validate_evidence(
+                effective["rules"],
                 decisions,
                 scope=scope,
                 provenance=model.get("provenance") or {},
@@ -43,7 +43,7 @@ def validate_outputs(
             )
         )
     else:
-        require(not decisions, "decision evidence requires a policy")
+        require(not decisions, "decision evidence requires rules")
     roles = list(effective.get("unknowns") or []) + [a["target"] for a in assignments]
     needed = {reference_key(r): r for r in roles}
     model_values = {r["id"] for r, _ in walk_data("Model", model) if "id" in r}

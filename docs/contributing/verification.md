@@ -31,7 +31,7 @@ Its folders mirror the packages:
 | Folder | Contents |
 | --- | --- |
 | `tests/<package>` | Tests of one package, for example `tests/flow` or `tests/model`. A fixture is next to the tests that read it |
-| `tests/contracts` | Format versions, retired names, golden account results, the jsonschema conformance of structural validation and the API snapshot. Golden Bundle formats and deterministic builds follow |
+| `tests/contracts` | Format versions, retired names, the jsonschema conformance of structural validation and the API snapshot. Golden Bundle formats and deterministic builds follow |
 | `tests/integration` | Complete teaching models and calculations across several packages, with their model builders |
 | `tests/walkthrough` | The example data package and the design example, in the core environment |
 

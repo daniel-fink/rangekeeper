@@ -385,7 +385,9 @@ class Attempt:
                     ),
                     diagnostics=tuple(self.findings),
                     trace=tuple(self.trace),
-                    outcomes=() if self.prepared is None else self.prepared.outcomes,
+                    rule_evidence=()
+                    if self.prepared is None
+                    else self.prepared.rule_evidence,
                 ),
             )
         )

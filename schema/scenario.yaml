@@ -71,7 +71,7 @@ classes:
         range: string
         required: true
   ObservationAvailability:
-    description: Earliest date a recorded Value or Movement may be supplied to a policy.
+    description: Earliest date a recorded Value or Movement may be supplied to a rule.
     attributes:
       target:
         range: Reference

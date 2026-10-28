@@ -98,7 +98,7 @@ Validation runs at commit points ([ADR-011](../decisions/011-records-and-validat
 
 **Investigate a Model** ([ADR-013](../decisions/013-execution-and-extensions.md))
 1. Write a Specification that pins one Model revision. Fix and free values,
-   and add bounds or policies.
+   and add bounds or rules.
 2. `solve` resolves cases and validates the composition.
 3. It binds roles and builds an `AffineProblem`.
 4. The backend solves the problem.
@@ -137,12 +137,14 @@ contents are not yet in their 1.0 owner:
 | `schema` | Generated records, enums, the record runtime, structural validation and record behaviours | The Flow and Movement behaviours move to `flow` ([#106](https://github.com/daniel-fink/rangekeeper/issues/106)) |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
+| `profile` | Growth and distribution of known amounts over Periods: `extrapolate`, `distribute` and `GrowthMethod` | Profile classes and `Flow.from_profile` replace the functions ([#298](https://github.com/daniel-fink/rangekeeper/issues/298)) |
 | `flow` | Stream, the Flow re-exports, their options, table display and the private engine | — |
-| `finance` | Financial valuation, projection, accounts and deterministic dynamics | Path generators go to `market` with the market paths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137); #201, D29) |
-| `model` | The Model document, definitions, the system graph and rollups, equations, provenance, geometry and captured scenarios | `model.scenario` moves to `market` and the market paths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)) |
-| `specification` | The Specification document, composition, roles, and policy declarations and evaluation | Policy evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
+| `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#299](https://github.com/daniel-fink/rangekeeper/issues/299), [#303](https://github.com/daniel-fink/rangekeeper/issues/303)). Generation, `Market` and replay still import `model`, above `market` |
+| `finance` | Financial valuation: PV, NPV, IRR and day counts | `pv`, `npv`, `irr` and `payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
+| `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry | — |
+| `specification` | The Specification document, composition, roles, and rule declarations and evaluation | Rule evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
 | `run` | The Run document, its report and outputs, and evidence validation | — |
-| `execution` | Preparation, compilation, backends, acceptance and publication | Policy evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
+| `execution` | Preparation, compilation, backends, acceptance and publication | Rule evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
 | `io` | JSON and YAML codecs, stores, Bundle and Polars export | The store protocol moves to `shared` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
 
 Import-linter contracts that enforce the layer order follow in [#97](https://github.com/daniel-fink/rangekeeper/issues/97).
