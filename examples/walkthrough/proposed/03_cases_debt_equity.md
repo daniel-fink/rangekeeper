@@ -93,9 +93,10 @@ Narrative: as in lesson 02, start an empty Model and edit it. Declare the inputs
 with their units. Dates are values too, so a later lesson can change them. The
 plan's sequence relates them: the shared works start on the start date, Building A
 follows a year later, each building takes two years to build, and Building B cannot
-start before the shared works finish. Equations can be grouped in named
-formulations, like the sections of a pro forma. A group changes nothing in the
-solve; it organises the display and the trace. The date equations form "Dates".
+start before the shared works finish. Group equations in named formulations, like
+the sections of a pro forma: `add_formulation(name=)` makes one, and its
+`equations(...)` adds to it. A formulation changes nothing in the solve; it organises
+the display and the trace. The date equations form "Dates".
 
 ```python
 # cell 5
@@ -106,13 +107,13 @@ project.date(key="base_date")
 project.date(key="sale_date")
 project.date(key="start_date")
 project.date(key="b_start")
-project.equations(
+dates = project.add_formulation(name="Dates")
+dates.equations(
     "shared_start = start_date",
     "a_start = shared_start + 1 year",
     "a_open = a_start + 2 years",
     "b_open = b_start + 2 years",
     "b_start >= shared_start + 1 year",
-    formulation="Dates",
 )
 ```
 
@@ -166,13 +167,13 @@ solve uses.
 
 ```python
 # cell 6
-project.equations(
+development = project.add_formulation(name="Development")
+development.equations(
     "land = -rx.flow.event(amount=land_cost, on=start_date)",
     "shared_works = -rx.profile.uniform(total=shared_cost, start=shared_start, length=1 year)",
     "a_works = -rx.profile.uniform(total=a_cost, start=a_start, length=2 years)",
     "b_works = -rx.profile.uniform(total=b_cost, start=b_start, length=2 years)",
     "works = shared_works + a_works + b_works",
-    formulation="Development",
 )
 ```
 
@@ -181,14 +182,14 @@ earns nothing until it opens. Renewals come every five years after opening.
 
 ```python
 # cell 7
-project.equations(
+operations = project.add_formulation(name="Operations")
+operations.equations(
     "a_rent = rx.profile.compounding(initial=a_income, rate=rent_growth, start=a_open)",
     "b_rent = rx.profile.compounding(initial=b_income, rate=rent_growth, start=b_open)",
     "a_costs = rx.profile.compounding(initial=a_opex, rate=opex_growth, start=a_open)",
     "b_costs = rx.profile.compounding(initial=b_opex, rate=opex_growth, start=b_open)",
     "income = a_rent + b_rent",
     "opex = -(a_costs + b_costs)",
-    formulation="Operations",
 )
 ```
 
@@ -197,7 +198,7 @@ grow from 2027.
 
 ```python
 # cell 7b
-project.equations(
+operations.equations(
     (
         "a_renewals = rx.profile.compounding(initial=a_renewal, rate=opex_growth,"
         " start=a_open + 5 years, every=5 years)"
@@ -208,7 +209,6 @@ project.equations(
     ),
     "renewals = -(a_renewals + b_renewals)",
     "operating = income + opex + renewals",
-    formulation="Operations",
 )
 ```
 
@@ -216,13 +216,13 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as equations
 
 ```python
 # cell 8
-project.equations(
+sale_and_value = project.add_formulation(name="Sale and value")
+sale_and_value.equations(
     "exit_value = operating.at(on=sale_date + 1 year) / exit_cap_rate",
     "sale = rx.flow.event(amount=exit_value, on=sale_date)",
     "project_cash = land + works + operating + sale",
     "net_cash_flow = project_cash.until(on=sale_date)",
     "unlevered_npv = rx.finance.npv(flow=net_cash_flow, rate=discount_rate, on=base_date)",
-    formulation="Sale and value",
 )
 model = draft.commit()
 ```
@@ -296,12 +296,12 @@ project.value(key="equity", units="AUD")
 project.value(key="loan_limit", units="AUD")
 project.value(key="loan_rate", units="% pa")
 project.value(key="equity_rate", units="% pa")
-project.equations(
+funding = project.add_formulation(name="Funding")
+funding.equations(
     "funding_need = -(net_cash_flow + loan_interest).cumulative()",
     "loan_principal = rx.max(0 AUD, funding_need - equity)",
     "loan_draws = loan_principal.diff()",
     "loan_interest = -rx.finance.interest(balance=loan_principal, rate=loan_rate)",
-    formulation="Funding",
 )
 ```
 
@@ -311,11 +311,10 @@ and positive once the loan is repaid.
 
 ```python
 # cell 12b
-project.equations(
+funding.equations(
     "equity_cash_flow = net_cash_flow + loan_interest + loan_draws",
     "equity_npv = rx.finance.npv(flow=equity_cash_flow, rate=equity_rate, on=base_date)",
     "equity_irr = rx.finance.irr(flow=equity_cash_flow)",
-    formulation="Funding",
 )
 model = draft.commit()
 ```
@@ -401,6 +400,7 @@ reference_outcome.stream(
 ## 10. What is left to spend
 
 Narrative: what can still be spent is the available equity and the available loan.
+`project.formulation(name="Funding")` finds the formulation that cell 12 made.
 `loan_available` is what can still be drawn under the limit; `loan_principal` is what
 is owed. A shortfall is loan principal above the limit. Building A's income helps to
 pay for Building B, so the need includes the operating cash flow.
@@ -409,12 +409,12 @@ pay for Building B, so the need includes the operating cash flow.
 # cell 18
 draft = model.edit()
 project = draft.entity(code="project")
-project.equations(
+funding = project.formulation(name="Funding")
+funding.equations(
     "equity_available = rx.max(0 AUD, equity - funding_need)",
     "loan_available = loan_limit - loan_principal",
     "shortfall = rx.max(0 AUD, -loan_available)",
     "peak_shortfall = shortfall.max()",
-    formulation="Funding",
 )
 model = draft.commit()
 ```
@@ -448,14 +448,14 @@ uses it to check whether a start can be funded.
 # cell 21
 draft = model.edit()
 project = draft.entity(code="project")
-project.equations(
+funding = project.formulation(name="Funding")
+funding.equations(
     "shared_unpaid = shared_works.cumulative() - shared_works.total()",
     "a_unpaid = a_works.cumulative() - a_works.total()",
     "b_unpaid = b_works.cumulative() - b_works.total()",
     "committed = shared_unpaid.since(on=shared_start) + a_unpaid.since(on=a_start)"
     " + b_unpaid.since(on=b_start)",
     "commitment_gap = rx.max(0 AUD, (committed - equity_available - loan_available).max())",
-    formulation="Funding",
 )
 model = draft.commit()
 committed_outcome = rk.execution.solve(
@@ -579,7 +579,7 @@ follow `ruff format` (D15).
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
 | 5–5c | 2, 5 | G08 (entity handles); G72: the "Dates" formulation; G15: date-valued Values; G16: Flows made from amounts declare their Periods, other values take units and shape from their equations |
-| 6–8 | 3, 6 | G72: `formulation=` groups; G17: functions in equations (`rx.flow.event`, `rx.profile.uniform`, `rx.profile.compounding`, `rk.finance.npv`, and the methods `at` and `trim`); G18: Flow-valued string equations; date arithmetic in G15 |
+| 6–8 | 3, 6 | G72: formulation handles, `add_formulation(name=)` and `formulation(name=)`, with `equations(...)` (D43); G17: functions in equations (`rx.flow.event`, `rx.profile.uniform`, `rx.profile.compounding`, `rk.finance.npv`, and the methods `at` and `trim`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
 | 10 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |

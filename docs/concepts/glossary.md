@@ -36,7 +36,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Key | The name of a Value, unique within its owner | `model` | — |
 | Code | A catalogue identifier, such as a Classification code | `model` | — |
 | Label | A Classification attached to an Entity in addition to its main Classification | `model` | — |
-| Formulation | A named set of equations over Values. It does not say which values are known | `model` | — |
+| Formulation | A named set of equations over Values, such as "Funding". It does not say which values are known. `project.add_formulation(name=)` makes one and `project.formulation(name=)` finds one; each takes `equations(...)` | `model` | — |
 | Equation | One relation that must hold between values: an equality, or a bound such as `b_start >= shared_start + 1 year`. It is written as text or in Python with `rx` (`rangekeeper.expressions`), and stored as a Constraint over Expressions in a Formulation. It has no calculation direction | `model` | — |
 | Expression | One mathematical expression in an equation | `model` | — |
 | Provenance | Sources, Claims and Facts that support recorded content | `model` | — |

@@ -83,9 +83,11 @@ of a suffix on each function or a separate package, because each function then k
 one job and editors complete the names.
 
 An equation is an equality or a bound that must hold. Each one is stored as a
-Constraint over Expressions in a Formulation. `equations(..., formulation=name)`
-puts equations in a named Formulation; without a name they join the entity's
-default Formulation (#201, decision D18).
+Constraint over Expressions in a Formulation. A named Formulation is a handle:
+`funding = project.add_formulation(name="Funding")` makes one, `funding.equations(...)`
+adds to it, and `project.formulation(name=)` finds one in a later draft. Equations
+added to the entity itself join its default Formulation (#201, decisions D18 and
+D43).
 
 ### Identities and deterministic builds
 
