@@ -82,7 +82,8 @@ consistency. `not_applicable` declares an aggregate locally; resolving its Speci
 must establish that it really is a batch. External references are not loaded during
 construction or codec reads.
 
-`run.validation.validate(run, resolver=...)` resolves the attempted Specification,
+`run.validate(resolver=...)`, `run.check(resolver=...)` and
+`rangekeeper.run.validate(run, resolver=...)` resolve the attempted Specification,
 its includes/cases/Model pins, spawned Runs, output Models, and scoped report documents.
 Successful resolutions are cached. Report references carry no kind discriminator;
 resolving a previously unseen report document can require up to three typed lookups.

@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from difflib import get_close_matches
 from types import MappingProxyType
-from typing import TypeVar, cast
+from typing import Self, TypeVar, cast
 from uuid import UUID, uuid4
 
 from rangekeeper.flow import Movement
@@ -35,11 +35,13 @@ from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.runtime import UNSET, Record, Unset
 from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.arguments import optional_text, require_text, require_uuid
+from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
     MissingReferenceError,
     UnsupportedVersionError,
 )
+from rangekeeper.shared.references import SpecificationResolver
 
 K = TypeVar("K", Value, Label)
 
@@ -174,6 +176,36 @@ class Model:
     def to_data(self) -> dict[str, object]:
         """Export detached data, preserving presence and original collection order."""
         return self._record.to_data()
+
+    def validate(
+        self,
+        *,
+        resolver: SpecificationResolver | None = None,
+        units: UnitSystem | None = None,
+    ) -> ValidationReport:
+        """Report the problems of this revision; content problems raise nothing.
+
+        Construction already checked the rules with ``unit_system``. Pass
+        ``units`` to check the recorded units against another unit system. A
+        Model references no other document, so the check reads nothing from
+        ``resolver``; the parameter keeps the verbs the same on every document.
+        """
+        from rangekeeper.model.validation import validate_document
+
+        return validate_document(self, resolver=resolver, units=units)
+
+    def check(
+        self,
+        *,
+        resolver: SpecificationResolver | None = None,
+        units: UnitSystem | None = None,
+    ) -> Self:
+        """Return this revision if ``validate`` finds no problem.
+
+        Otherwise raise ValidationError; its ``report`` holds the problems.
+        """
+        self.validate(resolver=resolver, units=units).raise_if_invalid()
+        return self
 
     def record_at(self, path: str) -> RecordLocation:
         """Locate one embedded record by its original canonical JSON pointer.

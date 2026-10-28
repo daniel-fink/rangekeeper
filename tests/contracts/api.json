@@ -5,6 +5,7 @@
    "members": {
     "__init__": "method (self, record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None",
     "assembly": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Assembly",
+    "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "claim": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Claim",
     "classification": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Classification",
     "create": "classmethod (cls, *, metadata: rangekeeper.schema.records.Metadata, definitions: rangekeeper.schema.records.Definitions | rangekeeper.schema.runtime.Unset = <Unset>, system: rangekeeper.schema.records.System | rangekeeper.schema.runtime.Unset = <Unset>, provenance: rangekeeper.schema.records.Provenance | rangekeeper.schema.runtime.Unset = <Unset>, geometry: rangekeeper.schema.records.Geometry | rangekeeper.schema.runtime.Unset = <Unset>, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
@@ -30,6 +31,7 @@
     "system": "property",
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
+    "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport",
     "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
@@ -54,12 +56,14 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, record: rangekeeper.schema.records.Run) -> None",
+    "check": "method (self, *, resolver: rangekeeper.shared.references.DocumentResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Run",
     "id": "property",
     "metadata": "property",
     "record": "property",
     "report": "property",
-    "to_data": "method (self) -> dict[str, object]"
+    "to_data": "method (self) -> dict[str, object]",
+    "validate": "method (self, *, resolver: rangekeeper.shared.references.DocumentResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
    "module": "rangekeeper.run.run",
    "signature": "(record: rangekeeper.schema.records.Run) -> None"
@@ -68,6 +72,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, record: rangekeeper.schema.records.Specification) -> None",
+    "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
     "fix": "method (self, target: UUID | Reference, quantity: Quantity | Mapping[UUID, Quantity] | None = None, *, id: uuid.UUID, model: Model, ids: Sequence[UUID] | None = None, recorded: bool = False, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> Specification",
     "free": "method (self, target: UUID | Reference, *, id: uuid.UUID, model: Model, ids: Sequence[UUID] | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> Specification",
@@ -76,7 +81,8 @@
     "metadata": "property",
     "record": "property",
     "revise": "method (self, replacement: rangekeeper.schema.records.Specification) -> Specification",
-    "to_data": "method (self) -> dict[str, object]"
+    "to_data": "method (self) -> dict[str, object]",
+    "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
    "module": "rangekeeper.specification.specification",
    "signature": "(record: rangekeeper.schema.records.Specification) -> None"
@@ -1293,6 +1299,7 @@
    "members": {
     "__init__": "method (self, record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None",
     "assembly": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Assembly",
+    "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "claim": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Claim",
     "classification": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Classification",
     "create": "classmethod (cls, *, metadata: rangekeeper.schema.records.Metadata, definitions: rangekeeper.schema.records.Definitions | rangekeeper.schema.runtime.Unset = <Unset>, system: rangekeeper.schema.records.System | rangekeeper.schema.runtime.Unset = <Unset>, provenance: rangekeeper.schema.records.Provenance | rangekeeper.schema.runtime.Unset = <Unset>, geometry: rangekeeper.schema.records.Geometry | rangekeeper.schema.runtime.Unset = <Unset>, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
@@ -1318,6 +1325,7 @@
     "system": "property",
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
+    "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport",
     "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
@@ -2032,12 +2040,14 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, record: rangekeeper.schema.records.Run) -> None",
+    "check": "method (self, *, resolver: rangekeeper.shared.references.DocumentResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Run",
     "id": "property",
     "metadata": "property",
     "record": "property",
     "report": "property",
-    "to_data": "method (self) -> dict[str, object]"
+    "to_data": "method (self) -> dict[str, object]",
+    "validate": "method (self, *, resolver: rangekeeper.shared.references.DocumentResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
    "module": "rangekeeper.run.run",
    "signature": "(record: rangekeeper.schema.records.Run) -> None"
@@ -2193,6 +2203,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, record: rangekeeper.schema.records.Specification) -> None",
+    "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
     "fix": "method (self, target: UUID | Reference, quantity: Quantity | Mapping[UUID, Quantity] | None = None, *, id: uuid.UUID, model: Model, ids: Sequence[UUID] | None = None, recorded: bool = False, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> Specification",
     "free": "method (self, target: UUID | Reference, *, id: uuid.UUID, model: Model, ids: Sequence[UUID] | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> Specification",
@@ -2201,7 +2212,8 @@
     "metadata": "property",
     "record": "property",
     "revise": "method (self, replacement: rangekeeper.schema.records.Specification) -> Specification",
-    "to_data": "method (self) -> dict[str, object]"
+    "to_data": "method (self) -> dict[str, object]",
+    "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
    "module": "rangekeeper.specification.specification",
    "signature": "(record: rangekeeper.schema.records.Specification) -> None"

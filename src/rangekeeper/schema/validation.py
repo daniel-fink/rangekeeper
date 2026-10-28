@@ -255,7 +255,7 @@ def checked(
     return record.to_data() if record is not None else {}
 
 
-def validate_known_reference_types(root: Record, *, index) -> None:
+def check_known_reference_types(root: Record, *, index) -> None:
     """Check locally resolvable reference types without requiring external targets.
 
     Partial Specifications can point outside their declaration scope. A target

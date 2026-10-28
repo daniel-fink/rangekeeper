@@ -3,7 +3,7 @@
 from rangekeeper.shared.validation import require_unique
 
 
-def validate_formulation_names(formulations, *, path="/formulations") -> None:
+def check_formulation_names(formulations, *, path="/formulations") -> None:
     """Check names within each owner without resolving mathematical references.
 
     Root and nested sibling codes, Binding names, Value keys and Constraint codes
@@ -25,6 +25,6 @@ def validate_formulation_names(formulations, *, path="/formulations") -> None:
                 label,
                 path=f"{current}/{collection}",
             )
-        validate_formulation_names(
+        check_formulation_names(
             formulation.get("formulations") or [], path=f"{current}/formulations"
         )
