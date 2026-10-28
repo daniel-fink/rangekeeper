@@ -783,6 +783,14 @@ notes:
     status: agreed
     source: "#255 D13, D16, D17"
     note: Arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year.
+  - topic: Execution configuration
+    status: agreed
+    source: "ADR-013, #128"
+    note: >-
+      `Executor(store, backend=, units=, tolerances=)` becomes
+      `Executor(store, config=ExecutionConfig(backend=, units=, tolerances=))`.
+      `ExecutionConfig` also holds the default `limits` and the
+      `backend_options`.
   - topic: Keyword-only arguments
     status: agreed
     source: "#255 D14"

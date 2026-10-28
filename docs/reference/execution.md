@@ -15,12 +15,10 @@ worker. `pyproject.toml` declares the supported version ranges. The worker does
 not refuse other versions; the Run evidence records the Pyomo and HiGHS versions
 that it found.
 
-`Executor(store, *, backend="pyomo-highs", units=None, tolerances=Tolerances())`
-supports `MemoryStore`, `DirectoryStore` or a compatible `RecordStore`.
-`backend` is a `Backend` or the name of one in `execution.backends.registry`
-([extension points](extensions.md)). Each Run records the backend as a `solver`
+`Executor(store, *, config=None)` supports `MemoryStore`, `DirectoryStore` or a
+compatible `RecordStore`. `config` is an [`ExecutionConfig`](#configuration);
+without it, the defaults apply. Each Run records the backend as a `solver`
 implementation, with its registered name and fingerprint.
-Without `units`, each attempt uses the [unit system](units.md) of its input Model.
 `execute(specification: Specification) -> Run` stores the supplied root after
 reference-graph preflight. Referenced Models, includes and cases must already be
 available. Expected capability, settings and numerical outcomes appear in the Run.
@@ -32,6 +30,25 @@ Use the [examples guide](../guides/examples.md) for the complete valuation proce
 shared and inverse Specifications to pin the actual output, executes inverse,
 then executes a sequential batch. Synthetic expected-output fixtures do not stand
 in for execution results.
+
+## Configuration
+
+`ExecutionConfig` is the one public configuration of an execution, and the one
+source of its defaults. It is frozen.
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `backend` | `"pyomo-highs"` | A `Backend`, or the name of one in `execution.backends.registry` ([extension points](extensions.md)) |
+| `units` | `None` | The [unit system](units.md) of each case. Without it, each case uses the unit system of its input Model |
+| `limits` | `Limits()` | The default budget of each leaf: `time_limit=30` seconds, `iteration_limit=100000`, `symbol_limit=10000`, `constraint_limit=20000`. A Specification's `settings` replace a limit for its own cases. `Limits` refuses a value that is not positive and finite |
+| `tolerances` | `Tolerances()` | The policy of independent verification; see [independent acceptance](#independent-acceptance-and-immutable-publication) |
+| `backend_options` | `{}` | String keys and JSON scalar values that go to the backend unchanged |
+
+`pyomo-highs` reads `backend_options` as HiGHS options. They replace the
+worker's defaults, and the `solver_termination` evidence records the options that
+HiGHS received. The backend sets `output_flag`, `log_to_console`, `log_file`,
+`threads`, `time_limit` and `simplex_iteration_limit` itself: an attempt that
+asks for one of them fails with an `unsupported_capability` diagnostic.
 
 ## Stages
 
@@ -46,7 +63,7 @@ and stores the results.
 | 2 | `validate(composition, *, resolver, units=None)` | One composition | `Validation`: the report, the input Model and the unit system | Nothing for a content problem; it is an issue in the report |
 | 3 | `bind_roles(validation, *, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
 | 4 | `build_problem(binding, *, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: affine rows that keep the original Constraint identity | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`; `NumericalError` |
-| 5 | `Backend.solve(problem, *, limits, remaining)` | An `AffineProblem` | `Result`: termination, candidate values and evidence | `BackendUnavailableError`, `NumericalError` |
+| 5 | `Backend.solve(problem, *, limits, remaining, options)` | An `AffineProblem` | `Result`: termination, candidate values and evidence | `BackendUnavailableError`, `NumericalError` |
 | 6 | `make_candidate(binding, values, *, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
 | 7 | `verify(binding, candidate, *, tolerances=Tolerances())` | The candidate | `Verification`: accepted or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
 | 8 | `assemble(specification, report, *, id, output, resolver, units=None)` | The report of one leaf | The finalized Run, validated once with the output laid over the resolver | `ValidationError` |
@@ -66,7 +83,8 @@ time limit has passed. The stages call it between steps.
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the finalized Run of one leaf and validate it against the candidate overlay. |
-| `execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
+| `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
+| `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and the status of each expected failure. It stores nothing. |
 | `execution/executor.py` | Sequential batches, and output-before-Run persistence. |
 | `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
@@ -104,7 +122,8 @@ valuation formulas.
 ## Settings, limits and conclusions
 
 - Default limits are **30 seconds**, **100,000 simplex iterations**, **10,000 symbols**
-  and **20,000 affine constraints** per leaf. An attempt that exceeds the symbol or
+  and **20,000 affine constraints** per leaf. `ExecutionConfig.limits` changes
+  these defaults; a Specification's `settings` replace them for its cases. An attempt that exceeds the symbol or
   constraint limit fails with a `symbol_limit` or `constraint_limit` diagnostic.
   Requested `iteration_limit` maps to HiGHS simplex iterations; presolve reductions
   are separate. Requests exceeding HiGHS's integer maximum are clamped with a
@@ -154,8 +173,8 @@ each numerical comparison the default tolerance is:
 
 Both residual and tolerance use that comparison's evaluated left-side units. This
 is an explicit absolute floor of `1e-8` of that unit plus a relative term; it is not
-a universal monetary tolerance. `Tolerances(absolute=..., relative=...)` changes this
-acceptance policy independently of Specification/solver settings. Diagnostics state
+a universal monetary tolerance. `ExecutionConfig(tolerances=Tolerances(absolute=..., relative=...))`
+changes this acceptance policy independently of Specification/solver settings. Diagnostics state
 the signed left-minus-right residual, dimensional tolerance, relation and outcome.
 
 Accepted revisions retain declarations, definitions, unrelated quantities, original

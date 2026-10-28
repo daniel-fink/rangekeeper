@@ -11,6 +11,7 @@ from rangekeeper.execution import (
     AffineProblem,
     Binding,
     Cases,
+    ExecutionConfig,
     Tolerances,
     Validation,
     Verification,
@@ -84,14 +85,14 @@ def stages(specification=None):
 class Exact:
     """A backend that returns the known solution."""
 
-    def solve(self, problem, *, limits, remaining):
+    def solve(self, problem, *, limits, remaining, options):
         assert isinstance(problem, AffineProblem)
         return Result("optimal", SOLUTION)
 
 
 def attempt(cases, composition):
     return Attempt(
-        Exact(), None, Tolerances(), cases.root, composition, resolver=cases
+        ExecutionConfig(), Exact(), cases.root, composition, resolver=cases
     ).execute()
 
 
@@ -187,13 +188,13 @@ def test_build_problem_lowers_assertions_and_checks_limits():
     problem = build_problem(binding)
     assert isinstance(problem, AffineProblem)
     assert problem.binding is binding
-    assert len(problem.rows) == len(binding.assertions)
+    assert len(problem.rows) == len(binding.assertions) > 1
     assert all(set(row.residual.coefficients) <= {NOI, CAPITAL} for row in problem.rows)
     with pytest.raises(UnsupportedError) as symbols:
         build_problem(binding, limits=Limits(symbol_limit=1))
     assert symbols.value.code == Code.SYMBOL_LIMIT
     with pytest.raises(UnsupportedError) as rows:
-        build_problem(binding, limits=Limits(constraint_limit=0))
+        build_problem(binding, limits=Limits(constraint_limit=1))
     assert rows.value.code == Code.CONSTRAINT_LIMIT
     assert rows.value.target is not None
 

@@ -2,11 +2,10 @@
 
 from uuid import uuid4
 
-from rangekeeper.execution import acceptance
 from rangekeeper.execution.attempt import Attempt
-from rangekeeper.execution.backends import Backend, registry
+from rangekeeper.execution.backends import registry
+from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.planning import Cases, resolve_cases
-from rangekeeper.quantity import UnitSystem
 from rangekeeper.run import Run, RunRecord, Severity, SolutionStatus
 from rangekeeper.run.report import completion_for
 from rangekeeper.schema.records import (
@@ -30,9 +29,9 @@ class Executor:
     case has a fresh Run even when it fails; repeated paths are separate attempts.
     Missing references, invalid batch graphs, storage errors and programming errors
     raise to the caller. Expected formulation/numerical failures become Run evidence.
-    ``backend`` is a Backend or the name of a registered one. Run evidence records
-    its registered name and fingerprint.
-    Without ``units``, each attempt uses the unit system of its input Model.
+    ``config`` gives the backend, unit system, limits, tolerances and backend
+    options; without it, the defaults of ExecutionConfig apply. Run evidence
+    records the backend's registered name and fingerprint.
     No commit, network access, graph migration or source-workflow execution occurs.
     """
 
@@ -40,14 +39,12 @@ class Executor:
         self,
         store: RecordStore,
         *,
-        backend: Backend | str = "pyomo-highs",
-        units: UnitSystem | None = None,
-        tolerances: acceptance.Tolerances = acceptance.Tolerances(),
+        config: ExecutionConfig | None = None,
     ) -> None:
         self.store = store
+        self.config = ExecutionConfig() if config is None else config
+        backend = self.config.backend
         self.backend = registry.get(backend) if isinstance(backend, str) else backend
-        self.units = units
-        self.tolerances = tolerances
 
     def execute(self, specification: Specification) -> Run:
         """Persist one finalized execution tree; return its root immutable Run.
@@ -107,9 +104,8 @@ class Executor:
             self.store.put(run)
             return run
         run, output = Attempt(
+            self.config,
             self.backend,
-            self.units,
-            self.tolerances,
             specification,
             cases.compositions[specification.id],
             resolver=cases,

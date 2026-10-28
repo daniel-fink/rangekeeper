@@ -9,7 +9,7 @@ import pytest
 from rangekeeper.duration import Frequency
 from rangekeeper.duration.period import make_periods
 from rangekeeper.errors import Code
-from rangekeeper.execution import Executor
+from rangekeeper.execution import ExecutionConfig, Executor
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
@@ -341,7 +341,9 @@ def test_movement_candidate_rejection_and_expansion_limits():
             candidate[model.value(ids["cash"]).flow.movements[1].id] += 1
             return replace(result, candidate=candidate)
 
-    run = Executor(store, backend=WrongCandidate()).execute(investigate(model, ids))
+    run = Executor(store, config=ExecutionConfig(backend=WrongCandidate())).execute(
+        investigate(model, ids)
+    )
     assert not run.record.outputs
     assert store.load_model(model.id).to_data() == before
     data = investigate(model, ids).to_data()
@@ -363,14 +365,14 @@ def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypa
 
     spec = investigate(model, ids).to_data()
     spec["settings"] = dict(constraint_limit=1)
-    run = Executor(store, backend=ForbiddenBackend()).execute(
+    run = Executor(store, config=ExecutionConfig(backend=ForbiddenBackend())).execute(
         Specification.from_data(spec)
     )
     assert not run.record.outputs
     assert any(d.code == Code.CONSTRAINT_LIMIT for d in run.report.diagnostics)
     spec["metadata"]["id"] = str(uuid4())
     spec["settings"] = dict(time_limit=0.001)
-    run = Executor(store, backend=ForbiddenBackend()).execute(
+    run = Executor(store, config=ExecutionConfig(backend=ForbiddenBackend())).execute(
         Specification.from_data(spec)
     )
     assert run.report.status.completion == CompletionStatus.LIMITED

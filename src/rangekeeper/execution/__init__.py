@@ -13,11 +13,14 @@ to no store:
 8. ``assemble`` makes the finalized Run.
 
 ``Executor`` runs the stages for each case and stores the results.
+``ExecutionConfig`` holds the backend, unit system, limits, tolerances and
+backend options, with one source of defaults.
 """
 
 from rangekeeper.execution.acceptance import Tolerances, Verification, verify
 from rangekeeper.execution.assembly import assemble
 from rangekeeper.execution.compiler import AffineProblem, build_problem
+from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.executor import Executor
 from rangekeeper.execution.planning import Cases, resolve_cases
 from rangekeeper.execution.preparation import (
@@ -28,13 +31,16 @@ from rangekeeper.execution.preparation import (
     validate,
 )
 from rangekeeper.execution.publication import make_candidate
+from rangekeeper.execution.settings import Limits
 
 __all__ = [
     "AffineProblem",
     "Assertion",
     "Binding",
     "Cases",
+    "ExecutionConfig",
     "Executor",
+    "Limits",
     "Tolerances",
     "Validation",
     "Verification",

@@ -29,11 +29,11 @@ as `Compounding(rate=)`.
 ## Register an implementation
 
 ```python
-from rangekeeper.execution import Executor
+from rangekeeper.execution import ExecutionConfig, Executor
 from rangekeeper.execution.backends import registry
 
 registry.register("my-solver", MySolver())
-executor = Executor(store, backend="my-solver")
+executor = Executor(store, config=ExecutionConfig(backend="my-solver"))
 ```
 
 `register` checks the implementation against the Protocol with `isinstance`

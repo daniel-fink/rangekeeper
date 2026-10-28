@@ -15,6 +15,7 @@ import pytest
 from rangekeeper import Model, Quantity, Specification
 from rangekeeper.errors import Code
 from rangekeeper.execution import (
+    ExecutionConfig,
     Executor,
     Tolerances,
     backends,
@@ -349,8 +350,8 @@ def test_underdetermined_case_returns_one_candidate_without_uniqueness_claim():
 
 
 class WrongCandidate:
-    def solve(self, problem, *, limits, remaining):
-        result = PyomoHighs().solve(problem, limits=limits, remaining=remaining)
+    def solve(self, problem, **kwargs):
+        result = PyomoHighs().solve(problem, **kwargs)
         values = dict(result.candidate)
         values[CAPITAL] += 1000000
         return replace(result, candidate=values)
@@ -361,13 +362,15 @@ def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
     specification = spec()
     store.put(specification)
     with pytest.raises(UnknownExtensionError, match="pyomo-highs"):
-        Executor(store, backend="pyomo")
+        Executor(store, config=ExecutionConfig(backend="pyomo"))
     registry: Registry[backends.Backend] = Registry("backends", backends.Backend)
     registry.register("wrong", WrongCandidate())
     monkeypatch.setattr(backends, "registry", registry)
     monkeypatch.setattr("rangekeeper.execution.executor.registry", registry)
     monkeypatch.setattr("rangekeeper.execution.attempt.registry", registry)
-    run = Executor(store, backend="wrong").execute(specification)
+    run = Executor(store, config=ExecutionConfig(backend="wrong")).execute(
+        specification
+    )
     solvers = {
         item.name: item.version
         for item in run.report.runtime.implementations
@@ -376,7 +379,9 @@ def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
     assert solvers["rangekeeper.backends:wrong"].startswith("extension/v1:")
     other = spec()
     store.put(other)
-    unregistered = Executor(store, backend=PyomoHighs()).execute(other)
+    unregistered = Executor(
+        store, config=ExecutionConfig(backend=PyomoHighs())
+    ).execute(other)
     assert any(
         item.name == "rangekeeper.execution.backends.pyomo:PyomoHighs"
         for item in unregistered.report.runtime.implementations
@@ -387,7 +392,9 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     store, model = setup()
     specification = spec()
     store.put(specification)
-    run = Executor(store, backend=WrongCandidate()).execute(specification)
+    run = Executor(store, config=ExecutionConfig(backend=WrongCandidate())).execute(
+        specification
+    )
     assert run.report.status.completion == CompletionStatus.FAILED
     assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
@@ -525,7 +532,7 @@ def test_backend_statuses_do_not_overclaim(termination):
             return Result(termination)
 
     store, _ = setup()
-    run = Executor(store, backend=Backend()).execute(spec())
+    run = Executor(store, config=ExecutionConfig(backend=Backend())).execute(spec())
     assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
     assert run.report.status.completion == (
@@ -776,7 +783,7 @@ def test_nonfinite_or_boolean_backend_candidates_are_never_published(magnitude):
             )
 
     store, _ = setup()
-    run = Executor(store, backend=Backend()).execute(spec())
+    run = Executor(store, config=ExecutionConfig(backend=Backend())).execute(spec())
     assert run.report.status.completion == CompletionStatus.FAILED
     assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
