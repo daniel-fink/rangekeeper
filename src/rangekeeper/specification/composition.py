@@ -289,13 +289,7 @@ def compose_specification(
         try:
             snapshots.append(Specification.from_data(document))
         except ValidationError as error:
-            issue = error.report.issues[0]
-            raise ContractError(
-                issue.message,
-                code=issue.code,
-                path=issue.path,
-                document_id=issue.document_id,
-            ) from error
+            raise ContractError.from_issue(error.report.issues[0]) from error
         except (ValueError, TypeError) as error:
             raise ContractError(str(error)) from error
     result = object.__new__(Composition)

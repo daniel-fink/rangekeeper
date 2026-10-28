@@ -197,7 +197,7 @@ for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extr
              '_schema', '_records', '_record_index', '_revision', '_behaviors',
              'graph', 'formulations', 'scenarios', 'policies',
              'evidence', 'operation', 'account', 'metadata', 'table', 'units',
-             'references', 'diagnostics', 'errors', 'validate', '_validation',
+             'references', 'diagnostics', 'validate', '_validation',
              '_encoding', '_structured', '_yaml', '_implementation'):
     assert importlib.util.find_spec('rangekeeper.' + name) is None, name
     assert not hasattr(rangekeeper, name), name

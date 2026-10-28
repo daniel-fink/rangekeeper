@@ -8,10 +8,11 @@ This module imports no Model, Specification, Run, solver, or storage behavior.
 """
 
 from collections.abc import Callable, Hashable, Iterable, Mapping
-from typing import TypeVar
+from typing import Any, TypeVar
 from uuid import UUID
 
 from rangekeeper.shared import pointer
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import ContractError
 
@@ -22,12 +23,22 @@ def require(
     condition: object,
     message: str,
     *,
-    code: str = "semantic.contract",
+    code: Code = Code.CONTRACT,
     path: str = "",
+    targets: Iterable[UUID] = (),
+    values: Mapping[str, Any] | None = None,
+    evidence: Mapping[str, Any] | None = None,
 ) -> None:
     """Raise ContractError with diagnostic context when a condition is false."""
     if not condition:
-        raise ContractError(message, code=code, path=path)
+        raise ContractError(
+            message,
+            code=code,
+            path=path,
+            targets=targets,
+            values=values,
+            evidence=evidence,
+        )
 
 
 def require_unique(
@@ -50,8 +61,9 @@ def require_unique(
             require(
                 value not in seen,
                 f"duplicate {label}: {value}",
-                code="semantic.unique",
+                code=Code.UNIQUE,
                 path=pointer.child(path, index, field),
+                values={"field": field, "value": value},
             )
             seen.add(value)
 
@@ -71,8 +83,9 @@ def require_new(
     require(
         identity not in identities,
         f"duplicate {label}: {identity}",
-        code="semantic.identity",
+        code=Code.IDENTITY,
         path=path,
+        values={"identity": identity},
     )
     identities.add(identity)
 
@@ -92,9 +105,7 @@ def require_acyclic(
     complete: set[K] = set()
 
     def visit(node: K) -> None:
-        require(
-            node not in visiting, f"{label} cycle", code="semantic.cycle", path=path
-        )
+        require(node not in visiting, f"{label} cycle", code=Code.CYCLE, path=path)
         if node in complete:
             return
         visiting.add(node)
@@ -123,7 +134,7 @@ def require_ownership(document: object, *, path: str = "") -> None:
         require(
             id(node) not in active,
             "cyclic containment",
-            code="semantic.containment",
+            code=Code.CONTAINMENT,
             path=current,
         )
         active.add(id(node))
@@ -163,12 +174,5 @@ def bounded(
         try:
             operation()
         except ContractError as error:
-            issues.append(
-                Issue(
-                    error.code,
-                    str(error),
-                    error.document_id or _document_id(document),
-                    error.path,
-                )
-            )
+            issues.append(Issue.from_error(error, document_id=_document_id(document)))
     return ValidationReport(tuple(issues))

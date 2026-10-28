@@ -121,11 +121,13 @@ modules:
       `rangekeeper.quantity`, so "units" keeps one meaning: a unit string.
       `Quantity` is also at the root.
   - old: rangekeeper.io.store
-    new: rangekeeper.shared.store
-    status: draft
-    source: ADR-010
-    requires: [refactor]
-    note: The protocol imports Model, Specification and Run; these imports must become type-only.
+    new: rangekeeper.io
+    status: agreed
+    source: ADR-010, #98
+    note: >-
+      The `RecordStore` protocol is defined in the internal `shared.store`, so
+      `execution` does not import `io`. Import `RecordStore` and `Document`
+      from `rangekeeper.io`.
   - old: rangekeeper.model.system.projection
     new: rangekeeper.model.system.table
     status: draft

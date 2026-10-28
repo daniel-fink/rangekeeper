@@ -1,27 +1,62 @@
 """Errors shared by the schema-derived record boundary."""
 
+from collections.abc import Iterable, Mapping
+from typing import Any
 from uuid import UUID
+
+from rangekeeper.shared.codes import Code
 
 
 class ContractError(ValueError):
-    """A semantic rule failed, optionally identifying its code and JSON Pointer.
+    """A semantic rule failed, with its code, JSON Pointer and structured fields.
 
-    The message remains the exception text. Validation entrypoints retain the
-    structured context when converting this failure into a diagnostic report.
+    The message remains the exception text. Validation entrypoints convert this
+    failure into an ``Issue`` with the same code, targets, values and evidence.
     """
 
     def __init__(
         self,
         message: str,
         *,
-        code: str = "semantic.contract",
+        code: Code = Code.CONTRACT,
         path: str = "",
         document_id: UUID | None = None,
+        targets: Iterable[UUID] = (),
+        values: Mapping[str, Any] | None = None,
+        evidence: Mapping[str, Any] | None = None,
     ) -> None:
         super().__init__(message)
-        self.code = code
+        self.code = Code(code)
         self.path = path
         self.document_id = document_id
+        self.targets = tuple(targets)
+        self.values = dict(values or {})
+        self.evidence = dict(evidence or {})
+
+    @classmethod
+    def from_issue(cls, issue) -> "ContractError":
+        """Return a ContractError with the code, message and fields of an Issue."""
+        return cls(
+            issue.message,
+            code=issue.code,
+            path=issue.path,
+            document_id=issue.document_id,
+            targets=issue.targets,
+            values=issue.values,
+            evidence=issue.evidence,
+        )
+
+    def at(self, path: str) -> "ContractError":
+        """Return a copy of this error at another JSON Pointer."""
+        return ContractError(
+            str(self),
+            code=self.code,
+            path=path,
+            document_id=self.document_id,
+            targets=self.targets,
+            values=self.values,
+            evidence=self.evidence,
+        )
 
 
 class ValidationError(ValueError):

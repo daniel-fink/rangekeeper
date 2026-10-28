@@ -22,6 +22,7 @@ from rangekeeper.model.expression.evaluation import (
 )
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import UnitError
 
 
@@ -263,9 +264,15 @@ def compile(
         try:
             rows.extend(compiler.assertion(item))
             if constraint_limit is not None and len(rows) > constraint_limit:
-                raise UnsupportedProblem("expanded constraint limit exceeded")
+                raise UnsupportedProblem(
+                    f"expanded constraint limit {constraint_limit} exceeded",
+                    code=Code.CONSTRAINT_LIMIT,
+                )
         except UnsupportedProblem as error:
             raise UnsupportedProblem(
-                str(error), document=item.document, target=item.constraint.id
+                str(error),
+                code=error.code,
+                document=item.document,
+                target=item.constraint.id,
             ) from error
     return Compiled(prepared, tuple(rows))

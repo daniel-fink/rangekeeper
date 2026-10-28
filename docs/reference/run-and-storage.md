@@ -10,10 +10,10 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 | `run/report.py`, `run/outputs.py` | Shared status/report rules and pure output conformance checks; no output helper owns traversal state. |
 | `run/validation.py` | One operation-local owner resolves exact documents, caches matching preparation, and checks the Run tree; public `validate(run, *, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
 | `shared/references.py` | `SpecificationResolver` supplies Model/Specification reads; `DocumentResolver` extends it with Run reads. Domain code imports no IO implementation. |
-| `io/store.py` | `Document` union and `RecordStore` protocol: three typed reads plus `put(document) -> UUID`. |
+| `shared/store.py` | `RecordStore` protocol: three typed reads plus `put(document) -> UUID`. `execution` depends on this protocol, not on `io`. Import it from `rangekeeper.io`. |
 | `io/json.py`, `io/yaml.py` | Explicit-kind `loads`, `dumps`, `read`, and atomic create-only `write`. YAML is imported only when used. |
 | `io/memory.py`, `io/directory.py` | `MemoryStore()` and `DirectoryStore(root)` implement immutable revision storage. |
-| `io/_document.py`, `io/atomic.py` | Small kind/envelope dispatch and filesystem publication helpers; no handwritten field schema. |
+| `io/_document.py`, `io/atomic.py` | The `Document` union, small kind/envelope dispatch and filesystem publication helpers; no handwritten field schema. |
 
 Methods and helpers have docstrings documenting validation, error, mutation, and IO
 boundaries. Generated records remain the only field authority. Root imports expose
