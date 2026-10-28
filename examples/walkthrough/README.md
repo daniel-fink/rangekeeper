@@ -28,7 +28,8 @@ check the lessons.
 | [06](06_project_structure.ipynb) | Project structure | [#208](https://github.com/daniel-fink/rangekeeper/issues/208) |
 | [07](07_policies_and_graph.ipynb) | Rules and design options | [#244](https://github.com/daniel-fink/rangekeeper/issues/244) |
 
-The lessons are skeletons until their issues are done.
+Lesson 01 runs the [proposed cells](proposed/01_basic_dcf.md). The other lessons
+are skeletons until their issues are done.
 
 ## Run the lessons
 
