@@ -522,6 +522,41 @@
    "type": "Registry"
   }
  },
+ "rangekeeper.execution.rule": {
+  "Observation": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
+   },
+   "module": "rangekeeper.execution.rule.result",
+   "signature": "(at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
+  },
+  "RuleCapabilityError": {
+   "kind": "class",
+   "members": {},
+   "module": "rangekeeper.execution.rule.observation",
+   "signature": null
+  },
+  "RuleResult": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None",
+    "assignments": "property"
+   },
+   "module": "rangekeeper.execution.rule.result",
+   "signature": "(evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None"
+  },
+  "evaluate": {
+   "kind": "function",
+   "module": "rangekeeper.execution.rule.evaluation",
+   "signature": "(rules: rangekeeper.schema.records.RuleSet, *, model: rangekeeper.model.model.Model, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.execution.rule.result.RuleResult"
+  },
+  "observe": {
+   "kind": "function",
+   "module": "rangekeeper.execution.rule.observation",
+   "signature": "(model: rangekeeper.model.model.Model, *, at: datetime.date, bindings: collections.abc.Sequence[rangekeeper.schema.records.ObservationBinding]) -> rangekeeper.execution.rule.result.Observation"
+  }
+ },
  "rangekeeper.finance": {
   "financial": {
    "kind": "module",
@@ -2227,14 +2262,6 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, at: Date, observations: tuple[ObservationBinding, ...], rules: tuple[Rule, ...], fallback: tuple[Action, ...]) -> None"
   },
-  "Observation": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
-   },
-   "module": "rangekeeper.specification.rule.result",
-   "signature": "(at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
-  },
   "ObservationBinding": {
    "kind": "class",
    "members": {
@@ -2272,12 +2299,6 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, condition: Expression, actions: tuple[Action, ...]) -> None"
   },
-  "RuleCapabilityError": {
-   "kind": "class",
-   "members": {},
-   "module": "rangekeeper.specification.rule.observation",
-   "signature": null
-  },
   "RuleEvidence": {
    "kind": "class",
    "members": {
@@ -2294,15 +2315,6 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, decision: UUID, at: Date, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...], assignments: tuple[Assignment, ...], terminated: bool, termination_reason: str | None | Unset = <Unset>) -> None"
   },
-  "RuleResult": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None",
-    "assignments": "property"
-   },
-   "module": "rangekeeper.specification.rule.result",
-   "signature": "(evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None"
-  },
   "RuleSet": {
    "kind": "class",
    "members": {
@@ -2314,16 +2326,6 @@
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, targets: tuple[Reference, ...], decisions: tuple[Decision, ...]) -> None"
-  },
-  "evaluate": {
-   "kind": "function",
-   "module": "rangekeeper.specification.rule.evaluation",
-   "signature": "(rules: rangekeeper.schema.records.RuleSet, *, model: rangekeeper.model.model.Model, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.specification.rule.result.RuleResult"
-  },
-  "observe": {
-   "kind": "function",
-   "module": "rangekeeper.specification.rule.observation",
-   "signature": "(model: rangekeeper.model.model.Model, *, at: datetime.date, bindings: collections.abc.Sequence[rangekeeper.schema.records.ObservationBinding]) -> rangekeeper.specification.rule.result.Observation"
   }
  }
 }

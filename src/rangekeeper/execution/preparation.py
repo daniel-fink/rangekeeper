@@ -113,8 +113,8 @@ def prepare(
             raise UnsupportedError(
                 "rule observation targets an endogenous unknown; sequential numerical rules are unsupported"
             )
-        from rangekeeper.specification.rule.evaluation import evaluate
-        from rangekeeper.specification.rule.observation import RuleCapabilityError
+        from rangekeeper.execution.rule.evaluation import evaluate
+        from rangekeeper.execution.rule.observation import RuleCapabilityError
 
         try:
             rule_result = evaluate(requirements.rules, model=model, units=units)

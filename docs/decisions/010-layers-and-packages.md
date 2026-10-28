@@ -1,6 +1,6 @@
 # ADR-010: Layers, packages and public namespaces
 
-Status: accepted for 1.0; library boundary implemented in 1.0.0a1 (#87–#92); layers and namespaces implemented and enforced in 1.0.0a2 (#95, #311, #97), with the exceptions that `pyproject.toml` lists. Recorded: 2026-10-26.
+Status: accepted for 1.0; library boundary implemented in 1.0.0a1 (#87–#92); layers and namespaces implemented and enforced in 1.0.0a2 (#95, #311, #97, #102), with the exceptions that `pyproject.toml` lists. Recorded: 2026-10-26.
 
 ## Problem
 

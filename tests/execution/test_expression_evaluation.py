@@ -13,8 +13,8 @@ from rangekeeper.model import Expression, Reference
 from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.model.expression.evaluation import evaluate as numerical
 from rangekeeper.quantity import Quantity, default_units
+from rangekeeper.run._rule.predicate import evaluate as predicate
 from rangekeeper.shared.errors import UnitError
-from rangekeeper.specification.rule.predicate import evaluate as predicate
 
 
 def literal(amount, units="dimensionless"):
@@ -192,7 +192,7 @@ def test_conjunction_diagnostics_preserve_expression_order():
 
 
 def test_availability_combines_dates_without_runtime_imports():
-    from rangekeeper.specification.rule._availability import available_on
+    from rangekeeper.run._rule.availability import available_on
 
     assert available_on() is None
     assert available_on(period_end=date(2027, 2, 1)) == date(2027, 1, 31)
@@ -205,20 +205,20 @@ def test_availability_combines_dates_without_runtime_imports():
         declared=date(2027, 1, 5),
     ) == date(2027, 1, 5)
     for imports in (
-        "import rangekeeper.specification.validation; import rangekeeper.specification.rule._availability",
-        "import rangekeeper.specification.rule._availability; import rangekeeper.specification.validation",
+        "import rangekeeper.specification.validation; import rangekeeper.run._rule.availability",
+        "import rangekeeper.run._rule.availability; import rangekeeper.specification.validation",
     ):
         subprocess.run(
             [
                 sys.executable,
                 "-c",
                 imports
-                + "; import sys; assert not any(n.startswith(('rangekeeper.specification.rule.evaluation', 'rangekeeper.execution.compiler', 'numpy', 'scipy', 'pint', 'pyomo')) for n in sys.modules)",
+                + "; import sys; assert not any(n.startswith(('rangekeeper.execution.rule.evaluation', 'rangekeeper.execution.compiler', 'numpy', 'scipy', 'pint', 'pyomo')) for n in sys.modules)",
             ],
             check=True,
         )
     for imports in (
-        "import rangekeeper.specification.validation; from rangekeeper.specification.rule import evaluate",
-        "from rangekeeper.specification.rule import evaluate; import rangekeeper.specification.validation",
+        "import rangekeeper.specification.validation; from rangekeeper.execution.rule import evaluate",
+        "from rangekeeper.execution.rule import evaluate; import rangekeeper.specification.validation",
     ):
         subprocess.run([sys.executable, "-c", imports], check=True)

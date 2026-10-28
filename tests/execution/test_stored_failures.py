@@ -6,9 +6,10 @@ import pytest
 
 from rangekeeper import Model, Specification
 from rangekeeper.execution import Executor
+from rangekeeper.execution.rule import RuleCapabilityError, evaluate
 from rangekeeper.io import MemoryStore
 from rangekeeper.run import CompletionStatus, SolutionStatus, validate
-from rangekeeper.specification.rule import RuleCapabilityError, RuleSet, evaluate
+from rangekeeper.specification.rule import RuleSet
 
 
 def identity():

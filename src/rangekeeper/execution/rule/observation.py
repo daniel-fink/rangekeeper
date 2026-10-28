@@ -3,17 +3,17 @@
 from collections.abc import Sequence
 from datetime import date
 
+from rangekeeper.execution.rule.result import Observation
 from rangekeeper.model import Model
 from rangekeeper.model._scope import (
     recorded_quantity,
     resolve_reference,
     scope_for_model,
 )
+from rangekeeper.run._rule.availability import available_on, evidence_dates
 from rangekeeper.schema.records import ObservationBinding, ObservedQuantity, Quantity
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import RangekeeperError
-from rangekeeper.specification.rule._availability import available_on, evidence_dates
-from rangekeeper.specification.rule.result import Observation
 
 
 class RuleCapabilityError(RangekeeperError, ValueError):

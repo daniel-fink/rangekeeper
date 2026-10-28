@@ -7,6 +7,7 @@ import pytest
 
 from rangekeeper.duration import Frequency, make_periods
 from rangekeeper.errors import Code
+from rangekeeper.execution.rule import RuleCapabilityError, evaluate, observe
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.market import replay
 from rangekeeper.market.generation import generate, make_plan
@@ -24,12 +25,7 @@ from rangekeeper.model import (
     ValueKind,
 )
 from rangekeeper.schema.enums import DistributionFamily, Severity, SolutionStatus
-from rangekeeper.specification.rule import (
-    ObservationBinding,
-    RuleCapabilityError,
-    evaluate,
-    observe,
-)
+from rangekeeper.specification.rule import ObservationBinding
 from rangekeeper_examples.investment import build_stop_gain_resale_rules
 
 

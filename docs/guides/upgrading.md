@@ -169,7 +169,11 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.dynamics` | `rangekeeper.market.dynamics` | agreed | Path generators are series maths, so they leave `finance`. `rk.market.Dynamics` follows (#299). |
 | `rangekeeper.run.execution` | `rangekeeper.execution` | agreed |  |
 | `rangekeeper.specification.policy` | `rangekeeper.specification.rule` | agreed | "Policy" is not used. The rule queries of ADR-021 replace the records later (#215). |
-| `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.rule` | draft (needs refactor) | Rule evaluation moves to `execution` (#102). The lazy exports of `specification.rule` load it by its short name. |
+| `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.rule.evaluation` | agreed | Rule evaluation moves to `execution`. `specification.rule` keeps the declarations. Import `evaluate` from `rangekeeper.execution.rule`. |
+| `rangekeeper.specification.policy.observation` | `rangekeeper.execution.rule.observation` | agreed |  |
+| `rangekeeper.specification.policy.result` | `rangekeeper.execution.rule.result` | agreed |  |
+| `rangekeeper.specification.policy.predicate` | `rangekeeper.run._rule.predicate` | draft | Internal. The exact Boolean truth of a condition is shared by the evaluator and the trace check of a stored Run, so it is below `execution`. |
+| `rangekeeper.specification.policy._availability` | `rangekeeper.run._rule.availability` | draft | Internal. Shared by the evaluator and the trace check of a stored Run. |
 | `rangekeeper.shared.units` | `rangekeeper.quantity` | agreed | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
 | `rangekeeper.io.store` | `rangekeeper.io` | agreed | The `RecordStore` protocol is defined in the internal `shared.store`, so `execution` does not import `io`. Import `RecordStore` and `Document` from `rangekeeper.io`. |
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
@@ -219,7 +223,12 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.specification.policy.result.PolicyResult` | `RuleResult` | agreed |  |
 | `rangekeeper.specification.policy.observation.PolicyCapabilityError` | `RuleCapabilityError` | agreed |  |
 | `rangekeeper.specification.policy.validation.validate_policy` | `validate_rules` | agreed |  |
-| `rangekeeper.specification.policy.validation.validate_outcomes` | `validate_evidence` | agreed | It checks the `RuleEvidence` records of a Run report. |
+| `rangekeeper.specification.policy.validation.validate_outcomes` | `rangekeeper.run._rule.evidence.validate_evidence` | agreed | The trace check of the `RuleEvidence` records of a Run report. It is evidence validation, so it moves to the internal `run._rule` (#102). |
+| `rangekeeper.specification.policy.evaluate` | `rangekeeper.execution.rule.evaluate` | agreed | `specification.rule` exports only the declarations. |
+| `rangekeeper.specification.policy.observe` | `rangekeeper.execution.rule.observe` | agreed |  |
+| `rangekeeper.specification.policy.Observation` | `rangekeeper.execution.rule.Observation` | agreed |  |
+| `rangekeeper.specification.policy.PolicyResult` | `rangekeeper.execution.rule.RuleResult` | agreed |  |
+| `rangekeeper.specification.policy.PolicyCapabilityError` | `rangekeeper.execution.rule.RuleCapabilityError` | agreed |  |
 | `rangekeeper.execution.errors.UnsupportedProblem` | `UnsupportedError` | agreed | Every error name ends in `Error`. |
 | `rangekeeper.model.expression.evaluation.UnsupportedExpression` | `UnsupportedError` | agreed | One error for unsupported expressions and problems. |
 | `rangekeeper.execution.errors.BackendUnavailable` | `BackendUnavailableError` | agreed |  |

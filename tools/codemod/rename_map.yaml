@@ -107,11 +107,32 @@ modules:
     source: ADR-021, #255 D41
     note: '"Policy" is not used. The rule queries of ADR-021 replace the records later (#215).'
   - old: rangekeeper.specification.policy.evaluation
-    new: rangekeeper.execution.rule
+    new: rangekeeper.execution.rule.evaluation
+    status: agreed
+    source: ADR-010, #102
+    note: >-
+      Rule evaluation moves to `execution`. `specification.rule` keeps the
+      declarations. Import `evaluate` from `rangekeeper.execution.rule`.
+  - old: rangekeeper.specification.policy.observation
+    new: rangekeeper.execution.rule.observation
+    status: agreed
+    source: ADR-010, #102
+  - old: rangekeeper.specification.policy.result
+    new: rangekeeper.execution.rule.result
+    status: agreed
+    source: ADR-010, #102
+  - old: rangekeeper.specification.policy.predicate
+    new: rangekeeper.run._rule.predicate
     status: draft
-    source: ADR-010, #255 D41
-    requires: [refactor]
-    note: Rule evaluation moves to `execution` (#102). The lazy exports of `specification.rule` load it by its short name.
+    source: ADR-021, #102
+    note: >-
+      Internal. The exact Boolean truth of a condition is shared by the
+      evaluator and the trace check of a stored Run, so it is below `execution`.
+  - old: rangekeeper.specification.policy._availability
+    new: rangekeeper.run._rule.availability
+    status: draft
+    source: ADR-021, #102
+    note: Internal. Shared by the evaluator and the trace check of a stored Run.
   - old: rangekeeper.shared.units
     new: rangekeeper.quantity
     status: agreed
@@ -392,9 +413,40 @@ symbols:
   - module: rangekeeper.specification.policy.validation
     name: validate_outcomes
     new_name: validate_evidence
+    new_module: rangekeeper.run._rule.evidence
     status: agreed
-    source: "#255 D41"
-    note: It checks the `RuleEvidence` records of a Run report.
+    source: "#255 D41, #102"
+    note: >-
+      The trace check of the `RuleEvidence` records of a Run report. It is
+      evidence validation, so it moves to the internal `run._rule` (#102).
+  - module: rangekeeper.specification.policy
+    name: evaluate
+    new_module: rangekeeper.execution.rule
+    status: agreed
+    source: ADR-010, #102
+    note: "`specification.rule` exports only the declarations."
+  - module: rangekeeper.specification.policy
+    name: observe
+    new_module: rangekeeper.execution.rule
+    status: agreed
+    source: ADR-010, #102
+  - module: rangekeeper.specification.policy
+    name: Observation
+    new_module: rangekeeper.execution.rule
+    status: agreed
+    source: ADR-010, #102
+  - module: rangekeeper.specification.policy
+    name: PolicyResult
+    new_name: RuleResult
+    new_module: rangekeeper.execution.rule
+    status: agreed
+    source: "#255 D41, ADR-010, #102"
+  - module: rangekeeper.specification.policy
+    name: PolicyCapabilityError
+    new_name: RuleCapabilityError
+    new_module: rangekeeper.execution.rule
+    status: agreed
+    source: "#255 D41, ADR-010, #102"
   - module: rangekeeper.execution.errors
     name: UnsupportedProblem
     new_name: UnsupportedError
