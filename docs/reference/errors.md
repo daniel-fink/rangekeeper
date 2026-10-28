@@ -109,7 +109,7 @@ except rk.errors.ValidationError as error:
 | `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
 | `model.system`: `SelectionError`, `AggregationError` | `ValueError` | `SELECTION`, `AGGREGATION` |
 | `market`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
-| `specification.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
+| `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
 | `NumericalError` | `ValueError` | `NUMERICAL_FAILURE` |
 | `BackendUnavailableError`, `AttemptDeadlineError` | `RuntimeError` | `BACKEND_UNAVAILABLE`, `ATTEMPT_DEADLINE` |
 | `PublishedFileError` | `OSError` | `PUBLISHED_FILE` |

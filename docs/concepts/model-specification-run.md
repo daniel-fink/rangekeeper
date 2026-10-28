@@ -8,8 +8,8 @@ Import the three facades from `rangekeeper`. Their capability packages follow
 their ownership: `model.system` owns graph views, `model.formulation` owns passive
 equation builders, `duration` owns calendar rules, `profile` owns growth and
 distribution profiles, and `market` owns path generators and captured futures. Rule
-operations belong to `specification.rule`; numerical
-execution belongs to `execution`. Generated records and their runtime live in
+declarations belong to `specification.rule`; rule evaluation and numerical
+execution belong to `execution`. Generated records and their runtime live in
 `schema`, while reusable tables, units live in `quantity`, and reusable tables and resolver contracts live in `shared`.
 
 ## Model

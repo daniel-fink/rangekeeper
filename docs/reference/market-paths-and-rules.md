@@ -39,10 +39,12 @@ See [calendar contracts](calculations.md).
 | `market.dynamics` | Deterministic trend, cycle and shock kernels over supplied inputs |
 | `market.implementation` | Calculation provenance and its source/dependency manifest, from the import closure of the calculation |
 | `market.replay` | Check saved paths against captured inputs and the available calculation |
-| `specification.rule` | Generated declarations and evidence, `evaluate`, `observe` and derived results |
-| `specification.rule._availability` | Pure date rule, shared by runtime observation and stored-evidence checks |
-| `specification.rule.predicate` | Exact Boolean truth and short-circuiting; arithmetic uses the shared evaluator |
-| `specification.rule.validation` | Rule declaration and independent stored-evidence checks |
+| `specification.rule` | Generated declarations and evidence |
+| `specification.rule.validation` | Rule declaration checks |
+| `execution.rule` | `evaluate`, `observe` and derived results |
+| `run._rule.availability` | Pure date rule, shared by runtime observation and stored-evidence checks |
+| `run._rule.predicate` | Exact Boolean truth and short-circuiting; arithmetic uses the shared evaluator |
+| `run._rule.evidence` | Independent stored-evidence checks (the trace check) |
 | `rangekeeper_examples.investment` | The model-specific resale rules and investment author/formulate/specify/report operations |
 
 Builders return immutable declarations. They do not solve or read recorded amounts
@@ -119,7 +121,8 @@ the evidence. Each record's `decision` identifies its declaration. The rule
 queries of [ADR-021](../decisions/021-sequential-decisions.md) replace these
 records ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)). There is no public `decide` or `DecisionHistory` wrapper.
 
-`evaluate(rules, model=..., units=None)` prepares the scope and availability index
+Import `evaluate`, `observe`, `RuleResult` and `RuleCapabilityError` from
+`rangekeeper.execution.rule`. `evaluate(rules, model=..., units=None)` prepares the scope and availability index
 once; without `units` it uses `Model.unit_system`. It then applies the first true rule or the explicit fallback. Actions assign
 controls and may terminate. `observe` accepts only named quantities available by
 the decision date. Earlier evidence can supply later observations; a recorded

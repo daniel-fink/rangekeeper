@@ -31,7 +31,7 @@ def validate_outputs(
     assignments = list(effective.get("assignments") or [])
     decisions = run["report"].get("rule_evidence") or []
     if effective.get("rules"):
-        from rangekeeper.specification.rule.validation import validate_evidence
+        from rangekeeper.run._rule.evidence import validate_evidence
 
         assignments.extend(
             validate_evidence(

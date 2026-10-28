@@ -40,6 +40,7 @@ PACKAGES = (
     "rangekeeper.run",
     "rangekeeper.execution",
     "rangekeeper.execution.backends",
+    "rangekeeper.execution.rule",
     "rangekeeper.io",
     "rangekeeper.errors",
 )

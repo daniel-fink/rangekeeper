@@ -502,10 +502,11 @@ def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
     """Exercise real converted comparisons through both public entry points."""
     from copy import deepcopy
 
+    from rangekeeper.execution.rule import evaluate
     from rangekeeper.io import MemoryStore
     from rangekeeper.quantity import UnitSystem
     from rangekeeper.run import Run, validate
-    from rangekeeper.specification.rule import RuleSet, evaluate
+    from rangekeeper.specification.rule import RuleSet
 
     conversions = []
 

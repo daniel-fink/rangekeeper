@@ -63,7 +63,7 @@ contracts enforce the rule.
 | 7 | `finance` | Calculations on known values: PV, NPV, IRR, payments and interest |
 | 8 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
 | 9 | `specification` | The Specification document, composition, roles and rule declarations |
-| 10 | `run` | The Run document and evidence validation |
+| 10 | `run` | The Run document and evidence validation, with the rule trace check |
 | 11 | `execution` | Case resolution, role binding, problem building, backends, verification, rule evaluation and publication |
 | 12 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
@@ -142,9 +142,9 @@ contents are not yet in their 1.0 owner:
 | `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#299](https://github.com/daniel-fink/rangekeeper/issues/299), [#303](https://github.com/daniel-fink/rangekeeper/issues/303)). Generation, `Market` and replay still import `model`, above `market` |
 | `finance` | Financial valuation: PV, NPV, IRR and day counts | `pv`, `npv`, `irr` and `payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry | — |
-| `specification` | The Specification document, composition, roles, and rule declarations and evaluation | Rule evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
-| `run` | The Run document, its report and outputs, and evidence validation | — |
-| `execution` | Preparation, compilation, backends, acceptance and publication | Rule evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
+| `specification` | The Specification document, composition, roles, and rule declarations and their validation | Rule queries over a `Window` replace the rule records ([#300](https://github.com/daniel-fink/rangekeeper/issues/300), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
+| `run` | The Run document, its report and outputs, and evidence validation. The internal `run._rule` has the rule trace check, with the exact condition truth and the availability rule that rule evaluation also uses | — |
+| `execution` | Preparation, compilation, backends, acceptance, publication and rule evaluation (`execution.rule`) | Sequential rule evaluation replaces `execution.rule.evaluate` ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
 | `io` | JSON and YAML codecs, stores, Bundle and Polars export. It re-exports the `RecordStore` protocol from `shared` | — |
 
 The import-linter contract in [`pyproject.toml`](../../pyproject.toml) enforces the

@@ -1,12 +1,12 @@
 """Statically checked Model projection and source workflow calls."""
 
 from rangekeeper import Model
+from rangekeeper.execution.rule import RuleResult
 from rangekeeper.market import Market
 from rangekeeper.model import Distribution, Value
 from rangekeeper.model.system import Hierarchy, View
 from rangekeeper.model.system.table import ValueColumn, to_table
 from rangekeeper.shared.table import Table
-from rangekeeper.specification.rule import RuleResult
 
 
 def consume(model: Model) -> Table:

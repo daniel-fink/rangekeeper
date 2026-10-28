@@ -455,9 +455,7 @@ class _RunValidation:
                             or solution != "not_assessed"
                         )
                     ):
-                        from rangekeeper.specification.rule.validation import (
-                            validate_evidence,
-                        )
+                        from rangekeeper.run._rule.evidence import validate_evidence
 
                         validate_evidence(
                             effective["rules"],
