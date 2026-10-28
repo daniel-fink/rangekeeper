@@ -5,11 +5,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID
 
-from rangekeeper.execution.errors import NumericalError, UnsupportedProblem
+from rangekeeper.execution.errors import NumericalError, UnsupportedError
 from rangekeeper.execution.preparation import Prepared
 from rangekeeper.model import Model
 from rangekeeper.model.expression.evaluation import (
-    UnsupportedExpression,
     evaluate,
     finite_quantity,
 )
@@ -24,6 +23,7 @@ from rangekeeper.schema.records import (
     Operator,
     Quantity,
 )
+from rangekeeper.shared.codes import Code
 
 
 @dataclass(frozen=True)
@@ -81,7 +81,7 @@ def check(
             diagnostics.append(
                 Diagnostic(
                     severity=Severity.ERROR,
-                    code="assignment_rejected",
+                    code=Code.ASSIGNMENT_REJECTED.value,
                     message="Candidate changed an explicit assignment.",
                     document=prepared.model.id,
                     target=prepared.references[id].target,
@@ -126,7 +126,7 @@ def check(
             diagnostics.append(
                 Diagnostic(
                     severity=Severity.INFO if valid else Severity.ERROR,
-                    code="constraint_residual",
+                    code=Code.CONSTRAINT_RESIDUAL.value,
                     message=(
                         f"Independent original-expression check: {relation}; signed residual left-right, "
                         f"unscaled in left-side units; tolerance = {tolerances.absolute} + "
@@ -169,7 +169,7 @@ def _comparisons(
             node.kind is ExpressionKind.BINARY and node.operator is Operator.LOGICAL_AND
         ):
             if node.operands is None or len(node.operands) != 2:
-                raise UnsupportedProblem("conjunction requires two operands")
+                raise UnsupportedError("conjunction requires two operands")
             for child in node.operands:
                 yield from _comparisons(child, values, units=units, fixed=fixed)
         elif node.kind is ExpressionKind.BINARY and node.operator in (
@@ -180,7 +180,7 @@ def _comparisons(
             Operator.GREATER_THAN,
         ):
             if node.operands is None or len(node.operands) != 2:
-                raise UnsupportedProblem("comparison requires two operands")
+                raise UnsupportedError("comparison requires two operands")
             strict = node.operator in (Operator.LESS_THAN, Operator.GREATER_THAN)
             if strict and any(
                 child.target.target not in fixed
@@ -189,7 +189,7 @@ def _comparisons(
                 and child.kind is ExpressionKind.REFERENCE
                 and child.target is not None
             ):
-                raise UnsupportedProblem(
+                raise UnsupportedError(
                     "strict predicates require only fixed assigned or literal operands"
                 )
             left = evaluate(node.operands[0], values, units=units)
@@ -198,10 +198,8 @@ def _comparisons(
             )
             yield node.operator.value, left, right, strict
         else:
-            raise UnsupportedProblem("unsupported predicate in numerical acceptance")
-    except UnsupportedExpression as error:
-        raise UnsupportedProblem(str(error)) from error
-    except UnsupportedProblem:
+            raise UnsupportedError("unsupported predicate in numerical acceptance")
+    except UnsupportedError:
         raise
     except (ArithmeticError, ValueError, TypeError) as error:
         raise NumericalError(str(error)) from error

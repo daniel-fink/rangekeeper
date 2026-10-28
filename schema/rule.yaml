@@ -14,38 +14,49 @@ classes:
     description: An explicit observation target. An optional date may delay availability but cannot advance it.
     attributes:
       name:
+        description: Name of the observation, unique within its Decision.
         range: Code
         required: true
       target:
+        description: Value or Movement whose recorded or decided quantity the Decision observes.
         range: Reference
         required: true
         inlined: true
       available_at:
+        description: Optional date that can delay availability; it cannot make the quantity available earlier.
         range: date
   Action:
     description: An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.
     attributes:
       kind:
+        description: Whether the action assigns a control or terminates the decision sequence.
         range: ActionKind
         required: true
       target:
+        description: Controlled target to assign; required for assign and absent for terminate.
         range: Reference
         inlined: true
       quantity:
+        description: Finite quantity to assign, with units compatible with the target; required for assign and
+          absent for terminate.
         range: Quantity
         inlined: true
   Rule:
     description: One ordered Boolean condition and its atomic actions.
     attributes:
       id:
+        description: Stable identity of the Rule, referenced by RuleEvidence.
         range: UUID
         required: true
         identifier: true
       condition:
+        description: Boolean Expression that refers only to the observations of its Decision.
         range: Expression
         required: true
         inlined: true
       actions:
+        description: Nonempty ordered actions applied when this is the first true Rule; terminate can only be
+          last.
         range: Action
         required: true
         inlined: true
@@ -56,13 +67,16 @@ classes:
     description: One dated rule decision with explicit observations, first-match rules and fallback.
     attributes:
       id:
+        description: Stable identity of the Decision, referenced by RuleEvidence.
         range: UUID
         required: true
         identifier: true
       at:
+        description: Decision date; dates increase strictly within the RuleSet.
         range: date
         required: true
       observations:
+        description: Ordered observations that the rule conditions can read.
         range: ObservationBinding
         required: true
         inlined: true
@@ -70,6 +84,7 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
       rules:
+        description: Ordered rules; the first Rule whose condition is true supplies the actions.
         range: Rule
         required: true
         inlined: true
@@ -77,6 +92,7 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
       fallback:
+        description: Nonempty ordered actions applied when no rule condition is true.
         range: Action
         required: true
         inlined: true
@@ -87,10 +103,12 @@ classes:
     description: The rules of a Specification, owning explicit controlled targets and ordered dated decisions.
     attributes:
       id:
+        description: Stable identity of the RuleSet.
         range: UUID
         required: true
         identifier: true
       targets:
+        description: Nonempty unique controlled targets; the decision actions must assign each one.
         range: Reference
         required: true
         inlined: true
@@ -98,6 +116,7 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
       decisions:
+        description: Dated Decisions in strictly increasing date order.
         range: Decision
         required: true
         inlined: true
@@ -108,31 +127,40 @@ classes:
     description: The exact quantity and availability supplied to a decision.
     attributes:
       name:
+        description: Name of the ObservationBinding that this quantity satisfies.
         range: Code
         required: true
       target:
+        description: Observed Value or Movement, equal to the target of the ObservationBinding.
         range: Reference
         required: true
         inlined: true
       quantity:
+        description: Exact quantity supplied to the rule conditions.
         range: Quantity
         required: true
         inlined: true
       available_at:
+        description: Date from which the quantity was available; it is not later than the Decision date.
         range: date
         required: true
   RuleEvidence:
     description: Recorded evidence of one evaluated decision; absence of a rule means fallback.
     attributes:
       decision:
+        description: UUID of the evaluated Decision.
         range: UUID
         required: true
       at:
+        description: Date of the evaluated Decision.
         range: date
         required: true
       rule:
+        description: UUID of the first Rule whose condition was true; absent or null when the fallback
+          applied.
         range: UUID
       observations:
+        description: Observed quantities, in the order of the Decision observations.
         range: ObservedQuantity
         required: true
         inlined: true
@@ -140,6 +168,7 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
       assignments:
+        description: Assignments made by the applied actions, in action order.
         range: Assignment
         required: true
         inlined: true
@@ -147,6 +176,8 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
       terminated:
+        description: Whether the applied actions terminated the decision sequence; no evidence follows a
+          termination.
         range: boolean
         required: true
       termination_reason:

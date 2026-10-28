@@ -15,8 +15,11 @@ worker. `pyproject.toml` declares the supported version ranges. The worker does
 not refuse other versions; the Run evidence records the Pyomo and HiGHS versions
 that it found.
 
-`Executor(store, *, backend=None, units=None, tolerances=Tolerances())`
+`Executor(store, *, backend="pyomo-highs", units=None, tolerances=Tolerances())`
 supports `MemoryStore`, `DirectoryStore` or a compatible `RecordStore`.
+`backend` is a `Backend` or the name of one in `execution.backends.registry`
+([extension points](extensions.md)). Each Run records the backend as a `solver`
+implementation, with its registered name and fingerprint.
 Without `units`, each attempt uses the [unit system](units.md) of its input Model.
 `execute(specification: Specification) -> Run` stores the supplied root after
 reference-graph preflight. Referenced Models, includes and cases must already be
@@ -77,7 +80,8 @@ valuation formulas.
 ## Settings, limits and conclusions
 
 - Default limits are **30 seconds**, **100,000 simplex iterations**, **10,000 symbols**
-  and **20,000 affine constraints** per leaf.
+  and **20,000 affine constraints** per leaf. An attempt that exceeds the symbol or
+  constraint limit fails with a `symbol_limit` or `constraint_limit` diagnostic.
   Requested `iteration_limit` maps to HiGHS simplex iterations; presolve reductions
   are separate. Requests exceeding HiGHS's integer maximum are clamped with a
   `settings_adjusted` diagnostic.
@@ -155,6 +159,7 @@ role's entry modules in `rangekeeper`: `shared.fingerprints.import_closure` read
 the import statements with `ast` and does not import the modules. Shared
 arithmetic changes alter both identities. Comments and docstrings do not. A
 missing entry or imported module fails explicitly.
-Solver implementation/version evidence remains owned by the backend. Workflow and
+Solver implementation/version evidence remains owned by the backend. The
+backend's own fingerprint comes from its [registration](extensions.md#fingerprints). Workflow and
 scenario calculations share hashing mechanics but retain separate manifests and
 provenance contracts.

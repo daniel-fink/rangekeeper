@@ -121,11 +121,13 @@ modules:
       `rangekeeper.quantity`, so "units" keeps one meaning: a unit string.
       `Quantity` is also at the root.
   - old: rangekeeper.io.store
-    new: rangekeeper.shared.store
-    status: draft
-    source: ADR-010
-    requires: [refactor]
-    note: The protocol imports Model, Specification and Run; these imports must become type-only.
+    new: rangekeeper.io
+    status: agreed
+    source: ADR-010, #98
+    note: >-
+      The `RecordStore` protocol is defined in the internal `shared.store`, so
+      `execution` does not import `io`. Import `RecordStore` and `Document`
+      from `rangekeeper.io`.
   - old: rangekeeper.model.system.projection
     new: rangekeeper.model.system.table
     status: draft
@@ -386,6 +388,28 @@ symbols:
     status: agreed
     source: "#255 D41"
     note: It checks the `RuleEvidence` records of a Run report.
+  - module: rangekeeper.execution.errors
+    name: UnsupportedProblem
+    new_name: UnsupportedError
+    status: agreed
+    source: ADR-016, #255 D26
+    note: Every error name ends in `Error`.
+  - module: rangekeeper.model.expression.evaluation
+    name: UnsupportedExpression
+    new_name: UnsupportedError
+    status: agreed
+    source: ADR-016
+    note: One error for unsupported expressions and problems.
+  - module: rangekeeper.execution.errors
+    name: BackendUnavailable
+    new_name: BackendUnavailableError
+    status: agreed
+    source: ADR-016
+  - module: rangekeeper.execution.errors
+    name: AttemptDeadline
+    new_name: AttemptDeadlineError
+    status: agreed
+    source: ADR-016
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it
@@ -582,6 +606,14 @@ removed:
     status: agreed
     source: ADR-012, ADR-014
     requires: [refactor]
+  - name: rangekeeper.shared.errors.BoundaryError
+    replacement: rangekeeper.errors.RangekeeperError
+    status: agreed
+    source: ADR-016
+  - name: rangekeeper.shared.errors.ValueEncodingError
+    replacement: rangekeeper.errors.EncodingError
+    status: agreed
+    source: ADR-016
 
 # Decisions of #255 that change API shapes, not names. They are listed in the
 # upgrade guide. The codemod does not apply them.

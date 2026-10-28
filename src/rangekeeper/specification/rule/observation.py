@@ -10,12 +10,16 @@ from rangekeeper.model.scope import (
     scope_for_model,
 )
 from rangekeeper.schema.records import ObservationBinding, ObservedQuantity, Quantity
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import RangekeeperError
 from rangekeeper.specification.rule._availability import available_on, evidence_dates
 from rangekeeper.specification.rule.result import Observation
 
 
-class RuleCapabilityError(ValueError):
+class RuleCapabilityError(RangekeeperError, ValueError):
     """Missing, unavailable or endogenous quantities cannot drive a finite rule set."""
+
+    code = Code.RULE_CAPABILITY
 
 
 def _observe(scope, *, at, bindings, evidence, prior, controlled):

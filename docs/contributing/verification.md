@@ -80,7 +80,7 @@ python tools/schema/typecheck.py
 
 `check_generator.py` gives the generator slots that it must reject: Python
 keywords, names of record methods, more than one record type in
-one slot, and enum collections.
+one slot, enum collections, and classes or slots without a description.
 The native round trip and typing checks also need `mypy==1.18.2`,
 `py-moneyed` and `pint` in that environment. `verify_native.py` generates the
 stock LinkML module in a temporary folder; the package does not contain it.

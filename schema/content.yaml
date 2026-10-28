@@ -14,35 +14,45 @@ classes:
     description: Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked semantically.
     attributes:
       kind:
+        description: Type tag; it determines which other fields are present and how text is read.
         range: ContentKind
         required: true
       text:
+        description: Canonical text of a scalar value, such as an ISO date or a duration in microseconds;
+          absent for null and container kinds.
         range: string
       zone:
+        description: Optional IANA time-zone key of a datetime or time value.
         range: string
       fold:
+        description: Fold, 0 or 1, of a datetime or time value; it selects between repeated wall-clock times.
         range: integer
         minimum_value: 0
         maximum_value: 1
       items:
+        description: Ordered members of a list, tuple, set or frozenset; set members use a canonical order.
         range: PropertyContent
         multivalued: true
         inlined: true
         inlined_as_list: true
         list_elements_ordered: true
       entries:
+        description: Ordered entries of a mapping or mapping proxy; keys are unique.
         range: ContentEntry
         multivalued: true
         inlined: true
         inlined_as_list: true
         list_elements_ordered: true
   ContentEntry:
+    description: One key-value entry of mapping content.
     attributes:
       key:
+        description: Content of the mapping key.
         range: PropertyContent
         required: true
         inlined: true
       value:
+        description: Content of the value for the key.
         range: PropertyContent
         required: true
         inlined: true

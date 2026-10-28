@@ -14,10 +14,12 @@ classes:
     description: One exact provider dataset and explicit Entity associations, owned by this Model.
     attributes:
       pin:
+        description: Exact pin of the provider dataset that this Model owns.
         range: GeometryPin
         required: true
         inlined: true
       mappings:
+        description: Associations of Entities or Assemblies with typed source elements in the pinned dataset.
         range: GeometryMapping
         multivalued: true
         inlined: true
@@ -27,12 +29,16 @@ classes:
       integrity.
     attributes:
       provider:
+        description: Code that names the Geometry provider; with format and format_version, it selects the
+          provider adapter.
         range: Code
         required: true
       format:
+        description: Code that names the native dataset format.
         range: Code
         required: true
       format_version:
+        description: Version of the native dataset format.
         range: Code
         required: true
       specification:
@@ -40,34 +46,43 @@ classes:
         required: true
         description: Immutable upstream specification identifier, such as a full commit URL.
       specification_digest:
+        description: Lowercase hexadecimal SHA-256 digest of the pinned upstream specification.
         range: string
         required: true
         pattern: ^[0-9a-f]{64}$
       content_digest:
+        description: Lowercase hexadecimal SHA-256 digest of the file inventory sorted by path; validation
+          recomputes it from files.
         range: string
         required: true
         pattern: ^[0-9a-f]{64}$
       files:
+        description: Inventory of the retained native files; each path is unique.
         range: GeometryFile
         required: true
         multivalued: true
         inlined: true
         inlined_as_list: true
       source_address:
+        description: Optional address of the source dataset; it does not replace the digests.
         range: string
       source_version:
+        description: Optional version of the source dataset at the source address.
         range: string
   GeometryFile:
     description: One retained native file, addressed relative to the Geometry root.
     attributes:
       path:
+        description: Relative POSIX path under the Geometry root, without empty, dot or parent segments.
         range: string
         required: true
       sha256:
+        description: Lowercase hexadecimal SHA-256 digest of the file bytes.
         range: string
         required: true
         pattern: ^[0-9a-f]{64}$
       size:
+        description: File size in bytes.
         range: integer
         required: true
         minimum_value: 0
@@ -75,10 +90,12 @@ classes:
     description: One Entity or Assembly corresponds to one exact typed source element. This is not provenance.
     attributes:
       entity:
+        description: UUID of the mapped Entity or Assembly in this Model.
         range: Entity
         required: true
         inlined: false
       element:
+        description: Typed source element in the pinned dataset that corresponds to the Entity.
         range: GeometryElement
         required: true
         inlined: true
@@ -87,17 +104,22 @@ classes:
       mesh IDs are not source-object identities.
     attributes:
       namespace:
+        description: Provider-defined namespace of the element key.
         range: Code
         required: true
       kind:
+        description: Element kind; RK accepts object or group.
         range: Code
         required: true
       key:
+        description: Nonempty provider-defined identifier of the element in its namespace.
         range: string
         required: true
       scope:
+        description: Optional provider-defined scope that qualifies the key.
         range: string
       placement:
+        description: Optional ordered placement path that selects one placement of the element.
         range: string
         multivalued: true
         list_elements_ordered: true

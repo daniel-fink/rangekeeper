@@ -6,10 +6,7 @@ from uuid import UUID
 
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
-
-
-class UnsupportedExpression(ValueError):
-    """The expression is outside the finite numerical arithmetic contract."""
+from rangekeeper.shared.errors import UnsupportedError
 
 
 def finite_quantity(magnitude: float, units: str) -> Quantity:
@@ -46,7 +43,7 @@ def evaluate(
         Operator.DIVIDE,
         Operator.POWER,
     }:
-        raise UnsupportedExpression(
+        raise UnsupportedError(
             f"unsupported numerical expression: {node.kind}/{node.operator}"
         )
     if node.operands is None or len(node.operands) != 2:

@@ -169,7 +169,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.specification.policy` | `rangekeeper.specification.rule` | agreed | "Policy" is not used. The rule queries of ADR-021 replace the records later (#215). |
 | `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.rule` | draft (needs refactor) | Rule evaluation moves to `execution` (#102). The lazy exports of `specification.rule` load it by its short name. |
 | `rangekeeper.shared.units` | `rangekeeper.quantity` | agreed | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
-| `rangekeeper.io.store` | `rangekeeper.shared.store` | draft (needs refactor) | The protocol imports Model, Specification and Run; these imports must become type-only. |
+| `rangekeeper.io.store` | `rangekeeper.io` | agreed | The `RecordStore` protocol is defined in the internal `shared.store`, so `execution` does not import `io`. Import `RecordStore` and `Document` from `rangekeeper.io`. |
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
 | `rangekeeper.model.scenario` | `rangekeeper.market` | agreed | The generators, paths and replay move as they are. `rk.market.Paths` and the MarketPaths document replace the scenario plan (#299, #303). |
 | `rangekeeper.model.scenario.market` | `rangekeeper.market.generation` | draft | Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name. |
@@ -217,6 +217,10 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.specification.policy.observation.PolicyCapabilityError` | `RuleCapabilityError` | agreed |  |
 | `rangekeeper.specification.policy.validation.validate_policy` | `validate_rules` | agreed |  |
 | `rangekeeper.specification.policy.validation.validate_outcomes` | `validate_evidence` | agreed | It checks the `RuleEvidence` records of a Run report. |
+| `rangekeeper.execution.errors.UnsupportedProblem` | `UnsupportedError` | agreed | Every error name ends in `Error`. |
+| `rangekeeper.model.expression.evaluation.UnsupportedExpression` | `UnsupportedError` | agreed | One error for unsupported expressions and problems. |
+| `rangekeeper.execution.errors.BackendUnavailable` | `BackendUnavailableError` | agreed |  |
+| `rangekeeper.execution.errors.AttemptDeadline` | `AttemptDeadlineError` | agreed |  |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |
@@ -254,6 +258,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scenario.market.realize` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.market.generate` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.view.Market` | The MarketPaths document | agreed (needs refactor) |
+| `rangekeeper.shared.errors.BoundaryError` | rangekeeper.errors.RangekeeperError | agreed |
+| `rangekeeper.shared.errors.ValueEncodingError` | rangekeeper.errors.EncodingError | agreed |
 
 ### Changes of API shape
 

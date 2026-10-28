@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from rangekeeper import Model
+from rangekeeper.errors import Code
 from rangekeeper.model import validation
 from rangekeeper.schema.index import RecordIndex
 from rangekeeper.schema.records import Entity
@@ -241,7 +242,7 @@ def test_history_context_remains_ordered_and_detached(case, indexed):
 
 
 def test_initial_and_history_structural_issues_prevent_export(monkeypatch):
-    initial = [Issue("structure.test", "earlier fault", path="/first")]
+    initial = [Issue(Code.STRUCTURE_REQUIRED, "earlier fault", path="/first")]
     history = [{"id": "invalid", "schema_version": False}, {}]
 
     def forbidden(*args, **kwargs):
@@ -254,7 +255,7 @@ def test_initial_and_history_structural_issues_prevent_export(monkeypatch):
     assert actual.issues[0] == initial[0]
     assert any(issue.path.startswith("/history/0/") for issue in actual.issues[1:])
     assert any(issue.path == "/history/1" for issue in actual.issues[1:])
-    assert initial == [Issue("structure.test", "earlier fault", path="/first")]
+    assert initial == [Issue(Code.STRUCTURE_REQUIRED, "earlier fault", path="/first")]
 
 
 @pytest.mark.parametrize("value", [None, False, [], {}, {"metadata": None}])

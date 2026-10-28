@@ -95,9 +95,11 @@ classes:
         description: Explanation of the meaning of this Value within its owner.
         range: string
       flow:
+        description: Temporal quantities of a flow Value.
         range: Flow
         inlined: true
       content:
+        description: Inert typed content of a property Value.
         range: PropertyContent
         inlined: true
     slot_usage:

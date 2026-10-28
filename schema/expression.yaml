@@ -47,6 +47,7 @@ classes:
         identifier: true
         required: true
       kind:
+        description: Form of the Expression; it determines which content field is present.
         range: ExpressionKind
         required: true
       quantity:
@@ -70,6 +71,7 @@ classes:
         - range: Reference
           inlined: true
       operator:
+        description: Operator of a unary or binary Expression; absent for other kinds.
         range: Operator
       operands:
         description: Two ordered operands of a binary operator. Unary operators use operand; Function calls use
@@ -92,18 +94,21 @@ classes:
         - range: Expression
           inlined: true
       call:
+        description: Function call content of a call Expression.
         range: Call
         inlined: true
         all_of:
         - range: Call
           inlined: true
       selection:
+        description: Member or index selection content of a selection Expression.
         range: Selection
         inlined: true
         all_of:
         - range: Selection
           inlined: true
       query:
+        description: Embedded graph query of a query Expression; the Expression owns it.
         range: Query
         inlined: true
         all_of:
@@ -244,6 +249,7 @@ classes:
       cannot read ambient graph or session state.
     attributes:
       function:
+        description: UUID of the Function that the call applies.
         range: Function
         required: true
         inlined: false
@@ -277,9 +283,11 @@ classes:
     description: One named expression argument in a Function call.
     attributes:
       name:
+        description: Name of the Function parameter to which the argument binds.
         range: Code
         required: true
       expression:
+        description: Expression supplied for the parameter.
         range: Expression
         required: true
         inlined: true
@@ -296,9 +304,11 @@ classes:
       indices are errors. Sets and bags have no positional indices.
     attributes:
       kind:
+        description: Whether the selection reads a declared member or an indexed element.
         range: SelectionKind
         required: true
       base:
+        description: Expression whose structured content supplies the member or element.
         range: Expression
         required: true
         inlined: true

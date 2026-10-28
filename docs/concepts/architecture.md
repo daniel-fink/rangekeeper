@@ -133,7 +133,7 @@ contents are not yet in their 1.0 owner:
 
 | Package | Contents now | Moves that follow |
 | --- | --- | --- |
-| `shared` | Errors, diagnostics, validation helpers, encoding, references, tables and fingerprints | The store and resolver protocols arrive from `io` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
+| `shared` | Errors, diagnostics, validation helpers, encoding, the resolver and store protocols, tables and fingerprints | — |
 | `schema` | Data-only generated records, enums, the record runtime, the kind registry and structural validation | — |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
@@ -145,7 +145,7 @@ contents are not yet in their 1.0 owner:
 | `specification` | The Specification document, composition, roles, and rule declarations and evaluation | Rule evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
 | `run` | The Run document, its report and outputs, and evidence validation | — |
 | `execution` | Preparation, compilation, backends, acceptance and publication | Rule evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
-| `io` | JSON and YAML codecs, stores, Bundle and Polars export | The store protocol moves to `shared` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
+| `io` | JSON and YAML codecs, stores, Bundle and Polars export. It re-exports the `RecordStore` protocol from `shared` | — |
 
 Import-linter contracts that enforce the layer order follow in [#97](https://github.com/daniel-fink/rangekeeper/issues/97).
 

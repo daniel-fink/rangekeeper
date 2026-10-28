@@ -145,16 +145,7 @@ def validate(
             units=units,
         )
     except (MissingReferenceError, ReferenceTypeError, IdentityConflictError) as error:
-        code = (
-            "reference.missing"
-            if isinstance(error, MissingReferenceError)
-            else (
-                "reference.kind"
-                if isinstance(error, ReferenceTypeError)
-                else "reference.identity"
-            )
-        )
-        return ValidationReport((Issue(code, str(error), run.id),))
+        return ValidationReport((Issue(error.code, str(error), run.id),))
 
 
 def collect_documents(

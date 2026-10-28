@@ -307,6 +307,39 @@ def check_slots(slots, reserved):
                 raise ValueError(f"Unsupported enum slot shape: {name}.{field}")
 
 
+def descriptions(loaded: Loaded):
+    """Return the LinkML description of every class and of each of its slots."""
+    return {
+        name: dict(
+            description=loaded.classes[name].description,
+            slots={
+                field.name: field.description
+                for field in loaded.view.class_induced_slots(name)
+            },
+        )
+        for name in sorted(loaded.classes)
+    }
+
+
+def check_descriptions(descriptions):
+    """Reject a class or slot without a description.
+
+    The descriptions become the record and property docstrings, so the
+    generator does not write a placeholder in their place.
+    """
+    missing = []
+    for name, described in descriptions.items():
+        if not str(described["description"] or "").strip():
+            missing.append(name)
+        missing += [
+            f"{name}.{field}"
+            for field, text in described["slots"].items()
+            if not str(text or "").strip()
+        ]
+    if missing:
+        raise ValueError("Missing LinkML descriptions: " + ", ".join(missing))
+
+
 def field_type(meta, argument=False):
     """Return the Python annotation of one field, as an argument or a property."""
     variants = []
@@ -394,7 +427,7 @@ def record_class(loaded: Loaded, name, fields):
     bases = [str(parent or "Record")]
     lines = [
         f"class {name}({', '.join(bases)}):",
-        f"    {str(loaded.classes[name].description or name)!r}",
+        f"    {str(loaded.classes[name].description)!r}",
         "    __slots__ = ()",
         f"    _kind = {name!r}",
         "    _SLOTS = _freeze(",
@@ -538,13 +571,12 @@ def decoder(field, meta):
 
 def record_properties(loaded: Loaded, name, fields):
     """Return one read-only property for each field of one record class."""
-    descriptions = {
+    texts = {
         field.name: field.description for field in loaded.view.class_induced_slots(name)
     }
     lines = []
     for field, meta in fields.items():
         typ = field_type(meta)
-        doc = descriptions[field] or field.replace("_", " ").capitalize() + "."
         value = decoder(field, meta)
         # An opaque field reads its frozen value directly; a cast would be redundant.
         if typ != "FrozenJSONValue | None":
@@ -552,7 +584,7 @@ def record_properties(loaded: Loaded, name, fields):
         lines += [
             "    @property",
             f"    def {field}(self) -> {typ}:",
-            f"        {str(doc)!r}",
+            f"        {str(texts[field])!r}",
             f"        return {value}",
             "",
         ]
@@ -627,6 +659,7 @@ def generate(*, native_module: bool = False):
         loaded = load(Path(directory), sources)
     metadata = slots(loaded)
     check_slots(metadata, reserved_names())
+    check_descriptions(descriptions(loaded))
     files = {
         "enums.py": enum_source(loaded.enums),
         "records.py": records_source(loaded, metadata),

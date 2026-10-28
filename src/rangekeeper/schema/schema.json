@@ -5,7 +5,8 @@
       "description": "An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.",
       "properties": {
         "kind": {
-          "$ref": "#/$defs/ActionKind"
+          "$ref": "#/$defs/ActionKind",
+          "description": "Whether the action assigns a control or terminates the decision sequence."
         },
         "quantity": {
           "anyOf": [
@@ -15,7 +16,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Finite quantity to assign, with units compatible with the target; required for assign and absent for terminate."
         },
         "target": {
           "anyOf": [
@@ -25,7 +27,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Controlled target to assign; required for assign and absent for terminate."
         }
       },
       "required": [
@@ -53,9 +56,11 @@
             {
               "$ref": "#/$defs/Expression"
             }
-          ]
+          ],
+          "description": "Expression supplied for the parameter."
         },
         "name": {
+          "description": "Name of the Function parameter to which the argument binds.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         }
@@ -154,7 +159,8 @@
           "description": "Explicit finite magnitude and compatible units; omission or null is not a supplied amount."
         },
         "target": {
-          "$ref": "#/$defs/Reference"
+          "$ref": "#/$defs/Reference",
+          "description": "Value or Movement to which the quantity is supplied."
         }
       },
       "required": [
@@ -197,12 +203,15 @@
       "description": "Calculation implementation identity, separate from captured sampling provenance.",
       "properties": {
         "fingerprint": {
+          "description": "Format-prefixed digest of the calculation manifest, which covers its sources, resources and dependency versions.",
           "type": "string"
         },
         "name": {
+          "description": "Name of the calculation implementation.",
           "type": "string"
         },
         "versions": {
+          "description": "Dependency versions included in the fingerprint.",
           "items": {
             "$ref": "#/$defs/LibraryVersion"
           },
@@ -238,6 +247,7 @@
               "type": "string"
             }
           ],
+          "description": "UUID of the Function that the call applies.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
@@ -348,14 +358,17 @@
       "description": "Sourced, asserted, or derived candidate content and its supporting lineage.",
       "properties": {
         "content": {
-          "$ref": "#/$defs/Content"
+          "$ref": "#/$defs/Content",
+          "description": "Candidate content; its structure depends on the supported target."
         },
         "id": {
+          "description": "Stable identity of the Claim, referenced by Facts and by dependent Claims.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
         "kind": {
-          "$ref": "#/$defs/ClaimKind"
+          "$ref": "#/$defs/ClaimKind",
+          "description": "Whether the content is sourced, asserted or derived."
         },
         "method": {
           "anyOf": [
@@ -365,7 +378,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Process used to obtain the content; required for asserted and derived Claims."
         },
         "sources": {
           "description": "Source Locations or UUID references to upstream Claims.",
@@ -536,13 +550,15 @@
     },
     "ContentEntry": {
       "additionalProperties": false,
-      "description": "",
+      "description": "One key-value entry of mapping content.",
       "properties": {
         "key": {
-          "$ref": "#/$defs/PropertyContent"
+          "$ref": "#/$defs/PropertyContent",
+          "description": "Content of the mapping key."
         },
         "value": {
-          "$ref": "#/$defs/PropertyContent"
+          "$ref": "#/$defs/PropertyContent",
+          "description": "Content of the value for the key."
         }
       },
       "required": [
@@ -586,6 +602,7 @@
               "type": "string"
             }
           ],
+          "description": "UUID of the Classification that the Label must include.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
@@ -612,26 +629,31 @@
       "description": "One dated rule decision with explicit observations, first-match rules and fallback.",
       "properties": {
         "at": {
+          "description": "Decision date; dates increase strictly within the RuleSet.",
           "format": "date",
           "type": "string"
         },
         "fallback": {
+          "description": "Nonempty ordered actions applied when no rule condition is true.",
           "items": {
             "$ref": "#/$defs/Action"
           },
           "type": "array"
         },
         "id": {
+          "description": "Stable identity of the Decision, referenced by RuleEvidence.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
         "observations": {
+          "description": "Ordered observations that the rule conditions can read.",
           "items": {
             "$ref": "#/$defs/ObservationBinding"
           },
           "type": "array"
         },
         "rules": {
+          "description": "Ordered rules; the first Rule whose condition is true supplies the actions.",
           "items": {
             "$ref": "#/$defs/Rule"
           },
@@ -663,6 +685,7 @@
           ]
         },
         "measures": {
+          "description": "Measures of this Model; codes are unique within the collection.",
           "items": {
             "$ref": "#/$defs/Measure"
           },
@@ -672,6 +695,7 @@
           ]
         },
         "taxonomies": {
+          "description": "Taxonomies of this Model; codes are unique within the collection.",
           "items": {
             "$ref": "#/$defs/Taxonomy"
           },
@@ -840,24 +864,30 @@
       "description": "Serializable distribution parameters, with explicit units; no live random generator.",
       "properties": {
         "kind": {
-          "$ref": "#/$defs/DistributionFamily"
+          "$ref": "#/$defs/DistributionFamily",
+          "description": "Distribution family, which is uniform, triangular or PERT."
         },
         "lower": {
+          "description": "Finite lower bound of the support, in units.",
           "type": "number"
         },
         "mode": {
+          "description": "Finite most likely value, between lower and upper; semantic checks require it for triangular and PERT.",
           "type": [
             "number",
             "null"
           ]
         },
         "units": {
+          "description": "Units of lower, upper and mode.",
           "type": "string"
         },
         "upper": {
+          "description": "Finite upper bound of the support, in units; it is not less than lower.",
           "type": "number"
         },
         "weighting": {
+          "description": "Finite nonnegative weighting of the mode in a PERT distribution; absence means 4.",
           "type": [
             "number",
             "null"
@@ -1162,10 +1192,12 @@
       "description": "A named text component of a source address.",
       "properties": {
         "key": {
+          "description": "Nonblank name of the address part, such as sheet or cell.",
           "pattern": "\\S",
           "type": "string"
         },
         "value": {
+          "description": "Nonblank text of the address part.",
           "pattern": "\\S",
           "type": "string"
         }
@@ -1182,10 +1214,12 @@
       "description": "A named text component of a source address.",
       "properties": {
         "key": {
+          "description": "Nonblank name of the address part, such as sheet or cell.",
           "pattern": "\\S",
           "type": "string"
         },
         "value": {
+          "description": "Nonblank text of the address part.",
           "pattern": "\\S",
           "type": "string"
         }
@@ -1505,7 +1539,8 @@
             {
               "$ref": "#/$defs/Call"
             }
-          ]
+          ],
+          "description": "Function call content of a call Expression."
         },
         "id": {
           "description": "Stable identity of this Expression across Model revisions.",
@@ -1513,7 +1548,8 @@
           "type": "string"
         },
         "kind": {
-          "$ref": "#/$defs/ExpressionKind"
+          "$ref": "#/$defs/ExpressionKind",
+          "description": "Form of the Expression; it determines which content field is present."
         },
         "operand": {
           "allOf": [
@@ -1536,7 +1572,8 @@
           ]
         },
         "operator": {
-          "$ref": "#/$defs/Operator"
+          "$ref": "#/$defs/Operator",
+          "description": "Operator of a unary or binary Expression; absent for other kinds."
         },
         "quantity": {
           "allOf": [
@@ -1551,14 +1588,16 @@
             {
               "$ref": "#/$defs/Query"
             }
-          ]
+          ],
+          "description": "Embedded graph query of a query Expression; the Expression owns it."
         },
         "selection": {
           "allOf": [
             {
               "$ref": "#/$defs/Selection"
             }
-          ]
+          ],
+          "description": "Member or index selection content of a selection Expression."
         },
         "target": {
           "allOf": [
@@ -1612,7 +1651,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Optional explicit selection of one supporting Claim when the Claims conflict."
         },
         "target": {
           "$ref": "#/$defs/Content",
@@ -1658,6 +1698,7 @@
               "type": "null"
             }
           ],
+          "description": "Exact Classification that a candidate Entity must have; taxonomy descendants do not match.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
@@ -1680,12 +1721,14 @@
       "description": "Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero movements are distinct. The overall model logic defines the meaning of the quantities and selects their calculations; a Flow carries no semantic kind or basis.",
       "properties": {
         "movements": {
+          "description": "Ordered Movements; an empty list is a Flow with no entries.",
           "items": {
             "$ref": "#/$defs/Movement"
           },
           "type": "array"
         },
         "units": {
+          "description": "Units of every Movement magnitude in this Flow.",
           "pattern": "\\S",
           "type": "string"
         }
@@ -1791,6 +1834,7 @@
       "description": "An identified, versioned contract for a pure mathematical or domain function, independent of a particular runtime implementation.",
       "properties": {
         "code": {
+          "description": "Case-sensitive code unique within the Model Function collection; not reference identity.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
@@ -1799,6 +1843,7 @@
           "description": "Required for functions with collection arguments. Zero is permitted only when the result domain and units can be established without reading a member."
         },
         "id": {
+          "description": "Stable identity of the Function, referenced by calls.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
@@ -1852,6 +1897,7 @@
           "type": "string"
         },
         "version": {
+          "description": "Version of this Function contract.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         }
@@ -1873,6 +1919,7 @@
       "description": "One exact provider dataset and explicit Entity associations, owned by this Model.",
       "properties": {
         "mappings": {
+          "description": "Associations of Entities or Assemblies with typed source elements in the pinned dataset.",
           "items": {
             "$ref": "#/$defs/GeometryMapping"
           },
@@ -1882,7 +1929,8 @@
           ]
         },
         "pin": {
-          "$ref": "#/$defs/GeometryPin"
+          "$ref": "#/$defs/GeometryPin",
+          "description": "Exact pin of the provider dataset that this Model owns."
         }
       },
       "required": [
@@ -1896,17 +1944,21 @@
       "description": "A typed identity in the pinned provider dataset. Namespace and scope remain explicit; mesh IDs are not source-object identities.",
       "properties": {
         "key": {
+          "description": "Nonempty provider-defined identifier of the element in its namespace.",
           "type": "string"
         },
         "kind": {
+          "description": "Element kind; RK accepts object or group.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
         "namespace": {
+          "description": "Provider-defined namespace of the element key.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
         "placement": {
+          "description": "Optional ordered placement path that selects one placement of the element.",
           "items": {
             "type": "string"
           },
@@ -1916,6 +1968,7 @@
           ]
         },
         "scope": {
+          "description": "Optional provider-defined scope that qualifies the key.",
           "type": [
             "string",
             "null"
@@ -1935,13 +1988,16 @@
       "description": "One retained native file, addressed relative to the Geometry root.",
       "properties": {
         "path": {
+          "description": "Relative POSIX path under the Geometry root, without empty, dot or parent segments.",
           "type": "string"
         },
         "sha256": {
+          "description": "Lowercase hexadecimal SHA-256 digest of the file bytes.",
           "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         },
         "size": {
+          "description": "File size in bytes.",
           "minimum": 0,
           "type": "integer"
         }
@@ -1959,9 +2015,11 @@
       "description": "One Entity or Assembly corresponds to one exact typed source element. This is not provenance.",
       "properties": {
         "element": {
-          "$ref": "#/$defs/GeometryElement"
+          "$ref": "#/$defs/GeometryElement",
+          "description": "Typed source element in the pinned dataset that corresponds to the Entity."
         },
         "entity": {
+          "description": "UUID of the mapped Entity or Assembly in this Model.",
           "type": "string"
         }
       },
@@ -1977,34 +2035,41 @@
       "description": "Exact native content and its source contract. Paths and source addresses do not replace integrity.",
       "properties": {
         "content_digest": {
+          "description": "Lowercase hexadecimal SHA-256 digest of the file inventory sorted by path; validation recomputes it from files.",
           "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         },
         "files": {
+          "description": "Inventory of the retained native files; each path is unique.",
           "items": {
             "$ref": "#/$defs/GeometryFile"
           },
           "type": "array"
         },
         "format": {
+          "description": "Code that names the native dataset format.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
         "format_version": {
+          "description": "Version of the native dataset format.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
         "provider": {
+          "description": "Code that names the Geometry provider; with format and format_version, it selects the provider adapter.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
         "source_address": {
+          "description": "Optional address of the source dataset; it does not replace the digests.",
           "type": [
             "string",
             "null"
           ]
         },
         "source_version": {
+          "description": "Optional version of the source dataset at the source address.",
           "type": [
             "string",
             "null"
@@ -2015,6 +2080,7 @@
           "type": "string"
         },
         "specification_digest": {
+          "description": "Lowercase hexadecimal SHA-256 digest of the pinned upstream specification.",
           "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         }
@@ -2106,9 +2172,11 @@
       "description": "Recorded implementation dependency version.",
       "properties": {
         "name": {
+          "description": "Name of the dependency, such as python.",
           "type": "string"
         },
         "version": {
+          "description": "Version of the dependency.",
           "type": "string"
         }
       },
@@ -2130,6 +2198,7 @@
                 "$ref": "#/$defs/Entry__identifier_optional"
               },
               {
+                "description": "Nonblank text of the address part.",
                 "pattern": "\\S",
                 "type": "string"
               }
@@ -2142,6 +2211,7 @@
           ]
         },
         "source": {
+          "description": "UUID of the Source edition that contains this address.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         }
@@ -2260,10 +2330,12 @@
       "description": "The named process used to assert, derive, or reconcile evidence.",
       "properties": {
         "code": {
+          "description": "Nonblank code that names the process.",
           "pattern": "\\S",
           "type": "string"
         },
         "description": {
+          "description": "Optional nonblank explanation of the process.",
           "pattern": "\\S",
           "type": [
             "string",
@@ -2271,6 +2343,7 @@
           ]
         },
         "version": {
+          "description": "Optional nonblank version of the process.",
           "pattern": "\\S",
           "type": [
             "string",
@@ -2353,6 +2426,7 @@
       "description": "One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. UUID identifies the Movement independently of dates and optional matching keys. Repeated event dates require distinct nonblank keys; keys are not reference identity. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.",
       "properties": {
         "claims": {
+          "description": "Unique UUIDs of provenance Claims that support this Movement.",
           "items": {
             "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
             "type": "string"
@@ -2363,6 +2437,7 @@
           ]
         },
         "date": {
+          "description": "Date of the entry; with a period, an independent payment or observation date.",
           "format": "date",
           "type": [
             "string",
@@ -2383,6 +2458,7 @@
           ]
         },
         "magnitude": {
+          "description": "Amount in the Flow units; absent or null means unresolved, and zero is a known amount.",
           "type": [
             "number",
             "null"
@@ -2396,7 +2472,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Half-open Period of the entry."
         }
       },
       "required": [
@@ -2446,11 +2523,13 @@
       "description": "Earliest date a recorded Value or Movement may be supplied to a rule.",
       "properties": {
         "available_at": {
+          "description": "Earliest date on which a rule can observe the target.",
           "format": "date",
           "type": "string"
         },
         "target": {
-          "$ref": "#/$defs/Reference"
+          "$ref": "#/$defs/Reference",
+          "description": "Recorded Value or Movement; scenario validation requires a Movement."
         }
       },
       "required": [
@@ -2465,6 +2544,7 @@
       "description": "An explicit observation target. An optional date may delay availability but cannot advance it.",
       "properties": {
         "available_at": {
+          "description": "Optional date that can delay availability; it cannot make the quantity available earlier.",
           "format": "date",
           "type": [
             "string",
@@ -2472,11 +2552,13 @@
           ]
         },
         "name": {
+          "description": "Name of the observation, unique within its Decision.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
         "target": {
-          "$ref": "#/$defs/Reference"
+          "$ref": "#/$defs/Reference",
+          "description": "Value or Movement whose recorded or decided quantity the Decision observes."
         }
       },
       "required": [
@@ -2491,18 +2573,22 @@
       "description": "The exact quantity and availability supplied to a decision.",
       "properties": {
         "available_at": {
+          "description": "Date from which the quantity was available; it is not later than the Decision date.",
           "format": "date",
           "type": "string"
         },
         "name": {
+          "description": "Name of the ObservationBinding that this quantity satisfies.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
         "quantity": {
-          "$ref": "#/$defs/Quantity"
+          "$ref": "#/$defs/Quantity",
+          "description": "Exact quantity supplied to the rule conditions."
         },
         "target": {
-          "$ref": "#/$defs/Reference"
+          "$ref": "#/$defs/Reference",
+          "description": "Observed Value or Movement, equal to the target of the ObservationBinding."
         }
       },
       "required": [
@@ -2554,6 +2640,7 @@
           "description": "How a call may supply this parameter."
         },
         "name": {
+          "description": "Parameter name, unique within the Function; named arguments bind by this name.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
@@ -2590,10 +2677,12 @@
       "description": "Half-open interval [start, end), which includes start and excludes end. Date boundaries use the Gregorian calendar; start must precede end.",
       "properties": {
         "end": {
+          "description": "Boundary date after the period; it is excluded and later than start.",
           "format": "date",
           "type": "string"
         },
         "start": {
+          "description": "First date of the period; it is included.",
           "format": "date",
           "type": "string"
         }
@@ -2708,7 +2797,8 @@
       "description": "Select Entity identities or Values belonging to each matching Entity.",
       "properties": {
         "cardinality": {
-          "$ref": "#/$defs/Cardinality"
+          "$ref": "#/$defs/Cardinality",
+          "description": "Number of Values permitted for each Entity; required for value projection and absent for entity projection."
         },
         "key": {
           "anyOf": [
@@ -2724,7 +2814,8 @@
           "type": "string"
         },
         "kind": {
-          "$ref": "#/$defs/ProjectionKind"
+          "$ref": "#/$defs/ProjectionKind",
+          "description": "Whether the query returns Entity identities or Values of the matching Entities."
         },
         "measure": {
           "anyOf": [
@@ -2741,7 +2832,8 @@
           "type": "string"
         },
         "missing": {
-          "$ref": "#/$defs/MissingHandling"
+          "$ref": "#/$defs/MissingHandling",
+          "description": "Treatment of an Entity with no matching Value; required for value projection and absent for entity projection."
         }
       },
       "required": [
@@ -2764,6 +2856,7 @@
       "description": "Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked semantically.",
       "properties": {
         "entries": {
+          "description": "Ordered entries of a mapping or mapping proxy; keys are unique.",
           "items": {
             "$ref": "#/$defs/ContentEntry"
           },
@@ -2773,6 +2866,7 @@
           ]
         },
         "fold": {
+          "description": "Fold, 0 or 1, of a datetime or time value; it selects between repeated wall-clock times.",
           "maximum": 1,
           "minimum": 0,
           "type": [
@@ -2781,6 +2875,7 @@
           ]
         },
         "items": {
+          "description": "Ordered members of a list, tuple, set or frozenset; set members use a canonical order.",
           "items": {
             "$ref": "#/$defs/PropertyContent"
           },
@@ -2790,15 +2885,18 @@
           ]
         },
         "kind": {
-          "$ref": "#/$defs/ContentKind"
+          "$ref": "#/$defs/ContentKind",
+          "description": "Type tag; it determines which other fields are present and how text is read."
         },
         "text": {
+          "description": "Canonical text of a scalar value, such as an ISO date or a duration in microseconds; absent for null and container kinds.",
           "type": [
             "string",
             "null"
           ]
         },
         "zone": {
+          "description": "Optional IANA time-zone key of a datetime or time value.",
           "type": [
             "string",
             "null"
@@ -2816,6 +2914,7 @@
       "description": "Facts connecting graph objects to supporting Claims, with the Sources and upstream Claims needed to follow their lineage.",
       "properties": {
         "claims": {
+          "description": "Claims referenced by Facts and by upstream Claim dependencies; each Claim is stored once.",
           "items": {
             "$ref": "#/$defs/Claim"
           },
@@ -2825,6 +2924,7 @@
           ]
         },
         "facts": {
+          "description": "Facts that connect graph objects or characteristics to supporting Claims; at most one Fact per target.",
           "items": {
             "$ref": "#/$defs/Fact"
           },
@@ -2834,6 +2934,7 @@
           ]
         },
         "scenarios": {
+          "description": "Captured scenario realizations, in order, with their inputs, paths and observation availability.",
           "items": {
             "$ref": "#/$defs/ScenarioRealization"
           },
@@ -2843,6 +2944,7 @@
           ]
         },
         "sources": {
+          "description": "Source editions referenced by Claim Locations; each Source is stored once.",
           "items": {
             "$ref": "#/$defs/Source"
           },
@@ -2881,14 +2983,16 @@
       "description": "A non-executing query specification returning Entity or Value identities from the containing Model revision.",
       "properties": {
         "duplicates": {
-          "$ref": "#/$defs/DuplicateHandling"
+          "$ref": "#/$defs/DuplicateHandling",
+          "description": "Whether repeated projected UUIDs are kept or removed."
         },
         "filter": {
           "allOf": [
             {
               "$ref": "#/$defs/Filter"
             }
-          ]
+          ],
+          "description": "Optional conditions applied to the candidates after traversal."
         },
         "projection": {
           "$ref": "#/$defs/Projection",
@@ -2896,7 +3000,8 @@
             {
               "$ref": "#/$defs/Projection"
             }
-          ]
+          ],
+          "description": "Selection of Entity identities or Values from the filtered candidates."
         },
         "starting_at": {
           "anyOf": [
@@ -2905,6 +3010,7 @@
               "type": "string"
             }
           ],
+          "description": "UUID of the Entity in the containing Model revision where the query starts.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
@@ -2932,9 +3038,11 @@
       "description": "Stable component stream identity derived from seed, scenario key and component name.",
       "properties": {
         "identifier": {
+          "description": "SHA-256 hexadecimal digest of the scenario key and stream component; with the plan seed, it seeds the stream.",
           "type": "string"
         },
         "name": {
+          "description": "Name of the parameter or input that the stream samples.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         }
@@ -2958,7 +3066,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Optional process used to make the selection."
         },
         "selected": {
           "description": "UUID of a Claim included in the Fact's claims.",
@@ -2966,7 +3075,8 @@
           "type": "string"
         },
         "status": {
-          "$ref": "#/$defs/ReconciliationStatus"
+          "$ref": "#/$defs/ReconciliationStatus",
+          "description": "Whether the selection is provisional or confirmed."
         }
       },
       "required": [
@@ -3061,6 +3171,7 @@
           ]
         },
         "rule_evidence": {
+          "description": "Ordered evidence of each evaluated Decision of the Specification rules.",
           "items": {
             "$ref": "#/$defs/RuleEvidence"
           },
@@ -3108,15 +3219,18 @@
       "description": "One ordered Boolean condition and its atomic actions.",
       "properties": {
         "actions": {
+          "description": "Nonempty ordered actions applied when this is the first true Rule; terminate can only be last.",
           "items": {
             "$ref": "#/$defs/Action"
           },
           "type": "array"
         },
         "condition": {
-          "$ref": "#/$defs/Expression"
+          "$ref": "#/$defs/Expression",
+          "description": "Boolean Expression that refers only to the observations of its Decision."
         },
         "id": {
+          "description": "Stable identity of the Rule, referenced by RuleEvidence.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         }
@@ -3134,26 +3248,31 @@
       "description": "Recorded evidence of one evaluated decision; absence of a rule means fallback.",
       "properties": {
         "assignments": {
+          "description": "Assignments made by the applied actions, in action order.",
           "items": {
             "$ref": "#/$defs/Assignment"
           },
           "type": "array"
         },
         "at": {
+          "description": "Date of the evaluated Decision.",
           "format": "date",
           "type": "string"
         },
         "decision": {
+          "description": "UUID of the evaluated Decision.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
         "observations": {
+          "description": "Observed quantities, in the order of the Decision observations.",
           "items": {
             "$ref": "#/$defs/ObservedQuantity"
           },
           "type": "array"
         },
         "rule": {
+          "description": "UUID of the first Rule whose condition was true; absent or null when the fallback applied.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": [
             "string",
@@ -3161,6 +3280,7 @@
           ]
         },
         "terminated": {
+          "description": "Whether the applied actions terminated the decision sequence; no evidence follows a termination.",
           "type": "boolean"
         },
         "termination_reason": {
@@ -3186,16 +3306,19 @@
       "description": "The rules of a Specification, owning explicit controlled targets and ordered dated decisions.",
       "properties": {
         "decisions": {
+          "description": "Dated Decisions in strictly increasing date order.",
           "items": {
             "$ref": "#/$defs/Decision"
           },
           "type": "array"
         },
         "id": {
+          "description": "Stable identity of the RuleSet.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
         "targets": {
+          "description": "Nonempty unique controlled targets; the decision actions must assign each one.",
           "items": {
             "$ref": "#/$defs/Reference"
           },
@@ -3341,9 +3464,11 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Distribution to sample; give this or quantity, not both."
         },
         "name": {
+          "description": "Parameter name of the market method contract, unique within the plan.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
@@ -3355,7 +3480,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Fixed quantity; give this or distribution, not both."
         }
       },
       "required": [
@@ -3369,25 +3495,30 @@
       "description": "Finite market generation plan. This is input-generation provenance, not governing mathematics.",
       "properties": {
         "id": {
+          "description": "Stable identity of the plan.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
         "method": {
+          "description": "Code of the market method contract that the plan uses.",
           "type": "string"
         },
         "parameters": {
+          "description": "Parameters of the method; their names match the parameter inventory of the method.",
           "items": {
             "$ref": "#/$defs/ScenarioParameter"
           },
           "type": "array"
         },
         "periods": {
+          "description": "Nonempty ordered calendar periods of the generated paths; periods do not overlap.",
           "items": {
             "$ref": "#/$defs/Period"
           },
           "type": "array"
         },
         "seed": {
+          "description": "Nonnegative master seed of the random streams.",
           "minimum": 0,
           "type": "integer"
         }
@@ -3407,6 +3538,7 @@
       "description": "Captured scenario inputs and paths. Stored draws permit replay without random sampling.",
       "properties": {
         "availability": {
+          "description": "Earliest observation dates of the recorded Movements.",
           "items": {
             "$ref": "#/$defs/ObservationAvailability"
           },
@@ -3420,41 +3552,50 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Calculation that produced the realized paths; absent for inputs without realized paths."
         },
         "generator": {
+          "description": "Random generation algorithm, such as numpy.SeedSequence/PCG64, or supplied for captured inputs.",
           "type": "string"
         },
         "id": {
+          "description": "Stable identity of the realization.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
         "inputs": {
+          "description": "Bindings of the captured input Values.",
           "items": {
             "$ref": "#/$defs/Binding"
           },
           "type": "array"
         },
         "key": {
+          "description": "Scenario key; with the plan seed, it determines the random streams.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         },
         "outputs": {
+          "description": "Bindings of the realized path Values; empty until the paths are realized.",
           "items": {
             "$ref": "#/$defs/Binding"
           },
           "type": "array"
         },
         "plan": {
-          "$ref": "#/$defs/ScenarioPlan"
+          "$ref": "#/$defs/ScenarioPlan",
+          "description": "Complete plan from which the scenario inputs were generated."
         },
         "streams": {
+          "description": "Random streams used to sample the inputs; empty for supplied inputs.",
           "items": {
             "$ref": "#/$defs/RandomStream"
           },
           "type": "array"
         },
         "versions": {
+          "description": "Dependency versions of the sampling or capture environment.",
           "items": {
             "$ref": "#/$defs/LibraryVersion"
           },
@@ -3551,7 +3692,8 @@
             {
               "$ref": "#/$defs/Expression"
             }
-          ]
+          ],
+          "description": "Expression whose structured content supplies the member or element."
         },
         "index": {
           "allOf": [
@@ -3562,7 +3704,8 @@
           "description": "Index expression."
         },
         "kind": {
-          "$ref": "#/$defs/SelectionKind"
+          "$ref": "#/$defs/SelectionKind",
+          "description": "Whether the selection reads a declared member or an indexed element."
         },
         "member": {
           "description": "Declared member name.",
@@ -3665,6 +3808,7 @@
       "description": "An identifiable edition of an external evidence artifact.",
       "properties": {
         "author": {
+          "description": "Optional nonblank author of the evidence artifact.",
           "pattern": "\\S",
           "type": [
             "string",
@@ -3677,6 +3821,7 @@
           "type": "string"
         },
         "id": {
+          "description": "Stable identity of the Source edition, referenced by Locations.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
@@ -3693,9 +3838,11 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Optional date or date-time at which the source edition was issued."
         },
         "name": {
+          "description": "Nonblank human-readable name of the evidence artifact.",
           "pattern": "\\S",
           "type": "string"
         },
@@ -3712,7 +3859,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Optional date or date-time at which the source edition was received."
         }
       },
       "required": [
@@ -3728,16 +3876,19 @@
       "description": "Named extent, using the same half-open boundary convention as Period.",
       "properties": {
         "end": {
+          "description": "Boundary date after the period; it is excluded and later than start.",
           "format": "date",
           "type": "string"
         },
         "name": {
+          "description": "Optional name of the extent.",
           "type": [
             "string",
             "null"
           ]
         },
         "start": {
+          "description": "First date of the period; it is included.",
           "format": "date",
           "type": "string"
         }
@@ -3858,7 +4009,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Optional RuleSet with controlled targets and dated decisions."
         },
         "settings": {
           "allOf": [
@@ -4077,16 +4229,19 @@
           "type": "string"
         },
         "definition": {
+          "description": "Optional explanatory text.",
           "type": [
             "string",
             "null"
           ]
         },
         "id": {
+          "description": "Stable identity of the Taxonomy across Model revisions.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
         "name": {
+          "description": "Nonblank human-readable name.",
           "pattern": "\\S",
           "type": "string"
         }
@@ -4179,13 +4334,16 @@
           "type": "string"
         },
         "depth": {
-          "$ref": "#/$defs/Depth"
+          "$ref": "#/$defs/Depth",
+          "description": "Whether the step follows exactly one edge or one or more edges."
         },
         "direction": {
-          "$ref": "#/$defs/Direction"
+          "$ref": "#/$defs/Direction",
+          "description": "Direction in which to follow Relationships; required for relationship steps and absent for membership steps."
         },
         "kind": {
-          "$ref": "#/$defs/TraversalKind"
+          "$ref": "#/$defs/TraversalKind",
+          "description": "Whether the step follows classified Relationships or Assembly membership."
         }
       },
       "required": [
@@ -4258,7 +4416,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Inert typed content of a property Value."
         },
         "description": {
           "description": "Explanation of the meaning of this Value within its owner.",
@@ -4275,7 +4434,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Temporal quantities of a flow Value."
         },
         "id": {
           "description": "Stable identity of the Value, used by provenance Facts.",
