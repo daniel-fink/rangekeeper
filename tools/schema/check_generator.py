@@ -45,4 +45,12 @@ for label, slots in cases.items():
 generation.check_slots(
     {"Example": {"part": meta(("Period", "record"), ("Claim", "uuid"))}}, reserved
 )
-print(f"Checked {len(cases)} rejected slot shapes")
+compiler = generation.CheckCompiler({"$defs": {}}, (), ())
+for schema in ({"type": "string", "uniqueItems": True}, {"format": "email"}):
+    try:
+        compiler.value(schema, "v")
+    except generation.Unsupported as error:
+        print(f"Rejected node check keyword: {error}")
+    else:
+        raise SystemExit(f"The node check compiler accepted {schema}")
+print(f"Checked {len(cases)} rejected slot shapes and 2 node check keywords")

@@ -19,7 +19,7 @@ value type.
 | --- | --- |
 | Persistent field and enum definitions | `schema/*.yaml` |
 | Resolved bundle and Python/C# generators | `tools/schema/` |
-| Generated Python records, JSON Schemas, slots and manifest | `src/rangekeeper/schema/` |
+| Generated Python records, node checks, JSON Schemas, slots and manifest | `src/rangekeeper/schema/` |
 | Generated C# records, transport metadata and manifest | `examples/grasshopper/Model/Generated/` |
 | Reusable wire examples | `examples/schema/` |
 | Positive/negative conformance procedures | `schema/checks/` |
@@ -28,6 +28,9 @@ The generator is a set of small functions: it loads the bundle, derives the
 slot metadata, checks it, emits the records and writes the manifest. It stops
 when a slot name is a Python keyword or shadows a record method,
 or when one slot has more than one record type.
+It also compiles the JSON Schema of each class into a node check in
+`checks.py`; a JSON Schema keyword that the compiler does not support stops
+generation.
 
 Do not edit generated files by hand. Create a separate environment with
 [`tools/schema/requirements.txt`](../../tools/schema/requirements.txt). From the

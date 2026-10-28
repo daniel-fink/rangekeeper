@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from collections.abc import Mapping
 from datetime import date as Date
 from types import MappingProxyType
@@ -41,6 +42,18 @@ class Unset:
 
 
 UNSET = Unset()
+
+
+class Omit:
+    """Replacement sentinel that removes an optional field."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return "OMIT"
+
+
+OMIT = Omit()
 
 
 def copy_json(value, active=None):
@@ -183,8 +196,10 @@ def _encode_record(value, cls, name):
     if isinstance(value, Record):
         if not isinstance(value, cls):
             raise TypeError(f"{name}: incompatible record {value._kind}")
-        # The frozen tree is copied once, by _set_data.
         return value._data
+    if isinstance(value, Mapping):
+        # Data, not a record: validate it in full once.
+        return cls.from_data(value)._data
     return copy_json(value)
 
 
@@ -219,6 +234,51 @@ def _decode_date(value):
 
 def _decode_dates(values):
     return None if values is None else tuple(_decode_date(v) for v in values)
+
+
+def _number(value) -> bool:
+    """Match JSON Schema ``number``: an int or float, not a bool."""
+    return type(value) in (int, float)
+
+
+def _integer(value) -> bool:
+    """Match JSON Schema ``integer``, which includes an integral float."""
+    return type(value) is int or type(value) is float and value.is_integer()
+
+
+def _array(value) -> bool:
+    return type(value) in (list, tuple)
+
+
+_DATE = re.compile(r"\d{4}-\d{2}-\d{2}", re.ASCII)
+
+
+def _date(value: str) -> bool:
+    """Match the jsonschema ``date`` format check."""
+    try:
+        return bool(_DATE.fullmatch(value) and Date.fromisoformat(value))
+    except ValueError:
+        return False
+
+
+def _datetime(value: str) -> bool:
+    """Match the jsonschema ``date-time`` format check (RFC 3339)."""
+    # rfc3339-validator ships no type information.
+    from rfc3339_validator import (  # type: ignore[import-untyped, unused-ignore]
+        validate_rfc3339,
+    )
+
+    return bool(validate_rfc3339(value.upper()))
+
+
+def _raise_issues(issues) -> None:
+    """Raise ValidationError for node check issues; return when there are none."""
+    if issues:
+        from rangekeeper.shared.diagnostics import Issue, ValidationReport
+
+        ValidationReport(
+            tuple(Issue(code, message, path=path) for code, message, path in issues)
+        ).raise_if_invalid()
 
 
 def _borrow(cls, data):
@@ -263,13 +323,14 @@ class Record:
                 if not isinstance(item, expected):
                     raise TypeError(f"{name}: expected {expected.__name__}")
                 return item.value
+            records = [o for o in meta["options"] if o["category"] == "record"]
             if isinstance(item, Record):
-                if not any(
-                    o["category"] == "record" and isinstance(item, _TYPES[o["kind"]])
-                    for o in meta["options"]
-                ):
+                if not any(isinstance(item, _TYPES[o["kind"]]) for o in records):
                     raise TypeError(f"{name}: incompatible record {item._kind}")
                 return item._data
+            if isinstance(item, Mapping) and records:
+                # A slot has at most one record type (see check_slots).
+                return _TYPES[records[0]["kind"]].from_data(item)._data
             if isinstance(item, UUID) and any(
                 o["category"] == "uuid" for o in meta["options"]
             ):
@@ -288,12 +349,30 @@ class Record:
     def _replace(self: R, fields: Mapping[str, object]) -> R:
         """Copy encoded fields without collapsing omitted, null and empty values.
 
-        Generated signatures provide field types and reject unknown keywords. This
-        primitive changes content only; document revision rules belong to facades.
+        Only this record is checked: its changed fields and its rules. Unchanged
+        fields and child records keep their frozen, already checked content.
+        Generated signatures provide field types and reject unknown keywords.
+        Document revision rules belong to facades.
         """
+        from rangekeeper.schema.checks import CHECKS
+        from rangekeeper.schema.validation import _slot_map, _validate_json
+
         data: dict[str, object] = dict(self._data)
-        data.update(fields)
-        return type(self).from_data(data)
+        for name, value in fields.items():
+            if value is OMIT:
+                data.pop(name, None)
+            else:
+                data[name] = value
+        slots = _slot_map(self._kind)
+        if any(slots[name]["mapping"] for name in fields):
+            # A keyed collection holds reduced child records that only the
+            # JSON Schema describes.
+            _validate_json(self._kind, copy_json(data)).raise_if_invalid()
+        else:
+            _raise_issues(CHECKS[self._kind](data, fields))
+        changed = {name: data[name] for name in fields if name in data}
+        data.update(_freeze(_normalize(self._kind, changed)))
+        return _borrow(type(self), MappingProxyType(data))
 
     def _set_data(self, data: object) -> None:
         from rangekeeper.schema.validation import _validate_json
@@ -435,4 +514,19 @@ class Record:
     __hash__ = None  # type: ignore[assignment]
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}.from_data({self.to_data()!r})"
+        """Return a one-line summary; ``to_data`` gives the complete content."""
+        parts = []
+        for name, value in self._data.items():
+            if isinstance(value, Mapping):
+                text = "{...}"
+            elif isinstance(value, tuple):
+                text = f"[{len(value)}]"
+            else:
+                text = repr(value)
+                if len(text) > 40:
+                    text = text[:37] + "..."
+            parts.append(f"{name}={text}")
+        summary = ", ".join(parts)
+        if len(summary) > 160:
+            summary = summary[:157] + "..."
+        return f"{type(self).__name__}({summary})"

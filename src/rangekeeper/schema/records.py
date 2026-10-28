@@ -7,9 +7,11 @@ from uuid import UUID
 from datetime import date as Date
 from .runtime import (
     EMPTY,
+    OMIT,
     UNSET,
     FrozenJSONValue,
     JSONValue,
+    Omit,
     Record,
     Unset,
     _decode_date,
@@ -101,16 +103,20 @@ class Action(Record):
 
     def replace(self, *,
         kind: ActionKind | Unset = UNSET,
-        target: Reference | None | Unset = UNSET,
-        quantity: Quantity | None | Unset = UNSET,
+        target: Reference | None | Unset | Omit = UNSET,
+        quantity: Quantity | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, ActionKind, 'kind')
-        if target is not UNSET:
+        if target is OMIT:
+            changes['target'] = OMIT
+        elif target is not UNSET:
             changes['target'] = _encode_record(target, Reference, 'target')
-        if quantity is not UNSET:
+        if quantity is OMIT:
+            changes['quantity'] = OMIT
+        elif quantity is not UNSET:
             changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
         return self._replace(changes)
 
@@ -162,7 +168,7 @@ class Argument(Record):
         name: str | Unset = UNSET,
         expression: Expression | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
@@ -239,23 +245,31 @@ class Entity(Record):
         self._set_data(data)
 
     def replace(self, *,
-        classification: UUID | None | Unset = UNSET,
+        classification: UUID | None | Unset | Omit = UNSET,
         id: UUID | Unset = UNSET,
-        code: str | None | Unset = UNSET,
-        name: str | None | Unset = UNSET,
-        characteristics: Characteristics | None | Unset = UNSET,
+        code: str | None | Unset | Omit = UNSET,
+        name: str | None | Unset | Omit = UNSET,
+        characteristics: Characteristics | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if classification is not UNSET:
+        if classification is OMIT:
+            changes['classification'] = OMIT
+        elif classification is not UNSET:
             changes['classification'] = _encode_uuid(classification)
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
-        if code is not UNSET:
+        if code is OMIT:
+            changes['code'] = OMIT
+        elif code is not UNSET:
             changes['code'] = copy_json(code)
-        if name is not UNSET:
+        if name is OMIT:
+            changes['name'] = OMIT
+        elif name is not UNSET:
             changes['name'] = copy_json(name)
-        if characteristics is not UNSET:
+        if characteristics is OMIT:
+            changes['characteristics'] = OMIT
+        elif characteristics is not UNSET:
             changes['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
         return self._replace(changes)
 
@@ -361,29 +375,41 @@ class Assembly(Entity):
         self._set_data(data)
 
     def replace(self, *,
-        entities: tuple[UUID, ...] | None | Unset = UNSET,
-        relationships: tuple[UUID, ...] | None | Unset = UNSET,
-        classification: UUID | None | Unset = UNSET,
+        entities: tuple[UUID, ...] | None | Unset | Omit = UNSET,
+        relationships: tuple[UUID, ...] | None | Unset | Omit = UNSET,
+        classification: UUID | None | Unset | Omit = UNSET,
         id: UUID | Unset = UNSET,
-        code: str | None | Unset = UNSET,
-        name: str | None | Unset = UNSET,
-        characteristics: Characteristics | None | Unset = UNSET,
+        code: str | None | Unset | Omit = UNSET,
+        name: str | None | Unset | Omit = UNSET,
+        characteristics: Characteristics | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if entities is not UNSET:
+        if entities is OMIT:
+            changes['entities'] = OMIT
+        elif entities is not UNSET:
             changes['entities'] = _encode_many(entities, lambda v: _encode_uuid(v))
-        if relationships is not UNSET:
+        if relationships is OMIT:
+            changes['relationships'] = OMIT
+        elif relationships is not UNSET:
             changes['relationships'] = _encode_many(relationships, lambda v: _encode_uuid(v))
-        if classification is not UNSET:
+        if classification is OMIT:
+            changes['classification'] = OMIT
+        elif classification is not UNSET:
             changes['classification'] = _encode_uuid(classification)
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
-        if code is not UNSET:
+        if code is OMIT:
+            changes['code'] = OMIT
+        elif code is not UNSET:
             changes['code'] = copy_json(code)
-        if name is not UNSET:
+        if name is OMIT:
+            changes['name'] = OMIT
+        elif name is not UNSET:
             changes['name'] = copy_json(name)
-        if characteristics is not UNSET:
+        if characteristics is OMIT:
+            changes['characteristics'] = OMIT
+        elif characteristics is not UNSET:
             changes['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
         return self._replace(changes)
 
@@ -455,7 +481,7 @@ class Assignment(Record):
         target: Reference | Unset = UNSET,
         quantity: Quantity | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if target is not UNSET:
             changes['target'] = _encode_record(target, Reference, 'target')
@@ -506,7 +532,7 @@ class Binding(Record):
         name: str | Unset = UNSET,
         value: UUID | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
@@ -566,7 +592,7 @@ class CalculationProvenance(Record):
         fingerprint: str | Unset = UNSET,
         versions: tuple[LibraryVersion, ...] | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
@@ -632,16 +658,20 @@ class Call(Record):
 
     def replace(self, *,
         function: UUID | Unset = UNSET,
-        arguments: tuple[Expression, ...] | None | Unset = UNSET,
-        named_arguments: tuple[Argument, ...] | None | Unset = UNSET,
+        arguments: tuple[Expression, ...] | None | Unset | Omit = UNSET,
+        named_arguments: tuple[Argument, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if function is not UNSET:
             changes['function'] = _encode_uuid(function)
-        if arguments is not UNSET:
+        if arguments is OMIT:
+            changes['arguments'] = OMIT
+        elif arguments is not UNSET:
             changes['arguments'] = _encode_many(arguments, lambda v: _encode_record(v, Expression, 'arguments'))
-        if named_arguments is not UNSET:
+        if named_arguments is OMIT:
+            changes['named_arguments'] = OMIT
+        elif named_arguments is not UNSET:
             changes['named_arguments'] = _encode_many(named_arguments, lambda v: _encode_record(v, Argument, 'named_arguments'))
         return self._replace(changes)
 
@@ -692,14 +722,18 @@ class Characteristics(Record):
         self._set_data(data)
 
     def replace(self, *,
-        labels: tuple[Label, ...] | None | Unset = UNSET,
-        values: tuple[Value, ...] | None | Unset = UNSET,
+        labels: tuple[Label, ...] | None | Unset | Omit = UNSET,
+        values: tuple[Value, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if labels is not UNSET:
+        if labels is OMIT:
+            changes['labels'] = OMIT
+        elif labels is not UNSET:
             changes['labels'] = _encode_many(labels, lambda v: _encode_record(v, Label, 'labels'))
-        if values is not UNSET:
+        if values is OMIT:
+            changes['values'] = OMIT
+        elif values is not UNSET:
             changes['values'] = _encode_many(values, lambda v: _encode_record(v, Value, 'values'))
         return self._replace(changes)
 
@@ -773,10 +807,10 @@ class Claim(Record):
         id: UUID | Unset = UNSET,
         content: JSONValue | None | Unset = UNSET,
         kind: ClaimKind | Unset = UNSET,
-        sources: tuple[Location | UUID, ...] | None | Unset = UNSET,
-        method: Method | None | Unset = UNSET,
+        sources: tuple[Location | UUID, ...] | None | Unset | Omit = UNSET,
+        method: Method | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -784,9 +818,13 @@ class Claim(Record):
             changes['content'] = copy_json(content)
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, ClaimKind, 'kind')
-        if sources is not UNSET:
+        if sources is OMIT:
+            changes['sources'] = OMIT
+        elif sources is not UNSET:
             changes['sources'] = self._encode_field('sources', sources)
-        if method is not UNSET:
+        if method is OMIT:
+            changes['method'] = OMIT
+        elif method is not UNSET:
             changes['method'] = _encode_record(method, Method, 'method')
         return self._replace(changes)
 
@@ -874,10 +912,10 @@ class Classification(Record):
         id: UUID | Unset = UNSET,
         code: str | Unset = UNSET,
         name: str | Unset = UNSET,
-        definition: str | None | Unset = UNSET,
-        parent: UUID | None | Unset = UNSET,
+        definition: str | None | Unset | Omit = UNSET,
+        parent: UUID | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -885,9 +923,13 @@ class Classification(Record):
             changes['code'] = copy_json(code)
         if name is not UNSET:
             changes['name'] = copy_json(name)
-        if definition is not UNSET:
+        if definition is OMIT:
+            changes['definition'] = OMIT
+        elif definition is not UNSET:
             changes['definition'] = copy_json(definition)
-        if parent is not UNSET:
+        if parent is OMIT:
+            changes['parent'] = OMIT
+        elif parent is not UNSET:
             changes['parent'] = _encode_uuid(parent)
         return self._replace(changes)
 
@@ -974,20 +1016,26 @@ class Constraint(Record):
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
-        code: str | None | Unset = UNSET,
-        name: str | None | Unset = UNSET,
-        description: str | None | Unset = UNSET,
+        code: str | None | Unset | Omit = UNSET,
+        name: str | None | Unset | Omit = UNSET,
+        description: str | None | Unset | Omit = UNSET,
         predicate: UUID | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
-        if code is not UNSET:
+        if code is OMIT:
+            changes['code'] = OMIT
+        elif code is not UNSET:
             changes['code'] = copy_json(code)
-        if name is not UNSET:
+        if name is OMIT:
+            changes['name'] = OMIT
+        elif name is not UNSET:
             changes['name'] = copy_json(name)
-        if description is not UNSET:
+        if description is OMIT:
+            changes['description'] = OMIT
+        elif description is not UNSET:
             changes['description'] = copy_json(description)
         if predicate is not UNSET:
             changes['predicate'] = _encode_uuid(predicate)
@@ -1051,7 +1099,7 @@ class ContentEntry(Record):
         key: PropertyContent | Unset = UNSET,
         value: PropertyContent | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if key is not UNSET:
             changes['key'] = _encode_record(key, PropertyContent, 'key')
@@ -1102,7 +1150,7 @@ class Criterion(Record):
         key: str | Unset = UNSET,
         classification: UUID | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if key is not UNSET:
             changes['key'] = copy_json(key)
@@ -1181,7 +1229,7 @@ class Decision(Record):
         rules: tuple[Rule, ...] | Unset = UNSET,
         fallback: tuple[Action, ...] | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -1296,19 +1344,21 @@ class DecisionOutcome(Record):
     def replace(self, *,
         decision: UUID | Unset = UNSET,
         at: Date | Unset = UNSET,
-        rule: UUID | None | Unset = UNSET,
+        rule: UUID | None | Unset | Omit = UNSET,
         observations: tuple[ObservedQuantity, ...] | Unset = UNSET,
         assignments: tuple[Assignment, ...] | Unset = UNSET,
         terminated: bool | Unset = UNSET,
-        termination_reason: str | None | Unset = UNSET,
+        termination_reason: str | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if decision is not UNSET:
             changes['decision'] = _encode_uuid(decision)
         if at is not UNSET:
             changes['at'] = _encode_date(at)
-        if rule is not UNSET:
+        if rule is OMIT:
+            changes['rule'] = OMIT
+        elif rule is not UNSET:
             changes['rule'] = _encode_uuid(rule)
         if observations is not UNSET:
             changes['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
@@ -1316,7 +1366,9 @@ class DecisionOutcome(Record):
             changes['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
         if terminated is not UNSET:
             changes['terminated'] = copy_json(terminated)
-        if termination_reason is not UNSET:
+        if termination_reason is OMIT:
+            changes['termination_reason'] = OMIT
+        elif termination_reason is not UNSET:
             changes['termination_reason'] = copy_json(termination_reason)
         return self._replace(changes)
 
@@ -1396,17 +1448,23 @@ class Definitions(Record):
         self._set_data(data)
 
     def replace(self, *,
-        taxonomies: tuple[Taxonomy, ...] | None | Unset = UNSET,
-        measures: tuple[Measure, ...] | None | Unset = UNSET,
-        functions: tuple[Function, ...] | None | Unset = UNSET,
+        taxonomies: tuple[Taxonomy, ...] | None | Unset | Omit = UNSET,
+        measures: tuple[Measure, ...] | None | Unset | Omit = UNSET,
+        functions: tuple[Function, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if taxonomies is not UNSET:
+        if taxonomies is OMIT:
+            changes['taxonomies'] = OMIT
+        elif taxonomies is not UNSET:
             changes['taxonomies'] = _encode_many(taxonomies, lambda v: _encode_record(v, Taxonomy, 'taxonomies'))
-        if measures is not UNSET:
+        if measures is OMIT:
+            changes['measures'] = OMIT
+        elif measures is not UNSET:
             changes['measures'] = _encode_many(measures, lambda v: _encode_record(v, Measure, 'measures'))
-        if functions is not UNSET:
+        if functions is OMIT:
+            changes['functions'] = OMIT
+        elif functions is not UNSET:
             changes['functions'] = _encode_many(functions, lambda v: _encode_record(v, Function, 'functions'))
         return self._replace(changes)
 
@@ -1511,13 +1569,13 @@ class Diagnostic(Record):
         severity: Severity | Unset = UNSET,
         code: str | Unset = UNSET,
         message: str | Unset = UNSET,
-        document: UUID | Unset = UNSET,
-        target: UUID | None | Unset = UNSET,
-        residual: Quantity | Unset = UNSET,
-        tolerance: Quantity | Unset = UNSET,
-        references: tuple[Reference, ...] | None | Unset = UNSET,
+        document: UUID | Unset | Omit = UNSET,
+        target: UUID | None | Unset | Omit = UNSET,
+        residual: Quantity | Unset | Omit = UNSET,
+        tolerance: Quantity | Unset | Omit = UNSET,
+        references: tuple[Reference, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if severity is not UNSET:
             changes['severity'] = _encode_enum(severity, Severity, 'severity')
@@ -1525,15 +1583,25 @@ class Diagnostic(Record):
             changes['code'] = copy_json(code)
         if message is not UNSET:
             changes['message'] = copy_json(message)
-        if document is not UNSET:
+        if document is OMIT:
+            changes['document'] = OMIT
+        elif document is not UNSET:
             changes['document'] = _encode_uuid(document)
-        if target is not UNSET:
+        if target is OMIT:
+            changes['target'] = OMIT
+        elif target is not UNSET:
             changes['target'] = _encode_uuid(target)
-        if residual is not UNSET:
+        if residual is OMIT:
+            changes['residual'] = OMIT
+        elif residual is not UNSET:
             changes['residual'] = _encode_record(residual, Quantity, 'residual')
-        if tolerance is not UNSET:
+        if tolerance is OMIT:
+            changes['tolerance'] = OMIT
+        elif tolerance is not UNSET:
             changes['tolerance'] = _encode_record(tolerance, Quantity, 'tolerance')
-        if references is not UNSET:
+        if references is OMIT:
+            changes['references'] = OMIT
+        elif references is not UNSET:
             changes['references'] = _encode_many(references, lambda v: _encode_record(v, Reference, 'references'))
         return self._replace(changes)
 
@@ -1644,11 +1712,11 @@ class Distribution(Record):
         kind: DistributionFamily | Unset = UNSET,
         lower: int | float | Unset = UNSET,
         upper: int | float | Unset = UNSET,
-        mode: int | float | None | Unset = UNSET,
-        weighting: int | float | None | Unset = UNSET,
+        mode: int | float | None | Unset | Omit = UNSET,
+        weighting: int | float | None | Unset | Omit = UNSET,
         units: str | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, DistributionFamily, 'kind')
@@ -1656,9 +1724,13 @@ class Distribution(Record):
             changes['lower'] = copy_json(lower)
         if upper is not UNSET:
             changes['upper'] = copy_json(upper)
-        if mode is not UNSET:
+        if mode is OMIT:
+            changes['mode'] = OMIT
+        elif mode is not UNSET:
             changes['mode'] = copy_json(mode)
-        if weighting is not UNSET:
+        if weighting is OMIT:
+            changes['weighting'] = OMIT
+        elif weighting is not UNSET:
             changes['weighting'] = copy_json(weighting)
         if units is not UNSET:
             changes['units'] = copy_json(units)
@@ -1754,22 +1826,30 @@ class Domain(Record):
 
     def replace(self, *,
         kind: DomainKind | Unset = UNSET,
-        units: str | None | Unset = UNSET,
-        measure: UUID | Unset = UNSET,
-        item_domain: Domain | Unset = UNSET,
-        collection_kind: CollectionKind | Unset = UNSET,
+        units: str | None | Unset | Omit = UNSET,
+        measure: UUID | Unset | Omit = UNSET,
+        item_domain: Domain | Unset | Omit = UNSET,
+        collection_kind: CollectionKind | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, DomainKind, 'kind')
-        if units is not UNSET:
+        if units is OMIT:
+            changes['units'] = OMIT
+        elif units is not UNSET:
             changes['units'] = copy_json(units)
-        if measure is not UNSET:
+        if measure is OMIT:
+            changes['measure'] = OMIT
+        elif measure is not UNSET:
             changes['measure'] = _encode_uuid(measure)
-        if item_domain is not UNSET:
+        if item_domain is OMIT:
+            changes['item_domain'] = OMIT
+        elif item_domain is not UNSET:
             changes['item_domain'] = _encode_record(item_domain, Domain, 'item_domain')
-        if collection_kind is not UNSET:
+        if collection_kind is OMIT:
+            changes['collection_kind'] = OMIT
+        elif collection_kind is not UNSET:
             changes['collection_kind'] = _encode_enum(collection_kind, CollectionKind, 'collection_kind')
         return self._replace(changes)
 
@@ -1831,7 +1911,7 @@ class Entry(Record):
         key: str | Unset = UNSET,
         value: str | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if key is not UNSET:
             changes['key'] = copy_json(key)
@@ -1962,39 +2042,57 @@ class Expression(Record):
     def replace(self, *,
         id: UUID | Unset = UNSET,
         kind: ExpressionKind | Unset = UNSET,
-        quantity: Quantity | Unset = UNSET,
-        boolean: bool | Unset = UNSET,
-        target: Reference | Unset = UNSET,
-        operator: Operator | Unset = UNSET,
-        operands: tuple[Expression, ...] | None | Unset = UNSET,
-        operand: Expression | Unset = UNSET,
-        call: Call | Unset = UNSET,
-        selection: Selection | Unset = UNSET,
-        query: Query | Unset = UNSET,
+        quantity: Quantity | Unset | Omit = UNSET,
+        boolean: bool | Unset | Omit = UNSET,
+        target: Reference | Unset | Omit = UNSET,
+        operator: Operator | Unset | Omit = UNSET,
+        operands: tuple[Expression, ...] | None | Unset | Omit = UNSET,
+        operand: Expression | Unset | Omit = UNSET,
+        call: Call | Unset | Omit = UNSET,
+        selection: Selection | Unset | Omit = UNSET,
+        query: Query | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, ExpressionKind, 'kind')
-        if quantity is not UNSET:
+        if quantity is OMIT:
+            changes['quantity'] = OMIT
+        elif quantity is not UNSET:
             changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        if boolean is not UNSET:
+        if boolean is OMIT:
+            changes['boolean'] = OMIT
+        elif boolean is not UNSET:
             changes['boolean'] = copy_json(boolean)
-        if target is not UNSET:
+        if target is OMIT:
+            changes['target'] = OMIT
+        elif target is not UNSET:
             changes['target'] = _encode_record(target, Reference, 'target')
-        if operator is not UNSET:
+        if operator is OMIT:
+            changes['operator'] = OMIT
+        elif operator is not UNSET:
             changes['operator'] = _encode_enum(operator, Operator, 'operator')
-        if operands is not UNSET:
+        if operands is OMIT:
+            changes['operands'] = OMIT
+        elif operands is not UNSET:
             changes['operands'] = _encode_many(operands, lambda v: _encode_record(v, Expression, 'operands'))
-        if operand is not UNSET:
+        if operand is OMIT:
+            changes['operand'] = OMIT
+        elif operand is not UNSET:
             changes['operand'] = _encode_record(operand, Expression, 'operand')
-        if call is not UNSET:
+        if call is OMIT:
+            changes['call'] = OMIT
+        elif call is not UNSET:
             changes['call'] = _encode_record(call, Call, 'call')
-        if selection is not UNSET:
+        if selection is OMIT:
+            changes['selection'] = OMIT
+        elif selection is not UNSET:
             changes['selection'] = _encode_record(selection, Selection, 'selection')
-        if query is not UNSET:
+        if query is OMIT:
+            changes['query'] = OMIT
+        elif query is not UNSET:
             changes['query'] = _encode_record(query, Query, 'query')
         return self._replace(changes)
 
@@ -2098,15 +2196,17 @@ class Fact(Record):
     def replace(self, *,
         target: UUID | Unset = UNSET,
         claims: tuple[UUID, ...] | Unset = UNSET,
-        reconciliation: Reconciliation | None | Unset = UNSET,
+        reconciliation: Reconciliation | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if target is not UNSET:
             changes['target'] = self._encode_field('target', target)
         if claims is not UNSET:
             changes['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
-        if reconciliation is not UNSET:
+        if reconciliation is OMIT:
+            changes['reconciliation'] = OMIT
+        elif reconciliation is not UNSET:
             changes['reconciliation'] = _encode_record(reconciliation, Reconciliation, 'reconciliation')
         return self._replace(changes)
 
@@ -2157,14 +2257,18 @@ class Filter(Record):
         self._set_data(data)
 
     def replace(self, *,
-        classification: UUID | Unset = UNSET,
-        labels: tuple[Criterion, ...] | None | Unset = UNSET,
+        classification: UUID | Unset | Omit = UNSET,
+        labels: tuple[Criterion, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if classification is not UNSET:
+        if classification is OMIT:
+            changes['classification'] = OMIT
+        elif classification is not UNSET:
             changes['classification'] = _encode_uuid(classification)
-        if labels is not UNSET:
+        if labels is OMIT:
+            changes['labels'] = OMIT
+        elif labels is not UNSET:
             changes['labels'] = _encode_many(labels, lambda v: _encode_record(v, Criterion, 'labels'))
         return self._replace(changes)
 
@@ -2211,7 +2315,7 @@ class Flow(Record):
         units: str | Unset = UNSET,
         movements: tuple[Movement, ...] | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if units is not UNSET:
             changes['units'] = copy_json(units)
@@ -2324,34 +2428,50 @@ class Formulation(Record):
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
-        code: str | None | Unset = UNSET,
-        name: str | None | Unset = UNSET,
-        description: str | None | Unset = UNSET,
-        bindings: tuple[Binding, ...] | None | Unset = UNSET,
-        values: tuple[Value, ...] | None | Unset = UNSET,
-        expressions: tuple[Expression, ...] | None | Unset = UNSET,
-        constraints: tuple[Constraint, ...] | None | Unset = UNSET,
-        formulations: tuple[Formulation, ...] | None | Unset = UNSET,
+        code: str | None | Unset | Omit = UNSET,
+        name: str | None | Unset | Omit = UNSET,
+        description: str | None | Unset | Omit = UNSET,
+        bindings: tuple[Binding, ...] | None | Unset | Omit = UNSET,
+        values: tuple[Value, ...] | None | Unset | Omit = UNSET,
+        expressions: tuple[Expression, ...] | None | Unset | Omit = UNSET,
+        constraints: tuple[Constraint, ...] | None | Unset | Omit = UNSET,
+        formulations: tuple[Formulation, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
-        if code is not UNSET:
+        if code is OMIT:
+            changes['code'] = OMIT
+        elif code is not UNSET:
             changes['code'] = copy_json(code)
-        if name is not UNSET:
+        if name is OMIT:
+            changes['name'] = OMIT
+        elif name is not UNSET:
             changes['name'] = copy_json(name)
-        if description is not UNSET:
+        if description is OMIT:
+            changes['description'] = OMIT
+        elif description is not UNSET:
             changes['description'] = copy_json(description)
-        if bindings is not UNSET:
+        if bindings is OMIT:
+            changes['bindings'] = OMIT
+        elif bindings is not UNSET:
             changes['bindings'] = _encode_many(bindings, lambda v: _encode_record(v, Binding, 'bindings'))
-        if values is not UNSET:
+        if values is OMIT:
+            changes['values'] = OMIT
+        elif values is not UNSET:
             changes['values'] = _encode_many(values, lambda v: _encode_record(v, Value, 'values'))
-        if expressions is not UNSET:
+        if expressions is OMIT:
+            changes['expressions'] = OMIT
+        elif expressions is not UNSET:
             changes['expressions'] = _encode_many(expressions, lambda v: _encode_record(v, Expression, 'expressions'))
-        if constraints is not UNSET:
+        if constraints is OMIT:
+            changes['constraints'] = OMIT
+        elif constraints is not UNSET:
             changes['constraints'] = _encode_many(constraints, lambda v: _encode_record(v, Constraint, 'constraints'))
-        if formulations is not UNSET:
+        if formulations is OMIT:
+            changes['formulations'] = OMIT
+        elif formulations is not UNSET:
             changes['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
         return self._replace(changes)
 
@@ -2493,13 +2613,13 @@ class Function(Record):
         code: str | Unset = UNSET,
         name: str | Unset = UNSET,
         version: str | Unset = UNSET,
-        parameters: tuple[Parameter, ...] | None | Unset = UNSET,
+        parameters: tuple[Parameter, ...] | None | Unset | Omit = UNSET,
         result: Domain | Unset = UNSET,
         semantics: str | Unset = UNSET,
         unit_rule: str | Unset = UNSET,
-        empty_collection: EmptyHandling | Unset = UNSET,
+        empty_collection: EmptyHandling | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -2509,7 +2629,9 @@ class Function(Record):
             changes['name'] = copy_json(name)
         if version is not UNSET:
             changes['version'] = copy_json(version)
-        if parameters is not UNSET:
+        if parameters is OMIT:
+            changes['parameters'] = OMIT
+        elif parameters is not UNSET:
             changes['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, Parameter, 'parameters'))
         if result is not UNSET:
             changes['result'] = _encode_record(result, Domain, 'result')
@@ -2517,7 +2639,9 @@ class Function(Record):
             changes['semantics'] = copy_json(semantics)
         if unit_rule is not UNSET:
             changes['unit_rule'] = copy_json(unit_rule)
-        if empty_collection is not UNSET:
+        if empty_collection is OMIT:
+            changes['empty_collection'] = OMIT
+        elif empty_collection is not UNSET:
             changes['empty_collection'] = _encode_enum(empty_collection, EmptyHandling, 'empty_collection')
         return self._replace(changes)
 
@@ -2598,13 +2722,15 @@ class Geometry(Record):
 
     def replace(self, *,
         pin: GeometryPin | Unset = UNSET,
-        mappings: tuple[GeometryMapping, ...] | None | Unset = UNSET,
+        mappings: tuple[GeometryMapping, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if pin is not UNSET:
             changes['pin'] = _encode_record(pin, GeometryPin, 'pin')
-        if mappings is not UNSET:
+        if mappings is OMIT:
+            changes['mappings'] = OMIT
+        elif mappings is not UNSET:
             changes['mappings'] = _encode_many(mappings, lambda v: _encode_record(v, GeometryMapping, 'mappings'))
         return self._replace(changes)
 
@@ -2677,10 +2803,10 @@ class GeometryElement(Record):
         namespace: str | Unset = UNSET,
         kind: str | Unset = UNSET,
         key: str | Unset = UNSET,
-        scope: str | None | Unset = UNSET,
-        placement: tuple[str, ...] | None | Unset = UNSET,
+        scope: str | None | Unset | Omit = UNSET,
+        placement: tuple[str, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if namespace is not UNSET:
             changes['namespace'] = copy_json(namespace)
@@ -2688,9 +2814,13 @@ class GeometryElement(Record):
             changes['kind'] = copy_json(kind)
         if key is not UNSET:
             changes['key'] = copy_json(key)
-        if scope is not UNSET:
+        if scope is OMIT:
+            changes['scope'] = OMIT
+        elif scope is not UNSET:
             changes['scope'] = copy_json(scope)
-        if placement is not UNSET:
+        if placement is OMIT:
+            changes['placement'] = OMIT
+        elif placement is not UNSET:
             changes['placement'] = _encode_many(placement, lambda v: copy_json(v))
         return self._replace(changes)
 
@@ -2761,7 +2891,7 @@ class GeometryFile(Record):
         sha256: str | Unset = UNSET,
         size: int | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if path is not UNSET:
             changes['path'] = copy_json(path)
@@ -2819,7 +2949,7 @@ class GeometryMapping(Record):
         entity: UUID | Unset = UNSET,
         element: GeometryElement | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if entity is not UNSET:
             changes['entity'] = _encode_uuid(entity)
@@ -2933,10 +3063,10 @@ class GeometryPin(Record):
         specification_digest: str | Unset = UNSET,
         content_digest: str | Unset = UNSET,
         files: tuple[GeometryFile, ...] | Unset = UNSET,
-        source_address: str | None | Unset = UNSET,
-        source_version: str | None | Unset = UNSET,
+        source_address: str | None | Unset | Omit = UNSET,
+        source_version: str | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if provider is not UNSET:
             changes['provider'] = copy_json(provider)
@@ -2952,9 +3082,13 @@ class GeometryPin(Record):
             changes['content_digest'] = copy_json(content_digest)
         if files is not UNSET:
             changes['files'] = _encode_many(files, lambda v: _encode_record(v, GeometryFile, 'files'))
-        if source_address is not UNSET:
+        if source_address is OMIT:
+            changes['source_address'] = OMIT
+        elif source_address is not UNSET:
             changes['source_address'] = copy_json(source_address)
-        if source_version is not UNSET:
+        if source_version is OMIT:
+            changes['source_version'] = OMIT
+        elif source_version is not UNSET:
             changes['source_version'] = copy_json(source_version)
         return self._replace(changes)
 
@@ -3045,7 +3179,7 @@ class Implementation(Record):
         name: str | Unset = UNSET,
         version: str | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, ImplementationKind, 'kind')
@@ -3112,15 +3246,17 @@ class Label(Record):
     def replace(self, *,
         id: UUID | Unset = UNSET,
         key: str | Unset = UNSET,
-        classifications: tuple[UUID, ...] | None | Unset = UNSET,
+        classifications: tuple[UUID, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
         if key is not UNSET:
             changes['key'] = copy_json(key)
-        if classifications is not UNSET:
+        if classifications is OMIT:
+            changes['classifications'] = OMIT
+        elif classifications is not UNSET:
             changes['classifications'] = _encode_many(classifications, lambda v: _encode_uuid(v))
         return self._replace(changes)
 
@@ -3172,7 +3308,7 @@ class LibraryVersion(Record):
         name: str | Unset = UNSET,
         version: str | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
@@ -3223,13 +3359,15 @@ class Location(Record):
 
     def replace(self, *,
         source: UUID | Unset = UNSET,
-        address: Mapping[str, Mapping[str, JSONValue] | str] | None | Unset = UNSET,
+        address: Mapping[str, Mapping[str, JSONValue] | str] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if source is not UNSET:
             changes['source'] = _encode_uuid(source)
-        if address is not UNSET:
+        if address is OMIT:
+            changes['address'] = OMIT
+        elif address is not UNSET:
             changes['address'] = self._encode_field('address', address)
         return self._replace(changes)
 
@@ -3311,10 +3449,10 @@ class Measure(Record):
         code: str | Unset = UNSET,
         name: str | Unset = UNSET,
         units: str | Unset = UNSET,
-        definition: str | None | Unset = UNSET,
-        tags: tuple[str, ...] | None | Unset = UNSET,
+        definition: str | None | Unset | Omit = UNSET,
+        tags: tuple[str, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -3324,9 +3462,13 @@ class Measure(Record):
             changes['name'] = copy_json(name)
         if units is not UNSET:
             changes['units'] = copy_json(units)
-        if definition is not UNSET:
+        if definition is OMIT:
+            changes['definition'] = OMIT
+        elif definition is not UNSET:
             changes['definition'] = copy_json(definition)
-        if tags is not UNSET:
+        if tags is OMIT:
+            changes['tags'] = OMIT
+        elif tags is not UNSET:
             changes['tags'] = _encode_many(tags, lambda v: copy_json(v))
         return self._replace(changes)
 
@@ -3419,21 +3561,27 @@ class Metadata(Record):
     def replace(self, *,
         id: UUID | Unset = UNSET,
         schema_version: str | Unset = UNSET,
-        name: str | None | Unset = UNSET,
-        description: str | None | Unset = UNSET,
-        previous: UUID | Unset = UNSET,
+        name: str | None | Unset | Omit = UNSET,
+        description: str | None | Unset | Omit = UNSET,
+        previous: UUID | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
         if schema_version is not UNSET:
             changes['schema_version'] = copy_json(schema_version)
-        if name is not UNSET:
+        if name is OMIT:
+            changes['name'] = OMIT
+        elif name is not UNSET:
             changes['name'] = copy_json(name)
-        if description is not UNSET:
+        if description is OMIT:
+            changes['description'] = OMIT
+        elif description is not UNSET:
             changes['description'] = copy_json(description)
-        if previous is not UNSET:
+        if previous is OMIT:
+            changes['previous'] = OMIT
+        elif previous is not UNSET:
             changes['previous'] = _encode_uuid(previous)
         return self._replace(changes)
 
@@ -3503,16 +3651,20 @@ class Method(Record):
 
     def replace(self, *,
         code: str | Unset = UNSET,
-        version: str | None | Unset = UNSET,
-        description: str | None | Unset = UNSET,
+        version: str | None | Unset | Omit = UNSET,
+        description: str | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if code is not UNSET:
             changes['code'] = copy_json(code)
-        if version is not UNSET:
+        if version is OMIT:
+            changes['version'] = OMIT
+        elif version is not UNSET:
             changes['version'] = copy_json(version)
-        if description is not UNSET:
+        if description is OMIT:
+            changes['description'] = OMIT
+        elif description is not UNSET:
             changes['description'] = copy_json(description)
         return self._replace(changes)
 
@@ -3590,22 +3742,30 @@ class Model(Record):
 
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
-        definitions: Definitions | Unset = UNSET,
-        system: System | Unset = UNSET,
-        provenance: Provenance | Unset = UNSET,
-        geometry: Geometry | None | Unset = UNSET,
+        definitions: Definitions | Unset | Omit = UNSET,
+        system: System | Unset | Omit = UNSET,
+        provenance: Provenance | Unset | Omit = UNSET,
+        geometry: Geometry | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if metadata is not UNSET:
             changes['metadata'] = _encode_record(metadata, Metadata, 'metadata')
-        if definitions is not UNSET:
+        if definitions is OMIT:
+            changes['definitions'] = OMIT
+        elif definitions is not UNSET:
             changes['definitions'] = _encode_record(definitions, Definitions, 'definitions')
-        if system is not UNSET:
+        if system is OMIT:
+            changes['system'] = OMIT
+        elif system is not UNSET:
             changes['system'] = _encode_record(system, System, 'system')
-        if provenance is not UNSET:
+        if provenance is OMIT:
+            changes['provenance'] = OMIT
+        elif provenance is not UNSET:
             changes['provenance'] = _encode_record(provenance, Provenance, 'provenance')
-        if geometry is not UNSET:
+        if geometry is OMIT:
+            changes['geometry'] = OMIT
+        elif geometry is not UNSET:
             changes['geometry'] = _encode_record(geometry, Geometry, 'geometry')
         return self._replace(changes)
 
@@ -3702,25 +3862,35 @@ class Movement(Record):
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
-        key: str | None | Unset = UNSET,
-        date: Date | None | Unset = UNSET,
-        period: Period | None | Unset = UNSET,
-        magnitude: int | float | None | Unset = UNSET,
-        claims: tuple[UUID, ...] | None | Unset = UNSET,
+        key: str | None | Unset | Omit = UNSET,
+        date: Date | None | Unset | Omit = UNSET,
+        period: Period | None | Unset | Omit = UNSET,
+        magnitude: int | float | None | Unset | Omit = UNSET,
+        claims: tuple[UUID, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
-        if key is not UNSET:
+        if key is OMIT:
+            changes['key'] = OMIT
+        elif key is not UNSET:
             changes['key'] = copy_json(key)
-        if date is not UNSET:
+        if date is OMIT:
+            changes['date'] = OMIT
+        elif date is not UNSET:
             changes['date'] = _encode_date(date)
-        if period is not UNSET:
+        if period is OMIT:
+            changes['period'] = OMIT
+        elif period is not UNSET:
             changes['period'] = _encode_record(period, Period, 'period')
-        if magnitude is not UNSET:
+        if magnitude is OMIT:
+            changes['magnitude'] = OMIT
+        elif magnitude is not UNSET:
             changes['magnitude'] = copy_json(magnitude)
-        if claims is not UNSET:
+        if claims is OMIT:
+            changes['claims'] = OMIT
+        elif claims is not UNSET:
             changes['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
         return self._replace(changes)
 
@@ -3787,7 +3957,7 @@ class Objective(Record):
         expression: UUID | Unset = UNSET,
         sense: ObjectiveKind | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if expression is not UNSET:
             changes['expression'] = _encode_uuid(expression)
@@ -3838,7 +4008,7 @@ class ObservationAvailability(Record):
         target: Reference | Unset = UNSET,
         available_at: Date | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if target is not UNSET:
             changes['target'] = _encode_record(target, Reference, 'target')
@@ -3897,15 +4067,17 @@ class ObservationBinding(Record):
     def replace(self, *,
         name: str | Unset = UNSET,
         target: Reference | Unset = UNSET,
-        available_at: Date | None | Unset = UNSET,
+        available_at: Date | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
         if target is not UNSET:
             changes['target'] = _encode_record(target, Reference, 'target')
-        if available_at is not UNSET:
+        if available_at is OMIT:
+            changes['available_at'] = OMIT
+        elif available_at is not UNSET:
             changes['available_at'] = _encode_date(available_at)
         return self._replace(changes)
 
@@ -3975,7 +4147,7 @@ class ObservedQuantity(Record):
         quantity: Quantity | Unset = UNSET,
         available_at: Date | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
@@ -4058,7 +4230,7 @@ class Parameter(Record):
         kind: ParameterKind | Unset = UNSET,
         required: bool | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
@@ -4123,7 +4295,7 @@ class Period(Record):
         start: Date | Unset = UNSET,
         end: Date | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if start is not UNSET:
             changes['start'] = _encode_date(start)
@@ -4183,7 +4355,7 @@ class Policy(Record):
         targets: tuple[Reference, ...] | Unset = UNSET,
         decisions: tuple[Decision, ...] | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -4267,22 +4439,30 @@ class Projection(Record):
 
     def replace(self, *,
         kind: ProjectionKind | Unset = UNSET,
-        key: str | Unset = UNSET,
-        measure: UUID | Unset = UNSET,
-        cardinality: Cardinality | Unset = UNSET,
-        missing: MissingHandling | Unset = UNSET,
+        key: str | Unset | Omit = UNSET,
+        measure: UUID | Unset | Omit = UNSET,
+        cardinality: Cardinality | Unset | Omit = UNSET,
+        missing: MissingHandling | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, ProjectionKind, 'kind')
-        if key is not UNSET:
+        if key is OMIT:
+            changes['key'] = OMIT
+        elif key is not UNSET:
             changes['key'] = copy_json(key)
-        if measure is not UNSET:
+        if measure is OMIT:
+            changes['measure'] = OMIT
+        elif measure is not UNSET:
             changes['measure'] = _encode_uuid(measure)
-        if cardinality is not UNSET:
+        if cardinality is OMIT:
+            changes['cardinality'] = OMIT
+        elif cardinality is not UNSET:
             changes['cardinality'] = _encode_enum(cardinality, Cardinality, 'cardinality')
-        if missing is not UNSET:
+        if missing is OMIT:
+            changes['missing'] = OMIT
+        elif missing is not UNSET:
             changes['missing'] = _encode_enum(missing, MissingHandling, 'missing')
         return self._replace(changes)
 
@@ -4379,25 +4559,35 @@ class PropertyContent(Record):
 
     def replace(self, *,
         kind: ContentKind | Unset = UNSET,
-        text: str | None | Unset = UNSET,
-        zone: str | None | Unset = UNSET,
-        fold: int | None | Unset = UNSET,
-        items: tuple[PropertyContent, ...] | None | Unset = UNSET,
-        entries: tuple[ContentEntry, ...] | None | Unset = UNSET,
+        text: str | None | Unset | Omit = UNSET,
+        zone: str | None | Unset | Omit = UNSET,
+        fold: int | None | Unset | Omit = UNSET,
+        items: tuple[PropertyContent, ...] | None | Unset | Omit = UNSET,
+        entries: tuple[ContentEntry, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, ContentKind, 'kind')
-        if text is not UNSET:
+        if text is OMIT:
+            changes['text'] = OMIT
+        elif text is not UNSET:
             changes['text'] = copy_json(text)
-        if zone is not UNSET:
+        if zone is OMIT:
+            changes['zone'] = OMIT
+        elif zone is not UNSET:
             changes['zone'] = copy_json(zone)
-        if fold is not UNSET:
+        if fold is OMIT:
+            changes['fold'] = OMIT
+        elif fold is not UNSET:
             changes['fold'] = copy_json(fold)
-        if items is not UNSET:
+        if items is OMIT:
+            changes['items'] = OMIT
+        elif items is not UNSET:
             changes['items'] = _encode_many(items, lambda v: _encode_record(v, PropertyContent, 'items'))
-        if entries is not UNSET:
+        if entries is OMIT:
+            changes['entries'] = OMIT
+        elif entries is not UNSET:
             changes['entries'] = _encode_many(entries, lambda v: _encode_record(v, ContentEntry, 'entries'))
         return self._replace(changes)
 
@@ -4482,20 +4672,28 @@ class Provenance(Record):
         self._set_data(data)
 
     def replace(self, *,
-        sources: tuple[Source, ...] | None | Unset = UNSET,
-        claims: tuple[Claim, ...] | None | Unset = UNSET,
-        facts: tuple[Fact, ...] | None | Unset = UNSET,
-        scenarios: tuple[ScenarioRealization, ...] | None | Unset = UNSET,
+        sources: tuple[Source, ...] | None | Unset | Omit = UNSET,
+        claims: tuple[Claim, ...] | None | Unset | Omit = UNSET,
+        facts: tuple[Fact, ...] | None | Unset | Omit = UNSET,
+        scenarios: tuple[ScenarioRealization, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if sources is not UNSET:
+        if sources is OMIT:
+            changes['sources'] = OMIT
+        elif sources is not UNSET:
             changes['sources'] = _encode_many(sources, lambda v: _encode_record(v, Source, 'sources'))
-        if claims is not UNSET:
+        if claims is OMIT:
+            changes['claims'] = OMIT
+        elif claims is not UNSET:
             changes['claims'] = _encode_many(claims, lambda v: _encode_record(v, Claim, 'claims'))
-        if facts is not UNSET:
+        if facts is OMIT:
+            changes['facts'] = OMIT
+        elif facts is not UNSET:
             changes['facts'] = _encode_many(facts, lambda v: _encode_record(v, Fact, 'facts'))
-        if scenarios is not UNSET:
+        if scenarios is OMIT:
+            changes['scenarios'] = OMIT
+        elif scenarios is not UNSET:
             changes['scenarios'] = _encode_many(scenarios, lambda v: _encode_record(v, ScenarioRealization, 'scenarios'))
         return self._replace(changes)
 
@@ -4552,7 +4750,7 @@ class Quantity(Record):
         magnitude: int | float | Unset = UNSET,
         units: str | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if magnitude is not UNSET:
             changes['magnitude'] = copy_json(magnitude)
@@ -4627,18 +4825,22 @@ class Query(Record):
 
     def replace(self, *,
         starting_at: UUID | Unset = UNSET,
-        steps: tuple[Traversal, ...] | None | Unset = UNSET,
-        filter: Filter | Unset = UNSET,
+        steps: tuple[Traversal, ...] | None | Unset | Omit = UNSET,
+        filter: Filter | Unset | Omit = UNSET,
         projection: Projection | Unset = UNSET,
         duplicates: DuplicateHandling | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if starting_at is not UNSET:
             changes['starting_at'] = _encode_uuid(starting_at)
-        if steps is not UNSET:
+        if steps is OMIT:
+            changes['steps'] = OMIT
+        elif steps is not UNSET:
             changes['steps'] = _encode_many(steps, lambda v: _encode_record(v, Traversal, 'steps'))
-        if filter is not UNSET:
+        if filter is OMIT:
+            changes['filter'] = OMIT
+        elif filter is not UNSET:
             changes['filter'] = _encode_record(filter, Filter, 'filter')
         if projection is not UNSET:
             changes['projection'] = _encode_record(projection, Projection, 'projection')
@@ -4704,7 +4906,7 @@ class RandomStream(Record):
         name: str | Unset = UNSET,
         identifier: str | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
@@ -4763,15 +4965,17 @@ class Reconciliation(Record):
     def replace(self, *,
         selected: UUID | Unset = UNSET,
         status: ReconciliationStatus | Unset = UNSET,
-        method: Method | None | Unset = UNSET,
+        method: Method | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if selected is not UNSET:
             changes['selected'] = _encode_uuid(selected)
         if status is not UNSET:
             changes['status'] = _encode_enum(status, ReconciliationStatus, 'status')
-        if method is not UNSET:
+        if method is OMIT:
+            changes['method'] = OMIT
+        elif method is not UNSET:
             changes['method'] = _encode_record(method, Method, 'method')
         return self._replace(changes)
 
@@ -4814,7 +5018,7 @@ class Reference(Record):
     def replace(self, *,
         target: UUID | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if target is not UNSET:
             changes['target'] = _encode_uuid(target)
@@ -4885,9 +5089,9 @@ class Relationship(Record):
         id: UUID | Unset = UNSET,
         source: UUID | Unset = UNSET,
         target: UUID | Unset = UNSET,
-        characteristics: Characteristics | None | Unset = UNSET,
+        characteristics: Characteristics | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if classification is not UNSET:
             changes['classification'] = _encode_uuid(classification)
@@ -4897,7 +5101,9 @@ class Relationship(Record):
             changes['source'] = _encode_uuid(source)
         if target is not UNSET:
             changes['target'] = _encode_uuid(target)
-        if characteristics is not UNSET:
+        if characteristics is OMIT:
+            changes['characteristics'] = OMIT
+        elif characteristics is not UNSET:
             changes['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
         return self._replace(changes)
 
@@ -4985,22 +5191,30 @@ class Report(Record):
 
     def replace(self, *,
         status: Status | Unset = UNSET,
-        runtime: Runtime | Unset = UNSET,
-        diagnostics: tuple[Diagnostic, ...] | None | Unset = UNSET,
-        trace: tuple[Step, ...] | None | Unset = UNSET,
-        outcomes: tuple[DecisionOutcome, ...] | None | Unset = UNSET,
+        runtime: Runtime | Unset | Omit = UNSET,
+        diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = UNSET,
+        trace: tuple[Step, ...] | None | Unset | Omit = UNSET,
+        outcomes: tuple[DecisionOutcome, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if status is not UNSET:
             changes['status'] = _encode_record(status, Status, 'status')
-        if runtime is not UNSET:
+        if runtime is OMIT:
+            changes['runtime'] = OMIT
+        elif runtime is not UNSET:
             changes['runtime'] = _encode_record(runtime, Runtime, 'runtime')
-        if diagnostics is not UNSET:
+        if diagnostics is OMIT:
+            changes['diagnostics'] = OMIT
+        elif diagnostics is not UNSET:
             changes['diagnostics'] = _encode_many(diagnostics, lambda v: _encode_record(v, Diagnostic, 'diagnostics'))
-        if trace is not UNSET:
+        if trace is OMIT:
+            changes['trace'] = OMIT
+        elif trace is not UNSET:
             changes['trace'] = _encode_many(trace, lambda v: _encode_record(v, Step, 'trace'))
-        if outcomes is not UNSET:
+        if outcomes is OMIT:
+            changes['outcomes'] = OMIT
+        elif outcomes is not UNSET:
             changes['outcomes'] = _encode_many(outcomes, lambda v: _encode_record(v, DecisionOutcome, 'outcomes'))
         return self._replace(changes)
 
@@ -5071,7 +5285,7 @@ class Rule(Record):
         condition: Expression | Unset = UNSET,
         actions: tuple[Action, ...] | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -5154,19 +5368,23 @@ class Run(Record):
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
         specification: UUID | Unset = UNSET,
-        spawns: tuple[UUID, ...] | None | Unset = UNSET,
-        outputs: tuple[UUID, ...] | None | Unset = UNSET,
+        spawns: tuple[UUID, ...] | None | Unset | Omit = UNSET,
+        outputs: tuple[UUID, ...] | None | Unset | Omit = UNSET,
         report: Report | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if metadata is not UNSET:
             changes['metadata'] = _encode_record(metadata, Metadata, 'metadata')
         if specification is not UNSET:
             changes['specification'] = _encode_uuid(specification)
-        if spawns is not UNSET:
+        if spawns is OMIT:
+            changes['spawns'] = OMIT
+        elif spawns is not UNSET:
             changes['spawns'] = _encode_many(spawns, lambda v: _encode_uuid(v))
-        if outputs is not UNSET:
+        if outputs is OMIT:
+            changes['outputs'] = OMIT
+        elif outputs is not UNSET:
             changes['outputs'] = _encode_many(outputs, lambda v: _encode_uuid(v))
         if report is not UNSET:
             changes['report'] = _encode_record(report, Report, 'report')
@@ -5247,20 +5465,26 @@ class Runtime(Record):
         self._set_data(data)
 
     def replace(self, *,
-        started_at: str | None | Unset = UNSET,
-        finished_at: str | None | Unset = UNSET,
+        started_at: str | None | Unset | Omit = UNSET,
+        finished_at: str | None | Unset | Omit = UNSET,
         implementations: tuple[Implementation, ...] | Unset = UNSET,
-        settings: Settings | Unset = UNSET,
+        settings: Settings | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if started_at is not UNSET:
+        if started_at is OMIT:
+            changes['started_at'] = OMIT
+        elif started_at is not UNSET:
             changes['started_at'] = copy_json(started_at)
-        if finished_at is not UNSET:
+        if finished_at is OMIT:
+            changes['finished_at'] = OMIT
+        elif finished_at is not UNSET:
             changes['finished_at'] = copy_json(finished_at)
         if implementations is not UNSET:
             changes['implementations'] = _encode_many(implementations, lambda v: _encode_record(v, Implementation, 'implementations'))
-        if settings is not UNSET:
+        if settings is OMIT:
+            changes['settings'] = OMIT
+        elif settings is not UNSET:
             changes['settings'] = _encode_record(settings, Settings, 'settings')
         return self._replace(changes)
 
@@ -5325,16 +5549,20 @@ class ScenarioParameter(Record):
 
     def replace(self, *,
         name: str | Unset = UNSET,
-        quantity: Quantity | None | Unset = UNSET,
-        distribution: Distribution | None | Unset = UNSET,
+        quantity: Quantity | None | Unset | Omit = UNSET,
+        distribution: Distribution | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if name is not UNSET:
             changes['name'] = copy_json(name)
-        if quantity is not UNSET:
+        if quantity is OMIT:
+            changes['quantity'] = OMIT
+        elif quantity is not UNSET:
             changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        if distribution is not UNSET:
+        if distribution is OMIT:
+            changes['distribution'] = OMIT
+        elif distribution is not UNSET:
             changes['distribution'] = _encode_record(distribution, Distribution, 'distribution')
         return self._replace(changes)
 
@@ -5414,7 +5642,7 @@ class ScenarioPlan(Record):
         periods: tuple[Period, ...] | Unset = UNSET,
         parameters: tuple[ScenarioParameter, ...] | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -5553,7 +5781,7 @@ class ScenarioRealization(Record):
         id: UUID | Unset = UNSET,
         plan: ScenarioPlan | Unset = UNSET,
         key: str | Unset = UNSET,
-        calculation: CalculationProvenance | None | Unset = UNSET,
+        calculation: CalculationProvenance | None | Unset | Omit = UNSET,
         generator: str | Unset = UNSET,
         versions: tuple[LibraryVersion, ...] | Unset = UNSET,
         streams: tuple[RandomStream, ...] | Unset = UNSET,
@@ -5561,7 +5789,7 @@ class ScenarioRealization(Record):
         outputs: tuple[Binding, ...] | Unset = UNSET,
         availability: tuple[ObservationAvailability, ...] | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -5569,7 +5797,9 @@ class ScenarioRealization(Record):
             changes['plan'] = _encode_record(plan, ScenarioPlan, 'plan')
         if key is not UNSET:
             changes['key'] = copy_json(key)
-        if calculation is not UNSET:
+        if calculation is OMIT:
+            changes['calculation'] = OMIT
+        elif calculation is not UNSET:
             changes['calculation'] = _encode_record(calculation, CalculationProvenance, 'calculation')
         if generator is not UNSET:
             changes['generator'] = copy_json(generator)
@@ -5685,18 +5915,22 @@ class Selection(Record):
     def replace(self, *,
         kind: SelectionKind | Unset = UNSET,
         base: Expression | Unset = UNSET,
-        member: str | None | Unset = UNSET,
-        index: Expression | Unset = UNSET,
+        member: str | None | Unset | Omit = UNSET,
+        index: Expression | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, SelectionKind, 'kind')
         if base is not UNSET:
             changes['base'] = _encode_record(base, Expression, 'base')
-        if member is not UNSET:
+        if member is OMIT:
+            changes['member'] = OMIT
+        elif member is not UNSET:
             changes['member'] = copy_json(member)
-        if index is not UNSET:
+        if index is OMIT:
+            changes['index'] = OMIT
+        elif index is not UNSET:
             changes['index'] = _encode_record(index, Expression, 'index')
         return self._replace(changes)
 
@@ -5780,23 +6014,33 @@ class Settings(Record):
         self._set_data(data)
 
     def replace(self, *,
-        relative_tolerance: int | float | None | Unset = UNSET,
-        iteration_limit: int | None | Unset = UNSET,
-        time_limit: int | float | None | Unset = UNSET,
-        symbol_limit: int | None | Unset = UNSET,
-        constraint_limit: int | None | Unset = UNSET,
+        relative_tolerance: int | float | None | Unset | Omit = UNSET,
+        iteration_limit: int | None | Unset | Omit = UNSET,
+        time_limit: int | float | None | Unset | Omit = UNSET,
+        symbol_limit: int | None | Unset | Omit = UNSET,
+        constraint_limit: int | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if relative_tolerance is not UNSET:
+        if relative_tolerance is OMIT:
+            changes['relative_tolerance'] = OMIT
+        elif relative_tolerance is not UNSET:
             changes['relative_tolerance'] = copy_json(relative_tolerance)
-        if iteration_limit is not UNSET:
+        if iteration_limit is OMIT:
+            changes['iteration_limit'] = OMIT
+        elif iteration_limit is not UNSET:
             changes['iteration_limit'] = copy_json(iteration_limit)
-        if time_limit is not UNSET:
+        if time_limit is OMIT:
+            changes['time_limit'] = OMIT
+        elif time_limit is not UNSET:
             changes['time_limit'] = copy_json(time_limit)
-        if symbol_limit is not UNSET:
+        if symbol_limit is OMIT:
+            changes['symbol_limit'] = OMIT
+        elif symbol_limit is not UNSET:
             changes['symbol_limit'] = copy_json(symbol_limit)
-        if constraint_limit is not UNSET:
+        if constraint_limit is OMIT:
+            changes['constraint_limit'] = OMIT
+        elif constraint_limit is not UNSET:
             changes['constraint_limit'] = copy_json(constraint_limit)
         return self._replace(changes)
 
@@ -5895,11 +6139,11 @@ class Source(Record):
         id: UUID | Unset = UNSET,
         name: str | Unset = UNSET,
         checksum: str | Unset = UNSET,
-        issued_at: Date | str | None | Unset = UNSET,
-        received_at: Date | str | None | Unset = UNSET,
-        author: str | None | Unset = UNSET,
+        issued_at: Date | str | None | Unset | Omit = UNSET,
+        received_at: Date | str | None | Unset | Omit = UNSET,
+        author: str | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -5907,11 +6151,17 @@ class Source(Record):
             changes['name'] = copy_json(name)
         if checksum is not UNSET:
             changes['checksum'] = copy_json(checksum)
-        if issued_at is not UNSET:
+        if issued_at is OMIT:
+            changes['issued_at'] = OMIT
+        elif issued_at is not UNSET:
             changes['issued_at'] = self._encode_field('issued_at', issued_at)
-        if received_at is not UNSET:
+        if received_at is OMIT:
+            changes['received_at'] = OMIT
+        elif received_at is not UNSET:
             changes['received_at'] = self._encode_field('received_at', received_at)
-        if author is not UNSET:
+        if author is OMIT:
+            changes['author'] = OMIT
+        elif author is not UNSET:
             changes['author'] = copy_json(author)
         return self._replace(changes)
 
@@ -5984,13 +6234,15 @@ class Span(Period):
         self._set_data(data)
 
     def replace(self, *,
-        name: str | None | Unset = UNSET,
+        name: str | None | Unset | Omit = UNSET,
         start: Date | Unset = UNSET,
         end: Date | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if name is not UNSET:
+        if name is OMIT:
+            changes['name'] = OMIT
+        elif name is not UNSET:
             changes['name'] = copy_json(name)
         if start is not UNSET:
             changes['start'] = _encode_date(start)
@@ -6126,40 +6378,60 @@ class Specification(Record):
 
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
-        model: UUID | Unset = UNSET,
-        includes: tuple[UUID, ...] | None | Unset = UNSET,
-        cases: tuple[UUID, ...] | None | Unset = UNSET,
-        assignments: tuple[Assignment, ...] | None | Unset = UNSET,
-        unknowns: tuple[Reference, ...] | None | Unset = UNSET,
-        estimates: tuple[Assignment, ...] | None | Unset = UNSET,
-        formulations: tuple[Formulation, ...] | None | Unset = UNSET,
-        objectives: tuple[Objective, ...] | None | Unset = UNSET,
-        settings: Settings | Unset = UNSET,
-        policy: Policy | None | Unset = UNSET,
+        model: UUID | Unset | Omit = UNSET,
+        includes: tuple[UUID, ...] | None | Unset | Omit = UNSET,
+        cases: tuple[UUID, ...] | None | Unset | Omit = UNSET,
+        assignments: tuple[Assignment, ...] | None | Unset | Omit = UNSET,
+        unknowns: tuple[Reference, ...] | None | Unset | Omit = UNSET,
+        estimates: tuple[Assignment, ...] | None | Unset | Omit = UNSET,
+        formulations: tuple[Formulation, ...] | None | Unset | Omit = UNSET,
+        objectives: tuple[Objective, ...] | None | Unset | Omit = UNSET,
+        settings: Settings | Unset | Omit = UNSET,
+        policy: Policy | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if metadata is not UNSET:
             changes['metadata'] = _encode_record(metadata, Metadata, 'metadata')
-        if model is not UNSET:
+        if model is OMIT:
+            changes['model'] = OMIT
+        elif model is not UNSET:
             changes['model'] = _encode_uuid(model)
-        if includes is not UNSET:
+        if includes is OMIT:
+            changes['includes'] = OMIT
+        elif includes is not UNSET:
             changes['includes'] = _encode_many(includes, lambda v: _encode_uuid(v))
-        if cases is not UNSET:
+        if cases is OMIT:
+            changes['cases'] = OMIT
+        elif cases is not UNSET:
             changes['cases'] = _encode_many(cases, lambda v: _encode_uuid(v))
-        if assignments is not UNSET:
+        if assignments is OMIT:
+            changes['assignments'] = OMIT
+        elif assignments is not UNSET:
             changes['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
-        if unknowns is not UNSET:
+        if unknowns is OMIT:
+            changes['unknowns'] = OMIT
+        elif unknowns is not UNSET:
             changes['unknowns'] = _encode_many(unknowns, lambda v: _encode_record(v, Reference, 'unknowns'))
-        if estimates is not UNSET:
+        if estimates is OMIT:
+            changes['estimates'] = OMIT
+        elif estimates is not UNSET:
             changes['estimates'] = _encode_many(estimates, lambda v: _encode_record(v, Assignment, 'estimates'))
-        if formulations is not UNSET:
+        if formulations is OMIT:
+            changes['formulations'] = OMIT
+        elif formulations is not UNSET:
             changes['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
-        if objectives is not UNSET:
+        if objectives is OMIT:
+            changes['objectives'] = OMIT
+        elif objectives is not UNSET:
             changes['objectives'] = _encode_many(objectives, lambda v: _encode_record(v, Objective, 'objectives'))
-        if settings is not UNSET:
+        if settings is OMIT:
+            changes['settings'] = OMIT
+        elif settings is not UNSET:
             changes['settings'] = _encode_record(settings, Settings, 'settings')
-        if policy is not UNSET:
+        if policy is OMIT:
+            changes['policy'] = OMIT
+        elif policy is not UNSET:
             changes['policy'] = _encode_record(policy, Policy, 'policy')
         return self._replace(changes)
 
@@ -6251,7 +6523,7 @@ class Status(Record):
         completion: CompletionStatus | Unset = UNSET,
         solution: SolutionStatus | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if completion is not UNSET:
             changes['completion'] = _encode_enum(completion, CompletionStatus, 'completion')
@@ -6327,22 +6599,28 @@ class Step(Record):
 
     def replace(self, *,
         kind: StepKind | Unset = UNSET,
-        at: str | None | Unset = UNSET,
+        at: str | None | Unset | Omit = UNSET,
         message: str | Unset = UNSET,
-        document: UUID | Unset = UNSET,
-        target: UUID | None | Unset = UNSET,
+        document: UUID | Unset | Omit = UNSET,
+        target: UUID | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, StepKind, 'kind')
-        if at is not UNSET:
+        if at is OMIT:
+            changes['at'] = OMIT
+        elif at is not UNSET:
             changes['at'] = copy_json(at)
         if message is not UNSET:
             changes['message'] = copy_json(message)
-        if document is not UNSET:
+        if document is OMIT:
+            changes['document'] = OMIT
+        elif document is not UNSET:
             changes['document'] = _encode_uuid(document)
-        if target is not UNSET:
+        if target is OMIT:
+            changes['target'] = OMIT
+        elif target is not UNSET:
             changes['target'] = _encode_uuid(target)
         return self._replace(changes)
 
@@ -6421,20 +6699,28 @@ class System(Record):
         self._set_data(data)
 
     def replace(self, *,
-        entities: tuple[Entity, ...] | None | Unset = UNSET,
-        relationships: tuple[Relationship, ...] | None | Unset = UNSET,
-        assemblies: tuple[Assembly, ...] | None | Unset = UNSET,
-        formulations: tuple[Formulation, ...] | None | Unset = UNSET,
+        entities: tuple[Entity, ...] | None | Unset | Omit = UNSET,
+        relationships: tuple[Relationship, ...] | None | Unset | Omit = UNSET,
+        assemblies: tuple[Assembly, ...] | None | Unset | Omit = UNSET,
+        formulations: tuple[Formulation, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if entities is not UNSET:
+        if entities is OMIT:
+            changes['entities'] = OMIT
+        elif entities is not UNSET:
             changes['entities'] = _encode_many(entities, lambda v: _encode_record(v, Entity, 'entities'))
-        if relationships is not UNSET:
+        if relationships is OMIT:
+            changes['relationships'] = OMIT
+        elif relationships is not UNSET:
             changes['relationships'] = _encode_many(relationships, lambda v: _encode_record(v, Relationship, 'relationships'))
-        if assemblies is not UNSET:
+        if assemblies is OMIT:
+            changes['assemblies'] = OMIT
+        elif assemblies is not UNSET:
             changes['assemblies'] = _encode_many(assemblies, lambda v: _encode_record(v, Assembly, 'assemblies'))
-        if formulations is not UNSET:
+        if formulations is OMIT:
+            changes['formulations'] = OMIT
+        elif formulations is not UNSET:
             changes['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
         return self._replace(changes)
 
@@ -6517,10 +6803,10 @@ class Taxonomy(Record):
         id: UUID | Unset = UNSET,
         code: str | Unset = UNSET,
         name: str | Unset = UNSET,
-        definition: str | None | Unset = UNSET,
+        definition: str | None | Unset | Omit = UNSET,
         classifications: tuple[Classification, ...] | Unset = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -6528,7 +6814,9 @@ class Taxonomy(Record):
             changes['code'] = copy_json(code)
         if name is not UNSET:
             changes['name'] = copy_json(name)
-        if definition is not UNSET:
+        if definition is OMIT:
+            changes['definition'] = OMIT
+        elif definition is not UNSET:
             changes['definition'] = copy_json(definition)
         if classifications is not UNSET:
             changes['classifications'] = _encode_many(classifications, lambda v: _encode_record(v, Classification, 'classifications'))
@@ -6609,18 +6897,22 @@ class Traversal(Record):
     def replace(self, *,
         kind: TraversalKind | Unset = UNSET,
         depth: Depth | Unset = UNSET,
-        classification: UUID | Unset = UNSET,
-        direction: Direction | Unset = UNSET,
+        classification: UUID | Unset | Omit = UNSET,
+        direction: Direction | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, TraversalKind, 'kind')
         if depth is not UNSET:
             changes['depth'] = _encode_enum(depth, Depth, 'depth')
-        if classification is not UNSET:
+        if classification is OMIT:
+            changes['classification'] = OMIT
+        elif classification is not UNSET:
             changes['classification'] = _encode_uuid(classification)
-        if direction is not UNSET:
+        if direction is OMIT:
+            changes['direction'] = OMIT
+        elif direction is not UNSET:
             changes['direction'] = _encode_enum(direction, Direction, 'direction')
         return self._replace(changes)
 
@@ -6727,20 +7019,24 @@ class Value(Record):
         self._set_data(data)
 
     def replace(self, *,
-        measure: UUID | None | Unset = UNSET,
-        quantity: Quantity | None | Unset = UNSET,
+        measure: UUID | None | Unset | Omit = UNSET,
+        quantity: Quantity | None | Unset | Omit = UNSET,
         id: UUID | Unset = UNSET,
         key: str | Unset = UNSET,
         kind: ValueKind | Unset = UNSET,
-        description: str | None | Unset = UNSET,
-        flow: Flow | None | Unset = UNSET,
-        content: PropertyContent | None | Unset = UNSET,
+        description: str | None | Unset | Omit = UNSET,
+        flow: Flow | None | Unset | Omit = UNSET,
+        content: PropertyContent | None | Unset | Omit = UNSET,
     ) -> Self:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
-        if measure is not UNSET:
+        if measure is OMIT:
+            changes['measure'] = OMIT
+        elif measure is not UNSET:
             changes['measure'] = _encode_uuid(measure)
-        if quantity is not UNSET:
+        if quantity is OMIT:
+            changes['quantity'] = OMIT
+        elif quantity is not UNSET:
             changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
         if id is not UNSET:
             changes['id'] = _encode_uuid(id)
@@ -6748,11 +7044,17 @@ class Value(Record):
             changes['key'] = copy_json(key)
         if kind is not UNSET:
             changes['kind'] = _encode_enum(kind, ValueKind, 'kind')
-        if description is not UNSET:
+        if description is OMIT:
+            changes['description'] = OMIT
+        elif description is not UNSET:
             changes['description'] = copy_json(description)
-        if flow is not UNSET:
+        if flow is OMIT:
+            changes['flow'] = OMIT
+        elif flow is not UNSET:
             changes['flow'] = _encode_record(flow, Flow, 'flow')
-        if content is not UNSET:
+        if content is OMIT:
+            changes['content'] = OMIT
+        elif content is not UNSET:
             changes['content'] = _encode_record(content, PropertyContent, 'content')
         return self._replace(changes)
 
