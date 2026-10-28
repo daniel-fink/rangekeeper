@@ -321,6 +321,28 @@ symbols:
     status: pending
     source: ADR-015
     pending: "#255 D6 and D16: `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)` and `date(...)`."
+  - module: rangekeeper.execution.errors
+    name: UnsupportedProblem
+    new_name: UnsupportedError
+    status: agreed
+    source: ADR-016, #255 D26
+    note: Every error name ends in `Error`. `rangekeeper.errors` exports every error.
+  - module: rangekeeper.model.expression.evaluation
+    name: UnsupportedExpression
+    new_name: UnsupportedError
+    status: agreed
+    source: ADR-016
+    note: One error for unsupported expressions and problems.
+  - module: rangekeeper.execution.errors
+    name: BackendUnavailable
+    new_name: BackendUnavailableError
+    status: agreed
+    source: ADR-016
+  - module: rangekeeper.execution.errors
+    name: AttemptDeadline
+    new_name: AttemptDeadlineError
+    status: agreed
+    source: ADR-016
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it
@@ -456,6 +478,14 @@ removed:
     replacement: The MarketPaths document
     status: agreed
     source: ADR-012, ADR-014
+  - name: rangekeeper.shared.errors.BoundaryError
+    replacement: rangekeeper.errors.RangekeeperError
+    status: agreed
+    source: ADR-016
+  - name: rangekeeper.shared.errors.ValueEncodingError
+    replacement: rangekeeper.errors.EncodingError
+    status: agreed
+    source: ADR-016
 
 # Decisions under review in #255 that change API shapes, not names. They are
 # listed in the upgrade guide draft. The codemod does not apply them.

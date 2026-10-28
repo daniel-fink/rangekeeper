@@ -173,7 +173,7 @@ mapping and returns a `ValidationReport`. Shared argument guards reject invalid
 Python arguments with `TypeError` or `ValueError`. They do not inspect documents.
 Shared invariants report `ContractError` with a code from `rangekeeper.errors.Code`,
 a JSON pointer where available, and structured targets, values and evidence. See
-[diagnostics and codes](errors.md). `Issue` and `ValidationReport` live in
+[errors and diagnostics](errors.md). `Issue` and `ValidationReport` live in
 `shared.diagnostics`; errors live in `shared.errors`. None of these shared helpers
 imports Model, Specification, Run or IO behavior.
 

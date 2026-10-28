@@ -502,15 +502,8 @@ def prepare(
         IdentityConflictError,
         UnitError,
     ) as error:
-        codes = {
-            MissingReferenceError: Code.REFERENCE_MISSING,
-            ReferenceTypeError: Code.REFERENCE_KIND,
-            IdentityConflictError: Code.REFERENCE_IDENTITY,
-            UnitError: Code.UNITS,
-        }
-        code = next(value for kind, value in codes.items() if isinstance(error, kind))
         return PreparedValidation(
-            ValidationReport((Issue(code, str(error), composition.root_id),)),
+            ValidationReport((Issue(error.code, str(error), composition.root_id),)),
             composition,
             model,
         )

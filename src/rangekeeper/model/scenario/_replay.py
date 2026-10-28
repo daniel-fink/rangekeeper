@@ -8,10 +8,14 @@ from rangekeeper.model.scenario._paths import construct_paths
 from rangekeeper.model.scenario.implementation import calculation_provenance
 from rangekeeper.model.scenario.market import _flow, captured_inputs
 from rangekeeper.model.scenario.view import Market
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import RangekeeperError
 
 
-class ReplayUnavailableError(ValueError):
+class ReplayUnavailableError(RangekeeperError, ValueError):
     """Stored mathematics is readable but its calculation implementation is unavailable."""
+
+    code = Code.REPLAY_UNAVAILABLE
 
 
 def replay(model: Model, *, realization: UUID | None = None) -> Market:

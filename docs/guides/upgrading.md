@@ -210,6 +210,10 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.projection.ProjectionMethod` | — | pending | #255 D12: profile classes replace the method enum; the word projection is not used. |
 | `rangekeeper.model.expression.authoring.sum` | — | pending | #255 D6 and D18: equation strings on entity handles replace the expression builders. ADR-012 forbids public names that shadow builtins. |
 | `rangekeeper.model.formulation.authoring.declare` | — | pending | #255 D6 and D16: `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)` and `date(...)`. |
+| `rangekeeper.execution.errors.UnsupportedProblem` | `UnsupportedError` | agreed | Every error name ends in `Error`. `rangekeeper.errors` exports every error. |
+| `rangekeeper.model.expression.evaluation.UnsupportedExpression` | `UnsupportedError` | agreed | One error for unsupported expressions and problems. |
+| `rangekeeper.execution.errors.BackendUnavailable` | `BackendUnavailableError` | agreed |  |
+| `rangekeeper.execution.errors.AttemptDeadline` | `AttemptDeadlineError` | agreed |  |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |
@@ -239,6 +243,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scenario.market.realize` | Path generators and the MarketPaths document | agreed |
 | `rangekeeper.model.scenario.market.generate` | Path generators and the MarketPaths document | agreed |
 | `rangekeeper.model.scenario.view.Market` | The MarketPaths document | agreed |
+| `rangekeeper.shared.errors.BoundaryError` | rangekeeper.errors.RangekeeperError | agreed |
+| `rangekeeper.shared.errors.ValueEncodingError` | rangekeeper.errors.EncodingError | agreed |
 
 ### Decisions under review
 

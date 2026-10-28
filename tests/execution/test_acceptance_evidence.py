@@ -213,7 +213,7 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
 
 def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancellation():
     from rangekeeper.execution.acceptance import _comparisons
-    from rangekeeper.execution.errors import UnsupportedProblem
+    from rangekeeper.execution.errors import UnsupportedError
     from rangekeeper.model import Expression, Reference
     from rangekeeper.model.expression import ExpressionKind, Operator
     from rangekeeper.quantity import Quantity, default_units
@@ -239,7 +239,7 @@ def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancel
     )
     assert relation == "less_than" and exact and left.magnitude < right.magnitude
     cancelled = predicate.replace(operands=(ref, ref.replace(id=uuid4())))
-    with pytest.raises(UnsupportedProblem, match="fixed"):
+    with pytest.raises(UnsupportedError, match="fixed"):
         tuple(_comparisons(cancelled, values, units=default_units))
     relation, left, right, exact = next(
         _comparisons(cancelled, values, units=default_units, fixed={target})
