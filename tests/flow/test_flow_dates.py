@@ -81,13 +81,13 @@ def test_wire_dates_must_be_valid_iso_dates(value):
 
 
 def test_sample_needs_date_or_period():
-    # Generated records check structure; Flow validation checks this cross-field rule.
-    for movement in (
-        Movement(id=uuid4(), key="missing"),
-        Movement(id=uuid4(), key="null", date=None, period=None),
-    ):
-        with pytest.raises(ValueError, match="date or period"):
-            Flow(units="m", movements=(movement,)).check()
+    # A Movement keeps this cross-field rule from construction (ADR-011).
+    with pytest.raises(ValueError, match="date or period"):
+        Movement(id=uuid4(), key="missing")
+    with pytest.raises(ValueError, match="date or period"):
+        Movement(id=uuid4(), key="null", date=None, period=None)
+    with pytest.raises(ValueError, match="date or period"):
+        Movement.from_data({"id": str(uuid4()), "key": "data"})
 
 
 def test_period_timing_is_explicit_and_does_not_change_content():

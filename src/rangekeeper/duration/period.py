@@ -35,17 +35,15 @@ class Period(records.Period):
         """Return the last included date."""
         return self.end - timedelta(days=1)
 
-    def check(self) -> Period:
+    def _invariants(self) -> None:
         """Require a positive date interval [start, end)."""
         if elapsed_days(self.start, self.end) <= 0:
             raise ValueError("period end must follow start")
-        return self
 
     def resolve(self, *, timing: PeriodTiming) -> date:
         """Select the first included date, last included date or excluded boundary."""
         if not isinstance(timing, PeriodTiming):
             raise TypeError("timing must be a PeriodTiming")
-        self.check()
         return {
             PeriodTiming.FIRST: self.first,
             PeriodTiming.LAST: self.last,
@@ -82,7 +80,6 @@ class Span(records.Span, Period):
                 month_roll=MonthRoll.PRESERVE_END if month_roll is None else month_roll,
             ),
         )
-        span.check()
         return span
 
     def periods(
@@ -93,7 +90,6 @@ class Span(records.Span, Period):
         month_roll: MonthRoll | None = None,
     ) -> tuple[Period, ...]:
         """Partition this extent; a partial final period requires explicit permission."""
-        self.check()
         return periods_between(
             self.start,
             self.end,
@@ -108,7 +104,7 @@ def make_period(start: date, end: date) -> Period:
     return Period(
         start=require_date(start),
         end=require_date(end),
-    ).check()
+    )
 
 
 def make_periods(
@@ -218,8 +214,6 @@ def cover(periods: Sequence[Period], *, name: str | None = None) -> Span:
     """Return a Span covering all intervals, including gaps between them."""
     if not periods:
         raise ValueError("cover requires at least one interval")
-    for period in periods:
-        period.check()
     return Span(
         start=min(p.start for p in periods),
         end=max(p.end for p in periods),

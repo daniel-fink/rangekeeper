@@ -32,29 +32,33 @@ class Distribution(records.Distribution):
 
     __slots__ = ()
 
-    def check(self) -> Distribution:
-        """Reject invalid support, modes, weights and units; leave the record unchanged."""
-        distribution = self
-        from rangekeeper.quantity import default_units
-
-        numbers = [distribution.lower, distribution.upper]
-        if distribution.mode is not None:
-            numbers.append(distribution.mode)
-        if distribution.weighting is not None:
-            numbers.append(distribution.weighting)
+    def _invariants(self) -> None:
+        """Reject non-finite parameters, invalid bounds, weights and modes."""
+        numbers = [self.lower, self.upper]
+        if self.mode is not None:
+            numbers.append(self.mode)
+        if self.weighting is not None:
+            numbers.append(self.weighting)
         if any(not math.isfinite(x) for x in numbers):
             raise ValueError("distribution parameters must be finite")
-        if distribution.lower > distribution.upper:
+        if self.lower > self.upper:
             raise ValueError("invalid distribution bounds")
-        if distribution.weighting is not None and distribution.weighting < 0:
+        if self.weighting is not None and self.weighting < 0:
             raise ValueError("invalid distribution weighting")
-        if distribution.kind is not DistributionFamily.UNIFORM and (
-            distribution.mode is None
-            or not distribution.lower <= distribution.mode <= distribution.upper
+        if self.kind is not DistributionFamily.UNIFORM and (
+            self.mode is None or not self.lower <= self.mode <= self.upper
         ):
             raise ValueError("distribution mode outside bounds")
-        default_units.validate_units(distribution.units)
-        return distribution
+
+    def check(self) -> Distribution:
+        """Check the units against the default unit system; return this record.
+
+        The parameter rules hold from construction.
+        """
+        from rangekeeper.quantity import default_units
+
+        default_units.validate_units(self.units)
+        return self
 
     @classmethod
     def uniform(
@@ -66,7 +70,6 @@ class Distribution(records.Distribution):
         result = factory(
             kind=DistributionFamily.UNIFORM, lower=lower, upper=upper, units=units
         )
-        result.check()
         return result
 
     @classmethod
@@ -88,7 +91,6 @@ class Distribution(records.Distribution):
             mode=mode,
             units=units,
         )
-        result.check()
         return result
 
     @classmethod
@@ -112,7 +114,6 @@ class Distribution(records.Distribution):
             weighting=weighting,
             units=units,
         )
-        result.check()
         return result
 
     @classmethod
@@ -150,7 +151,6 @@ class Distribution(records.Distribution):
         with requires("calculations"):
             from scipy import stats
 
-        distribution.check()
         scale = distribution.upper - distribution.lower
         if scale == 0:
             return None

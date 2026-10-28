@@ -129,7 +129,6 @@ Flow
   display(*, name=None, transpose=False, precision=2) -> StreamTable
 
 Period (also inherited by Span)
-  check() -> Period
   resolve(*, timing) -> date
 
 Span
@@ -143,9 +142,22 @@ Distribution
   cdf(values) / mass(boundaries) -> tuple[float, ...]
 ```
 
-`check` raises on invalid content and otherwise returns the same object. It does
-not repair data. `Flow.check(resolved=True)` additionally requires a finite number
-for every Movement. `Movement.number` provides a nonoptional float for arithmetic.
+Value types keep their local rules from construction
+([ADR-011](../decisions/011-records-and-validation.md#when-validation-runs)).
+Construction, `replace` and `from_data` (for each value type in the tree) raise
+`ValidationError` with the code `invariant.<kind>` when a rule fails:
+
+| Value type | Rules |
+| --- | --- |
+| Period, Span | `start` is before `end` |
+| Movement | A date or a period; distinct Claims |
+| Flow | Unique Movement IDs; all events or all periods; events in date order, with distinct keys on a repeated date; periods in order without overlap |
+| Distribution | Finite parameters; `lower <= upper`; a nonnegative weighting; a mode inside the bounds when the family needs one |
+
+A Flow has one `units` field. `Flow.check(units=None)` checks those units against
+a unit system, and `Flow.check(resolved=True)` also requires a finite number for
+every Movement. `Distribution.check()` checks its units against the default unit
+system. Both return the same object and do not repair data. `Movement.number` provides a nonoptional float for arithmetic.
 `Flow.clean` is a transformation: it removes unresolved movements and, when
 requested, zeroes. It is not a validation step.
 

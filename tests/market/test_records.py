@@ -55,9 +55,8 @@ def test_shared_distribution_survives_serialization_and_calculations():
     assert record.lower == 1
     with pytest.raises(AttributeError):
         record.lower = 0
-    invalid = Distribution(kind=DistributionFamily.PERT, lower=2, upper=1, units="AUD")
     with pytest.raises(ValueError, match="bounds"):
-        invalid.sample(size=1, generator=np.random.default_rng(1))
+        Distribution(kind=DistributionFamily.PERT, lower=2, upper=1, units="AUD")
 
 
 def test_component_authoring_preserves_plan_and_rejects_conflicts():

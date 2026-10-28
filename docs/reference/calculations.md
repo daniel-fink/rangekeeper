@@ -106,7 +106,7 @@ sequence helper used by extrapolation and the market kernels. Profile classes an
 | Owner | Responsibility |
 | --- | --- |
 | `duration` | Native Gregorian dates, Period coverage, explicit frequencies and timing |
-| `Period.check()` / `.resolve()` | Valid coverage and a declared representative date |
+| `Period.resolve()` | A declared representative date; coverage is valid from construction |
 | `Distribution` | Canonical parameters and intrinsic `check`, `sample`, `cdf`, `mass` |
 | `profile` | Grow a known Quantity, or distribute a total, over explicit periods |
 | `flow.Stream` | Align and combine several Flows with explicit policies |

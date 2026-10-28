@@ -59,6 +59,13 @@ class Code(StrEnum):
     UNIQUE = "semantic.unique"
     UNITS = "semantic.units"
 
+    # The local rules of one value type (ADR-011), as ``invariant.<kind>``.
+    INVARIANT_DISTRIBUTION = "invariant.Distribution"
+    INVARIANT_FLOW = "invariant.Flow"
+    INVARIANT_MOVEMENT = "invariant.Movement"
+    INVARIANT_PERIOD = "invariant.Period"
+    INVARIANT_SPAN = "invariant.Span"
+
     # Batches of cases.
     BATCH_MODEL = "batch.model"
 

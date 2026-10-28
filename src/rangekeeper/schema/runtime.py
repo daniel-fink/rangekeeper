@@ -7,6 +7,7 @@ import math
 import re
 from collections.abc import Mapping
 from datetime import date as Date
+from functools import cache
 from types import MappingProxyType
 from typing import TypeAlias, TypeVar, cast
 from uuid import UUID
@@ -281,6 +282,44 @@ def _raise_issues(issues) -> None:
         ).raise_if_invalid()
 
 
+def _require_invariants(record, path: str) -> None:
+    """Run the local rules of a value type; report a failure as a ValidationError."""
+    if type(record)._invariants is Record._invariants:
+        return
+    try:
+        record._invariants()
+    except ValueError as error:
+        from rangekeeper.shared.codes import Code
+        from rangekeeper.shared.diagnostics import Issue, ValidationReport
+
+        code = Code(f"invariant.{record._kind}")
+        ValidationReport((Issue(code, str(error), path=path),)).raise_if_invalid()
+
+
+@cache
+def _reaches_invariants(kind: str) -> bool:
+    """Return whether a record of ``kind`` can contain a value type with rules."""
+    from rangekeeper.schema.kinds import record_type
+    from rangekeeper.schema.records import _TYPES
+    from rangekeeper.schema.validation import _slot_map
+
+    seen, pending = set(), [kind]
+    while pending:
+        current = pending.pop()
+        if current in seen or current not in _TYPES:
+            continue
+        seen.add(current)
+        if record_type(current)._invariants is not Record._invariants:
+            return True
+        for field in _slot_map(current).values():
+            pending += [
+                o["kind"]
+                for o in field["options"]
+                if o["category"] in ("record", "keyed")
+            ]
+    return False
+
+
 def _borrow(cls, data):
     """Return a record of ``cls`` that shares an already validated frozen tree."""
     record = cls.__new__(cls)
@@ -301,6 +340,13 @@ class Record:
         """Create an instance of the registered owner class of this kind."""
         owner = record_type(cls._kind)
         return object.__new__(owner if issubclass(owner, cls) else cls)
+
+    def _invariants(self) -> None:
+        """Raise ValueError when a value type's local rules are not met.
+
+        Owners of value types override this (ADR-011). Construction, replace
+        and from_data run it; a decoded child of a checked record does not.
+        """
 
     def __setattr__(self, name, value):
         raise AttributeError("records are immutable")
@@ -372,7 +418,9 @@ class Record:
             _raise_issues(CHECKS[self._kind](data, fields))
         changed = {name: data[name] for name in fields if name in data}
         data.update(_freeze(_normalize(self._kind, changed)))
-        return _borrow(type(self), MappingProxyType(data))
+        result = _borrow(type(self), MappingProxyType(data))
+        _require_invariants(result, "")
+        return result
 
     def _set_checked(self, data: dict[str, object]) -> None:
         """Set encoded constructor fields after the node check of this record.
@@ -392,6 +440,7 @@ class Record:
         else:
             _raise_issues(CHECKS[self._kind](data))
         object.__setattr__(self, "_data", _freeze(_normalize(self._kind, data)))
+        _require_invariants(self, "")
 
     def _set_data(self, data: object) -> None:
         """Copy, validate with jsonschema and freeze untrusted data."""
@@ -402,6 +451,12 @@ class Record:
         data = copy_json(data)
         _validate_json(self._kind, data).raise_if_invalid()
         object.__setattr__(self, "_data", _freeze(_normalize(self._kind, data)))
+        if _reaches_invariants(self._kind):
+            from rangekeeper.schema.index import walk
+
+            # Children first, so the most specific rule reports a failure.
+            for record, _, path in reversed(list(walk(self))):
+                _require_invariants(record, path)
 
     @classmethod
     def from_data(cls: type[R], data: Mapping[str, object]) -> R:

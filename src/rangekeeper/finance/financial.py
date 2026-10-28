@@ -64,7 +64,7 @@ def calculate_pv(flow: Flow, *, rate: float, first_period: int = 1) -> Flow:
             )
             for i, movement in enumerate(flow.movements)
         )
-    ).check()
+    )
 
 
 def calculate_xnpv(
