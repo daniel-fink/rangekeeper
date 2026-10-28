@@ -112,9 +112,9 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
-| Draft | A mutable set of additions or changes to a Model, from `model.edit()`. `commit()` checks it once and returns a new revision | `model` | None (planned, #141, #281). Now `model.revise(Update(...))` |
-| Namespace | A UUID that makes the IDs of a Model and its drafts deterministic | `model` | None (planned, #147, #281) |
-| Handle | A draft's reference to an object, such as an entity, that does not have a UUID yet. A value's handle also builds equations with Python operators | `model`, `expressions` | None (planned, #281, #305) |
+| Draft | A mutable set of additions or changes to a Model, from `model.edit()`. `commit()` checks it once and returns a new revision | `model` | `ModelDraft` |
+| Namespace | A UUID that makes the IDs of a Model and its drafts deterministic | `model` | `rk.Model(namespace=)` derives the IDs that a draft makes; the tested contract and stored namespace are planned (#146, #147) |
+| Handle | A draft's reference to an object, such as an entity or a value, by its UUID. A value's handle also builds equations with Python operators | `model`, `expressions` | `EntityHandle` and `ValueHandle`; operators are planned (#309), and Formulation handles (#305) |
 | Expressions (`rx`) | The Python form of equations: `import rangekeeper.expressions as rx`. It mirrors the equation functions of the text form and makes the same records | `expressions` | None (planned, #309). Now nested `equal(left=..., right=add(...))` constructors in `rangekeeper.model.expression.authoring` |
 
 ## Words with one meaning only

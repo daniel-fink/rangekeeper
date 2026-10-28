@@ -1,5 +1,8 @@
 """Canonical Model revisions and schema-derived nested records."""
 
+from rangekeeper.model.draft import EntityHandle as EntityHandle
+from rangekeeper.model.draft import ModelDraft as ModelDraft
+from rangekeeper.model.draft import ValueHandle as ValueHandle
 from rangekeeper.model.model import Model as Model
 from rangekeeper.model.update import Update as Update
 from rangekeeper.profile import Distribution as Distribution
@@ -90,6 +93,9 @@ from rangekeeper.schema.records import (
 
 __all__ = [
     "Model",
+    "ModelDraft",
+    "EntityHandle",
+    "ValueHandle",
     "Update",
     "Metadata",
     "Definitions",

@@ -3,7 +3,7 @@
   "Model": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None",
+    "__init__": "method (self, *, name: str, namespace: uuid.UUID | None = None, description: str | None = None) -> None",
     "assembly": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Assembly",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "claim": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Claim",
@@ -11,6 +11,7 @@
     "create": "classmethod (cls, *, metadata: rangekeeper.schema.records.Metadata, definitions: rangekeeper.schema.records.Definitions | rangekeeper.schema.runtime.Unset = <Unset>, system: rangekeeper.schema.records.System | rangekeeper.schema.runtime.Unset = <Unset>, provenance: rangekeeper.schema.records.Provenance | rangekeeper.schema.runtime.Unset = <Unset>, geometry: rangekeeper.schema.records.Geometry | rangekeeper.schema.runtime.Unset = <Unset>, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
+    "edit": "method (self, *, name: str | None = None, description: str | None = None) -> ModelDraft",
     "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
@@ -35,7 +36,7 @@
     "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
-   "signature": "(record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None"
+   "signature": "(*, name: str, namespace: uuid.UUID | None = None, description: str | None = None) -> None"
   },
   "OMIT": {
    "kind": "value",
@@ -1174,6 +1175,20 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, classification: UUID | None | Unset = <Unset>, id: UUID, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, characteristics: Characteristics | None | Unset = <Unset>) -> None"
   },
+  "EntityHandle": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, draft: ModelDraft, id: uuid.UUID) -> None",
+    "code": "property",
+    "equations": "method (self, *equations: rangekeeper.schema.records.Expression) -> None",
+    "flow": "method (self, *, key: str, units: str, periods: collections.abc.Iterable[rangekeeper.duration.period.Period] | None = None, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
+    "id": "property",
+    "ref": "method (self, *, key: str) -> rangekeeper.model.draft.ValueHandle",
+    "value": "method (self, *, key: str, units: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle"
+   },
+   "module": "rangekeeper.model.draft",
+   "signature": "(draft: ModelDraft, id: uuid.UUID) -> None"
+  },
   "Expression": {
    "kind": "class",
    "members": {
@@ -1352,7 +1367,7 @@
   "Model": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None",
+    "__init__": "method (self, *, name: str, namespace: uuid.UUID | None = None, description: str | None = None) -> None",
     "assembly": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Assembly",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "claim": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Claim",
@@ -1360,6 +1375,7 @@
     "create": "classmethod (cls, *, metadata: rangekeeper.schema.records.Metadata, definitions: rangekeeper.schema.records.Definitions | rangekeeper.schema.runtime.Unset = <Unset>, system: rangekeeper.schema.records.System | rangekeeper.schema.runtime.Unset = <Unset>, provenance: rangekeeper.schema.records.Provenance | rangekeeper.schema.runtime.Unset = <Unset>, geometry: rangekeeper.schema.records.Geometry | rangekeeper.schema.runtime.Unset = <Unset>, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
+    "edit": "method (self, *, name: str | None = None, description: str | None = None) -> ModelDraft",
     "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
@@ -1384,7 +1400,23 @@
     "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
-   "signature": "(record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None"
+   "signature": "(*, name: str, namespace: uuid.UUID | None = None, description: str | None = None) -> None"
+  },
+  "ModelDraft": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self) -> None",
+    "add_assembly": "method (self, *, code: str, classification: str | uuid.UUID | None = None, name: str | None = None, entities: collections.abc.Sequence['str | UUID | EntityHandle'] = tuple()) -> rangekeeper.model.draft.EntityHandle",
+    "add_classification": "method (self, *, code: str, name: str | None = None, parent: str | uuid.UUID | None = None, taxonomy: str = 'entity') -> rangekeeper.schema.records.Classification",
+    "add_entity": "method (self, *, code: str, classification: str | uuid.UUID | None = None, name: str | None = None) -> rangekeeper.model.draft.EntityHandle",
+    "add_measure": "method (self, *, code: str, name: str, units: str, definition: str | None = None) -> rangekeeper.schema.records.Measure",
+    "add_relationship": "method (self, *, source: str | UUID | EntityHandle, target: str | UUID | EntityHandle, classification: str | uuid.UUID) -> rangekeeper.schema.records.Relationship",
+    "commit": "method (self) -> Model",
+    "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.model.draft.EntityHandle",
+    "model": "property"
+   },
+   "module": "rangekeeper.model.draft",
+   "signature": "() -> None"
   },
   "Provenance": {
    "kind": "class",
@@ -1497,6 +1529,14 @@
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>) -> None"
+  },
+  "ValueHandle": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, id: uuid.UUID, key: str, owner: uuid.UUID, units: str | None) -> None"
+   },
+   "module": "rangekeeper.model.draft",
+   "signature": "(id: uuid.UUID, key: str, owner: uuid.UUID, units: str | None) -> None"
   },
   "ValueKind": {
    "kind": "enum",

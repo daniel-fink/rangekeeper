@@ -318,7 +318,7 @@ them; the issues that the table names make the changes.
 | --- | --- | --- |
 | Quantity text in API arguments | Arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year. | #255 D13, D16, D17 |
 | Keyword-only arguments | Every Rangekeeper call names its arguments. | #255 D14 |
-| Model authoring and builder names | `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles. | #255 D6, D16, D18 |
+| Model authoring and builder names | `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles. `Model(record, units=)` is removed: `rk.Model(name=)` makes an empty Model, and `Model.create(...)` or `Model.from_data(...)` take complete records (#141, #281). | #255 D6, D16, D18 |
 | Specification calls | `fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. | #255 D7, D8 |
 | Loan payment | `rangekeeper.finance.payment(principal=, rate=, term=, frequency=)` (#167). | #255 D19 |
 | Funding accounts | There is no account class and no account declaration. A balance is `cumulative()` of a Flow. | #255 D2, D23 |

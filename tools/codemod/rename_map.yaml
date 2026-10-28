@@ -731,7 +731,7 @@ notes:
   - topic: Model authoring and builder names
     status: agreed
     source: "#255 D6, D16, D18"
-    note: "`rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles."
+    note: "`rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles. `Model(record, units=)` is removed: `rk.Model(name=)` makes an empty Model, and `Model.create(...)` or `Model.from_data(...)` take complete records (#141, #281)."
   - topic: Specification calls
     status: agreed
     source: "#255 D7, D8"
