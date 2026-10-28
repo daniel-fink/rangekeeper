@@ -8,6 +8,8 @@ Run in the pinned schema environment, from the repository root.
 import importlib.util
 from pathlib import Path
 
+from linkml_runtime.linkml_model.meta import SlotDefinition
+
 spec = importlib.util.spec_from_file_location(
     "generation", Path(__file__).with_name("generate.py")
 )
@@ -65,3 +67,21 @@ for label, metadata in missing.items():
         raise SystemExit(f"The generator accepted a {label} without a description")
 generation.check_descriptions({"Example": described})
 print(f"Checked {len(missing)} missing descriptions")
+
+
+def field(**annotations):
+    return SlotDefinition(name="field", annotations=annotations)
+
+
+assert generation.slot_annotations("Example", field()) == {"lineage": False}
+assert generation.slot_annotations("Example", field(lineage=True)) == {"lineage": True}
+for label, value in {
+    "unknown annotation": field(other=True),
+    "text annotation": field(lineage="true"),
+}.items():
+    try:
+        generation.slot_annotations("Example", value)
+    except ValueError as error:
+        print(f"Rejected {label}: {error}")
+    else:
+        raise SystemExit(f"The generator accepted a {label}")

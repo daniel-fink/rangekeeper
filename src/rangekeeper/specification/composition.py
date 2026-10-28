@@ -16,7 +16,11 @@ from uuid import UUID
 from rangekeeper.model.scope import reference_key
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import Specification as SpecificationRecord
-from rangekeeper.schema.validation import document_version, supports_version
+from rangekeeper.schema.validation import (
+    document_version,
+    slots_for,
+    supports_version,
+)
 from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -45,7 +49,8 @@ REQUIREMENTS = (
     "settings",
     "rules",
 )
-FIELDS = {"metadata", "model", "includes", "cases", *REQUIREMENTS}
+# The closed set of Specification fields comes from the schema slots.
+FIELDS = frozenset(slots_for("Specification"))
 
 
 def validate_local_header(doc, schema_version):

@@ -313,11 +313,9 @@ def _shred(model):
                     )
                 else:
                     physical = value
-                if (
-                    category == "uuid"
-                    and target != "UUID"
-                    and (kind, name) != ("Metadata", "previous")
-                ):
+                # Lineage slots, such as Metadata.previous, name other revisions.
+                # They are not references to records in this Model.
+                if category == "uuid" and target != "UUID" and not meta["lineage"]:
                     references.append(
                         dict(
                             path=path,

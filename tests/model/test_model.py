@@ -190,6 +190,19 @@ def test_revision_noop_lineage_version_and_empty_sections():
         Update(system=None)
 
 
+def test_update_sections_are_the_model_slots():
+    from dataclasses import fields
+
+    from rangekeeper.model.update import SECTIONS
+    from rangekeeper.schema.validation import slots_for
+
+    sections = set(slots_for("Model")) - {"metadata"}
+    assert set(SECTIONS) == sections
+    assert {f.name for f in fields(Update)} - {"metadata"} == sections
+    for name in sections:
+        assert getattr(Model, name).fget is not None
+
+
 def test_explicit_metadata_and_descriptive_revision():
     model = simple()
     metadata = Metadata(
