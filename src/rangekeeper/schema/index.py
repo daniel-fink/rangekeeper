@@ -13,6 +13,7 @@ from uuid import UUID
 
 from rangekeeper.schema.runtime import Record
 from rangekeeper.schema.validation import _slot_map
+from rangekeeper.shared import pointer
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import (
     IdentityConflictError,
@@ -185,14 +186,7 @@ def walk_data(kind: str, data: Mapping, path: str = ""):
         )
         for index, child in items:
             if isinstance(child, Mapping):
-                location = (
-                    path
-                    + "/"
-                    + name.replace("~", "~0").replace("/", "~1")
-                    + (
-                        "/" + str(index).replace("~", "~0").replace("/", "~1")
-                        if index is not None
-                        else ""
-                    )
+                location = pointer.child(
+                    path, name, *(() if index is None else (index,))
                 )
                 yield from walk_data(kinds[0], child, location)

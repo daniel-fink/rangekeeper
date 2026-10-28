@@ -1,5 +1,7 @@
 """Domain-independent semantic invariants and validation orchestration.
 
+Helpers that read schema records are in ``rangekeeper.schema.validation``.
+
 These checks raise ContractError; Python argument guards in ``validate`` raise
 TypeError/ValueError instead. Callers own collection scope and validation order.
 This module imports no Model, Specification, Run, solver, or storage behavior.
@@ -9,7 +11,7 @@ from collections.abc import Callable, Hashable, Iterable, Mapping
 from typing import TypeVar
 from uuid import UUID
 
-from rangekeeper.schema.runtime import Record
+from rangekeeper.shared import pointer
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import ContractError
 
@@ -42,7 +44,6 @@ def require_unique(
     once and never changed. ``path`` is the collection's JSON Pointer.
     """
     seen = set()
-    token = field.replace("~", "~0").replace("/", "~1")
     for index, record in enumerate(records):
         value = record.get(field)
         if value is not None:
@@ -50,9 +51,30 @@ def require_unique(
                 value not in seen,
                 f"duplicate {label}: {value}",
                 code="semantic.unique",
-                path=f"{path}/{index}/{token}",
+                path=pointer.child(path, index, field),
             )
             seen.add(value)
+
+
+def require_new(
+    identities: set,
+    identity: Hashable,
+    *,
+    label: str = "identity",
+    path: str = "",
+) -> None:
+    """Add one declared identity to ``identities``; reject an identity seen before.
+
+    This is the one duplicate-identity check. Callers own the scope of
+    ``identities``, for example one document or one composition.
+    """
+    require(
+        identity not in identities,
+        f"duplicate {label}: {identity}",
+        code="semantic.identity",
+        path=path,
+    )
+    identities.add(identity)
 
 
 def require_acyclic(
@@ -92,7 +114,7 @@ def require_ownership(document: object, *, path: str = "") -> None:
     MUST exclude opaque payloads first (for example Claim.content). Typed record
     traversal belongs to the domain index, not this generic dict/list check.
     """
-    identities = set()
+    identities: set[Hashable] = set()
     active: set[int] = set()
 
     def visit(node, current: str) -> None:
@@ -108,42 +130,15 @@ def require_ownership(document: object, *, path: str = "") -> None:
         children: Iterable[tuple[object, object]]
         if isinstance(node, Mapping):
             if "id" in node:
-                identity = node["id"]
-                require(
-                    identity not in identities,
-                    f"duplicate identity: {identity}",
-                    code="semantic.identity",
-                    path=current + "/id",
-                )
-                identities.add(identity)
+                require_new(identities, node["id"], path=current + "/id")
             children = node.items()
         else:
             children = enumerate(node)
-        for key, child in children:
-            token = str(key).replace("~", "~0").replace("/", "~1")
-            visit(child, current + "/" + token)
+        for key, value in children:
+            visit(value, pointer.child(current, key))
         active.remove(id(node))
 
     visit(document, path)
-
-
-def require_declarations(documents):
-    """Check declaration identities through schema slots, excluding opaque payloads."""
-    from rangekeeper.schema.index import walk_data
-
-    identities = set()
-    for kind, data in documents:
-        for record, path in walk_data(kind, data):
-            if "id" in record:
-                identity = record["id"]
-                require(
-                    identity not in identities,
-                    f"duplicate identity: {identity}",
-                    code="semantic.identity",
-                    path=path + "/id",
-                )
-                identities.add(identity)
-    return identities
 
 
 def _document_id(data) -> UUID | None:
@@ -151,43 +146,6 @@ def _document_id(data) -> UUID | None:
         return UUID(data["metadata"]["id"])
     except (KeyError, TypeError, ValueError, AttributeError):
         return None
-
-
-def checked_record(kind, value, label, issues):
-    """Retain one structurally validated record and contextualize boundary failures."""
-    from rangekeeper.schema.records import _TYPES
-    from rangekeeper.shared.errors import ValidationError
-
-    if isinstance(value, Record):
-        if value._kind == kind:
-            return value
-        issues.append(
-            Issue(
-                "structure.kind", f"expected {kind}, received {value._kind}", path=label
-            )
-        )
-        return None
-    try:
-        return _TYPES[kind].from_data(value)
-    except ValidationError as error:
-        issues.extend(
-            Issue(issue.code, issue.message, _document_id(value), label + issue.path)
-            for issue in error.report.issues
-        )
-    except (ValueError, TypeError) as error:
-        issues.append(Issue("structure.json", str(error), _document_id(value), label))
-    return None
-
-
-def checked(
-    kind: str,
-    value: Record | Mapping[str, object],
-    label: str,
-    issues: list[Issue],
-) -> dict:
-    """Expose one detached representation from the shared structural preparation."""
-    record = checked_record(kind, value, label, issues)
-    return record.to_data() if record is not None else {}
 
 
 def bounded(
@@ -214,42 +172,3 @@ def bounded(
                 )
             )
     return ValidationReport(tuple(issues))
-
-
-def validate_known_reference_types(root: Record, *, index) -> None:
-    """Check locally resolvable reference types without requiring external targets.
-
-    Partial Specifications can point outside their declaration scope. A target
-    already declared locally cannot masquerade as another record kind.
-    Complete Model/composition validation owns reference existence checks.
-    """
-    from uuid import UUID
-
-    from rangekeeper.schema.index import walk
-    from rangekeeper.schema.records import _TYPES, Movement, Reference, Value
-    from rangekeeper.schema.validation import _slot_map
-
-    for record, _, path in walk(root):
-        for name, field in _slot_map(record._kind).items():
-            types = tuple(
-                _TYPES[option["kind"]]
-                for option in field["options"]
-                if option["category"] == "uuid" and option["kind"] in _TYPES
-            )
-            if isinstance(record, Reference) and name == "target":
-                types = (Value, Movement)
-            if not types:
-                continue
-            value = getattr(record, name)
-            entries = enumerate(value) if isinstance(value, tuple) else ((None, value),)
-            for position, identity in entries:
-                if isinstance(identity, UUID) and identity in index.records:
-                    actual = index.records[identity]
-                    expected = ", ".join(kind.__name__ for kind in types)
-                    require(
-                        isinstance(actual, types),
-                        f"{identity} targets {actual._kind}; expected {expected}",
-                        code="reference.kind",
-                        path=f"{path}/{name}"
-                        + (f"/{position}" if position is not None else ""),
-                    )

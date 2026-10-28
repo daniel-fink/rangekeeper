@@ -20,7 +20,12 @@ from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.runtime import Record
-from rangekeeper.schema.validation import document_version, supports_version
+from rangekeeper.schema.validation import (
+    checked,
+    document_version,
+    require_declarations,
+    supports_version,
+)
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -30,13 +35,7 @@ from rangekeeper.shared.errors import (
     UnitError,
 )
 from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.validation import (
-    bounded,
-    checked,
-    require,
-    require_acyclic,
-    require_declarations,
-)
+from rangekeeper.shared.validation import bounded, require, require_acyclic
 from rangekeeper.specification.composition import (
     Composition,
     batch_cases,
