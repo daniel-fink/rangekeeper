@@ -49,7 +49,7 @@ def batch_of(model, *leaves):
 
 
 def count_validations(monkeypatch):
-    from rangekeeper.execution import assembly
+    from rangekeeper.execution import assembly, pipeline
     from rangekeeper.io import memory
 
     counts: Counter = Counter()
@@ -62,6 +62,7 @@ def count_validations(monkeypatch):
         return validate
 
     monkeypatch.setattr(assembly, "validate_run", counted(assembly.validate_run))
+    monkeypatch.setattr(pipeline, "validate_run", counted(pipeline.validate_run))
     monkeypatch.setattr(memory, "validate_run", counted(memory.validate_run))
     return counts
 
@@ -93,7 +94,7 @@ def test_solve_validates_each_run_once(monkeypatch):
     assert counts == {outcome.run.id: 1}
 
 
-def test_execute_publishes_outputs_then_runs_and_validates_each_run_once(monkeypatch):
+def test_execute_publishes_outputs_then_runs_and_validates_the_tree_once(monkeypatch):
     counts = count_validations(monkeypatch)
     store = Recording()
     _, model = setup(store)
@@ -112,8 +113,8 @@ def test_execute_publishes_outputs_then_runs_and_validates_each_run_once(monkeyp
         ("Run", leaves[1].run.id),
         ("Run", outcome.run.id),
     ]
-    # store.put is the one validation of each Run.
-    assert counts == {item.run.id: 1 for item in outcome.walk()}
+    # One validation of the whole tree; store.put does not repeat it.
+    assert counts == {outcome.run.id: 1}
     assert store.load_run(outcome.run.id).to_data() == outcome.run.to_data()
     assert isinstance(store.load_model(leaves[0].outputs[0].id), Model)
 

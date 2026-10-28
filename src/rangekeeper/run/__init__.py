@@ -1,7 +1,7 @@
 """Finalized Run records and explicit cross-document validation."""
 
 from rangekeeper.run.run import Run
-from rangekeeper.run.validation import validate
+from rangekeeper.run.validation import Prerequisites, validate
 from rangekeeper.schema.records import (
     Diagnostic,
     Implementation,
@@ -15,6 +15,7 @@ from rangekeeper.schema.records import (
 )
 
 __all__ = [
+    "Prerequisites",
     "Run",
     "RunRecord",
     "Report",

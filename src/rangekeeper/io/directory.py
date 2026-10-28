@@ -18,6 +18,7 @@ from rangekeeper.io._document import (
 from rangekeeper.io.atomic import write_new
 from rangekeeper.io.json import _parse
 from rangekeeper.run.validation import validate as validate_run
+from rangekeeper.run.validation import validated_in
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import DecodeError, MissingReferenceError
 
@@ -55,7 +56,10 @@ class DirectoryStore:
         """Atomically add a validated revision, or compare it with the stored one.
 
         The document was validated when it was built; put does not validate it
-        again. A Run's references are resolved against this store first.
+        again. A Run's references are resolved against this store first, unless
+        the Run already passed that validation against this store
+        (``run.validation.mark_validated``) and every revision that the
+        validation read from elsewhere is now in this store.
 
         Identical concurrent puts succeed; different content/kind conflicts. A crash
         before the final link can leave only a temporary file, ignored by readers.
@@ -69,7 +73,9 @@ class DirectoryStore:
             existing = None
         if existing is not None:
             require_same(existing, candidate)
-        if isinstance(candidate, Run):
+        if isinstance(candidate, Run) and not validated_in(
+            candidate, self, lambda id: (self.root / f"{id}.json").exists()
+        ):
             validate_run(candidate, resolver=self).raise_if_invalid()
         if existing is not None:
             return candidate.id

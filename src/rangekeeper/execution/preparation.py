@@ -1,7 +1,7 @@
 """Stages 2 and 3: validate a composition, then bind its roles; no solver import."""
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
@@ -46,6 +46,8 @@ class Validation:
     composition: Composition
     model: Model | None = None
     units: UnitSystem | None = None
+    # The scope of a valid Specification check, which Run validation reuses.
+    scope: object = field(default=None, repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -81,6 +83,7 @@ def validate(
         composition,
         model,
         None if model is None else model.unit_system if units is None else units,
+        validated.scope,
     )
 
 

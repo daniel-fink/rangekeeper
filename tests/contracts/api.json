@@ -610,10 +610,10 @@
   "Validation": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
+    "__init__": "method (self, report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None, scope: object = None) -> None"
    },
    "module": "rangekeeper.execution.preparation",
-   "signature": "(report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
+   "signature": "(report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None, scope: object = None) -> None"
   },
   "Verification": {
    "kind": "class",
@@ -2343,6 +2343,14 @@
    ],
    "module": "rangekeeper.schema.enums"
   },
+  "Prerequisites": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, compositions: collections.abc.Mapping[uuid.UUID, 'Composition'] = <_HAS_DEFAULT_FACTORY_CLASS>, scopes: collections.abc.Mapping[uuid.UUID, typing.Any] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+   },
+   "module": "rangekeeper.run.validation",
+   "signature": "(compositions: collections.abc.Mapping[uuid.UUID, 'Composition'] = <_HAS_DEFAULT_FACTORY_CLASS>, scopes: collections.abc.Mapping[uuid.UUID, typing.Any] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+  },
   "Report": {
    "kind": "class",
    "members": {
@@ -2459,7 +2467,7 @@
   "validate": {
    "kind": "function",
    "module": "rangekeeper.run.validation",
-   "signature": "(run: Run, *, resolver: DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
+   "signature": "(run: Run, *, resolver: DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None, prerequisites: rangekeeper.run.validation.Prerequisites | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
   }
  },
  "rangekeeper.specification": {
