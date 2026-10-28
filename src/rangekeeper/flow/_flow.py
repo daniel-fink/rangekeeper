@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from rangekeeper.duration.period import PeriodTiming
     from rangekeeper.flow._options import MeanWeighting
     from rangekeeper.flow._table import StreamTable
+    from rangekeeper.profile import Profile
     from rangekeeper.quantity import UnitSystem
 
 # A number, a currency amount or None in a Flow constructor.
@@ -436,6 +437,48 @@ class Flow(records.Flow):
             )
         result = factory(units=units, movements=tuple(movements))
         return result
+
+    @classmethod
+    def from_profile(
+        cls,
+        *,
+        profile: Profile,
+        periods: Sequence[Period],
+        initial: Quantity | str | None = None,
+        total: Quantity | str | None = None,
+    ) -> Flow:
+        """Make a Flow over Periods from a profile and an amount.
+
+        A growth profile takes ``initial=``: the first Period holds it, and
+        each Period holds it times the profile's factor. A distribution
+        profile takes ``total=`` and divides it over the Periods; the last
+        Period takes the remainder, so the amounts add up to the total. The
+        amount is a Quantity or its text, and gives the Flow its units.
+        """
+        from rangekeeper.profile import Profile
+
+        if not isinstance(profile, Profile):
+            raise TypeError("profile must be a rangekeeper.profile Profile")
+        given = {"initial": initial, "total": total}
+        supplied = [name for name, value in given.items() if value is not None]
+        if supplied != [profile.takes]:
+            other = "total" if profile.takes == "initial" else "initial"
+            raise TypeError(
+                f"{type(profile).__name__} takes {profile.takes}=, not {other}="
+            )
+        amount = given[profile.takes]
+        quantity = Quantity(text=amount) if isinstance(amount, str) else amount
+        if not isinstance(quantity, records.Quantity):
+            raise TypeError(f"{profile.takes} must be a Quantity or its text")
+        factors = profile.factors(periods=periods)
+        if len(factors) != len(periods):
+            raise ValueError("the profile must give one factor for each Period")
+        values = [quantity.number * factor for factor in factors]
+        if profile.takes == "total":
+            values[-1] = quantity.number - math.fsum(values[:-1])
+        if any(not math.isfinite(value) for value in values):
+            raise NumericalError("the profile produced a non-finite amount")
+        return cls.from_periods(periods, values, units=quantity.units)
 
     def clone(self) -> Flow:
         """Copy content with fresh Movement IDs for an independent owning Value.

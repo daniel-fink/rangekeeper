@@ -6,6 +6,7 @@ import pytest
 
 from rangekeeper import profile
 from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.flow import Flow
 from rangekeeper.model import Distribution
 from rangekeeper.profile import GrowthMethod, PaddingMode
 from rangekeeper.quantity import Quantity
@@ -39,10 +40,10 @@ def test_padding_is_explicit_and_preserves_projection_origin():
 
 def test_pert_allocation_preserves_mass_without_padding_observations():
     periods = make_periods(date(2000, 1, 1), frequency=Frequency.MONTH, count=12)
-    flow = profile.distribute(
-        Quantity(magnitude=1, units="meter"),
+    flow = Flow.from_profile(
+        profile=profile.SCurve(distribution=Distribution.pert()),
         periods=periods,
-        distribution=Distribution.pert(),
+        total=Quantity(magnitude=1, units="meter"),
     )
     assert flow.total().number == pytest.approx(1)
     assert tuple(m.period for m in flow.movements) == periods

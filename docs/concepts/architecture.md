@@ -70,12 +70,11 @@ contracts enforce the rule.
 
 `quantity` and `money` sit between `schema` and `duration`; `money` is below
 `quantity`. Users import from `rangekeeper` and from the namespaces in
-`rangekeeper.__all__`: `quantity`, `money`, `duration`, `flow`, `finance`,
-`model`, `specification`, `run`, `execution`, `io` and `errors`. `schema` and
-`shared` are internal. `profile` and `market` are internal now; they become
-public with their 1.0.0b1 APIs
-([#303](https://github.com/daniel-fink/rangekeeper/issues/303),
-[#298](https://github.com/daniel-fink/rangekeeper/issues/298),
+`rangekeeper.__all__`: `quantity`, `money`, `duration`, `profile`, `flow`,
+`finance`, `model`, `specification`, `run`, `execution`, `io` and `errors`.
+`schema` and `shared` are internal. `market` is internal now; it becomes public
+with its 1.0.0b1 API
+([#298](https://github.com/daniel-fink/rangekeeper/issues/298),
 [#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Owners re-export
 the records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
 and [ADR-017](../decisions/017-api-and-formats.md).
@@ -191,7 +190,7 @@ contents are not yet in their 1.0 owner:
 | `money` | The ISO 4217 catalogue and minor units, `to_number`, `to_amount` and `round` | — |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
-| `profile` | Growth and distribution of known amounts over Periods: `extrapolate`, `distribute` and `GrowthMethod`; the Distribution owner (public as `rangekeeper.model.Distribution`) | Profile classes and `Flow.from_profile` replace the functions ([#303](https://github.com/daniel-fink/rangekeeper/issues/303)) |
+| `profile` | Growth profiles (`Constant`, `Linear`, `Compounding`), distribution profiles (`Uniform`, `SCurve`), the `Profile` Protocol and the `profiles` registry; the Distribution owner (public as `rangekeeper.model.Distribution`). `Flow.from_profile` in `flow` makes the Flow | — |
 | `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
 | `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#298](https://github.com/daniel-fink/rangekeeper/issues/298), [#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Generation, `Market` and replay still import `model`, above `market` |
 | `finance` | Financial valuation: PV, NPV, IRR and day counts | `pv`, `npv`, `irr` and `payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |

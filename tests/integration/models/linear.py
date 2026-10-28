@@ -19,11 +19,12 @@ class Model:
             frequency=frequency,
             count=params["num_periods"] + 1,
         )
-        self.pgi = profile.extrapolate(
-            Quantity(magnitude=params["initial_pgi"], units=units),
+        self.pgi = Flow.from_profile(
+            profile=profile.Compounding(
+                rate=Quantity(magnitude=params["growth_rate"], units="pa")
+            ),
             periods=periods,
-            method=profile.GrowthMethod.COMPOUND,
-            rate=params["growth_rate"],
+            initial=Quantity(magnitude=params["initial_pgi"], units=units),
         )
         self.vacancy = self.pgi.scale(-params["vacancy_rate"])
         self.egi = lines((self.pgi, self.vacancy)).aggregate().flow
