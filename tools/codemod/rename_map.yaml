@@ -144,6 +144,13 @@ modules:
     status: draft
     source: ADR-010, #255 D29
     note: Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name.
+  - old: rangekeeper.model.scope
+    new: rangekeeper.model._scope
+    status: agreed
+    source: ADR-010, #161
+    note: >-
+      Internal. The checks over raw mappings become private; the typed
+      target lookups move to `rangekeeper.model.targets`.
 
 # Other file moves, relative to the repository root.
 paths:
@@ -410,6 +417,21 @@ symbols:
     new_name: AttemptDeadlineError
     status: agreed
     source: ADR-016
+  - module: rangekeeper.model.scope
+    name: target_value
+    new_module: rangekeeper.model.targets
+    status: agreed
+    source: ADR-010, #161
+  - module: rangekeeper.model.scope
+    name: target_units
+    new_module: rangekeeper.model.targets
+    status: agreed
+    source: ADR-010, #161
+  - module: rangekeeper.model.scope
+    name: recorded_scalar
+    new_module: rangekeeper.model.targets
+    status: agreed
+    source: ADR-010, #161
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it

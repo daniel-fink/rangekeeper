@@ -1,4 +1,9 @@
-"""Revision-local mathematical declarations and explicit recorded scalar access."""
+"""UUID-keyed declaration tables and checks over raw wire mappings.
+
+Preparation and validation run these checks before or without typed records.
+Every function here reads and returns plain mappings. The typed lookups of a
+Model revision are in ``rangekeeper.model.targets``.
+"""
 
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -129,51 +134,6 @@ def recorded_quantity(reference: dict, targets, measures):
         return value.get("quantity")
     magnitude = movement.get("magnitude")
     return None if magnitude is None else dict(magnitude=magnitude, units=units)
-
-
-def _model_target(model, target):
-    from rangekeeper.flow import Movement
-
-    record = model.resolve(target)
-    if isinstance(record, Movement):
-        return model.value(model.owner_of(record.id)), record
-    return record, None
-
-
-def target_value(model, target):
-    """Return the owning Value with one target-resolution operation."""
-    return _model_target(model, target)[0]
-
-
-def _model_units(model, value, movement):
-    from rangekeeper.schema.records import Measure
-
-    return _scalar_units(
-        value._data,
-        movement._data if movement is not None else None,
-        lambda identity: model._index.get(identity, Measure)._data,
-    )
-
-
-def target_units(model, target) -> str:
-    """Read declared scalar units without inferring a solve role."""
-    value, movement = _model_target(model, target)
-    return _model_units(model, value, movement)
-
-
-def recorded_scalar(model, target):
-    """Read explicit scalar content using the same eligibility rules as validation."""
-    from rangekeeper.schema.records import Quantity
-
-    value, movement = _model_target(model, target)
-    units = _model_units(model, value, movement)
-    if movement is not None:
-        return (
-            None
-            if movement.magnitude is None
-            else Quantity(magnitude=movement.magnitude, units=units)
-        )
-    return value.quantity
 
 
 def scope_for_model(model):

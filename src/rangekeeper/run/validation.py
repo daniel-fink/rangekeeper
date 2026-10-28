@@ -4,8 +4,8 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from rangekeeper.model._scope import resolve_reference
 from rangekeeper.model.model import Model
-from rangekeeper.model.scope import resolve_reference
 from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import UnitSystem, default_units
 from rangekeeper.run.outputs import validate_outputs

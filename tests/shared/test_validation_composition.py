@@ -12,6 +12,7 @@ def uid(name):
 import pytest
 
 from rangekeeper.errors import Code
+from rangekeeper.model._scope import build_scope
 from rangekeeper.model.expression.validation import (
     infer_expression_domain,
     validate_constraint_predicates,
@@ -19,7 +20,6 @@ from rangekeeper.model.expression.validation import (
 )
 from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.model.formulation.validation import validate_formulation_names
-from rangekeeper.model.scope import build_scope
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.diagnostics import Issue
 from rangekeeper.shared.errors import ContractError

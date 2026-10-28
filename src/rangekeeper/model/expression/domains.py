@@ -4,7 +4,7 @@ from enum import Enum
 from typing import cast
 from uuid import UUID
 
-from rangekeeper.model.scope import Scope
+from rangekeeper.model._scope import Scope
 from rangekeeper.shared.validation import require
 
 

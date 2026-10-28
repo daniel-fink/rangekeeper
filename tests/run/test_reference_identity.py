@@ -20,7 +20,7 @@ from rangekeeper.model import (
     Value,
     ValueKind,
 )
-from rangekeeper.model.scope import target_units, target_value
+from rangekeeper.model.targets import target_units, target_value
 from rangekeeper.run import Run
 from rangekeeper.run import validate as validate_run
 from rangekeeper.shared.errors import (

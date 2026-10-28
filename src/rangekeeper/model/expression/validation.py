@@ -5,13 +5,13 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from uuid import UUID
 
+from rangekeeper.model._scope import Scope, resolve_reference
 from rangekeeper.model.expression.domains import (
     DomainCompatibility,
     compare_domains,
     infer_operator_domain,
     infer_selection_domain,
 )
-from rangekeeper.model.scope import Scope, resolve_reference
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError
 from rangekeeper.shared.validation import require, require_new

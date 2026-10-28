@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from datetime import date
 
 from rangekeeper.model import Model
-from rangekeeper.model.scope import (
+from rangekeeper.model._scope import (
     recorded_quantity,
     resolve_reference,
     scope_for_model,

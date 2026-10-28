@@ -10,7 +10,7 @@ import math
 from copy import deepcopy
 from uuid import UUID
 
-from rangekeeper.model.scope import numerical_units, recorded_quantity, reference_key
+from rangekeeper.model._scope import numerical_units, recorded_quantity, reference_key
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.runtime import exact_equal
 from rangekeeper.shared.validation import require
