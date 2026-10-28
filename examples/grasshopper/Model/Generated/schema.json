@@ -609,7 +609,7 @@
     },
     "Decision": {
       "additionalProperties": false,
-      "description": "One dated policy decision with explicit observations, first-match rules and fallback.",
+      "description": "One dated rule decision with explicit observations, first-match rules and fallback.",
       "properties": {
         "at": {
           "format": "date",
@@ -646,58 +646,6 @@
         "fallback"
       ],
       "title": "Decision",
-      "type": "object"
-    },
-    "DecisionOutcome": {
-      "additionalProperties": false,
-      "description": "Recorded outcome of one evaluated decision; absence of a rule means fallback.",
-      "properties": {
-        "assignments": {
-          "items": {
-            "$ref": "#/$defs/Assignment"
-          },
-          "type": "array"
-        },
-        "at": {
-          "format": "date",
-          "type": "string"
-        },
-        "decision": {
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "observations": {
-          "items": {
-            "$ref": "#/$defs/ObservedQuantity"
-          },
-          "type": "array"
-        },
-        "rule": {
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "terminated": {
-          "type": "boolean"
-        },
-        "termination_reason": {
-          "description": "Reason for termination, required when terminated is true.",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "required": [
-        "decision",
-        "at",
-        "observations",
-        "assignments",
-        "terminated"
-      ],
-      "title": "DecisionOutcome",
       "type": "object"
     },
     "Definitions": {
@@ -2495,7 +2443,7 @@
     },
     "ObservationAvailability": {
       "additionalProperties": false,
-      "description": "Earliest date a recorded Value or Movement may be supplied to a policy.",
+      "description": "Earliest date a recorded Value or Movement may be supplied to a rule.",
       "properties": {
         "available_at": {
           "format": "date",
@@ -2655,35 +2603,6 @@
         "end"
       ],
       "title": "Period",
-      "type": "object"
-    },
-    "Policy": {
-      "additionalProperties": false,
-      "description": "Finite policy owning explicit controlled targets and ordered dated decisions.",
-      "properties": {
-        "decisions": {
-          "items": {
-            "$ref": "#/$defs/Decision"
-          },
-          "type": "array"
-        },
-        "id": {
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "targets": {
-          "items": {
-            "$ref": "#/$defs/Reference"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "id",
-        "targets",
-        "decisions"
-      ],
-      "title": "Policy",
       "type": "object"
     },
     "Projection": {
@@ -3141,9 +3060,9 @@
             "null"
           ]
         },
-        "outcomes": {
+        "rule_evidence": {
           "items": {
-            "$ref": "#/$defs/DecisionOutcome"
+            "$ref": "#/$defs/RuleEvidence"
           },
           "type": [
             "array",
@@ -3208,6 +3127,87 @@
         "actions"
       ],
       "title": "Rule",
+      "type": "object"
+    },
+    "RuleEvidence": {
+      "additionalProperties": false,
+      "description": "Recorded evidence of one evaluated decision; absence of a rule means fallback.",
+      "properties": {
+        "assignments": {
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "type": "array"
+        },
+        "at": {
+          "format": "date",
+          "type": "string"
+        },
+        "decision": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "observations": {
+          "items": {
+            "$ref": "#/$defs/ObservedQuantity"
+          },
+          "type": "array"
+        },
+        "rule": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "terminated": {
+          "type": "boolean"
+        },
+        "termination_reason": {
+          "description": "Reason for termination, required when terminated is true.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "decision",
+        "at",
+        "observations",
+        "assignments",
+        "terminated"
+      ],
+      "title": "RuleEvidence",
+      "type": "object"
+    },
+    "RuleSet": {
+      "additionalProperties": false,
+      "description": "The rules of a Specification, owning explicit controlled targets and ordered dated decisions.",
+      "properties": {
+        "decisions": {
+          "items": {
+            "$ref": "#/$defs/Decision"
+          },
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "targets": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "targets",
+        "decisions"
+      ],
+      "title": "RuleSet",
       "type": "object"
     },
     "Run": {
@@ -3850,10 +3850,10 @@
             "null"
           ]
         },
-        "policy": {
+        "rules": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Policy"
+              "$ref": "#/$defs/RuleSet"
             },
             {
               "type": "null"
@@ -3869,7 +3869,7 @@
           "description": "Optional numerical requests. Choices still unspecified after composition are left to the implementation; the Run records the effective settings."
         },
         "unknowns": {
-          "description": "Unique scalar or Movement unknowns; explicit and disjoint from assignments and policy targets.",
+          "description": "Unique scalar or Movement unknowns; explicit and disjoint from assignments and rule targets.",
           "items": {
             "$ref": "#/$defs/Reference"
           },
@@ -3950,7 +3950,7 @@
           }
         }
       ],
-      "description": "One ordered record of execution activity, without prescribing scheduling or policy logic.",
+      "description": "One ordered record of execution activity, without prescribing scheduling or rule logic.",
       "properties": {
         "at": {
           "description": "Observed event instant with an explicit timezone.",

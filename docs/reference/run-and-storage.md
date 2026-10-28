@@ -112,7 +112,7 @@ Output checks apply their explicit numerical-field allowlist separately. Store
 revision conflicts use schema equivalence; that does not relax historical evidence.
 See the [comparison rules](identity.md#comparison-rules).
 
-Policy evidence is stored as `Report.outcomes`, containing `DecisionOutcome` records
+Rule evidence is stored as `Report.rule_evidence`, containing `RuleEvidence` records
 that name their declared `Decision`. Recorded controls cannot substitute for an
 earlier outcome. Both output and no-output validation branches use the supplied
 UnitSystem and independently check observations, actions and first matching rules.

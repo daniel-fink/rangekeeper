@@ -56,7 +56,7 @@ def test_closure_follows_static_lazy_and_relative_imports(tmp_path):
 def test_closure_names_real_files_and_fails_on_missing_modules(tmp_path):
     # A re-exported class name never resolves to a same-named file on a
     # case-insensitive file system.
-    closure = import_closure(["model/scenario/market.py"], package=PACKAGE)
+    closure = import_closure(["market/generation.py"], package=PACKAGE)
     names = {
         path: set(p.name for p in (PACKAGE / path).parent.iterdir()) for path in closure
     }
@@ -137,8 +137,9 @@ def test_execution_closures_cover_every_module_that_runs(monkeypatch):
 
 
 def test_scenario_closure_covers_every_module_that_runs():
-    from rangekeeper.model.scenario import implementation, market
-    from tests.model.test_scenario_contracts import base, plan
+    from rangekeeper.market import generation as market
+    from rangekeeper.market import implementation
+    from tests.market.test_contracts import base, plan
 
     trace = Trace()
     trace.wrap(market.generate)(base(), plan(), scenario_keys=["traced"])

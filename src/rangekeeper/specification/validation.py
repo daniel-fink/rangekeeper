@@ -20,7 +20,12 @@ from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.runtime import Record
-from rangekeeper.schema.validation import document_version, supports_version
+from rangekeeper.schema.validation import (
+    checked,
+    document_version,
+    require_declarations,
+    supports_version,
+)
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
@@ -31,13 +36,7 @@ from rangekeeper.shared.errors import (
     UnitError,
 )
 from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.validation import (
-    bounded,
-    checked,
-    require,
-    require_acyclic,
-    require_declarations,
-)
+from rangekeeper.shared.validation import bounded, require, require_acyclic
 from rangekeeper.specification.composition import (
     Composition,
     batch_cases,
@@ -255,7 +254,7 @@ def _validate_concrete(
     assigned, unknowns, controlled = (
         roles["assignments"],
         roles["unknowns"],
-        roles["policy"],
+        roles["rules"],
     )
     supplied("assignments")
     references = specification.get("unknowns") or []
@@ -263,11 +262,11 @@ def _validate_concrete(
         eligible(target)
     supplied("estimates")
     require(roles["estimates"] <= unknowns, "estimate target is not an unknown")
-    if specification.get("policy"):
-        from rangekeeper.specification.policy.validation import validate_policy
+    if specification.get("rules"):
+        from rangekeeper.specification.rule.validation import validate_rules
 
-        validate_policy(
-            specification["policy"], scope=scope, units_compatible=units_compatible
+        validate_rules(
+            specification["rules"], scope=scope, units_compatible=units_compatible
         )
 
     # Imposed predicates and every objective need role completeness. Unused

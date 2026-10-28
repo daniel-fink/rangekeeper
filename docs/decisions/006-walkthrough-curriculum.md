@@ -20,7 +20,7 @@ This record owns the curriculum, teaching objectives and remaining work. It does
 not establish acceptance of new notebooks or authorize all required library
 changes. The [walkthrough guide](../guides/walkthroughs.md) owns execution and
 local publication. The [execution reference](../reference/execution.md) and
-[scenario and policy reference](../reference/scenarios-and-policies.md) own current
+[scenario and policy reference](../reference/market-paths-and-rules.md) own current
 capability limits.
 
 ## Accepted scope

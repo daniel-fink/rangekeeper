@@ -43,7 +43,7 @@ null literal content is invalid. A reference to an unresolved Value is valid.
 Optional list fields may be absent, null, or empty to denote no entries; canonical codecs preserve those distinctions. Required operation content cannot be null or empty.
 
 Date and string literal nodes are deferred until a concrete operation requires
-them. Policy guards or action arguments may provide such requirements; their
+them. Rule guards or action arguments may provide such requirements; their
 comparison, typing, and execution semantics will need to be specified together.
 This does not remove date or string result domains: a reference, selection, or call
 can return such content under its declared contract. For example, selecting a
@@ -102,7 +102,7 @@ owner-local declarations with original paths. `model.expression.validation`
 checks signatures, binds arguments and analyzes each expression once; its immutable
 ExpressionAnalysis contains node, domain and path maps. Constraints and objectives
 consume those results. `domains.py` contains local rules; numerical evaluation and
-policy truth remain separate.
+rule truth remain separate.
 
 Domain comparison is directional and returns compatible, incompatible or unproven.
 Missing units do not prove dimensionless content. A required Function argument,
@@ -247,8 +247,7 @@ Specification can fix a total and solve a summand. The signatures use:
 | `growth.linear` | `initial`, `increment`, `series` |
 | `financial.discount` | `series`, `rate`, `discounted` |
 | `financial.pv` | `sequence`, `value` |
-| `account.interest` | `principal`, `rate`, `interest` |
-| `account.schedule` | `transactions`, `initial`, `rate`, `balances`, `interest` |
+| `financial.interest` | `principal`, `rate`, `interest` |
 | `flow.aligned` | `members`, `reference` |
 | `flow.resample` | `sequence`, `resampled` |
 

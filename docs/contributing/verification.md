@@ -31,7 +31,7 @@ Its folders mirror the packages:
 | Folder | Contents |
 | --- | --- |
 | `tests/<package>` | Tests of one package, for example `tests/flow` or `tests/model`. A fixture is next to the tests that read it |
-| `tests/contracts` | Format versions, retired names, golden account results, the jsonschema conformance of structural validation and the API snapshot. Golden Bundle formats and deterministic builds follow |
+| `tests/contracts` | Format versions, retired names, the jsonschema conformance of structural validation and the API snapshot. Golden Bundle formats and deterministic builds follow |
 | `tests/integration` | Complete teaching models and calculations across several packages, with their model builders |
 | `tests/walkthrough` | The example data package and the design example, in the core environment |
 
@@ -72,11 +72,15 @@ In the [pinned schema environment](schema.md), from the repository root:
 
 ```sh
 python tools/schema/generate.py --check
+python tools/schema/check_generator.py
 python tools/schema/generate_csharp.py --check
 python tools/schema/verify_native.py
 python tools/schema/typecheck.py
 ```
 
+`check_generator.py` gives the generator slots that it must reject: Python
+keywords, names of record or behaviour methods, more than one record type in
+one slot, and enum collections.
 The native round trip and typing checks also need `mypy==1.18.2`,
 `py-moneyed` and `pint` in that environment. `verify_native.py` generates the
 stock LinkML module in a temporary folder; the package does not contain it.

@@ -21,18 +21,17 @@ from rangekeeper.schema.records import (
     Model as ModelRecord,
 )
 from rangekeeper.schema.runtime import Record
-from rangekeeper.schema.validation import document_version, supports_version
+from rangekeeper.schema.validation import (
+    checked,
+    checked_record,
+    document_version,
+    require_declarations,
+    supports_version,
+)
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import UnitError
-from rangekeeper.shared.validation import (
-    bounded,
-    checked,
-    checked_record,
-    require,
-    require_acyclic,
-    require_declarations,
-)
+from rangekeeper.shared.validation import bounded, require, require_acyclic
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model

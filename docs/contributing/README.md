@@ -151,7 +151,7 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 | `lint` | `ruff check` and `ruff format --check` |
 | `types` | mypy, with all extras for their types |
 | `changelog` | A fragment in `changelog.d/` and a draft changelog build, in the separate [Changelog workflow](../../.github/workflows/changelog.yml) on pull requests. The `no-changelog` label skips the fragment check; adding or removing a label reruns only this check |
-| `generated files` | `tools/schema/generate.py --check`, `generate_csharp.py --check`, `verify_native.py` and `typecheck.py` in the pinned schema environment |
+| `generated files` | `tools/schema/generate.py --check`, `check_generator.py`, `generate_csharp.py --check`, `verify_native.py` and `typecheck.py` in the pinned schema environment |
 | `dotnet` | Restores and builds the C# Model library and fixture runner in `examples/grasshopper` with the package version, then round-trips the cross-language fixtures through C# |
 | `docs` | `tools/docs/check.py` |
 | `test` | The full suite with all extras, on Linux and macOS with Python 3.12 and 3.13, and on Windows with Python 3.13 |
@@ -180,7 +180,7 @@ distinguish structural and local Model checks. These different responsibilities
 do not require a shared service superclass or universal status enum.
 
 The [package map](../concepts/architecture.md) owns import locations. The
-[scenario and policy reference](../reference/scenarios-and-policies.md) owns
+[market paths and rules reference](../reference/market-paths-and-rules.md) owns
 quantity names, authoring verbs and the distinction between declarations and
 recorded outcomes. The [record reference](../reference/records.md) owns field
 presence, immutability and intrinsic methods.

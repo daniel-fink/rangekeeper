@@ -1,8 +1,8 @@
 # Specification contributions, composition and validation
 
 A `Specification` records an investigation against one exact input Model revision.
-It can declare assignments, unknowns, estimates, bounds, objectives and policy
-requirements. Saved partial contributions and batches are valid document shapes;
+It can declare assignments, unknowns, estimates, bounds, objectives and rules.
+Saved partial contributions and batches are valid document shapes;
 an effective leaf investigation is a derived `Composition`. Composition does not
 solve equations or change its contributors.
 
@@ -18,7 +18,7 @@ for the supported numerical subset.
 | `specification/composition.py` | Additive requirements, exact contributor snapshots and original source locations |
 | `specification/validation.py` | Complete investigation validation using a supplied read-only resolver |
 | `specification/targets.py` | Explicit expansion of Flow assignments and unknown roles |
-| `specification/policy/` | Dated declarations, causal observation and independent outcome validation |
+| `specification/rule/` | Dated declarations, causal observation and independent evidence validation |
 | `shared/references.py` | Resolver protocols without a storage dependency |
 
 ## Contributions, composition and validation
@@ -104,9 +104,9 @@ unknown. Omitting `ids` selects all entries. Recorded quantities and estimates
 never supply omitted assignments. A Measure identifies meaning, not a unique
 Value. Duplicate or conflicting roles fail.
 
-Composition permits one policy contribution. Its controls cannot also be assigned
-or unknown, and policy outcomes must follow the declared information availability.
-See [policies](scenarios-and-policies.md#policy-declarations-and-evidence).
+Composition permits one rule set contribution. Its controls cannot also be assigned
+or unknown, and rule evidence must follow the declared information availability.
+See [rules](market-paths-and-rules.md#rule-declarations-and-evidence).
 
 Pass the caller's `UnitSystem` through validation and execution. Public validation
 uses explicit compatibility checks; raw conformance entrypoints retain their
@@ -135,7 +135,7 @@ explicitly; unresolved amounts fail. An omitted quantity never means reuse.
 
 A lock removes matching local unknowns and estimates. Role editing requires the
 pinned Model. Included contributions require `resolver=`; inherited roles and
-policy-controlled targets must be edited at their owner. Composition is checked
+rule-controlled targets must be edited at their owner. Composition is checked
 after editing, and normal execution still performs full effective validation.
 Annual totals alone do not determine monthly allocations; an underdetermined
 investigation returns a feasible candidate with a rank diagnostic.

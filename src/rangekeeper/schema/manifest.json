@@ -1,9 +1,9 @@
 {
   "artifacts": {
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "records.py": "b0d74704bb0fcd2d8316af0dbf2a4d5043a9199c38e5517e87edf3c207590e02",
-    "schema.json": "2423d5676d333ced0e434cb3462123caa89196c34ad10d940d4226be33bf5af2",
-    "slots.json": "e36e7d305c19d107408a8a94def81507485813efc6e08078f61922b9d0335333"
+    "records.py": "e9516100d01f0a44ca78fbd1f1468cde0bf9e511f1baaf413ac7d7bdd3f172ec",
+    "schema.json": "73d15ae3d34896bf592a2ab9d1a45cb0700ca5cacf8fcea268d4356a2f45b941",
+    "slots.json": "abd85e5880edcd4263facb8f11d9dd8c741cb4ae0a038e080fe08dadaff2169c"
   },
   "classes": [
     "Action",
@@ -21,7 +21,6 @@
     "ContentEntry",
     "Criterion",
     "Decision",
-    "DecisionOutcome",
     "Definitions",
     "Diagnostic",
     "Distribution",
@@ -54,7 +53,6 @@
     "ObservedQuantity",
     "Parameter",
     "Period",
-    "Policy",
     "Projection",
     "PropertyContent",
     "Provenance",
@@ -66,6 +64,8 @@
     "Relationship",
     "Report",
     "Rule",
+    "RuleEvidence",
+    "RuleSet",
     "Run",
     "Runtime",
     "ScenarioParameter",
@@ -117,17 +117,17 @@
     "schema/geometry.yaml": "c7b8c499abfd156e9d206a74a72c2d0a6c713b0469c491beab94a523c4d07874",
     "schema/measure.yaml": "88d417ab8e5f151ff32fcaa6412fe12154ff4328dfcd4ea451b27ca6db9141a3",
     "schema/model.yaml": "d998afd2fc7010b15863b358defb9c178d1aacd982aa93877fd1bab479f2aef7",
-    "schema/policy.yaml": "3d114dff49a9278acd7e53d7f77145592aecdb19b8602ecc08fd931b36bd958f",
     "schema/provenance.yaml": "05b16899c8441f4536ff7b2a36cd4e42248bd3309dda371df9e36e413e8a413f",
     "schema/query.yaml": "46f6a70cb29367e90f43d6dd30fde4c57fa791025f8b4b0fe5b487dc2b250cbb",
     "schema/reference.yaml": "f7b5bd042a908cbea777881b714fcb1942c87211ba499f6eb8347bb59573ddbd",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
-    "schema/run.yaml": "240fde9ec7a9f18c8a80ba339e7336033587f92c027e4ff2bcf244eca36d1bcc",
-    "schema/scenario.yaml": "8dff27e1cbb7cb7e23860ee78c1d1180a658f4a4deeca78e61b09194bc7da2aa",
+    "schema/rule.yaml": "f1bbaebc59c14383e80161a4a90bd63041d316d68c7bbce7ae39a3710f953805",
+    "schema/run.yaml": "0dba7b2281cdfcb39c3aa9fc2d03747d72ed82cae75133cf9ee6165ae47e7143",
+    "schema/scenario.yaml": "c712bfaadb6bc69fb62abbc56e31ef9642ba413a44fa02ce36402b94012ca643",
     "schema/settings.yaml": "857cfb5fa49ee77e8469f51a3d188714fde401352c23922b055fd8d107f10e96",
-    "schema/specification.yaml": "730f04d5a16624aa0afe0951beeb408b824286c54c96874fc5d39d9439d39461",
+    "schema/specification.yaml": "47e2c6f7894b271fe1edc12615877a80843c0a785423ff7f0431d463e9ba75a8",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "2aded8c7d05696a91a191bea121d178644a5d6762362c1099168a4b860586c7b",
+    "tools/schema/generate.py": "0f3b6dce6485edd2cf1568c7f80d7a02d5a3c43e6bea5f800132833cfe7495b1",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"
   }
 }
