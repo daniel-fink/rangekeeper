@@ -134,10 +134,10 @@ contents are not yet in their 1.0 owner:
 | Package | Contents now | Moves that follow |
 | --- | --- | --- |
 | `shared` | Errors, diagnostics, validation helpers, encoding, references, tables and fingerprints | The store and resolver protocols arrive from `io` ([#98](https://github.com/daniel-fink/rangekeeper/issues/98)) |
-| `schema` | Generated records, enums, the record runtime, structural validation and record behaviours | The Flow and Movement behaviours move to `flow` ([#106](https://github.com/daniel-fink/rangekeeper/issues/106)) |
+| `schema` | Data-only generated records, enums, the record runtime, the kind registry and structural validation | — |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
-| `flow` | Stream, the Flow re-exports, their options, table display and the private engine | — |
+| `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
 | `finance` | Financial valuation, projection, accounts and deterministic dynamics | Path generators go to `market` with the market paths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137); #201, D29) |
 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance, geometry and captured scenarios | `model.scenario` moves to `market` and the market paths document ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)) |
 | `specification` | The Specification document, composition, roles, and policy declarations and evaluation | Policy evaluation moves to `execution` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |

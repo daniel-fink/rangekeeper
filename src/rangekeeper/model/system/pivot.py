@@ -10,6 +10,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from rangekeeper.flow import Flow
 from rangekeeper.model import Entity
 from rangekeeper.model.definitions import _classes
 from rangekeeper.model.system.errors import AggregationError
@@ -20,7 +21,7 @@ from rangekeeper.model.system.reduction import (
     Coverage,
     RollupResult,
 )
-from rangekeeper.schema.records import Flow, Quantity
+from rangekeeper.schema.records import Quantity
 
 if TYPE_CHECKING:
     from rangekeeper.model.system.reduction import Reduction

@@ -7,16 +7,17 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
+from rangekeeper.flow._flow import Flow, Movement
 from rangekeeper.flow._options import (
     AggregationMethod,
     AlignmentJoin,
     FlowAggregate,
     MeanWeighting,
+    MissingValueHandling,
     ResamplingMethod,
 )
-from rangekeeper.schema.behaviors.flow import MissingValueHandling
 from rangekeeper.schema.enums import ValueKind
-from rangekeeper.schema.records import Flow, Movement, Value
+from rangekeeper.schema.records import Value
 
 if TYPE_CHECKING:
     from polars import DataFrame

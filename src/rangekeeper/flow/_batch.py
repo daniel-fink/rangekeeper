@@ -9,10 +9,12 @@ from dataclasses import dataclass
 from datetime import date
 from uuid import uuid4
 
+from rangekeeper.duration import Period
+from rangekeeper.flow._flow import Flow, Movement
 from rangekeeper.flow._mapping import period_indices, weights
+from rangekeeper.flow._options import MissingValueHandling as Missing
 from rangekeeper.quantity import default_units
-from rangekeeper.schema.behaviors.flow import MissingValueHandling as Missing
-from rangekeeper.schema.records import Flow, Movement, Period, Quantity
+from rangekeeper.schema.records import Quantity
 from rangekeeper.shared.optional import requires
 
 

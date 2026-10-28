@@ -170,7 +170,7 @@ or the documentation site. Run those
 Use one clear noun for a type and one clear verb for an operation. Qualify a name
 when one word would lose domain meaning. Put a record's invariant on its owner;
 keep cross-record validation, execution and IO at their explicit boundaries.
-Generated record behaviors declare no persistent fields.
+Owner subclasses of generated records declare no persistent fields.
 
 Use composition between runtime services instead of inheritance with hidden
 state. For example, `Executor` traverses batches, `Plan` resolves their graph,

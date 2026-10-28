@@ -42,7 +42,7 @@ def test_shared_distribution_survives_serialization_and_calculations():
     record = Distribution.symmetric(
         kind=DistributionFamily.TRIANGULAR, mean=2, residual=1, units="AUD"
     )
-    assert type(record) is Generated
+    assert type(record) is Distribution and isinstance(record, Generated)
     restored = Distribution.from_json(json.dumps(record.to_data()))
     assert restored == record
     assert sum(restored.mass([1, 2, 3])) == pytest.approx(1)

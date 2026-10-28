@@ -163,7 +163,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model._flow_mapping` | `rangekeeper.flow._mapping` | draft |  |
 | `rangekeeper.calculations._batch` | `rangekeeper.flow._batch` | draft | The private calculation engine. |
 | `rangekeeper.calculations.series` | `rangekeeper.flow` | agreed | The module is removed (#103). Its options and FlowAggregate are in `rangekeeper.flow`; Flow and Stream methods replace its functions (see the removed names). |
-| `rangekeeper.schema.behaviors.flow` | `rangekeeper.flow.behavior` | draft (needs refactor) | The generated Flow and Movement records load these behaviours, so the schema runtime must find them in `flow` without an upward import. |
+| `rangekeeper.schema.behaviors.flow` | `rangekeeper.flow` | agreed | The behaviour modules are removed; generated records contain data only. Flow, Movement and MissingValueHandling are in `rangekeeper.flow`. Period and Span are in `rangekeeper.duration`; Distribution stays in `rangekeeper.model`. |
 | `rangekeeper.calculations` | `rangekeeper.finance` | agreed |  |
 | `rangekeeper.calculations.projection` | `rangekeeper.finance.growth` | pending | #255 D12: growth and distribution profiles move to `rangekeeper.profile`, applied by `Flow.from_profile`. |
 | `rangekeeper.run.execution` | `rangekeeper.execution` | agreed |  |

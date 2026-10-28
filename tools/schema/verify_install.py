@@ -156,8 +156,10 @@ import sys
 from uuid import uuid4
 from datetime import date
 import rangekeeper
-from rangekeeper.schema.records import Model, Metadata, Runtime, Period, Flow, Movement, Source
-from rangekeeper.duration import PeriodTiming
+from rangekeeper.schema import records
+from rangekeeper.schema.records import Model, Metadata, Runtime, Source
+from rangekeeper.duration import Period, PeriodTiming
+from rangekeeper.flow import Flow, Movement
 from rangekeeper.model.validation import validate
 period = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
 movement = Movement(id=uuid4(), key="january", period=period)
@@ -166,6 +168,7 @@ flow = Flow(units="AUD", movements=(movement,))
 assert set(flow.to_data()) == {"units", "movements"}
 assert Flow.from_data(flow.to_data()) == flow
 assert type(flow.movements[0]) is Movement and not hasattr(flow, "samples")
+assert type(records.Flow.from_data(flow.to_data())) is Flow and not hasattr(records.Flow, "check")
 assert flow.movements[0].replace(magnitude=3).number == 3.0
 assert not flow.replace().movements[0].has_field("magnitude")
 assert period.check().resolve(timing=PeriodTiming.LAST) == date(2026, 1, 31)

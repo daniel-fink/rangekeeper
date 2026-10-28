@@ -25,13 +25,11 @@ def meta(*options, many=False):
 
 
 reserved = generation.reserved_names()
-assert {"to_data", "from_data", "has_field"} <= reserved["Record"]
-assert "coordinate" in reserved["MovementBehavior"]
+assert {"to_data", "from_data", "has_field"} <= reserved
 cases = {
     "keyword": {"Example": {"class": meta(("string", "primitive"))}},
     "record method": {"Example": {"to_data": meta(("string", "primitive"))}},
     "generated method": {"Example": {"replace": meta(("string", "primitive"))}},
-    "behaviour method": {"Movement": {"coordinate": meta(("string", "primitive"))}},
     "record union": {
         "Example": {"part": meta(("Period", "record"), ("Span", "record"))}
     },

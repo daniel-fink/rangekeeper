@@ -7,11 +7,13 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from rangekeeper.duration import PeriodTiming
+from rangekeeper.duration import Period, PeriodTiming, Span
 from rangekeeper.flow import (
     AggregationMethod,
     AlignmentJoin,
+    Flow,
     MissingValueHandling,
+    Movement,
 )
 from rangekeeper.model import ClaimKind, Model, ValueKind
 from rangekeeper.model.validation import validate
@@ -35,12 +37,12 @@ DAY = date(2026, 1, 1)
     ],
 )
 def test_replacement_preserves_presence_and_input(fields):
-    original = r.Movement.from_data(
+    original = Movement.from_data(
         {"id": str(uuid4()), "key": "a", "date": DAY.isoformat(), **fields}
     )
     before = original.to_data()
     copy = original.replace(key="b", magnitude=UNSET, claims=UNSET)
-    assert type(copy) is r.Movement
+    assert type(copy) is Movement
     assert copy is not original
     assert copy.to_data() == {**before, "key": "b"}
     assert original.to_data() == before
@@ -51,7 +53,7 @@ def test_replacement_preserves_presence_and_input(fields):
 
 
 def test_replacement_checks_types_and_copies_mutable_content():
-    movement = r.Movement(id=uuid4(), key="a", date=DAY)
+    movement = Movement(id=uuid4(), key="a", date=DAY)
     with pytest.raises(TypeError):
         movement.replace(unknown=True)
     with pytest.raises((TypeError, ValidationError)):
@@ -75,32 +77,32 @@ def test_replacement_checks_types_and_copies_mutable_content():
 
 
 def test_decoded_records_keep_methods_and_schema_inheritance():
-    period = r.Period(start=DAY, end=date(2026, 2, 1))
-    flow = r.Flow.from_periods([period], [2], units="m")
+    period = Period(start=DAY, end=date(2026, 2, 1))
+    flow = Flow.from_periods([period], [2], units="m")
     value = r.Value(
         id=uuid4(), key="area", kind=ValueKind.FLOW, measure=uuid4(), flow=flow
     )
     decoded = r.Value.from_json(json.dumps(value.to_data())).flow
-    assert type(decoded) is r.Flow
-    assert type(decoded.movements[0]) is r.Movement
-    assert type(decoded.movements[0].period) is r.Period
+    assert type(decoded) is Flow
+    assert type(decoded.movements[0]) is Movement
+    assert type(decoded.movements[0].period) is Period
     assert decoded.check() is decoded
     assert decoded.movements[0].number == 2.0
     assert decoded.movements[0].resolve(timing=PeriodTiming.LAST) == date(2026, 1, 31)
     assert decoded.movements[0].replace(magnitude=3).number == 3.0
-    span = r.Span(
+    span = Span(
         start=period.start,
         end=period.end,
         name="January",
     )
-    assert isinstance(span, r.Period)
-    assert type(span.replace(name="Month")) is r.Span
+    assert isinstance(span, Period)
+    assert type(span.replace(name="Month")) is Span
     assert span.check() is span
     assert span.resolve(timing=PeriodTiming.END) == period.end
 
 
 def test_check_clean_and_number_have_distinct_roles():
-    flow = r.Flow.from_events([DAY, date(2026, 1, 2)], [None, 0], units="m")
+    flow = Flow.from_events([DAY, date(2026, 1, 2)], [None, 0], units="m")
     before = flow.to_data()
     assert flow.check() is flow
     with pytest.raises(ValueError, match="unresolved"):
@@ -116,16 +118,14 @@ def test_check_clean_and_number_have_distinct_roles():
 @pytest.mark.parametrize("reducer, expected", [("sum", 3), ("min", 1), ("max", 2)])
 def test_reduction_shares_units_claims_and_coverage(reducer, expected):
     a, b = UUID(int=1), UUID(int=2)
-    left = r.Flow(
+    left = Flow(
         units="m",
-        movements=(
-            r.Movement(id=uuid4(), key="a", date=DAY, magnitude=1, claims=(a,)),
-        ),
+        movements=(Movement(id=uuid4(), key="a", date=DAY, magnitude=1, claims=(a,)),),
     )
-    right = r.Flow(
+    right = Flow(
         units="cm",
         movements=(
-            r.Movement(id=uuid4(), key="a", date=DAY, magnitude=200, claims=(b, a)),
+            Movement(id=uuid4(), key="a", date=DAY, magnitude=200, claims=(b, a)),
         ),
     )
     aligned = lines([left, right]).align()
@@ -145,9 +145,9 @@ def test_reduction_shares_units_claims_and_coverage(reducer, expected):
 
 @pytest.mark.parametrize("reducer", ["sum", "min", "max"])
 def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
-    known = r.Flow.from_events([DAY], [2], units="m")
-    unknown = r.Flow.from_events([DAY], [None], units="m")
-    empty = r.Flow(units="m", movements=())
+    known = Flow.from_events([DAY], [2], units="m")
+    unknown = Flow.from_events([DAY], [None], units="m")
+    empty = Flow(units="m", movements=())
     skipped = lines([known, unknown]).aggregate(
         method=AggregationMethod(reducer), missing=MissingValueHandling.SKIP
     )
@@ -207,8 +207,8 @@ def test_generated_classes_properties_and_replacement_have_documentation():
 
 
 def test_zero_filling_converts_to_target_units():
-    first = r.Flow.from_events([DAY], [1], units="m")
-    second = r.Flow.from_events([date(2026, 1, 2)], [1], units="ft")
+    first = Flow.from_events([DAY], [1], units="m")
+    second = Flow.from_events([date(2026, 1, 2)], [1], units="ft")
     result = lines([first, second]).aggregate(
         join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
     )

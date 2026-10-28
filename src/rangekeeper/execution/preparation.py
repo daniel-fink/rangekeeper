@@ -6,6 +6,7 @@ from types import MappingProxyType
 from uuid import UUID
 
 from rangekeeper.execution.errors import UnsupportedProblem
+from rangekeeper.flow import Movement
 from rangekeeper.model import Model
 from rangekeeper.model.scope import target_units
 from rangekeeper.quantity import UnitSystem
@@ -15,7 +16,6 @@ from rangekeeper.schema.records import (
     Constraint,
     DecisionOutcome,
     Expression,
-    Movement,
     Quantity,
     Reference,
     Value,

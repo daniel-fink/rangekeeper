@@ -7,7 +7,17 @@ from enum import Enum, unique
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rangekeeper.schema.records import Flow
+    from rangekeeper.flow._flow import Flow
+
+
+@unique
+class MissingValueHandling(Enum):
+    """Treatment of unresolved magnitudes: raise, propagate None, skip or use zero."""
+
+    ERROR = "error"
+    PROPAGATE = "propagate"
+    SKIP = "skip"
+    ZERO = "zero"
 
 
 @unique

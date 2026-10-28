@@ -1,27 +1,29 @@
-"""Distribution declarations and calculations with lazy numerical backends."""
+"""Distribution: declarations and calculations with lazy numerical backends.
+
+``rangekeeper.model.Distribution`` is the public path.
+"""
 
 from __future__ import annotations
 
 import math
 from collections.abc import Sequence
 from itertools import pairwise
-from typing import TYPE_CHECKING, cast
 
+from rangekeeper.schema import records
 from rangekeeper.schema.enums import DistributionFamily
+from rangekeeper.schema.kinds import register
 from rangekeeper.shared.optional import requires
 
-if TYPE_CHECKING:
-    from rangekeeper.schema.records import Distribution, DistributionFamily
 
-
-class DistributionBehavior:
+@register
+class Distribution(records.Distribution):
     """Keep parameter checks, named construction and probability operations together."""
 
     __slots__ = ()
 
     def check(self) -> Distribution:
         """Reject invalid support, modes, weights and units; leave the record unchanged."""
-        distribution = cast("Distribution", self)
+        distribution = self
         from rangekeeper.quantity import default_units
 
         numbers = [distribution.lower, distribution.upper]
@@ -48,7 +50,7 @@ class DistributionBehavior:
         cls, *, lower: float = 0, upper: float = 1, units: str = "dimensionless"
     ) -> Distribution:
         """Declare a uniform distribution, including a point mass when bounds coincide."""
-        factory = cast("type[Distribution]", cls)
+        factory = cls
 
         result = factory(
             kind=DistributionFamily.UNIFORM, lower=lower, upper=upper, units=units
@@ -66,7 +68,7 @@ class DistributionBehavior:
         units: str = "dimensionless",
     ) -> Distribution:
         """Declare triangular density with a mode within its closed support."""
-        factory = cast("type[Distribution]", cls)
+        factory = cls
 
         result = factory(
             kind=DistributionFamily.TRIANGULAR,
@@ -89,7 +91,7 @@ class DistributionBehavior:
         units: str = "dimensionless",
     ) -> Distribution:
         """Declare a PERT distribution with an explicit, nonnegative mode weighting."""
-        factory = cast("type[Distribution]", cls)
+        factory = cls
 
         result = factory(
             kind=DistributionFamily.PERT,
@@ -112,7 +114,7 @@ class DistributionBehavior:
         units: str = "dimensionless",
     ) -> Distribution:
         """Declare support mean ± residual; residual is a half-range, not full width."""
-        factory = cast("type[Distribution]", cls)
+        factory = cls
 
         if not isinstance(kind, DistributionFamily):
             raise TypeError("kind must be DistributionFamily")
@@ -133,7 +135,7 @@ class DistributionBehavior:
         raise ValueError("unsupported distribution")
 
     def _implementation(self):
-        distribution = cast("Distribution", self)
+        distribution = self
         with requires("calculations"):
             from scipy import stats
 
@@ -162,7 +164,7 @@ class DistributionBehavior:
         Negative sizes, wrong generators and invalid distributions raise ValueError.
         The record is immutable; only generator state advances.
         """
-        distribution = cast("Distribution", self)
+        distribution = self
         with requires("calculations"):
             import numpy as np
 
@@ -183,7 +185,7 @@ class DistributionBehavior:
 
     def cdf(self, values: Sequence[float]) -> tuple[float, ...]:
         """Evaluate the CDF at finite coordinates in the distribution's declared units."""
-        distribution = cast("Distribution", self)
+        distribution = self
         if any(type(x) not in (float, int) or not math.isfinite(x) for x in values):
             raise ValueError("CDF coordinates must be finite")
         implementation = distribution._implementation()
@@ -197,7 +199,7 @@ class DistributionBehavior:
         Require at least two finite, nondecreasing coordinates. No record or random
         state changes; boundaries use the distribution's units.
         """
-        distribution = cast("Distribution", self)
+        distribution = self
         if len(boundaries) < 2 or any(b < a for a, b in pairwise(boundaries)):
             raise ValueError(
                 "interval boundaries must be ordered and contain at least two values"

@@ -7,9 +7,9 @@ from collections.abc import Sequence
 from enum import Enum, unique
 
 from rangekeeper.duration import Period
+from rangekeeper.finance._distribution import Distribution
 from rangekeeper.flow import Flow
 from rangekeeper.quantity import Quantity
-from rangekeeper.schema.records import Distribution
 
 
 @unique

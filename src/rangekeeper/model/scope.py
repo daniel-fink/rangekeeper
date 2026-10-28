@@ -135,7 +135,7 @@ def recorded_quantity(reference: dict, targets, measures):
 
 
 def _model_target(model, target):
-    from rangekeeper.schema.records import Movement
+    from rangekeeper.flow import Movement
 
     record = model.resolve(target)
     if isinstance(record, Movement):
@@ -206,8 +206,9 @@ def scope_for_model(model):
 
 def validate_values(scope):
     """Check intrinsic Value content after declaration identities are indexed."""
+    from rangekeeper.flow import Flow
     from rangekeeper.model.content import validate_content
-    from rangekeeper.schema.records import Flow, PropertyContent
+    from rangekeeper.schema.records import PropertyContent
 
     for value in scope.values.values():
         kind = value["kind"]

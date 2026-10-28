@@ -73,13 +73,14 @@ modules:
       `rangekeeper.flow`; Flow and Stream methods replace its functions (see
       the removed names).
   - old: rangekeeper.schema.behaviors.flow
-    new: rangekeeper.flow.behavior
-    status: draft
-    source: ADR-010
-    requires: [refactor]
+    new: rangekeeper.flow
+    status: agreed
+    source: ADR-011, #106
     note: >-
-      The generated Flow and Movement records load these behaviours, so the
-      schema runtime must find them in `flow` without an upward import.
+      The behaviour modules are removed; generated records contain data only.
+      Flow, Movement and MissingValueHandling are in `rangekeeper.flow`.
+      Period and Span are in `rangekeeper.duration`; Distribution stays in
+      `rangekeeper.model`.
   - old: rangekeeper.calculations
     new: rangekeeper.finance
     status: agreed

@@ -10,7 +10,8 @@ from bisect import bisect_right
 from collections.abc import Sequence
 from datetime import date
 
-from rangekeeper.schema.records import Flow, Movement, Period
+from rangekeeper.duration import Period
+from rangekeeper.flow._flow import Flow, Movement
 
 
 def alignment(
