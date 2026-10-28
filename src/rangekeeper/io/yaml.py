@@ -2,12 +2,12 @@
 
 from pathlib import Path
 
-from rangekeeper.io._document import require_kind, restore, snapshot
+from rangekeeper.io._document import D, Document, require_kind, restore, snapshot
 from rangekeeper.io.atomic import write_new
-from rangekeeper.io.store import D, Document
 from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.errors import DecodeError
 from rangekeeper.shared.optional import requires
+from rangekeeper.shared.yaml import decode
 
 
 def _implementation():
@@ -20,46 +20,19 @@ def _implementation():
 def loads(text: str, *, kind: type[D]) -> D:
     """Decode safe JSON-compatible YAML with unique string keys and explicit kind.
 
-    Merge keys, executable/custom tags, cyclic aliases and non-finite numbers are
-    rejected. Timestamp scalars remain strings: only generated typed fields interpret
-    date/time/UUID meaning, and opaque Claim content is never recursively coerced.
-    Shared non-cyclic aliases are copied into independent immutable data.
+    The policy is ``rangekeeper.shared.yaml.decode``. Cyclic aliases and
+    non-finite numbers are also rejected; opaque Claim content is never
+    recursively coerced. Shared non-cyclic aliases are copied into independent
+    immutable data.
     """
     require_kind(kind)
     if not isinstance(text, str):
         raise TypeError("text must be a string")
-    yaml = _implementation()
-
-    # PyYAML remains a lazy optional module; the base is only known at runtime.
-    class Loader(yaml.SafeLoader):  # type: ignore[name-defined]
-        def construct_object(self, node, deep=False):
-            allowed = {"map", "seq", "str", "null", "bool", "int", "float", "timestamp"}
-            if node.tag not in {"tag:yaml.org,2002:" + name for name in allowed}:
-                raise DecodeError(f"unsupported YAML tag: {node.tag}")
-            return super().construct_object(node, deep=deep)
-
-        def construct_mapping(self, node, deep=False):
-            result = {}
-            for key_node, value_node in node.value:
-                if key_node.tag == "tag:yaml.org,2002:merge":
-                    raise DecodeError("YAML merge keys are unsupported")
-                key = self.construct_object(key_node, deep=deep)
-                if not isinstance(key, str):
-                    raise DecodeError("YAML keys must be strings")
-                if key in result:
-                    raise DecodeError(f"duplicate YAML key: {key}")
-                result[key] = self.construct_object(value_node, deep=deep)
-            return result
-
-    # This subclass has its own constructor table; SafeLoader's global behavior
-    # is unchanged for other callers, including external source readers.
-    Loader.add_constructor(
-        "tag:yaml.org,2002:timestamp",
-        lambda loader, node: loader.construct_scalar(node),
-    )
     try:
-        data = copy_json(yaml.load(text, Loader=Loader))
-    except (yaml.YAMLError, ValueError, TypeError, KeyError) as error:
+        data = copy_json(decode(text))
+    except DecodeError:
+        raise
+    except (ValueError, TypeError, KeyError) as error:
         raise DecodeError(str(error)) from error
     return restore(data, kind)
 

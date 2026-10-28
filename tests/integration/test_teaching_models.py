@@ -9,8 +9,8 @@ import pytest
 from rangekeeper.duration import Frequency, make_periods
 from rangekeeper.execution import Executor
 from rangekeeper.io import MemoryStore
+from rangekeeper.market.generation import generate, make_plan
 from rangekeeper.model import Distribution, DistributionFamily, Metadata, Model
-from rangekeeper.model.scenario.market import generate, make_plan
 from rangekeeper.run import validate
 from rangekeeper.schema.enums import SolutionStatus
 from tests.integration.models import deterministic, flexible, linear, probabilistic
@@ -88,13 +88,13 @@ def test_probabilistic_and_flexible_use_identical_captured_paths():
         probabilistic.author(dict(num_periods=3), scenario=scenario)
     )
     fixed, _ = execute(probabilistic, model)
-    policy = flexible.build_stop_gain_resale_policy(
+    rules = flexible.build_stop_gain_resale_rules(
         model, minimum_holding_periods=2, threshold=1.2
     )
-    chosen, run = execute(flexible, model, policy=policy)
+    chosen, run = execute(flexible, model, rules=rules)
     assert chosen.sale_date == datetime.date(2022, 12, 31)
     assert fixed.sale_date == datetime.date(2023, 12, 31)
-    assert len(run.report.outcomes) == 2
+    assert len(run.report.rule_evidence) == 2
     for name in ("space_market_price_factors", "historical_value"):
         value = scenario.value(name)
         assert (

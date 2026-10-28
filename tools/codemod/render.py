@@ -98,15 +98,18 @@ def render(data: Mapping) -> str:
             for e in data.get("removed") or ()
         ],
     )
-    lines += ["", "### Decisions under review", ""]
+    lines += ["", "### Changes of API shape", ""]
     lines += [
-        "These decisions change API shapes, not only names. They wait for the review of",
-        "the proposed walkthrough cells.",
+        "These decisions change API shapes, not only names. The codemod does not apply",
+        "them; the issues that the table names make the changes.",
         "",
     ]
     lines += _table(
-        ("Topic", "Proposal"),
-        [(e["topic"], _reason(e)) for e in data.get("notes") or ()],
+        ("Topic", "1.0", "Source"),
+        [
+            (e["topic"], _reason(e), e.get("source") or "—")
+            for e in data.get("notes") or ()
+        ],
     )
     return "\n".join(lines) + "\n"
 

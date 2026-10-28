@@ -12,8 +12,9 @@ from rangekeeper.model.expression.domains import (
     infer_selection_domain,
 )
 from rangekeeper.model.scope import Scope, resolve_reference
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError
-from rangekeeper.shared.validation import require
+from rangekeeper.shared.validation import require, require_new
 
 
 def validate_function_signature(function, *, scope: Scope) -> None:
@@ -116,8 +117,7 @@ def infer_query_domain(query, *, scope: Scope) -> dict:
 
 def _infer_expression_domain(node, seen, *, scope: Scope, analysis, path) -> dict:
     """Validate one expression tree and infer its coarse domain without evaluating it."""
-    require(UUID(node["id"]) not in seen, "duplicate Expression identity")
-    seen.add(UUID(node["id"]))
+    require_new(seen, UUID(node["id"]), label="Expression identity")
     kind = node["kind"]
     if kind == "quantity":
         import math
@@ -209,14 +209,12 @@ def _require_constraint_identities(constraints, *, scope: Scope) -> set[UUID]:
     """Reserve Constraint declarations before walking the combined expression scope."""
     seen = set(scope.identities)
     for index, constraint in enumerate(constraints):
-        identity = UUID(constraint["id"])
-        require(
-            identity not in seen,
-            "duplicate Constraint identity",
-            code="semantic.identity",
+        require_new(
+            seen,
+            UUID(constraint["id"]),
+            label="Constraint identity",
             path=f"/constraints/{index}/id",
         )
-        seen.add(identity)
     return seen
 
 
@@ -249,13 +247,13 @@ def validate_constraint_predicates(
         require(
             predicate in analysis.nodes_by_id,
             "unknown or non-Expression Constraint predicate",
-            code="reference.predicate",
+            code=Code.REFERENCE_PREDICATE,
             path=path,
         )
         require(
             analysis.domains_by_id[predicate]["kind"] == "boolean",
             "Constraint predicate must be Boolean",
-            code="semantic.predicate",
+            code=Code.PREDICATE,
             path=path,
         )
     return analysis
@@ -278,7 +276,7 @@ def _analyze_node(node, seen, *, scope, analysis, path):
     except ContractError as error:
         if error.path:
             raise
-        raise ContractError(str(error), code=error.code, path=path) from error
+        raise error.at(path) from error
     identity = UUID(node["id"])
     analysis[0][identity] = node
     analysis[1][identity] = result

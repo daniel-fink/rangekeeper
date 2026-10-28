@@ -93,24 +93,25 @@ Their `source_values` remain available for source inspection. See
 
 ## Calendar and numerical ownership
 
-`projection.extrapolate(initial=..., periods=..., method=..., rate=...)` extends
+`profile.extrapolate(initial=..., periods=..., method=..., rate=...)` extends
 an initial Quantity into a Flow. Compound growth starts at exponent zero unless
-`origin` is supplied. `projection.distribute(quantity=..., periods=...,
+`origin` is supplied. `profile.distribute(quantity=..., periods=...,
 distribution=...)` spreads a total using a Distribution's interval masses and
 preserves that total. Explicit `weights=` can replace a distribution. Neither
-operation declares equations or selects unknowns. `project_values` remains the
-numeric sequence helper used by extrapolation and dynamics.
+operation declares equations or selects unknowns. `grow_values` is the numeric
+sequence helper used by extrapolation and the market kernels. Profile classes and
+`Flow.from_profile` replace these functions
+([#298](https://github.com/daniel-fink/rangekeeper/issues/298)).
 
 | Owner | Responsibility |
 | --- | --- |
 | `duration` | Native Gregorian dates, Period coverage, explicit frequencies and timing |
 | `Period.check()` / `.resolve()` | Valid coverage and a declared representative date |
 | `Distribution` | Canonical parameters and intrinsic `check`, `sample`, `cdf`, `mass` |
-| `finance.projection` | Project a known Quantity over explicit periods |
+| `profile` | Grow a known Quantity, or distribute a total, over explicit periods |
 | `flow.Stream` | Align and combine several Flows with explicit policies |
-| `finance.account.Account.calculate` | Interest, overdraft and balance recurrence |
 | `finance.financial` | PV, XNPV, IRR and day counts using PyXIRR |
-| `finance.dynamics` | Deterministic kernels over supplied shocks or samples |
+| `market.dynamics` | Deterministic kernels over supplied shocks or samples |
 | `model.formulation` | Build declared equations for forward and inverse investigations |
 
 Dates are calendar values, never implicit timestamps. Periods are half-open:
@@ -161,33 +162,17 @@ Coverage reports the original known fraction, including after zero filling.
 
 `Flow.multiply`, `Flow.integrate` and `Flow.resample` keep explicit calculation
 contracts. `Stream.resample` also reports the coverage of each line.
-`Account.calculate(...)` returns opening, closing, overdraft and interest Flows.
 Financial valuation remains in `finance.financial`, with explicit timing and
 PyXIRR conventions. Calendar grids remain in `duration.period`.
 
-## Composed account conventions
+## Funding without accounts
 
-Import `Balance`, `CurrentInterest` and `InterestTreatment` from
-`rangekeeper.finance.account`. The numerical calculation and passive schedule use the same
-three choices. `Balance.OPENING` selects the signed debt before transactions;
-`CLOSING` selects it after transactions. `CurrentInterest.EXCLUDED` charges the
-positive selected principal at the per-step rate. `INCLUDED` solves the charge as
-`base * rate / (1 - rate)` and requires a rate below one.
-
-`InterestTreatment.SEPARATE` leaves interest out of closing principal; `FINANCED`
-adds it. Included current interest requires financing, so six combinations are
-valid. The default is closing, excluded, separate. The recurrence retains signed
-balances; displayed debt and overdraft balances retain their separate meanings.
-Rate Flow coordinates must match transaction coordinates and order. Validation also
-applies to empty transactions. Same-day keys never reorder transaction/rate pairs.
-
-`model.formulation.account.schedule` declares the same finite account mechanics with
-explicit `transactions`, `initial`, `rate`, `balances` and `interest` references.
-Its convention keyword is `balance_basis`; numerical `Account.calculate` retains
-`balance`.
-It requires a nonnegative-principal contract. Fixed rate bounds are ordinary
-predicates and are checked exactly. Unknown rates and piecewise overdraft branches
-remain unsupported. `account.interest` handles explicitly selected principal only.
+Rangekeeper has no account class and no account declaration (#201, decision D2).
+Funding is composition: a balance is the `cumulative()` sum of a Flow, and the
+equations of the Model relate draws, interest and repayments.
+`model.formulation.financial.interest` declares interest on an explicitly selected,
+nonnegative principal. Unknown rates and piecewise overdraft branches are
+unsupported.
 
 ## Calendar choices
 

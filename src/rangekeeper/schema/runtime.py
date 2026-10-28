@@ -393,16 +393,9 @@ class Record:
     @classmethod
     def from_json(cls: type[R], text: str) -> R:
         """Read one JSON record, rejecting duplicate object keys at every depth."""
+        from rangekeeper.shared.encoding import parse_json
 
-        def unique(pairs):
-            result = {}
-            for key, value in pairs:
-                if key in result:
-                    raise ValueError(f"duplicate JSON key: {key}")
-                result[key] = value
-            return result
-
-        return cls.from_data(json.loads(text, object_pairs_hook=unique))
+        return cls.from_data(cast(Mapping[str, object], parse_json(text)))
 
     def to_data(self) -> dict[str, object]:
         """Export a detached JSON-compatible tree, retaining omitted/null/empty fields."""

@@ -135,6 +135,7 @@ classes:
       rather than an implicit variable number of scalar arguments.
     attributes:
       name:
+        description: Parameter name, unique within the Function; named arguments bind by this name.
         range: Code
         required: true
       domain:
@@ -171,10 +172,12 @@ classes:
       applies; zero requires a numerical result with established units.
     attributes:
       id:
+        description: Stable identity of the Function, referenced by calls.
         range: UUID
         required: true
         identifier: true
       code:
+        description: Case-sensitive code unique within the Model Function collection; not reference identity.
         range: Code
         required: true
       name:
@@ -185,6 +188,7 @@ classes:
         - range: string
         pattern: \S
       version:
+        description: Version of this Function contract.
         range: Code
         required: true
       parameters:

@@ -97,3 +97,60 @@ def test_table_exports_preserve_large_integers(tmp_path):
     assert restored.column("value") == (str(integer), "1.5")
     huge = table_module.Table(columns=("value",), rows=({"value": 10**40},))
     assert polars.to_table(polars.to_frame(huge)) == huge
+
+
+def _flow(magnitudes):
+    from datetime import date, timedelta
+    from uuid import uuid4
+
+    from rangekeeper.flow import Flow, Movement
+
+    start = date(2026, 1, 1)
+    return Flow(
+        units="m",
+        movements=tuple(
+            Movement(id=uuid4(), date=start + timedelta(days=i), magnitude=magnitude)
+            for i, magnitude in enumerate(magnitudes)
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "magnitudes, dtype",
+    [
+        ((1, 2, 3), pl.Int64),
+        ((1.5, 2.0, None), pl.Float64),
+        ((1, 2.0, None, 3.5), pl.Object),
+        ((10**40, 1), pl.Object),
+        ((), pl.Float64),
+    ],
+    ids=["integers", "floats", "mixed", "large", "empty"],
+)
+def test_polars_flow_round_trip_keeps_number_types(magnitudes, dtype):
+    from rangekeeper.schema.validation import slots_for
+
+    flow = _flow(magnitudes)
+    frame = polars.to_frame(flow)
+    assert frame.schema["magnitude"] == dtype
+    assert set(frame.columns) == {*slots_for("Movement"), "_present"}
+    assert frame.columns[0] == "id" and frame.columns[-1] == "_present"
+    restored = polars.from_frame(frame, units=flow.units)
+    assert [type(m.magnitude) for m in restored.movements] == [
+        type(m) for m in magnitudes
+    ]
+    assert restored.to_data() == flow.to_data()
+
+
+def test_polars_flow_columns_use_slot_types():
+    frame = polars.to_frame(_flow(()))
+    assert frame.schema == pl.Schema(
+        {
+            "id": pl.String,
+            "key": pl.String,
+            "date": pl.String,
+            "period": pl.Null,
+            "magnitude": pl.Float64,
+            "claims": pl.List(pl.String),
+            "_present": pl.List(pl.String),
+        }
+    )

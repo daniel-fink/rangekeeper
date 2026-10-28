@@ -14,7 +14,7 @@ Both use the same engine and the same map.
 ## The map
 
 [`rename_map.yaml`](rename_map.yaml) is the rename map. The draft table in the
-[upgrade guide](../../docs/guides/upgrading.md#100a2-rename-map-draft) comes from
+[upgrade guide](../../docs/guides/upgrading.md#100a2-rename-map) comes from
 it. After you change the map, update the table:
 
 ```sh
@@ -36,10 +36,12 @@ The map has these sections:
 | `exclude` | Paths that the tool never changes, such as ADRs and history |
 
 Each entry has a status. The tool applies `agreed` and `draft` entries. It does
-not apply `pending` entries (they wait for the decisions in #255) or `open`
+not apply `pending` entries (they wait for a decision under review) or `open`
 entries (they have no 1.0 name). An entry with `requires: [schema]` or
 `requires: [refactor]` needs work that the tool cannot do; the tool skips it
-unless you add `--with schema` or `--with refactor`.
+unless you add `--with schema` or `--with refactor`. A `removed` entry with
+`requires: [refactor]` names an API that later work removes; the tool lists its
+uses only with `--with refactor`.
 
 ## Run the package pass
 

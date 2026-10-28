@@ -197,7 +197,7 @@ for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extr
              '_schema', '_records', '_record_index', '_revision', '_behaviors',
              'graph', 'formulations', 'scenarios', 'policies',
              'evidence', 'operation', 'account', 'metadata', 'table', 'units',
-             'references', 'diagnostics', 'errors', 'validate', '_validation',
+             'references', 'diagnostics', 'validate', '_validation',
              '_encoding', '_structured', '_yaml', '_implementation'):
     assert importlib.util.find_spec('rangekeeper.' + name) is None, name
     assert not hasattr(rangekeeper, name), name
@@ -470,10 +470,10 @@ with pl.Config(tbl_rows=2, tbl_cols=1, float_precision=0):
 assert display_stream.to_frame()['Receipts'].to_list() == [0, None] + [None] * 10
 from rangekeeper.duration import Span, Frequency
 from rangekeeper.quantity import Quantity
-from rangekeeper.finance import projection
+from rangekeeper import profile
 periods = Span.from_duration(name='Forecast', start=date(2026, 1, 1), frequency=Frequency.YEAR, count=2).periods(frequency=Frequency.YEAR)
-assert [m.number for m in projection.extrapolate(initial=Quantity(magnitude=100, units='AUD'), periods=periods, method=projection.ProjectionMethod.COMPOUND, rate=0.02).movements] == [100, 102]
-assert projection.distribute(quantity=Quantity(magnitude=100, units='AUD'), periods=periods, weights=(0.25, 0.75)).total().magnitude == 100
+assert [m.number for m in profile.extrapolate(initial=Quantity(magnitude=100, units='AUD'), periods=periods, method=profile.GrowthMethod.COMPOUND, rate=0.02).movements] == [100, 102]
+assert profile.distribute(quantity=Quantity(magnitude=100, units='AUD'), periods=periods, weights=(0.25, 0.75)).total().magnitude == 100
 table = Table(columns=('code', 'status', 'value'), rows=({'code': '001', 'status': 'NA', 'value': None},))
 assert polars.to_table(polars.to_frame(table)) == table
 path = Path('table.csv')

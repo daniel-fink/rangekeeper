@@ -13,7 +13,7 @@ figures below are illustrative inputs, not calibrated estimates or predicted res
 The current object-model reference is
 [Model, Specification, and Run: object model and requirements](../concepts/model-specification-run.md).
 This note retains the representative policy example and its provisional assumptions.
-The 2026-10-01 [scenario and policy composition sketches](../concepts/model-specification-run.md#scenarios-and-policy)
+The 2026-10-01 [scenario and policy composition sketches](../concepts/model-specification-run.md#market-paths-and-rules)
 clarify that one Specification and Run can evaluate multiple futures and alternative
 complete policies, publishing multiple Model outputs. Additive `includes` assemble
 one investigation; `cases` specify separate investigations, recorded by ordinary
@@ -21,7 +21,7 @@ child Runs. Policy alternatives remain distinct from cooperating subordinate pol
 Scalar Specification composition and finalized Run records are drafted; direct
 subordinate executions use `Run.spawns`. This policy example remains unimplemented.
 The 2026-10-01 [execution priorities](../reference/execution.md#supported-mathematics)
-and [scenario distinctions](../concepts/model-specification-run.md#scenarios-and-policy)
+and [scenario distinctions](../concepts/model-specification-run.md#market-paths-and-rules)
 clarify the route to this example: deterministic valuation under supplied markets,
 evaluation on saved futures, committed decisions across those futures, and then
 adaptive policies. Algebraic inversion of market generation is a separate capability.

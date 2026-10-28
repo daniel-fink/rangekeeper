@@ -20,21 +20,27 @@ classes:
       must be acyclic. Source and Claim records are stored once and shared by reference.
     attributes:
       sources:
+        description: Source editions referenced by Claim Locations; each Source is stored once.
         range: Source
         multivalued: true
         inlined: true
         inlined_as_list: true
       claims:
+        description: Claims referenced by Facts and by upstream Claim dependencies; each Claim is stored once.
         range: Claim
         multivalued: true
         inlined: true
         inlined_as_list: true
       facts:
+        description: Facts that connect graph objects or characteristics to supporting Claims; at most one
+          Fact per target.
         range: Fact
         multivalued: true
         inlined: true
         inlined_as_list: true
       scenarios:
+        description: Captured scenario realizations, in order, with their inputs, paths and observation
+          availability.
         range: ScenarioRealization
         inlined: true
         multivalued: true
@@ -44,10 +50,12 @@ classes:
     description: An identifiable edition of an external evidence artifact.
     attributes:
       id:
+        description: Stable identity of the Source edition, referenced by Locations.
         range: UUID
         identifier: true
         required: true
       name:
+        description: Nonblank human-readable name of the evidence artifact.
         range: string
         required: true
         pattern: \S
@@ -57,22 +65,26 @@ classes:
         required: true
         pattern: \S
       issued_at:
+        description: Optional date or date-time at which the source edition was issued.
         range: Content
         any_of:
         - range: date
         - range: datetime
       received_at:
+        description: Optional date or date-time at which the source edition was received.
         range: Content
         any_of:
         - range: date
         - range: datetime
       author:
+        description: Optional nonblank author of the evidence artifact.
         range: string
         pattern: \S
   Location:
     description: An address within a specific Source edition.
     attributes:
       source:
+        description: UUID of the Source edition that contains this address.
         range: Source
         inlined: false
         required: true
@@ -87,11 +99,13 @@ classes:
     description: A named text component of a source address.
     attributes:
       key:
+        description: Nonblank name of the address part, such as sheet or cell.
         range: string
         key: true
         required: true
         pattern: \S
       value:
+        description: Nonblank text of the address part.
         range: string
         required: true
         pattern: \S
@@ -99,13 +113,16 @@ classes:
     description: The named process used to assert, derive, or reconcile evidence.
     attributes:
       code:
+        description: Nonblank code that names the process.
         range: string
         required: true
         pattern: \S
       version:
+        description: Optional nonblank version of the process.
         range: string
         pattern: \S
       description:
+        description: Optional nonblank explanation of the process.
         range: string
         pattern: \S
   Content:
@@ -124,14 +141,17 @@ classes:
       require semantic validation in addition to structural validation of this envelope.
     attributes:
       id:
+        description: Stable identity of the Claim, referenced by Facts and by dependent Claims.
         range: UUID
         identifier: true
         required: true
       content:
+        description: Candidate content; its structure depends on the supported target.
         range: Content
         required: true
         inlined: true
       kind:
+        description: Whether the content is sourced, asserted or derived.
         range: ClaimKind
         required: true
       sources:
@@ -145,6 +165,7 @@ classes:
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
       method:
+        description: Process used to obtain the content; required for asserted and derived Claims.
         range: Method
         inlined: true
     rules:
@@ -206,6 +227,7 @@ classes:
         list_elements_unique: true
         pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
       reconciliation:
+        description: Optional explicit selection of one supporting Claim when the Claims conflict.
         range: Reconciliation
         inlined: true
   Reconciliation:
@@ -218,9 +240,11 @@ classes:
         required: true
         pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
       status:
+        description: Whether the selection is provisional or confirmed.
         range: ReconciliationStatus
         required: true
       method:
+        description: Optional process used to make the selection.
         range: Method
         inlined: true
 enums:

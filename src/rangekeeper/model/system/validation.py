@@ -3,6 +3,7 @@
 from uuid import UUID
 
 from rangekeeper.schema.records import System as System
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.validation import require, require_acyclic
 
 __all__ = ["System"]
@@ -20,7 +21,7 @@ def check_system(system, *, scope, locations):
             require(
                 code not in codes,
                 f"duplicate Entity/Assembly code: {code}",
-                code="semantic.unique",
+                code=Code.UNIQUE,
                 path=locations[identity] + "/code",
             )
             codes.add(code)

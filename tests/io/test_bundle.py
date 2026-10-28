@@ -52,6 +52,16 @@ def test_record_query_filters_in_parquet_without_arrow_materialization(
         reader.records(path=[])
 
 
+def test_lineage_slots_are_not_model_references():
+    from rangekeeper.io.bundle import _shred
+
+    data = yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
+    data["metadata"]["previous"] = str(UUID(int=1))
+    _, _, references = _shred(Model.from_data(data))
+    assert references
+    assert not [r for r in references if r["path"] == "/metadata"]
+
+
 def test_records_page_in_numeric_path_order(tmp_path):
     model = Model.from_data(
         dict(

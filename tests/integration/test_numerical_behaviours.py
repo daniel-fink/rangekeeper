@@ -11,7 +11,7 @@ from uuid import uuid4
 import numpy as np
 import pytest
 
-from rangekeeper import Model
+from rangekeeper import Model, profile
 from rangekeeper.duration import (
     Frequency,
     MonthRoll,
@@ -21,8 +21,6 @@ from rangekeeper.duration import (
     offset,
 )
 from rangekeeper.duration.calendar import elapsed_days
-from rangekeeper.finance import projection
-from rangekeeper.finance.projection import ProjectionMethod
 from rangekeeper.flow import Flow, MissingValueHandling, ResamplingMethod, Stream
 from rangekeeper.model import (
     Assembly,
@@ -39,6 +37,7 @@ from rangekeeper.model import (
     ValueKind,
 )
 from rangekeeper.model.content import decode, encode
+from rangekeeper.profile import GrowthMethod
 from rangekeeper.quantity import Quantity
 from tests.streams import lines
 
@@ -54,10 +53,8 @@ def test_distribution_mass(spec):
     assert all(x >= 0 for x in masses)
 
 
-def test_projection_compounding():
-    factors = projection.project_values(
-        1, count=12, method=ProjectionMethod.COMPOUND, rate=0.02
-    )
+def test_growth_compounding():
+    factors = profile.grow_values(1, count=12, method=GrowthMethod.COMPOUND, rate=0.02)
     assert factors[-1] == (1.02**11)
 
 
@@ -89,7 +86,7 @@ def test_flow_construction_detachment_and_negation():
 
 def test_allocation_and_annual_resampling_preserve_total():
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
-    flow = projection.distribute(Quantity(magnitude=100, units="AUD"), periods=periods)
+    flow = profile.distribute(Quantity(magnitude=100, units="AUD"), periods=periods)
     assert amounts(flow) == pytest.approx((4,) * 25)
     years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
     reduced = flow.negate().resample(years, method=ResamplingMethod.SUM)
@@ -121,7 +118,7 @@ def test_sampling_is_explicit_before_allocation():
     assert all(2 <= x <= 8 for x in draws)
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
     for amount in draws:
-        flow = projection.distribute(
+        flow = profile.distribute(
             Quantity(magnitude=amount, units="AUD"), periods=periods
         )
         assert flow.total().magnitude == pytest.approx(amount)
@@ -130,7 +127,7 @@ def test_sampling_is_explicit_before_allocation():
 def test_stream_selection_and_mixed_frequency_totals():
     measure = Measure(id=uuid4(), code="cash", name="Cash", units="AUD")
     flows = [
-        projection.distribute(
+        profile.distribute(
             Quantity(magnitude=total, units="AUD"),
             periods=make_periods(
                 date(2020, 1, 1),

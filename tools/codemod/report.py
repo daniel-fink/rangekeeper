@@ -123,6 +123,12 @@ def _describe(entry: Entry) -> str:
         )
         if x
     )
-    new = data.get("new") or data.get("new_module") or data.get("new_name") or "?"
+    new = (
+        data.get("new")
+        or data.get("new_module")
+        or data.get("new_name")
+        or data.get("replacement")
+        or "?"
+    )
     reason = entry.pending or entry.note
     return f"{old or data.get('topic')} -> {new}" + (f" ({reason})" if reason else "")

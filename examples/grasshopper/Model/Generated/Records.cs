@@ -411,56 +411,6 @@ public sealed class Decision : WireRecord
     }
 }
 
-/// <summary>Schema-derived DecisionOutcome wire record. Exports and nested reads are detached.</summary>
-public sealed class DecisionOutcome : WireRecord
-{
-    public DecisionOutcome() { }
-    public DecisionOutcome(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field assignments; missing and null remain distinct.</summary>
-    public IReadOnlyList<Assignment> Assignments
-    {
-        get => Read<IReadOnlyList<Assignment>>("assignments");
-        init => Write("assignments", value);
-    }
-    /// <summary>Wire field at; missing and null remain distinct.</summary>
-    public DateOnly At
-    {
-        get => Read<DateOnly>("at");
-        init => Write("at", value);
-    }
-    /// <summary>Wire field decision; missing and null remain distinct.</summary>
-    public Guid Decision
-    {
-        get => Read<Guid>("decision");
-        init => Write("decision", value);
-    }
-    /// <summary>Wire field observations; missing and null remain distinct.</summary>
-    public IReadOnlyList<ObservedQuantity> Observations
-    {
-        get => Read<IReadOnlyList<ObservedQuantity>>("observations");
-        init => Write("observations", value);
-    }
-    /// <summary>Wire field rule; missing and null remain distinct.</summary>
-    public Optional<Guid> Rule
-    {
-        get => ReadOptional<Guid>("rule");
-        init => WriteOptional("rule", value);
-    }
-    /// <summary>Wire field terminated; missing and null remain distinct.</summary>
-    public bool Terminated
-    {
-        get => Read<bool>("terminated");
-        init => Write("terminated", value);
-    }
-    /// <summary>Wire field termination_reason; missing and null remain distinct.</summary>
-    public Optional<string> TerminationReason
-    {
-        get => ReadOptional<string>("termination_reason");
-        init => WriteOptional("termination_reason", value);
-    }
-}
-
 /// <summary>Schema-derived Definitions wire record. Exports and nested reads are detached.</summary>
 public sealed class Definitions : WireRecord
 {
@@ -1545,32 +1495,6 @@ public sealed class Period : WireRecord
     }
 }
 
-/// <summary>Schema-derived Policy wire record. Exports and nested reads are detached.</summary>
-public sealed class Policy : WireRecord
-{
-    public Policy() { }
-    public Policy(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field decisions; missing and null remain distinct.</summary>
-    public IReadOnlyList<Decision> Decisions
-    {
-        get => Read<IReadOnlyList<Decision>>("decisions");
-        init => Write("decisions", value);
-    }
-    /// <summary>Wire field id; missing and null remain distinct.</summary>
-    public Guid Id
-    {
-        get => Read<Guid>("id");
-        init => Write("id", value);
-    }
-    /// <summary>Wire field targets; missing and null remain distinct.</summary>
-    public IReadOnlyList<Reference> Targets
-    {
-        get => Read<IReadOnlyList<Reference>>("targets");
-        init => Write("targets", value);
-    }
-}
-
 /// <summary>Schema-derived Projection wire record. Exports and nested reads are detached.</summary>
 public sealed class Projection : WireRecord
 {
@@ -1853,11 +1777,11 @@ public sealed class Report : WireRecord
         get => ReadOptional<IReadOnlyList<Diagnostic>>("diagnostics");
         init => WriteOptional("diagnostics", value);
     }
-    /// <summary>Wire field outcomes; missing and null remain distinct.</summary>
-    public Optional<IReadOnlyList<DecisionOutcome>> Outcomes
+    /// <summary>Wire field rule_evidence; missing and null remain distinct.</summary>
+    public Optional<IReadOnlyList<RuleEvidence>> RuleEvidence
     {
-        get => ReadOptional<IReadOnlyList<DecisionOutcome>>("outcomes");
-        init => WriteOptional("outcomes", value);
+        get => ReadOptional<IReadOnlyList<RuleEvidence>>("rule_evidence");
+        init => WriteOptional("rule_evidence", value);
     }
     /// <summary>Wire field runtime; missing and null remain distinct.</summary>
     public Optional<Runtime> Runtime
@@ -1902,6 +1826,82 @@ public sealed class Rule : WireRecord
     {
         get => Read<Guid>("id");
         init => Write("id", value);
+    }
+}
+
+/// <summary>Schema-derived RuleEvidence wire record. Exports and nested reads are detached.</summary>
+public sealed class RuleEvidence : WireRecord
+{
+    public RuleEvidence() { }
+    public RuleEvidence(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field assignments; missing and null remain distinct.</summary>
+    public IReadOnlyList<Assignment> Assignments
+    {
+        get => Read<IReadOnlyList<Assignment>>("assignments");
+        init => Write("assignments", value);
+    }
+    /// <summary>Wire field at; missing and null remain distinct.</summary>
+    public DateOnly At
+    {
+        get => Read<DateOnly>("at");
+        init => Write("at", value);
+    }
+    /// <summary>Wire field decision; missing and null remain distinct.</summary>
+    public Guid Decision
+    {
+        get => Read<Guid>("decision");
+        init => Write("decision", value);
+    }
+    /// <summary>Wire field observations; missing and null remain distinct.</summary>
+    public IReadOnlyList<ObservedQuantity> Observations
+    {
+        get => Read<IReadOnlyList<ObservedQuantity>>("observations");
+        init => Write("observations", value);
+    }
+    /// <summary>Wire field rule; missing and null remain distinct.</summary>
+    public Optional<Guid> Rule
+    {
+        get => ReadOptional<Guid>("rule");
+        init => WriteOptional("rule", value);
+    }
+    /// <summary>Wire field terminated; missing and null remain distinct.</summary>
+    public bool Terminated
+    {
+        get => Read<bool>("terminated");
+        init => Write("terminated", value);
+    }
+    /// <summary>Wire field termination_reason; missing and null remain distinct.</summary>
+    public Optional<string> TerminationReason
+    {
+        get => ReadOptional<string>("termination_reason");
+        init => WriteOptional("termination_reason", value);
+    }
+}
+
+/// <summary>Schema-derived RuleSet wire record. Exports and nested reads are detached.</summary>
+public sealed class RuleSet : WireRecord
+{
+    public RuleSet() { }
+    public RuleSet(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field decisions; missing and null remain distinct.</summary>
+    public IReadOnlyList<Decision> Decisions
+    {
+        get => Read<IReadOnlyList<Decision>>("decisions");
+        init => Write("decisions", value);
+    }
+    /// <summary>Wire field id; missing and null remain distinct.</summary>
+    public Guid Id
+    {
+        get => Read<Guid>("id");
+        init => Write("id", value);
+    }
+    /// <summary>Wire field targets; missing and null remain distinct.</summary>
+    public IReadOnlyList<Reference> Targets
+    {
+        get => Read<IReadOnlyList<Reference>>("targets");
+        init => Write("targets", value);
     }
 }
 
@@ -2301,11 +2301,11 @@ public sealed class Specification : WireRecord
         get => ReadOptional<IReadOnlyList<Objective>>("objectives");
         init => WriteOptional("objectives", value);
     }
-    /// <summary>Wire field policy; missing and null remain distinct.</summary>
-    public Optional<Policy> Policy
+    /// <summary>Wire field rules; missing and null remain distinct.</summary>
+    public Optional<RuleSet> Rules
     {
-        get => ReadOptional<Policy>("policy");
-        init => WriteOptional("policy", value);
+        get => ReadOptional<RuleSet>("rules");
+        init => WriteOptional("rules", value);
     }
     /// <summary>Wire field settings; missing and null remain distinct.</summary>
     public Optional<Settings> Settings
