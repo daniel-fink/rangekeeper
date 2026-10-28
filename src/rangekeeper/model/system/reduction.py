@@ -13,7 +13,7 @@ if TYPE_CHECKING:
         AggregationMethod,
         AlignmentJoin,
         MeanWeighting,
-        ResamplingMethod,
+        ResampleMethod,
     )
     from rangekeeper.model.system.pivot import Pivot
 from dataclasses import dataclass, replace
@@ -226,7 +226,7 @@ class RollupResult:
             if label in flows:
                 label = f"{label} ({index + 1})"
             flows[label] = value
-        return Stream(flows).display(transpose=transpose, precision=precision)
+        return Stream(flows=flows).display(transpose=transpose, precision=precision)
 
 
 def classified(
@@ -428,7 +428,7 @@ class Reduction:
         *,
         key: str,
         periods: "Sequence[Period] | None" = None,
-        resampling: "ResamplingMethod | None" = None,
+        resampling: "ResampleMethod | None" = None,
         aggregation: "AggregationMethod | None" = None,
         weighting: "MeanWeighting | None" = None,
         contributors: "Contributor | Callable[[Entity], bool]" = Contributor.LEAVES,
@@ -442,14 +442,14 @@ class Reduction:
         from rangekeeper.flow._options import (
             AggregationMethod,
             AlignmentJoin,
-            ResamplingMethod,
+            ResampleMethod,
         )
         from rangekeeper.model.system.selection import select_value
 
         if (periods is None) != (resampling is None):
             raise ValueError("supply both periods and resampling, or neither")
-        if resampling is not None and not isinstance(resampling, ResamplingMethod):
-            raise TypeError("resampling must be a ResamplingMethod")
+        if resampling is not None and not isinstance(resampling, ResampleMethod):
+            raise TypeError("resampling must be a ResampleMethod")
         rule = _FlowRule(
             None if periods is None else tuple(periods),
             resampling,
@@ -542,12 +542,12 @@ class Reduction:
         results = {}
         if owners:
             stream = Stream(
-                {str(i): available[owner].flow for i, owner in enumerate(owners)}
+                flows={str(i): available[owner].flow for i, owner in enumerate(owners)}
             )
             rule = self._flow
             if rule.periods is not None:
                 stream = stream.resample(
-                    rule.periods,
+                    periods=rule.periods,
                     method=rule.resampling,
                     weighting=rule.weighting,
                     missing=rule.missing,

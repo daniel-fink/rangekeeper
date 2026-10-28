@@ -9,10 +9,11 @@ import math
 from collections.abc import Mapping, Sequence
 from datetime import date
 from decimal import Decimal
+from itertools import pairwise
 from typing import TYPE_CHECKING, cast
 from uuid import UUID, uuid4
 
-from rangekeeper.flow._options import MissingValueHandling
+from rangekeeper.flow._options import MissingValueHandling, ResampleMethod
 from rangekeeper.money import (
     ROUND_HALF_EVEN,
     _encoded,
@@ -21,18 +22,27 @@ from rangekeeper.money import (
     to_number,
 )
 from rangekeeper.money import round as _round
+from rangekeeper.quantity import Quantity, _is_number, _product, _sum_scale
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
-from rangekeeper.schema.runtime import UNSET
-from rangekeeper.shared.errors import UnitError
+from rangekeeper.schema.runtime import OMIT, UNSET
+from rangekeeper.shared.errors import (
+    AmbiguousReferenceError,
+    MissingReferenceError,
+    NumericalError,
+    UnitError,
+)
 
 if TYPE_CHECKING:
-    from rangekeeper.duration import Period
+    from rangekeeper.duration import Frequency, Period
     from rangekeeper.duration.calendar import DayCount
     from rangekeeper.duration.period import PeriodTiming
-    from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
+    from rangekeeper.flow._options import MeanWeighting
     from rangekeeper.flow._table import StreamTable
-    from rangekeeper.quantity import Quantity, UnitSystem
+    from rangekeeper.quantity import UnitSystem
+
+# A number, a currency amount or None in a Flow constructor.
+type Amount = Quantity | str | Decimal | int | float | None
 
 
 def _number(magnitude: Decimal | int | float | None) -> float | None:
@@ -113,11 +123,85 @@ class Movement(records.Movement):
         return movement.period.resolve(timing=timing)
 
 
+def _from_amounts(
+    amounts: Mapping[Period | date, Amount], units: str | None
+) -> tuple[str, tuple[Movement, ...]]:
+    """Return the units and Movements of a mapping of Periods or dates to amounts."""
+    from rangekeeper.duration import Period
+    from rangekeeper.quantity import default_units
+
+    if not isinstance(amounts, Mapping):
+        raise TypeError("amounts must map Periods or dates to amounts")
+    if units is None:
+        units = next(
+            (
+                (Quantity(text=v) if isinstance(v, str) else v).units
+                for v in amounts.values()
+                if isinstance(v, (str, records.Quantity))
+            ),
+            None,
+        )
+        if units is None:
+            raise TypeError("give units, or give the amounts as Quantities")
+    keys, magnitudes = [], []
+    for key, value in amounts.items():
+        if isinstance(value, str):
+            value = Quantity(text=value)
+        if isinstance(value, records.Quantity):
+            value = (
+                value.magnitude
+                if value.units == units
+                else default_units.convert(value, to=units).magnitude
+            )
+        elif value is not None and not _is_number(value):
+            if not isinstance(value, Decimal):
+                raise TypeError(f"amount {value!r} is not a number or a Quantity")
+        keys.append(key)
+        magnitudes.append(value)
+    periods = [key for key in keys if isinstance(key, Period)]
+    dates = [key for key in keys if type(key) is date]
+    if len(periods) == len(keys):
+        order = sorted(range(len(keys)), key=lambda i: periods[i].start)
+        flow = Flow.from_periods(
+            [periods[i] for i in order], [magnitudes[i] for i in order], units=units
+        )
+    elif len(dates) == len(keys):
+        order = sorted(range(len(keys)), key=lambda i: dates[i])
+        flow = Flow.from_events(
+            [dates[i] for i in order], [magnitudes[i] for i in order], units=units
+        )
+    else:
+        raise TypeError("key the amounts by Periods or by dates, not both")
+    return units, flow.movements
+
+
 @register
 class Flow(records.Flow):
-    """Validate or transform one immutable Flow, preserving coordinate meaning."""
+    """An ordered series of amounts in one unit, one for each Period or date.
+
+    Make one from a mapping, ``Flow(amounts={period: 100, ...}, units="USD")``;
+    with Quantities as amounts, the units come from them. ``movements=`` gives
+    the Movements directly. Arithmetic works on amounts: ``2 * flow``,
+    ``flow / rate``, ``flow + other`` and ``-flow`` give new Flows.
+    """
 
     __slots__ = ()
+
+    def __init__(
+        self,
+        *,
+        units: str | None = None,
+        movements: Sequence[Movement] | None = None,
+        amounts: Mapping[Period | date, Amount] | None = None,
+    ) -> None:
+        if (movements is None) == (amounts is None):
+            raise TypeError("give movements or amounts, not both")
+        if amounts is not None:
+            units, movements = _from_amounts(amounts, units)
+        if units is None:
+            raise TypeError("give units")
+        assert movements is not None
+        super().__init__(units=units, movements=tuple(movements))
 
     def display(
         self,
@@ -133,7 +217,7 @@ class Flow(records.Flow):
         """
         from rangekeeper.flow import Stream
 
-        return Stream({"Flow" if name is None else name: self}).display(
+        return Stream(flows={"Flow" if name is None else name: self}).display(
             transpose=transpose,
             precision=precision,
         )
@@ -477,7 +561,188 @@ class Flow(records.Flow):
                 return None
         return Quantity(magnitude=math.fsum(values), units=flow.units)
 
-    def trim(self, span: Period) -> Flow:
+    def at(self, *, on: date) -> Quantity:
+        """Return the amount of the Period that contains a date, or of the event on it.
+
+        A date with no amount raises MissingReferenceError; several events on
+        one date raise AmbiguousReferenceError; an unresolved amount raises
+        NumericalError.
+        """
+        from rangekeeper.duration.calendar import require_date
+
+        require_date(on)
+        found = [
+            m
+            for m in self.movements
+            if (m.period.start <= on < m.period.end if m.period else m.date == on)
+        ]
+        if not found:
+            raise MissingReferenceError(
+                on.isoformat(), kind="amount", by="date", where=f"Flow in {self.units}"
+            )
+        if len(found) > 1:
+            raise AmbiguousReferenceError(
+                on.isoformat(),
+                kind="amount",
+                by="date",
+                where=f"Flow in {self.units}",
+                candidates=[str(m.key) for m in found],
+            )
+        if found[0].magnitude is None:
+            raise NumericalError(f"the amount on {on.isoformat()} is unresolved")
+        return Quantity(magnitude=found[0].magnitude, units=self.units)
+
+    def shift(self, *, by: int) -> Flow:
+        """Move each amount by whole Periods; the Periods stay the same.
+
+        ``by=-1`` moves each amount one Period earlier, so each Period holds the
+        amount of the next one. A Period that no amount moves into is
+        unresolved, and an amount that moves past the first or last Period is
+        left out. The Periods must be gap-free; dated Flows cannot shift.
+        """
+        if type(by) is not int:
+            raise TypeError("by must be a whole number of Periods")
+        movements = self.movements
+        if any(m.period is None for m in movements):
+            raise ValueError("only a Flow over Periods can shift by Periods")
+        if any(
+            a.period.end != b.period.start  # type: ignore[union-attr]
+            for a, b in pairwise(movements)
+        ):
+            raise ValueError("shift needs gap-free Periods")
+        shifted = []
+        for i, movement in enumerate(movements):
+            j = i - by
+            source = movements[j] if 0 <= j < len(movements) else None
+            shifted.append(
+                movement.replace(
+                    id=uuid4(),
+                    magnitude=None if source is None else source.magnitude,
+                    claims=OMIT
+                    if source is None or not source.claims
+                    else source.claims,
+                )
+            )
+        return self.replace(movements=tuple(shifted))
+
+    def __neg__(self) -> Flow:
+        return self.negate()
+
+    def __pos__(self) -> Flow:
+        return self
+
+    def __add__(self, other: object) -> Flow:
+        return self._sum(other, subtract=False)
+
+    def __sub__(self, other: object) -> Flow:
+        return self._sum(other, subtract=True)
+
+    def __mul__(self, other: object) -> Flow:
+        return self._combine(other, divide=False, reverse=False)
+
+    def __rmul__(self, other: object) -> Flow:
+        return self._combine(other, divide=False, reverse=True)
+
+    def __truediv__(self, other: object) -> Flow:
+        return self._combine(other, divide=True, reverse=False)
+
+    def _sum(self, other: object, *, subtract: bool) -> Flow:
+        """Add or subtract amounts on matching coordinates.
+
+        A coordinate that only one Flow has keeps that amount, because the other
+        Flow has nothing there. An unresolved amount gives an unresolved result.
+        """
+        if not isinstance(other, Flow):
+            return NotImplemented
+        scale = _sum_scale(self.units, other.units)
+        left, right = self.coordinate_index(), other.coordinate_index()
+        if len({key[0] for key in (*left, *right)}) > 1:
+            raise ValueError(
+                "cannot add dated and period amounts; use Stream.sum, which dates "
+                "each period amount"
+            )
+        sign = -1.0 if subtract else 1.0
+        movements = []
+        for key in sorted({**left, **right}, key=lambda k: (k[1], str(k))):
+            a, b = left.get(key), right.get(key)
+            template = cast(Movement, a if a is not None else b)
+            if (a is not None and a.magnitude is None) or (
+                b is not None and b.magnitude is None
+            ):
+                value = None
+            else:
+                value = (0.0 if a is None else a.number) + sign * (
+                    0.0 if b is None else b.number * scale
+                )
+            claims = tuple(
+                dict.fromkeys(
+                    c for m in (a, b) if m is not None for c in (m.claims or ())
+                )
+            )
+            movements.append(
+                template.replace(
+                    id=uuid4(), magnitude=value, claims=claims if claims else OMIT
+                )
+            )
+        return Flow(units=self.units, movements=tuple(movements))
+
+    def _combine(self, other: object, *, divide: bool, reverse: bool) -> Flow:
+        """Multiply or divide each amount by a number, a Quantity or a Flow."""
+        if _is_number(other):
+            number = float(cast(int | float, other))
+            if reverse and divide:
+                return NotImplemented
+            return self._each(
+                lambda value: value / number if divide else value * number,
+                self.units,
+            )
+        if isinstance(other, records.Quantity):
+            quantity = cast(Quantity, other)
+            if reverse:
+                product = _product(quantity.units, self.units, divide)
+                return self._each(
+                    lambda value: product.apply(quantity.number, value, divide),
+                    product.units,
+                )
+            product = _product(self.units, quantity.units, divide)
+            return self._each(
+                lambda value: product.apply(value, quantity.number, divide),
+                product.units,
+            )
+        if isinstance(other, Flow):
+            from rangekeeper.flow._mapping import alignment
+
+            product = _product(self.units, other.units, divide)
+            movements = []
+            for movement, (match,) in alignment((other,), self):
+                value = (
+                    None
+                    if movement.magnitude is None or match.magnitude is None
+                    else product.apply(movement.number, match.number, divide)
+                )
+                movements.append(movement.replace(id=uuid4(), magnitude=value))
+            return self._checked(movements, product.units)
+        return NotImplemented
+
+    def _each(self, operation, units: str) -> Flow:
+        movements = [
+            m.replace(
+                id=uuid4(),
+                magnitude=None if m.magnitude is None else operation(m.number),
+            )
+            for m in self.movements
+        ]
+        return self._checked(movements, units)
+
+    def _checked(self, movements: list[Movement], units: str) -> Flow:
+        if any(
+            m.magnitude is not None and not math.isfinite(_number(m.magnitude) or 0)
+            for m in movements
+        ):
+            raise UnitError(f"arithmetic in {units!r} produced a non-finite magnitude")
+        return Flow(units=units, movements=tuple(movements))
+
+    def trim(self, *, span: Period) -> Flow:
         """Select dates in [start, end) of a Period or Span, or whole periods inside it.
 
         Partial period overlap raises ValueError; trimming must not silently allocate
@@ -507,23 +772,37 @@ class Flow(records.Flow):
 
     def resample(
         self,
-        periods: Sequence[Period],
         *,
-        method: ResamplingMethod,
+        periods: Sequence[Period] | None = None,
+        frequency: Frequency | None = None,
+        method: ResampleMethod,
         weighting: MeanWeighting | None = None,
         missing: MissingValueHandling = MissingValueHandling.ERROR,
     ) -> Flow:
-        """Group whole movements onto explicit periods; a mean needs an explicit weighting.
+        """Put the amounts on other Periods: explicit ``periods``, or a ``frequency``.
 
-        ``Stream.resample`` takes the same arguments and also reports coverage.
+        A frequency makes the Periods from the start of the first Period to the
+        end of the last one; they must fit exactly. ``SPLIT`` divides each
+        amount equally over the shorter Periods inside its Period. The other
+        methods group whole movements onto longer Periods; a mean needs an
+        explicit weighting. ``Stream.resample`` takes the same arguments and
+        also reports coverage.
         """
         flow = self
+        periods = _target(flow.movements, periods=periods, frequency=frequency)
+        if method is ResampleMethod.SPLIT:
+            if weighting is not None:
+                raise ValueError("weighting applies only to means")
+            return _split(flow, periods)
         from rangekeeper.flow._batch import Batch
 
         return (
             Batch.prepare((flow,))
             .resample(
-                periods, methods=(method,), weightings=(weighting,), missing=missing
+                periods=periods,
+                methods=(method,),
+                weightings=(weighting,),
+                missing=missing,
             )
             .flows()[0]
         )
@@ -730,3 +1009,78 @@ class Flow(records.Flow):
                 flow.movements[selected[0] : selected[-1] + 1] if selected else ()
             )
         )
+
+
+def _target(
+    movements: Sequence[records.Movement],
+    *,
+    periods: Sequence[Period] | None,
+    frequency: Frequency | None,
+) -> Sequence[Period]:
+    """Return the target Periods of a resample: given, or made from a frequency."""
+    if (periods is None) == (frequency is None):
+        raise TypeError("give periods or frequency, not both")
+    if periods is not None:
+        return periods
+    from rangekeeper.duration import Periods
+    from rangekeeper.duration.calendar import count_steps, offset
+
+    assert frequency is not None
+    covered = [m.period for m in movements if m.period is not None]
+    if len(covered) != len(movements):
+        raise ValueError("give periods= to resample dated movements")
+    if not covered:
+        raise ValueError("an empty Flow needs periods= to resample")
+    start = min(period.start for period in covered)
+    end = max(period.end for period in covered)
+    count = count_steps(start, end, frequency=frequency)
+    if offset(start, frequency=frequency, count=count) != end:
+        raise ValueError(
+            f"{frequency.value} Periods from {start} do not end at {end}; give periods="
+        )
+    return Periods(start=start, frequency=frequency, count=count)
+
+
+def _split(flow: Flow, periods: Sequence[Period]) -> Flow:
+    """Divide each period amount equally over the target Periods inside it.
+
+    The target Periods must partition each source Period. The last part takes
+    the remainder, so the parts add up to the amount.
+    """
+    targets = list(periods)
+    movements = []
+    position = 0
+    for movement in flow.movements:
+        if movement.period is None:
+            raise ValueError("SPLIT needs period movements")
+        while (
+            position < len(targets) and targets[position].end <= movement.period.start
+        ):
+            position += 1
+        parts = []
+        cursor = movement.period.start
+        while position < len(targets) and targets[position].start < movement.period.end:
+            part = targets[position]
+            if part.start != cursor or part.end > movement.period.end:
+                raise ValueError("the target Periods must partition each Period")
+            parts.append(part)
+            cursor = part.end
+            position += 1
+        if cursor != movement.period.end:
+            raise ValueError("the target Periods must partition each Period")
+        if movement.magnitude is None:
+            values: list[float | None] = [None] * len(parts)
+        else:
+            share = movement.number / len(parts)
+            values = [share] * len(parts)
+            values[-1] = movement.number - math.fsum([share] * (len(parts) - 1))
+        for part, value in zip(parts, values, strict=True):
+            movements.append(
+                Movement(
+                    id=uuid4(),
+                    period=part,
+                    magnitude=value,
+                    claims=movement.claims if movement.claims else UNSET,
+                )
+            )
+    return Flow(units=flow.units, movements=tuple(movements))

@@ -12,7 +12,7 @@ from rangekeeper.flow import (
     MeanWeighting,
     MissingValueHandling,
     Movement,
-    ResamplingMethod,
+    ResampleMethod,
     Stream,
 )
 from rangekeeper.quantity import Quantity
@@ -50,8 +50,8 @@ def test_model_can_select_different_reductions_for_the_same_flow(reduction, expe
     )
     before = flow.to_data()
     result = flow.resample(
-        [make_period(date(2026, 1, 1), date(2026, 2, 1))],
-        method=ResamplingMethod(reduction),
+        periods=[make_period(date(2026, 1, 1), date(2026, 2, 1))],
+        method=ResampleMethod(reduction),
         weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
     )
     assert result.movements[0].magnitude == expected
@@ -63,12 +63,12 @@ def test_means_require_a_choice_and_do_not_infer_weighting_from_units():
     flow = Flow.from_periods(periods, [10, 20], units="dimensionless")
     target = [make_period(periods[0].start, periods[-1].end)]
     with pytest.raises(ValueError, match="weighting"):
-        flow.resample(target, method=ResamplingMethod.MEAN)
+        flow.resample(periods=target, method=ResampleMethod.MEAN)
     observed = flow.resample(
-        target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.OBSERVATIONS
+        periods=target, method=ResampleMethod.MEAN, weighting=MeanWeighting.OBSERVATIONS
     )
     elapsed = flow.resample(
-        target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.ELAPSED
+        periods=target, method=ResampleMethod.MEAN, weighting=MeanWeighting.ELAPSED
     )
     assert observed.movements[0].magnitude == 15
     assert elapsed.movements[0].number == pytest.approx((31 * 10 + 28 * 20) / 59)
@@ -99,8 +99,8 @@ def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
     periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
     flow = Flow.from_periods(periods[:2], [10, None], units="AUD")
     result = lines([flow]).resample(
-        periods,
-        method=ResamplingMethod(reduction),
+        periods=periods,
+        method=ResampleMethod(reduction),
         weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
         missing=MissingValueHandling.ZERO,
     )
@@ -112,7 +112,7 @@ def test_flow_and_stream_trim_take_the_same_span():
     periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
     flow = Flow.from_periods(periods, [1, 2, 3], units="AUD")
     span = Span(start=periods[1].start, end=periods[2].end, name="later")
-    assert [m.number for m in flow.trim(span).movements] == [2, 3]
-    assert flow.trim(span) == Stream({"a": flow}).trim(span).flows[0]
+    assert [m.number for m in flow.trim(span=span).movements] == [2, 3]
+    assert flow.trim(span=span) == Stream(flows={"a": flow}).trim(span=span).flows[0]
     with pytest.raises(TypeError, match="Period or Span"):
-        flow.trim((periods[1].start, periods[2].end))
+        flow.trim(span=(periods[1].start, periods[2].end))

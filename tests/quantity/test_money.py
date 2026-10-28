@@ -135,7 +135,7 @@ def test_copies_keep_each_amount_exactly():
     for result in (
         flow.clone(),
         flow.clean(),
-        flow.trim(_span()),
+        flow.trim(span=_span()),
         flow.convert(units="AUD"),
     ):
         assert [m.magnitude for m in result.movements] == [
@@ -218,13 +218,13 @@ def test_flow_and_stream_sums_give_the_same_amount():
     values = ("0.10", "0.20", "1250000.33")
     first = Flow.from_events(DAYS, values, units="AUD")
     second = Flow.from_events(DAYS, ("0.10", "0.10", "0.10"), units="AUD")
-    combined = Stream({"a": first, "b": second}).sum()
+    combined = Stream(flows={"a": first, "b": second}).sum()
     assert [m.magnitude for m in combined.movements] == [
         Decimal("0.2"),
         Decimal("0.3"),
         Decimal("1250000.43"),
     ]
-    stream_total = Stream({"a": first}).sum().total()
+    stream_total = Stream(flows={"a": first}).sum().total()
     assert stream_total is not None and stream_total == first.total()
 
 

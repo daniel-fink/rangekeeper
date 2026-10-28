@@ -43,24 +43,45 @@ reused. No cache spans revisions or independent validation operations.
 
 ```python
 from uuid import uuid4
-from rangekeeper.model import Metadata, Model, Entity, System, Definitions, Measure, Characteristics, Value, ValueKind, Update
+from rangekeeper.model import (
+    Metadata,
+    Model,
+    Entity,
+    System,
+    Definitions,
+    Measure,
+    Characteristics,
+    Value,
+    ValueKind,
+    Update,
+)
 from rangekeeper.quantity import Quantity
 from rangekeeper.model.diff import between
 
 area = Measure(id=uuid4(), code="area", name="Area", units="sqm")
-gross = Value(id=uuid4(), key="gross", kind=ValueKind.MEASUREMENT, measure=area.id,
-              quantity=Quantity(magnitude=100, units="sqm"))
+gross = Value(
+    id=uuid4(),
+    key="gross",
+    kind=ValueKind.MEASUREMENT,
+    measure=area.id,
+    quantity=Quantity(magnitude=100, units="sqm"),
+)
 net = Value(id=uuid4(), key="net", kind=ValueKind.MEASUREMENT, measure=area.id)
-entity = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(gross, net)))
+entity = Entity(
+    id=uuid4(), code="A", characteristics=Characteristics(values=(gross, net))
+)
 model = Model.create(
     metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
-    definitions=Definitions(measures=(area,)), system=System(entities=(entity,)),
+    definitions=Definitions(measures=(area,)),
+    system=System(entities=(entity,)),
 )
 assert model.value(gross.id).quantity.magnitude == 100
 assert model.owner_of(net.id) == entity.id
 assert model.value(owner=entity.id, key="net").quantity is None
 
-renamed = Entity(id=entity.id, code="Apartment-A", characteristics=entity.characteristics)
+renamed = Entity(
+    id=entity.id, code="Apartment-A", characteristics=entity.characteristics
+)
 revised = model.revise(Update(system=System(entities=(renamed,))))
 assert revised.metadata.previous == model.id
 assert model.entity(entity.id).code == "A"

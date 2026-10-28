@@ -89,15 +89,19 @@ Use the explicit `rangekeeper.io.bundle` module:
 ```python
 from rangekeeper.io.bundle import write, Reader
 
-manifest = write(new_directory, result_model, documents=[run, next_specification],
-                 resolver=record_store)
+manifest = write(
+    new_directory,
+    result_model,
+    documents=[run, next_specification],
+    resolver=record_store,
+)
 reader = Reader(new_directory)
-result = reader.model()                 # main Model
+result = reader.model()  # main Model
 inputs = reader.load_model(input_uuid)  # exact retained Model
 spec = reader.load_specification(spec_uuid)
 run = reader.load_run(run_uuid)
-records = reader.documents()            # immutable roots, UUID order
-reader.copy_to(new_record_store)        # no execution or acceptance
+records = reader.documents()  # immutable roots, UUID order
+reader.copy_to(new_record_store)  # no execution or acceptance
 ```
 
 `documents=` selects root facades. `resolver=` supplies dependencies through the

@@ -179,13 +179,17 @@ Given a base `model` and explicit calendar `periods`, compose the plan as follow
 ```python
 from rangekeeper.market import generation as market
 
-plan = market.make_plan(periods=periods, seed=23, components=(
-    market.make_trend(growth_rate=.02),
-    market.make_volatility(volatility_per_period=.03),
-    market.make_cyclicality(space_amplitude=.25),
-    market.make_noise(lower=-.02, upper=.02),
-    market.make_black_swan(likelihood=.02, impact=-.25),
-))
+plan = market.make_plan(
+    periods=periods,
+    seed=23,
+    components=(
+        market.make_trend(growth_rate=0.02),
+        market.make_volatility(volatility_per_period=0.03),
+        market.make_cyclicality(space_amplitude=0.25),
+        market.make_noise(lower=-0.02, upper=0.02),
+        market.make_black_swan(likelihood=0.02, impact=-0.25),
+    ),
+)
 markets = market.generate(model, plan, scenario_keys=("base",))
 pricing_value = markets[0].space_market_price_factors
 pricing_flow = pricing_value.flow

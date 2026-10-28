@@ -8,7 +8,7 @@ from datetime import date
 from pathlib import Path
 
 from rangekeeper.duration import Frequency, make_periods
-from rangekeeper.flow import Flow, ResamplingMethod, Stream
+from rangekeeper.flow import Flow, ResampleMethod, Stream
 
 
 def run(count, months):
@@ -22,9 +22,9 @@ def run(count, months):
         for i in range(count)
     }
     construction = time.perf_counter() - start
-    stream = Stream(flows)
+    stream = Stream(flows=flows)
     start = time.perf_counter()
-    grouped = stream.resample(annual, method=ResamplingMethod.SUM)
+    grouped = stream.resample(periods=annual, method=ResampleMethod.SUM)
     result = grouped.sum()
     first = time.perf_counter() - start
     start = time.perf_counter()

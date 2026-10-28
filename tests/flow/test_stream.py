@@ -15,7 +15,7 @@ from rangekeeper.flow import AlignmentJoin as Join
 from rangekeeper.flow import Flow, Stream
 from rangekeeper.flow import MeanWeighting as Weight
 from rangekeeper.flow import MissingValueHandling as Missing
-from rangekeeper.flow import ResamplingMethod as R
+from rangekeeper.flow import ResampleMethod as R
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import Reference, Update
 from rangekeeper.model.formulation import flow
@@ -42,7 +42,7 @@ def test_collection_and_column_reuse(monkeypatch):
         classmethod(lambda *a, **kw: pytest.fail("reprepared records")),
     )
     assert stream.sum().movements[0].number == 960
-    assert stream.select(["Rent"]).sum().movements[0].number == 1200
+    assert stream.select("Rent").sum().movements[0].number == 1200
     assert stream._prepared() is batch
     frame = stream.to_frame()
     frame[0, "Rent"] = 999
@@ -52,9 +52,9 @@ def test_collection_and_column_reuse(monkeypatch):
 
 
 def test_minimal_import_and_immutable_stream():
-    code = "from rangekeeper.flow import Flow, Stream; import sys; Stream({}); Flow(units='AUD', movements=()).display(); assert not {'polars','matplotlib','pyomo.environ','IPython'} & set(sys.modules)"
+    code = "from rangekeeper.flow import Flow, Stream; import sys; Stream(flows={}); Flow(units='AUD', movements=()).display(); assert not {'polars','matplotlib','pyomo.environ','IPython'} & set(sys.modules)"
     subprocess.run([sys.executable, "-c", code], check=True)
-    stream = Stream({})
+    stream = Stream(flows={})
     with pytest.raises(AttributeError):
         stream.names = ("edited",)
 
@@ -75,7 +75,7 @@ def test_display_needs_no_chart_or_graph_dependency():
 
         flow = Flow.from_events([date(2027, 1, 1)], [12.5], units="AUD")
         assert "12.50" in flow._repr_html_() and "12.50" in str(flow.display())
-        assert "Rent [AUD]" in Stream({"Rent": flow})._repr_html_()
+        assert "Rent [AUD]" in Stream(flows={"Rent": flow})._repr_html_()
         assert "rangekeeper.visualisation" not in sys.modules
         """
     )
@@ -105,7 +105,9 @@ def test_flow_display_preserves_records_and_uses_shared_rendering(period_content
     assert "Jan 2027" in html if period_content else "2027-01-01" in html
     assert (
         html
-        == Stream({"<Cash>": source}).display(transpose=True, precision=3)._repr_html_()
+        == Stream(flows={"<Cash>": source})
+        .display(transpose=True, precision=3)
+        ._repr_html_()
     )
     assert "Flow [AUD]" in source._repr_html_()
     assert "-1.23" in str(source.display())
@@ -127,7 +129,7 @@ def test_native_display_shows_full_selection_and_restores_config(transpose):
     periods = make_periods(date(2001, 1, 1), frequency=Frequency.YEAR, count=80)
     label = "Income from the property's commercial and residential tenancies"
     source = Flow.from_periods(periods, [1234.567] * 80, units="AUD")
-    table = Stream({label: source, "Other": source}).display(
+    table = Stream(flows={label: source, "Other": source}).display(
         transpose=transpose, precision=1
     )
     with pl.Config(
@@ -176,7 +178,7 @@ def test_native_display_missing_states_and_numeric_export(transpose):
     periods = make_periods(date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
     receipts = Flow.from_periods(periods[:2], [0, None], units="AUD")
     stream = Stream(
-        {
+        flows={
             "Receipts": receipts,
             "Expenses": Flow.from_periods(periods, [-1234.567] * 3, units="AUD"),
         },
@@ -196,14 +198,14 @@ def test_native_display_missing_states_and_numeric_export(transpose):
 
 @pytest.mark.parametrize("transpose", [False, True])
 def test_native_display_empty_collections(transpose):
-    table = Stream({"Empty": Flow(units="AUD", movements=())}).display(
+    table = Stream(flows={"Empty": Flow(units="AUD", movements=())}).display(
         transpose=transpose
     )
     for rendered in (table._repr_html_(), str(table)):
         assert ("Line item" if transpose else "Period / date") in rendered
         assert "Empty [AUD]" in rendered
     # A selection with no Flows retains its existing alignment error.
-    empty = Stream({}).display(transpose=transpose)
+    empty = Stream(flows={}).display(transpose=transpose)
     for render in (empty._repr_html_, empty.__str__):
         with pytest.raises(ValueError, match="at least one Flow"):
             render()
@@ -242,9 +244,9 @@ def test_resampling_independent_oracle_and_claims(method, expected):
     source = source.replace(
         movements=tuple(m.replace(claims=(claim,)) for m in source.movements)
     )
-    stream = Stream({"Receipts": source})
+    stream = Stream(flows={"Receipts": source})
     result = stream.resample(
-        make_periods(date(2027, 1, 1), frequency=Frequency.QUARTER, count=1),
+        periods=make_periods(date(2027, 1, 1), frequency=Frequency.QUARTER, count=1),
         method=method,
         weighting=Weight.OBSERVATIONS if method is R.MEAN else None,
     )
@@ -260,10 +262,12 @@ def test_methods_mapping_missing_zero_and_html_escape():
     receipts = Flow.from_periods(periods[:2], [0, None], units="AUD")
     balance = Flow.from_periods(periods[:2], [10, 20], units="AUD")
     stream = Stream(
-        {"<Receipts>": receipts, "Balance": balance}, missing=Missing.PROPAGATE
+        flows={"<Receipts>": receipts, "Balance": balance}, missing=Missing.PROPAGATE
     )
     result = stream.resample(
-        periods, method={"<Receipts>": R.SUM, "Balance": R.LAST}, missing=Missing.ZERO
+        periods=periods,
+        method={"<Receipts>": R.SUM, "Balance": R.LAST},
+        missing=Missing.ZERO,
     )
     assert [m.magnitude for m in result.flows[0].movements] == [0, None, 0]
     assert result.coverage["<Receipts>"] == (1, 0, 0)
@@ -275,11 +279,11 @@ def test_methods_mapping_missing_zero_and_html_escape():
         and "0.00" in html
     )
     with pytest.raises(ValueError, match="every label"):
-        stream.resample(periods, method={"Balance": R.LAST})
+        stream.resample(periods=periods, method={"Balance": R.LAST})
     with pytest.raises(ValueError, match="weighting"):
-        stream.resample(periods, method=R.MEAN)
+        stream.resample(periods=periods, method=R.MEAN)
     sparse = Stream(
-        {
+        flows={
             "Receipt": receipts,
             "Balance": Flow.from_periods(periods, [1, 2, 3], units="AUD"),
         },
@@ -291,7 +295,7 @@ def test_methods_mapping_missing_zero_and_html_escape():
 def test_cancellation_units_empty_and_boundaries():
     day = date(2027, 1, 1)
     stream = Stream(
-        {
+        flows={
             str(i): Flow.from_events([day], [v], units="AUD")
             for i, v in enumerate([1e16, 1, -1e16])
         }
@@ -299,19 +303,21 @@ def test_cancellation_units_empty_and_boundaries():
     assert stream.sum().movements[0].number == math.fsum([1e16, 1, -1e16]) == 1
     with pytest.raises(ValueError, match="outside|crosses"):
         Stream(
-            {
+            flows={
                 "annual": Flow.from_periods(
                     make_periods(day, frequency=Frequency.YEAR, count=1),
                     [1],
                     units="AUD",
                 )
             }
-        ).resample(make_periods(day, frequency=Frequency.MONTH, count=12), method=R.SUM)
+        ).resample(
+            periods=make_periods(day, frequency=Frequency.MONTH, count=12), method=R.SUM
+        )
     with pytest.raises(ValueError, match="trim crosses"):
         stream = collection()
-        stream.trim(Span(start=date(2027, 2, 1), end=date(2028, 1, 1)))
+        stream.trim(span=Span(start=date(2027, 2, 1), end=date(2028, 1, 1)))
     with pytest.raises(ValueError):
-        Stream({}).sum()
+        Stream(flows={}).sum()
 
 
 def test_model_selections_cannot_hide_numerical_transformations():
@@ -320,7 +326,8 @@ def test_model_selections_cannot_hide_numerical_transformations():
     declaration = flow.sum(model, id=uuid4(), summands=selected, total=ids["A_net"])
     assert declaration.bindings[0].value == ids["A_rent"]
     detached = selected.resample(
-        make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=1), method=R.SUM
+        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=1),
+        method=R.SUM,
     )
     with pytest.raises(ValueError, match="intermediate"):
         flow.sum(model, id=uuid4(), summands=detached, total=ids["A_annual"])
@@ -336,7 +343,7 @@ def test_model_selections_cannot_hide_numerical_transformations():
     )
     with pytest.raises(ValueError, match="revision"):
         flow.sum(revised, id=uuid4(), summands=selected, total=ids["A_net"])
-    assert selected.merge(selected.select(["rent"])).value_ids == selected.value_ids
+    assert selected.merge(selected.select("rent")).value_ids == selected.value_ids
     with pytest.raises(ValueError, match="twice"):
         Stream.from_values(model, [ids["A_rent"]] * 2)
 
@@ -456,18 +463,18 @@ def test_selection_releases_unselected_coordinates_before_trim():
     months = make_periods(date(2027, 1, 1), frequency=Frequency.MONTH, count=12)
     years = make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=1)
     stream = Stream(
-        {
+        flows={
             "months": Flow.from_periods(months, [1] * 12, units="AUD"),
             "years": Flow.from_periods(years, [12], units="AUD"),
         }
     )
     stream._prepared()
-    selected = stream.select(["months"])
+    selected = stream.select("months")
     assert len(selected._prepared().metadata) == 12
     assert len(selected._prepared().coordinates) == 12
     assert (
         len(
-            selected.trim(Span(start=date(2027, 2, 1), end=date(2027, 4, 1)))
+            selected.trim(span=Span(start=date(2027, 2, 1), end=date(2027, 4, 1)))
             .flows[0]
             .movements
         )

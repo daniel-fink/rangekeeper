@@ -32,24 +32,43 @@ from uuid import uuid4
 import rangekeeper as rk
 from rangekeeper.model import Metadata
 from rangekeeper.specification import SpecificationRecord
-from rangekeeper.run import RunRecord, Report, Status, Diagnostic, CompletionStatus, SolutionStatus, Severity, validate as validate_run
+from rangekeeper.run import (
+    RunRecord,
+    Report,
+    Status,
+    Diagnostic,
+    CompletionStatus,
+    SolutionStatus,
+    Severity,
+    validate as validate_run,
+)
 from rangekeeper.io import MemoryStore, DirectoryStore, json
 
 model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
-specification = rk.Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="1.0.0"), model=model.id,
-))
-run = rk.Run(RunRecord(
-    metadata=Metadata(id=uuid4(), schema_version="1.0.0", name="Synthetic example"),
-    specification=specification.id,
-    report=Report(
-        status=Status(completion=CompletionStatus.FAILED, solution=SolutionStatus.NOT_ASSESSED),
-        diagnostics=(Diagnostic(
-            severity=Severity.ERROR, code="unsupported_capability",
-            message="Synthetic example: no execution backend was invoked.",
-        ),),
-    ),
-))
+specification = rk.Specification(
+    SpecificationRecord(
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
+        model=model.id,
+    )
+)
+run = rk.Run(
+    RunRecord(
+        metadata=Metadata(id=uuid4(), schema_version="1.0.0", name="Synthetic example"),
+        specification=specification.id,
+        report=Report(
+            status=Status(
+                completion=CompletionStatus.FAILED, solution=SolutionStatus.NOT_ASSESSED
+            ),
+            diagnostics=(
+                Diagnostic(
+                    severity=Severity.ERROR,
+                    code="unsupported_capability",
+                    message="Synthetic example: no execution backend was invoked.",
+                ),
+            ),
+        ),
+    )
+)
 
 memory = MemoryStore()
 memory.put(model)

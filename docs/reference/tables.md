@@ -46,7 +46,11 @@ Use `rangekeeper.model.system.table.to_table` with a pinned `View` or
 ```python
 from rangekeeper.model.system import View
 from rangekeeper.model.system.table import (
-    EntityField, FieldColumn, PropertyColumn, ValueColumn, to_table,
+    EntityField,
+    FieldColumn,
+    PropertyColumn,
+    ValueColumn,
+    to_table,
 )
 
 columns = (
@@ -121,8 +125,11 @@ integers. Rich cells and non-finite numbers require an explicit encoding and are
 ```python
 import polars as pl
 from rangekeeper.io import polars
+
 polars.text_frame(table).write_csv("areas.csv")
-restored = polars.to_table(pl.read_csv("areas.csv", schema_overrides={"code": pl.String}))
+restored = polars.to_table(
+    pl.read_csv("areas.csv", schema_overrides={"code": pl.String})
+)
 ```
 
 CSV has no canonical record identity, units or provenance contract. Retain those separately

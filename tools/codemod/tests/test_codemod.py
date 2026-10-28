@@ -618,7 +618,7 @@ def test_shipped_index_upgrades_1_0_0a1_consumer_code(tmp_path: Path):
     assert main([*arguments, "--apply"]) == 0
     assert (project / "app.py").read_text() == textwrap.dedent(
         """\
-        from rangekeeper.flow import ResamplingMethod
+        from rangekeeper.flow import ResampleMethod
         from rangekeeper.duration import Frequency
         from rangekeeper.flow import Stream
         from rangekeeper.quantity import UnitSystem

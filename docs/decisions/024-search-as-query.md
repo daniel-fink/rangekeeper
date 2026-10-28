@@ -105,9 +105,7 @@ and compares the result.
 ### A range cannot vary a value that a rule reads
 
 ```python
-strategy.cases(
-    cases=rk.specification.Range(key="start_trigger", first=1.00, last=1.20)
-)
+strategy.cases(cases=rk.specification.Range(key="start_trigger", first=1.00, last=1.20))
 # ValidationError(code="range_over_rule_input"): start_trigger is read by the rule
 # that decides start_date. Searching it tunes the rule on these paths. Test several
 # triggers as listed cases, and check the chosen one on new paths.

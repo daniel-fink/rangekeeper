@@ -392,7 +392,9 @@ class Batch:
         by_group = {}
         for g, c, value, count, size, known, _, template in reduced.iter_rows():
             total = len(groups[g])
-            complete = count == total
+            # A coordinate that a line does not have is no movement, not a
+            # missing amount; only unresolved amounts are missing.
+            complete = count == size
             if not complete and missing is Missing.ERROR:
                 raise ValueError("missing/unresolved movement in aligned flows")
             if missing is Missing.ZERO and count == size:
@@ -436,7 +438,7 @@ class Batch:
         return tuple(results)
 
     def resample(self, periods, *, methods, weightings, missing):
-        from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
+        from rangekeeper.flow._options import MeanWeighting, ResampleMethod
 
         if not isinstance(missing, Missing):
             raise TypeError("missing must be a MissingValueHandling")
@@ -455,19 +457,19 @@ class Batch:
         )
         all_results = []
         for method in dict.fromkeys(methods):
-            if not isinstance(method, ResamplingMethod):
-                raise TypeError("method must be a ResamplingMethod")
+            if not isinstance(method, ResampleMethod):
+                raise TypeError("method must be a ResampleMethod")
             lines = [i for i, m in enumerate(methods) if m is method]
             for line in lines:
                 w = weightings[line]
                 if w is not None and not isinstance(w, MeanWeighting):
                     raise TypeError("weighting must be a MeanWeighting")
-                if method is ResamplingMethod.MEAN and w is None:
+                if method is ResampleMethod.MEAN and w is None:
                     raise ValueError("means require explicit weighting")
-                if method is not ResamplingMethod.MEAN and w is not None:
+                if method is not ResampleMethod.MEAN and w is not None:
                     raise ValueError("weighting applies only to means")
             part = frame.filter(pl.col("line").is_in(lines))
-            if method is ResamplingMethod.MEAN:
+            if method is ResampleMethod.MEAN:
                 weighted = []
                 for weighting in dict.fromkeys(weightings[i] for i in lines):
                     selected = [i for i in lines if weightings[i] is weighting]

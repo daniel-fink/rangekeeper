@@ -490,6 +490,12 @@ symbols:
     status: agreed
     source: "ADR-023, #117"
     note: The money module owns the ISO 4217 catalogue, boundaries and rounding.
+  - module: rangekeeper.flow
+    name: ResamplingMethod
+    new_name: ResampleMethod
+    status: agreed
+    source: "#255 (lesson 01 cell 15), #273"
+    note: The enum also gains SPLIT, which divides each amount over shorter Periods.
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it

@@ -54,12 +54,15 @@ global optimum.
 spec.alternatives(b_design={"residential": residential, "hotel": hotel})
 
 # several choice keys: the author supplies each combination
-spec.alternatives(keys=("b_design", "a_design"), models={
-    ("residential", "base"): residential,
-    ("hotel", "base"): hotel,
-    ("residential", "expanded"): residential_expanded,
-    ("hotel", "expanded"): hotel_expanded,
-})
+spec.alternatives(
+    keys=("b_design", "a_design"),
+    models={
+        ("residential", "base"): residential,
+        ("hotel", "base"): hotel,
+        ("residential", "expanded"): residential_expanded,
+        ("hotel", "expanded"): hotel_expanded,
+    },
+)
 ```
 
 These rules apply:
@@ -210,16 +213,24 @@ the author applies to each B design. `a_design` is fixed, so only the expanded
 combinations are reachable:
 
 ```python
-def add_expansion(model):
-    ...                                  # cell 17 as a function of a Model
+def add_expansion(model): ...  # cell 17 as a function of a Model
 
-expand = (both.alternatives(keys=("b_design", "a_design"), models={
-              ("residential", "expanded"): add_expansion(residential),
-              ("hotel", "expanded"): add_expansion(hotel)})
-          .fix(a_design="expanded", a_provision="1.5e6 AUD")
-          .fix(expansion_date=expansion_window.where(
-              condition='use_index["residential"] >= 1.25'
-          ).first(otherwise=rk.duration.NEVER)))
+
+expand = (
+    both.alternatives(
+        keys=("b_design", "a_design"),
+        models={
+            ("residential", "expanded"): add_expansion(residential),
+            ("hotel", "expanded"): add_expansion(hotel),
+        },
+    )
+    .fix(a_design="expanded", a_provision="1.5e6 AUD")
+    .fix(
+        expansion_date=expansion_window.where(
+            condition='use_index["residential"] >= 1.25'
+        ).first(otherwise=rk.duration.NEVER)
+    )
+)
 ```
 
 **The largest justified premium (cells 13 to 14b, and exercise 2).** The cells

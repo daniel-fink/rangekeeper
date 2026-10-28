@@ -25,7 +25,7 @@ from rangekeeper.flow import (
     Flow,
     MeanWeighting,
     MissingValueHandling,
-    ResamplingMethod,
+    ResampleMethod,
     Stream,
 )
 from rangekeeper.io import json as codec
@@ -309,9 +309,9 @@ def test_resample_complete_calendar_and_explicit_reduction():
     )
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
     with pytest.raises(ValueError):
-        lines([flow]).resample(periods, method=ResamplingMethod.SUM)
+        lines([flow]).resample(periods=periods, method=ResampleMethod.SUM)
     result = lines([flow]).resample(
-        periods, method=ResamplingMethod.SUM, missing=MissingValueHandling.ZERO
+        periods=periods, method=ResampleMethod.SUM, missing=MissingValueHandling.ZERO
     )
     assert [s.magnitude for s in result.flows[0].movements] == [
         30,
@@ -323,13 +323,15 @@ def test_resample_complete_calendar_and_explicit_reduction():
         [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="dwelling"
     )
     assert (
-        stocks.resample(periods[:1], method=ResamplingMethod.LAST)
+        stocks.resample(periods=periods[:1], method=ResampleMethod.LAST)
         .movements[0]
         .magnitude
         == 20
     )
     assert (
-        stocks.resample(periods[:1], method=ResamplingMethod.SUM).movements[0].magnitude
+        stocks.resample(periods=periods[:1], method=ResampleMethod.SUM)
+        .movements[0]
+        .magnitude
         == 30
     )
 
@@ -424,14 +426,16 @@ def test_weighted_rates_and_partial_period_helpers():
     rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
     target = (make_period(date(2020, 1, 1), date(2020, 3, 1)),)
     with pytest.raises(ValueError, match="weighting"):
-        rates.resample(target, method=ResamplingMethod.MEAN)
+        rates.resample(periods=target, method=ResampleMethod.MEAN)
     result = rates.resample(
-        target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.ELAPSED
+        periods=target, method=ResampleMethod.MEAN, weighting=MeanWeighting.ELAPSED
     )
     assert result.movements[0].number == pytest.approx((31 * 10 + 29 * 20) / 60)
     assert (
         rates.resample(
-            target, method=ResamplingMethod.MEAN, weighting=MeanWeighting.OBSERVATIONS
+            periods=target,
+            method=ResampleMethod.MEAN,
+            weighting=MeanWeighting.OBSERVATIONS,
         )
         .movements[0]
         .magnitude
