@@ -153,3 +153,25 @@ def test_the_command_writes_new_files_and_never_replaces_one(tmp_path, capsys):
     assert Specification.from_data(yaml.safe_load((tmp_path / names[1]).read_text()))
     assert main([*arguments, "--output", str(tmp_path)]) == 1
     assert "error" in capsys.readouterr().err
+
+
+def test_filters_keep_their_exact_match():
+    from tools.upgrade.convert import _fields
+
+    query = {
+        "starting_at": "00000000-0000-4000-8000-000000000001",
+        "filter": {
+            "classification": "00000000-0000-4000-8000-000000000002",
+            "labels": [
+                {"key": "use", "classification": "00000000-0000-4000-8000-000000000003"}
+            ],
+        },
+        "projection": {"kind": "entity"},
+        "duplicates": "distinct",
+    }
+    result = _fields("Query", query)
+    assert result["filter"]["exclusive"] is True
+    assert result["filter"]["labels"][0]["exclusive"] is True
+    assert "exclusive" not in query["filter"]
+    # A Filter without a classification gets no exclusive field.
+    assert _fields("Filter", {"labels": []}) == {"labels": []}

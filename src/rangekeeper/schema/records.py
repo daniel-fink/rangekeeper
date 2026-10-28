@@ -63,6 +63,7 @@ from .enums import SolutionStatus as SolutionStatus
 from .enums import StepKind as StepKind
 from .enums import TraversalKind as TraversalKind
 from .enums import ValueKind as ValueKind
+from .enums import ValueRelation as ValueRelation
 Content = FrozenJSONValue
 DiagnosticValues = FrozenJSONValue
 
@@ -1168,7 +1169,7 @@ class ContentEntry(Record):
 
 
 class Criterion(Record):
-    'Require an Entity Label with this owner-local key to include the exact Classification.'
+    'Require an Entity Label with this owner-local key to include a Classification, or one of its sub-types.'
     __slots__ = ()
     _kind = 'Criterion'
     _SLOTS = _freeze(
@@ -1185,21 +1186,32 @@ class Criterion(Record):
                             'mapping': False,
                             'nullable': False,
                             'ordered': False,
-                            'lineage': False}}
+                            'lineage': False},
+         'exclusive': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
+                       'required': False,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': False,
+                       'lineage': False}}
     )
 
     def __init__(self, *,
         key: str,
         classification: UUID,
+        exclusive: bool | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         data['key'] = copy_json(key)
         data['classification'] = _encode_uuid(classification)
+        if exclusive is not UNSET:
+            data['exclusive'] = copy_json(exclusive)
         self._set_checked(data)
 
     def replace(self, *,
         key: str | Unset = UNSET,
         classification: UUID | Unset = UNSET,
+        exclusive: bool | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -1207,6 +1219,10 @@ class Criterion(Record):
             changes['key'] = copy_json(key)
         if classification is not UNSET:
             changes['classification'] = _encode_uuid(classification)
+        if exclusive is OMIT:
+            changes['exclusive'] = OMIT
+        elif exclusive is not UNSET:
+            changes['exclusive'] = copy_json(exclusive)
         return self._replace(changes)
 
     @property
@@ -1218,6 +1234,11 @@ class Criterion(Record):
     def classification(self) -> UUID:
         'UUID of the Classification that the Label must include.'
         return cast('UUID', _decode_uuid(self._data.get('classification')))
+
+    @property
+    def exclusive(self) -> bool | None:
+        'Whether only the Classification itself matches; absent or false also matches its sub-types in its Taxonomy.'
+        return cast('bool | None', self._data.get('exclusive'))
 
 
 class Decision(Record):
@@ -2202,7 +2223,7 @@ class Fact(Record):
 
 
 class Filter(Record):
-    'Conjunctive filters over fixed Entity metadata. No numerical expression or solved amount determines membership.'
+    'Conjunctive tests of Entity metadata and recorded Values, as data. A missing value never passes a test.'
     __slots__ = ()
     _kind = 'Filter'
     _SLOTS = _freeze(
@@ -2213,29 +2234,51 @@ class Filter(Record):
                             'nullable': False,
                             'ordered': False,
                             'lineage': False},
+         'exclusive': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
+                       'required': False,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': False,
+                       'lineage': False},
          'labels': {'options': [{'kind': 'Criterion', 'category': 'record'}],
                     'required': False,
                     'many': True,
                     'mapping': False,
                     'nullable': True,
                     'ordered': True,
-                    'lineage': False}}
+                    'lineage': False},
+         'tests': {'options': [{'kind': 'ValueTest', 'category': 'record'}],
+                   'required': False,
+                   'many': True,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': True,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
         classification: UUID | Unset = UNSET,
+        exclusive: bool | None | Unset = UNSET,
         labels: tuple[Criterion, ...] | None | Unset = UNSET,
+        tests: tuple[ValueTest, ...] | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         if classification is not UNSET:
             data['classification'] = _encode_uuid(classification)
+        if exclusive is not UNSET:
+            data['exclusive'] = copy_json(exclusive)
         if labels is not UNSET:
             data['labels'] = _encode_many(labels, lambda v: _encode_record(v, Criterion, 'labels'))
+        if tests is not UNSET:
+            data['tests'] = _encode_many(tests, lambda v: _encode_record(v, ValueTest, 'tests'))
         self._set_checked(data)
 
     def replace(self, *,
         classification: UUID | Unset | Omit = UNSET,
+        exclusive: bool | None | Unset | Omit = UNSET,
         labels: tuple[Criterion, ...] | None | Unset | Omit = UNSET,
+        tests: tuple[ValueTest, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -2243,21 +2286,39 @@ class Filter(Record):
             changes['classification'] = OMIT
         elif classification is not UNSET:
             changes['classification'] = _encode_uuid(classification)
+        if exclusive is OMIT:
+            changes['exclusive'] = OMIT
+        elif exclusive is not UNSET:
+            changes['exclusive'] = copy_json(exclusive)
         if labels is OMIT:
             changes['labels'] = OMIT
         elif labels is not UNSET:
             changes['labels'] = _encode_many(labels, lambda v: _encode_record(v, Criterion, 'labels'))
+        if tests is OMIT:
+            changes['tests'] = OMIT
+        elif tests is not UNSET:
+            changes['tests'] = _encode_many(tests, lambda v: _encode_record(v, ValueTest, 'tests'))
         return self._replace(changes)
 
     @property
     def classification(self) -> UUID | None:
-        'Exact Classification that a candidate Entity must have; taxonomy descendants do not match.'
+        'Classification that a candidate Entity must have, with its sub-types unless exclusive.'
         return cast('UUID | None', _decode_uuid(self._data.get('classification')))
+
+    @property
+    def exclusive(self) -> bool | None:
+        'Whether only the Classification itself matches; absent or false also matches its sub-types in its Taxonomy.'
+        return cast('bool | None', self._data.get('exclusive'))
 
     @property
     def labels(self) -> tuple[Criterion, ...] | None:
         'All listed Label conditions must hold.'
         return cast('tuple[Criterion, ...] | None', self._child('labels', Criterion, True))
+
+    @property
+    def tests(self) -> tuple[ValueTest, ...] | None:
+        'All listed Value tests must hold.'
+        return cast('tuple[ValueTest, ...] | None', self._child('tests', ValueTest, True))
 
 
 class Flow(Record):
@@ -7445,6 +7506,119 @@ class Value(Record):
         return cast('PropertyContent | None', self._child('content', PropertyContent, False))
 
 
+class ValueTest(Record):
+    'One test of the recorded measurement Value with an owner-local key, after conversion to the units of the test.'
+    __slots__ = ()
+    _kind = 'ValueTest'
+    _SLOTS = _freeze(
+        {'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False,
+                 'lineage': False},
+         'relation': {'options': [{'kind': 'ValueRelation', 'category': 'enum'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False,
+                      'lineage': False},
+         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False,
+                      'lineage': False},
+         'minimum': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False,
+                     'lineage': False},
+         'maximum': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False,
+                     'lineage': False}}
+    )
+
+    def __init__(self, *,
+        key: str,
+        relation: ValueRelation,
+        quantity: Quantity | Unset = UNSET,
+        minimum: Quantity | Unset = UNSET,
+        maximum: Quantity | Unset = UNSET,
+    ) -> None:
+        data: dict[str, object] = {}
+        data['key'] = copy_json(key)
+        data['relation'] = _encode_enum(relation, ValueRelation, 'relation')
+        if quantity is not UNSET:
+            data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if minimum is not UNSET:
+            data['minimum'] = _encode_record(minimum, Quantity, 'minimum')
+        if maximum is not UNSET:
+            data['maximum'] = _encode_record(maximum, Quantity, 'maximum')
+        self._set_checked(data)
+
+    def replace(self, *,
+        key: str | Unset = UNSET,
+        relation: ValueRelation | Unset = UNSET,
+        quantity: Quantity | Unset | Omit = UNSET,
+        minimum: Quantity | Unset | Omit = UNSET,
+        maximum: Quantity | Unset | Omit = UNSET,
+    ) -> Self:
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
+        changes: dict[str, object] = {}
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if relation is not UNSET:
+            changes['relation'] = _encode_enum(relation, ValueRelation, 'relation')
+        if quantity is OMIT:
+            changes['quantity'] = OMIT
+        elif quantity is not UNSET:
+            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if minimum is OMIT:
+            changes['minimum'] = OMIT
+        elif minimum is not UNSET:
+            changes['minimum'] = _encode_record(minimum, Quantity, 'minimum')
+        if maximum is OMIT:
+            changes['maximum'] = OMIT
+        elif maximum is not UNSET:
+            changes['maximum'] = _encode_record(maximum, Quantity, 'maximum')
+        return self._replace(changes)
+
+    @property
+    def key(self) -> str:
+        'Owner-local key of the tested Value.'
+        return cast('str', self._data.get('key'))
+
+    @property
+    def relation(self) -> ValueRelation:
+        'How the recorded Value relates to the operands.'
+        return cast('ValueRelation', _decode_enum(self._data.get('relation'), ValueRelation))
+
+    @property
+    def quantity(self) -> _Quantity | None:
+        'Operand of a comparison; absent for between, present and missing.'
+        return cast('_Quantity | None', self._child('quantity', Quantity, False))
+
+    @property
+    def minimum(self) -> _Quantity | None:
+        'Inclusive lower bound of between; absent for other relations.'
+        return cast('_Quantity | None', self._child('minimum', Quantity, False))
+
+    @property
+    def maximum(self) -> _Quantity | None:
+        'Inclusive upper bound of between; absent for other relations.'
+        return cast('_Quantity | None', self._child('maximum', Quantity, False))
+
+
 _TYPES = {
     'Action': Action,
     'Argument': Argument,
@@ -7521,6 +7695,7 @@ _TYPES = {
     'Taxonomy': Taxonomy,
     'Traversal': Traversal,
     'Value': Value,
+    'ValueTest': ValueTest,
 }
 
 _SLOTS = {
@@ -7599,6 +7774,7 @@ _SLOTS = {
     'Taxonomy': Taxonomy._SLOTS,
     'Traversal': Traversal._SLOTS,
     'Value': Value._SLOTS,
+    'ValueTest': ValueTest._SLOTS,
 }
 
 _OWNERS = {
@@ -7610,4 +7786,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']

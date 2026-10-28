@@ -69,7 +69,11 @@ classes:
             direction:
               value_presence: ABSENT
   Criterion:
-    description: Require an Entity Label with this owner-local key to include the exact Classification.
+    description: Require an Entity Label with this owner-local key to include a Classification, or one of
+      its sub-types.
+    notes:
+    - A Label matches when it includes the Classification or, unless exclusive, one of its sub-types in
+      its Taxonomy. An Entity without a Label of this key has a missing value; it does not pass.
     attributes:
       key:
         range: string
@@ -88,16 +92,120 @@ classes:
         - range: Classification
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
-  Filter:
-    description: Conjunctive filters over fixed Entity metadata. No numerical expression or solved amount
-      determines membership.
+      exclusive:
+        description: Whether only the Classification itself matches; absent or false also matches its
+          sub-types in its Taxonomy.
+        range: boolean
+  ValueTest:
+    description: One test of the recorded measurement Value with an owner-local key, after conversion to
+      the units of the test.
     notes:
-    - classification matches exactly, without implicit taxonomy-descendant expansion. All Label filters
-      must match. An absent classification or Label does not match. An empty filter matches every candidate.
+    - A comparison converts the recorded Quantity to the units of the test with the Model's unit system.
+      Incompatible units are an error, not a failed test.
+    - Equality and the inclusive bounds use the unit system's closeness tolerance, so 1 km equals 1000 m.
+    - A missing Value or an unresolved Quantity is a missing value. It never counts as zero. A comparison
+      with a missing value does not pass, and the result counts it as missing. Only the missing relation
+      passes it.
+    - present and missing test any Value kind; the comparisons need a measurement Value.
+    attributes:
+      key:
+        range: string
+        description: Owner-local key of the tested Value.
+        required: true
+        any_of:
+        - range: string
+        pattern: \S
+      relation:
+        description: How the recorded Value relates to the operands.
+        range: ValueRelation
+        required: true
+      quantity:
+        description: Operand of a comparison; absent for between, present and missing.
+        range: Quantity
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true
+      minimum:
+        description: Inclusive lower bound of between; absent for other relations.
+        range: Quantity
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true
+      maximum:
+        description: Inclusive upper bound of between; absent for other relations.
+        range: Quantity
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true
+    rules:
+    - preconditions:
+        slot_conditions:
+          relation:
+            equals_string_in:
+            - equal
+            - not_equal
+            - less
+            - less_or_equal
+            - greater
+            - greater_or_equal
+      postconditions:
+        slot_conditions:
+          quantity:
+            required: true
+        all_of:
+        - slot_conditions:
+            minimum:
+              value_presence: ABSENT
+        - slot_conditions:
+            maximum:
+              value_presence: ABSENT
+    - preconditions:
+        slot_conditions:
+          relation:
+            equals_string: between
+      postconditions:
+        slot_conditions:
+          minimum:
+            required: true
+          maximum:
+            required: true
+        all_of:
+        - slot_conditions:
+            quantity:
+              value_presence: ABSENT
+    - preconditions:
+        slot_conditions:
+          relation:
+            equals_string_in:
+            - present
+            - missing
+      postconditions:
+        slot_conditions: {}
+        all_of:
+        - slot_conditions:
+            quantity:
+              value_presence: ABSENT
+        - slot_conditions:
+            minimum:
+              value_presence: ABSENT
+        - slot_conditions:
+            maximum:
+              value_presence: ABSENT
+  Filter:
+    description: Conjunctive tests of Entity metadata and recorded Values, as data. A missing value never
+      passes a test.
+    notes:
+    - classification matches the Classification and its sub-types in its Taxonomy, unless exclusive. An
+      Entity without a classification does not pass.
+    - All Label criteria and all Value tests must hold. A test that cannot be decided because its value is
+      missing does not pass; results count such Entities as missing, separately from those that fail.
+    - An empty filter matches every candidate. Raw-text properties have no tests.
     attributes:
       classification:
-        description: Exact Classification that a candidate Entity must have; taxonomy descendants do not
-          match.
+        description: Classification that a candidate Entity must have, with its sub-types unless exclusive.
         range: Classification
         inlined: false
         pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
@@ -105,12 +213,26 @@ classes:
         - range: Classification
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      exclusive:
+        description: Whether only the Classification itself matches; absent or false also matches its
+          sub-types in its Taxonomy.
+        range: boolean
       labels:
         range: Criterion
         description: All listed Label conditions must hold.
         inlined: true
         any_of:
         - range: Criterion
+          inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      tests:
+        range: ValueTest
+        description: All listed Value tests must hold.
+        inlined: true
+        any_of:
+        - range: ValueTest
           inlined: true
         multivalued: true
         inlined_as_list: true
@@ -196,7 +318,8 @@ classes:
     - starting_at must identify an Entity in the containing Model revision. Queries never fetch live external
       state. An embedded Query is owned by its Expression; no second identity is required.
     - Apply traversal steps in order, then the filter, then projection, then duplicate handling. With
-      no steps, the starting Entity is the candidate.
+      no steps, the starting Entity is the candidate. A candidate whose filter has a missing value does not
+      pass.
     - Query results are symbolic references. Projecting Values preserves their mathematical roles and
       unresolved content; it does not freeze stored amounts.
     - distinct yields a set keyed by projected UUID; preserve yields a bag with one occurrence per matching
@@ -282,6 +405,26 @@ enums:
         description: Reject an Entity with no matching Value.
       omit:
         description: Explicitly omit an Entity with no matching Value.
+  ValueRelation:
+    permissible_values:
+      equal:
+        description: The value equals quantity, within the unit system's closeness tolerance.
+      not_equal:
+        description: The value does not equal quantity.
+      less:
+        description: The value is less than quantity and not equal to it.
+      less_or_equal:
+        description: The value is less than or equal to quantity.
+      greater:
+        description: The value is greater than quantity and not equal to it.
+      greater_or_equal:
+        description: The value is greater than or equal to quantity.
+      between:
+        description: The value is from minimum to maximum, both included.
+      present:
+        description: The Entity has a Value with this key and recorded content.
+      missing:
+        description: The Entity has no Value with this key, or the Value has no recorded content.
   DuplicateHandling:
     permissible_values:
       distinct:

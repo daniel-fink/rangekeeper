@@ -593,7 +593,7 @@
     },
     "Criterion": {
       "additionalProperties": false,
-      "description": "Require an Entity Label with this owner-local key to include the exact Classification.",
+      "description": "Require an Entity Label with this owner-local key to include a Classification, or one of its sub-types.",
       "properties": {
         "classification": {
           "anyOf": [
@@ -605,6 +605,13 @@
           "description": "UUID of the Classification that the Label must include.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
+        },
+        "exclusive": {
+          "description": "Whether only the Classification itself matches; absent or false also matches its sub-types in its Taxonomy.",
+          "type": [
+            "boolean",
+            "null"
+          ]
         },
         "key": {
           "anyOf": [
@@ -1709,7 +1716,7 @@
     },
     "Filter": {
       "additionalProperties": false,
-      "description": "Conjunctive filters over fixed Entity metadata. No numerical expression or solved amount determines membership.",
+      "description": "Conjunctive tests of Entity metadata and recorded Values, as data. A missing value never passes a test.",
       "properties": {
         "classification": {
           "anyOf": [
@@ -1721,14 +1728,31 @@
               "type": "null"
             }
           ],
-          "description": "Exact Classification that a candidate Entity must have; taxonomy descendants do not match.",
+          "description": "Classification that a candidate Entity must have, with its sub-types unless exclusive.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
+        },
+        "exclusive": {
+          "description": "Whether only the Classification itself matches; absent or false also matches its sub-types in its Taxonomy.",
+          "type": [
+            "boolean",
+            "null"
+          ]
         },
         "labels": {
           "description": "All listed Label conditions must hold.",
           "items": {
             "$ref": "#/$defs/Criterion"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "tests": {
+          "description": "All listed Value tests must hold.",
+          "items": {
+            "$ref": "#/$defs/ValueTest"
           },
           "type": [
             "array",
@@ -4528,6 +4552,206 @@
       ],
       "title": "ValueKind",
       "type": "string"
+    },
+    "ValueRelation": {
+      "description": "",
+      "enum": [
+        "equal",
+        "not_equal",
+        "less",
+        "less_or_equal",
+        "greater",
+        "greater_or_equal",
+        "between",
+        "present",
+        "missing"
+      ],
+      "title": "ValueRelation",
+      "type": "string"
+    },
+    "ValueTest": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "relation": {
+                "enum": [
+                  "equal",
+                  "not_equal",
+                  "less",
+                  "less_or_equal",
+                  "greater",
+                  "greater_or_equal"
+                ]
+              }
+            },
+            "required": [
+              "relation"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "minimum"
+                  ]
+                },
+                "properties": {
+                  "minimum": {}
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "maximum"
+                  ]
+                },
+                "properties": {
+                  "maximum": {}
+                }
+              }
+            ],
+            "properties": {
+              "quantity": {}
+            },
+            "required": [
+              "quantity"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "relation": {
+                "const": "between"
+              }
+            },
+            "required": [
+              "relation"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "quantity"
+                  ]
+                },
+                "properties": {
+                  "quantity": {}
+                }
+              }
+            ],
+            "properties": {
+              "maximum": {},
+              "minimum": {}
+            },
+            "required": [
+              "minimum",
+              "maximum"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "relation": {
+                "enum": [
+                  "present",
+                  "missing"
+                ]
+              }
+            },
+            "required": [
+              "relation"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "quantity"
+                  ]
+                },
+                "properties": {
+                  "quantity": {}
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "minimum"
+                  ]
+                },
+                "properties": {
+                  "minimum": {}
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "maximum"
+                  ]
+                },
+                "properties": {
+                  "maximum": {}
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "description": "One test of the recorded measurement Value with an owner-local key, after conversion to the units of the test.",
+      "properties": {
+        "key": {
+          "anyOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Owner-local key of the tested Value.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "maximum": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            }
+          ],
+          "description": "Inclusive upper bound of between; absent for other relations."
+        },
+        "minimum": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            }
+          ],
+          "description": "Inclusive lower bound of between; absent for other relations."
+        },
+        "quantity": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            }
+          ],
+          "description": "Operand of a comparison; absent for between, present and missing."
+        },
+        "relation": {
+          "$ref": "#/$defs/ValueRelation",
+          "description": "How the recorded Value relates to the operands."
+        }
+      },
+      "required": [
+        "key",
+        "relation"
+      ],
+      "title": "ValueTest",
+      "type": "object"
     }
   },
   "$id": "https://daniel-fink.github.io/rangekeeper/schema/bundle",

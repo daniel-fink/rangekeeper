@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "5fc9af6dc0bdcdd91486adb210af40bc37a2d9b4d77c87b26112cfd8fd56a90c",
-    "enums.py": "f3a4ccd09355fdb04a94a8c5af558bb5286f568ff28a0e13b203c3d3e1fba5bf",
-    "records.py": "8c3f1eabe0f84ca6878130242a0482f13102b299512592f99adc9055f269842c",
-    "schema.json": "9d8f898a4e88ef87c563c6ea1f65f88535ae0adfe8134c8dc5020782c3a4b138",
-    "slots.json": "07357093036d403e060498f2207e526eeb017dffe6092b19256dc96846ce610e"
+    "checks.py": "8429bea8adf59675b6c9d20b3c1c3c8f8ae322218d84986ff64d5aa4a4e7fe89",
+    "enums.py": "15ea4304b36c2a3398ddb939ec18c1120ee52601afdd0422999045d5be4b0ad4",
+    "records.py": "d39d810f937b4b60869e602b8736323a2425f64936f3504ae3f2157256410f42",
+    "schema.json": "a89c9bdf31938e63994fb2eb62e5f3054d427e19a2bdcb396449554336d31d1a",
+    "slots.json": "23acf1db0f3af6771613566426700556ae07acde1ee0802293b31352f78c9514"
   },
   "classes": [
     "Action",
@@ -83,7 +83,8 @@
     "System",
     "Taxonomy",
     "Traversal",
-    "Value"
+    "Value",
+    "ValueTest"
   ],
   "dependencies": {
     "PyYAML": "6.0.3",
@@ -121,7 +122,7 @@
     "schema/measure.yaml": "8af2081c45a4dc123c436441d557d36934648e60598953faa10f89b240138bbf",
     "schema/model.yaml": "d998afd2fc7010b15863b358defb9c178d1aacd982aa93877fd1bab479f2aef7",
     "schema/provenance.yaml": "dbc4138fe81d290ac1aa789efa46750554eb8e2db934cca4d4f4340f021b63e1",
-    "schema/query.yaml": "ff94ae0111e3f44fdedb0de2d19ddbf6bdee72c7354b0087a1899166cdd87d6b",
+    "schema/query.yaml": "f9de10392a5d3f58444cbf44bdab506f8db891f66f269f5d2cb548245f621717",
     "schema/reference.yaml": "2e554658a7d03b849bddf72a1014317b1144eec9b3bd34fe63874b4059400ced",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
     "schema/rule.yaml": "184d6e3c08d2d5e3c93f7c454c3e47bc66d4161cda6357d200ae410a6c67be89",

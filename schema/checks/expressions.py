@@ -257,6 +257,29 @@ valid.append(("Query", q))
 q = copy.deepcopy(query)
 q["filter"]["labels"] = [dict(key="use", classification=q["filter"]["classification"])]
 valid.append(("Query", q))
+# Sub-type matching is the default; exclusive keeps an exact match. Value tests
+# compare a measurement with units, test a range, or test presence (#121).
+q = copy.deepcopy(query)
+q["filter"]["exclusive"] = True
+q["filter"]["labels"] = [
+    dict(key="use", classification=q["filter"]["classification"], exclusive=False)
+]
+q["filter"]["tests"] = [
+    dict(
+        key="gfa",
+        relation="greater_or_equal",
+        quantity=dict(magnitude=1500, units="m^2"),
+    ),
+    dict(
+        key="gfa",
+        relation="between",
+        minimum=dict(magnitude=1, units="m^2"),
+        maximum=dict(magnitude=2, units="ha"),
+    ),
+    dict(key="nla", relation="present"),
+    dict(key="nla", relation="missing"),
+]
+valid.append(("Query", q))
 valid.extend(
     ("Query", node["query"])
     for node in [graph["expressions"][1]["call"]["named_arguments"][0]["expression"]]
@@ -441,6 +464,32 @@ bad["filter"]["expression"] = left
 reject("Query", bad)
 bad = copy.deepcopy(query)
 bad["duplicates"] = "implicit"
+reject("Query", bad)
+for test in [
+    dict(key="gfa", relation="less"),
+    dict(key="gfa", relation="approximately", quantity=dict(magnitude=1, units="m^2")),
+    dict(key="gfa", relation="between", minimum=dict(magnitude=1, units="m^2")),
+    dict(
+        key="gfa",
+        relation="between",
+        quantity=dict(magnitude=1, units="m^2"),
+        minimum=dict(magnitude=1, units="m^2"),
+        maximum=dict(magnitude=2, units="m^2"),
+    ),
+    dict(key="gfa", relation="present", quantity=dict(magnitude=1, units="m^2")),
+    dict(
+        key="gfa",
+        relation="equal",
+        quantity=dict(magnitude=1, units="m^2"),
+        maximum=dict(magnitude=2, units="m^2"),
+    ),
+    dict(key=" ", relation="present"),
+]:
+    bad = copy.deepcopy(query)
+    bad["filter"]["tests"] = [test]
+    reject("Query", bad)
+bad = copy.deepcopy(query)
+bad["filter"]["exclusive"] = "yes"
 reject("Query", bad)
 bad = copy.deepcopy(query)
 bad["steps"][0]["relationship"] = bad["steps"][0].pop("classification")

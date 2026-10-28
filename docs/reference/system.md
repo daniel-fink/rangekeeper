@@ -90,6 +90,68 @@ produce a pinned immutable tree with `root`, `kind` (`HierarchyKind`), `children
 `empty`, `disconnected`, `cycle`, `multiple_parents`, `parallel_edges` or `root_mismatch`.
 Traversal is iterative; valid deep trees do not consume the Python call stack.
 
+## Declarative filters
+
+A `Filter` (`rangekeeper.model.Filter`) is a selection stored as data, not code
+([ADR-017](../decisions/017-api-and-formats.md)). It can be part of a query
+Expression, and `View.match` and `View.where` apply it to a View. All its tests
+must hold:
+
+- `classification`: the Entity's Classification, with its sub-types in its
+  Taxonomy, as in [`View.filter`](#selection-and-traversal). `exclusive=True`
+  matches only that Classification.
+- `labels`: `Criterion(key=, classification=, exclusive=None)` records. The
+  Entity's Label with that key must include the Classification or, unless
+  `exclusive`, one of its sub-types.
+- `tests`: `ValueTest(key=, relation=, quantity=, minimum=, maximum=)` records
+  on the Entity's Value with that key. A `ValueRelation` names the test:
+  `EQUAL`, `NOT_EQUAL`, `LESS`, `LESS_OR_EQUAL`, `GREATER` and
+  `GREATER_OR_EQUAL` compare with `quantity`; `BETWEEN` includes `minimum` and
+  `maximum`; `PRESENT` and `MISSING` test whether the Value has recorded content.
+
+```python
+from rangekeeper.model import Criterion, Filter, ValueRelation, ValueTest
+from rangekeeper.quantity import Quantity
+
+large_hotel_floors = Filter(
+    classification=floor_id,  # and its sub-types
+    labels=(Criterion(key="use", classification=hotel_id),),
+    tests=(
+        ValueTest(
+            key="gfa",
+            relation=ValueRelation.GREATER_OR_EQUAL,
+            quantity=Quantity(text="1500 m^2"),
+        ),
+    ),
+)
+match = view.match(condition=large_hotel_floors)
+match.passed, match.failed, match.missing  # Entity UUIDs, in View order
+floors = view.where(condition=large_hotel_floors)  # a View of the passed Entities
+```
+
+A comparison converts the recorded Quantity to the units of the test with the
+Model's unit system, so 16 000 ft² is less than 1 500 m². Equality and the
+inclusive bounds use the relative tolerance of `rangekeeper.quantity.isclose`
+(1e-9). Incompatible or unknown units raise `UnitError`. A comparison on a Flow
+or property Value raises `SelectionError`; raw-text properties have no tests.
+
+A test passes, fails, or cannot be decided because its value is missing. A
+missing value is an absent Value, a measurement with no recorded Quantity, or an
+absent Label. It never counts as zero
+([ADR-016](../decisions/016-safety-defaults.md#missing-values)). The `Match`
+partitions the tested Entities:
+
+- `passed`: every test passed;
+- `failed`: at least one test failed;
+- `missing`: no test failed, but at least one has a missing value. These Entities
+  do not pass, and `Match.complete` is false.
+
+Only `MISSING` passes an Entity whose value is missing. An Entity without a
+classification fails a `classification` test. `View.where(condition=)` keeps
+the passed Entities and the selected Relationships between them. Unknown
+Classification UUIDs raise `MissingReferenceError`. An empty `Filter()` passes
+every Entity.
+
 ## Explicit recorded-Value reduction
 
 ```python

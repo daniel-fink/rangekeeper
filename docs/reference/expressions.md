@@ -15,8 +15,12 @@ exactly one content variant. Nested nodes retain their own identities. Reference
 identify Values within the applicable Model or composed Specification scope, independently of display
 names and recorded amounts. Fixed and unknown roles belong to a Specification.
 `ExpressionKind` distinguishes syntax forms and `Operator` names their
-operators. Helper records use `Call`, `Parameter`, `Filter`, `Criterion`, and
-`Projection`; their fields refer to the relevant classes and categorical enums.
+operators. Helper records use `Call`, `Parameter`, `Filter`, `Criterion`,
+`ValueTest` and `Projection`; their fields refer to the relevant classes and
+categorical enums. A query's `Filter` follows the
+[declarative filter rules](system.md#declarative-filters): Classifications include
+their sub-types unless `exclusive`, and a candidate with a missing tested value
+does not pass.
 
 | Form | Serialized kind and content |
 | --- | --- |

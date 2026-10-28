@@ -104,7 +104,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Flow aggregate | The result of aggregating Flows, with coverage | `flow` | — |
 | Coverage | Which contributors had a value, and which did not | `model`, `flow` | Four different types |
 | Pivot | A cross-tab of rollup results by rows and columns | `model` | — |
-| Filter | A declarative selection by classification, labels, number comparisons and presence | `model` | Classification and exact label criteria only |
+| Filter | A declarative selection by classification, labels, number comparisons and presence | `model` | — |
 | Path | One possible history of external conditions: named Flows with availability | `market` | Scenario |
 | Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `ScenarioPlan` method; the kernels in `market.dynamics` |
 

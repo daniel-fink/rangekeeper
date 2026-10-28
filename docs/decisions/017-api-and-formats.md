@@ -1,6 +1,6 @@
 # ADR-017: Public API, stability and data formats
 
-Status: accepted for 1.0; 1.0.0 format reset and Decimal money implemented in 1.0.0a2 (#118, #117); format freeze and Bundle format 1 pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; 1.0.0 format reset and Decimal money implemented in 1.0.0a2 (#118, #117); declarative `Filter` implemented (#121); format freeze and Bundle format 1 pending. Recorded: 2026-10-26.
 
 ## Problem
 

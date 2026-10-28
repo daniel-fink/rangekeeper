@@ -547,6 +547,12 @@ symbols:
     status: agreed
     source: "#255 (lesson 01 cell 15), #273"
     note: The enum also gains SPLIT, which divides each amount over shorter Periods.
+  - module: rangekeeper.model.expression
+    name: Criterion
+    new_module: rangekeeper.model
+    status: agreed
+    source: "ADR-017, #121"
+    note: "`rangekeeper.model` exports the query Filter with its Criterion and ValueTest records."
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it

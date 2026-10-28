@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     )
     from .hierarchy import Hierarchy as Hierarchy
     from .hierarchy import HierarchyKind as HierarchyKind
+    from .matching import Match as Match
     from .pivot import (
         Partition as Partition,
     )
@@ -53,6 +54,7 @@ _EXPORTS = {
     "Coverage": "reduction",
     "CoverageStatus": "reduction",
     "classified": "reduction",
+    "Match": "matching",
     "Pivot": "pivot",
     "PivotColumn": "pivot",
     "Partition": "pivot",
@@ -60,7 +62,15 @@ _EXPORTS = {
     "HierarchyError": "errors",
     "AggregationError": "errors",
 }
-_MODULES = {"reduction", "table", "membership", "selection", "reducers", "pivot"}
+_MODULES = {
+    "matching",
+    "reduction",
+    "table",
+    "membership",
+    "selection",
+    "reducers",
+    "pivot",
+}
 __all__ = [*_EXPORTS, *sorted(_MODULES)]
 
 
