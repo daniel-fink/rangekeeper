@@ -125,7 +125,9 @@ class _Documents:
         try:
             document = self._documents[identifier]
         except KeyError:
-            raise MissingReferenceError(str(identifier)) from None
+            raise MissingReferenceError(
+                identifier, kind=kind.__name__, where=type(self).__name__
+            ) from None
         return require_revision(document, identifier, kind)
 
     def load_model(self, id):
@@ -146,7 +148,9 @@ class _Documents:
 
 def _resolve(resolver, identifier, kind):
     if resolver is None:
-        raise MissingReferenceError(str(identifier))
+        raise MissingReferenceError(
+            identifier, kind=kind.__name__ if kind else "document", where="no resolver"
+        )
     for candidate in (kind,) if kind else (Model, Specification, Run):
         try:
             document = getattr(resolver, "load_" + candidate.__name__.lower())(
@@ -157,7 +161,9 @@ def _resolve(resolver, identifier, kind):
                 raise
             continue
         return trusted(require_revision(document, identifier, candidate))
-    raise MissingReferenceError(str(identifier))
+    raise MissingReferenceError(
+        identifier, kind="document", where=type(resolver).__name__
+    )
 
 
 def _collect(model, documents, resolver, max_documents=1000):
@@ -955,7 +961,7 @@ class Reader(_Documents):
             else self._documents.get(UUID(str(document)))
         )
         if selected is None:
-            raise MissingReferenceError(str(document))
+            raise MissingReferenceError(document, kind="document", where="Bundle")
         prefix = self._prefix(selected.id)
         with requires("bundle"):
             import duckdb

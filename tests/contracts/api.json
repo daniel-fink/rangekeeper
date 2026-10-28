@@ -10,7 +10,7 @@
     "create": "classmethod (cls, *, metadata: rangekeeper.schema.records.Metadata, definitions: rangekeeper.schema.records.Definitions | rangekeeper.schema.runtime.Unset = <Unset>, system: rangekeeper.schema.records.System | rangekeeper.schema.runtime.Unset = <Unset>, provenance: rangekeeper.schema.records.Provenance | rangekeeper.schema.runtime.Unset = <Unset>, geometry: rangekeeper.schema.records.Geometry | rangekeeper.schema.runtime.Unset = <Unset>, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
-    "entity": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Entity",
+    "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object], *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
@@ -238,6 +238,14 @@
   }
  },
  "rangekeeper.errors": {
+  "AmbiguousReferenceError": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+   },
+   "module": "rangekeeper.shared.errors",
+   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+  },
   "AttemptDeadlineError": {
    "kind": "class",
    "members": {},
@@ -299,6 +307,7 @@
     "INVARIANT_PERIOD",
     "INVARIANT_SPAN",
     "BATCH_MODEL",
+    "REFERENCE_AMBIGUOUS",
     "REFERENCE_IDENTITY",
     "REFERENCE_KIND",
     "REFERENCE_MISSING",
@@ -379,9 +388,11 @@
   },
   "MissingReferenceError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
   },
   "NumericalError": {
    "kind": "class",
@@ -1251,7 +1262,7 @@
     "create": "classmethod (cls, *, metadata: rangekeeper.schema.records.Metadata, definitions: rangekeeper.schema.records.Definitions | rangekeeper.schema.runtime.Unset = <Unset>, system: rangekeeper.schema.records.System | rangekeeper.schema.runtime.Unset = <Unset>, provenance: rangekeeper.schema.records.Provenance | rangekeeper.schema.runtime.Unset = <Unset>, geometry: rangekeeper.schema.records.Geometry | rangekeeper.schema.runtime.Unset = <Unset>, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
-    "entity": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Entity",
+    "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object], *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",

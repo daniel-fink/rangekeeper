@@ -98,10 +98,69 @@ class UnsupportedVersionError(RangekeeperError, ValueError):
     code = Code.UNSUPPORTED_VERSION
 
 
-class MissingReferenceError(RangekeeperError, LookupError):
-    """A UUID does not exist in the requested document or resolver scope."""
+class _ReferenceFields:
+    """The fields and message of a failed lookup; not an exception by itself."""
+
+    _verb: str
+    _label: str
+
+    def __init__(
+        self,
+        requested: object,
+        *,
+        kind: str = "reference",
+        by: str = "id",
+        where: str | None = None,
+        candidates: Iterable[str] = (),
+    ) -> None:
+        self.requested = requested
+        self.kind = kind
+        self.by = by
+        self.where = where
+        self.candidates = tuple(candidates)
+        text = repr(requested) if isinstance(requested, str) else str(requested)
+        subject = f"{kind} {text}" if by == "id" else f"{kind} with {by} {text}"
+        message = f"{subject} {self._verb}" + (f" in {where}" if where else "")
+        if self.candidates:
+            message += f"; {self._label}: " + ", ".join(self.candidates)
+        # The exception base after this mixin in the MRO takes the message.
+        super().__init__(message)  # type: ignore[call-arg]
+
+    def __reduce__(self):
+        fields = dict(
+            kind=self.kind, by=self.by, where=self.where, candidates=self.candidates
+        )
+        return _rebuild, (type(self), self.requested, fields)
+
+
+def _rebuild(cls, requested, fields):
+    return cls(requested, **fields)
+
+
+class MissingReferenceError(_ReferenceFields, RangekeeperError, LookupError):
+    """A lookup by UUID, code, name, key or path found no item.
+
+    ``requested`` is the value that the caller gave and ``by`` says what it is:
+    ``"id"``, ``"code"``, ``"name"``, ``"key"`` or ``"path"``. ``kind`` names the
+    kind of item, and ``where`` names the document, store or owner that was
+    searched. ``candidates`` gives the nearest names that exist, when any are close.
+    """
 
     code = Code.REFERENCE_MISSING
+    _verb = "not found"
+    _label = "nearest"
+
+
+class AmbiguousReferenceError(_ReferenceFields, RangekeeperError, LookupError):
+    """A lookup for one item by code or name found several items.
+
+    The fields are those of ``MissingReferenceError``. ``candidates`` gives the
+    code, or else the UUID, of each item that matched, in declaration order.
+    """
+
+    code = Code.REFERENCE_AMBIGUOUS
+    _verb = "is ambiguous"
+    _label = "matches"
 
 
 class ReferenceTypeError(RangekeeperError, TypeError):
