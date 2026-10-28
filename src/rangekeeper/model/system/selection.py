@@ -4,16 +4,20 @@ from collections.abc import Callable
 from uuid import UUID
 
 from rangekeeper.model import Entity, Measure, Model, Value
-from rangekeeper.model.characteristics import value
 from rangekeeper.model.system.errors import SelectionError
 from rangekeeper.shared.arguments import require_text, require_uuid
 
 ValueSelector = Callable[[Model, Entity], Value | None]
 
 
-def _local_value(entity: Entity, key: str, measure: UUID | None) -> Value | None:
+def _local_value(
+    model: Model,
+    entity: Entity,
+    key: str,
+    measure: UUID | None,
+) -> Value | None:
     """Read a canonical Entity after the caller has prepared its Model and request."""
-    selected = value(entity.characteristics, key)
+    selected = model._local(Value, entity.id, key)
     if selected is not None and measure is not None and selected.measure != measure:
         raise SelectionError(
             f"Value {selected.id} at {entity.id}/{key} does not use Measure {measure}"
@@ -51,7 +55,7 @@ def select_value(key: str, *, measure: UUID | None = None) -> ValueSelector:
         canonical = model.entity(entity.id)
         if measure is not None:
             model._index.get(measure, Measure)
-        return _local_value(canonical, key, measure)
+        return _local_value(model, canonical, key, measure)
 
     return select
 

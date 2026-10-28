@@ -62,7 +62,8 @@ The report lists each use that needs a change by hand. These are the changes:
 | `series.integrate(flow, ...)` | `flow.integrate(exposures=, day_count=, units=)` |
 | `flow.trim(start=, end=)` | `flow.trim(span)` with a Period or Span, as `Stream.trim(span)` |
 | `stream.labels` and `select(labels=)` on a value that is not clearly a Stream | `stream.names` and `select(names=)`. Classification `labels` keep their name |
-| `from rangekeeper.model.characteristics import Value` (and `Label`, `Characteristics`, `ValueKind`) | `from rangekeeper.model import Value`. `model.characteristics` keeps only `value()` and `label()` |
+| `from rangekeeper.model.characteristics import Value` (and `Label`, `Characteristics`, `ValueKind`) | `from rangekeeper.model import Value` |
+| `characteristics.value(entity.characteristics, key)`, `characteristics.label(...)` | `model.value(owner=entity.id, key=key)`, `model.label(owner=entity.id, key=key)`. A missing key raises `MissingReferenceError` instead of returning `None` |
 | Code that reads the wire keys `start_inclusive` and `end_exclusive` | The keys are `start` and `end` |
 
 Each public name has one import path, plus the root re-exports `Model`,
@@ -117,6 +118,7 @@ This table lists the public names that 1.x consumers use, with their state in
 | `shared.units.UnitSystem`, `default_units` | `rangekeeper.quantity.UnitSystem`, `default_units` (the codemod moves them). `Model.unit_system` is unchanged | — |
 | `model.measure.Quantity`, `model.Quantity` | `rangekeeper.Quantity` and `rangekeeper.quantity.Quantity` (the codemod moves them) | Quantity text in API arguments ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D13, D16) |
 | `model.system.System`, `Entity`, `Assembly`, `Relationship` | `rangekeeper.model` only (the codemod moves them). `model.system` keeps the views, rollups and pivots | — |
+| `model.characteristics.value`, `label` | Removed. `Model.value(owner=, key=)` and `Model.label(owner=, key=)` raise `MissingReferenceError` for a missing key | — |
 | `rangekeeper.Model`, `model.Definitions` | Unchanged; the Model format is 1.0.0 | Builder names ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D6, D16) |
 | `io.bundle.Reader`, `write`, `Reader(..., check_index=False)` | Unchanged API. A Bundle with 0.x documents does not open | Identifiers `rangekeeper.bundle/1` and `rangekeeper.parquet/1`; the format freezes at 1.0.0b1 (ADR-017) |
 
@@ -255,7 +257,9 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.series.resample` | Flow.resample(periods, method=) and Stream.resample(periods, method=) | agreed |
 | `rangekeeper.calculations.series.aggregate` | Stream.aggregate(method=), Stream.sum(), Stream.min() and Stream.max() | agreed |
 | `rangekeeper.calculations.series.Alignment` | The Stream that Stream.align() returns; Stream.aggregate() replaces Alignment.reduce() | agreed |
-| `rangekeeper.model.characteristics` | Value and Label access on the owner record; re-exports in rangekeeper.model | agreed |
+| `rangekeeper.model.characteristics` | `Model.value(owner=, key=)` and `Model.label(owner=, key=)`; the records are re-exported in rangekeeper.model | agreed |
+| `rangekeeper.model.characteristics.value` | `model.value(owner=entity.id, key=)`. A missing key raises MissingReferenceError instead of returning None | agreed |
+| `rangekeeper.model.characteristics.label` | `model.label(owner=entity.id, key=)`. A missing key raises MissingReferenceError instead of returning None | agreed |
 | `rangekeeper.model.scenario.market.ScenarioPlan` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.market.sample` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.market.capture` | Path generators and the MarketPaths document | agreed (needs refactor) |

@@ -91,6 +91,7 @@ for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system
         "rangekeeper.calculations",
         "rangekeeper.model.measure",
         "rangekeeper.model.distribution",
+        "rangekeeper.model.characteristics",
         "rangekeeper.io.migration",
     ],
 )

@@ -16,6 +16,7 @@
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object], *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "geometry": "property",
     "id": "property",
+    "label": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
     "metadata": "property",
     "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
@@ -29,7 +30,7 @@
     "system": "property",
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
-    "value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Value"
+    "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
    "signature": "(record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None"
@@ -1268,6 +1269,7 @@
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object], *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "geometry": "property",
     "id": "property",
+    "label": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
     "metadata": "property",
     "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
@@ -1281,7 +1283,7 @@
     "system": "property",
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
-    "value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Value"
+    "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
    "signature": "(record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None"

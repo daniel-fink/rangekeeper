@@ -5,8 +5,7 @@ from dataclasses import dataclass
 from enum import Enum, unique
 from uuid import UUID
 
-from rangekeeper.model import Assembly, Classification, Measure, ValueKind
-from rangekeeper.model.characteristics import label, value
+from rangekeeper.model import Assembly, Classification, Label, Measure, Value, ValueKind
 from rangekeeper.model.content import decode
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.selection import _local_value, select_value
@@ -146,14 +145,14 @@ def to_table(
         for c in columns:
             result: object
             if isinstance(c, ValueColumn):
-                item = _local_value(entity, c.key, c.measure)
+                item = _local_value(view.model, entity, c.key, c.measure)
                 result = (
                     None
                     if item is None or item.quantity is None
                     else units.convert(item.quantity, to=c.units).magnitude
                 )
             elif isinstance(c, PropertyColumn):
-                item = value(entity.characteristics, c.key)
+                item = view.model._local(Value, entity.id, c.key)
                 if item is not None and item.kind is not ValueKind.PROPERTY:
                     raise TableError(f"{c.key} is not a property Value")
                 result = (
@@ -162,7 +161,7 @@ def to_table(
                     else None
                 )
             elif isinstance(c, LabelColumn):
-                selected_label = label(entity.characteristics, c.key)
+                selected_label = view.model._local(Label, entity.id, c.key)
                 result = (
                     None if selected_label is None else selected_label.classifications
                 )
