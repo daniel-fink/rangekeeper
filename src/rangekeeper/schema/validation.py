@@ -24,7 +24,7 @@ def _artifacts():
     root = files(__package__)
     return tuple(
         json.loads(root.joinpath(name).read_text(encoding="utf-8"))
-        for name in ("schema.json", "slots.json", "manifest.json")
+        for name in ("schema.json", "manifest.json")
     )
 
 
@@ -36,26 +36,33 @@ def schema_for(kind: str) -> dict:
     return {**deepcopy(schema), "$ref": f"#/$defs/{kind}"}
 
 
-@cache
 def _slot_map(kind: str):
-    """Share immutable generated slot metadata inside record access and traversal.
+    """Return the generated, immutable slot metadata of one kind.
 
-    A read of a UUID or child record must not copy the whole class declaration.
-    The public slots_for function still returns a detached, editable dictionary.
+    Each generated class carries its own slots; nothing reads slots.json at run
+    time. A read of a UUID or child record does not copy the declaration.
     """
-    from rangekeeper.schema.runtime import _freeze
+    from rangekeeper.schema.records import _SLOTS
 
-    return _freeze(_artifacts()[1][kind])
+    return _SLOTS[kind]
+
+
+def _thaw(value):
+    if isinstance(value, Mapping):
+        return {key: _thaw(child) for key, child in value.items()}
+    if isinstance(value, tuple):
+        return [_thaw(child) for child in value]
+    return value
 
 
 def slots_for(kind: str) -> dict:
     """Return a detached, editable copy of a kind's generated slot metadata."""
-    return deepcopy(_artifacts()[1][kind])
+    return _thaw(_slot_map(kind))
 
 
 def document_version(kind: str) -> str:
     """Return the packaged document version for a record kind."""
-    return str(_artifacts()[2]["document_versions"][kind])
+    return str(_artifacts()[1]["document_versions"][kind])
 
 
 def supports_version(version: object, current: str) -> bool:

@@ -5,7 +5,26 @@ from typing import TYPE_CHECKING, Self, cast
 from collections.abc import Mapping
 from uuid import UUID
 from datetime import date as Date
-from .runtime import Record, Unset, UNSET, FrozenJSONValue, JSONValue
+from .runtime import (
+    EMPTY,
+    UNSET,
+    FrozenJSONValue,
+    JSONValue,
+    Record,
+    Unset,
+    _decode_date,
+    _decode_dates,
+    _decode_enum,
+    _decode_uuid,
+    _decode_uuids,
+    _encode_date,
+    _encode_enum,
+    _encode_many,
+    _encode_record,
+    _encode_uuid,
+    _freeze,
+    copy_json,
+)
 
 if TYPE_CHECKING:
     from rangekeeper.profile import Distribution as _Distribution
@@ -46,17 +65,39 @@ class Action(Record):
     'An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.'
     __slots__ = ()
     _kind = 'Action'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'ActionKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False},
+         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False}}
+    )
 
     def __init__(self, *,
         kind: ActionKind,
         target: Reference | None | Unset = UNSET,
         quantity: Quantity | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'target': target,
-            'quantity': quantity,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, ActionKind, 'kind')
+        if target is not UNSET:
+            data['target'] = _encode_record(target, Reference, 'target')
+        if quantity is not UNSET:
+            data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        self._set_data(data)
 
     def replace(self, *,
         kind: ActionKind | Unset = UNSET,
@@ -64,67 +105,119 @@ class Action(Record):
         quantity: Quantity | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'target': target,
-            'quantity': quantity,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, ActionKind, 'kind')
+        if target is not UNSET:
+            changes['target'] = _encode_record(target, Reference, 'target')
+        if quantity is not UNSET:
+            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        return self._replace(changes)
 
     @property
     def kind(self) -> ActionKind:
         'Whether the action assigns a control or terminates the decision sequence.'
-        return cast('ActionKind', self._field('kind'))
+        return cast('ActionKind', _decode_enum(self._data.get('kind'), ActionKind))
 
     @property
     def target(self) -> Reference | None:
         'Controlled target to assign; required for assign and absent for terminate.'
-        return cast('Reference | None', self._field('target'))
+        return cast('Reference | None', self._child('target', Reference, False))
 
     @property
     def quantity(self) -> Quantity | None:
         'Finite quantity to assign, with units compatible with the target; required for assign and absent for terminate.'
-        return cast('Quantity | None', self._field('quantity'))
+        return cast('Quantity | None', self._child('quantity', Quantity, False))
 
 
 class Argument(Record):
     'One named expression argument in a Function call.'
     __slots__ = ()
     _kind = 'Argument'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'expression': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str,
         expression: Expression,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'expression': expression,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        data['expression'] = _encode_record(expression, Expression, 'expression')
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
         expression: Expression | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'expression': expression,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if expression is not UNSET:
+            changes['expression'] = _encode_record(expression, Expression, 'expression')
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Name of the Function parameter to which the argument binds.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def expression(self) -> Expression:
         'Expression supplied for the parameter.'
-        return cast('Expression', self._field('expression'))
+        return cast('Expression', self._child('expression', Expression, False))
 
 
 class Entity(Record):
     'An identifiable domain object, such as an apartment, building, or actor. Its identity persists across immutable Model revisions. Loading its definition does not execute calculations.'
     __slots__ = ()
     _kind = 'Entity'
+    _SLOTS = _freeze(
+        {'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
+                            'required': False,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': True,
+                            'ordered': False},
+         'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'characteristics': {'options': [{'kind': 'Characteristics',
+                                          'category': 'record'}],
+                             'required': False,
+                             'many': False,
+                             'mapping': False,
+                             'nullable': True,
+                             'ordered': False}}
+    )
 
     def __init__(self, *,
         classification: UUID | None | Unset = UNSET,
@@ -133,13 +226,17 @@ class Entity(Record):
         name: str | None | Unset = UNSET,
         characteristics: Characteristics | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'classification': classification,
-            'id': id,
-            'code': code,
-            'name': name,
-            'characteristics': characteristics,
-        })
+        data: dict[str, object] = {}
+        if classification is not UNSET:
+            data['classification'] = _encode_uuid(classification)
+        data['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            data['code'] = copy_json(code)
+        if name is not UNSET:
+            data['name'] = copy_json(name)
+        if characteristics is not UNSET:
+            data['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
+        self._set_data(data)
 
     def replace(self, *,
         classification: UUID | None | Unset = UNSET,
@@ -149,44 +246,94 @@ class Entity(Record):
         characteristics: Characteristics | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'classification': classification,
-            'id': id,
-            'code': code,
-            'name': name,
-            'characteristics': characteristics,
-        })
+        changes: dict[str, object] = {}
+        if classification is not UNSET:
+            changes['classification'] = _encode_uuid(classification)
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if characteristics is not UNSET:
+            changes['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
+        return self._replace(changes)
 
     @property
     def classification(self) -> UUID | None:
         'Classification describing the object, referenced by its stable UUID.'
-        return cast('UUID | None', self._field('classification'))
+        return cast('UUID | None', _decode_uuid(self._data.get('classification')))
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Entity, distinct from a Model revision.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str | None:
         'Optional case-sensitive code unique among all Entities and Assemblies in the Model. Renaming it preserves UUID identity and references.'
-        return cast('str | None', self._field('code'))
+        return cast('str | None', self._data.get('code'))
 
     @property
     def name(self) -> str | None:
         'Human-readable display name; not used as identity.'
-        return cast('str | None', self._field('name'))
+        return cast('str | None', self._data.get('name'))
 
     @property
     def characteristics(self) -> Characteristics | None:
         "The Entity's labels and named values."
-        return cast('Characteristics | None', self._field('characteristics'))
+        return cast('Characteristics | None', self._child('characteristics', Characteristics, False))
 
 
 class Assembly(Entity):
     'An Entity identifying a collection of Entities and Relationships. Members are referenced by identity and may belong to more than one Assembly. Membership does not imply spatial containment or duplicate its members.'
     __slots__ = ()
     _kind = 'Assembly'
+    _SLOTS = _freeze(
+        {'entities': {'options': [{'kind': 'Entity', 'category': 'uuid'}],
+                      'required': False,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False},
+         'relationships': {'options': [{'kind': 'Relationship', 'category': 'uuid'}],
+                           'required': False,
+                           'many': True,
+                           'mapping': False,
+                           'nullable': True,
+                           'ordered': False},
+         'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
+                            'required': False,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': True,
+                            'ordered': False},
+         'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'characteristics': {'options': [{'kind': 'Characteristics',
+                                          'category': 'record'}],
+                             'required': False,
+                             'many': False,
+                             'mapping': False,
+                             'nullable': True,
+                             'ordered': False}}
+    )
 
     def __init__(self, *,
         entities: tuple[UUID, ...] | None | Unset = UNSET,
@@ -197,15 +344,21 @@ class Assembly(Entity):
         name: str | None | Unset = UNSET,
         characteristics: Characteristics | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'entities': entities,
-            'relationships': relationships,
-            'classification': classification,
-            'id': id,
-            'code': code,
-            'name': name,
-            'characteristics': characteristics,
-        })
+        data: dict[str, object] = {}
+        if entities is not UNSET:
+            data['entities'] = _encode_many(entities, lambda v: _encode_uuid(v))
+        if relationships is not UNSET:
+            data['relationships'] = _encode_many(relationships, lambda v: _encode_uuid(v))
+        if classification is not UNSET:
+            data['classification'] = _encode_uuid(classification)
+        data['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            data['code'] = copy_json(code)
+        if name is not UNSET:
+            data['name'] = copy_json(name)
+        if characteristics is not UNSET:
+            data['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
+        self._set_data(data)
 
     def replace(self, *,
         entities: tuple[UUID, ...] | None | Unset = UNSET,
@@ -217,137 +370,196 @@ class Assembly(Entity):
         characteristics: Characteristics | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'entities': entities,
-            'relationships': relationships,
-            'classification': classification,
-            'id': id,
-            'code': code,
-            'name': name,
-            'characteristics': characteristics,
-        })
+        changes: dict[str, object] = {}
+        if entities is not UNSET:
+            changes['entities'] = _encode_many(entities, lambda v: _encode_uuid(v))
+        if relationships is not UNSET:
+            changes['relationships'] = _encode_many(relationships, lambda v: _encode_uuid(v))
+        if classification is not UNSET:
+            changes['classification'] = _encode_uuid(classification)
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if characteristics is not UNSET:
+            changes['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
+        return self._replace(changes)
 
     @property
     def entities(self) -> tuple[UUID, ...] | None:
         'Unordered, unique UUIDs of member Entities, including nested Assemblies.'
-        return cast('tuple[UUID, ...] | None', self._field('entities'))
+        return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('entities', ())))
 
     @property
     def relationships(self) -> tuple[UUID, ...] | None:
         'Unordered, unique UUIDs of member Relationships.'
-        return cast('tuple[UUID, ...] | None', self._field('relationships'))
+        return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('relationships', ())))
 
     @property
     def classification(self) -> UUID | None:
         'Classification describing the object, referenced by its stable UUID.'
-        return cast('UUID | None', self._field('classification'))
+        return cast('UUID | None', _decode_uuid(self._data.get('classification')))
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Entity, distinct from a Model revision.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str | None:
         'Optional case-sensitive code unique among all Entities and Assemblies in the Model. Renaming it preserves UUID identity and references.'
-        return cast('str | None', self._field('code'))
+        return cast('str | None', self._data.get('code'))
 
     @property
     def name(self) -> str | None:
         'Human-readable display name; not used as identity.'
-        return cast('str | None', self._field('name'))
+        return cast('str | None', self._data.get('name'))
 
     @property
     def characteristics(self) -> Characteristics | None:
         "The Entity's labels and named values."
-        return cast('Characteristics | None', self._field('characteristics'))
+        return cast('Characteristics | None', self._child('characteristics', Characteristics, False))
 
 
 class Assignment(Record):
     'An explicit scalar or Movement target and finite supplied Quantity; its collection determines assignment or estimate semantics.'
     __slots__ = ()
     _kind = 'Assignment'
+    _SLOTS = _freeze(
+        {'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False}}
+    )
 
     def __init__(self, *,
         target: Reference,
         quantity: Quantity,
     ) -> None:
-        self._initialize({
-            'target': target,
-            'quantity': quantity,
-        })
+        data: dict[str, object] = {}
+        data['target'] = _encode_record(target, Reference, 'target')
+        data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        self._set_data(data)
 
     def replace(self, *,
         target: Reference | Unset = UNSET,
         quantity: Quantity | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'target': target,
-            'quantity': quantity,
-        })
+        changes: dict[str, object] = {}
+        if target is not UNSET:
+            changes['target'] = _encode_record(target, Reference, 'target')
+        if quantity is not UNSET:
+            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        return self._replace(changes)
 
     @property
     def target(self) -> Reference:
         'Value or Movement to which the quantity is supplied.'
-        return cast('Reference', self._field('target'))
+        return cast('Reference', self._child('target', Reference, False))
 
     @property
     def quantity(self) -> Quantity:
         'Explicit finite magnitude and compatible units; omission or null is not a supplied amount.'
-        return cast('Quantity', self._field('quantity'))
+        return cast('Quantity', self._child('quantity', Quantity, False))
 
 
 class Binding(Record):
     'A local interface name that refers to an existing canonical Value by UUID.'
     __slots__ = ()
     _kind = 'Binding'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'value': {'options': [{'kind': 'Value', 'category': 'uuid'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str,
         value: UUID,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'value': value,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        data['value'] = _encode_uuid(value)
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
         value: UUID | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'value': value,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if value is not UNSET:
+            changes['value'] = _encode_uuid(value)
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Case-sensitive local interface name; not reference identity.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def value(self) -> UUID:
         'UUID of the shared Value. Its declaration supplies its kind, Measure, and content.'
-        return cast('UUID', self._field('value'))
+        return cast('UUID', _decode_uuid(self._data.get('value')))
 
 
 class CalculationProvenance(Record):
     'Calculation implementation identity, separate from captured sampling provenance.'
     __slots__ = ()
     _kind = 'CalculationProvenance'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'fingerprint': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                         'required': True,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': False,
+                         'ordered': False},
+         'versions': {'options': [{'kind': 'LibraryVersion', 'category': 'record'}],
+                      'required': True,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': True}}
+    )
 
     def __init__(self, *,
         name: str,
         fingerprint: str,
         versions: tuple[LibraryVersion, ...],
     ) -> None:
-        self._initialize({
-            'name': name,
-            'fingerprint': fingerprint,
-            'versions': versions,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        data['fingerprint'] = copy_json(fingerprint)
+        data['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -355,43 +567,68 @@ class CalculationProvenance(Record):
         versions: tuple[LibraryVersion, ...] | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'fingerprint': fingerprint,
-            'versions': versions,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if fingerprint is not UNSET:
+            changes['fingerprint'] = copy_json(fingerprint)
+        if versions is not UNSET:
+            changes['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Name of the calculation implementation.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def fingerprint(self) -> str:
         'Format-prefixed digest of the calculation manifest, which covers its sources, resources and dependency versions.'
-        return cast('str', self._field('fingerprint'))
+        return cast('str', self._data.get('fingerprint'))
 
     @property
     def versions(self) -> tuple[LibraryVersion, ...]:
         'Dependency versions included in the fingerprint.'
-        return cast('tuple[LibraryVersion, ...]', self._field('versions'))
+        return cast('tuple[LibraryVersion, ...]', self._child('versions', LibraryVersion, True))
 
 
 class Call(Record):
     'Application of an identified Function to positional and named expression arguments.'
     __slots__ = ()
     _kind = 'Call'
+    _SLOTS = _freeze(
+        {'function': {'options': [{'kind': 'Function', 'category': 'uuid'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'arguments': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                       'required': False,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': True},
+         'named_arguments': {'options': [{'kind': 'Argument', 'category': 'record'}],
+                             'required': False,
+                             'many': True,
+                             'mapping': False,
+                             'nullable': True,
+                             'ordered': True}}
+    )
 
     def __init__(self, *,
         function: UUID,
         arguments: tuple[Expression, ...] | None | Unset = UNSET,
         named_arguments: tuple[Argument, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'function': function,
-            'arguments': arguments,
-            'named_arguments': named_arguments,
-        })
+        data: dict[str, object] = {}
+        data['function'] = _encode_uuid(function)
+        if arguments is not UNSET:
+            data['arguments'] = _encode_many(arguments, lambda v: _encode_record(v, Expression, 'arguments'))
+        if named_arguments is not UNSET:
+            data['named_arguments'] = _encode_many(named_arguments, lambda v: _encode_record(v, Argument, 'named_arguments'))
+        self._set_data(data)
 
     def replace(self, *,
         function: UUID | Unset = UNSET,
@@ -399,67 +636,121 @@ class Call(Record):
         named_arguments: tuple[Argument, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'function': function,
-            'arguments': arguments,
-            'named_arguments': named_arguments,
-        })
+        changes: dict[str, object] = {}
+        if function is not UNSET:
+            changes['function'] = _encode_uuid(function)
+        if arguments is not UNSET:
+            changes['arguments'] = _encode_many(arguments, lambda v: _encode_record(v, Expression, 'arguments'))
+        if named_arguments is not UNSET:
+            changes['named_arguments'] = _encode_many(named_arguments, lambda v: _encode_record(v, Argument, 'named_arguments'))
+        return self._replace(changes)
 
     @property
     def function(self) -> UUID:
         'UUID of the Function that the call applies.'
-        return cast('UUID', self._field('function'))
+        return cast('UUID', _decode_uuid(self._data.get('function')))
 
     @property
     def arguments(self) -> tuple[Expression, ...] | None:
         'Positional arguments, in order.'
-        return cast('tuple[Expression, ...] | None', self._field('arguments'))
+        return cast('tuple[Expression, ...] | None', self._child('arguments', Expression, True))
 
     @property
     def named_arguments(self) -> tuple[Argument, ...] | None:
         'Named arguments with unique parameter names. Their order is retained for authoring, not positional binding.'
-        return cast('tuple[Argument, ...] | None', self._field('named_arguments'))
+        return cast('tuple[Argument, ...] | None', self._child('named_arguments', Argument, True))
 
 
 class Characteristics(Record):
     'A collection of Labels and Values belonging to an Entity or Relationship. Each Label or Value has a stable UUID and a key unique within its collection.'
     __slots__ = ()
     _kind = 'Characteristics'
+    _SLOTS = _freeze(
+        {'labels': {'options': [{'kind': 'Label', 'category': 'record'}],
+                    'required': False,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False},
+         'values': {'options': [{'kind': 'Value', 'category': 'record'}],
+                    'required': False,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         labels: tuple[Label, ...] | None | Unset = UNSET,
         values: tuple[Value, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'labels': labels,
-            'values': values,
-        })
+        data: dict[str, object] = {}
+        if labels is not UNSET:
+            data['labels'] = _encode_many(labels, lambda v: _encode_record(v, Label, 'labels'))
+        if values is not UNSET:
+            data['values'] = _encode_many(values, lambda v: _encode_record(v, Value, 'values'))
+        self._set_data(data)
 
     def replace(self, *,
         labels: tuple[Label, ...] | None | Unset = UNSET,
         values: tuple[Value, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'labels': labels,
-            'values': values,
-        })
+        changes: dict[str, object] = {}
+        if labels is not UNSET:
+            changes['labels'] = _encode_many(labels, lambda v: _encode_record(v, Label, 'labels'))
+        if values is not UNSET:
+            changes['values'] = _encode_many(values, lambda v: _encode_record(v, Value, 'values'))
+        return self._replace(changes)
 
     @property
     def labels(self) -> tuple[Label, ...] | None:
         'Identified labels with explicit owner-local keys, unique within this collection.'
-        return cast('tuple[Label, ...] | None', self._field('labels'))
+        return cast('tuple[Label, ...] | None', self._child('labels', Label, True))
 
     @property
     def values(self) -> tuple[Value, ...] | None:
         'Identified values with explicit owner-local keys, unique within this collection.'
-        return cast('tuple[Value, ...] | None', self._field('values'))
+        return cast('tuple[Value, ...] | None', self._child('values', Value, True))
 
 
 class Claim(Record):
     'Sourced, asserted, or derived candidate content and its supporting lineage.'
     __slots__ = ()
     _kind = 'Claim'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'content': {'options': [{'kind': 'Content', 'category': 'opaque'}],
+                     'required': True,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': False},
+         'kind': {'options': [{'kind': 'ClaimKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'sources': {'options': [{'kind': 'Location', 'category': 'record'},
+                                 {'kind': 'Claim', 'category': 'uuid'}],
+                     'required': False,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': False},
+         'method': {'options': [{'kind': 'Method', 'category': 'record'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -468,13 +759,15 @@ class Claim(Record):
         sources: tuple[Location | UUID, ...] | None | Unset = UNSET,
         method: Method | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'content': content,
-            'kind': kind,
-            'sources': sources,
-            'method': method,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['content'] = copy_json(content)
+        data['kind'] = _encode_enum(kind, ClaimKind, 'kind')
+        if sources is not UNSET:
+            data['sources'] = self._encode_field('sources', sources)
+        if method is not UNSET:
+            data['method'] = _encode_record(method, Method, 'method')
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -484,28 +777,33 @@ class Claim(Record):
         method: Method | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'content': content,
-            'kind': kind,
-            'sources': sources,
-            'method': method,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if content is not UNSET:
+            changes['content'] = copy_json(content)
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, ClaimKind, 'kind')
+        if sources is not UNSET:
+            changes['sources'] = self._encode_field('sources', sources)
+        if method is not UNSET:
+            changes['method'] = _encode_record(method, Method, 'method')
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Claim, referenced by Facts and by dependent Claims.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def content(self) -> FrozenJSONValue | None:
         'Candidate content; its structure depends on the supported target.'
-        return cast('FrozenJSONValue | None', self._field('content'))
+        return self._data.get('content')
 
     @property
     def kind(self) -> ClaimKind:
         'Whether the content is sourced, asserted or derived.'
-        return cast('ClaimKind', self._field('kind'))
+        return cast('ClaimKind', _decode_enum(self._data.get('kind'), ClaimKind))
 
     @property
     def sources(self) -> tuple[Location | UUID, ...] | None:
@@ -515,13 +813,45 @@ class Claim(Record):
     @property
     def method(self) -> Method | None:
         'Process used to obtain the content; required for asserted and derived Claims.'
-        return cast('Method | None', self._field('method'))
+        return cast('Method | None', self._child('method', Method, False))
 
 
 class Classification(Record):
     'A named definition node in a taxonomy hierarchy.'
     __slots__ = ()
     _kind = 'Classification'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'definition': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                        'required': False,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': False},
+         'parent': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -530,13 +860,15 @@ class Classification(Record):
         definition: str | None | Unset = UNSET,
         parent: UUID | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'code': code,
-            'name': name,
-            'definition': definition,
-            'parent': parent,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['code'] = copy_json(code)
+        data['name'] = copy_json(name)
+        if definition is not UNSET:
+            data['definition'] = copy_json(definition)
+        if parent is not UNSET:
+            data['parent'] = _encode_uuid(parent)
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -546,44 +878,81 @@ class Classification(Record):
         parent: UUID | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'code': code,
-            'name': name,
-            'definition': definition,
-            'parent': parent,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if definition is not UNSET:
+            changes['definition'] = copy_json(definition)
+        if parent is not UNSET:
+            changes['parent'] = _encode_uuid(parent)
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity across code changes and Model revisions.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str:
         'Case-sensitive code unique within its Taxonomy; descriptive metadata, not reference identity.'
-        return cast('str', self._field('code'))
+        return cast('str', self._data.get('code'))
 
     @property
     def name(self) -> str:
         'Nonblank human-readable name.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def definition(self) -> str | None:
         'Optional explanatory text; an empty string is permitted.'
-        return cast('str | None', self._field('definition'))
+        return cast('str | None', self._data.get('definition'))
 
     @property
     def parent(self) -> UUID | None:
         'Parent Classification in the same Taxonomy, referenced by UUID. An absent or null parent denotes a root candidate.'
-        return cast('UUID | None', self._field('parent'))
+        return cast('UUID | None', _decode_uuid(self._data.get('parent')))
 
 
 class Constraint(Record):
     'An identified requirement that a referenced Boolean Expression be true in the context where the Constraint is imposed.'
     __slots__ = ()
     _kind = 'Constraint'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'predicate': {'options': [{'kind': 'Expression', 'category': 'uuid'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -592,13 +961,16 @@ class Constraint(Record):
         description: str | None | Unset = UNSET,
         predicate: UUID,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'code': code,
-            'name': name,
-            'description': description,
-            'predicate': predicate,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            data['code'] = copy_json(code)
+        if name is not UNSET:
+            data['name'] = copy_json(name)
+        if description is not UNSET:
+            data['description'] = copy_json(description)
+        data['predicate'] = _encode_uuid(predicate)
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -608,114 +980,184 @@ class Constraint(Record):
         predicate: UUID | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'code': code,
-            'name': name,
-            'description': description,
-            'predicate': predicate,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if description is not UNSET:
+            changes['description'] = copy_json(description)
+        if predicate is not UNSET:
+            changes['predicate'] = _encode_uuid(predicate)
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Constraint across Model revisions.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str | None:
         'Optional case-sensitive code unique within its Constraint collection; not reference identity. Renaming it preserves UUID references.'
-        return cast('str | None', self._field('code'))
+        return cast('str | None', self._data.get('code'))
 
     @property
     def name(self) -> str | None:
         'Human-readable display name; not used as identity.'
-        return cast('str | None', self._field('name'))
+        return cast('str | None', self._data.get('name'))
 
     @property
     def description(self) -> str | None:
         'Explanation of the requirement and its purpose.'
-        return cast('str | None', self._field('description'))
+        return cast('str | None', self._data.get('description'))
 
     @property
     def predicate(self) -> UUID:
         'UUID reference to the Expression required to be true. Reference existence and a Boolean result domain require semantic validation beyond record shape.'
-        return cast('UUID', self._field('predicate'))
+        return cast('UUID', _decode_uuid(self._data.get('predicate')))
 
 
 class ContentEntry(Record):
     'One key-value entry of mapping content.'
     __slots__ = ()
     _kind = 'ContentEntry'
+    _SLOTS = _freeze(
+        {'key': {'options': [{'kind': 'PropertyContent', 'category': 'record'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'value': {'options': [{'kind': 'PropertyContent', 'category': 'record'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         key: PropertyContent,
         value: PropertyContent,
     ) -> None:
-        self._initialize({
-            'key': key,
-            'value': value,
-        })
+        data: dict[str, object] = {}
+        data['key'] = _encode_record(key, PropertyContent, 'key')
+        data['value'] = _encode_record(value, PropertyContent, 'value')
+        self._set_data(data)
 
     def replace(self, *,
         key: PropertyContent | Unset = UNSET,
         value: PropertyContent | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'key': key,
-            'value': value,
-        })
+        changes: dict[str, object] = {}
+        if key is not UNSET:
+            changes['key'] = _encode_record(key, PropertyContent, 'key')
+        if value is not UNSET:
+            changes['value'] = _encode_record(value, PropertyContent, 'value')
+        return self._replace(changes)
 
     @property
     def key(self) -> PropertyContent:
         'Content of the mapping key.'
-        return cast('PropertyContent', self._field('key'))
+        return cast('PropertyContent', self._child('key', PropertyContent, False))
 
     @property
     def value(self) -> PropertyContent:
         'Content of the value for the key.'
-        return cast('PropertyContent', self._field('value'))
+        return cast('PropertyContent', self._child('value', PropertyContent, False))
 
 
 class Criterion(Record):
     'Require an Entity Label with this owner-local key to include the exact Classification.'
     __slots__ = ()
     _kind = 'Criterion'
+    _SLOTS = _freeze(
+        {'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
+                            'required': True,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': False,
+                            'ordered': False}}
+    )
 
     def __init__(self, *,
         key: str,
         classification: UUID,
     ) -> None:
-        self._initialize({
-            'key': key,
-            'classification': classification,
-        })
+        data: dict[str, object] = {}
+        data['key'] = copy_json(key)
+        data['classification'] = _encode_uuid(classification)
+        self._set_data(data)
 
     def replace(self, *,
         key: str | Unset = UNSET,
         classification: UUID | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'key': key,
-            'classification': classification,
-        })
+        changes: dict[str, object] = {}
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if classification is not UNSET:
+            changes['classification'] = _encode_uuid(classification)
+        return self._replace(changes)
 
     @property
     def key(self) -> str:
         'Owner-local Label key.'
-        return cast('str', self._field('key'))
+        return cast('str', self._data.get('key'))
 
     @property
     def classification(self) -> UUID:
         'UUID of the Classification that the Label must include.'
-        return cast('UUID', self._field('classification'))
+        return cast('UUID', _decode_uuid(self._data.get('classification')))
 
 
 class Decision(Record):
     'One dated rule decision with explicit observations, first-match rules and fallback.'
     __slots__ = ()
     _kind = 'Decision'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'at': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'observations': {'options': [{'kind': 'ObservationBinding',
+                                       'category': 'record'}],
+                          'required': True,
+                          'many': True,
+                          'mapping': False,
+                          'nullable': False,
+                          'ordered': True},
+         'rules': {'options': [{'kind': 'Rule', 'category': 'record'}],
+                   'required': True,
+                   'many': True,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': True},
+         'fallback': {'options': [{'kind': 'Action', 'category': 'record'}],
+                      'required': True,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': True}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -724,13 +1166,13 @@ class Decision(Record):
         rules: tuple[Rule, ...],
         fallback: tuple[Action, ...],
     ) -> None:
-        self._initialize({
-            'id': id,
-            'at': at,
-            'observations': observations,
-            'rules': rules,
-            'fallback': fallback,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['at'] = _encode_date(at)
+        data['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservationBinding, 'observations'))
+        data['rules'] = _encode_many(rules, lambda v: _encode_record(v, Rule, 'rules'))
+        data['fallback'] = _encode_many(fallback, lambda v: _encode_record(v, Action, 'fallback'))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -740,55 +1182,83 @@ class Decision(Record):
         fallback: tuple[Action, ...] | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'at': at,
-            'observations': observations,
-            'rules': rules,
-            'fallback': fallback,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if at is not UNSET:
+            changes['at'] = _encode_date(at)
+        if observations is not UNSET:
+            changes['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservationBinding, 'observations'))
+        if rules is not UNSET:
+            changes['rules'] = _encode_many(rules, lambda v: _encode_record(v, Rule, 'rules'))
+        if fallback is not UNSET:
+            changes['fallback'] = _encode_many(fallback, lambda v: _encode_record(v, Action, 'fallback'))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Decision, referenced by RuleEvidence.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def at(self) -> Date:
         'Decision date; dates increase strictly within the RuleSet.'
-        return cast('Date', self._field('at'))
+        return cast('Date', _decode_date(self._data.get('at')))
 
     @property
     def observations(self) -> tuple[ObservationBinding, ...]:
         'Ordered observations that the rule conditions can read.'
-        return cast('tuple[ObservationBinding, ...]', self._field('observations'))
+        return cast('tuple[ObservationBinding, ...]', self._child('observations', ObservationBinding, True))
 
     @property
     def rules(self) -> tuple[Rule, ...]:
         'Ordered rules; the first Rule whose condition is true supplies the actions.'
-        return cast('tuple[Rule, ...]', self._field('rules'))
+        return cast('tuple[Rule, ...]', self._child('rules', Rule, True))
 
     @property
     def fallback(self) -> tuple[Action, ...]:
         'Nonempty ordered actions applied when no rule condition is true.'
-        return cast('tuple[Action, ...]', self._field('fallback'))
+        return cast('tuple[Action, ...]', self._child('fallback', Action, True))
 
 
 class Definitions(Record):
     'Reusable Taxonomies, Measures, and Functions identified by stable UUIDs within a Model.'
     __slots__ = ()
     _kind = 'Definitions'
+    _SLOTS = _freeze(
+        {'taxonomies': {'options': [{'kind': 'Taxonomy', 'category': 'record'}],
+                        'required': False,
+                        'many': True,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': False},
+         'measures': {'options': [{'kind': 'Measure', 'category': 'record'}],
+                      'required': False,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False},
+         'functions': {'options': [{'kind': 'Function', 'category': 'record'}],
+                       'required': False,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': False}}
+    )
 
     def __init__(self, *,
         taxonomies: tuple[Taxonomy, ...] | None | Unset = UNSET,
         measures: tuple[Measure, ...] | None | Unset = UNSET,
         functions: tuple[Function, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'taxonomies': taxonomies,
-            'measures': measures,
-            'functions': functions,
-        })
+        data: dict[str, object] = {}
+        if taxonomies is not UNSET:
+            data['taxonomies'] = _encode_many(taxonomies, lambda v: _encode_record(v, Taxonomy, 'taxonomies'))
+        if measures is not UNSET:
+            data['measures'] = _encode_many(measures, lambda v: _encode_record(v, Measure, 'measures'))
+        if functions is not UNSET:
+            data['functions'] = _encode_many(functions, lambda v: _encode_record(v, Function, 'functions'))
+        self._set_data(data)
 
     def replace(self, *,
         taxonomies: tuple[Taxonomy, ...] | None | Unset = UNSET,
@@ -796,32 +1266,85 @@ class Definitions(Record):
         functions: tuple[Function, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'taxonomies': taxonomies,
-            'measures': measures,
-            'functions': functions,
-        })
+        changes: dict[str, object] = {}
+        if taxonomies is not UNSET:
+            changes['taxonomies'] = _encode_many(taxonomies, lambda v: _encode_record(v, Taxonomy, 'taxonomies'))
+        if measures is not UNSET:
+            changes['measures'] = _encode_many(measures, lambda v: _encode_record(v, Measure, 'measures'))
+        if functions is not UNSET:
+            changes['functions'] = _encode_many(functions, lambda v: _encode_record(v, Function, 'functions'))
+        return self._replace(changes)
 
     @property
     def taxonomies(self) -> tuple[Taxonomy, ...] | None:
         'Taxonomies of this Model; codes are unique within the collection.'
-        return cast('tuple[Taxonomy, ...] | None', self._field('taxonomies'))
+        return cast('tuple[Taxonomy, ...] | None', self._child('taxonomies', Taxonomy, True))
 
     @property
     def measures(self) -> tuple[Measure, ...] | None:
         'Measures of this Model; codes are unique within the collection.'
-        return cast('tuple[Measure, ...] | None', self._field('measures'))
+        return cast('tuple[Measure, ...] | None', self._child('measures', Measure, True))
 
     @property
     def functions(self) -> tuple[Function, ...] | None:
         'Exact versioned Function contracts used by calls in this Model. Implementations and their capabilities are selected separately.'
-        return cast('tuple[Function, ...] | None', self._field('functions'))
+        return cast('tuple[Function, ...] | None', self._child('functions', Function, True))
 
 
 class Diagnostic(Record):
     'A coded finding and optional numerical evidence, qualified by document revision.'
     __slots__ = ()
     _kind = 'Diagnostic'
+    _SLOTS = _freeze(
+        {'severity': {'options': [{'kind': 'Severity', 'category': 'enum'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'message': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                     'required': True,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False},
+         'document': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'target': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False},
+         'residual': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'tolerance': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                       'required': False,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False},
+         'references': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                        'required': False,
+                        'many': True,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': True}}
+    )
 
     def __init__(self, *,
         severity: Severity,
@@ -833,16 +1356,21 @@ class Diagnostic(Record):
         tolerance: Quantity | Unset = UNSET,
         references: tuple[Reference, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'severity': severity,
-            'code': code,
-            'message': message,
-            'document': document,
-            'target': target,
-            'residual': residual,
-            'tolerance': tolerance,
-            'references': references,
-        })
+        data: dict[str, object] = {}
+        data['severity'] = _encode_enum(severity, Severity, 'severity')
+        data['code'] = copy_json(code)
+        data['message'] = copy_json(message)
+        if document is not UNSET:
+            data['document'] = _encode_uuid(document)
+        if target is not UNSET:
+            data['target'] = _encode_uuid(target)
+        if residual is not UNSET:
+            data['residual'] = _encode_record(residual, Quantity, 'residual')
+        if tolerance is not UNSET:
+            data['tolerance'] = _encode_record(tolerance, Quantity, 'tolerance')
+        if references is not UNSET:
+            data['references'] = _encode_many(references, lambda v: _encode_record(v, Reference, 'references'))
+        self._set_data(data)
 
     def replace(self, *,
         severity: Severity | Unset = UNSET,
@@ -855,62 +1383,108 @@ class Diagnostic(Record):
         references: tuple[Reference, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'severity': severity,
-            'code': code,
-            'message': message,
-            'document': document,
-            'target': target,
-            'residual': residual,
-            'tolerance': tolerance,
-            'references': references,
-        })
+        changes: dict[str, object] = {}
+        if severity is not UNSET:
+            changes['severity'] = _encode_enum(severity, Severity, 'severity')
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if message is not UNSET:
+            changes['message'] = copy_json(message)
+        if document is not UNSET:
+            changes['document'] = _encode_uuid(document)
+        if target is not UNSET:
+            changes['target'] = _encode_uuid(target)
+        if residual is not UNSET:
+            changes['residual'] = _encode_record(residual, Quantity, 'residual')
+        if tolerance is not UNSET:
+            changes['tolerance'] = _encode_record(tolerance, Quantity, 'tolerance')
+        if references is not UNSET:
+            changes['references'] = _encode_many(references, lambda v: _encode_record(v, Reference, 'references'))
+        return self._replace(changes)
 
     @property
     def severity(self) -> Severity:
         'Importance of the finding.'
-        return cast('Severity', self._field('severity'))
+        return cast('Severity', _decode_enum(self._data.get('severity'), Severity))
 
     @property
     def code(self) -> str:
         'Nonblank finding code.'
-        return cast('str', self._field('code'))
+        return cast('str', self._data.get('code'))
 
     @property
     def message(self) -> str:
         'Explanation and, for numerical findings, the checking convention.'
-        return cast('str', self._field('message'))
+        return cast('str', self._data.get('message'))
 
     @property
     def document(self) -> UUID | None:
         'Revision containing the referenced target, or the document addressed as a whole.'
-        return cast('UUID | None', self._field('document'))
+        return cast('UUID | None', _decode_uuid(self._data.get('document')))
 
     @property
     def target(self) -> UUID | None:
         'UUID of a canonical record in document; never an unqualified cross-revision reference.'
-        return cast('UUID | None', self._field('target'))
+        return cast('UUID | None', _decode_uuid(self._data.get('target')))
 
     @property
     def residual(self) -> Quantity | None:
         'Finite signed residual under the stated convention.'
-        return cast('Quantity | None', self._field('residual'))
+        return cast('Quantity | None', self._child('residual', Quantity, False))
 
     @property
     def tolerance(self) -> Quantity | None:
         'Finite nonnegative tolerance in compatible units.'
-        return cast('Quantity | None', self._field('tolerance'))
+        return cast('Quantity | None', self._child('tolerance', Quantity, False))
 
     @property
     def references(self) -> tuple[Reference, ...] | None:
         "Participating Values and Movements in this Run's input Model. Batch findings and attempts without a valid input Model cannot carry these references."
-        return cast('tuple[Reference, ...] | None', self._field('references'))
+        return cast('tuple[Reference, ...] | None', self._child('references', Reference, True))
 
 
 class Distribution(Record):
     'Serializable distribution parameters, with explicit units; no live random generator.'
     __slots__ = ()
     _kind = 'Distribution'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'DistributionFamily', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'lower': {'options': [{'kind': 'double', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'upper': {'options': [{'kind': 'double', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'mode': {'options': [{'kind': 'double', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'weighting': {'options': [{'kind': 'double', 'category': 'primitive'}],
+                       'required': False,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': False},
+         'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         kind: DistributionFamily,
@@ -920,14 +1494,16 @@ class Distribution(Record):
         weighting: int | float | None | Unset = UNSET,
         units: str,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'lower': lower,
-            'upper': upper,
-            'mode': mode,
-            'weighting': weighting,
-            'units': units,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, DistributionFamily, 'kind')
+        data['lower'] = copy_json(lower)
+        data['upper'] = copy_json(upper)
+        if mode is not UNSET:
+            data['mode'] = copy_json(mode)
+        if weighting is not UNSET:
+            data['weighting'] = copy_json(weighting)
+        data['units'] = copy_json(units)
+        self._set_data(data)
 
     def replace(self, *,
         kind: DistributionFamily | Unset = UNSET,
@@ -938,50 +1514,89 @@ class Distribution(Record):
         units: str | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'lower': lower,
-            'upper': upper,
-            'mode': mode,
-            'weighting': weighting,
-            'units': units,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, DistributionFamily, 'kind')
+        if lower is not UNSET:
+            changes['lower'] = copy_json(lower)
+        if upper is not UNSET:
+            changes['upper'] = copy_json(upper)
+        if mode is not UNSET:
+            changes['mode'] = copy_json(mode)
+        if weighting is not UNSET:
+            changes['weighting'] = copy_json(weighting)
+        if units is not UNSET:
+            changes['units'] = copy_json(units)
+        return self._replace(changes)
 
     @property
     def kind(self) -> DistributionFamily:
         'Distribution family, which is uniform, triangular or PERT.'
-        return cast('DistributionFamily', self._field('kind'))
+        return cast('DistributionFamily', _decode_enum(self._data.get('kind'), DistributionFamily))
 
     @property
     def lower(self) -> int | float:
         'Finite lower bound of the support, in units.'
-        return cast('int | float', self._field('lower'))
+        return cast('int | float', self._data.get('lower'))
 
     @property
     def upper(self) -> int | float:
         'Finite upper bound of the support, in units; it is not less than lower.'
-        return cast('int | float', self._field('upper'))
+        return cast('int | float', self._data.get('upper'))
 
     @property
     def mode(self) -> int | float | None:
         'Finite most likely value, between lower and upper; semantic checks require it for triangular and PERT.'
-        return cast('int | float | None', self._field('mode'))
+        return cast('int | float | None', self._data.get('mode'))
 
     @property
     def weighting(self) -> int | float | None:
         'Finite nonnegative weighting of the mode in a PERT distribution; absence means 4.'
-        return cast('int | float | None', self._field('weighting'))
+        return cast('int | float | None', self._data.get('weighting'))
 
     @property
     def units(self) -> str:
         'Units of lower, upper and mode.'
-        return cast('str', self._field('units'))
+        return cast('str', self._data.get('units'))
 
 
 class Domain(Record):
     'The permitted content of an argument or result, including its kind, compatible units, measurement meaning, and collection elements where applicable.'
     __slots__ = ()
     _kind = 'Domain'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'DomainKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': False},
+         'measure': {'options': [{'kind': 'Measure', 'category': 'uuid'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False},
+         'item_domain': {'options': [{'kind': 'Domain', 'category': 'record'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': False,
+                         'ordered': False},
+         'collection_kind': {'options': [{'kind': 'CollectionKind',
+                                          'category': 'enum'}],
+                             'required': False,
+                             'many': False,
+                             'mapping': False,
+                             'nullable': False,
+                             'ordered': False}}
+    )
 
     def __init__(self, *,
         kind: DomainKind,
@@ -990,13 +1605,17 @@ class Domain(Record):
         item_domain: Domain | Unset = UNSET,
         collection_kind: CollectionKind | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'units': units,
-            'measure': measure,
-            'item_domain': item_domain,
-            'collection_kind': collection_kind,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, DomainKind, 'kind')
+        if units is not UNSET:
+            data['units'] = copy_json(units)
+        if measure is not UNSET:
+            data['measure'] = _encode_uuid(measure)
+        if item_domain is not UNSET:
+            data['item_domain'] = _encode_record(item_domain, Domain, 'item_domain')
+        if collection_kind is not UNSET:
+            data['collection_kind'] = _encode_enum(collection_kind, CollectionKind, 'collection_kind')
+        self._set_data(data)
 
     def replace(self, *,
         kind: DomainKind | Unset = UNSET,
@@ -1006,79 +1625,168 @@ class Domain(Record):
         collection_kind: CollectionKind | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'units': units,
-            'measure': measure,
-            'item_domain': item_domain,
-            'collection_kind': collection_kind,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, DomainKind, 'kind')
+        if units is not UNSET:
+            changes['units'] = copy_json(units)
+        if measure is not UNSET:
+            changes['measure'] = _encode_uuid(measure)
+        if item_domain is not UNSET:
+            changes['item_domain'] = _encode_record(item_domain, Domain, 'item_domain')
+        if collection_kind is not UNSET:
+            changes['collection_kind'] = _encode_enum(collection_kind, CollectionKind, 'collection_kind')
+        return self._replace(changes)
 
     @property
     def kind(self) -> DomainKind:
         'The category of content permitted by this Domain.'
-        return cast('DomainKind', self._field('kind'))
+        return cast('DomainKind', _decode_enum(self._data.get('kind'), DomainKind))
 
     @property
     def units(self) -> str | None:
         'Optional compatible units required for Quantity content. Omission leaves units unconstrained by the signature; a concrete Quantity still requires explicit units.'
-        return cast('str | None', self._field('units'))
+        return cast('str | None', self._data.get('units'))
 
     @property
     def measure(self) -> UUID | None:
         'Optional exact measurement meaning required for a measurement or Flow.'
-        return cast('UUID | None', self._field('measure'))
+        return cast('UUID | None', _decode_uuid(self._data.get('measure')))
 
     @property
     def item_domain(self) -> Domain | None:
         'Domain of each collection element.'
-        return cast('Domain | None', self._field('item_domain'))
+        return cast('Domain | None', self._child('item_domain', Domain, False))
 
     @property
     def collection_kind(self) -> CollectionKind | None:
         'Optional collection shape required by this signature.'
-        return cast('CollectionKind | None', self._field('collection_kind'))
+        return cast('CollectionKind | None', _decode_enum(self._data.get('collection_kind'), CollectionKind))
 
 
 class Entry(Record):
     'A named text component of a source address.'
     __slots__ = ()
     _kind = 'Entry'
+    _SLOTS = _freeze(
+        {'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'value': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         key: str,
         value: str,
     ) -> None:
-        self._initialize({
-            'key': key,
-            'value': value,
-        })
+        data: dict[str, object] = {}
+        data['key'] = copy_json(key)
+        data['value'] = copy_json(value)
+        self._set_data(data)
 
     def replace(self, *,
         key: str | Unset = UNSET,
         value: str | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'key': key,
-            'value': value,
-        })
+        changes: dict[str, object] = {}
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if value is not UNSET:
+            changes['value'] = copy_json(value)
+        return self._replace(changes)
 
     @property
     def key(self) -> str:
         'Nonblank name of the address part, such as sheet or cell.'
-        return cast('str', self._field('key'))
+        return cast('str', self._data.get('key'))
 
     @property
     def value(self) -> str:
         'Nonblank text of the address part.'
-        return cast('str', self._field('value'))
+        return cast('str', self._data.get('value'))
 
 
 class Expression(Record):
     'An identified mathematical expression. Its kind determines its content; nested expressions retain order and UUID references resolve in the applicable Model or composed Specification scope.'
     __slots__ = ()
     _kind = 'Expression'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'kind': {'options': [{'kind': 'ExpressionKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'boolean': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False},
+         'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'operator': {'options': [{'kind': 'Operator', 'category': 'enum'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'operands': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                      'required': False,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': True},
+         'operand': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False},
+         'call': {'options': [{'kind': 'Call', 'category': 'record'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'selection': {'options': [{'kind': 'Selection', 'category': 'record'}],
+                       'required': False,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False},
+         'query': {'options': [{'kind': 'Query', 'category': 'record'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -1093,19 +1801,28 @@ class Expression(Record):
         selection: Selection | Unset = UNSET,
         query: Query | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'kind': kind,
-            'quantity': quantity,
-            'boolean': boolean,
-            'target': target,
-            'operator': operator,
-            'operands': operands,
-            'operand': operand,
-            'call': call,
-            'selection': selection,
-            'query': query,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['kind'] = _encode_enum(kind, ExpressionKind, 'kind')
+        if quantity is not UNSET:
+            data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if boolean is not UNSET:
+            data['boolean'] = copy_json(boolean)
+        if target is not UNSET:
+            data['target'] = _encode_record(target, Reference, 'target')
+        if operator is not UNSET:
+            data['operator'] = _encode_enum(operator, Operator, 'operator')
+        if operands is not UNSET:
+            data['operands'] = _encode_many(operands, lambda v: _encode_record(v, Expression, 'operands'))
+        if operand is not UNSET:
+            data['operand'] = _encode_record(operand, Expression, 'operand')
+        if call is not UNSET:
+            data['call'] = _encode_record(call, Call, 'call')
+        if selection is not UNSET:
+            data['selection'] = _encode_record(selection, Selection, 'selection')
+        if query is not UNSET:
+            data['query'] = _encode_record(query, Query, 'query')
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -1121,91 +1838,127 @@ class Expression(Record):
         query: Query | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'kind': kind,
-            'quantity': quantity,
-            'boolean': boolean,
-            'target': target,
-            'operator': operator,
-            'operands': operands,
-            'operand': operand,
-            'call': call,
-            'selection': selection,
-            'query': query,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, ExpressionKind, 'kind')
+        if quantity is not UNSET:
+            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if boolean is not UNSET:
+            changes['boolean'] = copy_json(boolean)
+        if target is not UNSET:
+            changes['target'] = _encode_record(target, Reference, 'target')
+        if operator is not UNSET:
+            changes['operator'] = _encode_enum(operator, Operator, 'operator')
+        if operands is not UNSET:
+            changes['operands'] = _encode_many(operands, lambda v: _encode_record(v, Expression, 'operands'))
+        if operand is not UNSET:
+            changes['operand'] = _encode_record(operand, Expression, 'operand')
+        if call is not UNSET:
+            changes['call'] = _encode_record(call, Call, 'call')
+        if selection is not UNSET:
+            changes['selection'] = _encode_record(selection, Selection, 'selection')
+        if query is not UNSET:
+            changes['query'] = _encode_record(query, Query, 'query')
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of this Expression across Model revisions.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def kind(self) -> ExpressionKind:
         'Form of the Expression; it determines which content field is present.'
-        return cast('ExpressionKind', self._field('kind'))
+        return cast('ExpressionKind', _decode_enum(self._data.get('kind'), ExpressionKind))
 
     @property
     def quantity(self) -> Quantity | None:
         'Numerical literal with an explicit magnitude and units, independent of any Measure. Use dimensionless for unitless content. Zero is a literal, not absence.'
-        return cast('Quantity | None', self._field('quantity'))
+        return cast('Quantity | None', self._child('quantity', Quantity, False))
 
     @property
     def boolean(self) -> bool | None:
         'Boolean literal; false is a literal, not absence.'
-        return cast('bool | None', self._field('boolean'))
+        return cast('bool | None', self._data.get('boolean'))
 
     @property
     def target(self) -> Reference | None:
         'Explicit Value or Movement symbol; never implicit recorded content.'
-        return cast('Reference | None', self._field('target'))
+        return cast('Reference | None', self._child('target', Reference, False))
 
     @property
     def operator(self) -> Operator | None:
         'Operator of a unary or binary Expression; absent for other kinds.'
-        return cast('Operator | None', self._field('operator'))
+        return cast('Operator | None', _decode_enum(self._data.get('operator'), Operator))
 
     @property
     def operands(self) -> tuple[Expression, ...] | None:
         'Two ordered operands of a binary operator. Unary operators use operand; Function calls use their own signature.'
-        return cast('tuple[Expression, ...] | None', self._field('operands'))
+        return cast('tuple[Expression, ...] | None', self._child('operands', Expression, True))
 
     @property
     def operand(self) -> Expression | None:
         'Operand of unary negation or Boolean negation.'
-        return cast('Expression | None', self._field('operand'))
+        return cast('Expression | None', self._child('operand', Expression, False))
 
     @property
     def call(self) -> Call | None:
         'Function call content of a call Expression.'
-        return cast('Call | None', self._field('call'))
+        return cast('Call | None', self._child('call', Call, False))
 
     @property
     def selection(self) -> Selection | None:
         'Member or index selection content of a selection Expression.'
-        return cast('Selection | None', self._field('selection'))
+        return cast('Selection | None', self._child('selection', Selection, False))
 
     @property
     def query(self) -> Query | None:
         'Embedded graph query of a query Expression; the Expression owns it.'
-        return cast('Query | None', self._field('query'))
+        return cast('Query | None', self._child('query', Query, False))
 
 
 class Fact(Record):
     'Supporting Claims for the recorded state of one graph object or characteristic.'
     __slots__ = ()
     _kind = 'Fact'
+    _SLOTS = _freeze(
+        {'target': {'options': [{'kind': 'Entity', 'category': 'uuid'},
+                                {'kind': 'Relationship', 'category': 'uuid'},
+                                {'kind': 'Label', 'category': 'uuid'},
+                                {'kind': 'Value', 'category': 'uuid'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'claims': {'options': [{'kind': 'Claim', 'category': 'uuid'}],
+                    'required': True,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'reconciliation': {'options': [{'kind': 'Reconciliation',
+                                         'category': 'record'}],
+                            'required': False,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': True,
+                            'ordered': False}}
+    )
 
     def __init__(self, *,
         target: UUID,
         claims: tuple[UUID, ...],
         reconciliation: Reconciliation | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'target': target,
-            'claims': claims,
-            'reconciliation': reconciliation,
-        })
+        data: dict[str, object] = {}
+        data['target'] = self._encode_field('target', target)
+        data['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
+        if reconciliation is not UNSET:
+            data['reconciliation'] = _encode_record(reconciliation, Reconciliation, 'reconciliation')
+        self._set_data(data)
 
     def replace(self, *,
         target: UUID | Unset = UNSET,
@@ -1213,11 +1966,14 @@ class Fact(Record):
         reconciliation: Reconciliation | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'target': target,
-            'claims': claims,
-            'reconciliation': reconciliation,
-        })
+        changes: dict[str, object] = {}
+        if target is not UNSET:
+            changes['target'] = self._encode_field('target', target)
+        if claims is not UNSET:
+            changes['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
+        if reconciliation is not UNSET:
+            changes['reconciliation'] = _encode_record(reconciliation, Reconciliation, 'reconciliation')
+        return self._replace(changes)
 
     @property
     def target(self) -> UUID:
@@ -1227,88 +1983,178 @@ class Fact(Record):
     @property
     def claims(self) -> tuple[UUID, ...]:
         'Unique UUIDs of supporting Claims; at least one is required.'
-        return cast('tuple[UUID, ...]', self._field('claims'))
+        return cast('tuple[UUID, ...]', _decode_uuids(self._data.get('claims', ())))
 
     @property
     def reconciliation(self) -> Reconciliation | None:
         'Optional explicit selection of one supporting Claim when the Claims conflict.'
-        return cast('Reconciliation | None', self._field('reconciliation'))
+        return cast('Reconciliation | None', self._child('reconciliation', Reconciliation, False))
 
 
 class Filter(Record):
     'Conjunctive filters over fixed Entity metadata. No numerical expression or solved amount determines membership.'
     __slots__ = ()
     _kind = 'Filter'
+    _SLOTS = _freeze(
+        {'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
+                            'required': False,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': False,
+                            'ordered': False},
+         'labels': {'options': [{'kind': 'Criterion', 'category': 'record'}],
+                    'required': False,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': True}}
+    )
 
     def __init__(self, *,
         classification: UUID | Unset = UNSET,
         labels: tuple[Criterion, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'classification': classification,
-            'labels': labels,
-        })
+        data: dict[str, object] = {}
+        if classification is not UNSET:
+            data['classification'] = _encode_uuid(classification)
+        if labels is not UNSET:
+            data['labels'] = _encode_many(labels, lambda v: _encode_record(v, Criterion, 'labels'))
+        self._set_data(data)
 
     def replace(self, *,
         classification: UUID | Unset = UNSET,
         labels: tuple[Criterion, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'classification': classification,
-            'labels': labels,
-        })
+        changes: dict[str, object] = {}
+        if classification is not UNSET:
+            changes['classification'] = _encode_uuid(classification)
+        if labels is not UNSET:
+            changes['labels'] = _encode_many(labels, lambda v: _encode_record(v, Criterion, 'labels'))
+        return self._replace(changes)
 
     @property
     def classification(self) -> UUID | None:
         'Exact Classification that a candidate Entity must have; taxonomy descendants do not match.'
-        return cast('UUID | None', self._field('classification'))
+        return cast('UUID | None', _decode_uuid(self._data.get('classification')))
 
     @property
     def labels(self) -> tuple[Criterion, ...] | None:
         'All listed Label conditions must hold.'
-        return cast('tuple[Criterion, ...] | None', self._field('labels'))
+        return cast('tuple[Criterion, ...] | None', self._child('labels', Criterion, True))
 
 
 class Flow(Record):
     'Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero movements are distinct. The overall model logic defines the meaning of the quantities and selects their calculations; a Flow carries no semantic kind or basis.'
     __slots__ = ()
     _kind = 'Flow'
+    _SLOTS = _freeze(
+        {'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'movements': {'options': [{'kind': 'Movement', 'category': 'record'}],
+                       'required': True,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': True}}
+    )
 
     def __init__(self, *,
         units: str,
         movements: tuple[Movement, ...],
     ) -> None:
-        self._initialize({
-            'units': units,
-            'movements': movements,
-        })
+        data: dict[str, object] = {}
+        data['units'] = copy_json(units)
+        data['movements'] = _encode_many(movements, lambda v: _encode_record(v, Movement, 'movements'))
+        self._set_data(data)
 
     def replace(self, *,
         units: str | Unset = UNSET,
         movements: tuple[Movement, ...] | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'units': units,
-            'movements': movements,
-        })
+        changes: dict[str, object] = {}
+        if units is not UNSET:
+            changes['units'] = copy_json(units)
+        if movements is not UNSET:
+            changes['movements'] = _encode_many(movements, lambda v: _encode_record(v, Movement, 'movements'))
+        return self._replace(changes)
 
     @property
     def units(self) -> str:
         'Units of every Movement magnitude in this Flow.'
-        return cast('str', self._field('units'))
+        return cast('str', self._data.get('units'))
 
     @property
     def movements(self) -> tuple[_Movement, ...]:
         'Ordered Movements; an empty list is a Flow with no entries.'
-        return cast('tuple[_Movement, ...]', self._field('movements'))
+        return cast('tuple[_Movement, ...]', self._child('movements', Movement, True))
 
 
 class Formulation(Record):
     'An identified mathematical container with explicit local declarations, expressions, and asserted constraints. Formulations may contain child Formulations and bind names to shared Values.'
     __slots__ = ()
     _kind = 'Formulation'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'bindings': {'options': [{'kind': 'Binding', 'category': 'record'}],
+                      'required': False,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False},
+         'values': {'options': [{'kind': 'Value', 'category': 'record'}],
+                    'required': False,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False},
+         'expressions': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                         'required': False,
+                         'many': True,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'constraints': {'options': [{'kind': 'Constraint', 'category': 'record'}],
+                         'required': False,
+                         'many': True,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'formulations': {'options': [{'kind': 'Formulation', 'category': 'record'}],
+                          'required': False,
+                          'many': True,
+                          'mapping': False,
+                          'nullable': True,
+                          'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -1321,17 +2167,25 @@ class Formulation(Record):
         constraints: tuple[Constraint, ...] | None | Unset = UNSET,
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'code': code,
-            'name': name,
-            'description': description,
-            'bindings': bindings,
-            'values': values,
-            'expressions': expressions,
-            'constraints': constraints,
-            'formulations': formulations,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            data['code'] = copy_json(code)
+        if name is not UNSET:
+            data['name'] = copy_json(name)
+        if description is not UNSET:
+            data['description'] = copy_json(description)
+        if bindings is not UNSET:
+            data['bindings'] = _encode_many(bindings, lambda v: _encode_record(v, Binding, 'bindings'))
+        if values is not UNSET:
+            data['values'] = _encode_many(values, lambda v: _encode_record(v, Value, 'values'))
+        if expressions is not UNSET:
+            data['expressions'] = _encode_many(expressions, lambda v: _encode_record(v, Expression, 'expressions'))
+        if constraints is not UNSET:
+            data['constraints'] = _encode_many(constraints, lambda v: _encode_record(v, Constraint, 'constraints'))
+        if formulations is not UNSET:
+            data['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -1345,68 +2199,134 @@ class Formulation(Record):
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'code': code,
-            'name': name,
-            'description': description,
-            'bindings': bindings,
-            'values': values,
-            'expressions': expressions,
-            'constraints': constraints,
-            'formulations': formulations,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if description is not UNSET:
+            changes['description'] = copy_json(description)
+        if bindings is not UNSET:
+            changes['bindings'] = _encode_many(bindings, lambda v: _encode_record(v, Binding, 'bindings'))
+        if values is not UNSET:
+            changes['values'] = _encode_many(values, lambda v: _encode_record(v, Value, 'values'))
+        if expressions is not UNSET:
+            changes['expressions'] = _encode_many(expressions, lambda v: _encode_record(v, Expression, 'expressions'))
+        if constraints is not UNSET:
+            changes['constraints'] = _encode_many(constraints, lambda v: _encode_record(v, Constraint, 'constraints'))
+        if formulations is not UNSET:
+            changes['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of this Formulation across Model revisions.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str | None:
         'Optional case-sensitive code unique among sibling Formulations; not reference identity.'
-        return cast('str | None', self._field('code'))
+        return cast('str | None', self._data.get('code'))
 
     @property
     def name(self) -> str | None:
         'Human-readable display name.'
-        return cast('str | None', self._field('name'))
+        return cast('str | None', self._data.get('name'))
 
     @property
     def description(self) -> str | None:
         'Explanation of the mathematical purpose of this Formulation.'
-        return cast('str | None', self._field('description'))
+        return cast('str | None', self._data.get('description'))
 
     @property
     def bindings(self) -> tuple[Binding, ...] | None:
         'Local interface names referring to existing Values, including local Values.'
-        return cast('tuple[Binding, ...] | None', self._field('bindings'))
+        return cast('tuple[Binding, ...] | None', self._child('bindings', Binding, True))
 
     @property
     def values(self) -> tuple[Value, ...] | None:
         'Canonical declarations owned by this Formulation. Values already owned elsewhere are referenced, not repeated here.'
-        return cast('tuple[Value, ...] | None', self._field('values'))
+        return cast('tuple[Value, ...] | None', self._child('values', Value, True))
 
     @property
     def expressions(self) -> tuple[Expression, ...] | None:
         'Root Expressions owned by this Formulation; their nested operands remain owned within their expression trees. Constraints may reference any eligible Expression in the applicable scope.'
-        return cast('tuple[Expression, ...] | None', self._field('expressions'))
+        return cast('tuple[Expression, ...] | None', self._child('expressions', Expression, True))
 
     @property
     def constraints(self) -> tuple[Constraint, ...] | None:
         'Canonical assertions owned by this Formulation, referencing Boolean Expressions by UUID.'
-        return cast('tuple[Constraint, ...] | None', self._field('constraints'))
+        return cast('tuple[Constraint, ...] | None', self._child('constraints', Constraint, True))
 
     @property
     def formulations(self) -> tuple[Formulation, ...] | None:
         'Canonical child Formulations owned by this Formulation. Repeated or cyclic containment is invalid.'
-        return cast('tuple[Formulation, ...] | None', self._field('formulations'))
+        return cast('tuple[Formulation, ...] | None', self._child('formulations', Formulation, True))
 
 
 class Function(Record):
     'An identified, versioned contract for a pure mathematical or domain function, independent of a particular runtime implementation.'
     __slots__ = ()
     _kind = 'Function'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'version': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                     'required': True,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False},
+         'parameters': {'options': [{'kind': 'Parameter', 'category': 'record'}],
+                        'required': False,
+                        'many': True,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': True},
+         'result': {'options': [{'kind': 'Domain', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'semantics': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False},
+         'unit_rule': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False},
+         'empty_collection': {'options': [{'kind': 'EmptyHandling',
+                                           'category': 'enum'}],
+                              'required': False,
+                              'many': False,
+                              'mapping': False,
+                              'nullable': False,
+                              'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -1419,17 +2339,19 @@ class Function(Record):
         unit_rule: str,
         empty_collection: EmptyHandling | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'code': code,
-            'name': name,
-            'version': version,
-            'parameters': parameters,
-            'result': result,
-            'semantics': semantics,
-            'unit_rule': unit_rule,
-            'empty_collection': empty_collection,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['code'] = copy_json(code)
+        data['name'] = copy_json(name)
+        data['version'] = copy_json(version)
+        if parameters is not UNSET:
+            data['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, Parameter, 'parameters'))
+        data['result'] = _encode_record(result, Domain, 'result')
+        data['semantics'] = copy_json(semantics)
+        data['unit_rule'] = copy_json(unit_rule)
+        if empty_collection is not UNSET:
+            data['empty_collection'] = _encode_enum(empty_collection, EmptyHandling, 'empty_collection')
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -1443,103 +2365,161 @@ class Function(Record):
         empty_collection: EmptyHandling | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'code': code,
-            'name': name,
-            'version': version,
-            'parameters': parameters,
-            'result': result,
-            'semantics': semantics,
-            'unit_rule': unit_rule,
-            'empty_collection': empty_collection,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if version is not UNSET:
+            changes['version'] = copy_json(version)
+        if parameters is not UNSET:
+            changes['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, Parameter, 'parameters'))
+        if result is not UNSET:
+            changes['result'] = _encode_record(result, Domain, 'result')
+        if semantics is not UNSET:
+            changes['semantics'] = copy_json(semantics)
+        if unit_rule is not UNSET:
+            changes['unit_rule'] = copy_json(unit_rule)
+        if empty_collection is not UNSET:
+            changes['empty_collection'] = _encode_enum(empty_collection, EmptyHandling, 'empty_collection')
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Function, referenced by calls.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str:
         'Case-sensitive code unique within the Model Function collection; not reference identity.'
-        return cast('str', self._field('code'))
+        return cast('str', self._data.get('code'))
 
     @property
     def name(self) -> str:
         'Human-readable function name.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def version(self) -> str:
         'Version of this Function contract.'
-        return cast('str', self._field('version'))
+        return cast('str', self._data.get('version'))
 
     @property
     def parameters(self) -> tuple[Parameter, ...] | None:
         'Ordered signature. Omission denotes no parameters.'
-        return cast('tuple[Parameter, ...] | None', self._field('parameters'))
+        return cast('tuple[Parameter, ...] | None', self._child('parameters', Parameter, True))
 
     @property
     def result(self) -> Domain:
         'Domain of the result.'
-        return cast('Domain', self._field('result'))
+        return cast('Domain', self._child('result', Domain, False))
 
     @property
     def semantics(self) -> str:
         'Mathematical meaning, argument conventions, domain restrictions, and exceptional cases.'
-        return cast('str', self._field('semantics'))
+        return cast('str', self._data.get('semantics'))
 
     @property
     def unit_rule(self) -> str:
         'How result units follow from the arguments, or why units do not apply. This rule requires semantic implementation; prose is not an executable unit checker.'
-        return cast('str', self._field('unit_rule'))
+        return cast('str', self._data.get('unit_rule'))
 
     @property
     def empty_collection(self) -> EmptyHandling | None:
         'Required for functions with collection arguments. Zero is permitted only when the result domain and units can be established without reading a member.'
-        return cast('EmptyHandling | None', self._field('empty_collection'))
+        return cast('EmptyHandling | None', _decode_enum(self._data.get('empty_collection'), EmptyHandling))
 
 
 class Geometry(Record):
     'One exact provider dataset and explicit Entity associations, owned by this Model.'
     __slots__ = ()
     _kind = 'Geometry'
+    _SLOTS = _freeze(
+        {'pin': {'options': [{'kind': 'GeometryPin', 'category': 'record'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'mappings': {'options': [{'kind': 'GeometryMapping', 'category': 'record'}],
+                      'required': False,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False}}
+    )
 
     def __init__(self, *,
         pin: GeometryPin,
         mappings: tuple[GeometryMapping, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'pin': pin,
-            'mappings': mappings,
-        })
+        data: dict[str, object] = {}
+        data['pin'] = _encode_record(pin, GeometryPin, 'pin')
+        if mappings is not UNSET:
+            data['mappings'] = _encode_many(mappings, lambda v: _encode_record(v, GeometryMapping, 'mappings'))
+        self._set_data(data)
 
     def replace(self, *,
         pin: GeometryPin | Unset = UNSET,
         mappings: tuple[GeometryMapping, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'pin': pin,
-            'mappings': mappings,
-        })
+        changes: dict[str, object] = {}
+        if pin is not UNSET:
+            changes['pin'] = _encode_record(pin, GeometryPin, 'pin')
+        if mappings is not UNSET:
+            changes['mappings'] = _encode_many(mappings, lambda v: _encode_record(v, GeometryMapping, 'mappings'))
+        return self._replace(changes)
 
     @property
     def pin(self) -> GeometryPin:
         'Exact pin of the provider dataset that this Model owns.'
-        return cast('GeometryPin', self._field('pin'))
+        return cast('GeometryPin', self._child('pin', GeometryPin, False))
 
     @property
     def mappings(self) -> tuple[GeometryMapping, ...] | None:
         'Associations of Entities or Assemblies with typed source elements in the pinned dataset.'
-        return cast('tuple[GeometryMapping, ...] | None', self._field('mappings'))
+        return cast('tuple[GeometryMapping, ...] | None', self._child('mappings', GeometryMapping, True))
 
 
 class GeometryElement(Record):
     'A typed identity in the pinned provider dataset. Namespace and scope remain explicit; mesh IDs are not source-object identities.'
     __slots__ = ()
     _kind = 'GeometryElement'
+    _SLOTS = _freeze(
+        {'namespace': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False},
+         'kind': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'scope': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': False},
+         'placement': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                       'required': False,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': True}}
+    )
 
     def __init__(self, *,
         namespace: str,
@@ -1548,13 +2528,15 @@ class GeometryElement(Record):
         scope: str | None | Unset = UNSET,
         placement: tuple[str, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'namespace': namespace,
-            'kind': kind,
-            'key': key,
-            'scope': scope,
-            'placement': placement,
-        })
+        data: dict[str, object] = {}
+        data['namespace'] = copy_json(namespace)
+        data['kind'] = copy_json(kind)
+        data['key'] = copy_json(key)
+        if scope is not UNSET:
+            data['scope'] = copy_json(scope)
+        if placement is not UNSET:
+            data['placement'] = _encode_many(placement, lambda v: copy_json(v))
+        self._set_data(data)
 
     def replace(self, *,
         namespace: str | Unset = UNSET,
@@ -1564,55 +2546,80 @@ class GeometryElement(Record):
         placement: tuple[str, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'namespace': namespace,
-            'kind': kind,
-            'key': key,
-            'scope': scope,
-            'placement': placement,
-        })
+        changes: dict[str, object] = {}
+        if namespace is not UNSET:
+            changes['namespace'] = copy_json(namespace)
+        if kind is not UNSET:
+            changes['kind'] = copy_json(kind)
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if scope is not UNSET:
+            changes['scope'] = copy_json(scope)
+        if placement is not UNSET:
+            changes['placement'] = _encode_many(placement, lambda v: copy_json(v))
+        return self._replace(changes)
 
     @property
     def namespace(self) -> str:
         'Provider-defined namespace of the element key.'
-        return cast('str', self._field('namespace'))
+        return cast('str', self._data.get('namespace'))
 
     @property
     def kind(self) -> str:
         'Element kind; RK accepts object or group.'
-        return cast('str', self._field('kind'))
+        return cast('str', self._data.get('kind'))
 
     @property
     def key(self) -> str:
         'Nonempty provider-defined identifier of the element in its namespace.'
-        return cast('str', self._field('key'))
+        return cast('str', self._data.get('key'))
 
     @property
     def scope(self) -> str | None:
         'Optional provider-defined scope that qualifies the key.'
-        return cast('str | None', self._field('scope'))
+        return cast('str | None', self._data.get('scope'))
 
     @property
     def placement(self) -> tuple[str, ...] | None:
         'Optional ordered placement path that selects one placement of the element.'
-        return cast('tuple[str, ...] | None', self._field('placement'))
+        return cast('tuple[str, ...] | None', self._data.get('placement', ()))
 
 
 class GeometryFile(Record):
     'One retained native file, addressed relative to the Geometry root.'
     __slots__ = ()
     _kind = 'GeometryFile'
+    _SLOTS = _freeze(
+        {'path': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'sha256': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'size': {'options': [{'kind': 'integer', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False}}
+    )
 
     def __init__(self, *,
         path: str,
         sha256: str,
         size: int,
     ) -> None:
-        self._initialize({
-            'path': path,
-            'sha256': sha256,
-            'size': size,
-        })
+        data: dict[str, object] = {}
+        data['path'] = copy_json(path)
+        data['sha256'] = copy_json(sha256)
+        data['size'] = copy_json(size)
+        self._set_data(data)
 
     def replace(self, *,
         path: str | Unset = UNSET,
@@ -1620,67 +2627,143 @@ class GeometryFile(Record):
         size: int | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'path': path,
-            'sha256': sha256,
-            'size': size,
-        })
+        changes: dict[str, object] = {}
+        if path is not UNSET:
+            changes['path'] = copy_json(path)
+        if sha256 is not UNSET:
+            changes['sha256'] = copy_json(sha256)
+        if size is not UNSET:
+            changes['size'] = copy_json(size)
+        return self._replace(changes)
 
     @property
     def path(self) -> str:
         'Relative POSIX path under the Geometry root, without empty, dot or parent segments.'
-        return cast('str', self._field('path'))
+        return cast('str', self._data.get('path'))
 
     @property
     def sha256(self) -> str:
         'Lowercase hexadecimal SHA-256 digest of the file bytes.'
-        return cast('str', self._field('sha256'))
+        return cast('str', self._data.get('sha256'))
 
     @property
     def size(self) -> int:
         'File size in bytes.'
-        return cast('int', self._field('size'))
+        return cast('int', self._data.get('size'))
 
 
 class GeometryMapping(Record):
     'One Entity or Assembly corresponds to one exact typed source element. This is not provenance.'
     __slots__ = ()
     _kind = 'GeometryMapping'
+    _SLOTS = _freeze(
+        {'entity': {'options': [{'kind': 'Entity', 'category': 'uuid'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'element': {'options': [{'kind': 'GeometryElement', 'category': 'record'}],
+                     'required': True,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False}}
+    )
 
     def __init__(self, *,
         entity: UUID,
         element: GeometryElement,
     ) -> None:
-        self._initialize({
-            'entity': entity,
-            'element': element,
-        })
+        data: dict[str, object] = {}
+        data['entity'] = _encode_uuid(entity)
+        data['element'] = _encode_record(element, GeometryElement, 'element')
+        self._set_data(data)
 
     def replace(self, *,
         entity: UUID | Unset = UNSET,
         element: GeometryElement | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'entity': entity,
-            'element': element,
-        })
+        changes: dict[str, object] = {}
+        if entity is not UNSET:
+            changes['entity'] = _encode_uuid(entity)
+        if element is not UNSET:
+            changes['element'] = _encode_record(element, GeometryElement, 'element')
+        return self._replace(changes)
 
     @property
     def entity(self) -> UUID:
         'UUID of the mapped Entity or Assembly in this Model.'
-        return cast('UUID', self._field('entity'))
+        return cast('UUID', _decode_uuid(self._data.get('entity')))
 
     @property
     def element(self) -> GeometryElement:
         'Typed source element in the pinned dataset that corresponds to the Entity.'
-        return cast('GeometryElement', self._field('element'))
+        return cast('GeometryElement', self._child('element', GeometryElement, False))
 
 
 class GeometryPin(Record):
     'Exact native content and its source contract. Paths and source addresses do not replace integrity.'
     __slots__ = ()
     _kind = 'GeometryPin'
+    _SLOTS = _freeze(
+        {'provider': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'format': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'format_version': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                            'required': True,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': False,
+                            'ordered': False},
+         'specification': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                           'required': True,
+                           'many': False,
+                           'mapping': False,
+                           'nullable': False,
+                           'ordered': False},
+         'specification_digest': {'options': [{'kind': 'string',
+                                               'category': 'primitive'}],
+                                  'required': True,
+                                  'many': False,
+                                  'mapping': False,
+                                  'nullable': False,
+                                  'ordered': False},
+         'content_digest': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                            'required': True,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': False,
+                            'ordered': False},
+         'files': {'options': [{'kind': 'GeometryFile', 'category': 'record'}],
+                   'required': True,
+                   'many': True,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'source_address': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                            'required': False,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': True,
+                            'ordered': False},
+         'source_version': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                            'required': False,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': True,
+                            'ordered': False}}
+    )
 
     def __init__(self, *,
         provider: str,
@@ -1693,17 +2776,19 @@ class GeometryPin(Record):
         source_address: str | None | Unset = UNSET,
         source_version: str | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'provider': provider,
-            'format': format,
-            'format_version': format_version,
-            'specification': specification,
-            'specification_digest': specification_digest,
-            'content_digest': content_digest,
-            'files': files,
-            'source_address': source_address,
-            'source_version': source_version,
-        })
+        data: dict[str, object] = {}
+        data['provider'] = copy_json(provider)
+        data['format'] = copy_json(format)
+        data['format_version'] = copy_json(format_version)
+        data['specification'] = copy_json(specification)
+        data['specification_digest'] = copy_json(specification_digest)
+        data['content_digest'] = copy_json(content_digest)
+        data['files'] = _encode_many(files, lambda v: _encode_record(v, GeometryFile, 'files'))
+        if source_address is not UNSET:
+            data['source_address'] = copy_json(source_address)
+        if source_version is not UNSET:
+            data['source_version'] = copy_json(source_version)
+        self._set_data(data)
 
     def replace(self, *,
         provider: str | Unset = UNSET,
@@ -1717,79 +2802,108 @@ class GeometryPin(Record):
         source_version: str | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'provider': provider,
-            'format': format,
-            'format_version': format_version,
-            'specification': specification,
-            'specification_digest': specification_digest,
-            'content_digest': content_digest,
-            'files': files,
-            'source_address': source_address,
-            'source_version': source_version,
-        })
+        changes: dict[str, object] = {}
+        if provider is not UNSET:
+            changes['provider'] = copy_json(provider)
+        if format is not UNSET:
+            changes['format'] = copy_json(format)
+        if format_version is not UNSET:
+            changes['format_version'] = copy_json(format_version)
+        if specification is not UNSET:
+            changes['specification'] = copy_json(specification)
+        if specification_digest is not UNSET:
+            changes['specification_digest'] = copy_json(specification_digest)
+        if content_digest is not UNSET:
+            changes['content_digest'] = copy_json(content_digest)
+        if files is not UNSET:
+            changes['files'] = _encode_many(files, lambda v: _encode_record(v, GeometryFile, 'files'))
+        if source_address is not UNSET:
+            changes['source_address'] = copy_json(source_address)
+        if source_version is not UNSET:
+            changes['source_version'] = copy_json(source_version)
+        return self._replace(changes)
 
     @property
     def provider(self) -> str:
         'Code that names the Geometry provider; with format and format_version, it selects the provider adapter.'
-        return cast('str', self._field('provider'))
+        return cast('str', self._data.get('provider'))
 
     @property
     def format(self) -> str:
         'Code that names the native dataset format.'
-        return cast('str', self._field('format'))
+        return cast('str', self._data.get('format'))
 
     @property
     def format_version(self) -> str:
         'Version of the native dataset format.'
-        return cast('str', self._field('format_version'))
+        return cast('str', self._data.get('format_version'))
 
     @property
     def specification(self) -> str:
         'Immutable upstream specification identifier, such as a full commit URL.'
-        return cast('str', self._field('specification'))
+        return cast('str', self._data.get('specification'))
 
     @property
     def specification_digest(self) -> str:
         'Lowercase hexadecimal SHA-256 digest of the pinned upstream specification.'
-        return cast('str', self._field('specification_digest'))
+        return cast('str', self._data.get('specification_digest'))
 
     @property
     def content_digest(self) -> str:
         'Lowercase hexadecimal SHA-256 digest of the file inventory sorted by path; validation recomputes it from files.'
-        return cast('str', self._field('content_digest'))
+        return cast('str', self._data.get('content_digest'))
 
     @property
     def files(self) -> tuple[GeometryFile, ...]:
         'Inventory of the retained native files; each path is unique.'
-        return cast('tuple[GeometryFile, ...]', self._field('files'))
+        return cast('tuple[GeometryFile, ...]', self._child('files', GeometryFile, True))
 
     @property
     def source_address(self) -> str | None:
         'Optional address of the source dataset; it does not replace the digests.'
-        return cast('str | None', self._field('source_address'))
+        return cast('str | None', self._data.get('source_address'))
 
     @property
     def source_version(self) -> str | None:
         'Optional version of the source dataset at the source address.'
-        return cast('str | None', self._field('source_version'))
+        return cast('str | None', self._data.get('source_version'))
 
 
 class Implementation(Record):
     'An implementation role and its reproducible software identity as reported for this execution.'
     __slots__ = ()
     _kind = 'Implementation'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'ImplementationKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'version': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                     'required': True,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False}}
+    )
 
     def __init__(self, *,
         kind: ImplementationKind,
         name: str,
         version: str,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'name': name,
-            'version': version,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, ImplementationKind, 'kind')
+        data['name'] = copy_json(name)
+        data['version'] = copy_json(version)
+        self._set_data(data)
 
     def replace(self, *,
         kind: ImplementationKind | Unset = UNSET,
@@ -1797,43 +2911,68 @@ class Implementation(Record):
         version: str | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'name': name,
-            'version': version,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, ImplementationKind, 'kind')
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if version is not UNSET:
+            changes['version'] = copy_json(version)
+        return self._replace(changes)
 
     @property
     def kind(self) -> ImplementationKind:
         'Role performed by the implementation.'
-        return cast('ImplementationKind', self._field('kind'))
+        return cast('ImplementationKind', _decode_enum(self._data.get('kind'), ImplementationKind))
 
     @property
     def name(self) -> str:
         'Nonblank implementation name.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def version(self) -> str:
         'Nonblank version or immutable build identifier.'
-        return cast('str', self._field('version'))
+        return cast('str', self._data.get('version'))
 
 
 class Label(Record):
     'A named set of Classifications describing an aspect of an Entity or Relationship.'
     __slots__ = ()
     _kind = 'Label'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'classifications': {'options': [{'kind': 'Classification',
+                                          'category': 'uuid'}],
+                             'required': False,
+                             'many': True,
+                             'mapping': False,
+                             'nullable': True,
+                             'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
         key: str,
         classifications: tuple[UUID, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'key': key,
-            'classifications': classifications,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['key'] = copy_json(key)
+        if classifications is not UNSET:
+            data['classifications'] = _encode_many(classifications, lambda v: _encode_uuid(v))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -1841,102 +2980,177 @@ class Label(Record):
         classifications: tuple[UUID, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'key': key,
-            'classifications': classifications,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if classifications is not UNSET:
+            changes['classifications'] = _encode_many(classifications, lambda v: _encode_uuid(v))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Label, used by provenance Facts.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def key(self) -> str:
         "Name unique within the owner's characteristics.labels collection."
-        return cast('str', self._field('key'))
+        return cast('str', self._data.get('key'))
 
     @property
     def classifications(self) -> tuple[UUID, ...] | None:
         'Unique UUID references to Classifications describing this aspect.'
-        return cast('tuple[UUID, ...] | None', self._field('classifications'))
+        return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('classifications', ())))
 
 
 class LibraryVersion(Record):
     'Recorded implementation dependency version.'
     __slots__ = ()
     _kind = 'LibraryVersion'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'version': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                     'required': True,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str,
         version: str,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'version': version,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        data['version'] = copy_json(version)
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
         version: str | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'version': version,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if version is not UNSET:
+            changes['version'] = copy_json(version)
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Name of the dependency, such as python.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def version(self) -> str:
         'Version of the dependency.'
-        return cast('str', self._field('version'))
+        return cast('str', self._data.get('version'))
 
 
 class Location(Record):
     'An address within a specific Source edition.'
     __slots__ = ()
     _kind = 'Location'
+    _SLOTS = _freeze(
+        {'source': {'options': [{'kind': 'Source', 'category': 'uuid'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'address': {'options': [{'kind': 'Entry', 'category': 'keyed'},
+                                 {'kind': 'string', 'category': 'primitive'}],
+                     'required': False,
+                     'many': True,
+                     'mapping': True,
+                     'nullable': True,
+                     'ordered': False}}
+    )
 
     def __init__(self, *,
         source: UUID,
         address: Mapping[str, Mapping[str, JSONValue] | str] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'source': source,
-            'address': address,
-        })
+        data: dict[str, object] = {}
+        data['source'] = _encode_uuid(source)
+        if address is not UNSET:
+            data['address'] = self._encode_field('address', address)
+        self._set_data(data)
 
     def replace(self, *,
         source: UUID | Unset = UNSET,
         address: Mapping[str, Mapping[str, JSONValue] | str] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'source': source,
-            'address': address,
-        })
+        changes: dict[str, object] = {}
+        if source is not UNSET:
+            changes['source'] = _encode_uuid(source)
+        if address is not UNSET:
+            changes['address'] = self._encode_field('address', address)
+        return self._replace(changes)
 
     @property
     def source(self) -> UUID:
         'UUID of the Source edition that contains this address.'
-        return cast('UUID', self._field('source'))
+        return cast('UUID', _decode_uuid(self._data.get('source')))
 
     @property
     def address(self) -> Mapping[str, Mapping[str, FrozenJSONValue] | str] | None:
         'Named address parts, such as sheet and cell, with nonblank text values.'
-        return cast('Mapping[str, Mapping[str, FrozenJSONValue] | str] | None', self._field('address'))
+        return cast('Mapping[str, Mapping[str, FrozenJSONValue] | str] | None', self._data.get('address', EMPTY))
 
 
 class Measure(Record):
     'An identified definition of a measurable characteristic and its canonical units.'
     __slots__ = ()
     _kind = 'Measure'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'definition': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                        'required': False,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': False},
+         'tags': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': True,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -1946,14 +3160,16 @@ class Measure(Record):
         definition: str | None | Unset = UNSET,
         tags: tuple[str, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'code': code,
-            'name': name,
-            'units': units,
-            'definition': definition,
-            'tags': tags,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['code'] = copy_json(code)
+        data['name'] = copy_json(name)
+        data['units'] = copy_json(units)
+        if definition is not UNSET:
+            data['definition'] = copy_json(definition)
+        if tags is not UNSET:
+            data['tags'] = _encode_many(tags, lambda v: copy_json(v))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -1964,50 +3180,88 @@ class Measure(Record):
         tags: tuple[str, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'code': code,
-            'name': name,
-            'units': units,
-            'definition': definition,
-            'tags': tags,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if units is not UNSET:
+            changes['units'] = copy_json(units)
+        if definition is not UNSET:
+            changes['definition'] = copy_json(definition)
+        if tags is not UNSET:
+            changes['tags'] = _encode_many(tags, lambda v: copy_json(v))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of this Measure definition.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str:
         'Case-sensitive code unique within the Model’s Measure collection; not reference identity.'
-        return cast('str', self._field('code'))
+        return cast('str', self._data.get('code'))
 
     @property
     def name(self) -> str:
         'Nonblank human-readable name of the measured characteristic.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def units(self) -> str:
         'Nonblank expression specifying the canonical units for quantities interpreted through this Measure, such as m^2 or AUD/year. Unitless quantities must have an explicit dimensionless convention.'
-        return cast('str', self._field('units'))
+        return cast('str', self._data.get('units'))
 
     @property
     def definition(self) -> str | None:
         'Optional explanatory text describing the measurement convention.'
-        return cast('str | None', self._field('definition'))
+        return cast('str | None', self._data.get('definition'))
 
     @property
     def tags(self) -> tuple[str, ...] | None:
         'Unordered, nonblank descriptive terms, with no duplicates.'
-        return cast('tuple[str, ...] | None', self._field('tags'))
+        return cast('tuple[str, ...] | None', self._data.get('tags', ()))
 
 
 class Metadata(Record):
     'Identity, description, and optional lineage of one immutable document revision.'
     __slots__ = ()
     _kind = 'Metadata'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'schema_version': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                            'required': True,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': False,
+                            'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'previous': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -2016,13 +3270,16 @@ class Metadata(Record):
         description: str | None | Unset = UNSET,
         previous: UUID | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'schema_version': schema_version,
-            'name': name,
-            'description': description,
-            'previous': previous,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['schema_version'] = copy_json(schema_version)
+        if name is not UNSET:
+            data['name'] = copy_json(name)
+        if description is not UNSET:
+            data['description'] = copy_json(description)
+        if previous is not UNSET:
+            data['previous'] = _encode_uuid(previous)
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -2032,55 +3289,82 @@ class Metadata(Record):
         previous: UUID | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'schema_version': schema_version,
-            'name': name,
-            'description': description,
-            'previous': previous,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if schema_version is not UNSET:
+            changes['schema_version'] = copy_json(schema_version)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if description is not UNSET:
+            changes['description'] = copy_json(description)
+        if previous is not UNSET:
+            changes['previous'] = _encode_uuid(previous)
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'UUID identifying the enclosing immutable document revision.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def schema_version(self) -> str:
         "Version of the enclosing document's schema contract."
-        return cast('str', self._field('schema_version'))
+        return cast('str', self._data.get('schema_version'))
 
     @property
     def name(self) -> str | None:
         'Optional human-readable name of this revision.'
-        return cast('str | None', self._field('name'))
+        return cast('str | None', self._data.get('name'))
 
     @property
     def description(self) -> str | None:
         'Optional explanation of this revision and its purpose.'
-        return cast('str | None', self._field('description'))
+        return cast('str | None', self._data.get('description'))
 
     @property
     def previous(self) -> UUID | None:
         'UUID of the preceding revision of the same document kind, referencing its Metadata.'
-        return cast('UUID | None', self._field('previous'))
+        return cast('UUID | None', _decode_uuid(self._data.get('previous')))
 
 
 class Method(Record):
     'The named process used to assert, derive, or reconcile evidence.'
     __slots__ = ()
     _kind = 'Method'
+    _SLOTS = _freeze(
+        {'code': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'version': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': False},
+         'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False}}
+    )
 
     def __init__(self, *,
         code: str,
         version: str | None | Unset = UNSET,
         description: str | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'code': code,
-            'version': version,
-            'description': description,
-        })
+        data: dict[str, object] = {}
+        data['code'] = copy_json(code)
+        if version is not UNSET:
+            data['version'] = copy_json(version)
+        if description is not UNSET:
+            data['description'] = copy_json(description)
+        self._set_data(data)
 
     def replace(self, *,
         code: str | Unset = UNSET,
@@ -2088,32 +3372,67 @@ class Method(Record):
         description: str | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'code': code,
-            'version': version,
-            'description': description,
-        })
+        changes: dict[str, object] = {}
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if version is not UNSET:
+            changes['version'] = copy_json(version)
+        if description is not UNSET:
+            changes['description'] = copy_json(description)
+        return self._replace(changes)
 
     @property
     def code(self) -> str:
         'Nonblank code that names the process.'
-        return cast('str', self._field('code'))
+        return cast('str', self._data.get('code'))
 
     @property
     def version(self) -> str | None:
         'Optional nonblank version of the process.'
-        return cast('str | None', self._field('version'))
+        return cast('str | None', self._data.get('version'))
 
     @property
     def description(self) -> str | None:
         'Optional nonblank explanation of the process.'
-        return cast('str | None', self._field('description'))
+        return cast('str | None', self._data.get('description'))
 
 
 class Model(Record):
     "A self-contained snapshot of a system's declarations, mathematical formulations, and recorded content, identified by its Metadata."
     __slots__ = ()
     _kind = 'Model'
+    _SLOTS = _freeze(
+        {'metadata': {'options': [{'kind': 'Metadata', 'category': 'record'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'definitions': {'options': [{'kind': 'Definitions', 'category': 'record'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': False,
+                         'ordered': False},
+         'system': {'options': [{'kind': 'System', 'category': 'record'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'provenance': {'options': [{'kind': 'Provenance', 'category': 'record'}],
+                        'required': False,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False},
+         'geometry': {'options': [{'kind': 'Geometry', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False}}
+    )
 
     def __init__(self, *,
         metadata: Metadata,
@@ -2122,13 +3441,17 @@ class Model(Record):
         provenance: Provenance | Unset = UNSET,
         geometry: Geometry | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'metadata': metadata,
-            'definitions': definitions,
-            'system': system,
-            'provenance': provenance,
-            'geometry': geometry,
-        })
+        data: dict[str, object] = {}
+        data['metadata'] = _encode_record(metadata, Metadata, 'metadata')
+        if definitions is not UNSET:
+            data['definitions'] = _encode_record(definitions, Definitions, 'definitions')
+        if system is not UNSET:
+            data['system'] = _encode_record(system, System, 'system')
+        if provenance is not UNSET:
+            data['provenance'] = _encode_record(provenance, Provenance, 'provenance')
+        if geometry is not UNSET:
+            data['geometry'] = _encode_record(geometry, Geometry, 'geometry')
+        self._set_data(data)
 
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
@@ -2138,44 +3461,87 @@ class Model(Record):
         geometry: Geometry | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'metadata': metadata,
-            'definitions': definitions,
-            'system': system,
-            'provenance': provenance,
-            'geometry': geometry,
-        })
+        changes: dict[str, object] = {}
+        if metadata is not UNSET:
+            changes['metadata'] = _encode_record(metadata, Metadata, 'metadata')
+        if definitions is not UNSET:
+            changes['definitions'] = _encode_record(definitions, Definitions, 'definitions')
+        if system is not UNSET:
+            changes['system'] = _encode_record(system, System, 'system')
+        if provenance is not UNSET:
+            changes['provenance'] = _encode_record(provenance, Provenance, 'provenance')
+        if geometry is not UNSET:
+            changes['geometry'] = _encode_record(geometry, Geometry, 'geometry')
+        return self._replace(changes)
 
     @property
     def metadata(self) -> Metadata:
         'Required identity, schema contract version, and optional descriptive/history fields.'
-        return cast('Metadata', self._field('metadata'))
+        return cast('Metadata', self._child('metadata', Metadata, False))
 
     @property
     def definitions(self) -> Definitions | None:
         'Canonical Taxonomy, Measure, and Function definitions referenced by this snapshot.'
-        return cast('Definitions | None', self._field('definitions'))
+        return cast('Definitions | None', self._child('definitions', Definitions, False))
 
     @property
     def system(self) -> System | None:
         'The domain objects and explicit mathematical formulations represented by this Model.'
-        return cast('System | None', self._field('system'))
+        return cast('System | None', self._child('system', System, False))
 
     @property
     def provenance(self) -> Provenance | None:
         'Evidence and reasoning supporting recorded domain and Value content in this snapshot.'
-        return cast('Provenance | None', self._field('provenance'))
+        return cast('Provenance | None', self._child('provenance', Provenance, False))
 
     @property
     def geometry(self) -> Geometry | None:
         'Optional exact Geometry pin and Entity mappings.'
-        return cast('Geometry | None', self._field('geometry'))
+        return cast('Geometry | None', self._child('geometry', Geometry, False))
 
 
 class Movement(Record):
     'One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. UUID identifies the Movement independently of dates and optional matching keys. Repeated event dates require distinct nonblank keys; keys are not reference identity. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.'
     __slots__ = ()
     _kind = 'Movement'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                 'required': False,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': True,
+                 'ordered': False},
+         'date': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'period': {'options': [{'kind': 'Period', 'category': 'record'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False},
+         'magnitude': {'options': [{'kind': 'decimal', 'category': 'primitive'}],
+                       'required': False,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': False},
+         'claims': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                    'required': False,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -2185,14 +3551,19 @@ class Movement(Record):
         magnitude: int | float | None | Unset = UNSET,
         claims: tuple[UUID, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'key': key,
-            'date': date,
-            'period': period,
-            'magnitude': magnitude,
-            'claims': claims,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        if key is not UNSET:
+            data['key'] = copy_json(key)
+        if date is not UNSET:
+            data['date'] = _encode_date(date)
+        if period is not UNSET:
+            data['period'] = _encode_record(period, Period, 'period')
+        if magnitude is not UNSET:
+            data['magnitude'] = copy_json(magnitude)
+        if claims is not UNSET:
+            data['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -2203,131 +3574,190 @@ class Movement(Record):
         claims: tuple[UUID, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'key': key,
-            'date': date,
-            'period': period,
-            'magnitude': magnitude,
-            'claims': claims,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if date is not UNSET:
+            changes['date'] = _encode_date(date)
+        if period is not UNSET:
+            changes['period'] = _encode_record(period, Period, 'period')
+        if magnitude is not UNSET:
+            changes['magnitude'] = copy_json(magnitude)
+        if claims is not UNSET:
+            changes['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable Movement identity across Model revisions. Derived numerical results receive fresh identities.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def key(self) -> str | None:
         'Optional event matching key and readable label; never reference identity.'
-        return cast('str | None', self._field('key'))
+        return cast('str | None', self._data.get('key'))
 
     @property
     def date(self) -> Date | None:
         'Date of the entry; with a period, an independent payment or observation date.'
-        return cast('Date | None', self._field('date'))
+        return cast('Date | None', _decode_date(self._data.get('date')))
 
     @property
     def period(self) -> _Period | None:
         'Half-open Period of the entry.'
-        return cast('_Period | None', self._field('period'))
+        return cast('_Period | None', self._child('period', Period, False))
 
     @property
     def magnitude(self) -> int | float | None:
         'Amount in the Flow units; absent or null means unresolved, and zero is a known amount.'
-        return cast('int | float | None', self._field('magnitude'))
+        return cast('int | float | None', self._data.get('magnitude'))
 
     @property
     def claims(self) -> tuple[UUID, ...] | None:
         'Unique UUIDs of provenance Claims that support this Movement.'
-        return cast('tuple[UUID, ...] | None', self._field('claims'))
+        return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('claims', ())))
 
 
 class Objective(Record):
     'A scalar numerical Expression and the sense in which its result is preferred.'
     __slots__ = ()
     _kind = 'Objective'
+    _SLOTS = _freeze(
+        {'expression': {'options': [{'kind': 'Expression', 'category': 'uuid'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False},
+         'sense': {'options': [{'kind': 'ObjectiveKind', 'category': 'enum'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         expression: UUID,
         sense: ObjectiveKind,
     ) -> None:
-        self._initialize({
-            'expression': expression,
-            'sense': sense,
-        })
+        data: dict[str, object] = {}
+        data['expression'] = _encode_uuid(expression)
+        data['sense'] = _encode_enum(sense, ObjectiveKind, 'sense')
+        self._set_data(data)
 
     def replace(self, *,
         expression: UUID | Unset = UNSET,
         sense: ObjectiveKind | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'expression': expression,
-            'sense': sense,
-        })
+        changes: dict[str, object] = {}
+        if expression is not UNSET:
+            changes['expression'] = _encode_uuid(expression)
+        if sense is not UNSET:
+            changes['sense'] = _encode_enum(sense, ObjectiveKind, 'sense')
+        return self._replace(changes)
 
     @property
     def expression(self) -> UUID:
         'UUID of a scalar numerical Expression in the composed Model and Specification scope.'
-        return cast('UUID', self._field('expression'))
+        return cast('UUID', _decode_uuid(self._data.get('expression')))
 
     @property
     def sense(self) -> ObjectiveKind:
         'Whether smaller or larger results are preferred.'
-        return cast('ObjectiveKind', self._field('sense'))
+        return cast('ObjectiveKind', _decode_enum(self._data.get('sense'), ObjectiveKind))
 
 
 class ObservationAvailability(Record):
     'Earliest date a recorded Value or Movement may be supplied to a rule.'
     __slots__ = ()
     _kind = 'ObservationAvailability'
+    _SLOTS = _freeze(
+        {'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                          'required': True,
+                          'many': False,
+                          'mapping': False,
+                          'nullable': False,
+                          'ordered': False}}
+    )
 
     def __init__(self, *,
         target: Reference,
         available_at: Date,
     ) -> None:
-        self._initialize({
-            'target': target,
-            'available_at': available_at,
-        })
+        data: dict[str, object] = {}
+        data['target'] = _encode_record(target, Reference, 'target')
+        data['available_at'] = _encode_date(available_at)
+        self._set_data(data)
 
     def replace(self, *,
         target: Reference | Unset = UNSET,
         available_at: Date | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'target': target,
-            'available_at': available_at,
-        })
+        changes: dict[str, object] = {}
+        if target is not UNSET:
+            changes['target'] = _encode_record(target, Reference, 'target')
+        if available_at is not UNSET:
+            changes['available_at'] = _encode_date(available_at)
+        return self._replace(changes)
 
     @property
     def target(self) -> Reference:
         'Recorded Value or Movement; scenario validation requires a Movement.'
-        return cast('Reference', self._field('target'))
+        return cast('Reference', self._child('target', Reference, False))
 
     @property
     def available_at(self) -> Date:
         'Earliest date on which a rule can observe the target.'
-        return cast('Date', self._field('available_at'))
+        return cast('Date', _decode_date(self._data.get('available_at')))
 
 
 class ObservationBinding(Record):
     'An explicit observation target. An optional date may delay availability but cannot advance it.'
     __slots__ = ()
     _kind = 'ObservationBinding'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                          'required': False,
+                          'many': False,
+                          'mapping': False,
+                          'nullable': True,
+                          'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str,
         target: Reference,
         available_at: Date | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'target': target,
-            'available_at': available_at,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        data['target'] = _encode_record(target, Reference, 'target')
+        if available_at is not UNSET:
+            data['available_at'] = _encode_date(available_at)
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -2335,32 +3765,61 @@ class ObservationBinding(Record):
         available_at: Date | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'target': target,
-            'available_at': available_at,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if target is not UNSET:
+            changes['target'] = _encode_record(target, Reference, 'target')
+        if available_at is not UNSET:
+            changes['available_at'] = _encode_date(available_at)
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Name of the observation, unique within its Decision.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def target(self) -> Reference:
         'Value or Movement whose recorded or decided quantity the Decision observes.'
-        return cast('Reference', self._field('target'))
+        return cast('Reference', self._child('target', Reference, False))
 
     @property
     def available_at(self) -> Date | None:
         'Optional date that can delay availability; it cannot make the quantity available earlier.'
-        return cast('Date | None', self._field('available_at'))
+        return cast('Date | None', _decode_date(self._data.get('available_at')))
 
 
 class ObservedQuantity(Record):
     'The exact quantity and availability supplied to a decision.'
     __slots__ = ()
     _kind = 'ObservedQuantity'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                          'required': True,
+                          'many': False,
+                          'mapping': False,
+                          'nullable': False,
+                          'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str,
@@ -2368,12 +3827,12 @@ class ObservedQuantity(Record):
         quantity: Quantity,
         available_at: Date,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'target': target,
-            'quantity': quantity,
-            'available_at': available_at,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        data['target'] = _encode_record(target, Reference, 'target')
+        data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        data['available_at'] = _encode_date(available_at)
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -2382,38 +3841,68 @@ class ObservedQuantity(Record):
         available_at: Date | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'target': target,
-            'quantity': quantity,
-            'available_at': available_at,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if target is not UNSET:
+            changes['target'] = _encode_record(target, Reference, 'target')
+        if quantity is not UNSET:
+            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if available_at is not UNSET:
+            changes['available_at'] = _encode_date(available_at)
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Name of the ObservationBinding that this quantity satisfies.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def target(self) -> Reference:
         'Observed Value or Movement, equal to the target of the ObservationBinding.'
-        return cast('Reference', self._field('target'))
+        return cast('Reference', self._child('target', Reference, False))
 
     @property
     def quantity(self) -> Quantity:
         'Exact quantity supplied to the rule conditions.'
-        return cast('Quantity', self._field('quantity'))
+        return cast('Quantity', self._child('quantity', Quantity, False))
 
     @property
     def available_at(self) -> Date:
         'Date from which the quantity was available; it is not later than the Decision date.'
-        return cast('Date', self._field('available_at'))
+        return cast('Date', _decode_date(self._data.get('available_at')))
 
 
 class Parameter(Record):
     'A named argument in a Function signature. List order determines positional argument order.'
     __slots__ = ()
     _kind = 'Parameter'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'domain': {'options': [{'kind': 'Domain', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'kind': {'options': [{'kind': 'ParameterKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'required': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str,
@@ -2421,12 +3910,12 @@ class Parameter(Record):
         kind: ParameterKind,
         required: bool,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'domain': domain,
-            'kind': kind,
-            'required': required,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        data['domain'] = _encode_record(domain, Domain, 'domain')
+        data['kind'] = _encode_enum(kind, ParameterKind, 'kind')
+        data['required'] = copy_json(required)
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -2435,73 +3924,125 @@ class Parameter(Record):
         required: bool | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'domain': domain,
-            'kind': kind,
-            'required': required,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if domain is not UNSET:
+            changes['domain'] = _encode_record(domain, Domain, 'domain')
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, ParameterKind, 'kind')
+        if required is not UNSET:
+            changes['required'] = copy_json(required)
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Parameter name, unique within the Function; named arguments bind by this name.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def domain(self) -> Domain:
         'Content permitted for this argument.'
-        return cast('Domain', self._field('domain'))
+        return cast('Domain', self._child('domain', Domain, False))
 
     @property
     def kind(self) -> ParameterKind:
         'How a call may supply this parameter.'
-        return cast('ParameterKind', self._field('kind'))
+        return cast('ParameterKind', _decode_enum(self._data.get('kind'), ParameterKind))
 
     @property
     def required(self) -> bool:
         'Whether a call must supply this argument.'
-        return cast('bool', self._field('required'))
+        return cast('bool', self._data.get('required'))
 
 
 class Period(Record):
     'Half-open interval [start, end), which includes start and excludes end. Date boundaries use the Gregorian calendar; start must precede end.'
     __slots__ = ()
     _kind = 'Period'
+    _SLOTS = _freeze(
+        {'start': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'end': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False}}
+    )
 
     def __init__(self, *,
         start: Date,
         end: Date,
     ) -> None:
-        self._initialize({
-            'start': start,
-            'end': end,
-        })
+        data: dict[str, object] = {}
+        data['start'] = _encode_date(start)
+        data['end'] = _encode_date(end)
+        self._set_data(data)
 
     def replace(self, *,
         start: Date | Unset = UNSET,
         end: Date | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'start': start,
-            'end': end,
-        })
+        changes: dict[str, object] = {}
+        if start is not UNSET:
+            changes['start'] = _encode_date(start)
+        if end is not UNSET:
+            changes['end'] = _encode_date(end)
+        return self._replace(changes)
 
     @property
     def start(self) -> Date:
         'First date of the period; it is included.'
-        return cast('Date', self._field('start'))
+        return cast('Date', _decode_date(self._data.get('start')))
 
     @property
     def end(self) -> Date:
         'Boundary date after the period; it is excluded and later than start.'
-        return cast('Date', self._field('end'))
+        return cast('Date', _decode_date(self._data.get('end')))
 
 
 class Projection(Record):
     'Select Entity identities or Values belonging to each matching Entity.'
     __slots__ = ()
     _kind = 'Projection'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'ProjectionKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                 'required': False,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'measure': {'options': [{'kind': 'Measure', 'category': 'uuid'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False},
+         'cardinality': {'options': [{'kind': 'Cardinality', 'category': 'enum'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': False,
+                         'ordered': False},
+         'missing': {'options': [{'kind': 'MissingHandling', 'category': 'enum'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False}}
+    )
 
     def __init__(self, *,
         kind: ProjectionKind,
@@ -2510,13 +4051,17 @@ class Projection(Record):
         cardinality: Cardinality | Unset = UNSET,
         missing: MissingHandling | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'key': key,
-            'measure': measure,
-            'cardinality': cardinality,
-            'missing': missing,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, ProjectionKind, 'kind')
+        if key is not UNSET:
+            data['key'] = copy_json(key)
+        if measure is not UNSET:
+            data['measure'] = _encode_uuid(measure)
+        if cardinality is not UNSET:
+            data['cardinality'] = _encode_enum(cardinality, Cardinality, 'cardinality')
+        if missing is not UNSET:
+            data['missing'] = _encode_enum(missing, MissingHandling, 'missing')
+        self._set_data(data)
 
     def replace(self, *,
         kind: ProjectionKind | Unset = UNSET,
@@ -2526,44 +4071,87 @@ class Projection(Record):
         missing: MissingHandling | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'key': key,
-            'measure': measure,
-            'cardinality': cardinality,
-            'missing': missing,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, ProjectionKind, 'kind')
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if measure is not UNSET:
+            changes['measure'] = _encode_uuid(measure)
+        if cardinality is not UNSET:
+            changes['cardinality'] = _encode_enum(cardinality, Cardinality, 'cardinality')
+        if missing is not UNSET:
+            changes['missing'] = _encode_enum(missing, MissingHandling, 'missing')
+        return self._replace(changes)
 
     @property
     def kind(self) -> ProjectionKind:
         'Whether the query returns Entity identities or Values of the matching Entities.'
-        return cast('ProjectionKind', self._field('kind'))
+        return cast('ProjectionKind', _decode_enum(self._data.get('kind'), ProjectionKind))
 
     @property
     def key(self) -> str | None:
         'Exact owner-local Value key.'
-        return cast('str | None', self._field('key'))
+        return cast('str | None', self._data.get('key'))
 
     @property
     def measure(self) -> UUID | None:
         'Select Values with this exact Measure.'
-        return cast('UUID | None', self._field('measure'))
+        return cast('UUID | None', _decode_uuid(self._data.get('measure')))
 
     @property
     def cardinality(self) -> Cardinality | None:
         'Number of Values permitted for each Entity; required for value projection and absent for entity projection.'
-        return cast('Cardinality | None', self._field('cardinality'))
+        return cast('Cardinality | None', _decode_enum(self._data.get('cardinality'), Cardinality))
 
     @property
     def missing(self) -> MissingHandling | None:
         'Treatment of an Entity with no matching Value; required for value projection and absent for entity projection.'
-        return cast('MissingHandling | None', self._field('missing'))
+        return cast('MissingHandling | None', _decode_enum(self._data.get('missing'), MissingHandling))
 
 
 class PropertyContent(Record):
     'Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked semantically.'
     __slots__ = ()
     _kind = 'PropertyContent'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'ContentKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'text': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'zone': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'fold': {'options': [{'kind': 'integer', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'items': {'options': [{'kind': 'PropertyContent', 'category': 'record'}],
+                   'required': False,
+                   'many': True,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': True},
+         'entries': {'options': [{'kind': 'ContentEntry', 'category': 'record'}],
+                     'required': False,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': True}}
+    )
 
     def __init__(self, *,
         kind: ContentKind,
@@ -2573,14 +4161,19 @@ class PropertyContent(Record):
         items: tuple[PropertyContent, ...] | None | Unset = UNSET,
         entries: tuple[ContentEntry, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'text': text,
-            'zone': zone,
-            'fold': fold,
-            'items': items,
-            'entries': entries,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, ContentKind, 'kind')
+        if text is not UNSET:
+            data['text'] = copy_json(text)
+        if zone is not UNSET:
+            data['zone'] = copy_json(zone)
+        if fold is not UNSET:
+            data['fold'] = copy_json(fold)
+        if items is not UNSET:
+            data['items'] = _encode_many(items, lambda v: _encode_record(v, PropertyContent, 'items'))
+        if entries is not UNSET:
+            data['entries'] = _encode_many(entries, lambda v: _encode_record(v, ContentEntry, 'entries'))
+        self._set_data(data)
 
     def replace(self, *,
         kind: ContentKind | Unset = UNSET,
@@ -2591,50 +4184,83 @@ class PropertyContent(Record):
         entries: tuple[ContentEntry, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'text': text,
-            'zone': zone,
-            'fold': fold,
-            'items': items,
-            'entries': entries,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, ContentKind, 'kind')
+        if text is not UNSET:
+            changes['text'] = copy_json(text)
+        if zone is not UNSET:
+            changes['zone'] = copy_json(zone)
+        if fold is not UNSET:
+            changes['fold'] = copy_json(fold)
+        if items is not UNSET:
+            changes['items'] = _encode_many(items, lambda v: _encode_record(v, PropertyContent, 'items'))
+        if entries is not UNSET:
+            changes['entries'] = _encode_many(entries, lambda v: _encode_record(v, ContentEntry, 'entries'))
+        return self._replace(changes)
 
     @property
     def kind(self) -> ContentKind:
         'Type tag; it determines which other fields are present and how text is read.'
-        return cast('ContentKind', self._field('kind'))
+        return cast('ContentKind', _decode_enum(self._data.get('kind'), ContentKind))
 
     @property
     def text(self) -> str | None:
         'Canonical text of a scalar value, such as an ISO date or a duration in microseconds; absent for null and container kinds.'
-        return cast('str | None', self._field('text'))
+        return cast('str | None', self._data.get('text'))
 
     @property
     def zone(self) -> str | None:
         'Optional IANA time-zone key of a datetime or time value.'
-        return cast('str | None', self._field('zone'))
+        return cast('str | None', self._data.get('zone'))
 
     @property
     def fold(self) -> int | None:
         'Fold, 0 or 1, of a datetime or time value; it selects between repeated wall-clock times.'
-        return cast('int | None', self._field('fold'))
+        return cast('int | None', self._data.get('fold'))
 
     @property
     def items(self) -> tuple[PropertyContent, ...] | None:
         'Ordered members of a list, tuple, set or frozenset; set members use a canonical order.'
-        return cast('tuple[PropertyContent, ...] | None', self._field('items'))
+        return cast('tuple[PropertyContent, ...] | None', self._child('items', PropertyContent, True))
 
     @property
     def entries(self) -> tuple[ContentEntry, ...] | None:
         'Ordered entries of a mapping or mapping proxy; keys are unique.'
-        return cast('tuple[ContentEntry, ...] | None', self._field('entries'))
+        return cast('tuple[ContentEntry, ...] | None', self._child('entries', ContentEntry, True))
 
 
 class Provenance(Record):
     'Facts connecting graph objects to supporting Claims, with the Sources and upstream Claims needed to follow their lineage.'
     __slots__ = ()
     _kind = 'Provenance'
+    _SLOTS = _freeze(
+        {'sources': {'options': [{'kind': 'Source', 'category': 'record'}],
+                     'required': False,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': False},
+         'claims': {'options': [{'kind': 'Claim', 'category': 'record'}],
+                    'required': False,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False},
+         'facts': {'options': [{'kind': 'Fact', 'category': 'record'}],
+                   'required': False,
+                   'many': True,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': False},
+         'scenarios': {'options': [{'kind': 'ScenarioRealization',
+                                    'category': 'record'}],
+                       'required': False,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': True}}
+    )
 
     def __init__(self, *,
         sources: tuple[Source, ...] | None | Unset = UNSET,
@@ -2642,12 +4268,16 @@ class Provenance(Record):
         facts: tuple[Fact, ...] | None | Unset = UNSET,
         scenarios: tuple[ScenarioRealization, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'sources': sources,
-            'claims': claims,
-            'facts': facts,
-            'scenarios': scenarios,
-        })
+        data: dict[str, object] = {}
+        if sources is not UNSET:
+            data['sources'] = _encode_many(sources, lambda v: _encode_record(v, Source, 'sources'))
+        if claims is not UNSET:
+            data['claims'] = _encode_many(claims, lambda v: _encode_record(v, Claim, 'claims'))
+        if facts is not UNSET:
+            data['facts'] = _encode_many(facts, lambda v: _encode_record(v, Fact, 'facts'))
+        if scenarios is not UNSET:
+            data['scenarios'] = _encode_many(scenarios, lambda v: _encode_record(v, ScenarioRealization, 'scenarios'))
+        self._set_data(data)
 
     def replace(self, *,
         sources: tuple[Source, ...] | None | Unset = UNSET,
@@ -2656,73 +4286,125 @@ class Provenance(Record):
         scenarios: tuple[ScenarioRealization, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'sources': sources,
-            'claims': claims,
-            'facts': facts,
-            'scenarios': scenarios,
-        })
+        changes: dict[str, object] = {}
+        if sources is not UNSET:
+            changes['sources'] = _encode_many(sources, lambda v: _encode_record(v, Source, 'sources'))
+        if claims is not UNSET:
+            changes['claims'] = _encode_many(claims, lambda v: _encode_record(v, Claim, 'claims'))
+        if facts is not UNSET:
+            changes['facts'] = _encode_many(facts, lambda v: _encode_record(v, Fact, 'facts'))
+        if scenarios is not UNSET:
+            changes['scenarios'] = _encode_many(scenarios, lambda v: _encode_record(v, ScenarioRealization, 'scenarios'))
+        return self._replace(changes)
 
     @property
     def sources(self) -> tuple[Source, ...] | None:
         'Source editions referenced by Claim Locations; each Source is stored once.'
-        return cast('tuple[Source, ...] | None', self._field('sources'))
+        return cast('tuple[Source, ...] | None', self._child('sources', Source, True))
 
     @property
     def claims(self) -> tuple[Claim, ...] | None:
         'Claims referenced by Facts and by upstream Claim dependencies; each Claim is stored once.'
-        return cast('tuple[Claim, ...] | None', self._field('claims'))
+        return cast('tuple[Claim, ...] | None', self._child('claims', Claim, True))
 
     @property
     def facts(self) -> tuple[Fact, ...] | None:
         'Facts that connect graph objects or characteristics to supporting Claims; at most one Fact per target.'
-        return cast('tuple[Fact, ...] | None', self._field('facts'))
+        return cast('tuple[Fact, ...] | None', self._child('facts', Fact, True))
 
     @property
     def scenarios(self) -> tuple[ScenarioRealization, ...] | None:
         'Captured scenario realizations, in order, with their inputs, paths and observation availability.'
-        return cast('tuple[ScenarioRealization, ...] | None', self._field('scenarios'))
+        return cast('tuple[ScenarioRealization, ...] | None', self._child('scenarios', ScenarioRealization, True))
 
 
 class Quantity(Record):
     'Numerical content consisting of a finite magnitude and explicit units.'
     __slots__ = ()
     _kind = 'Quantity'
+    _SLOTS = _freeze(
+        {'magnitude': {'options': [{'kind': 'decimal', 'category': 'primitive'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False},
+         'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         magnitude: int | float,
         units: str,
     ) -> None:
-        self._initialize({
-            'magnitude': magnitude,
-            'units': units,
-        })
+        data: dict[str, object] = {}
+        data['magnitude'] = copy_json(magnitude)
+        data['units'] = copy_json(units)
+        self._set_data(data)
 
     def replace(self, *,
         magnitude: int | float | Unset = UNSET,
         units: str | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'magnitude': magnitude,
-            'units': units,
-        })
+        changes: dict[str, object] = {}
+        if magnitude is not UNSET:
+            changes['magnitude'] = copy_json(magnitude)
+        if units is not UNSET:
+            changes['units'] = copy_json(units)
+        return self._replace(changes)
 
     @property
     def magnitude(self) -> int | float:
         'Finite numerical magnitude expressed in the accompanying units.'
-        return cast('int | float', self._field('magnitude'))
+        return cast('int | float', self._data.get('magnitude'))
 
     @property
     def units(self) -> str:
         'Explicit units for this magnitude, such as m^2, AUD/year, or dimensionless.'
-        return cast('str', self._field('units'))
+        return cast('str', self._data.get('units'))
 
 
 class Query(Record):
     'A non-executing query specification returning Entity or Value identities from the containing Model revision.'
     __slots__ = ()
     _kind = 'Query'
+    _SLOTS = _freeze(
+        {'starting_at': {'options': [{'kind': 'Entity', 'category': 'uuid'}],
+                         'required': True,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': False,
+                         'ordered': False},
+         'steps': {'options': [{'kind': 'Traversal', 'category': 'record'}],
+                   'required': False,
+                   'many': True,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': True},
+         'filter': {'options': [{'kind': 'Filter', 'category': 'record'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'projection': {'options': [{'kind': 'Projection', 'category': 'record'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False},
+         'duplicates': {'options': [{'kind': 'DuplicateHandling', 'category': 'enum'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False}}
+    )
 
     def __init__(self, *,
         starting_at: UUID,
@@ -2731,13 +4413,15 @@ class Query(Record):
         projection: Projection,
         duplicates: DuplicateHandling,
     ) -> None:
-        self._initialize({
-            'starting_at': starting_at,
-            'steps': steps,
-            'filter': filter,
-            'projection': projection,
-            'duplicates': duplicates,
-        })
+        data: dict[str, object] = {}
+        data['starting_at'] = _encode_uuid(starting_at)
+        if steps is not UNSET:
+            data['steps'] = _encode_many(steps, lambda v: _encode_record(v, Traversal, 'steps'))
+        if filter is not UNSET:
+            data['filter'] = _encode_record(filter, Filter, 'filter')
+        data['projection'] = _encode_record(projection, Projection, 'projection')
+        data['duplicates'] = _encode_enum(duplicates, DuplicateHandling, 'duplicates')
+        self._set_data(data)
 
     def replace(self, *,
         starting_at: UUID | Unset = UNSET,
@@ -2747,90 +4431,132 @@ class Query(Record):
         duplicates: DuplicateHandling | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'starting_at': starting_at,
-            'steps': steps,
-            'filter': filter,
-            'projection': projection,
-            'duplicates': duplicates,
-        })
+        changes: dict[str, object] = {}
+        if starting_at is not UNSET:
+            changes['starting_at'] = _encode_uuid(starting_at)
+        if steps is not UNSET:
+            changes['steps'] = _encode_many(steps, lambda v: _encode_record(v, Traversal, 'steps'))
+        if filter is not UNSET:
+            changes['filter'] = _encode_record(filter, Filter, 'filter')
+        if projection is not UNSET:
+            changes['projection'] = _encode_record(projection, Projection, 'projection')
+        if duplicates is not UNSET:
+            changes['duplicates'] = _encode_enum(duplicates, DuplicateHandling, 'duplicates')
+        return self._replace(changes)
 
     @property
     def starting_at(self) -> UUID:
         'UUID of the Entity in the containing Model revision where the query starts.'
-        return cast('UUID', self._field('starting_at'))
+        return cast('UUID', _decode_uuid(self._data.get('starting_at')))
 
     @property
     def steps(self) -> tuple[Traversal, ...] | None:
         'Ordered traversal steps; omission selects the starting Entity.'
-        return cast('tuple[Traversal, ...] | None', self._field('steps'))
+        return cast('tuple[Traversal, ...] | None', self._child('steps', Traversal, True))
 
     @property
     def filter(self) -> Filter | None:
         'Optional conditions applied to the candidates after traversal.'
-        return cast('Filter | None', self._field('filter'))
+        return cast('Filter | None', self._child('filter', Filter, False))
 
     @property
     def projection(self) -> Projection:
         'Selection of Entity identities or Values from the filtered candidates.'
-        return cast('Projection', self._field('projection'))
+        return cast('Projection', self._child('projection', Projection, False))
 
     @property
     def duplicates(self) -> DuplicateHandling:
         'Whether repeated projected UUIDs are kept or removed.'
-        return cast('DuplicateHandling', self._field('duplicates'))
+        return cast('DuplicateHandling', _decode_enum(self._data.get('duplicates'), DuplicateHandling))
 
 
 class RandomStream(Record):
     'Stable component stream identity derived from seed, scenario key and component name.'
     __slots__ = ()
     _kind = 'RandomStream'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'identifier': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str,
         identifier: str,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'identifier': identifier,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        data['identifier'] = copy_json(identifier)
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
         identifier: str | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'identifier': identifier,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if identifier is not UNSET:
+            changes['identifier'] = copy_json(identifier)
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Name of the parameter or input that the stream samples.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def identifier(self) -> str:
         'SHA-256 hexadecimal digest of the scenario key and stream component; with the plan seed, it seeds the stream.'
-        return cast('str', self._field('identifier'))
+        return cast('str', self._data.get('identifier'))
 
 
 class Reconciliation(Record):
     'Explicit selection of one supporting Claim when evidence conflicts.'
     __slots__ = ()
     _kind = 'Reconciliation'
+    _SLOTS = _freeze(
+        {'selected': {'options': [{'kind': 'Claim', 'category': 'uuid'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'status': {'options': [{'kind': 'ReconciliationStatus', 'category': 'enum'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'method': {'options': [{'kind': 'Method', 'category': 'record'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         selected: UUID,
         status: ReconciliationStatus,
         method: Method | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'selected': selected,
-            'status': status,
-            'method': method,
-        })
+        data: dict[str, object] = {}
+        data['selected'] = _encode_uuid(selected)
+        data['status'] = _encode_enum(status, ReconciliationStatus, 'status')
+        if method is not UNSET:
+            data['method'] = _encode_record(method, Method, 'method')
+        self._set_data(data)
 
     def replace(self, *,
         selected: UUID | Unset = UNSET,
@@ -2838,58 +4564,103 @@ class Reconciliation(Record):
         method: Method | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'selected': selected,
-            'status': status,
-            'method': method,
-        })
+        changes: dict[str, object] = {}
+        if selected is not UNSET:
+            changes['selected'] = _encode_uuid(selected)
+        if status is not UNSET:
+            changes['status'] = _encode_enum(status, ReconciliationStatus, 'status')
+        if method is not UNSET:
+            changes['method'] = _encode_record(method, Method, 'method')
+        return self._replace(changes)
 
     @property
     def selected(self) -> UUID:
         "UUID of a Claim included in the Fact's claims."
-        return cast('UUID', self._field('selected'))
+        return cast('UUID', _decode_uuid(self._data.get('selected')))
 
     @property
     def status(self) -> ReconciliationStatus:
         'Whether the selection is provisional or confirmed.'
-        return cast('ReconciliationStatus', self._field('status'))
+        return cast('ReconciliationStatus', _decode_enum(self._data.get('status'), ReconciliationStatus))
 
     @property
     def method(self) -> Method | None:
         'Optional process used to make the selection.'
-        return cast('Method | None', self._field('method'))
+        return cast('Method | None', self._child('method', Method, False))
 
 
 class Reference(Record):
     "A Value or Movement UUID resolved in the containing Model or composed Specification. Execution diagnostic references resolve in the Run's input Model. Names, matching keys and positions are never identities."
     __slots__ = ()
     _kind = 'Reference'
+    _SLOTS = _freeze(
+        {'target': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         target: UUID,
     ) -> None:
-        self._initialize({
-            'target': target,
-        })
+        data: dict[str, object] = {}
+        data['target'] = _encode_uuid(target)
+        self._set_data(data)
 
     def replace(self, *,
         target: UUID | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'target': target,
-        })
+        changes: dict[str, object] = {}
+        if target is not UNSET:
+            changes['target'] = _encode_uuid(target)
+        return self._replace(changes)
 
     @property
     def target(self) -> UUID:
         'UUID of a Value or Movement declaration in the applicable scope.'
-        return cast('UUID', self._field('target'))
+        return cast('UUID', _decode_uuid(self._data.get('target')))
 
 
 class Relationship(Record):
     'An identified, directed connection from one Entity to another. Its classification describes the connection; its characteristics describe properties of the connection itself.'
     __slots__ = ()
     _kind = 'Relationship'
+    _SLOTS = _freeze(
+        {'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
+                            'required': True,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': False,
+                            'ordered': False},
+         'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'source': {'options': [{'kind': 'Entity', 'category': 'uuid'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'target': {'options': [{'kind': 'Entity', 'category': 'uuid'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'characteristics': {'options': [{'kind': 'Characteristics',
+                                          'category': 'record'}],
+                             'required': False,
+                             'many': False,
+                             'mapping': False,
+                             'nullable': True,
+                             'ordered': False}}
+    )
 
     def __init__(self, *,
         classification: UUID,
@@ -2898,13 +4669,14 @@ class Relationship(Record):
         target: UUID,
         characteristics: Characteristics | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'classification': classification,
-            'id': id,
-            'source': source,
-            'target': target,
-            'characteristics': characteristics,
-        })
+        data: dict[str, object] = {}
+        data['classification'] = _encode_uuid(classification)
+        data['id'] = _encode_uuid(id)
+        data['source'] = _encode_uuid(source)
+        data['target'] = _encode_uuid(target)
+        if characteristics is not UNSET:
+            data['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
+        self._set_data(data)
 
     def replace(self, *,
         classification: UUID | Unset = UNSET,
@@ -2914,44 +4686,81 @@ class Relationship(Record):
         characteristics: Characteristics | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'classification': classification,
-            'id': id,
-            'source': source,
-            'target': target,
-            'characteristics': characteristics,
-        })
+        changes: dict[str, object] = {}
+        if classification is not UNSET:
+            changes['classification'] = _encode_uuid(classification)
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if source is not UNSET:
+            changes['source'] = _encode_uuid(source)
+        if target is not UNSET:
+            changes['target'] = _encode_uuid(target)
+        if characteristics is not UNSET:
+            changes['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
+        return self._replace(changes)
 
     @property
     def classification(self) -> UUID:
         'Classification describing the object, referenced by its stable UUID.'
-        return cast('UUID', self._field('classification'))
+        return cast('UUID', _decode_uuid(self._data.get('classification')))
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Relationship across Model revisions.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def source(self) -> UUID:
         'UUID of the source Entity.'
-        return cast('UUID', self._field('source'))
+        return cast('UUID', _decode_uuid(self._data.get('source')))
 
     @property
     def target(self) -> UUID:
         'UUID of the target Entity.'
-        return cast('UUID', self._field('target'))
+        return cast('UUID', _decode_uuid(self._data.get('target')))
 
     @property
     def characteristics(self) -> Characteristics | None:
         'Labels and Values describing this connection.'
-        return cast('Characteristics | None', self._field('characteristics'))
+        return cast('Characteristics | None', self._child('characteristics', Characteristics, False))
 
 
 class Report(Record):
     'Outcome, actual runtime, findings, and ordered execution trace of a Run.'
     __slots__ = ()
     _kind = 'Report'
+    _SLOTS = _freeze(
+        {'status': {'options': [{'kind': 'Status', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'runtime': {'options': [{'kind': 'Runtime', 'category': 'record'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False},
+         'diagnostics': {'options': [{'kind': 'Diagnostic', 'category': 'record'}],
+                         'required': False,
+                         'many': True,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'trace': {'options': [{'kind': 'Step', 'category': 'record'}],
+                   'required': False,
+                   'many': True,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': True},
+         'rule_evidence': {'options': [{'kind': 'RuleEvidence', 'category': 'record'}],
+                           'required': False,
+                           'many': True,
+                           'mapping': False,
+                           'nullable': True,
+                           'ordered': True}}
+    )
 
     def __init__(self, *,
         status: Status,
@@ -2960,13 +4769,17 @@ class Report(Record):
         trace: tuple[Step, ...] | None | Unset = UNSET,
         rule_evidence: tuple[RuleEvidence, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'status': status,
-            'runtime': runtime,
-            'diagnostics': diagnostics,
-            'trace': trace,
-            'rule_evidence': rule_evidence,
-        })
+        data: dict[str, object] = {}
+        data['status'] = _encode_record(status, Status, 'status')
+        if runtime is not UNSET:
+            data['runtime'] = _encode_record(runtime, Runtime, 'runtime')
+        if diagnostics is not UNSET:
+            data['diagnostics'] = _encode_many(diagnostics, lambda v: _encode_record(v, Diagnostic, 'diagnostics'))
+        if trace is not UNSET:
+            data['trace'] = _encode_many(trace, lambda v: _encode_record(v, Step, 'trace'))
+        if rule_evidence is not UNSET:
+            data['rule_evidence'] = _encode_many(rule_evidence, lambda v: _encode_record(v, RuleEvidence, 'rule_evidence'))
+        self._set_data(data)
 
     def replace(self, *,
         status: Status | Unset = UNSET,
@@ -2976,55 +4789,80 @@ class Report(Record):
         rule_evidence: tuple[RuleEvidence, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'status': status,
-            'runtime': runtime,
-            'diagnostics': diagnostics,
-            'trace': trace,
-            'rule_evidence': rule_evidence,
-        })
+        changes: dict[str, object] = {}
+        if status is not UNSET:
+            changes['status'] = _encode_record(status, Status, 'status')
+        if runtime is not UNSET:
+            changes['runtime'] = _encode_record(runtime, Runtime, 'runtime')
+        if diagnostics is not UNSET:
+            changes['diagnostics'] = _encode_many(diagnostics, lambda v: _encode_record(v, Diagnostic, 'diagnostics'))
+        if trace is not UNSET:
+            changes['trace'] = _encode_many(trace, lambda v: _encode_record(v, Step, 'trace'))
+        if rule_evidence is not UNSET:
+            changes['rule_evidence'] = _encode_many(rule_evidence, lambda v: _encode_record(v, RuleEvidence, 'rule_evidence'))
+        return self._replace(changes)
 
     @property
     def status(self) -> Status:
         'Required execution and mathematical outcome.'
-        return cast('Status', self._field('status'))
+        return cast('Status', self._child('status', Status, False))
 
     @property
     def runtime(self) -> Runtime | None:
         'Actual runtime when known; may be absent for a skipped or pre-execution failure.'
-        return cast('Runtime | None', self._field('runtime'))
+        return cast('Runtime | None', self._child('runtime', Runtime, False))
 
     @property
     def diagnostics(self) -> tuple[Diagnostic, ...] | None:
         'Unordered findings supporting interpretation of the outcome.'
-        return cast('tuple[Diagnostic, ...] | None', self._field('diagnostics'))
+        return cast('tuple[Diagnostic, ...] | None', self._child('diagnostics', Diagnostic, True))
 
     @property
     def trace(self) -> tuple[Step, ...] | None:
         'Ordered execution and selection records; list order is preserved.'
-        return cast('tuple[Step, ...] | None', self._field('trace'))
+        return cast('tuple[Step, ...] | None', self._child('trace', Step, True))
 
     @property
     def rule_evidence(self) -> tuple[RuleEvidence, ...] | None:
         'Ordered evidence of each evaluated Decision of the Specification rules.'
-        return cast('tuple[RuleEvidence, ...] | None', self._field('rule_evidence'))
+        return cast('tuple[RuleEvidence, ...] | None', self._child('rule_evidence', RuleEvidence, True))
 
 
 class Rule(Record):
     'One ordered Boolean condition and its atomic actions.'
     __slots__ = ()
     _kind = 'Rule'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'condition': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False},
+         'actions': {'options': [{'kind': 'Action', 'category': 'record'}],
+                     'required': True,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': True}}
+    )
 
     def __init__(self, *,
         id: UUID,
         condition: Expression,
         actions: tuple[Action, ...],
     ) -> None:
-        self._initialize({
-            'id': id,
-            'condition': condition,
-            'actions': actions,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['condition'] = _encode_record(condition, Expression, 'condition')
+        data['actions'] = _encode_many(actions, lambda v: _encode_record(v, Action, 'actions'))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3032,32 +4870,81 @@ class Rule(Record):
         actions: tuple[Action, ...] | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'condition': condition,
-            'actions': actions,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if condition is not UNSET:
+            changes['condition'] = _encode_record(condition, Expression, 'condition')
+        if actions is not UNSET:
+            changes['actions'] = _encode_many(actions, lambda v: _encode_record(v, Action, 'actions'))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Rule, referenced by RuleEvidence.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def condition(self) -> Expression:
         'Boolean Expression that refers only to the observations of its Decision.'
-        return cast('Expression', self._field('condition'))
+        return cast('Expression', self._child('condition', Expression, False))
 
     @property
     def actions(self) -> tuple[Action, ...]:
         'Nonempty ordered actions applied when this is the first true Rule; terminate can only be last.'
-        return cast('tuple[Action, ...]', self._field('actions'))
+        return cast('tuple[Action, ...]', self._child('actions', Action, True))
 
 
 class RuleEvidence(Record):
     'Recorded evidence of one evaluated decision; absence of a rule means fallback.'
     __slots__ = ()
     _kind = 'RuleEvidence'
+    _SLOTS = _freeze(
+        {'decision': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'at': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'rule': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'observations': {'options': [{'kind': 'ObservedQuantity',
+                                       'category': 'record'}],
+                          'required': True,
+                          'many': True,
+                          'mapping': False,
+                          'nullable': False,
+                          'ordered': True},
+         'assignments': {'options': [{'kind': 'Assignment', 'category': 'record'}],
+                         'required': True,
+                         'many': True,
+                         'mapping': False,
+                         'nullable': False,
+                         'ordered': True},
+         'terminated': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False},
+         'termination_reason': {'options': [{'kind': 'string',
+                                             'category': 'primitive'}],
+                                'required': False,
+                                'many': False,
+                                'mapping': False,
+                                'nullable': True,
+                                'ordered': False}}
+    )
 
     def __init__(self, *,
         decision: UUID,
@@ -3068,15 +4955,17 @@ class RuleEvidence(Record):
         terminated: bool,
         termination_reason: str | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'decision': decision,
-            'at': at,
-            'rule': rule,
-            'observations': observations,
-            'assignments': assignments,
-            'terminated': terminated,
-            'termination_reason': termination_reason,
-        })
+        data: dict[str, object] = {}
+        data['decision'] = _encode_uuid(decision)
+        data['at'] = _encode_date(at)
+        if rule is not UNSET:
+            data['rule'] = _encode_uuid(rule)
+        data['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
+        data['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
+        data['terminated'] = copy_json(terminated)
+        if termination_reason is not UNSET:
+            data['termination_reason'] = copy_json(termination_reason)
+        self._set_data(data)
 
     def replace(self, *,
         decision: UUID | Unset = UNSET,
@@ -3088,67 +4977,94 @@ class RuleEvidence(Record):
         termination_reason: str | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'decision': decision,
-            'at': at,
-            'rule': rule,
-            'observations': observations,
-            'assignments': assignments,
-            'terminated': terminated,
-            'termination_reason': termination_reason,
-        })
+        changes: dict[str, object] = {}
+        if decision is not UNSET:
+            changes['decision'] = _encode_uuid(decision)
+        if at is not UNSET:
+            changes['at'] = _encode_date(at)
+        if rule is not UNSET:
+            changes['rule'] = _encode_uuid(rule)
+        if observations is not UNSET:
+            changes['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
+        if assignments is not UNSET:
+            changes['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
+        if terminated is not UNSET:
+            changes['terminated'] = copy_json(terminated)
+        if termination_reason is not UNSET:
+            changes['termination_reason'] = copy_json(termination_reason)
+        return self._replace(changes)
 
     @property
     def decision(self) -> UUID:
         'UUID of the evaluated Decision.'
-        return cast('UUID', self._field('decision'))
+        return cast('UUID', _decode_uuid(self._data.get('decision')))
 
     @property
     def at(self) -> Date:
         'Date of the evaluated Decision.'
-        return cast('Date', self._field('at'))
+        return cast('Date', _decode_date(self._data.get('at')))
 
     @property
     def rule(self) -> UUID | None:
         'UUID of the first Rule whose condition was true; absent or null when the fallback applied.'
-        return cast('UUID | None', self._field('rule'))
+        return cast('UUID | None', _decode_uuid(self._data.get('rule')))
 
     @property
     def observations(self) -> tuple[ObservedQuantity, ...]:
         'Observed quantities, in the order of the Decision observations.'
-        return cast('tuple[ObservedQuantity, ...]', self._field('observations'))
+        return cast('tuple[ObservedQuantity, ...]', self._child('observations', ObservedQuantity, True))
 
     @property
     def assignments(self) -> tuple[Assignment, ...]:
         'Assignments made by the applied actions, in action order.'
-        return cast('tuple[Assignment, ...]', self._field('assignments'))
+        return cast('tuple[Assignment, ...]', self._child('assignments', Assignment, True))
 
     @property
     def terminated(self) -> bool:
         'Whether the applied actions terminated the decision sequence; no evidence follows a termination.'
-        return cast('bool', self._field('terminated'))
+        return cast('bool', self._data.get('terminated'))
 
     @property
     def termination_reason(self) -> str | None:
         'Reason for termination, required when terminated is true.'
-        return cast('str | None', self._field('termination_reason'))
+        return cast('str | None', self._data.get('termination_reason'))
 
 
 class RuleSet(Record):
     'The rules of a Specification, owning explicit controlled targets and ordered dated decisions.'
     __slots__ = ()
     _kind = 'RuleSet'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'targets': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                     'required': True,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': True},
+         'decisions': {'options': [{'kind': 'Decision', 'category': 'record'}],
+                       'required': True,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': True}}
+    )
 
     def __init__(self, *,
         id: UUID,
         targets: tuple[Reference, ...],
         decisions: tuple[Decision, ...],
     ) -> None:
-        self._initialize({
-            'id': id,
-            'targets': targets,
-            'decisions': decisions,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
+        data['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3156,32 +5072,67 @@ class RuleSet(Record):
         decisions: tuple[Decision, ...] | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'targets': targets,
-            'decisions': decisions,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if targets is not UNSET:
+            changes['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
+        if decisions is not UNSET:
+            changes['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the RuleSet.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def targets(self) -> tuple[Reference, ...]:
         'Nonempty unique controlled targets; the decision actions must assign each one.'
-        return cast('tuple[Reference, ...]', self._field('targets'))
+        return cast('tuple[Reference, ...]', self._child('targets', Reference, True))
 
     @property
     def decisions(self) -> tuple[Decision, ...]:
         'Dated Decisions in strictly increasing date order.'
-        return cast('tuple[Decision, ...]', self._field('decisions'))
+        return cast('tuple[Decision, ...]', self._child('decisions', Decision, True))
 
 
 class Run(Record):
     'The finalized record of one execution attempt against an exact Specification revision.'
     __slots__ = ()
     _kind = 'Run'
+    _SLOTS = _freeze(
+        {'metadata': {'options': [{'kind': 'Metadata', 'category': 'record'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'specification': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                           'required': True,
+                           'many': False,
+                           'mapping': False,
+                           'nullable': False,
+                           'ordered': False},
+         'spawns': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                    'required': False,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False},
+         'outputs': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                     'required': False,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': False},
+         'report': {'options': [{'kind': 'Report', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         metadata: Metadata,
@@ -3190,13 +5141,15 @@ class Run(Record):
         outputs: tuple[UUID, ...] | None | Unset = UNSET,
         report: Report,
     ) -> None:
-        self._initialize({
-            'metadata': metadata,
-            'specification': specification,
-            'spawns': spawns,
-            'outputs': outputs,
-            'report': report,
-        })
+        data: dict[str, object] = {}
+        data['metadata'] = _encode_record(metadata, Metadata, 'metadata')
+        data['specification'] = _encode_uuid(specification)
+        if spawns is not UNSET:
+            data['spawns'] = _encode_many(spawns, lambda v: _encode_uuid(v))
+        if outputs is not UNSET:
+            data['outputs'] = _encode_many(outputs, lambda v: _encode_uuid(v))
+        data['report'] = _encode_record(report, Report, 'report')
+        self._set_data(data)
 
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
@@ -3206,44 +5159,76 @@ class Run(Record):
         report: Report | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'metadata': metadata,
-            'specification': specification,
-            'spawns': spawns,
-            'outputs': outputs,
-            'report': report,
-        })
+        changes: dict[str, object] = {}
+        if metadata is not UNSET:
+            changes['metadata'] = _encode_record(metadata, Metadata, 'metadata')
+        if specification is not UNSET:
+            changes['specification'] = _encode_uuid(specification)
+        if spawns is not UNSET:
+            changes['spawns'] = _encode_many(spawns, lambda v: _encode_uuid(v))
+        if outputs is not UNSET:
+            changes['outputs'] = _encode_many(outputs, lambda v: _encode_uuid(v))
+        if report is not UNSET:
+            changes['report'] = _encode_record(report, Report, 'report')
+        return self._replace(changes)
 
     @property
     def metadata(self) -> Metadata:
         'Identity and schema version of this immutable Run record.'
-        return cast('Metadata', self._field('metadata'))
+        return cast('Metadata', self._child('metadata', Metadata, False))
 
     @property
     def specification(self) -> UUID:
         'Exact attempted Specification revision, resolved as a Specification document.'
-        return cast('UUID', self._field('specification'))
+        return cast('UUID', _decode_uuid(self._data.get('specification')))
 
     @property
     def spawns(self) -> tuple[UUID, ...] | None:
         'Unique references to directly spawned Run revisions.'
-        return cast('tuple[UUID, ...] | None', self._field('spawns'))
+        return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('spawns', ())))
 
     @property
     def outputs(self) -> tuple[UUID, ...] | None:
         'Unique accepted output Model revision references, or their union for a batch.'
-        return cast('tuple[UUID, ...] | None', self._field('outputs'))
+        return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('outputs', ())))
 
     @property
     def report(self) -> Report:
         'Execution outcome and supporting evidence.'
-        return cast('Report', self._field('report'))
+        return cast('Report', self._child('report', Report, False))
 
 
 class Runtime(Record):
     'Observed timing, implementation identities, and effective numerical settings.'
     __slots__ = ()
     _kind = 'Runtime'
+    _SLOTS = _freeze(
+        {'started_at': {'options': [{'kind': 'datetime', 'category': 'primitive'}],
+                        'required': False,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': False},
+         'finished_at': {'options': [{'kind': 'datetime', 'category': 'primitive'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'implementations': {'options': [{'kind': 'Implementation',
+                                          'category': 'record'}],
+                             'required': True,
+                             'many': True,
+                             'mapping': False,
+                             'nullable': False,
+                             'ordered': False},
+         'settings': {'options': [{'kind': 'Settings', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False}}
+    )
 
     def __init__(self, *,
         started_at: str | None | Unset = UNSET,
@@ -3251,12 +5236,15 @@ class Runtime(Record):
         implementations: tuple[Implementation, ...],
         settings: Settings | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'started_at': started_at,
-            'finished_at': finished_at,
-            'implementations': implementations,
-            'settings': settings,
-        })
+        data: dict[str, object] = {}
+        if started_at is not UNSET:
+            data['started_at'] = copy_json(started_at)
+        if finished_at is not UNSET:
+            data['finished_at'] = copy_json(finished_at)
+        data['implementations'] = _encode_many(implementations, lambda v: _encode_record(v, Implementation, 'implementations'))
+        if settings is not UNSET:
+            data['settings'] = _encode_record(settings, Settings, 'settings')
+        self._set_data(data)
 
     def replace(self, *,
         started_at: str | None | Unset = UNSET,
@@ -3265,49 +5253,75 @@ class Runtime(Record):
         settings: Settings | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'started_at': started_at,
-            'finished_at': finished_at,
-            'implementations': implementations,
-            'settings': settings,
-        })
+        changes: dict[str, object] = {}
+        if started_at is not UNSET:
+            changes['started_at'] = copy_json(started_at)
+        if finished_at is not UNSET:
+            changes['finished_at'] = copy_json(finished_at)
+        if implementations is not UNSET:
+            changes['implementations'] = _encode_many(implementations, lambda v: _encode_record(v, Implementation, 'implementations'))
+        if settings is not UNSET:
+            changes['settings'] = _encode_record(settings, Settings, 'settings')
+        return self._replace(changes)
 
     @property
     def started_at(self) -> str | None:
         'Observed start instant with an explicit timezone.'
-        return cast('str | None', self._field('started_at'))
+        return cast('str | None', self._data.get('started_at'))
 
     @property
     def finished_at(self) -> str | None:
         'Observed finish instant with an explicit timezone.'
-        return cast('str | None', self._field('finished_at'))
+        return cast('str | None', self._data.get('finished_at'))
 
     @property
     def implementations(self) -> tuple[Implementation, ...]:
         'Actual implementation identities; nonempty when Runtime is present.'
-        return cast('tuple[Implementation, ...]', self._field('implementations'))
+        return cast('tuple[Implementation, ...]', self._child('implementations', Implementation, True))
 
     @property
     def settings(self) -> Settings | None:
         'Effective numerical settings, rather than merely copied requests.'
-        return cast('Settings | None', self._field('settings'))
+        return cast('Settings | None', self._child('settings', Settings, False))
 
 
 class ScenarioParameter(Record):
     'One named constant or sampled parameter; exactly one input is required by semantic validation.'
     __slots__ = ()
     _kind = 'ScenarioParameter'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False},
+         'distribution': {'options': [{'kind': 'Distribution', 'category': 'record'}],
+                          'required': False,
+                          'many': False,
+                          'mapping': False,
+                          'nullable': True,
+                          'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str,
         quantity: Quantity | None | Unset = UNSET,
         distribution: Distribution | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'quantity': quantity,
-            'distribution': distribution,
-        })
+        data: dict[str, object] = {}
+        data['name'] = copy_json(name)
+        if quantity is not UNSET:
+            data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if distribution is not UNSET:
+            data['distribution'] = _encode_record(distribution, Distribution, 'distribution')
+        self._set_data(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -3315,32 +5329,68 @@ class ScenarioParameter(Record):
         distribution: Distribution | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'quantity': quantity,
-            'distribution': distribution,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if quantity is not UNSET:
+            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if distribution is not UNSET:
+            changes['distribution'] = _encode_record(distribution, Distribution, 'distribution')
+        return self._replace(changes)
 
     @property
     def name(self) -> str:
         'Parameter name of the market method contract, unique within the plan.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def quantity(self) -> Quantity | None:
         'Fixed quantity; give this or distribution, not both.'
-        return cast('Quantity | None', self._field('quantity'))
+        return cast('Quantity | None', self._child('quantity', Quantity, False))
 
     @property
     def distribution(self) -> _Distribution | None:
         'Distribution to sample; give this or quantity, not both.'
-        return cast('_Distribution | None', self._field('distribution'))
+        return cast('_Distribution | None', self._child('distribution', Distribution, False))
 
 
 class ScenarioPlan(Record):
     'Finite market generation plan. This is input-generation provenance, not governing mathematics.'
     __slots__ = ()
     _kind = 'ScenarioPlan'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'method': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False},
+         'seed': {'options': [{'kind': 'integer', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'periods': {'options': [{'kind': 'Period', 'category': 'record'}],
+                     'required': True,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': True},
+         'parameters': {'options': [{'kind': 'ScenarioParameter',
+                                     'category': 'record'}],
+                        'required': True,
+                        'many': True,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': True}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -3349,13 +5399,13 @@ class ScenarioPlan(Record):
         periods: tuple[Period, ...],
         parameters: tuple[ScenarioParameter, ...],
     ) -> None:
-        self._initialize({
-            'id': id,
-            'method': method,
-            'seed': seed,
-            'periods': periods,
-            'parameters': parameters,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['method'] = copy_json(method)
+        data['seed'] = copy_json(seed)
+        data['periods'] = _encode_many(periods, lambda v: _encode_record(v, Period, 'periods'))
+        data['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, ScenarioParameter, 'parameters'))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3365,44 +5415,113 @@ class ScenarioPlan(Record):
         parameters: tuple[ScenarioParameter, ...] | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'method': method,
-            'seed': seed,
-            'periods': periods,
-            'parameters': parameters,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if method is not UNSET:
+            changes['method'] = copy_json(method)
+        if seed is not UNSET:
+            changes['seed'] = copy_json(seed)
+        if periods is not UNSET:
+            changes['periods'] = _encode_many(periods, lambda v: _encode_record(v, Period, 'periods'))
+        if parameters is not UNSET:
+            changes['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, ScenarioParameter, 'parameters'))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the plan.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def method(self) -> str:
         'Code of the market method contract that the plan uses.'
-        return cast('str', self._field('method'))
+        return cast('str', self._data.get('method'))
 
     @property
     def seed(self) -> int:
         'Nonnegative master seed of the random streams.'
-        return cast('int', self._field('seed'))
+        return cast('int', self._data.get('seed'))
 
     @property
     def periods(self) -> tuple[_Period, ...]:
         'Nonempty ordered calendar periods of the generated paths; periods do not overlap.'
-        return cast('tuple[_Period, ...]', self._field('periods'))
+        return cast('tuple[_Period, ...]', self._child('periods', Period, True))
 
     @property
     def parameters(self) -> tuple[ScenarioParameter, ...]:
         'Parameters of the method; their names match the parameter inventory of the method.'
-        return cast('tuple[ScenarioParameter, ...]', self._field('parameters'))
+        return cast('tuple[ScenarioParameter, ...]', self._child('parameters', ScenarioParameter, True))
 
 
 class ScenarioRealization(Record):
     'Captured scenario inputs and paths. Stored draws permit replay without random sampling.'
     __slots__ = ()
     _kind = 'ScenarioRealization'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'plan': {'options': [{'kind': 'ScenarioPlan', 'category': 'record'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'key': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'calculation': {'options': [{'kind': 'CalculationProvenance',
+                                      'category': 'record'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'generator': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False},
+         'versions': {'options': [{'kind': 'LibraryVersion', 'category': 'record'}],
+                      'required': True,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': True},
+         'streams': {'options': [{'kind': 'RandomStream', 'category': 'record'}],
+                     'required': True,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': True},
+         'inputs': {'options': [{'kind': 'Binding', 'category': 'record'}],
+                    'required': True,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': True},
+         'outputs': {'options': [{'kind': 'Binding', 'category': 'record'}],
+                     'required': True,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': True},
+         'availability': {'options': [{'kind': 'ObservationAvailability',
+                                       'category': 'record'}],
+                          'required': True,
+                          'many': True,
+                          'mapping': False,
+                          'nullable': False,
+                          'ordered': True}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -3416,18 +5535,19 @@ class ScenarioRealization(Record):
         outputs: tuple[Binding, ...],
         availability: tuple[ObservationAvailability, ...],
     ) -> None:
-        self._initialize({
-            'id': id,
-            'plan': plan,
-            'key': key,
-            'calculation': calculation,
-            'generator': generator,
-            'versions': versions,
-            'streams': streams,
-            'inputs': inputs,
-            'outputs': outputs,
-            'availability': availability,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['plan'] = _encode_record(plan, ScenarioPlan, 'plan')
+        data['key'] = copy_json(key)
+        if calculation is not UNSET:
+            data['calculation'] = _encode_record(calculation, CalculationProvenance, 'calculation')
+        data['generator'] = copy_json(generator)
+        data['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
+        data['streams'] = _encode_many(streams, lambda v: _encode_record(v, RandomStream, 'streams'))
+        data['inputs'] = _encode_many(inputs, lambda v: _encode_record(v, Binding, 'inputs'))
+        data['outputs'] = _encode_many(outputs, lambda v: _encode_record(v, Binding, 'outputs'))
+        data['availability'] = _encode_many(availability, lambda v: _encode_record(v, ObservationAvailability, 'availability'))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3442,74 +5562,110 @@ class ScenarioRealization(Record):
         availability: tuple[ObservationAvailability, ...] | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'plan': plan,
-            'key': key,
-            'calculation': calculation,
-            'generator': generator,
-            'versions': versions,
-            'streams': streams,
-            'inputs': inputs,
-            'outputs': outputs,
-            'availability': availability,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if plan is not UNSET:
+            changes['plan'] = _encode_record(plan, ScenarioPlan, 'plan')
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if calculation is not UNSET:
+            changes['calculation'] = _encode_record(calculation, CalculationProvenance, 'calculation')
+        if generator is not UNSET:
+            changes['generator'] = copy_json(generator)
+        if versions is not UNSET:
+            changes['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
+        if streams is not UNSET:
+            changes['streams'] = _encode_many(streams, lambda v: _encode_record(v, RandomStream, 'streams'))
+        if inputs is not UNSET:
+            changes['inputs'] = _encode_many(inputs, lambda v: _encode_record(v, Binding, 'inputs'))
+        if outputs is not UNSET:
+            changes['outputs'] = _encode_many(outputs, lambda v: _encode_record(v, Binding, 'outputs'))
+        if availability is not UNSET:
+            changes['availability'] = _encode_many(availability, lambda v: _encode_record(v, ObservationAvailability, 'availability'))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the realization.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def plan(self) -> ScenarioPlan:
         'Complete plan from which the scenario inputs were generated.'
-        return cast('ScenarioPlan', self._field('plan'))
+        return cast('ScenarioPlan', self._child('plan', ScenarioPlan, False))
 
     @property
     def key(self) -> str:
         'Scenario key; with the plan seed, it determines the random streams.'
-        return cast('str', self._field('key'))
+        return cast('str', self._data.get('key'))
 
     @property
     def calculation(self) -> CalculationProvenance | None:
         'Calculation that produced the realized paths; absent for inputs without realized paths.'
-        return cast('CalculationProvenance | None', self._field('calculation'))
+        return cast('CalculationProvenance | None', self._child('calculation', CalculationProvenance, False))
 
     @property
     def generator(self) -> str:
         'Random generation algorithm, such as numpy.SeedSequence/PCG64, or supplied for captured inputs.'
-        return cast('str', self._field('generator'))
+        return cast('str', self._data.get('generator'))
 
     @property
     def versions(self) -> tuple[LibraryVersion, ...]:
         'Dependency versions of the sampling or capture environment.'
-        return cast('tuple[LibraryVersion, ...]', self._field('versions'))
+        return cast('tuple[LibraryVersion, ...]', self._child('versions', LibraryVersion, True))
 
     @property
     def streams(self) -> tuple[RandomStream, ...]:
         'Random streams used to sample the inputs; empty for supplied inputs.'
-        return cast('tuple[RandomStream, ...]', self._field('streams'))
+        return cast('tuple[RandomStream, ...]', self._child('streams', RandomStream, True))
 
     @property
     def inputs(self) -> tuple[Binding, ...]:
         'Bindings of the captured input Values.'
-        return cast('tuple[Binding, ...]', self._field('inputs'))
+        return cast('tuple[Binding, ...]', self._child('inputs', Binding, True))
 
     @property
     def outputs(self) -> tuple[Binding, ...]:
         'Bindings of the realized path Values; empty until the paths are realized.'
-        return cast('tuple[Binding, ...]', self._field('outputs'))
+        return cast('tuple[Binding, ...]', self._child('outputs', Binding, True))
 
     @property
     def availability(self) -> tuple[ObservationAvailability, ...]:
         'Earliest observation dates of the recorded Movements.'
-        return cast('tuple[ObservationAvailability, ...]', self._field('availability'))
+        return cast('tuple[ObservationAvailability, ...]', self._child('availability', ObservationAvailability, True))
 
 
 class Selection(Record):
     'Read a declared member or indexed element from structured expression content.'
     __slots__ = ()
     _kind = 'Selection'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'SelectionKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'base': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'member': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False},
+         'index': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         kind: SelectionKind,
@@ -3517,12 +5673,14 @@ class Selection(Record):
         member: str | None | Unset = UNSET,
         index: Expression | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'base': base,
-            'member': member,
-            'index': index,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, SelectionKind, 'kind')
+        data['base'] = _encode_record(base, Expression, 'base')
+        if member is not UNSET:
+            data['member'] = copy_json(member)
+        if index is not UNSET:
+            data['index'] = _encode_record(index, Expression, 'index')
+        self._set_data(data)
 
     def replace(self, *,
         kind: SelectionKind | Unset = UNSET,
@@ -3531,38 +5689,75 @@ class Selection(Record):
         index: Expression | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'base': base,
-            'member': member,
-            'index': index,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, SelectionKind, 'kind')
+        if base is not UNSET:
+            changes['base'] = _encode_record(base, Expression, 'base')
+        if member is not UNSET:
+            changes['member'] = copy_json(member)
+        if index is not UNSET:
+            changes['index'] = _encode_record(index, Expression, 'index')
+        return self._replace(changes)
 
     @property
     def kind(self) -> SelectionKind:
         'Whether the selection reads a declared member or an indexed element.'
-        return cast('SelectionKind', self._field('kind'))
+        return cast('SelectionKind', _decode_enum(self._data.get('kind'), SelectionKind))
 
     @property
     def base(self) -> Expression:
         'Expression whose structured content supplies the member or element.'
-        return cast('Expression', self._field('base'))
+        return cast('Expression', self._child('base', Expression, False))
 
     @property
     def member(self) -> str | None:
         'Declared member name.'
-        return cast('str | None', self._field('member'))
+        return cast('str | None', self._data.get('member'))
 
     @property
     def index(self) -> Expression | None:
         'Index expression.'
-        return cast('Expression | None', self._field('index'))
+        return cast('Expression | None', self._child('index', Expression, False))
 
 
 class Settings(Record):
     'Numerical convergence and resource settings; the containing record distinguishes requested from effective values.'
     __slots__ = ()
     _kind = 'Settings'
+    _SLOTS = _freeze(
+        {'relative_tolerance': {'options': [{'kind': 'decimal',
+                                             'category': 'primitive'}],
+                                'required': False,
+                                'many': False,
+                                'mapping': False,
+                                'nullable': True,
+                                'ordered': False},
+         'iteration_limit': {'options': [{'kind': 'integer', 'category': 'primitive'}],
+                             'required': False,
+                             'many': False,
+                             'mapping': False,
+                             'nullable': True,
+                             'ordered': False},
+         'time_limit': {'options': [{'kind': 'decimal', 'category': 'primitive'}],
+                        'required': False,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': False},
+         'symbol_limit': {'options': [{'kind': 'integer', 'category': 'primitive'}],
+                          'required': False,
+                          'many': False,
+                          'mapping': False,
+                          'nullable': True,
+                          'ordered': False},
+         'constraint_limit': {'options': [{'kind': 'integer', 'category': 'primitive'}],
+                              'required': False,
+                              'many': False,
+                              'mapping': False,
+                              'nullable': True,
+                              'ordered': False}}
+    )
 
     def __init__(self, *,
         relative_tolerance: int | float | None | Unset = UNSET,
@@ -3571,13 +5766,18 @@ class Settings(Record):
         symbol_limit: int | None | Unset = UNSET,
         constraint_limit: int | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'relative_tolerance': relative_tolerance,
-            'iteration_limit': iteration_limit,
-            'time_limit': time_limit,
-            'symbol_limit': symbol_limit,
-            'constraint_limit': constraint_limit,
-        })
+        data: dict[str, object] = {}
+        if relative_tolerance is not UNSET:
+            data['relative_tolerance'] = copy_json(relative_tolerance)
+        if iteration_limit is not UNSET:
+            data['iteration_limit'] = copy_json(iteration_limit)
+        if time_limit is not UNSET:
+            data['time_limit'] = copy_json(time_limit)
+        if symbol_limit is not UNSET:
+            data['symbol_limit'] = copy_json(symbol_limit)
+        if constraint_limit is not UNSET:
+            data['constraint_limit'] = copy_json(constraint_limit)
+        self._set_data(data)
 
     def replace(self, *,
         relative_tolerance: int | float | None | Unset = UNSET,
@@ -3587,44 +5787,89 @@ class Settings(Record):
         constraint_limit: int | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'relative_tolerance': relative_tolerance,
-            'iteration_limit': iteration_limit,
-            'time_limit': time_limit,
-            'symbol_limit': symbol_limit,
-            'constraint_limit': constraint_limit,
-        })
+        changes: dict[str, object] = {}
+        if relative_tolerance is not UNSET:
+            changes['relative_tolerance'] = copy_json(relative_tolerance)
+        if iteration_limit is not UNSET:
+            changes['iteration_limit'] = copy_json(iteration_limit)
+        if time_limit is not UNSET:
+            changes['time_limit'] = copy_json(time_limit)
+        if symbol_limit is not UNSET:
+            changes['symbol_limit'] = copy_json(symbol_limit)
+        if constraint_limit is not UNSET:
+            changes['constraint_limit'] = copy_json(constraint_limit)
+        return self._replace(changes)
 
     @property
     def relative_tolerance(self) -> int | float | None:
         'Positive finite dimensionless convergence tolerance, strictly less than one.'
-        return cast('int | float | None', self._field('relative_tolerance'))
+        return cast('int | float | None', self._data.get('relative_tolerance'))
 
     @property
     def iteration_limit(self) -> int | None:
         "Maximum number of solver iterations requested, interpreted by the backend's documented algorithm."
-        return cast('int | None', self._field('iteration_limit'))
+        return cast('int | None', self._data.get('iteration_limit'))
 
     @property
     def time_limit(self) -> int | float | None:
         "Positive finite execution time limit in seconds, using the backend's documented timing convention."
-        return cast('int | float | None', self._field('time_limit'))
+        return cast('int | float | None', self._data.get('time_limit'))
 
     @property
     def symbol_limit(self) -> int | None:
         'Maximum prepared scalar/Movement symbols.'
-        return cast('int | None', self._field('symbol_limit'))
+        return cast('int | None', self._data.get('symbol_limit'))
 
     @property
     def constraint_limit(self) -> int | None:
         'Maximum expanded comparison rows.'
-        return cast('int | None', self._field('constraint_limit'))
+        return cast('int | None', self._data.get('constraint_limit'))
 
 
 class Source(Record):
     'An identifiable edition of an external evidence artifact.'
     __slots__ = ()
     _kind = 'Source'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'checksum': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'issued_at': {'options': [{'kind': 'date', 'category': 'primitive'},
+                                   {'kind': 'datetime', 'category': 'primitive'}],
+                       'required': False,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': False},
+         'received_at': {'options': [{'kind': 'date', 'category': 'primitive'},
+                                     {'kind': 'datetime', 'category': 'primitive'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'author': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -3634,14 +5879,17 @@ class Source(Record):
         received_at: Date | str | None | Unset = UNSET,
         author: str | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'id': id,
-            'name': name,
-            'checksum': checksum,
-            'issued_at': issued_at,
-            'received_at': received_at,
-            'author': author,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['name'] = copy_json(name)
+        data['checksum'] = copy_json(checksum)
+        if issued_at is not UNSET:
+            data['issued_at'] = self._encode_field('issued_at', issued_at)
+        if received_at is not UNSET:
+            data['received_at'] = self._encode_field('received_at', received_at)
+        if author is not UNSET:
+            data['author'] = copy_json(author)
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3652,29 +5900,35 @@ class Source(Record):
         author: str | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'name': name,
-            'checksum': checksum,
-            'issued_at': issued_at,
-            'received_at': received_at,
-            'author': author,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if checksum is not UNSET:
+            changes['checksum'] = copy_json(checksum)
+        if issued_at is not UNSET:
+            changes['issued_at'] = self._encode_field('issued_at', issued_at)
+        if received_at is not UNSET:
+            changes['received_at'] = self._encode_field('received_at', received_at)
+        if author is not UNSET:
+            changes['author'] = copy_json(author)
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Source edition, referenced by Locations.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def name(self) -> str:
         'Nonblank human-readable name of the evidence artifact.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def checksum(self) -> str:
         'Content checksum identifying the evidence edition.'
-        return cast('str', self._field('checksum'))
+        return cast('str', self._data.get('checksum'))
 
     @property
     def issued_at(self) -> Date | str | None:
@@ -3689,24 +5943,45 @@ class Source(Record):
     @property
     def author(self) -> str | None:
         'Optional nonblank author of the evidence artifact.'
-        return cast('str | None', self._field('author'))
+        return cast('str | None', self._data.get('author'))
 
 
 class Span(Period):
     'Named extent, using the same half-open boundary convention as Period.'
     __slots__ = ()
     _kind = 'Span'
+    _SLOTS = _freeze(
+        {'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'start': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'end': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False}}
+    )
 
     def __init__(self, *,
         name: str | None | Unset = UNSET,
         start: Date,
         end: Date,
     ) -> None:
-        self._initialize({
-            'name': name,
-            'start': start,
-            'end': end,
-        })
+        data: dict[str, object] = {}
+        if name is not UNSET:
+            data['name'] = copy_json(name)
+        data['start'] = _encode_date(start)
+        data['end'] = _encode_date(end)
+        self._set_data(data)
 
     def replace(self, *,
         name: str | None | Unset = UNSET,
@@ -3714,32 +5989,103 @@ class Span(Period):
         end: Date | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'name': name,
-            'start': start,
-            'end': end,
-        })
+        changes: dict[str, object] = {}
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if start is not UNSET:
+            changes['start'] = _encode_date(start)
+        if end is not UNSET:
+            changes['end'] = _encode_date(end)
+        return self._replace(changes)
 
     @property
     def name(self) -> str | None:
         'Optional name of the extent.'
-        return cast('str | None', self._field('name'))
+        return cast('str | None', self._data.get('name'))
 
     @property
     def start(self) -> Date:
         'First date of the period; it is included.'
-        return cast('Date', self._field('start'))
+        return cast('Date', _decode_date(self._data.get('start')))
 
     @property
     def end(self) -> Date:
         'Boundary date after the period; it is excluded and later than start.'
-        return cast('Date', self._field('end'))
+        return cast('Date', _decode_date(self._data.get('end')))
 
 
 class Specification(Record):
     'An immutable contribution of investigation requirements, a composition of such contributions, or a batch of separate Specifications. A concrete composition investigates one pinned Model revision.'
     __slots__ = ()
     _kind = 'Specification'
+    _SLOTS = _freeze(
+        {'metadata': {'options': [{'kind': 'Metadata', 'category': 'record'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'model': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'includes': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                      'required': False,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False},
+         'cases': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                   'required': False,
+                   'many': True,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': False},
+         'assignments': {'options': [{'kind': 'Assignment', 'category': 'record'}],
+                         'required': False,
+                         'many': True,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'unknowns': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                      'required': False,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False},
+         'estimates': {'options': [{'kind': 'Assignment', 'category': 'record'}],
+                       'required': False,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': True,
+                       'ordered': False},
+         'formulations': {'options': [{'kind': 'Formulation', 'category': 'record'}],
+                          'required': False,
+                          'many': True,
+                          'mapping': False,
+                          'nullable': True,
+                          'ordered': False},
+         'objectives': {'options': [{'kind': 'Objective', 'category': 'record'}],
+                        'required': False,
+                        'many': True,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': True},
+         'settings': {'options': [{'kind': 'Settings', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'rules': {'options': [{'kind': 'RuleSet', 'category': 'record'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': False}}
+    )
 
     def __init__(self, *,
         metadata: Metadata,
@@ -3754,19 +6100,29 @@ class Specification(Record):
         settings: Settings | Unset = UNSET,
         rules: RuleSet | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'metadata': metadata,
-            'model': model,
-            'includes': includes,
-            'cases': cases,
-            'assignments': assignments,
-            'unknowns': unknowns,
-            'estimates': estimates,
-            'formulations': formulations,
-            'objectives': objectives,
-            'settings': settings,
-            'rules': rules,
-        })
+        data: dict[str, object] = {}
+        data['metadata'] = _encode_record(metadata, Metadata, 'metadata')
+        if model is not UNSET:
+            data['model'] = _encode_uuid(model)
+        if includes is not UNSET:
+            data['includes'] = _encode_many(includes, lambda v: _encode_uuid(v))
+        if cases is not UNSET:
+            data['cases'] = _encode_many(cases, lambda v: _encode_uuid(v))
+        if assignments is not UNSET:
+            data['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
+        if unknowns is not UNSET:
+            data['unknowns'] = _encode_many(unknowns, lambda v: _encode_record(v, Reference, 'unknowns'))
+        if estimates is not UNSET:
+            data['estimates'] = _encode_many(estimates, lambda v: _encode_record(v, Assignment, 'estimates'))
+        if formulations is not UNSET:
+            data['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
+        if objectives is not UNSET:
+            data['objectives'] = _encode_many(objectives, lambda v: _encode_record(v, Objective, 'objectives'))
+        if settings is not UNSET:
+            data['settings'] = _encode_record(settings, Settings, 'settings')
+        if rules is not UNSET:
+            data['rules'] = _encode_record(rules, RuleSet, 'rules')
+        self._set_data(data)
 
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
@@ -3782,115 +6138,174 @@ class Specification(Record):
         rules: RuleSet | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'metadata': metadata,
-            'model': model,
-            'includes': includes,
-            'cases': cases,
-            'assignments': assignments,
-            'unknowns': unknowns,
-            'estimates': estimates,
-            'formulations': formulations,
-            'objectives': objectives,
-            'settings': settings,
-            'rules': rules,
-        })
+        changes: dict[str, object] = {}
+        if metadata is not UNSET:
+            changes['metadata'] = _encode_record(metadata, Metadata, 'metadata')
+        if model is not UNSET:
+            changes['model'] = _encode_uuid(model)
+        if includes is not UNSET:
+            changes['includes'] = _encode_many(includes, lambda v: _encode_uuid(v))
+        if cases is not UNSET:
+            changes['cases'] = _encode_many(cases, lambda v: _encode_uuid(v))
+        if assignments is not UNSET:
+            changes['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
+        if unknowns is not UNSET:
+            changes['unknowns'] = _encode_many(unknowns, lambda v: _encode_record(v, Reference, 'unknowns'))
+        if estimates is not UNSET:
+            changes['estimates'] = _encode_many(estimates, lambda v: _encode_record(v, Assignment, 'estimates'))
+        if formulations is not UNSET:
+            changes['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
+        if objectives is not UNSET:
+            changes['objectives'] = _encode_many(objectives, lambda v: _encode_record(v, Objective, 'objectives'))
+        if settings is not UNSET:
+            changes['settings'] = _encode_record(settings, Settings, 'settings')
+        if rules is not UNSET:
+            changes['rules'] = _encode_record(rules, RuleSet, 'rules')
+        return self._replace(changes)
 
     @property
     def metadata(self) -> Metadata:
         'Identity and schema version of this Specification revision, with optional description and lineage.'
-        return cast('Metadata', self._field('metadata'))
+        return cast('Metadata', self._child('metadata', Metadata, False))
 
     @property
     def model(self) -> UUID | None:
         "UUID of the exact input Model revision. Optional on a contribution; required after composing a concrete investigation. On a batch it only asserts every case's independently supplied input Model."
-        return cast('UUID | None', self._field('model'))
+        return cast('UUID | None', _decode_uuid(self._data.get('model')))
 
     @property
     def includes(self) -> tuple[UUID, ...] | None:
         'Unique Metadata UUIDs of Specification revisions contributing requirements to this investigation.'
-        return cast('tuple[UUID, ...] | None', self._field('includes'))
+        return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('includes', ())))
 
     @property
     def cases(self) -> tuple[UUID, ...] | None:
         'Unique Metadata UUIDs of separate Specifications in a batch, without implicit inheritance.'
-        return cast('tuple[UUID, ...] | None', self._field('cases'))
+        return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('cases', ())))
 
     @property
     def assignments(self) -> tuple[Assignment, ...] | None:
         'Explicit Quantities held fixed on their target Values for this investigation.'
-        return cast('tuple[Assignment, ...] | None', self._field('assignments'))
+        return cast('tuple[Assignment, ...] | None', self._child('assignments', Assignment, True))
 
     @property
     def unknowns(self) -> tuple[Reference, ...] | None:
         'Unique scalar or Movement unknowns; explicit and disjoint from assignments and rule targets.'
-        return cast('tuple[Reference, ...] | None', self._field('unknowns'))
+        return cast('tuple[Reference, ...] | None', self._child('unknowns', Reference, True))
 
     @property
     def estimates(self) -> tuple[Assignment, ...] | None:
         'Initial numerical estimates for unknown Values, used to initialize a solve without fixing them.'
-        return cast('tuple[Assignment, ...] | None', self._field('estimates'))
+        return cast('tuple[Assignment, ...] | None', self._child('estimates', Assignment, True))
 
     @property
     def formulations(self) -> tuple[Formulation, ...] | None:
         "Additional mathematical declarations and constraints owned by this Specification. Root codes are unique within this collection, independently of the Model's root Formulation codes."
-        return cast('tuple[Formulation, ...] | None', self._field('formulations'))
+        return cast('tuple[Formulation, ...] | None', self._child('formulations', Formulation, True))
 
     @property
     def objectives(self) -> tuple[Objective, ...] | None:
         'Objectives in decreasing order of preference. Implementations may use this order for automatic selection; candidate exploration and final selection are implementation responsibilities.'
-        return cast('tuple[Objective, ...] | None', self._field('objectives'))
+        return cast('tuple[Objective, ...] | None', self._child('objectives', Objective, True))
 
     @property
     def settings(self) -> Settings | None:
         'Optional numerical requests. Choices still unspecified after composition are left to the implementation; the Run records the effective settings.'
-        return cast('Settings | None', self._field('settings'))
+        return cast('Settings | None', self._child('settings', Settings, False))
 
     @property
     def rules(self) -> RuleSet | None:
         'Optional RuleSet with controlled targets and dated decisions.'
-        return cast('RuleSet | None', self._field('rules'))
+        return cast('RuleSet | None', self._child('rules', RuleSet, False))
 
 
 class Status(Record):
     'Execution completion and mathematical conclusion, recorded independently.'
     __slots__ = ()
     _kind = 'Status'
+    _SLOTS = _freeze(
+        {'completion': {'options': [{'kind': 'CompletionStatus', 'category': 'enum'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False},
+         'solution': {'options': [{'kind': 'SolutionStatus', 'category': 'enum'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False}}
+    )
 
     def __init__(self, *,
         completion: CompletionStatus,
         solution: SolutionStatus,
     ) -> None:
-        self._initialize({
-            'completion': completion,
-            'solution': solution,
-        })
+        data: dict[str, object] = {}
+        data['completion'] = _encode_enum(completion, CompletionStatus, 'completion')
+        data['solution'] = _encode_enum(solution, SolutionStatus, 'solution')
+        self._set_data(data)
 
     def replace(self, *,
         completion: CompletionStatus | Unset = UNSET,
         solution: SolutionStatus | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'completion': completion,
-            'solution': solution,
-        })
+        changes: dict[str, object] = {}
+        if completion is not UNSET:
+            changes['completion'] = _encode_enum(completion, CompletionStatus, 'completion')
+        if solution is not UNSET:
+            changes['solution'] = _encode_enum(solution, SolutionStatus, 'solution')
+        return self._replace(changes)
 
     @property
     def completion(self) -> CompletionStatus:
         'How this attempt ended, or the aggregate completion of a batch.'
-        return cast('CompletionStatus', self._field('completion'))
+        return cast('CompletionStatus', _decode_enum(self._data.get('completion'), CompletionStatus))
 
     @property
     def solution(self) -> SolutionStatus:
         'Mathematical conclusion; batches use not_applicable.'
-        return cast('SolutionStatus', self._field('solution'))
+        return cast('SolutionStatus', _decode_enum(self._data.get('solution'), SolutionStatus))
 
 
 class Step(Record):
     'One ordered record of execution activity, without prescribing scheduling or rule logic.'
     __slots__ = ()
     _kind = 'Step'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'StepKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'at': {'options': [{'kind': 'datetime', 'category': 'primitive'}],
+                'required': False,
+                'many': False,
+                'mapping': False,
+                'nullable': True,
+                'ordered': False},
+         'message': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                     'required': True,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': False},
+         'document': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False},
+         'target': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False}}
+    )
 
     def __init__(self, *,
         kind: StepKind,
@@ -3899,13 +6314,16 @@ class Step(Record):
         document: UUID | Unset = UNSET,
         target: UUID | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'at': at,
-            'message': message,
-            'document': document,
-            'target': target,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, StepKind, 'kind')
+        if at is not UNSET:
+            data['at'] = copy_json(at)
+        data['message'] = copy_json(message)
+        if document is not UNSET:
+            data['document'] = _encode_uuid(document)
+        if target is not UNSET:
+            data['target'] = _encode_uuid(target)
+        self._set_data(data)
 
     def replace(self, *,
         kind: StepKind | Unset = UNSET,
@@ -3915,44 +6333,75 @@ class Step(Record):
         target: UUID | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'at': at,
-            'message': message,
-            'document': document,
-            'target': target,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, StepKind, 'kind')
+        if at is not UNSET:
+            changes['at'] = copy_json(at)
+        if message is not UNSET:
+            changes['message'] = copy_json(message)
+        if document is not UNSET:
+            changes['document'] = _encode_uuid(document)
+        if target is not UNSET:
+            changes['target'] = _encode_uuid(target)
+        return self._replace(changes)
 
     @property
     def kind(self) -> StepKind:
         'Kind of recorded execution activity.'
-        return cast('StepKind', self._field('kind'))
+        return cast('StepKind', _decode_enum(self._data.get('kind'), StepKind))
 
     @property
     def at(self) -> str | None:
         'Observed event instant with an explicit timezone.'
-        return cast('str | None', self._field('at'))
+        return cast('str | None', self._data.get('at'))
 
     @property
     def message(self) -> str:
         'What occurred and the basis for any selection.'
-        return cast('str', self._field('message'))
+        return cast('str', self._data.get('message'))
 
     @property
     def document(self) -> UUID | None:
         'Revision containing the referenced target, or the document addressed as a whole.'
-        return cast('UUID | None', self._field('document'))
+        return cast('UUID | None', _decode_uuid(self._data.get('document')))
 
     @property
     def target(self) -> UUID | None:
         'UUID of a canonical record in document; never an unqualified cross-revision reference.'
-        return cast('UUID | None', self._field('target'))
+        return cast('UUID | None', _decode_uuid(self._data.get('target')))
 
 
 class System(Record):
     'The Entities, Relationships, Assemblies, and mathematical formulations of a Model.'
     __slots__ = ()
     _kind = 'System'
+    _SLOTS = _freeze(
+        {'entities': {'options': [{'kind': 'Entity', 'category': 'record'}],
+                      'required': False,
+                      'many': True,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False},
+         'relationships': {'options': [{'kind': 'Relationship', 'category': 'record'}],
+                           'required': False,
+                           'many': True,
+                           'mapping': False,
+                           'nullable': True,
+                           'ordered': False},
+         'assemblies': {'options': [{'kind': 'Assembly', 'category': 'record'}],
+                        'required': False,
+                        'many': True,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': False},
+         'formulations': {'options': [{'kind': 'Formulation', 'category': 'record'}],
+                          'required': False,
+                          'many': True,
+                          'mapping': False,
+                          'nullable': True,
+                          'ordered': False}}
+    )
 
     def __init__(self, *,
         entities: tuple[Entity, ...] | None | Unset = UNSET,
@@ -3960,12 +6409,16 @@ class System(Record):
         assemblies: tuple[Assembly, ...] | None | Unset = UNSET,
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'entities': entities,
-            'relationships': relationships,
-            'assemblies': assemblies,
-            'formulations': formulations,
-        })
+        data: dict[str, object] = {}
+        if entities is not UNSET:
+            data['entities'] = _encode_many(entities, lambda v: _encode_record(v, Entity, 'entities'))
+        if relationships is not UNSET:
+            data['relationships'] = _encode_many(relationships, lambda v: _encode_record(v, Relationship, 'relationships'))
+        if assemblies is not UNSET:
+            data['assemblies'] = _encode_many(assemblies, lambda v: _encode_record(v, Assembly, 'assemblies'))
+        if formulations is not UNSET:
+            data['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
+        self._set_data(data)
 
     def replace(self, *,
         entities: tuple[Entity, ...] | None | Unset = UNSET,
@@ -3974,38 +6427,75 @@ class System(Record):
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'entities': entities,
-            'relationships': relationships,
-            'assemblies': assemblies,
-            'formulations': formulations,
-        })
+        changes: dict[str, object] = {}
+        if entities is not UNSET:
+            changes['entities'] = _encode_many(entities, lambda v: _encode_record(v, Entity, 'entities'))
+        if relationships is not UNSET:
+            changes['relationships'] = _encode_many(relationships, lambda v: _encode_record(v, Relationship, 'relationships'))
+        if assemblies is not UNSET:
+            changes['assemblies'] = _encode_many(assemblies, lambda v: _encode_record(v, Assembly, 'assemblies'))
+        if formulations is not UNSET:
+            changes['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
+        return self._replace(changes)
 
     @property
     def entities(self) -> tuple[Entity, ...] | None:
         'Canonical domain Entities, excluding Assemblies stored in their own collection.'
-        return cast('tuple[Entity, ...] | None', self._field('entities'))
+        return cast('tuple[Entity, ...] | None', self._child('entities', Entity, True))
 
     @property
     def relationships(self) -> tuple[Relationship, ...] | None:
         'Canonical directed connections between Entities, including Assemblies.'
-        return cast('tuple[Relationship, ...] | None', self._field('relationships'))
+        return cast('tuple[Relationship, ...] | None', self._child('relationships', Relationship, True))
 
     @property
     def assemblies(self) -> tuple[Assembly, ...] | None:
         'Canonical Assemblies with UUID references to shared domain members.'
-        return cast('tuple[Assembly, ...] | None', self._field('assemblies'))
+        return cast('tuple[Assembly, ...] | None', self._child('assemblies', Assembly, True))
 
     @property
     def formulations(self) -> tuple[Formulation, ...] | None:
         'Canonical root Formulations containing governing mathematical declarations and constraints.'
-        return cast('tuple[Formulation, ...] | None', self._field('formulations'))
+        return cast('tuple[Formulation, ...] | None', self._child('formulations', Formulation, True))
 
 
 class Taxonomy(Record):
     'A named, single-root hierarchy of Classifications.'
     __slots__ = ()
     _kind = 'Taxonomy'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'definition': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                        'required': False,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': False},
+         'classifications': {'options': [{'kind': 'Classification',
+                                          'category': 'record'}],
+                             'required': True,
+                             'many': True,
+                             'mapping': False,
+                             'nullable': False,
+                             'ordered': False}}
+    )
 
     def __init__(self, *,
         id: UUID,
@@ -4014,13 +6504,14 @@ class Taxonomy(Record):
         definition: str | None | Unset = UNSET,
         classifications: tuple[Classification, ...],
     ) -> None:
-        self._initialize({
-            'id': id,
-            'code': code,
-            'name': name,
-            'definition': definition,
-            'classifications': classifications,
-        })
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['code'] = copy_json(code)
+        data['name'] = copy_json(name)
+        if definition is not UNSET:
+            data['definition'] = copy_json(definition)
+        data['classifications'] = _encode_many(classifications, lambda v: _encode_record(v, Classification, 'classifications'))
+        self._set_data(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -4030,44 +6521,75 @@ class Taxonomy(Record):
         classifications: tuple[Classification, ...] | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'id': id,
-            'code': code,
-            'name': name,
-            'definition': definition,
-            'classifications': classifications,
-        })
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if code is not UNSET:
+            changes['code'] = copy_json(code)
+        if name is not UNSET:
+            changes['name'] = copy_json(name)
+        if definition is not UNSET:
+            changes['definition'] = copy_json(definition)
+        if classifications is not UNSET:
+            changes['classifications'] = _encode_many(classifications, lambda v: _encode_record(v, Classification, 'classifications'))
+        return self._replace(changes)
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Taxonomy across Model revisions.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str:
         "Case-sensitive code unique in the Model's taxonomy catalogue."
-        return cast('str', self._field('code'))
+        return cast('str', self._data.get('code'))
 
     @property
     def name(self) -> str:
         'Nonblank human-readable name.'
-        return cast('str', self._field('name'))
+        return cast('str', self._data.get('name'))
 
     @property
     def definition(self) -> str | None:
         'Optional explanatory text.'
-        return cast('str | None', self._field('definition'))
+        return cast('str | None', self._data.get('definition'))
 
     @property
     def classifications(self) -> tuple[Classification, ...]:
         'Identified Classifications belonging to this Taxonomy; codes are unique within the collection.'
-        return cast('tuple[Classification, ...]', self._field('classifications'))
+        return cast('tuple[Classification, ...]', self._child('classifications', Classification, True))
 
 
 class Traversal(Record):
     'One traversal step over domain Relationships or Assembly membership.'
     __slots__ = ()
     _kind = 'Traversal'
+    _SLOTS = _freeze(
+        {'kind': {'options': [{'kind': 'TraversalKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'depth': {'options': [{'kind': 'Depth', 'category': 'enum'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False},
+         'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
+                            'required': False,
+                            'many': False,
+                            'mapping': False,
+                            'nullable': False,
+                            'ordered': False},
+         'direction': {'options': [{'kind': 'Direction', 'category': 'enum'}],
+                       'required': False,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False}}
+    )
 
     def __init__(self, *,
         kind: TraversalKind,
@@ -4075,12 +6597,14 @@ class Traversal(Record):
         classification: UUID | Unset = UNSET,
         direction: Direction | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'kind': kind,
-            'depth': depth,
-            'classification': classification,
-            'direction': direction,
-        })
+        data: dict[str, object] = {}
+        data['kind'] = _encode_enum(kind, TraversalKind, 'kind')
+        data['depth'] = _encode_enum(depth, Depth, 'depth')
+        if classification is not UNSET:
+            data['classification'] = _encode_uuid(classification)
+        if direction is not UNSET:
+            data['direction'] = _encode_enum(direction, Direction, 'direction')
+        self._set_data(data)
 
     def replace(self, *,
         kind: TraversalKind | Unset = UNSET,
@@ -4089,38 +6613,92 @@ class Traversal(Record):
         direction: Direction | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'kind': kind,
-            'depth': depth,
-            'classification': classification,
-            'direction': direction,
-        })
+        changes: dict[str, object] = {}
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, TraversalKind, 'kind')
+        if depth is not UNSET:
+            changes['depth'] = _encode_enum(depth, Depth, 'depth')
+        if classification is not UNSET:
+            changes['classification'] = _encode_uuid(classification)
+        if direction is not UNSET:
+            changes['direction'] = _encode_enum(direction, Direction, 'direction')
+        return self._replace(changes)
 
     @property
     def kind(self) -> TraversalKind:
         'Whether the step follows classified Relationships or Assembly membership.'
-        return cast('TraversalKind', self._field('kind'))
+        return cast('TraversalKind', _decode_enum(self._data.get('kind'), TraversalKind))
 
     @property
     def depth(self) -> Depth:
         'Whether the step follows exactly one edge or one or more edges.'
-        return cast('Depth', self._field('depth'))
+        return cast('Depth', _decode_enum(self._data.get('depth'), Depth))
 
     @property
     def classification(self) -> UUID | None:
         'Exact Classification of Relationships to follow.'
-        return cast('UUID | None', self._field('classification'))
+        return cast('UUID | None', _decode_uuid(self._data.get('classification')))
 
     @property
     def direction(self) -> Direction | None:
         'Direction in which to follow Relationships; required for relationship steps and absent for membership steps.'
-        return cast('Direction | None', self._field('direction'))
+        return cast('Direction | None', _decode_enum(self._data.get('direction'), Direction))
 
 
 class Value(Record):
     "An identified, typed Value belonging to an Entity or Relationship's Characteristics, or declared locally within a mathematical Formulation. Its key provides a name within the owner's values collection; its UUID identifies the symbol independently of that name."
     __slots__ = ()
     _kind = 'Value'
+    _SLOTS = _freeze(
+        {'measure': {'options': [{'kind': 'Measure', 'category': 'uuid'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': False},
+         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False},
+         'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False},
+         'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False},
+         'kind': {'options': [{'kind': 'ValueKind', 'category': 'enum'}],
+                  'required': True,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': False,
+                  'ordered': False},
+         'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
+                         'required': False,
+                         'many': False,
+                         'mapping': False,
+                         'nullable': True,
+                         'ordered': False},
+         'flow': {'options': [{'kind': 'Flow', 'category': 'record'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False},
+         'content': {'options': [{'kind': 'PropertyContent', 'category': 'record'}],
+                     'required': False,
+                     'many': False,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': False}}
+    )
 
     def __init__(self, *,
         measure: UUID | None | Unset = UNSET,
@@ -4132,16 +6710,21 @@ class Value(Record):
         flow: Flow | None | Unset = UNSET,
         content: PropertyContent | None | Unset = UNSET,
     ) -> None:
-        self._initialize({
-            'measure': measure,
-            'quantity': quantity,
-            'id': id,
-            'key': key,
-            'kind': kind,
-            'description': description,
-            'flow': flow,
-            'content': content,
-        })
+        data: dict[str, object] = {}
+        if measure is not UNSET:
+            data['measure'] = _encode_uuid(measure)
+        if quantity is not UNSET:
+            data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        data['id'] = _encode_uuid(id)
+        data['key'] = copy_json(key)
+        data['kind'] = _encode_enum(kind, ValueKind, 'kind')
+        if description is not UNSET:
+            data['description'] = copy_json(description)
+        if flow is not UNSET:
+            data['flow'] = _encode_record(flow, Flow, 'flow')
+        if content is not UNSET:
+            data['content'] = _encode_record(content, PropertyContent, 'content')
+        self._set_data(data)
 
     def replace(self, *,
         measure: UUID | None | Unset = UNSET,
@@ -4154,56 +6737,64 @@ class Value(Record):
         content: PropertyContent | None | Unset = UNSET,
     ) -> Self:
         """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'measure': measure,
-            'quantity': quantity,
-            'id': id,
-            'key': key,
-            'kind': kind,
-            'description': description,
-            'flow': flow,
-            'content': content,
-        })
+        changes: dict[str, object] = {}
+        if measure is not UNSET:
+            changes['measure'] = _encode_uuid(measure)
+        if quantity is not UNSET:
+            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if kind is not UNSET:
+            changes['kind'] = _encode_enum(kind, ValueKind, 'kind')
+        if description is not UNSET:
+            changes['description'] = copy_json(description)
+        if flow is not UNSET:
+            changes['flow'] = _encode_record(flow, Flow, 'flow')
+        if content is not UNSET:
+            changes['content'] = _encode_record(content, PropertyContent, 'content')
+        return self._replace(changes)
 
     @property
     def measure(self) -> UUID | None:
         'Measure defining meaning and canonical units, referenced by its stable UUID.'
-        return cast('UUID | None', self._field('measure'))
+        return cast('UUID | None', _decode_uuid(self._data.get('measure')))
 
     @property
     def quantity(self) -> Quantity | None:
         "Optional recorded numerical content. Its units must be compatible with the Measure's canonical units. Omission or null denotes unresolved content."
-        return cast('Quantity | None', self._field('quantity'))
+        return cast('Quantity | None', self._child('quantity', Quantity, False))
 
     @property
     def id(self) -> UUID:
         'Stable identity of the Value, used by provenance Facts.'
-        return cast('UUID', self._field('id'))
+        return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def key(self) -> str:
         "Nonblank name unique within the owner's values collection; not reference identity."
-        return cast('str', self._field('key'))
+        return cast('str', self._data.get('key'))
 
     @property
     def kind(self) -> ValueKind:
         'The kind of content represented by this characteristic.'
-        return cast('ValueKind', self._field('kind'))
+        return cast('ValueKind', _decode_enum(self._data.get('kind'), ValueKind))
 
     @property
     def description(self) -> str | None:
         'Explanation of the meaning of this Value within its owner.'
-        return cast('str | None', self._field('description'))
+        return cast('str | None', self._data.get('description'))
 
     @property
     def flow(self) -> _Flow | None:
         'Temporal quantities of a flow Value.'
-        return cast('_Flow | None', self._field('flow'))
+        return cast('_Flow | None', self._child('flow', Flow, False))
 
     @property
     def content(self) -> PropertyContent | None:
         'Inert typed content of a property Value.'
-        return cast('PropertyContent | None', self._field('content'))
+        return cast('PropertyContent | None', self._child('content', PropertyContent, False))
 
 
 _TYPES = {
@@ -4282,6 +6873,84 @@ _TYPES = {
     'Taxonomy': Taxonomy,
     'Traversal': Traversal,
     'Value': Value,
+}
+
+_SLOTS = {
+    'Action': Action._SLOTS,
+    'Argument': Argument._SLOTS,
+    'Assembly': Assembly._SLOTS,
+    'Assignment': Assignment._SLOTS,
+    'Binding': Binding._SLOTS,
+    'CalculationProvenance': CalculationProvenance._SLOTS,
+    'Call': Call._SLOTS,
+    'Characteristics': Characteristics._SLOTS,
+    'Claim': Claim._SLOTS,
+    'Classification': Classification._SLOTS,
+    'Constraint': Constraint._SLOTS,
+    'ContentEntry': ContentEntry._SLOTS,
+    'Criterion': Criterion._SLOTS,
+    'Decision': Decision._SLOTS,
+    'Definitions': Definitions._SLOTS,
+    'Diagnostic': Diagnostic._SLOTS,
+    'Distribution': Distribution._SLOTS,
+    'Domain': Domain._SLOTS,
+    'Entity': Entity._SLOTS,
+    'Entry': Entry._SLOTS,
+    'Expression': Expression._SLOTS,
+    'Fact': Fact._SLOTS,
+    'Filter': Filter._SLOTS,
+    'Flow': Flow._SLOTS,
+    'Formulation': Formulation._SLOTS,
+    'Function': Function._SLOTS,
+    'Geometry': Geometry._SLOTS,
+    'GeometryElement': GeometryElement._SLOTS,
+    'GeometryFile': GeometryFile._SLOTS,
+    'GeometryMapping': GeometryMapping._SLOTS,
+    'GeometryPin': GeometryPin._SLOTS,
+    'Implementation': Implementation._SLOTS,
+    'Label': Label._SLOTS,
+    'LibraryVersion': LibraryVersion._SLOTS,
+    'Location': Location._SLOTS,
+    'Measure': Measure._SLOTS,
+    'Metadata': Metadata._SLOTS,
+    'Method': Method._SLOTS,
+    'Model': Model._SLOTS,
+    'Movement': Movement._SLOTS,
+    'Objective': Objective._SLOTS,
+    'ObservationAvailability': ObservationAvailability._SLOTS,
+    'ObservationBinding': ObservationBinding._SLOTS,
+    'ObservedQuantity': ObservedQuantity._SLOTS,
+    'Parameter': Parameter._SLOTS,
+    'Period': Period._SLOTS,
+    'Projection': Projection._SLOTS,
+    'PropertyContent': PropertyContent._SLOTS,
+    'Provenance': Provenance._SLOTS,
+    'Quantity': Quantity._SLOTS,
+    'Query': Query._SLOTS,
+    'RandomStream': RandomStream._SLOTS,
+    'Reconciliation': Reconciliation._SLOTS,
+    'Reference': Reference._SLOTS,
+    'Relationship': Relationship._SLOTS,
+    'Report': Report._SLOTS,
+    'Rule': Rule._SLOTS,
+    'RuleEvidence': RuleEvidence._SLOTS,
+    'RuleSet': RuleSet._SLOTS,
+    'Run': Run._SLOTS,
+    'Runtime': Runtime._SLOTS,
+    'ScenarioParameter': ScenarioParameter._SLOTS,
+    'ScenarioPlan': ScenarioPlan._SLOTS,
+    'ScenarioRealization': ScenarioRealization._SLOTS,
+    'Selection': Selection._SLOTS,
+    'Settings': Settings._SLOTS,
+    'Source': Source._SLOTS,
+    'Span': Span._SLOTS,
+    'Specification': Specification._SLOTS,
+    'Status': Status._SLOTS,
+    'Step': Step._SLOTS,
+    'System': System._SLOTS,
+    'Taxonomy': Taxonomy._SLOTS,
+    'Traversal': Traversal._SLOTS,
+    'Value': Value._SLOTS,
 }
 
 _OWNERS = {

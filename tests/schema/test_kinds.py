@@ -94,3 +94,24 @@ def test_register_rejects_a_second_owner_or_another_module():
     )
     with pytest.raises(TypeError, match="owned by None"):
         register(unowned)
+
+
+def test_generated_slots_match_the_packaged_artifact_and_children_are_cached():
+    import json
+    from importlib.resources import files
+
+    from rangekeeper.schema.validation import slots_for
+
+    packaged = json.loads(
+        files("rangekeeper.schema").joinpath("slots.json").read_text()
+    )
+    assert {kind: slots_for(kind) for kind in _TYPES} == {
+        kind: packaged[kind] for kind in _TYPES
+    }
+    periods = rk.duration.make_periods(
+        date(2026, 1, 1), frequency=rk.duration.Frequency.MONTH, count=3
+    )
+    flow = rk.flow.Flow.from_periods(periods, [1.0, 2.0, 3.0], units="USD")
+    assert flow.movements is flow.movements
+    assert flow.movements[0].period is flow.movements[0].period
+    assert flow.replace(units="AUD").movements == flow.movements
