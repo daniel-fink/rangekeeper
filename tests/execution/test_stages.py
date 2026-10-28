@@ -27,7 +27,7 @@ from rangekeeper.execution import (
     verify,
 )
 from rangekeeper.execution.attempt import Attempt
-from rangekeeper.execution.backends import Result
+from rangekeeper.execution.backends import BackendResult, Termination
 from rangekeeper.execution.settings import Limits
 from rangekeeper.run import SolutionStatus
 from rangekeeper.shared.errors import NumericalError, UnsupportedError, ValidationError
@@ -90,7 +90,7 @@ class Exact:
 
     def solve(self, problem, *, limits, remaining, options):
         assert isinstance(problem, AffineProblem)
-        return Result("optimal", SOLUTION)
+        return BackendResult(Termination.FEASIBLE, SOLUTION)
 
 
 def attempt(cases, composition, specification=None):

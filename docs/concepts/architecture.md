@@ -154,7 +154,6 @@ show the target API in use.
   7. Read solved values from the `Outcome`.
 
   Gap issues: [#127](https://github.com/daniel-fink/rangekeeper/issues/127),
-  [#129](https://github.com/daniel-fink/rangekeeper/issues/129),
   [#290](https://github.com/daniel-fink/rangekeeper/issues/290),
   [#292](https://github.com/daniel-fink/rangekeeper/issues/292),
   [#293](https://github.com/daniel-fink/rangekeeper/issues/293),

@@ -14,7 +14,6 @@ def solve(request):
     # Record the installed versions; the package metadata declares the ranges.
     versions = {name: importlib.metadata.version(name) for name in ("pyomo", "highspy")}
     with requires("execution"):
-        import numpy as np
         from pyomo.contrib.solver.common.results import SolutionStatus
         from pyomo.contrib.solver.solvers.highs import Highs
         from pyomo.environ import ConcreteModel, ConstraintList, Objective, Var, value
@@ -70,17 +69,6 @@ def solve(request):
             id: float(value(model.variables[i]))
             for i, id in enumerate(request["unknowns"])
         }
-    equalities = [
-        row["coefficients"] for row in request["rows"] if row["relation"] == "equal"
-    ]
-    rank = (
-        int(np.linalg.matrix_rank(np.array(equalities))) if size and equalities else 0
-    )
-    free = [
-        id
-        for i, id in enumerate(request["unknowns"])
-        if all(row["coefficients"][i] == 0 for row in request["rows"])
-    ]
     return {
         "termination": result.termination_condition.name,
         "candidate": candidate,
@@ -103,10 +91,6 @@ def solve(request):
             "solver_options": options,
             "threads": 1,
             "package_versions": versions,
-            "equality_rank": rank,
-            "unknown_count": size,
-            "has_bounds": any(row["relation"] != "equal" for row in request["rows"]),
-            "unconstrained_values_initialized_to_zero": free,
         },
     }
 

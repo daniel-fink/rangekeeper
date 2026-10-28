@@ -82,9 +82,9 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Availability | The earliest date at which a value can be observed | `specification` | — |
 | Solve | Calculate an `Outcome` without writing to a store | `execution` | `execution.solve` |
 | Execute | Solve and then publish to a store | `execution` | `execution.execute` |
-| Affine problem | The linear problem that a backend receives | `execution` | `AffineProblem`; its backend-neutral contract is planned (#129) |
+| Affine problem | The linear problem that a backend receives | `execution` | `AffineProblem`: variables, rows with relations, bounds and the rank analysis |
 | Backend | A registered solver implementation | `execution` | — |
-| Termination | How a backend finished: feasible candidate, proven infeasible, limit, error or unknown | `execution` | Pyomo status strings |
+| Termination | How a backend finished: feasible candidate, proven infeasible, limit, error or unknown | `execution` | `execution.backends.Termination`, in a `BackendResult` |
 | Verification | Independent check of a candidate against the original equations | `execution` | `execution.verify`, which returns a `Verification` |
 | Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | `Outcome` with `run`, `outputs` and `cases`; reading values and status planned (#127) |
 | Underdetermined | A result with free unknowns that the equations do not fix | `execution` | Feasible with a warning |

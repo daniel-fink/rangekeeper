@@ -1,17 +1,20 @@
 """Stage 4: lower declared scalar arithmetic to affine rows after fixed assignments.
 
-The lowering is independent of Pyomo. Coefficients are expressed in each unknown's
-Measure units. Numerical acceptance does not use these rows: it reevaluates the
-original expression trees against the proposed serialized Model.
+The lowering is independent of any backend. Coefficients are expressed in each
+unknown's Measure units. Rows are not scaled: each backend scales them for its own
+numerical range. Numerical verification does not use these rows: it reevaluates
+the original expression trees against the proposed serialized Model.
 """
 
 import math
 import operator
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from enum import StrEnum
 from types import MappingProxyType
 from uuid import UUID
 
+from rangekeeper.execution.analysis import Analysis, equality_rank
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
 from rangekeeper.execution.preparation import Assertion, Binding
 from rangekeeper.execution.settings import Limits
@@ -34,22 +37,50 @@ class Affine:
     units: str
 
 
+class Relation(StrEnum):
+    """How an affine residual relates to zero."""
+
+    EQUAL = "equal"
+    LESS_THAN_OR_EQUAL = "less_than_or_equal"
+    GREATER_THAN_OR_EQUAL = "greater_than_or_equal"
+
+
 @dataclass(frozen=True)
 class Row:
-    """An affine residual constrained to equal, be below, or be above zero."""
+    """An affine residual constrained to equal, be below, or be above zero.
+
+    ``assertion`` keeps the original Constraint, so that a backend can name it.
+    """
 
     assertion: Assertion
-    relation: str
+    relation: Relation
     residual: Affine
-    scale: float
 
 
 @dataclass(frozen=True)
 class AffineProblem:
-    """Backend-independent feasibility problem, with traceable original assertions."""
+    """The backend-neutral feasibility problem of one case.
+
+    ``variables`` are the unknowns, in a fixed order. Each row relates an affine
+    residual over the variables to zero; a row that is not an equality is a
+    bound. ``analysis`` gives the equality rank and the free variables.
+    ``binding`` keeps the roles and the original assertions.
+    """
 
     binding: Binding
+    variables: tuple[UUID, ...]
     rows: tuple[Row, ...]
+    analysis: Analysis
+
+    @property
+    def equalities(self) -> tuple[Row, ...]:
+        """Return the equality rows."""
+        return tuple(row for row in self.rows if row.relation is Relation.EQUAL)
+
+    @property
+    def bounds(self) -> tuple[Row, ...]:
+        """Return the inequality rows."""
+        return tuple(row for row in self.rows if row.relation is not Relation.EQUAL)
 
 
 def _affine(constant: float, coefficients: Mapping[UUID, float], units: str) -> Affine:
@@ -181,7 +212,7 @@ class Compiler:
             )
         if node.kind == ExpressionKind.BOOLEAN:
             residual = _affine(0 if node.boolean else 1, {}, "dimensionless")
-            return (Row(item, "equal", residual, 1),)
+            return (Row(item, Relation.EQUAL, residual),)
         if node.kind is ExpressionKind.BINARY and node.operator in (
             Operator.LESS_THAN,
             Operator.GREATER_THAN,
@@ -235,14 +266,7 @@ class Compiler:
         residual = self.add(
             self.expression(node.operands[0]), self.expression(node.operands[1]), -1
         )
-        # Scale coefficients only; large RHS values must not erase small coefficients.
-        scale = max((1.0, *(abs(v) for v in residual.coefficients.values())))
-        scaled = [abs(v / scale) for v in residual.coefficients.values()]
-        if any(v <= 1e-12 for v in scaled) or abs(residual.constant / scale) >= 1e19:
-            raise UnsupportedError(
-                "affine row exceeds the supported HiGHS numerical scaling range"
-            )
-        return (Row(item, node.operator.value, residual, scale),)
+        return (Row(item, Relation(node.operator.value), residual),)
 
 
 def build_problem(
@@ -251,7 +275,7 @@ def build_problem(
     limits: Limits | None = None,
     checkpoint: Callable[[], None] = lambda: None,
 ) -> AffineProblem:
-    """Lower each assertion of ``binding`` to immutable affine rows.
+    """Lower each assertion of ``binding`` to immutable affine rows, and analyse them.
 
     Raise UnsupportedError, scoped to the original declaration, when a row is
     outside the affine slice, or with a ``symbol_limit`` or ``constraint_limit``
@@ -281,4 +305,19 @@ def build_problem(
                 document=item.document,
                 target=item.constraint.id,
             ) from error
-    return AffineProblem(binding, tuple(rows))
+    variables = tuple(binding.unknowns)
+    constrained = {key for row in rows for key in row.residual.coefficients}
+    analysis = Analysis(
+        rank=equality_rank(
+            [
+                row.residual.coefficients
+                for row in rows
+                if row.relation is Relation.EQUAL
+            ],
+            len(variables),
+        ),
+        unknown_count=len(variables),
+        free=tuple(id for id in variables if id not in constrained),
+        has_bounds=any(row.relation is not Relation.EQUAL for row in rows),
+    )
+    return AffineProblem(binding, variables, tuple(rows), analysis)

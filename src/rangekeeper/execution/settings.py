@@ -52,11 +52,11 @@ def resolve(
 ) -> tuple[Limits, tuple[Diagnostic, ...]]:
     """Return applied limits and explicit diagnostics for unapplied/adjusted requests.
 
-    A requested setting replaces its default from ``defaults``. The generic
-    relative_tolerance has no justified mapping to HiGHS absolute
-    primal/dual feasibility tolerances. Report it as unapplied, never as effective.
-    Independent dimensional acceptance has its own policy. Presolve is enabled;
-    iteration_limit counts simplex iterations, not presolve reductions.
+    A requested setting replaces its default from ``defaults``. A backend may
+    adjust a limit further; it reports that itself. The generic
+    relative_tolerance has no justified mapping to the absolute feasibility
+    tolerances of the solver. Report it as unapplied, never as effective.
+    Independent dimensional acceptance has its own policy.
     """
     findings = []
     time = (
@@ -69,20 +69,6 @@ def resolve(
         if requested and requested.iteration_limit is not None
         else defaults.iteration_limit
     )
-    if iterations > 2147483647:
-        iterations = 2147483647
-        findings.append(
-            Diagnostic(
-                severity=Severity.WARNING,
-                code=Code.SETTINGS_ADJUSTED.value,
-                message="iteration_limit clamped to HiGHS maximum 2147483647.",
-                values={
-                    "settings": ["iteration_limit"],
-                    "disposition": "clamped",
-                    "effective": 2147483647,
-                },
-            )
-        )
     if requested and requested.relative_tolerance is not None:
         findings.append(
             Diagnostic(

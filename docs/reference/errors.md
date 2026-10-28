@@ -65,8 +65,9 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | Code | `values` |
 | --- | --- |
 | `settings_adjusted` | `settings`: the names of the requested settings that changed or did not apply (required). `disposition`: for example `clamped` or `not_applied`. `effective`: the value that applied, when there is one |
-| `solver_termination` | `termination`: the backend termination. The other names are the backend evidence, for example `solution_status`, `simplex_iterations` and `solver_options` |
-| `solver_scaling` | `rows`: for each compiled row, its `constraint`, `divisor` and `residual_units` |
+| `solver_termination` | `termination`: the `Termination` value (`feasible`, `infeasible`, `limit`, `error` or `unknown`). The other names are the backend evidence; for `pyomo-highs`, `termination_condition` (the Pyomo condition), `solution_status`, `simplex_iterations` and `solver_options` |
+| `solver_scaling` | `rows`: for each row, its `constraint`, `divisor` and `residual_units`. The `pyomo-highs` backend records it |
+| `underdetermined`, `uniqueness_not_assessed` | `equality_rank` and `unknown_count`, from the analysis of the affine problem |
 
 ```python
 for diagnostic in run.report.diagnostics:

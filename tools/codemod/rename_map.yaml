@@ -469,6 +469,16 @@ symbols:
     new_name: AttemptDeadlineError
     status: agreed
     source: ADR-016
+  - module: rangekeeper.execution.backends.base
+    name: Result
+    new_name: BackendResult
+    new_module: rangekeeper.execution.backends
+    status: agreed
+    source: "ADR-013, #129"
+    note: >-
+      `termination` is a `Termination`, not a backend word; the backend's own
+      condition moves into `evidence`. A backend also returns its `limits`
+      and `diagnostics`.
   - module: rangekeeper.execution.compiler
     name: Compiled
     new_name: AffineProblem
@@ -755,6 +765,12 @@ removed:
     status: agreed
     source: ADR-012, ADR-014
     requires: [refactor]
+  - name: rangekeeper.execution.compiler.Row.scale
+    replacement: >-
+      Rows are unscaled. `PyomoHighs.scale(row)` gives the divisor of the
+      `pyomo-highs` backend
+    status: agreed
+    source: "ADR-013, #129"
   - name: rangekeeper.execution.executor.Executor
     replacement: >-
       `rangekeeper.execution.execute(specification, store, config=)`, which
