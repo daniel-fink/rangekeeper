@@ -199,7 +199,7 @@ sequence helper used by extrapolation and the market kernels. Profile classes an
 | `Distribution` | Canonical parameters and intrinsic `check`, `sample`, `cdf`, `mass` |
 | `profile` | Grow a known Quantity, or distribute a total, over explicit periods |
 | `flow.Stream` | Align and combine several Flows with explicit policies |
-| `finance.financial` | PV, XNPV, IRR and day counts using PyXIRR |
+| `finance` | `pv`, `npv`, `irr` and `payment` with units; `finance.financial` has the older PV, XNPV and IRR functions and the PyXIRR day counts |
 | `market.dynamics` | Deterministic kernels over supplied shocks or samples |
 | `model.formulation` | Build declared equations for forward and inverse investigations |
 
@@ -368,6 +368,42 @@ explicit weighting. The library does not infer this from a Flow kind. Bounded
 movements crossing target periods must be allocated first. Resampling coverage
 counts known observations, not continuous time coverage. Zero filling does not
 resolve an explicitly unknown observation.
+
+### Present value, NPV, IRR and payments
+
+`rangekeeper.finance` calculates on known Flows and Quantities, with units:
+
+| Function | Result |
+| --- | --- |
+| `pv(flow=, rate=, on=, day_count=ACTUAL_ACTUAL, timing=END)` | A Flow on the same coordinates: each amount divided by `(1 + rate) ** t`, where `t` is the years from `on` to its date |
+| `npv(flow=, rate=, on=, ...)` | The total of `pv`, a Quantity. An empty Flow has zero value |
+| `irr(flow=, guess=None, ...)` | The rate whose NPV is zero, in `% pa` |
+| `payment(principal=, rate=, term=, frequency=)` | The level payment per period that repays a loan, like a spreadsheet's PMT, in `AUD per month` and so on |
+
+Rates are effective rates per year, as Quantities or their text: `"7 % pa"`.
+An amount's date is its recorded date, or else its Period's date by `timing`:
+by default the end of the Period, so year 1 of a yearly Flow is discounted once.
+The default day count is actual/actual (ISDA), so a calendar year is exactly
+one year, also in a leap year. PyXIRR finds the IRR root; a `guess` is a starting
+point, not a bound. `irr` needs amounts of both signs on at least two dates, and
+the NPV at the root must be at most `1e-8` of the gross amounts; otherwise it
+raises `NumericalError`. `pv`, `npv` and `irr` discount the same way, so a price
+equal to the NPV earns the discount rate.
+
+`payment` divides a nominal yearly rate over the periods of a year (`"6 % pa"`
+monthly is 0.5 % a month) and pays at the end of each period. `term` is a whole
+number of periods, such as `"20 years"`. There is no mortgage-constant helper
+(D19): the constant is the payment per year on one unit of loan.
+
+```python
+value = rk.finance.npv(flow=cash_flows, rate="7 % pa", on=date(2001, 1, 1))
+monthly = rk.finance.payment(
+    principal="1 AUD", rate="6 % pa", term="20 years", frequency=rk.duration.Frequency.MONTH
+)
+(monthly / rk.Quantity(text="1 AUD")).to(units="% pa")  # the mortgage constant
+```
+
+### The financial module
 
 `calculate_pv` uses a per-observation rate and explicit `first_period` index.
 `calculate_xnpv` uses a valuation date and day-count convention; `calculate_irr`

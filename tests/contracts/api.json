@@ -596,6 +596,26 @@
   "financial": {
    "kind": "module",
    "module": "rangekeeper.finance.financial"
+  },
+  "irr": {
+   "kind": "function",
+   "module": "rangekeeper.finance._valuation",
+   "signature": "(*, flow: Flow, guess: Quantity | str | None = None, day_count: DayCount = DayCount.ACTUAL_ACTUAL, timing: PeriodTiming = PeriodTiming.END) -> Quantity"
+  },
+  "npv": {
+   "kind": "function",
+   "module": "rangekeeper.finance._valuation",
+   "signature": "(*, flow: Flow, rate: Quantity | str, on: date, day_count: DayCount = DayCount.ACTUAL_ACTUAL, timing: PeriodTiming = PeriodTiming.END) -> Quantity"
+  },
+  "payment": {
+   "kind": "function",
+   "module": "rangekeeper.finance._valuation",
+   "signature": "(*, principal: Quantity | str, rate: Quantity | str, term: Quantity | str, frequency: Frequency) -> Quantity"
+  },
+  "pv": {
+   "kind": "function",
+   "module": "rangekeeper.finance._valuation",
+   "signature": "(*, flow: Flow, rate: Quantity | str, on: date, day_count: DayCount = DayCount.ACTUAL_ACTUAL, timing: PeriodTiming = PeriodTiming.END) -> Flow"
   }
  },
  "rangekeeper.finance.financial": {

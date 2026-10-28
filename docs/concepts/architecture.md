@@ -117,9 +117,9 @@ show the target API in use.
 
 **Calculate with known data**
 1. Make Flows and Streams from dates, periods and amounts.
-2. Use Flow and Stream methods and `finance` operations. Now, `finance.financial`
-   has `calculate_pv`, `calculate_xnpv` and `calculate_irr`. The 1.0 names `pv`,
-   `npv`, `irr` and `payment` follow
+2. Use Flow and Stream methods and the `finance` operations `pv`, `npv`, `irr`
+   and `payment`. The older `finance.financial` functions (`calculate_pv`,
+   `calculate_xnpv`, `calculate_irr`) remain until their uses move
    ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)).
 3. Read the resulting Flows or Quantities. No Model is necessary.
 
@@ -193,7 +193,7 @@ contents are not yet in their 1.0 owner:
 | `profile` | Growth profiles (`Constant`, `Linear`, `Compounding`), distribution profiles (`Uniform`, `SCurve`), the `Profile` Protocol and the `profiles` registry; the Distribution owner (public as `rangekeeper.model.Distribution`). `Flow.from_profile` in `flow` makes the Flow | — |
 | `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
 | `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#298](https://github.com/daniel-fink/rangekeeper/issues/298), [#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Generation, `Market` and replay still import `model`, above `market` |
-| `finance` | Financial valuation: PV, NPV, IRR and day counts | `pv`, `npv`, `irr` and `payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
+| `finance` | Financial valuation: `pv`, `npv`, `irr` and `payment`; the older `financial` module with PV, XNPV, IRR and day counts | `pv`, `npv` and `irr` replace `financial.calculate_*` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry | — |
 | `specification` | The Specification document, composition, roles, and rule declarations and their validation | Rule queries over a `Window` replace the rule records ([#300](https://github.com/daniel-fink/rangekeeper/issues/300), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
 | `run` | The Run document, its report and outputs, and evidence validation. The internal `run._rule` has the rule trace check, with the exact condition truth and the availability rule that rule evaluation also uses | — |
