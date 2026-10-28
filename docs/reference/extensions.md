@@ -20,8 +20,9 @@ internal, so use the registry objects that the owning packages export.
 
 The path generators of `rangekeeper.market`, the profiles of
 `rangekeeper.profile` and the equation functions of `rangekeeper.expressions`
-use the same pattern when those packages are complete
-([#311](https://github.com/daniel-fink/rangekeeper/issues/311),
+use the same pattern when their 1.0 APIs land
+([#299](https://github.com/daniel-fink/rangekeeper/issues/299),
+[#303](https://github.com/daniel-fink/rangekeeper/issues/303),
 [#309](https://github.com/daniel-fink/rangekeeper/issues/309)).
 
 ## Register an implementation
