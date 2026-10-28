@@ -1,12 +1,12 @@
 # ADR-020: Walkthrough plan v2
 
-Status: accepted for 1.0; ideal cells and authoring pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; proposed cells recorded ([#201](https://github.com/daniel-fink/rangekeeper/issues/201)); authoring pending. Recorded: 2026-10-26.
 
 This record is the walkthrough plan for 1.0. It replaces the
 [ADR-006 curriculum](006-walkthrough-curriculum.md) and follows the direction in
 [ADR-019](019-walkthrough-direction.md). It defines the reader types, book
 outcomes, lessons, developer-experience principles, teaching conventions and
-source rights. The ideal cells ([#201](https://github.com/daniel-fink/rangekeeper/issues/201))
+source rights. The proposed cells ([#201](https://github.com/daniel-fink/rangekeeper/issues/201))
 and the lessons ([#203](https://github.com/daniel-fink/rangekeeper/issues/203)–[#209](https://github.com/daniel-fink/rangekeeper/issues/209))
 are separate work.
 
@@ -14,7 +14,7 @@ are separate work.
 
 - **The lessons follow the library's history, not its ideas.** ADR-006 teaches
   the property graph before the first solve. The main idea of the library,
-  "declare a relation once and ask it different questions", appears in lesson 03.
+  "declare an equation once and ask it different questions", appears in lesson 03.
 - **The lessons do not say who they are for.** There are no reader types,
   book outcomes, prerequisites or time estimates.
 - **The code hides the library.** Lesson 03 writes equations as nested
@@ -43,18 +43,18 @@ It has two buildings over a shared basement plinth with shared services.
   do not show its graph.
 - **Lesson 06 reveals the graph.** It shows that the totals in lessons 02–05 are
   rollups over the project's objects and relationships.
-- **Lesson 07 changes the graph.** Policies select design variants that change
+- **Lesson 07 changes the graph.** Rules select design variants that change
   the project's structure.
 
 | Lesson | Principle | Project question | Replaces in ADR-006 |
 | --- | --- | --- | --- |
 | 01 Basic discounted cash flow | A DCF is dated amounts that are grown, combined and discounted | What is this income stream worth? | 01 |
-| 02 Front door, back door | Declare a relation once. The Specification asks the question | What rent must the property earn, and what land price can its rent support? | 03 §4–6 |
+| 02 Front door, back door | Declare an equation once. The Specification asks the question | What rent must the property earn, and what land price can its rent support? | 03 §4–6 |
 | 03 Cases, debt and equity | One Model, many questions: a batch of named cases gives comparable results | How does the base plan perform in weak, reference and strong markets, with and without debt? Can we pay the bills on time? | 03 §1–3, §7–8 and legacy deterministic scenarios |
 | 04 Many market futures | Market futures are captured, replayable inputs | How does the same plan perform across many possible market histories? | 04 |
-| 05 When to commit | A policy uses only what is known at its date. Flexibility has value that we can compare | When should we buy the site, start Building B or stop? | 05 (timing) |
+| 05 When to commit | A rule uses only what is known at its date. Flexibility has value that we can compare | When should we buy the site, start Building B or stop? | 05 (timing) |
 | 06 Project structure | The project is a graph. Totals are rollups over chosen relationships | Where do the income, costs and value of lessons 02–05 come from? | 02 |
-| 07 Policies and the model graph | Policies can change the project's structure through bounded design variants | Which design provisions are worth paying for now? | 05 (phasing) and 06 |
+| 07 Rules and design options | Rules can change the project's structure through bounded design variants | Which design provisions are worth paying for now? | 05 (phasing) and 06 |
 
 A short book introduction (not a lesson) defines the terms below. It also has a
 "Start here" page with a suggested route for each reader type.
@@ -88,7 +88,7 @@ After the whole book, a reader can:
 
 1. Build a dated pro forma from Flows and Streams, and value it with NPV and IRR
    on the same date basis.
-2. Declare financial relations once, and answer forward and inverse questions by
+2. Declare financial equations once, and answer forward and inverse questions by
    changing which values are fixed and which are free.
 3. Tell an underdetermined, infeasible or unsupported solve from a solved one,
    and explain each from its diagnostics.
@@ -125,7 +125,7 @@ The core path takes 45–60 minutes, in about 20–25 code cells. Optional secti
 
 ### Lessons
 
-Each lesson lists its library dependencies by issue. The ideal-cells pass (#201)
+Each lesson lists its library dependencies by issue. The proposed-cells pass (#201)
 can add more dependencies to [#169](https://github.com/daniel-fink/rangekeeper/issues/169).
 The sketches are not binding. They show the intended shape only. #201 writes
 the real cells.
@@ -141,7 +141,7 @@ the real cells.
 - **Prerequisites.** None in the book. Spreadsheet DCF.
 - **Time.** 45 minutes core, 15 optional.
 - **Library shown.** `rk.duration` (Span, Frequency), `rk.flow` (Flow, Stream:
-  display, resample, trim, sum), growth, `rk.finance` NPV and PV, `rk.units.q`. Known
+  display, resample, trim, sum), growth, `rk.finance` NPV and PV, `rk.Quantity`. Known
   data only: no Model, equations or solve.
 - **Finance taught.** Potential and effective gross income, vacancy, operating
   expenses, NOI, capital expenditure, net annual cash flow, reversion, cap rate,
@@ -151,7 +151,7 @@ the real cells.
   PV plus collapse. Discounting and IRR use the same date basis.
 - **Depends on.** [#167](https://github.com/daniel-fink/rangekeeper/issues/167)
   (NPV), [#168](https://github.com/daniel-fink/rangekeeper/issues/168) (growth),
-  [#148](https://github.com/daniel-fink/rangekeeper/issues/148) (`q`),
+  [#148](https://github.com/daniel-fink/rangekeeper/issues/148) (`Quantity` from text),
   [#164](https://github.com/daniel-fink/rangekeeper/issues/164) (IRR), and the
   public namespaces of [#52](https://github.com/daniel-fink/rangekeeper/issues/52).
 
@@ -171,15 +171,15 @@ value = rk.finance.npv(cashflows, rate=0.07, on=holding.start)
 - **Project.** The property as one asset, at a stabilised snapshot year. Area
   by use comes from the data package. One dimensionless rent factor scales the
   reference rents of all uses.
-- **Goals.** Build a Model with a builder and string equations. Tell an
+- **Goals.** Make a Model, edit it in a draft and commit it, with string equations. Tell an
   equation from a calculation direction. Fix and free values in a
   Specification. Solve and read the result from `Outcome`. Reverse the question
   by changing two roles. Recognise underdetermined, infeasible and unsupported
   outcomes (optional section).
 - **Prerequisites.** Lesson 01.
 - **Time.** 60 minutes core, 20 optional.
-- **Library shown.** `Model.build()` and `commit()`, string equations (the
-  operator form once, in an Under the hood aside), the Specification builder
+- **Library shown.** `rk.Model()`, `edit()` and `commit()`, string equations (the
+  Python form, `rangekeeper.expressions` as `rx`, once in an Under the hood aside), the Specification builder
   with `fix` and `free`, `solve`, `Outcome`, the `underdetermined` status,
   dimensional checks and coded diagnostics.
 - **Finance taught.** Simple financial feasibility analysis (SFFA) front door
@@ -225,24 +225,27 @@ back = front.fix(rent_factor=1).free("land_cost")
   from the base case. Declare three named market cases (weak, reference, strong)
   as cases of one batch Specification. Solve the batch and compare the cases in
   one table. For each case, report unlevered NPV, equity NPV and equity IRR at
-  one fixed leverage. Then compare leverage levels on the reference case. Test
-  construction funding: cash balance, headroom and the commitment gap.
+  one equity level, with equity drawn first and a loan after it. Then compare equity
+  levels on the reference case. Test construction funding: the loan principal, the
+  shortfall and the commitment gap.
 - **Prerequisites.** Lessons 01 and 02.
-- **Time.** 60 minutes core, 25 optional (amortisation schedule, more leverage
+- **Time.** 60 minutes core, 25 optional (amortisation schedule, more equity
   levels).
 - **Library shown.** Specification cases and batch solves, batch results in
-  `Outcome`, growth from an opening date, NPV and IRR on dates, an account for
-  the funding balance. Under the hood: `execute` into a store, the Run as
+  `Outcome`, growth from an opening date, NPV and IRR on dates, the funding
+  cascade as equations (equity first, then the loan). Under the hood: `execute` into a store, the Run as
   evidence, replay in a fresh kernel and deterministic IDs.
 - **Finance taught.** Base plan and base case, development budget (hard costs,
   soft costs, contingency), opening dates, unlevered and levered cash flows,
-  loan-to-value, equity NPV, IRR and its failure cases, construction facility,
-  headroom, committed but unpaid costs, and the do-nothing baseline.
-- **By hand once.** One year of the funding balance, then the library account.
+  loan-to-value, equity NPV, IRR and its failure cases, equity first, then the
+  construction loan, the available equity and loan, committed but unpaid costs, and
+  the do-nothing baseline.
+- **By hand once.** One year's split between equity and the loan, then the cascade in
+  the Model.
 - **Depends on.** #144 (cases), #127, #167, #168, #147 (deterministic builds,
   aside) and two open questions for #201. First, can the cases reach the cash
   flows through the solve? That needs the DCF to be declared in the Model as
-  relations, for example growth with a fixed rate. Second, the funding account
+  equations, for example growth with a fixed rate. Second, the funding account
   and the commitment check need a library home.
 
 ```python
@@ -266,15 +269,16 @@ outcome.table("unlevered_npv", "equity_npv", "equity_irr", "peak_shortfall")
   capture market paths with a seed. Run the plan across the paths with
   `Specification.across`. Read the distribution of NPV and funding shortfall.
   Explain why a plan valued on average inputs differs from the average of its
-  results. Optional section: correlated hotel, residential and retail indices.
+  results. Optional section: hotel, residential and retail indices that move
+  together through a shared market index (amended by #201, decision D31).
 - **Prerequisites.** Lesson 03.
 - **Time.** 60 minutes core, 30 optional.
-- **Library shown.** `PathGenerator` and the built-in `MarketDynamics`,
-  `MarketPaths` and its capture record, `Specification.across`, batch summaries
+- **Library shown.** `PathGenerator`, the built-in `rk.market.Dynamics` with
+  `rk.market.generate`, `rk.market.Paths` and its capture record, `Specification.across`, batch summaries
   in `Outcome`. The core path uses one property-wide rent index.
 - **Finance taught.** Market cycles, volatility, mean reversion, rare shocks,
-  the flaw of averages, target curves (value at risk and gain), correlation
-  between use markets, and the rule not to apply market growth twice.
+  the flaw of averages, target curves (value at risk and gain), use markets
+  that move together, and the rule not to apply market growth twice.
 - **Path count.** An environment variable sets the count: small in CI, full
   locally.
 - **Depends on.** [#135](https://github.com/daniel-fink/rangekeeper/issues/135)–[#138](https://github.com/daniel-fink/rangekeeper/issues/138),
@@ -295,12 +299,12 @@ outcome.distribution("equity_npv")
   does not change.
 - **Options.** Three timing options, with no graph change:
   - **wait to start:** delay the purchase and shared works until an observed
-    market value passes a threshold;
+    market value reaches a trigger;
   - **conditional start of Building B:** start Building B only when observed
     conditions and funding allow, with a latest start date;
   - **abandon:** if conditions stay weak past a date, stop and sell the site by
     an explicit price rule.
-- **Goals.** Write a decision rule with thresholds on observed values. Use only
+- **Goals.** Write a decision rule with triggers on observed values. Use only
   information available at the decision date. Check funding (from lesson 03)
   before an action. Read a decision trace. Compare the fixed plan with each
   strategy on the same paths, as paired differences. Include the cost of waiting
@@ -309,7 +313,7 @@ outcome.distribution("equity_npv")
   downturn, short recovery then decline). Then use the full path set.
 - **Prerequisites.** Lessons 03 and 04.
 - **Time.** 60 minutes core, 30 optional.
-- **Library shown.** Policies with dated observations, availability, feasible
+- **Library shown.** Rules with dated observations, availability, feasible
   actions and commitments; decision traces in the Run report; paired
   comparison across one `MarketPaths`.
 - **Finance taught.** Real options in projects, option value as the difference
@@ -361,7 +365,7 @@ gfa.pivot(rows="building", columns="use")
 feasibility = feasibility_model.edit().fix_from(gfa_by_use).commit()
 ```
 
-#### 07 Policies and the model graph
+#### 07 Rules and design options
 
 - **Question.** Which design provisions are worth paying for now?
 - **Project.** The property graph from lesson 06, with lesson 05's timing rules
@@ -377,15 +381,15 @@ feasibility = feasibility_model.edit().fix_from(gfa_by_use).commit()
   flexibility, each provision, and the combination, on the same paths. Include
   the provision cost on every path, also where the option is never used. Find
   the largest justified premium under a stated criterion, and state whether the
-  policy stays fixed as the premium changes. Choose thresholds on one path set
+  decisions stay the same as the premium changes. Choose triggers on one path set
   and test them on another. Report the delivered projects (completion dates and
   use mix) as well as value.
 - **Prerequisites.** Lessons 05 and 06.
 - **Time.** 60 minutes core, 30 optional.
-- **Library shown.** Design variants, policies that select variants, rollups over
+- **Library shown.** Design variants, rules that select variants, rollups over
   realised structures and paired comparison.
 - **Finance taught.** Flexibility in projects and on projects, the cost of a
-  provision, the option premium, robustness and over-fitted thresholds. The
+  provision, the option premium, robustness and over-fitted triggers. The
   best strategy tested is not a global optimum.
 - **Depends on.** [#214](https://github.com/daniel-fink/rangekeeper/issues/214)
   (design), [#216](https://github.com/daniel-fink/rangekeeper/issues/216)
@@ -400,32 +404,33 @@ rk.execution.solve(strategy.across(paths, ...)).compare(fixed, "equity_npv", "co
 
 ### Developer-experience principles
 
-These rules apply to every cell that a reader types. #201 tests each ideal cell
+These rules apply to every cell that a reader types. #201 tests each proposed cell
 against them. Each break of a rule goes onto the gap list, not into a helper.
 
 1. **One import.** `import rangekeeper as rk`, plus `datetime` and the helpers.
    The root stays small ([ADR-010](010-layers-and-packages.md)): only `rk.Model`,
-   `rk.Specification` and `rk.Run`. Cells reach every other name through its
-   public namespace, for example `rk.execution.solve`, `rk.units.q`,
+   `rk.Specification`, `rk.Run` and `rk.Quantity`. Cells reach every other name through its
+   public namespace, for example `rk.execution.solve`, `rk.quantity.isclose`,
    `rk.flow.Flow` and `rk.finance.npv`. The namespaces are `rk.duration`,
-   `rk.flow`, `rk.finance`, `rk.model`, `rk.specification`, `rk.execution`,
-   `rk.io`, `rk.errors` and `rk.units`. Cells never import `schema`, `shared`
+   `rk.profile`, `rk.flow`, `rk.finance`, `rk.model`, `rk.specification`, `rk.execution`,
+   `rk.io`, `rk.errors` and `rk.quantity`. Cells never import `schema`, `shared`
    or private modules.
-2. **Build, do not assemble.** Use `Model.build()`, `model.edit()`, `commit()`
-   and the Specification builder. Cells never write Metadata, a format version,
+2. **Build, do not assemble.** Use `rk.Model()`, `model.edit()`, `commit()`
+   and the chained Specification calls. Cells never write Metadata, a format version,
    `uuid4()` or a `.replace` chain.
 3. **Equations are strings.** Write `b.equation("noi = coverage * debt_service")`.
-   Lesson 02 shows the operator form once, in an Under the hood aside. Both
-   forms are first-class and make the same records
+   Lesson 02 shows the Python form (`rangekeeper.expressions`, as `rx`) once, in an
+   Under the hood aside. Both forms are first-class and make the same records
    ([ADR-015](015-authoring.md#equations)).
 4. **Refer by key or code.** Cells never paste a UUID. Under the hood asides use
    a namespace for reproducible IDs.
-5. **Quantities, not unit strings.** Use `rk.units.q("20e6 AUD")` or a unit string as
+5. **Quantities, not unit strings.** Use `rk.Quantity("20e6 AUD")` or quantity text as
    an argument. Compare quantities and dimensions, never unit strings. Use the
    curated aliases (`pa`, `sqm`).
 6. **The library does the finance.** NPV, IRR and PV use the same date basis.
-   Growth starts from a date. Mortgage constant, payment and account balance are
-   library calls. A new idea can be shown by hand once, checked, and then
+   Growth starts from a date. Payment is a library call, and the mortgage constant
+   is derived from it (#201, decision D19). An account balance is a cumulative sum
+   of its transactions (decision D2). A new idea can be shown by hand once, checked, and then
    replaced by the library call.
 7. **The library walks the graph.** Use views, filters, rollups and pivots.
    Cells never walk parents by hand.
@@ -465,7 +470,7 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
 - checks tied to claims: shared costs counted once, inverse values that
   reproduce a target, decisions that respect availability, and commitments that
   fit funding;
-- optional sections for derivations, stochastic detail and policy searches;
+- optional sections for derivations, stochastic detail and tests of several triggers;
 - a common starting state, horizon and valuation convention for each comparison,
   with a do-nothing baseline and no double-counted terminal value;
 - the source identities of the property, and separate spatial, service and
@@ -530,15 +535,15 @@ The data package records its provenance (#210):
 
 | Decision | Needed before |
 | --- | --- |
-| Can lesson 03's cases reach the cash flows through the solve? Where do the funding account and commitment check live? | #201 for lesson 03 |
-| How an equation refers to a rollup result | #201 for lesson 06 |
-| Generator parameters and correlations for the property's markets | Authoring lesson 04 |
-| Thresholds, latest dates and the site sale price rule | Authoring lesson 05 |
+| Can lesson 03's cases reach the cash flows through the solve? Where do the funding account and commitment check live? | Resolved by #201: decisions D1 and D2 in the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
+| How an equation refers to a rollup result | Resolved by #201: decision D3 in the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
+| Generator parameters for the market index and the use factors | Authoring lesson 04 |
+| Triggers, latest dates and the site sale price rule | Authoring lesson 05 |
 | The hotel provision for Building B (cores, services, costs) and the expansion floors and premium | #214 and authoring lesson 07 |
 
 ### Delivery
 
-1. #201 writes the ideal cells for every lesson and the gap list in #169.
+1. #201 writes the proposed cells for every lesson and the gap list in #169.
 2. The library work lands, and #213–#216 design and verify the executor
    features for lessons 05 and 07.
 3. Each lesson is authored, run by CI from a fresh kernel and reviewed in the

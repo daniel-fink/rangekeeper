@@ -23,6 +23,7 @@ Install the matching library and the extras each example needs.
 | Directory | Contents |
 | --- | --- |
 | [`walkthrough/`](../../examples/walkthrough/README.md) | Lessons, presentation helpers, resources and their tests; see [walkthroughs](walkthroughs.md) |
+| [`walkthrough/proposed/`](../../examples/walkthrough/proposed/README.md) | Proposed cells for the seven 1.0 lessons, written against the 1.0 API, with the decisions and the API gap list ([#201](https://github.com/daniel-fink/rangekeeper/issues/201)). They do not run |
 | [`data/mixed_use_property/`](../../examples/data/mixed_use_property/README.md) | The data package for walkthrough lessons 02–07, under CC BY 4.0 |
 | [`rangekeeper_examples/`](../../examples/rangekeeper_examples) | Shared design and investment builders |
 | [`schema/`](../../examples/schema) | Complete wire documents and smaller syntax fragments, described below |

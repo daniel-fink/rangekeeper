@@ -25,7 +25,7 @@ check the lessons.
 | [04](04_market_futures.ipynb) | Many market futures | [#206](https://github.com/daniel-fink/rangekeeper/issues/206) |
 | [05](05_when_to_commit.ipynb) | When to commit | [#207](https://github.com/daniel-fink/rangekeeper/issues/207) |
 | [06](06_project_structure.ipynb) | Project structure | [#208](https://github.com/daniel-fink/rangekeeper/issues/208) |
-| [07](07_policies_and_graph.ipynb) | Policies and the model graph | [#244](https://github.com/daniel-fink/rangekeeper/issues/244) |
+| [07](07_policies_and_graph.ipynb) | Rules and design options | [#244](https://github.com/daniel-fink/rangekeeper/issues/244) |
 
 The lessons are skeletons until their issues are done.
 

@@ -40,8 +40,8 @@ blocked-by links. The
 | [ADR-016: Safety defaults](016-safety-defaults.md) | Accepted for 1.0; implementation pending | Curated units, dimensional checks, the underdetermined outcome, structured diagnostics and errors |
 | [ADR-017: Public API, stability and data formats](017-api-and-formats.md) | Accepted for 1.0; implementation pending | Semantic versioning, the 1.0.0 format reset, format changes before the freeze, Bundle format 1 and money |
 | [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted for 1.0; implementation pending | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
-| [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, ideal cells first, helpers, CI execution and sources |
-| [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; ideal cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
+| [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, proposed cells first, helpers, CI execution and sources |
+| [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; proposed cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
 | [ADR-023: Decimal currency amounts](023-decimal-money.md) | Accepted for 1.0; implementation pending | Currency amounts as Decimal, float64 calculation boundaries, JSON, YAML and Parquet encodings, solver evidence and tolerances, and minor-unit rounding; the design of ADR-017's Money section |
 
 The first three records summarize decisions already supported by the linked
@@ -59,13 +59,15 @@ interim API; all lessons are rebuilt for 1.x.
 ## Executor designs for lessons 05 and 07
 
 These records design the executor features that walkthrough lessons 05 and 07
-need ([ADR-019](019-walkthrough-direction.md)). They were accepted on 2026-10-27.
+need ([ADR-019](019-walkthrough-direction.md)). ADR-021 and ADR-022 were accepted on
+2026-10-27, and ADR-024 on 2026-10-28.
 #215 and #216 implement them.
 
 | Decision | Status | Scope |
 | --- | --- | --- |
 | [ADR-021: Decide values by rules over market paths](021-sequential-decisions.md) | Accepted for 1.0; implementation pending | Rules that decide one value, observations and availability, evaluation order, staged solves for each path, decision traces, replay and paired comparison; amends ADR-013 and ADR-014 |
 | [ADR-022: Choose between design alternatives with rules](022-design-alternatives.md) | Accepted for 1.0; implementation pending | Alternatives as Model revisions, choice keys, realised structure for each path, strategy comparison and the premium question; amends ADR-001 |
+| [ADR-024: Search as a query over a range of cases](024-search-as-query.md) | Accepted for 1.0; implementation pending | A range of one value as a source of cases, deferred Outcomes, the by-case table as a query, the exact and bracketed plan, and no range over a rule's inputs; amends ADR-021 and ADR-022 |
 
 ## Implementation history
 
@@ -80,7 +82,7 @@ need ([ADR-019](019-walkthrough-direction.md)). They were accepted on 2026-10-27
 
 ## Work that remains explicit
 
-- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). [Walkthrough plan v2](020-walkthrough-plan-v2.md) replaces the earlier curriculum with seven lessons. It owns the teaching sequence, preparation decisions and capability dependencies. All lessons need ideal cells, authoring and CI execution on the 1.x API.
+- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). [Walkthrough plan v2](020-walkthrough-plan-v2.md) replaces the earlier curriculum with seven lessons. It owns the teaching sequence, preparation decisions and capability dependencies. All lessons need proposed cells, authoring and CI execution on the 1.x API.
 - The [Windows/Rhino/connector gate](../history/windows-acceptance.md) is retired:
   the envelope is a walkthrough helper and the Grasshopper solution is an
   unsupported example ([ADR-010](010-layers-and-packages.md)). The [retirement guide](../contributing/legacy-retirement.md) records removed

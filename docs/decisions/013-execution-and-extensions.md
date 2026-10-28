@@ -92,6 +92,7 @@ has a fingerprint, and evidence records it.
 The extension points are:
 - execution backends;
 - path generators ([ADR-014](014-market-paths.md));
+- profiles (`rk.profile`, added by #201, decision D12);
 - unit systems and aliases ([ADR-016](016-safety-defaults.md));
 - Bundle geometry providers.
 

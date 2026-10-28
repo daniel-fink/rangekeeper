@@ -40,16 +40,18 @@ contracts in the test suite enforce this rule.
 | --- | --- | --- |
 | 1 | `shared` (internal) | Units policy support, errors and diagnostics, resolver and store protocols, the extension registry, fingerprints |
 | 2 | `schema` (internal) | Data-only generated records, enums and JSON resources; the record runtime; the kind registry; structural validation |
-| 3 | `duration` | Frequency, Period, Span and calendar rules |
-| 4 | `flow` | Movement, Flow, Stream, their options, table display and the private calculation engine |
-| 5 | `finance` | Calculations on known data: present value, NPV, IRR, payments, growth, accounts and path generators ([ADR-014](014-market-paths.md)) |
-| 6 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
-| 7 | `specification` | The Specification document, composition, roles and policy declarations |
-| 8 | `run` | The Run document and the validation of its evidence |
-| 9 | `execution` | The solve pipeline, backends, independent verification, policy evaluation and publication ([ADR-013](013-execution-and-extensions.md)) |
-| 10 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
+| 3 | `duration` | Frequency, Period, Periods, Span, `NEVER` and calendar rules |
+| 4 | `profile` | Profiles: how an amount develops over Periods. Growth profiles (constant, linear, compounding) start from an initial amount; distribution profiles (uniform, S-curve) divide a total |
+| 5 | `flow` | Movement, Flow, Stream, their options, `Flow.from_profile`, table display and the private calculation engine |
+| 6 | `market` | Path generators (`Dynamics`) and the market paths document (`Paths`) ([ADR-014](014-market-paths.md)) |
+| 7 | `finance` | Calculations on known data: present value, NPV, IRR, payments and interest. An account balance is a cumulative sum of Flows, not a `finance` class (#201, decision D2) |
+| 8 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
+| 9 | `specification` | The Specification document, composition, roles and policy declarations |
+| 10 | `run` | The Run document and the validation of its evidence |
+| 11 | `execution` | The solve pipeline, backends, independent verification, policy evaluation and publication ([ADR-013](013-execution-and-extensions.md)) |
+| 12 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
-`Quantity` and `UnitSystem` live in the public `units` namespace, below
+`Quantity` and `UnitSystem` live in the public `quantity` namespace, below
 `duration`. `errors` is a public namespace for the exception hierarchy
 ([ADR-016](016-safety-defaults.md)).
 
@@ -58,8 +60,17 @@ contracts in the test suite enforce this rule.
 - Flow and Stream methods are the only API for generic series operations.
   Examples are align, trim, resample, aggregate and scale. `calculations.series`
   is removed.
-- `finance` replaces `calculations`. It keeps the financial operations. Path
-  generators move into it from `model.scenario`.
+- `finance` replaces `calculations`. It keeps the financial operations.
+- Path generators are series maths, like profiles. They move from `model.scenario`
+  to `market`, with the market paths document. Amended 2026-10-27 by the
+  walkthrough proposed cells (#201, decision D29).
+- Growth and distribution are series shapes, not finance. They move from
+  `calculations.projection` to `profile`, and `Flow.from_profile` applies them.
+  The word "projection" is not used ([ADR-012](012-naming-and-glossary.md)).
+  Amended 2026-10-26 by the walkthrough proposed cells (#201, decision D12).
+- `Quantity` is at the root beside the three documents, because every layer uses
+  it. Its namespace is `quantity`, not `units`, so "units" means only a unit string
+  ([ADR-012](012-naming-and-glossary.md)). Amended 2026-10-26 (#201, decision D13).
 - Policy declarations stay in `specification`. Policy evaluation moves to `execution`.
 - The store and resolver protocols move to `shared`. This removes the `run` and
   `io` cycle.
@@ -67,8 +78,11 @@ contracts in the test suite enforce this rule.
 
 ### Public namespaces
 
-Users import from `rangekeeper` (Model, Specification, Run), `duration`, `flow`,
-`finance`, `model`, `specification`, `execution`, `io`, `errors` and `units`.
+Users import from `rangekeeper` (Model, Specification, Run and Quantity), `duration`, `profile`, `flow`,
+`market`, `finance`, `model`, `expressions`, `specification`, `execution`, `io`, `errors` and
+`quantity`. `expressions` (imported as `rx`) builds equations in Python. It sits in the
+`model` layer and is generated from the equation-function registry (#201, decision
+D32; [ADR-015](015-authoring.md#equations)).
 `schema` and `shared` are internal. Each owner re-exports the records that its
 users need. For example, `flow` exports Flow, `model` exports Entity and
 `specification` exports Assignment. [ADR-017](017-api-and-formats.md) defines
@@ -80,9 +94,10 @@ the stability promise for these names.
 | --- | --- |
 | `model.duration` | `duration` |
 | `model.flux`, `model._flow_mapping`, `schema/behaviors/flow.py`, `calculations.series`, `calculations._batch` | `flow` |
-| `model.measure` (Quantity), `shared.units` | `units` |
-| `calculations` (financial, projection, account, dynamics) | `finance` |
-| `model.scenario` | `finance` generators and the MarketPaths document ([ADR-014](014-market-paths.md)) |
+| `model.measure` (Quantity), `shared.units` | `quantity`; `Quantity` is also at the root |
+| `calculations` (financial, account, dynamics) | `finance` |
+| `calculations.projection` (growth and distribution) | `profile`, and `Flow.from_profile` in `flow` |
+| `model.scenario` | `market`: generators (`Dynamics`) and the market paths document (`Paths`) ([ADR-014](014-market-paths.md)) |
 | `run.execution`, policy evaluation in `specification.policy` | `execution` |
 | `io.store` protocol | `shared` |
 | `visualisation` (except table display), `io.speckle` | Walkthrough helpers |

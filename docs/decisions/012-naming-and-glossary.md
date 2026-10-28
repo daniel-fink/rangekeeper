@@ -61,7 +61,8 @@ The rename pass finalises these names. The table records the agreed direction.
 | `calculations.series.Aggregation` | `FlowAggregate` |
 | `model.system.reduction.Aggregation` | `RollupResult` |
 | `Reduction` (scalar and Flow modes) | `QuantityRollup` and `FlowRollup` with one `Reducer` enum |
-| `calculations.projection` (growth paths) | `finance.growth` |
+| `model.measure` (Quantity), `shared.units` | `quantity`, with `Quantity` also at the root (amended by #201, decision D13) |
+| `calculations.projection` (growth and distribution) | `profile`, with `Flow.from_profile` (amended by #201, decision D12) |
 | `model.system.projection` (table export) | `model.system.table` |
 | `duration.measure` (counts calendar steps) | `count_steps` |
 | `duration.align` (finds the containing Period) | `containing_period` |
