@@ -74,4 +74,6 @@ python tools/docs/notebooks.py _site/walkthrough examples/walkthrough/*.ipynb
 ```
 
 The tool refuses a lesson with a code cell that did not run or that has an error.
-`--allow-unexecuted` turns off the first check, for skeleton lessons.
+`--allow-unexecuted` turns off the first check, for skeleton lessons. The
+[docs site preview](../../docs/contributing/README.md#docs-site) runs and
+converts every lesson in one command.

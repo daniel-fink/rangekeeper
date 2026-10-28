@@ -76,6 +76,15 @@ types = ["mypy>=2.4,<3", "types-PyYAML>=6.0.12", "types-jsonschema>=4.26"]
 notebook = ["ipykernel>=7.3.0"]
 codemod = ["libcst>=1.8,<2", "PyYAML>=6.0.2,<7"]
 layers = ["import-linter>=2.15,<3"]
+# The docs site (ADR-018): tools/docs/site.py builds and serves it.
+docs = [
+    "zensical>=0.0.73,<0.1",
+    "mkdocstrings>=1.0.8,<2",
+    "mkdocstrings-python>=2.0.10,<3",
+]
+# Zensical's fork of mike publishes the versioned sites. It is not on PyPI, so
+# uv takes it from git at a fixed commit. Only publication needs it.
+versions = [{ include-group = "docs" }, "mike"]
 
 # The 1.0 layers (ADR-010). A module imports only from its own layer or a lower
 # layer, in the order below. TYPE_CHECKING imports are excluded: they name types,
@@ -123,6 +132,7 @@ cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true 
 
 [tool.uv.sources]
 rangekeeper-examples = { path = "examples", editable = true }
+mike = { git = "https://github.com/squidfunk/mike.git", rev = "2d4ad799442f4592db8ad53b179bfb33db8c69ac" }
 
 [tool.ruff]
 line-length = 88

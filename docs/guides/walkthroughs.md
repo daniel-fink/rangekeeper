@@ -82,8 +82,9 @@ tags control the page:
 | `solution` | Put the source and outputs in a collapsed "Solution" block |
 
 HTML outputs, for example native Polars tables and Plotly figures, stay as HTML
-in a `rk-output` block. The site configuration, navigation and versions are
-separate work ([#191](https://github.com/daniel-fink/rangekeeper/issues/191)).
+in a `rk-output` block. The [docs site build](../contributing/README.md#docs-site)
+runs each lesson and converts it in the same way; its preview shows the lessons
+with their outputs.
 
 ## Design example conventions
 

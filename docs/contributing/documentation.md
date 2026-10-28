@@ -61,8 +61,9 @@ service.
    Do not leave duplicate active copies or forwarding pages by default.
 6. Run `python tools/docs/check.py` from the repository root, then run the
    commands/examples affected by the edit. Run generation
-   checks when generated material changes. If book sources or configuration
-   change, build the book and inspect its navigation. Preserve captured logs,
+   checks when generated material changes. If pages, lessons, docstrings or the
+   site configuration change, build the [docs site](README.md#docs-site) and
+   inspect its navigation. Preserve captured logs,
    notebook outputs and historical source snapshots; add new dated evidence.
 7. Review the diff for contradictory status, duplicate contract definitions and
    orphan pages. Report which docs changed, which plans moved, the checks run and

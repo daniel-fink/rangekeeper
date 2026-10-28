@@ -114,7 +114,28 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: python3 tools/docs/check.py
-      # TODO: build the Zensical site here when it exists (ADR-018).
+
+  site:
+    name: site
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Both environments install Rangekeeper from this checkout (setuptools-scm).
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      # Zensical and mkdocstrings build the site; the walkthrough environment
+      # runs the lessons. The build does not publish.
+      - run: uv sync --locked --all-extras --no-default-groups --group docs
+      - run: uv sync --project examples/walkthrough --locked --no-default-groups --group test
+      - run: uv run --locked --no-sync python tools/docs/site.py build
+        env:
+          RK_DESIGN_MODE: fixture
+          RK_PATH_COUNT: "4"
 
   walkthrough:
     name: walkthrough

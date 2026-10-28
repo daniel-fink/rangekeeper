@@ -7,8 +7,8 @@ record fresh results for the checkout under review.
 Developers and agents run these checks explicitly before delivering a change.
 The [CI workflow](README.md#continuous-integration) runs the lint, type,
 changelog, generated-file, .NET, documentation, walkthrough, test, extra and
-wheel checks on pull requests. It does not build the Grasshopper components or
-the docs site; run those procedures locally. Follow
+wheel checks on pull requests, and builds the docs site. It does not build the
+Grasshopper components; run that procedure locally. Follow
 [the verification decision](../decisions/004-package-and-project-ownership.md#verification-ownership)
 and record the actual environment: local acceptance does not establish Linux,
 Windows or service acceptance on a different host.
@@ -141,7 +141,9 @@ from those executed notebooks. Routine design checks use explicit fixture mode.
 Apply [documentation upkeep](documentation.md) in the same change. Check incoming
 and outgoing relative links and headings after moves. Check example paths,
 working directories and current API names. Inspect the converted pages when
-lesson conversion changes. Do not rewrite captured evidence to make
+lesson conversion changes. Build the [docs site](README.md#docs-site) when
+pages, lessons, docstrings or the site configuration change. Do not rewrite
+captured evidence to make
 historical commands appear current.
 
 From the repository root, check local Markdown links, section anchors and routes

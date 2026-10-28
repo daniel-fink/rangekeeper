@@ -1397,6 +1397,11 @@ dev = [
     { name = "types-jsonschema", specifier = ">=4.26" },
     { name = "types-pyyaml", specifier = ">=6.0.12" },
 ]
+docs = [
+    { name = "mkdocstrings", specifier = ">=1.0.8,<2" },
+    { name = "mkdocstrings-python", specifier = ">=2.0.10,<3" },
+    { name = "zensical", specifier = ">=0.0.73,<0.1" },
+]
 layers = [{ name = "import-linter", specifier = ">=2.15,<3" }]
 lint = [{ name = "ruff", specifier = ">=0.17.2,<0.18" }]
 notebook = [{ name = "ipykernel", specifier = ">=7.3.0" }]
@@ -1404,6 +1409,12 @@ types = [
     { name = "mypy", specifier = ">=2.4,<3" },
     { name = "types-jsonschema", specifier = ">=4.26" },
     { name = "types-pyyaml", specifier = ">=6.0.12" },
+]
+versions = [
+    { name = "mike", git = "https://github.com/squidfunk/mike.git?rev=2d4ad799442f4592db8ad53b179bfb33db8c69ac" },
+    { name = "mkdocstrings", specifier = ">=1.0.8,<2" },
+    { name = "mkdocstrings-python", specifier = ">=2.0.10,<3" },
+    { name = "zensical", specifier = ">=0.0.73,<0.1" },
 ]
 
 [[package]]
