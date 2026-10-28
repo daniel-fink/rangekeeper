@@ -66,6 +66,24 @@ A currency amount stays an amount: the calculation uses float64, and the result
 goes through `money.to_amount` ([currency amounts](#currency-amounts)). A result
 that is not finite raises `UnitError`.
 
+### Equality and isclose
+
+`==` compares values: the same units text and equal magnitudes, so
+`Quantity(magnitude=1, units="m") == Quantity(magnitude=1.0, units="m")`, but
+`1 m` is not equal to `100 cm`. `<`, `<=`, `>` and `>=` convert to compatible
+units first. Quantities are not hashable.
+
+`rangekeeper.quantity.isclose(*, actual, expected, tolerance=None, relative=1e-9)`
+compares two Quantities, or two Flows, in the units of `expected`. They are
+close when the difference is at most `tolerance` (a Quantity or its text) or at
+most `relative` times the larger magnitude, as in `math.isclose`. Two Flows must
+have the same coordinates; two unresolved amounts are close.
+
+```python
+rk.quantity.isclose(actual=irr, expected=rk.Quantity(text="7 % pa"))
+rk.quantity.isclose(actual=a, expected=b, tolerance="1 AUD")
+```
+
 ## Errors and suggestions
 
 Each failure raises `UnitError`. Its `suggestions` attribute gives the spellings

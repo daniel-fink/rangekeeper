@@ -15,7 +15,7 @@ from dataclasses import dataclass, replace
 from decimal import Decimal
 from functools import lru_cache
 from importlib.metadata import version
-from typing import ClassVar, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 
 from rangekeeper.money import (
     CURRENCIES,
@@ -33,6 +33,9 @@ from rangekeeper.shared.amounts import text as _amount_text
 from rangekeeper.shared.errors import UnitError
 from rangekeeper.shared.fingerprints import manifest_digest
 from rangekeeper.shared.registry import Registry
+
+if TYPE_CHECKING:
+    from rangekeeper.flow import Flow
 
 _CURRENCIES = CURRENCIES
 
@@ -321,6 +324,38 @@ class Quantity(records.Quantity):
     def to(self, *, units: str) -> "Quantity":
         """Return this Quantity in other, compatible units; currencies never convert."""
         return default_units.convert(self, to=units)
+
+    def __eq__(self, other: object) -> bool:
+        """Compare values: the same units text and equal magnitudes.
+
+        ``1`` and ``1.0`` are equal, and so are ``Decimal("1.5")`` and
+        ``Decimal("1.50")``. Different spellings of units are not equal; use
+        ``isclose`` to compare in converted units, or with a tolerance.
+        """
+        if not isinstance(other, records.Quantity):
+            return NotImplemented
+        return self.units == other.units and self.magnitude == other.magnitude
+
+    __hash__ = None  # type: ignore[assignment]
+
+    def __lt__(self, other: object) -> bool:
+        return self._compare(other, lambda a, b: a < b)
+
+    def __le__(self, other: object) -> bool:
+        return self._compare(other, lambda a, b: a <= b)
+
+    def __gt__(self, other: object) -> bool:
+        return self._compare(other, lambda a, b: a > b)
+
+    def __ge__(self, other: object) -> bool:
+        return self._compare(other, lambda a, b: a >= b)
+
+    def _compare(self, other: object, test) -> bool:
+        if not isinstance(other, Quantity):
+            return NotImplemented
+        if other.units == self.units:
+            return test(self.magnitude, other.magnitude)
+        return test(self.number, other.number * _sum_scale(self.units, other.units))
 
     def __neg__(self) -> "Quantity":
         return Quantity(magnitude=-self.magnitude, units=self.units)
@@ -694,6 +729,74 @@ class UnitSystem:
 
 default_units = UnitSystem()
 
+
+def isclose(
+    *,
+    actual: "Quantity | Flow",
+    expected: "Quantity | Flow",
+    tolerance: "Quantity | str | None" = None,
+    relative: float = 1e-9,
+) -> bool:
+    """Return whether two Quantities, or two Flows, are equal within a tolerance.
+
+    ``actual`` is converted to the units of ``expected``; incompatible units
+    raise UnitError. Two values are close when their difference is at most
+    ``tolerance`` (a Quantity or its text, in units compatible with
+    ``expected``) or at most ``relative`` times the larger magnitude, as in
+    ``math.isclose``. Two Flows are close when they have the same coordinates
+    and each pair of amounts is close; two unresolved amounts are close.
+    """
+    if type(relative) not in (int, float) or not 0 <= relative < 1:
+        raise ValueError("relative must be a number from 0 up to 1")
+    pairs: list[tuple[Decimal | int | float | None, Decimal | int | float | None]]
+    if isinstance(actual, records.Quantity) and isinstance(expected, records.Quantity):
+        pairs = [(actual.magnitude, expected.magnitude)]
+    elif isinstance(actual, records.Flow) and isinstance(expected, records.Flow):
+        if [_coordinate(m) for m in actual.movements] != [
+            _coordinate(m) for m in expected.movements
+        ]:
+            return False
+        pairs = [
+            (a.magnitude, e.magnitude)
+            for a, e in zip(actual.movements, expected.movements, strict=True)
+        ]
+    else:
+        raise TypeError("compare two Quantities or two Flows")
+    scale = _sum_scale(expected.units, actual.units)
+    absolute = 0.0
+    if tolerance is not None:
+        if isinstance(tolerance, str):
+            tolerance = Quantity(text=tolerance)
+        if not isinstance(tolerance, records.Quantity):
+            raise TypeError("tolerance must be a Quantity or its text")
+        absolute = abs(_number(tolerance.magnitude)) * _sum_scale(
+            expected.units, tolerance.units
+        )
+    for a, e in pairs:
+        if a is None or e is None:
+            if a is not e:
+                return False
+            continue
+        if not math.isclose(
+            _number(a) * scale, _number(e), rel_tol=relative, abs_tol=absolute
+        ):
+            return False
+    return True
+
+
+def _number(magnitude: Decimal | int | float) -> float:
+    return to_number(magnitude) if isinstance(magnitude, Decimal) else float(magnitude)
+
+
+def _coordinate(movement: records.Movement) -> tuple:
+    period = movement.period
+    return (
+        None if period is None else (period.start, period.end),
+        movement.date,
+        movement.key,
+    )
+
+
 # Named unit systems (ADR-013, ADR-016). An installed distribution can add one in
 # the entry point group ``rangekeeper.unit_systems``.
 unit_systems: Registry[UnitSystem] = Registry(
@@ -701,4 +804,4 @@ unit_systems: Registry[UnitSystem] = Registry(
 )
 unit_systems.register("default", default_units)
 
-__all__ = ["Quantity", "UnitSystem", "default_units", "unit_systems"]
+__all__ = ["Quantity", "UnitSystem", "default_units", "isclose", "unit_systems"]
