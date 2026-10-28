@@ -1,4 +1,4 @@
-"""Resolve immutable mathematics and explicit solve roles without a solver import."""
+"""Stages 2 and 3: validate a composition, then bind its roles; no solver import."""
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -19,6 +19,7 @@ from rangekeeper.schema.records import (
     RuleEvidence,
     Value,
 )
+from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.specification import Composition
 from rangekeeper.specification.validation import prepare as validate_prepared
@@ -34,8 +35,22 @@ class Assertion:
 
 
 @dataclass(frozen=True)
-class Prepared:
-    """A derived solve scope; never a serialized or independently authoritative schema."""
+class Validation:
+    """The validation of one composition against its input Model.
+
+    ``model`` and ``units`` are set when the input Model resolved. ``units`` is
+    the unit system that the later stages use.
+    """
+
+    report: ValidationReport
+    composition: Composition
+    model: Model | None = None
+    units: UnitSystem | None = None
+
+
+@dataclass(frozen=True)
+class Binding:
+    """The bound roles of one composition; derived, never serialized."""
 
     model: Model
     composition: Composition
@@ -48,27 +63,45 @@ class Prepared:
     rule_evidence: tuple[RuleEvidence, ...] = ()
 
 
-def prepare(
+def validate(
     composition: Composition,
     *,
     resolver: SpecificationResolver,
     units: UnitSystem | None = None,
-    checkpoint: Callable[[], None] = lambda: None,
-) -> Prepared:
-    """Validate an existing composition and normalize assignments to Measure units.
+) -> Validation:
+    """Validate a composition against its input Model once; raise nothing.
 
-    Only imposed mathematics is prepared. Unused reporting queries stay passive.
-    Recorded quantities and estimates never supply missing fixed roles. This slice
-    publishes Model-owned scalar Values; local Specification Values and ordered
-    optimization objectives are rejected explicitly before invoking a backend.
+    Without ``units``, validation uses the unit system of the input Model. A
+    content problem is an issue in ``report``.
     """
     validated = validate_prepared(composition, resolver=resolver, units=units)
-    validated.report.raise_if_invalid()
-    checkpoint()
-    assert composition.model_id is not None
     model = validated.model
-    assert model is not None
-    units = model.unit_system if units is None else units
+    return Validation(
+        validated.report,
+        composition,
+        model,
+        None if model is None else model.unit_system if units is None else units,
+    )
+
+
+def bind_roles(
+    validation: Validation,
+    *,
+    checkpoint: Callable[[], None] = lambda: None,
+) -> Binding:
+    """Give each value its role and normalize assignments to Measure units.
+
+    Raise ValidationError for an invalid ``validation``. Only imposed
+    mathematics is bound. Unused reporting queries stay passive. Recorded
+    quantities and estimates never supply missing fixed roles. This slice
+    publishes Model-owned scalar Values; local Specification Values and ordered
+    optimization objectives raise UnsupportedError before any backend runs.
+    """
+    validation.report.raise_if_invalid()
+    checkpoint()
+    composition = validation.composition
+    model, units = validation.model, validation.units
+    assert model is not None and units is not None
     requirements = composition.requirements
     if requirements.objectives:
         raise UnsupportedError(
@@ -135,7 +168,7 @@ def prepare(
         )
         for item in (*(requirements.assignments or ()), *rule_assignments)
     }
-    return Prepared(
+    return Binding(
         model,
         composition,
         MappingProxyType(value_units),

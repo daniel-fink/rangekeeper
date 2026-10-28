@@ -1,4 +1,4 @@
-"""Construct detached candidate revisions; persist only after independent acceptance."""
+"""Stage 6: make a detached candidate revision; nothing is stored here."""
 
 import json
 from collections.abc import Mapping
@@ -6,7 +6,7 @@ from typing import Any, cast
 from uuid import UUID, uuid4
 
 from rangekeeper.execution.errors import NumericalError
-from rangekeeper.execution.preparation import Prepared
+from rangekeeper.execution.preparation import Binding
 from rangekeeper.model import Model
 from rangekeeper.model.targets import target_value
 from rangekeeper.model.update import Update
@@ -16,31 +16,34 @@ from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.references import DocumentResolver
 
 
-def candidate(
-    prepared: Prepared, unknowns: Mapping[UUID, float], *, run_id: UUID
+def make_candidate(
+    binding: Binding, unknowns: Mapping[UUID, float], *, run_id: UUID
 ) -> Model:
-    """Construct and round-trip one candidate, preserving shape and unrelated content.
+    """Write solved values into a new candidate Model revision and round-trip it.
+
+    The candidate keeps the shape and the unrelated content of the input Model.
+    Only independent verification decides whether it is published.
 
     Private symbol tokens never become domain identities. Each changed Movement
     receives new evidence; old Claims remain available as revision history.
     """
     from rangekeeper.model.expression.evaluation import finite_quantity
 
-    if set(unknowns) != set(prepared.unknowns):
+    if set(unknowns) != set(binding.unknowns):
         raise NumericalError(
             "backend candidate does not contain exactly the unknown symbols"
         )
-    quantities = dict(prepared.assignments)
+    quantities = dict(binding.assignments)
     for token, magnitude in unknowns.items():
         try:
-            quantities[token] = finite_quantity(magnitude, prepared.value_units[token])
+            quantities[token] = finite_quantity(magnitude, binding.value_units[token])
         except (ArithmeticError, TypeError, ValueError) as error:
             raise NumericalError(str(error)) from error
-    data = cast(dict[str, Any], prepared.model.to_data())
+    data = cast(dict[str, Any], binding.model.to_data())
     provenance = data.setdefault("provenance", {})
     claims = provenance.setdefault("claims", [])
     changed = {
-        str(target_value(prepared.model, prepared.references[token]).id)
+        str(target_value(binding.model, binding.references[token]).id)
         for token in quantities
     }
     facts = [f for f in provenance.get("facts", []) if f["target"] not in changed]
@@ -55,7 +58,7 @@ def candidate(
                 method=dict(
                     code=method,
                     version="2",
-                    description=f"Run {run_id}; Specification {prepared.composition.root_id}; independently checked publication.",
+                    description=f"Run {run_id}; Specification {binding.composition.root_id}; independently checked publication.",
                 ),
             )
         )
@@ -75,12 +78,12 @@ def candidate(
                         movement["claims"] = [
                             claim(
                                 dict(
-                                    target=prepared.references[token].to_data(),
+                                    target=binding.references[token].to_data(),
                                     quantity=amount,
                                 ),
                                 (
                                     "rangekeeper.movement.assignment"
-                                    if token in prepared.assignments
+                                    if token in binding.assignments
                                     else "rangekeeper.movement.solution"
                                 ),
                             )
@@ -93,9 +96,9 @@ def candidate(
             evidence = claim(content, "rangekeeper.value.publication")
             facts.append(dict(target=identity, claims=[evidence]))
     if not quantities:
-        claim(dict(model=str(prepared.model.id)), "rangekeeper.feasibility")
+        claim(dict(model=str(binding.model.id)), "rangekeeper.feasibility")
     provenance["facts"] = facts
-    result = prepared.model.revise(
+    result = binding.model.revise(
         Update(
             system=System.from_data(data.get("system", {})),
             provenance=Provenance.from_data(provenance),

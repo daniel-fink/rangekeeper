@@ -1,4 +1,4 @@
-"""Independently check proposed serialized quantities against original mathematics."""
+"""Stage 7: verify a serialized candidate independently against the original mathematics."""
 
 import math
 from collections.abc import Mapping
@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
-from rangekeeper.execution.preparation import Prepared
+from rangekeeper.execution.preparation import Binding
 from rangekeeper.model import Model
 from rangekeeper.model.expression.evaluation import (
     evaluate,
@@ -49,16 +49,16 @@ class Tolerances:
 
 
 @dataclass(frozen=True)
-class Acceptance:
+class Verification:
     """Numerical outcome with evidence; no storage side effects."""
 
     accepted: bool
     diagnostics: tuple[Diagnostic, ...]
 
 
-def check(
-    prepared: Prepared, candidate: Model, *, tolerances: Tolerances = Tolerances()
-) -> Acceptance:
+def verify(
+    binding: Binding, candidate: Model, *, tolerances: Tolerances = Tolerances()
+) -> Verification:
     """Check exact assignments and every original equality/bound on candidate values.
 
     Call after codec reconstruction of the proposed Model. This function does not
@@ -67,14 +67,14 @@ def check(
     candidates never need to be persisted just to support their evidence.
     """
     values = {}
-    for id in (*prepared.assignments, *prepared.unknowns):
-        value = recorded_scalar(candidate, prepared.references[id])
+    for id in (*binding.assignments, *binding.unknowns):
+        value = recorded_scalar(candidate, binding.references[id])
         if value is None:
             raise NumericalError(f"candidate has no quantity for {id}")
-        values[id] = prepared.units.convert(value, to=prepared.value_units[id])
+        values[id] = binding.units.convert(value, to=binding.value_units[id])
     diagnostics = []
     accepted = True
-    for id, assigned in prepared.assignments.items():
+    for id, assigned in binding.assignments.items():
         if values[id].to_data() != assigned.to_data():
             accepted = False
             diagnostics.append(
@@ -82,17 +82,17 @@ def check(
                     severity=Severity.ERROR,
                     code=Code.ASSIGNMENT_REJECTED.value,
                     message="Candidate changed an explicit assignment.",
-                    document=prepared.model.id,
-                    target=prepared.references[id].target,
-                    references=(prepared.references[id],),
+                    document=binding.model.id,
+                    target=binding.references[id].target,
+                    references=(binding.references[id],),
                 )
             )
-    for assertion in prepared.assertions:
+    for assertion in binding.assertions:
         for relation, left, right, boolean in _comparisons(
             assertion.predicate,
             values,
-            units=prepared.units,
-            fixed=prepared.assignments.keys(),
+            units=binding.units,
+            fixed=binding.assignments.keys(),
         ):
             residual = left.number - right.number
             tolerance = (
@@ -144,7 +144,7 @@ def check(
                     tolerance=Quantity(magnitude=tolerance, units=left.units),
                 )
             )
-    return Acceptance(accepted, tuple(diagnostics))
+    return Verification(accepted, tuple(diagnostics))
 
 
 def _comparisons(

@@ -1,11 +1,11 @@
 """Sequential scalar attempts and batches over immutable revision stores."""
 
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from rangekeeper.execution import acceptance
 from rangekeeper.execution.attempt import Attempt
 from rangekeeper.execution.backends import Backend, registry
-from rangekeeper.execution.planning import Plan
+from rangekeeper.execution.planning import Cases, resolve_cases
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.run import Run, RunRecord, Severity, SolutionStatus
 from rangekeeper.run.report import completion_for
@@ -18,9 +18,8 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.codes import Code
-from rangekeeper.shared.errors import ValidationError
 from rangekeeper.shared.store import RecordStore
-from rangekeeper.specification import Composition, Specification
+from rangekeeper.specification import Specification
 
 
 class Executor:
@@ -60,21 +59,14 @@ class Executor:
         """
         if not isinstance(specification, Specification):
             raise TypeError("specification must be a Specification")
-        plan = Plan(self.store)
-        documents, compositions = plan.resolve(specification)
+        cases = resolve_cases(specification, resolver=self.store)
         self.store.put(specification)
-        return self._execute(specification, documents, compositions, plan)
+        return self._execute(specification, cases)
 
-    def _execute(
-        self,
-        specification: Specification,
-        documents: dict[UUID, Specification],
-        compositions: dict[UUID, Composition | ValidationError],
-        plan: Plan,
-    ) -> Run:
+    def _execute(self, specification: Specification, cases: Cases) -> Run:
         if specification.record.cases:
             children = tuple(
-                self._execute(documents[id], documents, compositions, plan)
+                self._execute(cases.documents[id], cases)
                 for id in specification.record.cases
             )
             outputs = tuple(
@@ -114,12 +106,15 @@ class Executor:
             )
             self.store.put(run)
             return run
-        return Attempt(
-            self.store,
+        run, output = Attempt(
             self.backend,
             self.units,
             self.tolerances,
             specification,
-            compositions[specification.id],
-            resolver=plan,
+            cases.compositions[specification.id],
+            resolver=cases,
         ).execute()
+        if output is not None:
+            self.store.put(output)
+        self.store.put(run)
+        return run

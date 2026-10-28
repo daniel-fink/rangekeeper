@@ -9,7 +9,7 @@ from types import MappingProxyType
 from uuid import UUID
 
 from rangekeeper.execution.backends.base import Result
-from rangekeeper.execution.compiler import Compiled
+from rangekeeper.execution.compiler import AffineProblem
 from rangekeeper.execution.errors import BackendUnavailableError, NumericalError
 from rangekeeper.execution.settings import Limits
 from rangekeeper.schema.records import Implementation
@@ -23,11 +23,13 @@ class PyomoHighs:
     kills and reaps that process, discards partial output, and proves no infeasibility.
     """
 
-    def solve(self, problem: Compiled, *, limits: Limits, remaining: float) -> Result:
+    def solve(
+        self, problem: AffineProblem, *, limits: Limits, remaining: float
+    ) -> Result:
         """Solve a compiled problem in a child process and return its Result."""
         if remaining <= 0:
             return Result("worker_deadline", evidence={"remaining_seconds": 0})
-        ids = problem.prepared.unknowns
+        ids = problem.binding.unknowns
         request = {
             "unknowns": [str(id) for id in ids],
             "rows": [

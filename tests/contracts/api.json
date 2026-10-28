@@ -510,6 +510,41 @@
   }
  },
  "rangekeeper.execution": {
+  "AffineProblem": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, binding: rangekeeper.execution.preparation.Binding, rows: tuple[rangekeeper.execution.compiler.Row, ...]) -> None"
+   },
+   "module": "rangekeeper.execution.compiler",
+   "signature": "(binding: rangekeeper.execution.preparation.Binding, rows: tuple[rangekeeper.execution.compiler.Row, ...]) -> None"
+  },
+  "Assertion": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, document: uuid.UUID, constraint: rangekeeper.schema.records.Constraint, predicate: rangekeeper.schema.records.Expression) -> None"
+   },
+   "module": "rangekeeper.execution.preparation",
+   "signature": "(document: uuid.UUID, constraint: rangekeeper.schema.records.Constraint, predicate: rangekeeper.schema.records.Expression) -> None"
+  },
+  "Binding": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple()) -> None"
+   },
+   "module": "rangekeeper.execution.preparation",
+   "signature": "(model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple()) -> None"
+  },
+  "Cases": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition | rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None",
+    "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
+    "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
+    "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification"
+   },
+   "module": "rangekeeper.execution.planning",
+   "signature": "(root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition | rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
+  },
   "Executor": {
    "kind": "class",
    "members": {
@@ -526,6 +561,57 @@
    },
    "module": "rangekeeper.execution.acceptance",
    "signature": "(absolute: float = 1e-08, relative: float = 1e-09) -> None"
+  },
+  "Validation": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
+   },
+   "module": "rangekeeper.execution.preparation",
+   "signature": "(report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
+  },
+  "Verification": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, accepted: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
+   },
+   "module": "rangekeeper.execution.acceptance",
+   "signature": "(accepted: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
+  },
+  "assemble": {
+   "kind": "function",
+   "module": "rangekeeper.execution.assembly",
+   "signature": "(specification: rangekeeper.specification.specification.Specification, report: rangekeeper.schema.records.Report, *, id: uuid.UUID, output: rangekeeper.model.model.Model | None, resolver: rangekeeper.shared.references.DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.run.run.Run"
+  },
+  "bind_roles": {
+   "kind": "function",
+   "module": "rangekeeper.execution.preparation",
+   "signature": "(validation: rangekeeper.execution.preparation.Validation, *, checkpoint: collections.abc.Callable[[], None] = <function>) -> rangekeeper.execution.preparation.Binding"
+  },
+  "build_problem": {
+   "kind": "function",
+   "module": "rangekeeper.execution.compiler",
+   "signature": "(binding: rangekeeper.execution.preparation.Binding, *, limits: rangekeeper.execution.settings.Limits | None = None, checkpoint: collections.abc.Callable[[], None] = <function>) -> rangekeeper.execution.compiler.AffineProblem"
+  },
+  "make_candidate": {
+   "kind": "function",
+   "module": "rangekeeper.execution.publication",
+   "signature": "(binding: rangekeeper.execution.preparation.Binding, unknowns: collections.abc.Mapping[uuid.UUID, float], *, run_id: uuid.UUID) -> rangekeeper.model.model.Model"
+  },
+  "resolve_cases": {
+   "kind": "function",
+   "module": "rangekeeper.execution.planning",
+   "signature": "(specification: rangekeeper.specification.specification.Specification, *, resolver: rangekeeper.shared.references.DocumentResolver) -> rangekeeper.execution.planning.Cases"
+  },
+  "validate": {
+   "kind": "function",
+   "module": "rangekeeper.execution.preparation",
+   "signature": "(composition: rangekeeper.specification.composition.Composition, *, resolver: rangekeeper.shared.references.SpecificationResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.execution.preparation.Validation"
+  },
+  "verify": {
+   "kind": "function",
+   "module": "rangekeeper.execution.acceptance",
+   "signature": "(binding: rangekeeper.execution.preparation.Binding, candidate: rangekeeper.model.model.Model, *, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> rangekeeper.execution.acceptance.Verification"
   }
  },
  "rangekeeper.execution.backends": {
@@ -533,7 +619,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *args, **kwargs)",
-    "solve": "method (self, problem: rangekeeper.execution.compiler.Compiled, *, limits: rangekeeper.execution.settings.Limits, remaining: float) -> rangekeeper.execution.backends.base.Result"
+    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float) -> rangekeeper.execution.backends.base.Result"
    },
    "module": "rangekeeper.execution.backends.base",
    "signature": "(*args, **kwargs)"
@@ -541,7 +627,7 @@
   "PyomoHighs": {
    "kind": "class",
    "members": {
-    "solve": "method (self, problem: rangekeeper.execution.compiler.Compiled, *, limits: rangekeeper.execution.settings.Limits, remaining: float) -> rangekeeper.execution.backends.base.Result"
+    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float) -> rangekeeper.execution.backends.base.Result"
    },
    "module": "rangekeeper.execution.backends.pyomo",
    "signature": "()"
