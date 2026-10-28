@@ -316,6 +316,8 @@
     "AGGREGATION",
     "DECODE",
     "ENCODING",
+    "EXTENSION_CONFLICT",
+    "EXTENSION_UNKNOWN",
     "PUBLISHED_FILE",
     "REPLAY_UNAVAILABLE",
     "REVISION_CONFLICT",
@@ -349,6 +351,12 @@
    "signature": null
   },
   "EncodingError": {
+   "kind": "class",
+   "members": {},
+   "module": "rangekeeper.shared.errors",
+   "signature": null
+  },
+  "ExtensionConflictError": {
    "kind": "class",
    "members": {},
    "module": "rangekeeper.shared.errors",
@@ -405,6 +413,14 @@
    "signature": null
   },
   "UnitError": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, message: str, *, suggestions: tuple[str, ...] = tuple()) -> None"
+   },
+   "module": "rangekeeper.shared.errors",
+   "signature": "(message: str, *, suggestions: tuple[str, ...] = tuple()) -> None"
+  },
+  "UnknownExtensionError": {
    "kind": "class",
    "members": {
     "__init__": "method (self, message: str, *, suggestions: tuple[str, ...] = tuple()) -> None"
