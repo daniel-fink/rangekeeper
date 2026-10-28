@@ -30,7 +30,7 @@ def collection():
     extent = Span.from_duration(
         name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=11
     )
-    monthly = extent.periods(Frequency.MONTH)
+    monthly = extent.periods(frequency=Frequency.MONTH)
     stream = Stream(
         {
             "Rent": Flow.from_periods(monthly, [100.0] * len(monthly), units="AUD"),
@@ -38,7 +38,7 @@ def collection():
         }
     )
     annual = stream.resample(
-        extent.periods(Frequency.YEAR), method=ResamplingMethod.SUM
+        extent.periods(frequency=Frequency.YEAR), method=ResamplingMethod.SUM
     )
     assert all(m.number == 960 for m in annual.sum().movements)
     return annual
@@ -48,7 +48,10 @@ def hierarchy_model():
     span = Span.from_duration(
         name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1
     )
-    monthly, annual = span.periods(Frequency.MONTH), span.periods(Frequency.YEAR)
+    monthly, annual = (
+        span.periods(frequency=Frequency.MONTH),
+        span.periods(frequency=Frequency.YEAR),
+    )
     money = Measure(id=uuid4(), code="money", name="Money", units="AUD")
     ids = {}
     entities = []

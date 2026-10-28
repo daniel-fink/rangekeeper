@@ -214,17 +214,17 @@ def test_span_anchor_partial_and_decoded_behavior():
         name="Leap", start=date(2024, 1, 31), frequency=Frequency.MONTH, count=3
     )
     assert span.end == date(2024, 4, 30)
-    assert [p.end for p in span.periods(Frequency.MONTH)] == [
+    assert [p.end for p in span.periods(frequency=Frequency.MONTH)] == [
         date(2024, 2, 29),
         date(2024, 3, 31),
         date(2024, 4, 30),
     ]
-    assert Span.from_data(span.to_data()).periods(Frequency.MONTH) == span.periods(
-        Frequency.MONTH
-    )
+    assert Span.from_data(span.to_data()).periods(
+        frequency=Frequency.MONTH
+    ) == span.periods(frequency=Frequency.MONTH)
     with pytest.raises(ValueError, match="partial"):
-        span.periods(Frequency.YEAR)
-    assert len(span.periods(Frequency.YEAR, include_partial=True)) == 1
+        span.periods(frequency=Frequency.YEAR)
+    assert len(span.periods(frequency=Frequency.YEAR, include_partial=True)) == 1
     with pytest.raises(ValueError):
         Span.from_duration(
             name="Empty", start=date(2024, 1, 1), frequency=Frequency.YEAR, count=0
