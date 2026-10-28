@@ -48,10 +48,22 @@ def parse(source: str) -> Decimal:
 
 def canonical(source: str) -> str | None:
     """Return the canonical text of a decimal numeral, or None if it is not one."""
+    if PATTERN.match(source):
+        return source
     try:
         return text(parse(source))
     except (ValueError, InvalidOperation):
         return None
+
+
+def text_digits(source: str) -> int:
+    """Return the significant digits of canonical text, without a Decimal."""
+    return len(source.replace("-", "").replace(".", "").strip("0"))
+
+
+def float_text(number: float) -> str:
+    """Return the canonical text of a finite float at 15 significant digits, half even."""
+    return text(_CONTEXT.create_decimal(number))
 
 
 def to_number(amount: Decimal) -> float:
@@ -80,7 +92,11 @@ def to_amount(number: float | int) -> Decimal:
         raise TypeError("number must be an int or a float")
     if type(number) is float and not math.isfinite(number):
         raise NumericalError(f"currency amount is not finite: {number}")
-    return Decimal(text(_CONTEXT.create_decimal(number)))
+    return Decimal(
+        float_text(number)
+        if type(number) is float
+        else text(_CONTEXT.create_decimal(number))
+    )
 
 
 __all__ = [
@@ -88,9 +104,11 @@ __all__ = [
     "PATTERN",
     "canonical",
     "digits",
+    "float_text",
     "number",
     "parse",
     "text",
+    "text_digits",
     "to_amount",
     "to_number",
 ]

@@ -42,7 +42,7 @@ blocked-by links. The
 | [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted for 1.0; implementation pending | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
 | [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, proposed cells first, helpers, CI execution and sources |
 | [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; proposed cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
-| [ADR-023: Decimal currency amounts](023-decimal-money.md) | Accepted for 1.0; implementation in progress | Currency amounts as Decimal, float64 calculation boundaries, JSON, YAML and Parquet encodings, solver evidence and tolerances, and minor-unit rounding; the design of ADR-017's Money section |
+| [ADR-023: Decimal currency amounts](023-decimal-money.md) | Accepted for 1.0; implemented in 1.0.0a2 | Currency amounts as Decimal, float64 calculation boundaries, JSON, YAML and Parquet encodings, solver evidence and tolerances, and minor-unit rounding; the design of ADR-017's Money section |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also

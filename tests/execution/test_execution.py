@@ -177,6 +177,7 @@ def test_declared_forward_then_inverse_on_genuine_output(tmp_path, disk):
         ImplementationKind.COMPILER,
         ImplementationKind.SOLVER,
         ImplementationKind.EVALUATOR,
+        ImplementationKind.CONVENTION,
     }
     named = {item.name: item for item in forward.report.runtime.implementations}
     assert named["rangekeeper.backends:pyomo-highs"].version == (
