@@ -14,10 +14,12 @@ classes:
     description: Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero movements are distinct. The overall model logic defines the meaning of the quantities and selects their calculations; a Flow carries no semantic kind or basis.
     attributes:
       units:
+        description: Units of every Movement magnitude in this Flow.
         range: string
         pattern: \S
         required: true
       movements:
+        description: Ordered Movements; an empty list is a Flow with no entries.
         range: Movement
         multivalued: true
         inlined: true
@@ -37,13 +39,17 @@ classes:
         range: string
         pattern: \S
       date:
+        description: Date of the entry; with a period, an independent payment or observation date.
         range: date
       period:
+        description: Half-open Period of the entry.
         range: Period
         inlined: true
       magnitude:
+        description: Amount in the Flow units; absent or null means unresolved, and zero is a known amount.
         range: decimal
       claims:
+        description: Unique UUIDs of provenance Claims that support this Movement.
         range: UUID
         multivalued: true
         list_elements_unique: true
