@@ -412,9 +412,11 @@ def record_header(loaded: Loaded):
         "from datetime import date as Date",
         "from .runtime import (",
         "    EMPTY,",
+        "    OMIT,",
         "    UNSET,",
         "    FrozenJSONValue,",
         "    JSONValue,",
+        "    Omit,",
         "    Record,",
         "    Unset,",
         "    _decode_date,",
@@ -509,6 +511,13 @@ def encode_lines(fields, target, *, constructor):
             )
         if constructor and meta["required"]:
             lines.append(f"        {target}[{field!r}] = {value}")
+        elif not constructor and not meta["required"]:
+            lines += [
+                f"        if {field} is OMIT:",
+                f"            {target}[{field!r}] = OMIT",
+                f"        elif {field} is not UNSET:",
+                f"            {target}[{field!r}] = {value}",
+            ]
         else:
             lines += [
                 f"        if {field} is not UNSET:",
@@ -539,18 +548,21 @@ def record_init(fields):
 def record_replace(name, fields):
     """Return the typed replace method of one record class.
 
-    Replacement uses the same field encoders and structural validation as
-    construction. UNSET preserves the existing field's presence and value.
+    Replacement uses the same field encoders as construction and checks only
+    this record: its changed fields and its rules. UNSET preserves the existing
+    field's presence and value; OMIT removes an optional field.
     """
     lines = ["    def replace(self, *,"]
     for field, meta in fields.items():
         typ = field_type(meta, True)
         if "Unset" not in typ:
             typ += " | Unset"
+        if not meta["required"]:
+            typ += " | Omit"
         lines.append(f"        {field}: {typ} = UNSET,")
     return lines + [
         "    ) -> Self:",
-        '        """Return a validated copy; omitted arguments preserve field presence and value."""',
+        '        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""',
         "        changes: dict[str, object] = {}",
         *encode_lines(fields, "changes", constructor=False),
         "        return self._replace(changes)",
@@ -653,6 +665,234 @@ def records_source(loaded: Loaded, slots):
     return "\n".join(lines)
 
 
+class Unsupported(ValueError):
+    """A JSON Schema keyword that the generated node checks cannot express."""
+
+
+IGNORED = {"description", "title", "$comment"}
+TYPES = {
+    "string": "type({v}) is str",
+    "number": "_number({v})",
+    "integer": "_integer({v})",
+    "boolean": "type({v}) is bool",
+    "null": "{v} is None",
+    "array": "_array({v})",
+    "object": "isinstance({v}, Mapping)",
+}
+
+
+class CheckCompiler:
+    """Compile the packaged JSON Schema into one Python node check per class.
+
+    A node check tests the fields and rules of one record. It accepts a child
+    record that is a Mapping: construction gives children that are already
+    valid, and jsonschema validates untrusted input as a whole. Only the
+    keywords that the LinkML generator emits are supported; another keyword
+    stops generation, so the checks cannot silently accept less than the schema.
+    """
+
+    def __init__(self, shared, enums, opaque):
+        self.defs = shared["$defs"]
+        self.enums = set(enums)
+        self.opaque = set(opaque)
+        self.patterns = {}
+        self.depth = 0
+
+    def pattern(self, text):
+        if text not in self.patterns:
+            self.patterns[text] = f"_P{len(self.patterns)}"
+        return self.patterns[text]
+
+    def value(self, schema, v):
+        """Return a Python expression that is true when ``v`` satisfies ``schema``."""
+        terms = []
+        for key, item in schema.items():
+            if key in IGNORED:
+                continue
+            if key == "type":
+                kinds = item if isinstance(item, list) else [item]
+                terms.append(
+                    "(" + " or ".join(TYPES[k].format(v=v) for k in kinds) + ")"
+                )
+            elif key == "$ref":
+                terms.append(self.reference(item, v))
+            elif key == "allOf":
+                terms += [self.value(part, v) for part in item]
+            elif key == "anyOf":
+                terms.append(
+                    "(" + " or ".join(self.value(part, v) for part in item) + ")"
+                )
+            elif key == "pattern":
+                terms.append(
+                    f"(type({v}) is not str or {self.pattern(item)}.search({v}) is not None)"
+                )
+            elif key == "format":
+                if item not in ("date", "date-time"):
+                    raise Unsupported(f"format {item}")
+                check = "_date" if item == "date" else "_datetime"
+                terms.append(f"(type({v}) is not str or {check}({v}))")
+            elif key in ("minimum", "maximum"):
+                operator = ">=" if key == "minimum" else "<="
+                terms.append(f"(not _number({v}) or {v} {operator} {item!r})")
+            elif key in ("minItems", "maxItems"):
+                operator = ">=" if key == "minItems" else "<="
+                terms.append(f"(not _array({v}) or len({v}) {operator} {item!r})")
+            elif key == "items":
+                x = self.variable()
+                terms.append(
+                    f"(not _array({v}) or all({self.value(item, x)} for {x} in {v}))"
+                )
+            elif key == "additionalProperties" and item is True:
+                continue
+            elif key == "additionalProperties" and isinstance(item, dict):
+                x = self.variable()
+                terms.append(
+                    f"(not isinstance({v}, Mapping) or "
+                    f"all({self.value(item, x)} for {x} in {v}.values()))"
+                )
+            elif key == "enum":
+                terms.append(f"{v} in {tuple(item)!r}")
+            elif key == "const":
+                terms.append(f"{v} == {item!r}")
+            else:
+                raise Unsupported(f"keyword {key}")
+        return "(" + " and ".join(terms) + ")" if terms else "True"
+
+    def variable(self):
+        self.depth += 1
+        return f"x{self.depth}"
+
+    def reference(self, ref, v):
+        name = ref.removeprefix("#/$defs/")
+        if name in self.opaque or name in self.enums:
+            return self.value(self.defs[name], v)
+        if name in self.defs:
+            # A child record: construction and jsonschema check its content.
+            return f"isinstance({v}, Mapping)"
+        raise Unsupported(f"reference {ref}")
+
+    def node(self, schema, d):
+        """Return an expression that is true when the node ``d`` satisfies a rule."""
+        terms = []
+        for key, item in schema.items():
+            if key in IGNORED:
+                continue
+            if key == "required":
+                terms += [f"{name!r} in {d}" for name in item]
+            elif key == "properties":
+                for name, part in item.items():
+                    test = self.value(part, f"{d}[{name!r}]")
+                    if test != "True":
+                        terms.append(f"({name!r} not in {d} or {test})")
+            elif key == "not":
+                terms.append(f"not {self.node(item, d)}")
+            elif key == "allOf":
+                terms += [self.node(part, d) for part in item]
+            elif key == "anyOf":
+                terms.append("(" + " or ".join(self.node(p, d) for p in item) + ")")
+            elif key == "oneOf":
+                parts = ", ".join(self.node(p, d) for p in item)
+                terms.append(f"(sum(map(bool, ({parts},))) == 1)")
+            elif key == "if":
+                then = self.node(schema.get("then", {}), d)
+                otherwise = self.node(schema.get("else", {}), d)
+                condition = self.node(item, d)
+                terms.append(
+                    f"((not {condition} or {then}) and ({condition} or {otherwise}))"
+                )
+            elif key in ("then", "else"):
+                continue
+            else:
+                raise Unsupported(f"rule keyword {key}")
+        return "(" + " and ".join(terms) + ")" if terms else "True"
+
+    def check(self, name, fields):
+        """Return the source of the node check of one class."""
+        schema = dict(self.defs[name])
+        expected = {
+            "type",
+            "title",
+            "description",
+            "properties",
+            "required",
+            "additionalProperties",
+            "allOf",
+            "oneOf",
+        }
+        unknown = set(schema) - expected
+        if unknown or schema.get("type") != "object":
+            raise Unsupported(f"{name}: {sorted(unknown)}")
+        if schema.get("additionalProperties", False) is not False:
+            raise Unsupported(f"{name}: open record")
+        properties = schema.get("properties", {})
+        if set(properties) != set(fields):
+            raise ValueError(f"{name}: properties differ from slots")
+        lines = [
+            f"def check_{name}(d, fields=None):",
+            f'    """Check the fields and rules of one {name} node."""',
+            "    issues = []",
+        ]
+        for field in schema.get("required", []):
+            lines += [
+                f"    if {field!r} not in d:",
+                f"        issues.append(('structure.required', {field + ' is required'!r}, ''))",
+            ]
+        lines += [
+            "    for name in d:",
+            f"        if name not in {tuple(properties)!r}:",
+            "            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))",
+        ]
+        for field, part in properties.items():
+            self.depth = 0
+            test = self.value(part, "v")
+            if test == "True":
+                continue
+            lines += [
+                f"    if {field!r} in d and (fields is None or {field!r} in fields):",
+                f"        v = d[{field!r}]",
+                f"        if not {test}:",
+                f"            issues.append(('structure.value', {'invalid ' + field!r}, {'/' + field!r}))",
+            ]
+        rules = {k: schema[k] for k in ("allOf", "oneOf") if k in schema}
+        if rules:
+            self.depth = 0
+            lines += [
+                f"    if not {self.node(rules, 'd')}:",
+                f"        issues.append(('structure.rule', {'a ' + name + ' rule is not met'!r}, ''))",
+            ]
+        lines += ["    return issues", ""]
+        return lines
+
+
+def checks_source(loaded: Loaded, slots):
+    """Return checks.py: one node check per class, compiled from the JSON Schema."""
+    compiler = CheckCompiler(loaded.shared, loaded.enums, loaded.opaque)
+    body = []
+    names = [n for n in sorted(loaded.classes) if n not in loaded.opaque]
+    for name in names:
+        body += compiler.check(name, slots[name])
+        body.append("")
+    lines = [
+        "# Generated by tools/schema/generate.py; do not edit.",
+        '"""Node checks: the fields and rules of one record, without its children."""',
+        "",
+        "import re",
+        "from collections.abc import Mapping",
+        "",
+        "from .runtime import _array, _date, _datetime, _integer, _number",
+        "",
+        *[f"{name} = re.compile({text!r})" for text, name in compiler.patterns.items()],
+        "",
+        "",
+        *body,
+        "CHECKS = {",
+        *[f"    {n!r}: check_{n}," for n in names],
+        "}",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def manifest(loaded: Loaded, versions, sources, files):
     """Return the manifest of dependencies, source and artifact hashes, and versions."""
     return {
@@ -686,6 +926,7 @@ def generate(*, native_module: bool = False):
     files = {
         "enums.py": enum_source(loaded.enums),
         "records.py": records_source(loaded, metadata),
+        "checks.py": checks_source(loaded, metadata),
         "schema.json": encoded(loaded.shared),
         "slots.json": encoded(metadata),
     }

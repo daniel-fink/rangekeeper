@@ -23,7 +23,7 @@ contract: a Run that is read back has the same code text.
 
 | Group | Values | Examples |
 | --- | --- | --- |
-| Structure | `structure.json`, `structure.kind`, and `structure.<keyword>` for each JSON Schema keyword | `STRUCTURE_REQUIRED`, `STRUCTURE_TYPE`. A keyword without its own member has the code `STRUCTURE` and a `keyword` value |
+| Structure | `structure.json`, `structure.kind`, `structure.<keyword>` for each JSON Schema keyword, and `structure.value` and `structure.rule` from the generated node checks of typed construction and `replace` | `STRUCTURE_REQUIRED`, `STRUCTURE_TYPE`. A keyword without its own member has the code `STRUCTURE` and a `keyword` value |
 | Semantic | `semantic.*` | `CONTRACT`, `UNIQUE`, `CYCLE`, `IDENTITY`, `UNITS`, `ROLE_MISSING` |
 | References | `reference.*` | `REFERENCE_MISSING`, `REFERENCE_KIND` |
 | Batches | `batch.*` | `BATCH_MODEL` |

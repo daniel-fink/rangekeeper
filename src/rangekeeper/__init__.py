@@ -5,6 +5,7 @@ from importlib import metadata as _metadata
 from .model import Model
 from .quantity import Quantity
 from .run import Run
+from .schema.runtime import OMIT
 from .shared.exports import lazy as _lazy
 from .specification import Specification
 
@@ -33,6 +34,7 @@ __all__ = [
     "Specification",
     "Run",
     "Quantity",
+    "OMIT",
     "__version__",
     *sorted(_LAZY_MODULES - _INTERNAL),
 ]

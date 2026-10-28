@@ -85,3 +85,13 @@ for label, value in {
         print(f"Rejected {label}: {error}")
     else:
         raise SystemExit(f"The generator accepted a {label}")
+
+compiler = generation.CheckCompiler({"$defs": {}}, (), ())
+for schema in ({"type": "string", "uniqueItems": True}, {"format": "email"}):
+    try:
+        compiler.value(schema, "v")
+    except generation.Unsupported as error:
+        print(f"Rejected node check keyword: {error}")
+    else:
+        raise SystemExit(f"The node check compiler accepted {schema}")
+print("Checked 2 node check keywords")

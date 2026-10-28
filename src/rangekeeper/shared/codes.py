@@ -18,6 +18,9 @@ class Code(StrEnum):
     STRUCTURE = "structure.schema"
     STRUCTURE_JSON = "structure.json"
     STRUCTURE_KIND = "structure.kind"
+    # A generated node check (ADR-011): a field value or a class rule of one record.
+    STRUCTURE_VALUE = "structure.value"
+    STRUCTURE_RULE = "structure.rule"
     STRUCTURE_ADDITIONAL_PROPERTIES = "structure.additionalProperties"
     STRUCTURE_ANY_OF = "structure.anyOf"
     STRUCTURE_CONST = "structure.const"

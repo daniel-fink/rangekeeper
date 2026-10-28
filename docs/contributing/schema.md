@@ -22,7 +22,7 @@ value type.
 | --- | --- |
 | Persistent field and enum definitions | `schema/*.yaml` |
 | Resolved bundle and Python/C# generators | `tools/schema/` |
-| Generated Python records, JSON Schemas, slots and manifest | `src/rangekeeper/schema/` |
+| Generated Python records, node checks, JSON Schemas, slots and manifest | `src/rangekeeper/schema/` |
 | Generated C# records, transport metadata and manifest | `examples/grasshopper/Model/Generated/` |
 | Reusable wire examples | `examples/schema/` |
 | Positive/negative conformance procedures | `schema/checks/` |
@@ -32,6 +32,9 @@ slot metadata, checks it, emits the records and writes the manifest. It stops
 when a slot name is a Python keyword or shadows a record method,
 when one slot has more than one record type, or when a class or slot has no
 description.
+It also compiles the JSON Schema of each class into a node check in
+`checks.py`; a JSON Schema keyword that the compiler does not support stops
+generation.
 
 A boolean LinkML slot annotation becomes a key of every slot in `slots.json`.
 `ANNOTATIONS` in the generator names the permitted annotations. `lineage` marks the

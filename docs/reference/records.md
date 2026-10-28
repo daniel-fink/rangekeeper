@@ -71,12 +71,16 @@ strings belong at `from_data`/`from_json`. Runtime checks reject nonfinite numbe
 shapes. Python `bool` is a subtype of `int`, but runtime numerical fields still
 reject it.
 
-`replace` returns a new record. It uses the same field encoder and structural
-validation as construction. An omitted argument, or `UNSET`, retains the old
-field's presence and value. Explicit `None` records null where the schema permits
-it; `()` records an empty collection. A no-argument replacement preserves omitted,
-null and empty fields exactly. Replacement does not remove a present field;
-construct from an explicitly edited data mapping when that is required.
+`replace` returns a new record. It uses the same field encoders as construction.
+It checks only this record: its changed fields and its class rules. Unchanged
+fields and child records keep their frozen, already checked content, so a
+replacement costs about the same for a Flow of 12 or 120 Movements. The checks
+are generated from the JSON Schema; a contract test keeps them equal to
+jsonschema for every class. Record data (a mapping) passed for a record field is
+validated in full. An omitted argument, or `UNSET`, retains the old field's
+presence and value. `rangekeeper.OMIT` removes an optional field. Explicit `None`
+records null where the schema permits it; `()` records an empty collection. A
+no-argument replacement preserves omitted, null and empty fields exactly.
 
 Replacement does not mint a document revision or certify document-wide semantics.
 Use `Model.revise` or `Specification.revise` to check lineage and meaningful change.
@@ -87,6 +91,9 @@ validation. A new UUID alone is not a meaningful revision.
 and `datetime.date` in typed fields. Datetimes are not truncated into dates. Source
 fields that also permit timestamp strings retain those strings. UUID conversion
 applies only to schema-declared references, never to opaque content.
+
+`repr` gives a one-line summary: scalar fields, `{...}` for a child record and
+`[n]` for a collection. Use `to_data` for the complete content.
 
 Equality and revision comparison use the [identity contract](identity.md#comparison-rules).
 Neither operation converts units.
