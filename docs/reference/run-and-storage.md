@@ -151,7 +151,11 @@ generated slot metadata; arbitrary strings inside opaque content remain untouche
 
 ## Revision publication and failures
 
-Stores revalidate detached document content. Partial Specifications may be stored
+Stores and codecs trust a validated document: an exact `Model`, `Specification` or
+`Run` instance was validated when it was built and is immutable, so `put`, `dumps`
+and `write` do not validate it again ([ADR-011](../decisions/011-records-and-validation.md#when-validation-runs)).
+Data input is always validated: `loads`, `read` and every store read decode
+through `from_data`. Partial Specifications may be stored
 before their external references exist. A Run additionally undergoes resolved validation
 against the store; its attempted Specification, referenced contributions/Models, children,
 outputs and report documents must be available first. Even an identical Run put is

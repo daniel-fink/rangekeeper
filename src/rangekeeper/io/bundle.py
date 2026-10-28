@@ -14,7 +14,7 @@ from pathlib import Path
 from uuid import UUID
 
 from rangekeeper import Model, Run, Specification
-from rangekeeper.io._document import require_revision, require_same, snapshot
+from rangekeeper.io._document import require_revision, require_same, trusted
 from rangekeeper.io.atomic import write_new
 from rangekeeper.io.geometry import find as find_provider
 from rangekeeper.model.geometry import safe_path
@@ -110,16 +110,11 @@ def _dependencies(document):
 
 
 class _Documents:
-    def __init__(self, documents, *, validated=False):
-        """Hold immutable documents by UUID.
-
-        Caller-owned documents are validated again as detached snapshots.
-        ``validated`` documents were just reconstructed and validated by this
-        module, and no caller holds them, so they are kept without a snapshot.
-        """
+    def __init__(self, documents):
+        """Hold immutable, validated documents by UUID."""
         self._documents = {}
         for value in documents:
-            document = value if validated else snapshot(value)
+            document = trusted(value)
             if document.id in self._documents:
                 require_same(self._documents[document.id], document)
             else:
@@ -161,12 +156,12 @@ def _resolve(resolver, identifier, kind):
             if kind:
                 raise
             continue
-        return snapshot(require_revision(document, identifier, candidate))
+        return trusted(require_revision(document, identifier, candidate))
     raise MissingReferenceError(str(identifier))
 
 
-def _collect(model, documents, resolver, max_documents=1000, *, validated=False):
-    found = _Documents((model, *documents), validated=validated)
+def _collect(model, documents, resolver, max_documents=1000):
+    found = _Documents((model, *documents))
     pending = list(found.documents())
     while pending:
         document = pending.pop()
@@ -843,7 +838,7 @@ class Reader(_Documents):
         if set(names) != expected_files or m["geometry_paths"] != expected_geometry:
             raise ValueError("Unexpected Bundle files or Geometry paths")
         # Each document was validated once by _reconstruct.
-        super().__init__(documents, validated=True)
+        super().__init__(documents)
         roots = m["roots"]
         if (
             type(roots) is not list
@@ -860,7 +855,7 @@ class Reader(_Documents):
         selected = [self._load(UUID(r["id"]), KINDS[r["kind"]]) for r in roots]
         if any(d.id == self._primary for d in selected):
             raise ValueError("Primary Model is already selected")
-        closed = _collect(self.model(), selected, self, max_documents, validated=True)
+        closed = _collect(self.model(), selected, self, max_documents)
         if set(closed._documents) != set(self._documents):
             raise ValueError("Unselected document outside dependency closure")
         if identity(self.model(), documents=self.documents(), roots=roots) != m["id"]:

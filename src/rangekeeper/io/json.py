@@ -3,7 +3,7 @@
 import json as _json
 from pathlib import Path
 
-from rangekeeper.io._document import D, Document, require_kind, restore, snapshot
+from rangekeeper.io._document import D, Document, require_kind, restore, trusted
 from rangekeeper.io.atomic import write_new
 from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.encoding import parse_json
@@ -30,10 +30,13 @@ def loads(text: str, *, kind: type[D]) -> D:
 
 
 def dumps(document: Document) -> str:
-    """Revalidate and export detached JSON, retaining encounter order and presence."""
+    """Export detached JSON, retaining encounter order and presence.
+
+    The validated document is not validated again.
+    """
     return (
         _json.dumps(
-            snapshot(document).to_data(), ensure_ascii=False, allow_nan=False, indent=2
+            trusted(document).to_data(), ensure_ascii=False, allow_nan=False, indent=2
         )
         + "\n"
     )

@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from rangekeeper.io._document import D, Document, require_kind, restore, snapshot
+from rangekeeper.io._document import D, Document, require_kind, restore, trusted
 from rangekeeper.io.atomic import write_new
 from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.errors import DecodeError
@@ -40,7 +40,7 @@ def loads(text: str, *, kind: type[D]) -> D:
 def dumps(document: Document) -> str:
     """Write safe YAML retaining list order, absent/null fields and string scalars."""
     return _implementation().safe_dump(
-        snapshot(document).to_data(), sort_keys=False, allow_unicode=True
+        trusted(document).to_data(), sort_keys=False, allow_unicode=True
     )
 
 
