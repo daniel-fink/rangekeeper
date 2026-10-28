@@ -9,6 +9,7 @@ the errors that several packages raise; an error of one package, such as
 
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
+    AmbiguousReferenceError,
     AttemptDeadlineError,
     BackendUnavailableError,
     ContractError,
@@ -31,6 +32,7 @@ from rangekeeper.shared.errors import (
 )
 
 __all__ = [
+    "AmbiguousReferenceError",
     "AttemptDeadlineError",
     "BackendUnavailableError",
     "Code",

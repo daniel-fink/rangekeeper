@@ -43,7 +43,9 @@ class DirectoryStore:
         try:
             text = (self.root / f"{id}.json").read_text(encoding="utf-8")
         except FileNotFoundError as error:
-            raise MissingReferenceError(str(id)) from error
+            raise MissingReferenceError(
+                id, kind="document", where=f"DirectoryStore {self.root}"
+            ) from error
         except UnicodeError as error:
             raise DecodeError(str(error)) from error
         document = from_envelope(_parse(text))

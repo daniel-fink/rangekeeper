@@ -82,7 +82,12 @@ raise `ReferenceTypeError`. Entity lookup includes Assemblies stored canonically
 to Entities, Relationships, Assemblies or nested Formulations. `owner_of` returns the
 nearest identified container, or `None` for anonymous root ownership.
 
-`find_entities` ANDs exact code/name/classification selectors and returns a tuple in
+`Model.entity` also takes one `code=` or `name=` instead of a UUID, and returns
+the one Entity or Assembly that matches. No match raises `MissingReferenceError`
+with the nearest codes or names in `candidates`; several matches raise
+`AmbiguousReferenceError` ([lookups](errors.md#lookups)).
+
+`find_entities` is a search: it ANDs exact code/name/classification selectors and returns a tuple in
 document encounter order. It does not expand classification descendants; use
 `Model.descendants(id)` for the sub-types of a Classification, or the inclusive
 [View filter](system.md#selection-and-traversal). Local

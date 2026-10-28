@@ -2,6 +2,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from difflib import get_close_matches
 from uuid import UUID, uuid4
 
 from rangekeeper.flow import Movement
@@ -30,8 +31,12 @@ from rangekeeper.schema.records import (
 from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.runtime import UNSET, Record, Unset
 from rangekeeper.schema.validation import document_version, supports_version
-from rangekeeper.shared.arguments import optional_text, require_uuid
-from rangekeeper.shared.errors import UnsupportedVersionError
+from rangekeeper.shared.arguments import optional_text, require_text, require_uuid
+from rangekeeper.shared.errors import (
+    AmbiguousReferenceError,
+    MissingReferenceError,
+    UnsupportedVersionError,
+)
 
 
 @dataclass(frozen=True, init=False, eq=False)
@@ -190,9 +195,49 @@ class Model:
         self.classification(classification)
         return _descendants(self.definitions, classification)
 
-    def entity(self, id: UUID) -> Entity:
-        """Resolve an Entity or canonical Assembly; no code/name or history fallback."""
-        return self._index.get(id, Entity)
+    def entity(
+        self,
+        id: UUID | None = None,
+        *,
+        code: str | None = None,
+        name: str | None = None,
+    ) -> Entity:
+        """Return the one Entity or canonical Assembly with this UUID, code or name.
+
+        Give exactly one selector. No match raises MissingReferenceError with the
+        nearest codes or names; several matches raise AmbiguousReferenceError with
+        their codes. ``find_entities`` is the search that can return none or several.
+        """
+        if sum(value is not None for value in (id, code, name)) != 1:
+            raise TypeError("entity takes exactly one of id, code or name")
+        if id is not None:
+            return self._index.get(id, Entity)
+        by, text = ("code", code) if code is not None else ("name", name)
+        text = require_text(text, by)
+        entities = [
+            record
+            for record in self._index.records.values()
+            if isinstance(record, Entity)
+        ]
+        matches = [record for record in entities if getattr(record, by) == text]
+        if len(matches) == 1:
+            return matches[0]
+        if matches:
+            raise AmbiguousReferenceError(
+                text,
+                kind="Entity",
+                by=by,
+                where=self._index.where,
+                candidates=[record.code or str(record.id) for record in matches],
+            )
+        names = {getattr(record, by) for record in entities} - {None}
+        raise MissingReferenceError(
+            text,
+            kind="Entity",
+            by=by,
+            where=self._index.where,
+            candidates=get_close_matches(text, sorted(names), n=3),
+        )
 
     def assembly(self, id: UUID) -> Assembly:
         """Resolve an Assembly; an ordinary Entity has the wrong record kind."""

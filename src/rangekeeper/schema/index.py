@@ -43,6 +43,11 @@ def record_at(root: Record, path: str) -> RecordLocation:
     """
     from rangekeeper.schema.records import _TYPES
 
+    def missing() -> MissingReferenceError:
+        return MissingReferenceError(
+            path, kind="record", by="path", where=root_name(root)
+        )
+
     if not isinstance(path, str):
         raise TypeError("path must be a string")
     if path == "":
@@ -62,7 +67,7 @@ def record_at(root: Record, path: str) -> RecordLocation:
         # walk emits schema slot names verbatim. Do not introduce pointer aliases.
         field = fields.get(name)
         if field is None or field["mapping"] or name not in current._data:
-            raise MissingReferenceError(path)
+            raise missing()
         kind = next(
             (
                 option["kind"]
@@ -72,17 +77,17 @@ def record_at(root: Record, path: str) -> RecordLocation:
             None,
         )
         if kind is None:
-            raise MissingReferenceError(path)
+            raise missing()
         value = current._data[name]
         if field["many"]:
             if offset == len(tokens):
-                raise MissingReferenceError(path)
+                raise missing()
             token = tokens[offset]
             offset += 1
             if re.fullmatch(r"0|[1-9][0-9]*", token) is None:
                 raise ValueError("array indexes must be canonical nonnegative integers")
             if not isinstance(value, tuple):
-                raise MissingReferenceError(path)
+                raise missing()
             # Compare decimal lengths before int conversion, including very long
             # input indexes. This also keeps missing indexes in the lookup family.
             last = str(len(value) - 1)
@@ -91,10 +96,10 @@ def record_at(root: Record, path: str) -> RecordLocation:
                 or len(token) > len(last)
                 or (len(token) == len(last) and token > last)
             ):
-                raise MissingReferenceError(path)
+                raise missing()
             value = value[int(token)]
         if not isinstance(value, Mapping):
-            raise MissingReferenceError(path)
+            raise missing()
         # Match Record._field's record branch, borrowing only this frozen child.
         cls = cast(type[Record], _TYPES[kind])
         current = cls.__new__(cls)
@@ -125,13 +130,25 @@ def walk(
                     yield from walk(child, owner, f"{path}/{name}/{index}")
 
 
+def root_name(root: Record) -> str:
+    """Name a root record for an error: its kind, and its UUID when it has one."""
+    metadata = root._data.get("metadata")
+    if isinstance(metadata, Mapping) and "id" in metadata:
+        return f"{root._kind} {metadata['id']}"
+    return root._kind
+
+
 @dataclass(frozen=True, slots=True)
 class RecordIndex:
-    """Read-only acceleration structure derived from one validated root record."""
+    """Read-only acceleration structure derived from one validated root record.
+
+    ``where`` names the root in the errors of ``get``.
+    """
 
     records: Mapping[UUID, Record]
     owners: Mapping[UUID, UUID | None]
     paths: Mapping[UUID, str]
+    where: str = ""
 
     @classmethod
     def build(cls, root: Record) -> "RecordIndex":
@@ -145,7 +162,10 @@ class RecordIndex:
                 raise IdentityConflictError(f"duplicate declaration UUID: {identity}")
             records[identity], owners[identity], paths[identity] = record, owner, path
         return cls(
-            MappingProxyType(records), MappingProxyType(owners), MappingProxyType(paths)
+            MappingProxyType(records),
+            MappingProxyType(owners),
+            MappingProxyType(paths),
+            root_name(root),
         )
 
     def get(self, identity: UUID, kind: type[R]) -> R:
@@ -154,7 +174,11 @@ class RecordIndex:
         try:
             record = self.records[identity]
         except KeyError as error:
-            raise MissingReferenceError(str(identity)) from error
+            raise MissingReferenceError(
+                identity,
+                kind="record" if kind is Record else kind.__name__,
+                where=self.where or None,
+            ) from error
         if not isinstance(record, kind):
             raise ReferenceTypeError(
                 f"{identity} is {type(record).__name__}, expected {kind.__name__}"

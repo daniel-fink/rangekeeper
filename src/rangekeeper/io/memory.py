@@ -49,7 +49,9 @@ class MemoryStore:
             try:
                 document = self._documents[id]
             except KeyError as error:
-                raise MissingReferenceError(str(id)) from error
+                raise MissingReferenceError(
+                    id, kind=kind.__name__, where="MemoryStore"
+                ) from error
             return require_revision(document, id, kind)
 
     def load_model(self, id: UUID) -> Model:

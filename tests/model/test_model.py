@@ -28,7 +28,9 @@ from rangekeeper.model.diff import between
 from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.model.validation import validate
 from rangekeeper.quantity import Quantity, UnitSystem, default_units
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
+    AmbiguousReferenceError,
     IdentityConflictError,
     MissingReferenceError,
     ReferenceTypeError,
@@ -132,6 +134,80 @@ def test_canonical_assembly_search_and_lookup_errors():
         model.relationship(assembly.id)
     with pytest.raises(MissingReferenceError):
         model.owner_of(uuid4())
+
+
+def test_lookup_errors_name_what_was_requested_and_where():
+    model = simple()
+    missing = uuid4()
+    with pytest.raises(MissingReferenceError) as caught:
+        model.entity(missing)
+    error = caught.value
+    assert (error.code, error.requested, error.kind, error.by) == (
+        Code.REFERENCE_MISSING,
+        missing,
+        "Entity",
+        "id",
+    )
+    assert error.where == f"Model {model.id}" and error.candidates == ()
+    with pytest.raises(MissingReferenceError) as caught:
+        model.record_at("/system/entities/9")
+    assert (caught.value.requested, caught.value.by) == ("/system/entities/9", "path")
+    assert caught.value.where == f"Model {model.id}"
+    with pytest.raises(MissingReferenceError) as caught:
+        definitions.measure(None, missing)
+    assert (caught.value.kind, caught.value.where) == ("Measure", "Definitions")
+
+
+def test_entity_by_code_or_name_returns_one_or_raises():
+    model = simple()
+    entity, assembly = model.system.entities[0], model.system.assemblies[0]
+    assert model.entity(code="A") == entity
+    assert model.entity(code="group") == assembly
+    with pytest.raises(MissingReferenceError) as caught:
+        model.entity(code="groups")
+    error = caught.value
+    assert (error.requested, error.kind, error.by) == ("groups", "Entity", "code")
+    assert error.where == f"Model {model.id}" and error.candidates == ("group",)
+    with pytest.raises(MissingReferenceError) as caught:
+        model.entity(name="A")
+    assert caught.value.by == "name" and caught.value.candidates == ()
+    twins = (
+        Entity(id=uuid4(), code="a", name="twin"),
+        Entity(id=uuid4(), code="b", name="twin"),
+    )
+    twinned = model.revise(Update(system=System(entities=twins)))
+    with pytest.raises(AmbiguousReferenceError) as caught:
+        twinned.entity(name="twin")
+    error = caught.value
+    assert (error.code, error.requested, error.by) == (
+        Code.REFERENCE_AMBIGUOUS,
+        "twin",
+        "name",
+    )
+    assert error.candidates == ("a", "b")
+    assert twinned.find_entities(name="twin") == twins
+    for selectors in ({}, {"id": entity.id, "code": "A"}, {"code": "A", "name": "A"}):
+        with pytest.raises(TypeError):
+            model.entity(**selectors)
+    with pytest.raises(TypeError):
+        model.entity(code=1)
+
+
+def test_reference_errors_keep_their_fields_through_pickle():
+    import pickle
+
+    error = MissingReferenceError(
+        "b", kind="Entity", by="code", where="Model x", candidates=["a"]
+    )
+    copy = pickle.loads(pickle.dumps(error))
+    assert type(copy) is MissingReferenceError and str(copy) == str(error)
+    assert (copy.requested, copy.kind, copy.by, copy.where, copy.candidates) == (
+        "b",
+        "Entity",
+        "code",
+        "Model x",
+        ("a",),
+    )
 
 
 def test_definition_identity_is_separate_from_code_lookup():
