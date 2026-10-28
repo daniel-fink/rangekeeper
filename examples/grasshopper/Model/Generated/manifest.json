@@ -1,14 +1,14 @@
 {
   "inputs": {
     "examples/walkthrough/helpers/speckle_contract.json": "92292288d4581851ecb6e298b510959c67efb17a279afced005a7af60a1f733a",
-    "src/rangekeeper/schema/schema.json": "31cf05266456259a9c6dd390870114c5aff04ea1ddf94835a0710bc63c6f8c84",
-    "src/rangekeeper/schema/slots.json": "c2cbeac01f13c44f13f1ee71549f047e5027096be04f0a6278b664b195789006",
+    "src/rangekeeper/schema/schema.json": "9d8f898a4e88ef87c563c6ea1f65f88535ae0adfe8134c8dc5020782c3a4b138",
+    "src/rangekeeper/schema/slots.json": "07357093036d403e060498f2207e526eeb017dffe6092b19256dc96846ce610e",
     "tools/schema/generate_csharp.py": "ce9478a1ae1ec81ada806ceb5180e24be0aa869b02e626a0887f9770e2428e09"
   },
   "outputs": {
-    "Records.cs": "f1b6da110e1211359174b9fc6c84a121ed1b9a266a1543f2a1190564f07f61d2",
+    "Records.cs": "25c45f1e3ac3b9a8862121ea12c7155fd7540dd82ada88dc8dd85a6e9f50bc35",
     "TransportContract.cs": "6ceb05ef315749018afc2478d330d35ad28569b17afabd531c7bda00b5d8cee7",
-    "schema.json": "31cf05266456259a9c6dd390870114c5aff04ea1ddf94835a0710bc63c6f8c84",
-    "slots.json": "c2cbeac01f13c44f13f1ee71549f047e5027096be04f0a6278b664b195789006"
+    "schema.json": "9d8f898a4e88ef87c563c6ea1f65f88535ae0adfe8134c8dc5020782c3a4b138",
+    "slots.json": "07357093036d403e060498f2207e526eeb017dffe6092b19256dc96846ce610e"
   }
 }

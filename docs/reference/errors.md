@@ -27,7 +27,7 @@ contract: a Run that is read back has the same code text.
 | Semantic | `semantic.*` | `CONTRACT`, `UNIQUE`, `CYCLE`, `IDENTITY`, `UNITS`, `ROLE_MISSING` |
 | Currency amounts | `currency_amount` (a magnitude whose type does not match its units) and `amount_digits` (more than 15 significant digits) | `CURRENCY_AMOUNT`, `AMOUNT_DIGITS` |
 | Invariants | `invariant.<kind>` for the local rules of a value type: Period, Span, Movement, Flow and Distribution | `INVARIANT_FLOW`, `INVARIANT_PERIOD` |
-| References | `reference.*` | `REFERENCE_MISSING`, `REFERENCE_KIND` |
+| References | `reference.*` | `REFERENCE_MISSING`, `REFERENCE_AMBIGUOUS`, `REFERENCE_KIND` |
 | Batches | `batch.*` | `BATCH_MODEL` |
 | Hierarchies | `hierarchy.*` | `HIERARCHY_CYCLE`, `HIERARCHY_MULTIPLE_PARENTS` |
 | Other errors | Bare words | `DECODE`, `ENCODING`, `REVISION_CONFLICT`, `UNSUPPORTED_VERSION` |
@@ -57,9 +57,22 @@ them into the `Issue` that they report.
 
 A Run `Diagnostic` records its code as text, a document and a target, numerical
 residuals and tolerances, and references to the Values and Movements that take
-part. An underdetermined solve references the unknowns that no row constrains.
-A limit failure has the code of the limit. See
-[execution](execution.md#settings-limits-and-conclusions).
+part. Its optional `values` field is one JSON object of the named inputs and
+evidence of the finding; the code gives the names. An underdetermined solve
+references the unknowns that no row constrains. A limit failure has the code of
+the limit. See [execution](execution.md#settings-limits-and-conclusions).
+
+| Code | `values` |
+| --- | --- |
+| `settings_adjusted` | `settings`: the names of the requested settings that changed or did not apply (required). `disposition`: for example `clamped` or `not_applied`. `effective`: the value that applied, when there is one |
+| `solver_termination` | `termination`: the backend termination. The other names are the backend evidence, for example `solution_status`, `simplex_iterations` and `solver_options` |
+| `solver_scaling` | `rows`: for each compiled row, its `constraint`, `divisor` and `residual_units` |
+
+```python
+for diagnostic in run.report.diagnostics:
+    if diagnostic.code == rk.errors.Code.SETTINGS_ADJUSTED:
+        print(diagnostic.values["settings"], diagnostic.values["disposition"])
+```
 
 ## Errors
 
@@ -84,7 +97,8 @@ except rk.errors.ValidationError as error:
 | `ContractError` | `ValueError` | Given by the rule; `CONTRACT` by default |
 | `UnsupportedError` | `ValueError` | Given by the failure; `UNSUPPORTED_CAPABILITY` by default. `document` and `target` locate the declaration |
 | `model.system`: `HierarchyError` | `ValueError` | A `hierarchy.*` code. `ids` names the offending Entities |
-| `MissingReferenceError` | `LookupError` | `REFERENCE_MISSING` |
+| `MissingReferenceError` | `LookupError` | `REFERENCE_MISSING`. `requested`, `by`, `kind`, `where` and `candidates` say what was requested and where ([lookups](#lookups)) |
+| `AmbiguousReferenceError` | `LookupError` | `REFERENCE_AMBIGUOUS`. A lookup for one item found several; `candidates` names each match |
 | `ReferenceTypeError` | `TypeError` | `REFERENCE_KIND` |
 | `IdentityConflictError` | `ValueError` | `REFERENCE_IDENTITY` |
 | `RevisionConflictError` | `ValueError` | `REVISION_CONFLICT` |
@@ -96,10 +110,33 @@ except rk.errors.ValidationError as error:
 | `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
 | `model.system`: `SelectionError`, `AggregationError` | `ValueError` | `SELECTION`, `AGGREGATION` |
 | `market`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
-| `specification.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
+| `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
 | `NumericalError` | `ValueError` | `NUMERICAL_FAILURE` |
 | `BackendUnavailableError`, `AttemptDeadlineError` | `RuntimeError` | `BACKEND_UNAVAILABLE`, `ATTEMPT_DEADLINE` |
 | `PublishedFileError` | `OSError` | `PUBLISHED_FILE` |
+
+### Lookups
+
+A lookup returns one item or raises. A lookup by UUID, code, name, key or path
+that finds no item raises `MissingReferenceError`; a lookup for one item by code
+or name that finds several raises `AmbiguousReferenceError`. A search, such as
+`Model.find_entities`, returns a tuple that can be empty. Both errors have these
+fields:
+
+| Field | Contents |
+| --- | --- |
+| `requested` | The value that the caller gave: a UUID, code, name, key or JSON Pointer |
+| `by` | What `requested` is: `"id"`, `"code"`, `"name"`, `"key"` or `"path"` |
+| `kind` | The kind of item, for example `"Entity"`, `"Measure"` or `"document"` |
+| `where` | The document, store or owner that was searched, for example `"Model <uuid>"` |
+| `candidates` | For a missing item, the nearest codes or names that exist; for an ambiguous one, the code of each match |
+
+```python
+try:
+    model.entity(code="building_c")
+except rk.errors.MissingReferenceError as error:
+    print(error.requested, error.where, error.candidates)
+```
 
 Argument guards raise plain `TypeError` and `ValueError` for a wrong Python
 argument. An optional dependency that is not installed raises `ImportError`.

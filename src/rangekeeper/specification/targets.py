@@ -61,7 +61,7 @@ def expand_targets(
     ids: Sequence[UUID] | None = None,
 ) -> tuple[Reference, ...]:
     """Resolve a scalar, Movement or explicit whole-Flow selection without amounts."""
-    from rangekeeper.model.scope import target_units
+    from rangekeeper.model.targets import target_units
     from rangekeeper.schema.records import Value
 
     ref = Reference(target=target) if isinstance(target, UUID) else target

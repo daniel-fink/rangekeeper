@@ -255,7 +255,7 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
         ).to_data(),
     )
     changed = model.revise(Update(system=System.from_data(data)))
-    from rangekeeper.model.scope import target_units
+    from rangekeeper.model.targets import target_units
 
     reference = Reference(
         target=next(

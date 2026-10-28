@@ -64,6 +64,7 @@ from .enums import StepKind as StepKind
 from .enums import TraversalKind as TraversalKind
 from .enums import ValueKind as ValueKind
 Content = FrozenJSONValue
+DiagnosticValues = FrozenJSONValue
 
 class Action(Record):
     'An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.'
@@ -1463,7 +1464,14 @@ class Diagnostic(Record):
                         'mapping': False,
                         'nullable': True,
                         'ordered': True,
-                        'lineage': False}}
+                        'lineage': False},
+         'values': {'options': [{'kind': 'DiagnosticValues', 'category': 'opaque'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1475,6 +1483,7 @@ class Diagnostic(Record):
         residual: Quantity | Unset = UNSET,
         tolerance: Quantity | Unset = UNSET,
         references: tuple[Reference, ...] | None | Unset = UNSET,
+        values: JSONValue | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         data['severity'] = _encode_enum(severity, Severity, 'severity')
@@ -1490,6 +1499,8 @@ class Diagnostic(Record):
             data['tolerance'] = _encode_record(tolerance, Quantity, 'tolerance')
         if references is not UNSET:
             data['references'] = _encode_many(references, lambda v: _encode_record(v, Reference, 'references'))
+        if values is not UNSET:
+            data['values'] = copy_json(values)
         self._set_checked(data)
 
     def replace(self, *,
@@ -1501,6 +1512,7 @@ class Diagnostic(Record):
         residual: Quantity | Unset | Omit = UNSET,
         tolerance: Quantity | Unset | Omit = UNSET,
         references: tuple[Reference, ...] | None | Unset | Omit = UNSET,
+        values: JSONValue | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -1530,6 +1542,10 @@ class Diagnostic(Record):
             changes['references'] = OMIT
         elif references is not UNSET:
             changes['references'] = _encode_many(references, lambda v: _encode_record(v, Reference, 'references'))
+        if values is OMIT:
+            changes['values'] = OMIT
+        elif values is not UNSET:
+            changes['values'] = copy_json(values)
         return self._replace(changes)
 
     @property
@@ -1571,6 +1587,11 @@ class Diagnostic(Record):
     def references(self) -> tuple[Reference, ...] | None:
         "Participating Values and Movements in this Run's input Model. Batch findings and attempts without a valid input Model cannot carry these references."
         return cast('tuple[Reference, ...] | None', self._child('references', Reference, True))
+
+    @property
+    def values(self) -> FrozenJSONValue | None:
+        'Named inputs and evidence of the finding, as one JSON object; the code gives the names.'
+        return self._data.get('values')
 
 
 class Distribution(Record):
@@ -7589,4 +7610,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']

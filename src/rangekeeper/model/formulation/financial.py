@@ -18,7 +18,7 @@ from rangekeeper.model.expression.authoring import (
 )
 from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.formulation.flow import aligned, shape
-from rangekeeper.model.scope import target_value
+from rangekeeper.model.targets import target_value
 from rangekeeper.schema.enums import Operator
 from rangekeeper.schema.records import Expression, Formulation, Reference
 

@@ -20,13 +20,13 @@ from jsonschema.validators import validator_for
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 
+from rangekeeper.model._scope import build_scope as _build_scope
 from rangekeeper.model.expression.domains import DomainCompatibility, compare_domains
 from rangekeeper.model.expression.validation import (
     infer_expression_domain,
     validate_constraint_predicates,
     validate_function_signature,
 )
-from rangekeeper.model.scope import build_scope as _build_scope
 from rangekeeper.shared.errors import ContractError
 from rangekeeper.shared.validation import require_unique
 

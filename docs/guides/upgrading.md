@@ -62,7 +62,8 @@ The report lists each use that needs a change by hand. These are the changes:
 | `series.integrate(flow, ...)` | `flow.integrate(exposures=, day_count=, units=)` |
 | `flow.trim(start=, end=)` | `flow.trim(span)` with a Period or Span, as `Stream.trim(span)` |
 | `stream.labels` and `select(labels=)` on a value that is not clearly a Stream | `stream.names` and `select(names=)`. Classification `labels` keep their name |
-| `from rangekeeper.model.characteristics import Value` (and `Label`, `Characteristics`, `ValueKind`) | `from rangekeeper.model import Value`. `model.characteristics` keeps only `value()` and `label()` |
+| `from rangekeeper.model.characteristics import Value` (and `Label`, `Characteristics`, `ValueKind`) | `from rangekeeper.model import Value` |
+| `characteristics.value(entity.characteristics, key)`, `characteristics.label(...)` | `model.value(owner=entity.id, key=key)`, `model.label(owner=entity.id, key=key)`. A missing key raises `MissingReferenceError` instead of returning `None` |
 | Code that reads the wire keys `start_inclusive` and `end_exclusive` | The keys are `start` and `end` |
 
 Each public name has one import path, plus the root re-exports `Model`,
@@ -117,6 +118,7 @@ This table lists the public names that 1.x consumers use, with their state in
 | `shared.units.UnitSystem`, `default_units` | `rangekeeper.quantity.UnitSystem`, `default_units` (the codemod moves them). `Model.unit_system` is unchanged | — |
 | `model.measure.Quantity`, `model.Quantity` | `rangekeeper.Quantity` and `rangekeeper.quantity.Quantity` (the codemod moves them) | Quantity text in API arguments ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D13, D16) |
 | `model.system.System`, `Entity`, `Assembly`, `Relationship` | `rangekeeper.model` only (the codemod moves them). `model.system` keeps the views, rollups and pivots | — |
+| `model.characteristics.value`, `label` | Removed. `Model.value(owner=, key=)` and `Model.label(owner=, key=)` raise `MissingReferenceError` for a missing key | — |
 | `rangekeeper.Model`, `model.Definitions` | Unchanged; the Model format is 1.0.0 | Builder names ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D6, D16) |
 | `io.bundle.Reader`, `write`, `Reader(..., check_index=False)` | Unchanged API. A Bundle with 0.x documents does not open | Identifiers `rangekeeper.bundle/1` and `rangekeeper.parquet/1`; the format freezes at 1.0.0b1 (ADR-017) |
 
@@ -167,12 +169,17 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.dynamics` | `rangekeeper.market.dynamics` | agreed | Path generators are series maths, so they leave `finance`. `rk.market.Dynamics` follows (#299). |
 | `rangekeeper.run.execution` | `rangekeeper.execution` | agreed |  |
 | `rangekeeper.specification.policy` | `rangekeeper.specification.rule` | agreed | "Policy" is not used. The rule queries of ADR-021 replace the records later (#215). |
-| `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.rule` | draft (needs refactor) | Rule evaluation moves to `execution` (#102). The lazy exports of `specification.rule` load it by its short name. |
+| `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.rule.evaluation` | agreed | Rule evaluation moves to `execution`. `specification.rule` keeps the declarations. Import `evaluate` from `rangekeeper.execution.rule`. |
+| `rangekeeper.specification.policy.observation` | `rangekeeper.execution.rule.observation` | agreed |  |
+| `rangekeeper.specification.policy.result` | `rangekeeper.execution.rule.result` | agreed |  |
+| `rangekeeper.specification.policy.predicate` | `rangekeeper.run._rule.predicate` | draft | Internal. The exact Boolean truth of a condition is shared by the evaluator and the trace check of a stored Run, so it is below `execution`. |
+| `rangekeeper.specification.policy._availability` | `rangekeeper.run._rule.availability` | draft | Internal. Shared by the evaluator and the trace check of a stored Run. |
 | `rangekeeper.shared.units` | `rangekeeper.quantity` | agreed | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
 | `rangekeeper.io.store` | `rangekeeper.io` | agreed | The `RecordStore` protocol is defined in the internal `shared.store`, so `execution` does not import `io`. Import `RecordStore` and `Document` from `rangekeeper.io`. |
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
 | `rangekeeper.model.scenario` | `rangekeeper.market` | agreed | The generators, paths and replay move as they are. `rk.market.Paths` and the MarketPaths document replace the scenario plan (#299, #303). |
 | `rangekeeper.model.scenario.market` | `rangekeeper.market.generation` | draft | Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name. |
+| `rangekeeper.model.scope` | `rangekeeper.model._scope` | agreed | Internal. The checks over raw mappings become private; the typed target lookups move to `rangekeeper.model.targets`. |
 | `src/tests/` | `tests/` | agreed | The pass moves the suite to the top level. #177 adds the sub-folders that mirror the packages, and tests/contracts, tests/integration and tests/walkthrough. |
 
 ### Renamed names
@@ -216,11 +223,19 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.specification.policy.result.PolicyResult` | `RuleResult` | agreed |  |
 | `rangekeeper.specification.policy.observation.PolicyCapabilityError` | `RuleCapabilityError` | agreed |  |
 | `rangekeeper.specification.policy.validation.validate_policy` | `validate_rules` | agreed |  |
-| `rangekeeper.specification.policy.validation.validate_outcomes` | `validate_evidence` | agreed | It checks the `RuleEvidence` records of a Run report. |
+| `rangekeeper.specification.policy.validation.validate_outcomes` | `rangekeeper.run._rule.evidence.validate_evidence` | agreed | The trace check of the `RuleEvidence` records of a Run report. It is evidence validation, so it moves to the internal `run._rule` (#102). |
+| `rangekeeper.specification.policy.evaluate` | `rangekeeper.execution.rule.evaluate` | agreed | `specification.rule` exports only the declarations. |
+| `rangekeeper.specification.policy.observe` | `rangekeeper.execution.rule.observe` | agreed |  |
+| `rangekeeper.specification.policy.Observation` | `rangekeeper.execution.rule.Observation` | agreed |  |
+| `rangekeeper.specification.policy.PolicyResult` | `rangekeeper.execution.rule.RuleResult` | agreed |  |
+| `rangekeeper.specification.policy.PolicyCapabilityError` | `rangekeeper.execution.rule.RuleCapabilityError` | agreed |  |
 | `rangekeeper.execution.errors.UnsupportedProblem` | `UnsupportedError` | agreed | Every error name ends in `Error`. |
 | `rangekeeper.model.expression.evaluation.UnsupportedExpression` | `UnsupportedError` | agreed | One error for unsupported expressions and problems. |
 | `rangekeeper.execution.errors.BackendUnavailable` | `BackendUnavailableError` | agreed |  |
 | `rangekeeper.execution.errors.AttemptDeadline` | `AttemptDeadlineError` | agreed |  |
+| `rangekeeper.model.scope.target_value` | `rangekeeper.model.targets.target_value` | agreed |  |
+| `rangekeeper.model.scope.target_units` | `rangekeeper.model.targets.target_units` | agreed |  |
+| `rangekeeper.model.scope.recorded_scalar` | `rangekeeper.model.targets.recorded_scalar` | agreed |  |
 | `rangekeeper.quantity.minor_unit` | `rangekeeper.money.minor_unit` | agreed | The money module owns the ISO 4217 catalogue, boundaries and rounding. |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
@@ -252,7 +267,9 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.series.resample` | Flow.resample(periods, method=) and Stream.resample(periods, method=) | agreed |
 | `rangekeeper.calculations.series.aggregate` | Stream.aggregate(method=), Stream.sum(), Stream.min() and Stream.max() | agreed |
 | `rangekeeper.calculations.series.Alignment` | The Stream that Stream.align() returns; Stream.aggregate() replaces Alignment.reduce() | agreed |
-| `rangekeeper.model.characteristics` | Value and Label access on the owner record; re-exports in rangekeeper.model | agreed |
+| `rangekeeper.model.characteristics` | `Model.value(owner=, key=)` and `Model.label(owner=, key=)`; the records are re-exported in rangekeeper.model | agreed |
+| `rangekeeper.model.characteristics.value` | `model.value(owner=entity.id, key=)`. A missing key raises MissingReferenceError instead of returning None | agreed |
+| `rangekeeper.model.characteristics.label` | `model.label(owner=entity.id, key=)`. A missing key raises MissingReferenceError instead of returning None | agreed |
 | `rangekeeper.model.scenario.market.ScenarioPlan` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.market.sample` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.market.capture` | Path generators and the MarketPaths document | agreed (needs refactor) |

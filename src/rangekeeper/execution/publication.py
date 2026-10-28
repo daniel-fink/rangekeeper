@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 from rangekeeper.execution.errors import NumericalError
 from rangekeeper.execution.preparation import Prepared
 from rangekeeper.model import Model
-from rangekeeper.model.scope import target_value
+from rangekeeper.model.targets import target_value
 from rangekeeper.model.update import Update
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.records import Provenance, System

@@ -10,12 +10,13 @@
     "create": "classmethod (cls, *, metadata: rangekeeper.schema.records.Metadata, definitions: rangekeeper.schema.records.Definitions | rangekeeper.schema.runtime.Unset = <Unset>, system: rangekeeper.schema.records.System | rangekeeper.schema.runtime.Unset = <Unset>, provenance: rangekeeper.schema.records.Provenance | rangekeeper.schema.runtime.Unset = <Unset>, geometry: rangekeeper.schema.records.Geometry | rangekeeper.schema.runtime.Unset = <Unset>, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
-    "entity": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Entity",
+    "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object], *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "geometry": "property",
     "id": "property",
+    "label": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
     "metadata": "property",
     "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
@@ -29,7 +30,7 @@
     "system": "property",
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
-    "value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Value"
+    "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
    "signature": "(record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None"
@@ -244,6 +245,14 @@
   }
  },
  "rangekeeper.errors": {
+  "AmbiguousReferenceError": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+   },
+   "module": "rangekeeper.shared.errors",
+   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+  },
   "AttemptDeadlineError": {
    "kind": "class",
    "members": {},
@@ -307,6 +316,7 @@
     "INVARIANT_PERIOD",
     "INVARIANT_SPAN",
     "BATCH_MODEL",
+    "REFERENCE_AMBIGUOUS",
     "REFERENCE_IDENTITY",
     "REFERENCE_KIND",
     "REFERENCE_MISSING",
@@ -387,9 +397,11 @@
   },
   "MissingReferenceError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
   },
   "NumericalError": {
    "kind": "class",
@@ -516,6 +528,41 @@
   "registry": {
    "kind": "value",
    "type": "Registry"
+  }
+ },
+ "rangekeeper.execution.rule": {
+  "Observation": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
+   },
+   "module": "rangekeeper.execution.rule.result",
+   "signature": "(at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
+  },
+  "RuleCapabilityError": {
+   "kind": "class",
+   "members": {},
+   "module": "rangekeeper.execution.rule.observation",
+   "signature": null
+  },
+  "RuleResult": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None",
+    "assignments": "property"
+   },
+   "module": "rangekeeper.execution.rule.result",
+   "signature": "(evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None"
+  },
+  "evaluate": {
+   "kind": "function",
+   "module": "rangekeeper.execution.rule.evaluation",
+   "signature": "(rules: rangekeeper.schema.records.RuleSet, *, model: rangekeeper.model.model.Model, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.execution.rule.result.RuleResult"
+  },
+  "observe": {
+   "kind": "function",
+   "module": "rangekeeper.execution.rule.observation",
+   "signature": "(model: rangekeeper.model.model.Model, *, at: datetime.date, bindings: collections.abc.Sequence[rangekeeper.schema.records.ObservationBinding]) -> rangekeeper.execution.rule.result.Observation"
   }
  },
  "rangekeeper.finance": {
@@ -1259,12 +1306,13 @@
     "create": "classmethod (cls, *, metadata: rangekeeper.schema.records.Metadata, definitions: rangekeeper.schema.records.Definitions | rangekeeper.schema.runtime.Unset = <Unset>, system: rangekeeper.schema.records.System | rangekeeper.schema.runtime.Unset = <Unset>, provenance: rangekeeper.schema.records.Provenance | rangekeeper.schema.runtime.Unset = <Unset>, geometry: rangekeeper.schema.records.Geometry | rangekeeper.schema.runtime.Unset = <Unset>, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
-    "entity": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Entity",
+    "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object], *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "geometry": "property",
     "id": "property",
+    "label": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
     "metadata": "property",
     "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
@@ -1278,7 +1326,7 @@
     "system": "property",
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
-    "value": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Value"
+    "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
    "signature": "(record: rangekeeper.schema.records.Model, *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> None"
@@ -1974,19 +2022,20 @@
   "Diagnostic": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, severity: Severity, code: str, message: str, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, severity: Severity, code: str, message: str, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>, values: JSONValue | None | Unset = <Unset>) -> None",
     "code": "property",
     "document": "property",
     "message": "property",
     "references": "property",
-    "replace": "method (self, *, severity: Severity | Unset = <Unset>, code: str | Unset = <Unset>, message: str | Unset = <Unset>, document: UUID | Unset | Omit = <Unset>, target: UUID | None | Unset | Omit = <Unset>, residual: Quantity | Unset | Omit = <Unset>, tolerance: Quantity | Unset | Omit = <Unset>, references: tuple[Reference, ...] | None | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, severity: Severity | Unset = <Unset>, code: str | Unset = <Unset>, message: str | Unset = <Unset>, document: UUID | Unset | Omit = <Unset>, target: UUID | None | Unset | Omit = <Unset>, residual: Quantity | Unset | Omit = <Unset>, tolerance: Quantity | Unset | Omit = <Unset>, references: tuple[Reference, ...] | None | Unset | Omit = <Unset>, values: JSONValue | None | Unset | Omit = <Unset>) -> Self",
     "residual": "property",
     "severity": "property",
     "target": "property",
-    "tolerance": "property"
+    "tolerance": "property",
+    "values": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, severity: Severity, code: str, message: str, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>) -> None"
+   "signature": "(*, severity: Severity, code: str, message: str, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>, values: JSONValue | None | Unset = <Unset>) -> None"
   },
   "Implementation": {
    "kind": "class",
@@ -2258,14 +2307,6 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, at: Date, observations: tuple[ObservationBinding, ...], rules: tuple[Rule, ...], fallback: tuple[Action, ...]) -> None"
   },
-  "Observation": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
-   },
-   "module": "rangekeeper.specification.rule.result",
-   "signature": "(at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
-  },
   "ObservationBinding": {
    "kind": "class",
    "members": {
@@ -2303,12 +2344,6 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, condition: Expression, actions: tuple[Action, ...]) -> None"
   },
-  "RuleCapabilityError": {
-   "kind": "class",
-   "members": {},
-   "module": "rangekeeper.specification.rule.observation",
-   "signature": null
-  },
   "RuleEvidence": {
    "kind": "class",
    "members": {
@@ -2325,15 +2360,6 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, decision: UUID, at: Date, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...], assignments: tuple[Assignment, ...], terminated: bool, termination_reason: str | None | Unset = <Unset>) -> None"
   },
-  "RuleResult": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None",
-    "assignments": "property"
-   },
-   "module": "rangekeeper.specification.rule.result",
-   "signature": "(evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None"
-  },
   "RuleSet": {
    "kind": "class",
    "members": {
@@ -2345,16 +2371,6 @@
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, targets: tuple[Reference, ...], decisions: tuple[Decision, ...]) -> None"
-  },
-  "evaluate": {
-   "kind": "function",
-   "module": "rangekeeper.specification.rule.evaluation",
-   "signature": "(rules: rangekeeper.schema.records.RuleSet, *, model: rangekeeper.model.model.Model, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.specification.rule.result.RuleResult"
-  },
-  "observe": {
-   "kind": "function",
-   "module": "rangekeeper.specification.rule.observation",
-   "signature": "(model: rangekeeper.model.model.Model, *, at: datetime.date, bindings: collections.abc.Sequence[rangekeeper.schema.records.ObservationBinding]) -> rangekeeper.specification.rule.result.Observation"
   }
  }
 }

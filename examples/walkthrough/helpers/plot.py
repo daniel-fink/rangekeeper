@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 import plotly.graph_objects as go
 from IPython.display import IFrame
 
-from rangekeeper.model.characteristics import value
+from rangekeeper.errors import MissingReferenceError
 from rangekeeper.model.content import decode
 
 from .chart import plot_flows, plot_partition
@@ -69,9 +69,12 @@ def _path(path, title):
     return path
 
 
-def _content(entity, key):
-    recorded = value(entity.characteristics, key)
-    return None if recorded is None else decode(recorded.content)
+def _content(model, entity, key):
+    try:
+        recorded = model.value(owner=entity.id, key=key)
+    except MissingReferenceError:
+        return None
+    return decode(recorded.content)
 
 
 def show_plot(figure, *, path=None):
@@ -162,10 +165,10 @@ def show_sunburst(
     uses = {}
     for uid in hierarchy.preorder():
         entity = hierarchy.view.entity(uid)
-        own_use = _content(entity, "use")
+        own_use = _content(hierarchy.view.model, entity, "use")
         uses[uid] = own_use or uses.get(hierarchy.parent(uid))
         colors.append(USE_COLORS.get(uses[uid], "#DDE3EB"))
-        number = _content(entity, "number")
+        number = _content(hierarchy.view.model, entity, "number")
         label = (
             f"Floor {number}"
             if number is not None

@@ -12,7 +12,7 @@ from rangekeeper.model.expression.evaluation import (
     evaluate,
     finite_quantity,
 )
-from rangekeeper.model.scope import recorded_scalar
+from rangekeeper.model.targets import recorded_scalar
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.run import Severity
 from rangekeeper.schema.index import walk

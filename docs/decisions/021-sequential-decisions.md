@@ -2,8 +2,9 @@
 
 Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27. Amended
 2026-10-27 by #201 decisions D2, D25 and D26 (`Periods`, `NEVER`, the equity-first
-funding names), and 2026-10-28 by decisions D41 (rules, not policies) and D42 (a rule
-is a query over a window).
+funding names), 2026-10-28 by decisions D41 (rules, not policies) and D42 (a rule
+is a query over a window), and 2026-10-28 by #102 (the shared rule semantics are in
+`run`).
 
 ## Problem
 
@@ -277,8 +278,10 @@ a `Comparison`. It is the one call for two Outcomes or more (decision D30 of #20
 
 - `Policy`, `Decision`, the old `Rule`, `Action`, `ActionKind`, `DecisionOutcome`,
   `evaluate` and `observe` leave `specification.policy`.
-- The exact Boolean evaluator and the availability rule move into `execution` as
-  internal modules.
+- The exact Boolean evaluator and the availability rule are internal modules of
+  `run` (`run._rule`), with the trace check. `run.validate` checks the trace of a
+  stored Run, and `run` is below `execution`, so `execution` imports them from
+  `run`. Amended 2026-10-28 by #102.
 - The investment resale example fixes `sale_date` with a rule.
 
 ## Worked examples

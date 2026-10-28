@@ -6,12 +6,13 @@ from uuid import uuid4
 
 import pytest
 
+from rangekeeper.execution.rule import RuleCapabilityError, evaluate
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import Model
 from rangekeeper.run import Run, validate
 from rangekeeper.schema.validation import document_version
 from rangekeeper.specification import Specification
-from rangekeeper.specification.rule import RuleCapabilityError, RuleSet, evaluate
+from rangekeeper.specification.rule import RuleSet
 
 
 def metadata(kind):
@@ -258,10 +259,11 @@ def test_shared_numerical_quantity_rejects_nonfinite_boolean_and_complex(number)
 def test_rule_result_normalizes_and_checks_outcomes():
     from dataclasses import FrozenInstanceError
 
+    from rangekeeper.execution.rule import RuleResult
     from rangekeeper.model import Reference
     from rangekeeper.quantity import Quantity
     from rangekeeper.specification import Assignment
-    from rangekeeper.specification.rule import RuleEvidence, RuleResult
+    from rangekeeper.specification.rule import RuleEvidence
 
     assignment = Assignment(
         target=Reference(target=uuid4()),

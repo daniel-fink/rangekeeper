@@ -1,7 +1,6 @@
 """Scalar acceptance through public documents and real isolated Pyomo/HiGHS runs."""
 
 import importlib.util
-import json
 import os
 import subprocess
 import sys
@@ -463,13 +462,13 @@ def test_requested_settings_are_applied_or_explicitly_accounted_for():
     assert effective.iteration_limit == 123 and effective.time_limit == 10
     assert effective.relative_tolerance is None
     assert any(
-        d.code == "settings_adjusted" and "relative_tolerance" in d.message
+        d.code == Code.SETTINGS_ADJUSTED
+        and "relative_tolerance" in d.values["settings"]
+        and d.values["disposition"] == "not_applied"
         for d in run.report.diagnostics
     )
-    evidence = json.loads(
-        next(
-            d.message for d in run.report.diagnostics if d.code == "solver_termination"
-        )
+    evidence = next(
+        d.values for d in run.report.diagnostics if d.code == Code.SOLVER_TERMINATION
     )
     assert evidence["solver_options"]["simplex_iteration_limit"] == 123
     assert evidence["simplex_iterations"] >= 0
@@ -705,10 +704,8 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
         SolutionStatus.FEASIBLE,
         SolutionStatus.UNKNOWN,
     }
-    evidence = json.loads(
-        next(
-            d.message for d in run.report.diagnostics if d.code == "solver_termination"
-        )
+    evidence = next(
+        d.values for d in run.report.diagnostics if d.code == Code.SOLVER_TERMINATION
     )
     assert evidence["termination"] == "iterationLimit"
     assert evidence["simplex_iterations"] == 1

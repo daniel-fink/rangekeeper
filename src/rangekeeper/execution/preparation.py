@@ -8,7 +8,7 @@ from uuid import UUID
 from rangekeeper.execution.errors import UnsupportedError
 from rangekeeper.flow import Movement
 from rangekeeper.model import Model
-from rangekeeper.model.scope import target_units
+from rangekeeper.model.targets import target_units
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
@@ -112,8 +112,8 @@ def prepare(
             raise UnsupportedError(
                 "rule observation targets an endogenous unknown; sequential numerical rules are unsupported"
             )
-        from rangekeeper.specification.rule.evaluation import evaluate
-        from rangekeeper.specification.rule.observation import RuleCapabilityError
+        from rangekeeper.execution.rule.evaluation import evaluate
+        from rangekeeper.execution.rule.observation import RuleCapabilityError
 
         try:
             rule_result = evaluate(requirements.rules, model=model, units=units)

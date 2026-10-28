@@ -75,6 +75,7 @@ from rangekeeper import duration
 from rangekeeper.model import formulation
 from rangekeeper import market, profile
 from rangekeeper.specification import rule
+from rangekeeper.execution import rule as rule_evaluation
 from rangekeeper.model.system import View
 for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system.graph',
              'rangekeeper.legacy', 'specklepy', 'matplotlib', 'plotly',
@@ -91,6 +92,7 @@ for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system
         "rangekeeper.calculations",
         "rangekeeper.model.measure",
         "rangekeeper.model.distribution",
+        "rangekeeper.model.characteristics",
         "rangekeeper.io.migration",
     ],
 )

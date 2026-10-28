@@ -12,6 +12,7 @@ from typing import Any, cast
 from uuid import UUID, uuid4, uuid5
 
 from rangekeeper.duration import Frequency, PeriodTiming, make_periods
+from rangekeeper.errors import MissingReferenceError
 from rangekeeper.flow import Flow
 from rangekeeper.model import (
     Definitions,
@@ -25,7 +26,6 @@ from rangekeeper.model import (
     Value,
     ValueKind,
 )
-from rangekeeper.model.characteristics import value as local_value
 from rangekeeper.model.content import decode, encode
 from rangekeeper.model.definitions import find_classifications
 from rangekeeper.model.expression.authoring import (
@@ -109,10 +109,19 @@ def select_contributors(model: Model, *, root: UUID) -> tuple[UUID, ...]:
     )
 
 
+def _local_value(model: Model, owner: UUID, key: str) -> Value | None:
+    """Return the Entity's Value with this key, or None when it has none."""
+    model.entity(owner)  # A missing Entity raises; only a missing key is None.
+    try:
+        return model.value(owner=owner, key=key)
+    except MissingReferenceError:
+        return None
+
+
 def _use(model: Model, owner: UUID) -> str:
     """Read the floor's explicit use or agreeing spatial-parent uses."""
     assert model.system is not None
-    own = local_value(model.entity(owner).characteristics, "use")
+    own = _local_value(model, owner, "use")
     if own is not None:
         choices = [decode(own.content)] if own.content is not None else []
     else:
@@ -124,7 +133,7 @@ def _use(model: Model, owner: UUID) -> str:
         }
         choices = []
         for parent in parents:
-            item = local_value(model.entity(parent).characteristics, "use")
+            item = _local_value(model, parent, "use")
             if item is not None and item.content is not None:
                 choices.append(decode(item.content))
     if (
@@ -137,7 +146,7 @@ def _use(model: Model, owner: UUID) -> str:
 
 
 def _source(model: Model, owner: UUID, key: str) -> Value:
-    item = local_value(model.entity(owner).characteristics, key)
+    item = _local_value(model, owner, key)
     if item is None or item.kind is not ValueKind.MEASUREMENT or item.quantity is None:
         raise ValueError(f"{owner}/{key} requires a resolved source measurement")
     return item
@@ -493,7 +502,7 @@ def specify(model: Model) -> Specification:
     values(model)  # Raises unless one aggregate declaration exists.
     for uid in _contributors(model):
         for key in ("gfa", "perimeter", "ftf", "volume"):
-            item = local_value(model.entity(uid).characteristics, key)
+            item = _local_value(model, uid, key)
             if item is not None and item.quantity is not None:
                 inputs[item.id] = item
     for declaration in model.system.formulations or ():

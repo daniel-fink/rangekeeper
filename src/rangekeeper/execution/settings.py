@@ -52,6 +52,11 @@ def resolve(requested: Settings | None) -> tuple[Limits, tuple[Diagnostic, ...]]
                 severity=Severity.WARNING,
                 code=Code.SETTINGS_ADJUSTED.value,
                 message="iteration_limit clamped to HiGHS maximum 2147483647.",
+                values={
+                    "settings": ["iteration_limit"],
+                    "disposition": "clamped",
+                    "effective": 2147483647,
+                },
             )
         )
     if requested and requested.relative_tolerance is not None:
@@ -64,6 +69,10 @@ def resolve(requested: Settings | None) -> tuple[Limits, tuple[Diagnostic, ...]]
                     "uses explicit absolute primal/dual solver tolerances, not a relative convergence criterion. "
                     "Independent dimensional acceptance is recorded separately."
                 ),
+                values={
+                    "settings": ["relative_tolerance"],
+                    "disposition": "not_applied",
+                },
             )
         )
     return Limits(

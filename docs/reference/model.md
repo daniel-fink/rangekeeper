@@ -16,7 +16,8 @@ and [identity](identity.md) define shared construction and reference rules.
 | `model/{update,diff}.py` | Complete-section replacement and descriptive comparison |
 | `model/system/validation.py` | Entity, Assembly, Relationship and membership invariants |
 | `model/formulation/` | Located Formulations, owner-local codes and mathematical preparation |
-| `model/scope.py`, `model/expression/` | Declaration/target lookup, Value content, Function signatures and expression analysis |
+| `model/_scope.py`, `model/expression/` | Declaration lookup and Value content checks over raw mappings, Function signatures and expression analysis |
+| `model/targets.py` | Typed lookups of a Reference target: owning Value, units and recorded scalar |
 | `model/validation.py` | Public validation report and coordination of domain checks |
 
 The Model builds its `RecordIndex` once and reuses it for lookup, validation and
@@ -45,7 +46,6 @@ from uuid import uuid4
 from rangekeeper.schema import Metadata
 from rangekeeper.model import Model, Entity, System, Definitions, Measure, Characteristics, Value, ValueKind, Update
 from rangekeeper.quantity import Quantity
-from rangekeeper.model import characteristics
 from rangekeeper.model.diff import between
 
 area = Measure(id=uuid4(), code="area", name="Area", units="sqm")
@@ -59,7 +59,7 @@ model = Model.create(
 )
 assert model.value(gross.id).quantity.magnitude == 100
 assert model.owner_of(net.id) == entity.id
-assert characteristics.value(model.entity(entity.id).characteristics, "net").quantity is None
+assert model.value(owner=entity.id, key="net").quantity is None
 
 renamed = Entity(id=entity.id, code="Apartment-A", characteristics=entity.characteristics)
 revised = model.revise(Update(system=System(entities=(renamed,))))
@@ -73,7 +73,7 @@ ownership, references and supported recorded-unit compatibility must pass before
 the facade is returned. `create` uses the same path with typed section arguments.
 History is not loaded implicitly. `to_data` always exports detached mutable data.
 
-UUID methods `entity`, `assembly`, `relationship`, `value`, `formulation` and `owner_of` require
+UUID methods `entity`, `assembly`, `relationship`, `value`, `label`, `formulation` and `owner_of` require
 actual UUID objects. `Model.movement(id)` looks up a Movement;
 `Model.resolve(Reference(target=id))` looks up a Value or Movement in this revision.
 A Movement's nearest identified owner is its containing Value. Missing identities raise `MissingReferenceError`; wrong kinds
@@ -82,11 +82,22 @@ raise `ReferenceTypeError`. Entity lookup includes Assemblies stored canonically
 to Entities, Relationships, Assemblies or nested Formulations. `owner_of` returns the
 nearest identified container, or `None` for anonymous root ownership.
 
-`find_entities` ANDs exact code/name/classification selectors and returns a tuple in
+`Model.entity` also takes one `code=` or `name=` instead of a UUID, and returns
+the one Entity or Assembly that matches. No match raises `MissingReferenceError`
+with the nearest codes or names in `candidates`; several matches raise
+`AmbiguousReferenceError` ([lookups](errors.md#lookups)).
+
+`find_entities` is a search: it ANDs exact code/name/classification selectors and returns a tuple in
 document encounter order. It does not expand classification descendants; use
 `Model.descendants(id)` for the sub-types of a Classification, or the inclusive
-[View filter](system.md#selection-and-traversal). Local
-Characteristics lookup is case-sensitive and returns `None` for an absent key/container.
+[View filter](system.md#selection-and-traversal).
+
+`Model.value(owner=, key=)` and `Model.label(owner=, key=)` read one Value or
+Label of an Entity, Assembly, Relationship or (for a Value) Formulation by its
+exact, case-sensitive key. Generated records are plain data, so the Model reads
+them ([ADR-011](../decisions/011-records-and-validation.md)). A missing key
+raises `MissingReferenceError` with the owner in `where` and the nearest keys in
+`candidates`; `Model.value(id)` and `Model.label(id)` still look up by UUID.
 Catalogue helpers similarly separate UUID lookup from `find_*` searches. They reject duplicate declaration UUIDs across the entire supplied catalogue, even when the requested UUID is unrelated. `Model.assembly` rejects an ordinary Entity. Multiple
 Values may share a Measure; Measure identity never chooses a unique Value implicitly.
 

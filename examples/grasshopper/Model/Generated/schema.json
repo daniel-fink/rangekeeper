@@ -840,6 +840,17 @@
             }
           ],
           "description": "Finite nonnegative tolerance in compatible units."
+        },
+        "values": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DiagnosticValues"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Named inputs and evidence of the finding, as one JSON object; the code gives the names."
         }
       },
       "required": [
@@ -849,6 +860,18 @@
       ],
       "title": "Diagnostic",
       "type": "object"
+    },
+    "DiagnosticValues": {
+      "additionalProperties": true,
+      "description": "A JSON object of named diagnostic inputs and evidence; its names depend on the diagnostic code. Numbers are finite.",
+      "title": "DiagnosticValues",
+      "type": [
+        "null",
+        "boolean",
+        "object",
+        "number",
+        "string"
+      ]
     },
     "Direction": {
       "description": "",

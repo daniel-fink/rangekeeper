@@ -6,6 +6,8 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.errors import Code
+from rangekeeper.execution.rule import RuleCapabilityError, evaluate, observe
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.market import replay
 from rangekeeper.market.generation import generate, make_plan
@@ -22,13 +24,8 @@ from rangekeeper.model import (
     Value,
     ValueKind,
 )
-from rangekeeper.schema.enums import DistributionFamily, SolutionStatus
-from rangekeeper.specification.rule import (
-    ObservationBinding,
-    RuleCapabilityError,
-    evaluate,
-    observe,
-)
+from rangekeeper.schema.enums import DistributionFamily, Severity, SolutionStatus
+from rangekeeper.specification.rule import ObservationBinding
 from rangekeeper_examples.investment import build_stop_gain_resale_rules
 
 
@@ -335,4 +332,6 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     data["unknowns"].append(observed.to_data())
     run = Executor(store).execute(Specification.from_data(data))
     assert not run.record.outputs
-    assert any("endogenous unknown" in d.message for d in run.report.diagnostics)
+    assert [d.code for d in run.report.diagnostics if d.severity == Severity.ERROR] == [
+        Code.UNSUPPORTED_CAPABILITY
+    ]

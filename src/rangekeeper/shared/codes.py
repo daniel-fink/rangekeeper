@@ -75,6 +75,7 @@ class Code(StrEnum):
     BATCH_MODEL = "batch.model"
 
     # References between records and documents.
+    REFERENCE_AMBIGUOUS = "reference.ambiguous"
     REFERENCE_IDENTITY = "reference.identity"
     REFERENCE_KIND = "reference.kind"
     REFERENCE_MISSING = "reference.missing"

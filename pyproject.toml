@@ -114,7 +114,7 @@ ignore_imports = [
     # samples, captures and replays market paths into a Model.
     "rangekeeper.market._replay -> rangekeeper.model",
     "rangekeeper.market.components -> rangekeeper.model",
-    "rangekeeper.market.contracts -> rangekeeper.model.scope",
+    "rangekeeper.market.contracts -> rangekeeper.model._scope",
     "rangekeeper.market.generation -> rangekeeper.model",
     "rangekeeper.market.view -> rangekeeper.model",
 ]

@@ -860,8 +860,23 @@
       ],
       "ordered": false,
       "required": false
+    },
+    "values": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "opaque",
+          "kind": "DiagnosticValues"
+        }
+      ],
+      "ordered": false,
+      "required": false
     }
   },
+  "DiagnosticValues": {},
   "Distribution": {
     "kind": {
       "lineage": false,

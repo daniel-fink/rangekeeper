@@ -12,7 +12,7 @@ from rangekeeper.model.expression.authoring import (
 )
 from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.formulation.flow import shape
-from rangekeeper.model.scope import target_value
+from rangekeeper.model.targets import target_value
 from rangekeeper.schema.records import Formulation, Reference
 
 

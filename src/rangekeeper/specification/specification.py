@@ -147,7 +147,7 @@ class Specification:
         recorded amounts explicitly; it cannot be combined with quantity.
         Included roles and rule controls must be revised at their owner.
         """
-        from rangekeeper.model.scope import recorded_scalar, target_units
+        from rangekeeper.model.targets import recorded_scalar, target_units
         from rangekeeper.quantity import Quantity
         from rangekeeper.schema.records import Assignment
         from rangekeeper.specification.targets import expand_targets

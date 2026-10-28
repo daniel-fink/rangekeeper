@@ -274,6 +274,9 @@ def settings_changed(bundle, run):
             severity="warning",
             code="settings_adjusted",
             message="iteration_limit requested as 100; effective 50 under the documented synthetic adapter limit.",
+            values=dict(
+                settings=["iteration_limit"], disposition="reduced", effective=50
+            ),
         )
     )
 
@@ -397,6 +400,19 @@ bad(
     "unaccounted requested setting",
     lambda b, r: r["report"]["runtime"]["settings"].update(iteration_limit=99),
 )
+
+
+def adjusted(values):
+    def edit(bundle, run):
+        settings_changed(bundle, run)
+        run["report"]["diagnostics"][-1]["values"] = values
+
+    return edit
+
+
+bad("unaccounted requested setting", adjusted(dict(settings=["time_limit"])))
+bad("requires values.settings", adjusted(dict(disposition="reduced")))
+bad("values must be a JSON object", adjusted("iteration_limit"))
 bad(
     "unresolved report document",
     lambda b, r: r["report"]["diagnostics"][0].update(document=uid("missing-document")),

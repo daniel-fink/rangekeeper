@@ -10,7 +10,7 @@ import math
 from copy import deepcopy
 from uuid import UUID
 
-from rangekeeper.model.scope import numerical_units, recorded_quantity, reference_key
+from rangekeeper.model._scope import numerical_units, recorded_quantity, reference_key
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.runtime import exact_equal
 from rangekeeper.shared.amounts import number
@@ -32,7 +32,7 @@ def validate_outputs(
     assignments = list(effective.get("assignments") or [])
     decisions = run["report"].get("rule_evidence") or []
     if effective.get("rules"):
-        from rangekeeper.specification.rule.validation import validate_evidence
+        from rangekeeper.run._rule.evidence import validate_evidence
 
         assignments.extend(
             validate_evidence(
