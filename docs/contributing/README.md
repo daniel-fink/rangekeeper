@@ -122,8 +122,8 @@ Update generators instead of editing generated outputs by hand.
 
 ## Local hooks and changelog
 
-pre-commit runs ruff, mypy and nbstripout before each commit, and the
-changelog check before each push. Install the hooks once:
+pre-commit runs ruff, mypy, nbstripout and the layer contract before each
+commit, and the changelog check before each push. Install the hooks once:
 
 ```sh
 uv run --locked pre-commit install
@@ -149,6 +149,7 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 | Job | Checks |
 | --- | --- |
 | `lint` | `ruff check` and `ruff format --check` |
+| `layers` | `lint-imports`: the layer contract of [ADR-010](../decisions/010-layers-and-packages.md) |
 | `types` | mypy, with all extras for their types |
 | `changelog` | A fragment in `changelog.d/` and a draft changelog build, in the separate [Changelog workflow](../../.github/workflows/changelog.yml) on pull requests. The `no-changelog` label skips the fragment check; adding or removing a label reruns only this check |
 | `generated files` | `tools/schema/generate.py --check`, `check_generator.py`, `generate_csharp.py --check`, `verify_native.py` and `typecheck.py` in the pinned schema environment |
@@ -164,6 +165,24 @@ The test jobs skip no tests, and no test needs a display or network access. `-rs
 CI does not build the Grasshopper components, which need the Rhino assemblies,
 or the documentation site. Run those
 [verification](verification.md) procedures locally when the change affects them.
+
+## Layer rules
+
+`src/rangekeeper` has 12 layers ([ADR-010](../decisions/010-layers-and-packages.md),
+[architecture](../concepts/architecture.md#layers)). A module imports only from
+its own layer or a lower layer. The import-linter contract in `pyproject.toml`
+encodes the order. Run it from the repository root:
+
+```sh
+uv run --locked lint-imports
+```
+
+The contract checks imports inside functions too. It excludes imports under
+`TYPE_CHECKING`, because they do not run. When a module needs a type from a
+higher layer only for an annotation, import it under `TYPE_CHECKING`. Move
+other code to the layer that owns it. `ignore_imports` lists only the upward
+imports that a planned change removes. Each entry names its issue, and the
+change that removes the import also removes the entry.
 
 ## Naming and ownership
 

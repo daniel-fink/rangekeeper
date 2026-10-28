@@ -31,7 +31,7 @@ blocked-by links. The
 
 | Decision | Status | Scope |
 | --- | --- | --- |
-| [ADR-010: Layers, packages and public namespaces](010-layers-and-packages.md) | Accepted for 1.0; library boundary implemented, layers pending | Library boundary, layer order, ownership rules, public namespaces and the move map |
+| [ADR-010: Layers, packages and public namespaces](010-layers-and-packages.md) | Accepted for 1.0; library boundary and layers implemented | Library boundary, layer order, ownership rules, public namespaces and the move map |
 | [ADR-011: Records, behaviour and validation](011-records-and-validation.md) | Accepted for 1.0; implementation pending | Data-only generated records, owner subclasses, document facades, generated runtime and validation tiers |
 | [ADR-012: Naming convention, glossary and rename pass](012-naming-and-glossary.md) | Accepted for 1.0; implementation pending | Naming rules, agreed renames, initial rename map and the single 1.0.0a2 codemod pass |
 | [ADR-013: Execution pipeline and extension points](013-execution-and-extensions.md) | Accepted for 1.0; extension points implemented, pipeline pending | Pure `solve`, `execute`, `Outcome`, backend contract, worker, registry pattern and fingerprints |

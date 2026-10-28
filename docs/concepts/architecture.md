@@ -147,7 +147,9 @@ contents are not yet in their 1.0 owner:
 | `execution` | Preparation, compilation, backends, acceptance and publication | Rule evaluation arrives from `specification` ([#102](https://github.com/daniel-fink/rangekeeper/issues/102)) |
 | `io` | JSON and YAML codecs, stores, Bundle and Polars export. It re-exports the `RecordStore` protocol from `shared` | — |
 
-Import-linter contracts that enforce the layer order follow in [#97](https://github.com/daniel-fink/rangekeeper/issues/97).
+The import-linter contract in [`pyproject.toml`](../../pyproject.toml) enforces the
+layer order. The `layers` CI job and a pre-commit hook run it; see
+[layer rules](../contributing/README.md#layer-rules).
 
 These folders are outside the package and its wheel:
 

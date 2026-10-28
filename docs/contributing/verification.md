@@ -22,6 +22,7 @@ the repository root:
 uv run --locked ruff check .
 uv run --locked ruff format --check .
 uv run --locked mypy
+uv run --locked lint-imports
 uv run --locked pytest -q
 ```
 

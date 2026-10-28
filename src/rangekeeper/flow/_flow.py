@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from rangekeeper.duration.calendar import DayCount
     from rangekeeper.duration.period import PeriodTiming
     from rangekeeper.flow._options import MeanWeighting, ResamplingMethod
-    from rangekeeper.model.display import StreamTable
+    from rangekeeper.flow._table import StreamTable
     from rangekeeper.quantity import UnitSystem
     from rangekeeper.schema.records import Quantity
 

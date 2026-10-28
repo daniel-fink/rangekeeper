@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from rangekeeper.duration.period import PeriodTiming
 from rangekeeper.flow import Flow, Stream
+from rangekeeper.flow._table import stream_frame
 from rangekeeper.shared.optional import requires
 from rangekeeper.shared.table import Table
 
@@ -152,83 +153,6 @@ def dates(
             name: pl.Series([m.magnitude for m in flow.movements], dtype=pl.Float64),
         }
     )
-
-
-def stream_projection(stream):
-    """One projection for numeric export and both presentation forms."""
-    batch = stream._prepared()
-    try:
-        grid = batch.grid(stream.join)
-    except ValueError as error:
-        raise ValueError(f"{error}; lines: {', '.join(stream.names)}") from error
-    amounts = {}
-    present = set()
-    for line, coordinate, magnitude in batch.frame.select(
-        "line", "coordinate", "magnitude"
-    ).iter_rows():
-        amounts[line, coordinate] = magnitude
-        present.add((line, coordinate))
-    return batch, grid, amounts, present
-
-
-def stream_frame(stream) -> DataFrame:
-    """Export numeric line columns and explicit coordinates, without mutable shared state.
-
-    Line columns are Float64 numerical projections, not lossless records.
-    """
-    from datetime import date
-
-    from rangekeeper.flow._batch import polars
-
-    pl = polars()
-    batch, grid, amounts, _ = stream_projection(stream)
-    reserved = {"date", "period_start", "period_end", "key"}
-    if reserved & set(stream.names):
-        raise ValueError(
-            "line names conflict with coordinate column names; select explicit names"
-        )
-    coordinates = [batch.coordinates[i] for i in grid]
-    frame = pl.DataFrame(
-        {
-            "date": pl.Series(
-                [
-                    (
-                        date.fromisoformat(c[1])
-                        if c[0] == "event"
-                        else date.fromisoformat(c[3])
-                        if c[3]
-                        else None
-                    )
-                    for c in coordinates
-                ],
-                dtype=pl.Date,
-            ),
-            "period_start": pl.Series(
-                [
-                    date.fromisoformat(c[1]) if c[0] == "period" else None
-                    for c in coordinates
-                ],
-                dtype=pl.Date,
-            ),
-            "period_end": pl.Series(
-                [
-                    date.fromisoformat(c[2]) if c[0] == "period" else None
-                    for c in coordinates
-                ],
-                dtype=pl.Date,
-            ),
-            "key": pl.Series(
-                [c[2] if c[0] == "event" else None for c in coordinates],
-                dtype=pl.String,
-            ),
-        }
-    )
-    return frame.with_columns(
-        [
-            pl.Series(label, [amounts.get((line, c)) for c in grid], dtype=pl.Float64)
-            for line, label in enumerate(stream.names)
-        ]
-    ).clone()
 
 
 def text_frame(table: Table):
