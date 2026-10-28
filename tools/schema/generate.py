@@ -57,6 +57,11 @@ PRIMITIVES = {
     "date": "Date",
     "datetime": "str",
 }
+# Boolean LinkML slot annotations that slots.json carries for every slot. A
+# lineage slot records document revision identity or lineage: it is not domain
+# content in a revision comparison and not a reference to a record in the
+# document.
+ANNOTATIONS = ("lineage",)
 
 
 def encoded(value):
@@ -231,6 +236,23 @@ def keyed_options(name, field, prop):
     return options
 
 
+def slot_annotations(name, field):
+    """Return the boolean annotations of one induced slot; reject other annotations."""
+    # SchemaView returns induced annotations as a JsonObj, not as a dict.
+    annotations = field.annotations
+    items = annotations._items() if hasattr(annotations, "_items") else annotations
+    found = {tag: annotation.value for tag, annotation in dict(items).items()}
+    unknown = sorted(set(found) - set(ANNOTATIONS))
+    if unknown:
+        raise ValueError(f"Unsupported slot annotation {unknown}: {name}.{field.name}")
+    for tag, value in found.items():
+        if not isinstance(value, bool):
+            raise ValueError(
+                f"Slot annotation {tag} is not boolean: {name}.{field.name}"
+            )
+    return {tag: found.get(tag, False) for tag in ANNOTATIONS}
+
+
 def class_slots(loaded: Loaded, name):
     """Return the slot metadata of one class, in induced order."""
     result = {}
@@ -248,6 +270,7 @@ def class_slots(loaded: Loaded, name):
             mapping=mapping,
             nullable=nullable,
             ordered=bool(field.list_elements_ordered),
+            **slot_annotations(name, field),
         )
     return result
 

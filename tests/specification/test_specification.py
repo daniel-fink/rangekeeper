@@ -276,3 +276,11 @@ def test_locally_known_role_target_cannot_masquerade_as_value():
     assert issue.code == "reference.kind"
     assert issue.path == "/unknowns/0/target"
     assert all(name in issue.message for name in ("Formulation", "Value", "Movement"))
+
+
+def test_closed_specification_fields_are_the_schema_slots():
+    from rangekeeper.schema.validation import slots_for
+    from rangekeeper.specification.composition import FIELDS, REQUIREMENTS
+
+    assert FIELDS == set(slots_for("Specification"))
+    assert set(REQUIREMENTS) < FIELDS

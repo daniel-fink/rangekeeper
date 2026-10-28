@@ -22,7 +22,7 @@ the shared record layer and its method ownership.
 | `rangekeeper/schema/kinds.py` | The kind registry: the owner class that each kind constructs and decodes to |
 | `rangekeeper/schema/runtime.py` | Shared field encoding, strict JSON copying, freezing, replacement, field presence and schema equivalence |
 | `rangekeeper/flow`, `rangekeeper/duration`, `rangekeeper/finance/_distribution.py` | Owner subclasses with the methods of Flow and Movement, Period and Span, and Distribution; no field declarations |
-| `rangekeeper/schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
+| `rangekeeper/schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata (including slot annotations such as `lineage`) and reproducible generation fingerprints |
 | `model`, `specification`, `run` | Document-wide validation, references and revision rules |
 | `flow`, `finance` | Operations that combine records or require an explicit financial or temporal interpretation |
 

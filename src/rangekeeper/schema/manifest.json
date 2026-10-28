@@ -3,7 +3,7 @@
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
     "records.py": "6dd5e62b6119f8853f9b76f3646b8053d3c1fa3b97660f78813b61cf55cb9b1d",
     "schema.json": "2423d5676d333ced0e434cb3462123caa89196c34ad10d940d4226be33bf5af2",
-    "slots.json": "e36e7d305c19d107408a8a94def81507485813efc6e08078f61922b9d0335333"
+    "slots.json": "fa54fbb1b391837c440e6d24eae2a8b37cd0bd4569357bfced0f24e0559ce4ea"
   },
   "classes": [
     "Action",
@@ -103,7 +103,7 @@
     "schema/binding.yaml": "68a69d3be474c4bea52e4fbbf1dd853cf8f7eddd9923e79c489a0629ccbcc8ec",
     "schema/characteristics.yaml": "216dddceca09ddec7490b6117fa2a1b02286c00b1e03e68fbe5b07fc0df14f9e",
     "schema/classification.yaml": "a61498c8727e04c9e2c095de339b60134ecc30c8d01d7cf48dd80073d6402e99",
-    "schema/common.yaml": "5913c313f6917e5b635aa636bdbdcf331f94aad89f6d0bce9b939b70ad3d5b20",
+    "schema/common.yaml": "4ab468ef9421484786b7e474c36fca63dc9d640bf27379dc3122224ed6ab6424",
     "schema/constraint.yaml": "74242011c99b655ce4ced89426df36b26c09eb7a0bbef8602983168e75c972dd",
     "schema/content.yaml": "7c2e3ee9b4cd5c3b4a79ca45e41689528ee8e16bca06d27342cc2d168aa7a96e",
     "schema/definitions.yaml": "4f4f57c79a32cb64f4475d385a03db4ee1cfd21ae47e7762c4e28323841b43bd",
@@ -127,7 +127,7 @@
     "schema/settings.yaml": "857cfb5fa49ee77e8469f51a3d188714fde401352c23922b055fd8d107f10e96",
     "schema/specification.yaml": "730f04d5a16624aa0afe0951beeb408b824286c54c96874fc5d39d9439d39461",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "1cbcec89f2362cab122a1a4f8f19f6e3dbfd165cccc9569ddc687f9e52e6fe69",
+    "tools/schema/generate.py": "afc848454fd08fbf31f6fe098c4bd50e6b54e2fd3c1f610973d1953b8a6a0609",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"
   }
 }

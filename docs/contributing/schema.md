@@ -29,6 +29,16 @@ slot metadata, checks it, emits the records and writes the manifest. It stops
 when a slot name is a Python keyword or shadows a record method,
 or when one slot has more than one record type.
 
+A boolean LinkML slot annotation becomes a key of every slot in `slots.json`.
+`ANNOTATIONS` in the generator names the permitted annotations. `lineage` marks the
+revision identity and lineage slots, `Metadata.id` and `Metadata.previous`. Revision
+comparison ignores them, and the Bundle reference index does not list them. The
+generator stops at an unknown or non-boolean annotation.
+
+Hand-written code reads field lists from the slot metadata (`slots_for`), not from
+literals. Examples are the Polars Movement columns, the Model sections of `Update`
+and the closed Specification fields.
+
 Do not edit generated files by hand. Create a separate environment with
 [`tools/schema/requirements.txt`](../../tools/schema/requirements.txt). From the
 repository root, with that environment active:
