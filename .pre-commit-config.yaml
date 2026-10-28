@@ -21,6 +21,13 @@ repos:
         language: system
         types_or: [python, pyi]
         pass_filenames: false
+      - id: lint-imports
+        name: lint-imports
+        # The layer contracts of ADR-010, in pyproject.toml.
+        entry: uv run --locked lint-imports
+        language: system
+        types: [python]
+        pass_filenames: false
       - id: towncrier-check
         name: towncrier check
         entry: uv run --locked towncrier check --compare-with origin/develop

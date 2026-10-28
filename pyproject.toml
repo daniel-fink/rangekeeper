@@ -65,6 +65,7 @@ dev = [
     { include-group = "types" },
     { include-group = "notebook" },
     { include-group = "codemod" },
+    { include-group = "layers" },
     "pytest>=8.0",
     "numpy-financial>=1.0",
     "rangekeeper-examples",
@@ -74,6 +75,48 @@ changelog = ["towncrier>=26.9,<27"]
 types = ["mypy>=2.4,<3", "types-PyYAML>=6.0.12", "types-jsonschema>=4.26"]
 notebook = ["ipykernel>=7.3.0"]
 codemod = ["libcst>=1.8,<2", "PyYAML>=6.0.2,<7"]
+layers = ["import-linter>=2.15,<3"]
+
+# The 1.0 layers (ADR-010). A module imports only from its own layer or a lower
+# layer, in the order below. TYPE_CHECKING imports are excluded: they name types,
+# and do not run. Each ignored import gives its reason.
+[tool.importlinter]
+root_package = "rangekeeper"
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+id = "layers"
+name = "The 12 layers of ADR-010"
+type = "layers"
+containers = ["rangekeeper"]
+layers = [
+    "io",
+    "execution",
+    "run",
+    "specification",
+    "model",
+    "finance",
+    "market",
+    "flow",
+    "profile",
+    "duration",
+    "quantity",
+    "schema",
+    "shared",
+]
+# Upward imports that a planned change removes. Each entry names its issue;
+# remove the entry with the import.
+ignore_imports = [
+    # #303: profile classes and Flow.from_profile replace extrapolate and distribute.
+    "rangekeeper.profile -> rangekeeper.flow",
+    # #298, #299: Dynamics, generate and Paths replace the scenario plan, which
+    # samples, captures and replays market paths into a Model.
+    "rangekeeper.market._replay -> rangekeeper.model",
+    "rangekeeper.market.components -> rangekeeper.model",
+    "rangekeeper.market.contracts -> rangekeeper.model.scope",
+    "rangekeeper.market.generation -> rangekeeper.model",
+    "rangekeeper.market.view -> rangekeeper.model",
+]
 
 [tool.uv]
 # Rebuild the editable install when the git version changes (setuptools-scm).

@@ -1384,6 +1384,7 @@ codemod = [
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
 ]
 dev = [
+    { name = "import-linter", specifier = ">=2.15,<3" },
     { name = "ipykernel", specifier = ">=7.3.0" },
     { name = "libcst", specifier = ">=1.8,<2" },
     { name = "mypy", specifier = ">=2.4,<3" },
@@ -1396,6 +1397,7 @@ dev = [
     { name = "types-jsonschema", specifier = ">=4.26" },
     { name = "types-pyyaml", specifier = ">=6.0.12" },
 ]
+layers = [{ name = "import-linter", specifier = ">=2.15,<3" }]
 lint = [{ name = "ruff", specifier = ">=0.17.2,<0.18" }]
 notebook = [{ name = "ipykernel", specifier = ">=7.3.0" }]
 types = [

@@ -1,17 +1,18 @@
 """Construct detached candidate revisions; persist only after independent acceptance."""
 
+import json
 from collections.abc import Mapping
 from typing import Any, cast
 from uuid import UUID, uuid4
 
 from rangekeeper.execution.errors import NumericalError
 from rangekeeper.execution.preparation import Prepared
-from rangekeeper.io import json
 from rangekeeper.model import Model
 from rangekeeper.model.scope import target_value
 from rangekeeper.model.update import Update
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.records import Provenance, System
+from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.references import DocumentResolver
 
 
@@ -100,7 +101,10 @@ def candidate(
             provenance=Provenance.from_data(provenance),
         )
     )
-    return json.loads(json.dumps(result), kind=Model)
+    # Round-trip through strict JSON, as the codecs do, so the candidate holds
+    # only what a stored revision can hold.
+    text = json.dumps(result.to_data(), ensure_ascii=False, allow_nan=False)
+    return Model.from_data(copy_json(json.loads(text)), units=result.unit_system)
 
 
 class CandidateResolver:
