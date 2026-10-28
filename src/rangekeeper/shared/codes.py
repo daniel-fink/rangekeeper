@@ -85,3 +85,23 @@ class Code(StrEnum):
     UNDERDETERMINED = "underdetermined"
     UNIQUENESS_NOT_ASSESSED = "uniqueness_not_assessed"
     UNSUPPORTED_CAPABILITY = "unsupported_capability"
+
+    # Errors outside validation and execution.
+    AGGREGATION = "aggregation"
+    DECODE = "decode"
+    ENCODING = "encoding"
+    PUBLISHED_FILE = "published_file"
+    REPLAY_UNAVAILABLE = "replay_unavailable"
+    REVISION_CONFLICT = "revision_conflict"
+    RULE_CAPABILITY = "rule_capability"
+    SELECTION = "selection"
+    TABLE = "table"
+    UNSUPPORTED_VERSION = "unsupported_version"
+
+    # A selected graph that is not one rooted tree.
+    HIERARCHY_CYCLE = "hierarchy.cycle"
+    HIERARCHY_DISCONNECTED = "hierarchy.disconnected"
+    HIERARCHY_EMPTY = "hierarchy.empty"
+    HIERARCHY_MULTIPLE_PARENTS = "hierarchy.multiple_parents"
+    HIERARCHY_PARALLEL_EDGES = "hierarchy.parallel_edges"
+    HIERARCHY_ROOT_MISMATCH = "hierarchy.root_mismatch"

@@ -7,7 +7,7 @@ from hashlib import sha256
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from rangekeeper.shared.errors import DecodeError, ValueEncodingError
+from rangekeeper.shared.errors import DecodeError, EncodingError
 
 
 def canonical_json(value: object) -> str:
@@ -64,7 +64,7 @@ def encode(value: object) -> object:
         return ["int", str(value)]
     if type(value) is float:
         if not math.isfinite(value):
-            raise ValueEncodingError("unsupported_value", "Non-finite float")
+            raise EncodingError("Non-finite float")
         return ["float", value.hex()]
     if type(value) is str:
         return ["str", value]
@@ -72,7 +72,7 @@ def encode(value: object) -> object:
         return ["uuid", value.hex]
     if isinstance(value, (datetime, time)) and kind in (datetime, time):
         if value.tzinfo is not None and type(value.tzinfo) not in (timezone, ZoneInfo):
-            raise ValueEncodingError("unsupported_value", "Mutable/custom timezone")
+            raise EncodingError("Mutable/custom timezone")
         zone = value.tzinfo.key if isinstance(value.tzinfo, ZoneInfo) else None
         return [kind.__name__, value.isoformat(), value.fold, zone]
     if type(value) is date:
@@ -86,6 +86,4 @@ def encode(value: object) -> object:
             "frozenset",
             sorted((encode(item) for item in value), key=canonical_json),
         ]
-    raise ValueEncodingError(
-        "unsupported_value", f"Expected immutable supported value, got {kind.__name__}"
-    )
+    raise EncodingError(f"Expected immutable supported value, got {kind.__name__}")

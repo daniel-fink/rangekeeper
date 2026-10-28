@@ -15,10 +15,10 @@ from rangekeeper.execution import (
 from rangekeeper.execution.backends import Backend
 from rangekeeper.execution.backends.base import Result
 from rangekeeper.execution.errors import (
-    AttemptDeadline,
-    BackendUnavailable,
+    AttemptDeadlineError,
+    BackendUnavailableError,
     NumericalError,
-    UnsupportedProblem,
+    UnsupportedError,
 )
 from rangekeeper.execution.implementation import fingerprint
 from rangekeeper.model import Model
@@ -117,12 +117,12 @@ class Attempt:
         )
 
     def checkpoint(self) -> None:
-        """Raise AttemptDeadline when this attempt's time limit has elapsed."""
+        """Raise AttemptDeadlineError when this attempt's time limit has elapsed."""
         if (
             self.limits is not None
             and time.monotonic() - self.clock >= self.limits.time_limit
         ):
-            raise AttemptDeadline(
+            raise AttemptDeadlineError(
                 "execution deadline reached during preparation or compilation"
             )
 
@@ -132,7 +132,7 @@ class Attempt:
             problem = self.prepare()
             result = self.solve(problem)
             self.accept(result)
-        except AttemptDeadline as error:
+        except AttemptDeadlineError as error:
             self.completion, self.solution = (
                 CompletionStatus.LIMITED,
                 SolutionStatus.NOT_ASSESSED,
@@ -156,7 +156,7 @@ class Attempt:
                 str(error),
                 severity=Severity.ERROR,
             )
-        except (UnsupportedProblem, UnitError) as error:
+        except (UnsupportedError, UnitError) as error:
             self.completion, self.solution = (
                 CompletionStatus.FAILED,
                 (
@@ -168,23 +168,23 @@ class Attempt:
             self.diagnose(
                 (
                     error.code
-                    if isinstance(error, UnsupportedProblem)
+                    if isinstance(error, UnsupportedError)
                     else Code.UNSUPPORTED_CAPABILITY
                 ),
                 str(error),
                 severity=Severity.ERROR,
                 document=(
                     error.document
-                    if isinstance(error, UnsupportedProblem) and error.document
+                    if isinstance(error, UnsupportedError) and error.document
                     else UNSET
                 ),
                 target=(
                     error.target
-                    if isinstance(error, UnsupportedProblem) and error.target
+                    if isinstance(error, UnsupportedError) and error.target
                     else UNSET
                 ),
             )
-        except BackendUnavailable as error:
+        except BackendUnavailableError as error:
             self.diagnose(Code.BACKEND_UNAVAILABLE, str(error), severity=Severity.ERROR)
         except (NumericalError, ArithmeticError) as error:
             self.completion, self.solution = (
@@ -217,7 +217,7 @@ class Attempt:
             )
         )
         if len(self.prepared.references) > self.limits.symbol_limit:
-            raise UnsupportedProblem(
+            raise UnsupportedError(
                 f"expanded symbol limit {self.limits.symbol_limit} exceeded",
                 code=Code.SYMBOL_LIMIT,
             )
@@ -227,7 +227,7 @@ class Attempt:
             constraint_limit=self.limits.constraint_limit,
         )
         if len(problem.rows) > self.limits.constraint_limit:
-            raise UnsupportedProblem(
+            raise UnsupportedError(
                 f"expanded constraint limit {self.limits.constraint_limit} exceeded",
                 code=Code.CONSTRAINT_LIMIT,
             )

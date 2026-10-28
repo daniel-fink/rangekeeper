@@ -1,8 +1,50 @@
-"""Codes of the diagnostics and errors that Rangekeeper reports (ADR-016).
+"""The errors that Rangekeeper raises and the codes of its findings (ADR-016).
 
-Read a finding by its ``code`` and its structured fields, never by its message.
+Every error subclasses ``RangekeeperError`` and has a ``code``. Read the code and
+the error's fields, never its message. Most errors also subclass a built-in
+type, for example ``ValidationError`` is a ``ValueError``. This module exports
+the errors that several packages raise; an error of one package, such as
+``rangekeeper.model.system.HierarchyError``, is exported by that package.
 """
 
 from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import (
+    AttemptDeadlineError,
+    BackendUnavailableError,
+    ContractError,
+    DecodeError,
+    EncodingError,
+    IdentityConflictError,
+    MissingReferenceError,
+    NumericalError,
+    PublishedFileError,
+    RangekeeperError,
+    ReferenceTypeError,
+    RevisionConflictError,
+    TableError,
+    UnitError,
+    UnsupportedError,
+    UnsupportedVersionError,
+    ValidationError,
+)
 
-__all__ = ["Code"]
+__all__ = [
+    "AttemptDeadlineError",
+    "BackendUnavailableError",
+    "Code",
+    "ContractError",
+    "DecodeError",
+    "EncodingError",
+    "IdentityConflictError",
+    "MissingReferenceError",
+    "NumericalError",
+    "PublishedFileError",
+    "RangekeeperError",
+    "ReferenceTypeError",
+    "RevisionConflictError",
+    "TableError",
+    "UnitError",
+    "UnsupportedError",
+    "UnsupportedVersionError",
+    "ValidationError",
+]
