@@ -1,0 +1,1165 @@
+{
+  "metadata": {
+    "id": "bc375b98-6539-4d9a-ab46-50eae3e5363e",
+    "schema_version": "0.4.0"
+  },
+  "specification": "d8b764b2-e348-4ebe-b00f-d2e9d0e75e80",
+  "outputs": [
+    "9b8252a6-cd8b-4da8-ba95-b877be422576"
+  ],
+  "report": {
+    "status": {
+      "completion": "completed",
+      "solution": "feasible"
+    },
+    "runtime": {
+      "started_at": "2026-10-28T08:43:48.389484+00:00",
+      "finished_at": "2026-10-28T08:43:50.308727+00:00",
+      "implementations": [
+        {
+          "kind": "compiler",
+          "name": "rangekeeper.scalar",
+          "version": "execution-implementation/v1:bc01865ed3bc2d8a01879f6f1b2d7cc9b4a7be21d8cfb91cbb026eb4e6237024"
+        },
+        {
+          "kind": "compiler",
+          "name": "Pyomo",
+          "version": "6.10.1"
+        },
+        {
+          "kind": "solver",
+          "name": "HiGHS",
+          "version": "1.15.1"
+        },
+        {
+          "kind": "evaluator",
+          "name": "rangekeeper.scalar.original_expressions",
+          "version": "execution-implementation/v1:96b4fa7bf0935297e8c8feda6ad431d5f939816855811523dc550d6be2f53f17"
+        }
+      ],
+      "settings": {
+        "iteration_limit": 100000,
+        "time_limit": 30.0,
+        "symbol_limit": 10000,
+        "constraint_limit": 20000
+      }
+    },
+    "diagnostics": [
+      {
+        "severity": "info",
+        "code": "solver_scaling",
+        "message": "[{\"constraint\": \"0dfd0e8a-485e-5825-a852-99289af0bf2b\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"6762d426-d750-56bd-87fa-aad8979ab046\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"c8ba64e9-47d8-5e4e-a38a-1a6c5b0b2c42\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"c5ba6d09-da1c-53a7-b810-bda87b3f4a05\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"5fa60d58-d899-515e-87b2-bb37730d2af7\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"d71b746b-bdbc-527e-8375-f044e8adf9b2\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"c87b8ea7-37fb-5330-beb5-bba91cb6b2ad\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"e5da0cd3-0ae9-596a-8a03-c08cf7d1af17\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"65446df7-209b-5342-898e-e262e2872651\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"e7739584-93ea-54c2-8225-66d51c80272c\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"f379e6c5-489b-5547-a212-9123bf3e0036\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"444026ee-8681-5439-81cc-4cd63f245b47\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"bd762c8a-8ba4-5381-888c-8de75ae1f51a\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"2567dd4d-a302-5904-a988-2c2871e06b8b\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"ecf199ab-714d-5313-8ffb-8c586cbb1ed1\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"8b58cdf8-04db-5c6d-a28b-b4bb7be92c59\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"e85ef3c4-d74b-509f-b899-59a814a9382c\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"48ef15b6-de96-53e6-b434-b2ed95019bc7\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"63d1ad45-8493-520a-93e4-809fd4f039bf\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"83306fcc-c450-5666-8c42-9c33baeca325\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"389894b3-ff2e-5130-ad8d-cb67549c4bd6\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"239c68e6-5624-5925-a74b-7c7564eb4697\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"7f883704-6e35-555b-af53-8011f56eb8e8\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"a0aed8fa-fd2a-5865-83e7-5ed77cc1c83f\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"820b928d-c243-59d3-b9f6-b90e2da0fb03\", \"divisor\": 20.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"f5c6d8aa-b52e-578a-95e4-aa35180ebd5c\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"e2f37c3f-9320-5aa0-a3a7-0dd856fec35c\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"cd30ffe8-b5e8-5e33-8208-4e77f4df217f\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"3c8b419b-722b-5455-899e-1dc64295a4b1\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"5c31d601-f2c3-5805-baf3-77116dbd2500\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"019cd3fa-c097-5cad-90a3-694cdad66355\", \"divisor\": 20.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"2596549a-e034-5c16-84eb-afd19d838b6c\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"a096ab73-9a2f-510e-8aba-bdc941a7e947\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"d1c03cb5-ffe8-5590-8c63-a61a92374f69\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"d8485d00-67c5-58ed-98ee-30c8da2938a0\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"32e9840f-7074-5266-b695-2f57385ece96\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"3e9961d2-429c-5097-8712-b61130a64be2\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}]"
+      },
+      {
+        "severity": "info",
+        "code": "solver_termination",
+        "message": "{\"termination\": \"convergenceCriteriaSatisfied\", \"solution_status\": \"optimal\", \"simplex_iterations\": 0, \"highs_seconds\": 0.0010766659979708493, \"worker_seconds\": 1.1597292500082403, \"solver_time_limit\": 29.02276612399146, \"solver_options\": {\"solver\": \"simplex\", \"presolve\": \"on\", \"parallel\": \"off\", \"random_seed\": 0, \"simplex_iteration_limit\": 100000, \"small_matrix_value\": 1e-12, \"primal_feasibility_tolerance\": 1e-07, \"dual_feasibility_tolerance\": 1e-07, \"output_flag\": false}, \"threads\": 1, \"package_versions\": {\"pyomo\": \"6.10.1\", \"highspy\": \"1.15.1\"}, \"equality_rank\": 37, \"unknown_count\": 37, \"has_bounds\": false, \"unconstrained_values_initialized_to_zero\": []}"
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "0dfd0e8a-485e-5825-a852-99289af0bf2b",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "b28eef6e-ddc1-4fbe-855f-0b29cf0400b3"
+          },
+          {
+            "target": "d04261cd-4a62-46a1-a3ff-0dd0bff28b2e"
+          },
+          {
+            "target": "baaffead-e6e6-4ebc-9eb6-ca65581e6144"
+          },
+          {
+            "target": "4a97871a-1166-4ceb-bce4-e97b6eb16966"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "6762d426-d750-56bd-87fa-aad8979ab046",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "12067201-2de9-498f-93a6-79e9a6f07fc2"
+          },
+          {
+            "target": "b28eef6e-ddc1-4fbe-855f-0b29cf0400b3"
+          },
+          {
+            "target": "960c94cb-b232-4611-ad50-da04154611b9"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "c8ba64e9-47d8-5e4e-a38a-1a6c5b0b2c42",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.5000000000000002e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "e960307f-1d9d-44e4-b9ff-c441caeeabdb"
+          },
+          {
+            "target": "b5672296-c986-4378-ba0f-9ee1bbae8db2"
+          },
+          {
+            "target": "12067201-2de9-498f-93a6-79e9a6f07fc2"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "c5ba6d09-da1c-53a7-b810-bda87b3f4a05",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 4.5000000000000006e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "9a78dc0a-ff2f-437b-925b-b269c7b7a845"
+          },
+          {
+            "target": "5c233dad-ebe6-46b0-9305-1f45e9362192"
+          },
+          {
+            "target": "12067201-2de9-498f-93a6-79e9a6f07fc2"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "5fa60d58-d899-515e-87b2-bb37730d2af7",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 2e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "2ac7a63c-6691-404d-ad48-346186cb430f"
+          },
+          {
+            "target": "ada17620-2801-4aee-b310-3f465fa8c88e"
+          },
+          {
+            "target": "12067201-2de9-498f-93a6-79e9a6f07fc2"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "d71b746b-bdbc-527e-8375-f044e8adf9b2",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.05e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "b864b18b-5b75-4ed0-a5ef-16360c9374a5"
+          },
+          {
+            "target": "12067201-2de9-498f-93a6-79e9a6f07fc2"
+          },
+          {
+            "target": "e960307f-1d9d-44e4-b9ff-c441caeeabdb"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "c87b8ea7-37fb-5330-beb5-bba91cb6b2ad",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 7e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "1bf7d7f8-d9f3-429e-8924-e70b786e0ab2"
+          },
+          {
+            "target": "b864b18b-5b75-4ed0-a5ef-16360c9374a5"
+          },
+          {
+            "target": "9a78dc0a-ff2f-437b-925b-b269c7b7a845"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "e5da0cd3-0ae9-596a-8a03-c08cf7d1af17",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.000000000000001e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "c7d34f50-c2e3-476d-baac-612d46e3a56b"
+          },
+          {
+            "target": "1bf7d7f8-d9f3-429e-8924-e70b786e0ab2"
+          },
+          {
+            "target": "2ac7a63c-6691-404d-ad48-346186cb430f"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "65446df7-209b-5342-898e-e262e2872651",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.12e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "01c5d630-8bef-41ba-afe8-f203771d1940"
+          },
+          {
+            "target": "d04261cd-4a62-46a1-a3ff-0dd0bff28b2e"
+          },
+          {
+            "target": "baaffead-e6e6-4ebc-9eb6-ca65581e6144"
+          },
+          {
+            "target": "4a97871a-1166-4ceb-bce4-e97b6eb16966"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "e7739584-93ea-54c2-8225-66d51c80272c",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.12e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "3a4c3801-ada6-4d05-8ebe-d0d3fa823544"
+          },
+          {
+            "target": "01c5d630-8bef-41ba-afe8-f203771d1940"
+          },
+          {
+            "target": "68cf49dd-51b0-4b77-8dd5-f8a4ae407ddf"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "f379e6c5-489b-5547-a212-9123bf3e0036",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.5100000000000003e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "53795b2f-fd42-4812-90d8-d7bd99760056"
+          },
+          {
+            "target": "b5672296-c986-4378-ba0f-9ee1bbae8db2"
+          },
+          {
+            "target": "3a4c3801-ada6-4d05-8ebe-d0d3fa823544"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "444026ee-8681-5439-81cc-4cd63f245b47",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 4.569999999999999e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "bf37af10-5aeb-4735-ad0f-650bb1db5395"
+          },
+          {
+            "target": "5c233dad-ebe6-46b0-9305-1f45e9362192"
+          },
+          {
+            "target": "3a4c3801-ada6-4d05-8ebe-d0d3fa823544"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "bd762c8a-8ba4-5381-888c-8de75ae1f51a",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 2.0200000000000002e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "b91546a1-4027-43ab-88f2-86560cdba965"
+          },
+          {
+            "target": "ada17620-2801-4aee-b310-3f465fa8c88e"
+          },
+          {
+            "target": "3a4c3801-ada6-4d05-8ebe-d0d3fa823544"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "2567dd4d-a302-5904-a988-2c2871e06b8b",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.0690000000000001e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "1a3419dd-c8fd-4120-afcb-42e6eea53117"
+          },
+          {
+            "target": "3a4c3801-ada6-4d05-8ebe-d0d3fa823544"
+          },
+          {
+            "target": "53795b2f-fd42-4812-90d8-d7bd99760056"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "ecf199ab-714d-5313-8ffb-8c586cbb1ed1",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 7.120000000000002e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "5e2b1d0a-ff39-4fe5-a222-13f15e288a7b"
+          },
+          {
+            "target": "1a3419dd-c8fd-4120-afcb-42e6eea53117"
+          },
+          {
+            "target": "bf37af10-5aeb-4735-ad0f-650bb1db5395"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "8b58cdf8-04db-5c6d-a28b-b4bb7be92c59",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.100000000000002e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "d46244a2-714a-4d11-ae53-8137ba55e92d"
+          },
+          {
+            "target": "5e2b1d0a-ff39-4fe5-a222-13f15e288a7b"
+          },
+          {
+            "target": "b91546a1-4027-43ab-88f2-86560cdba965"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "e85ef3c4-d74b-509f-b899-59a814a9382c",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1404e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "7e9ecbce-49fd-4823-a8f2-d4b2e6027b8e"
+          },
+          {
+            "target": "d04261cd-4a62-46a1-a3ff-0dd0bff28b2e"
+          },
+          {
+            "target": "baaffead-e6e6-4ebc-9eb6-ca65581e6144"
+          },
+          {
+            "target": "4a97871a-1166-4ceb-bce4-e97b6eb16966"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "48ef15b6-de96-53e6-b434-b2ed95019bc7",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1404e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "e66e78f6-7f5f-4abb-8acb-9ea498acd250"
+          },
+          {
+            "target": "7e9ecbce-49fd-4823-a8f2-d4b2e6027b8e"
+          },
+          {
+            "target": "80ca4bbc-f232-42a2-ba29-ee91b1b263e7"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "63d1ad45-8493-520a-93e4-809fd4f039bf",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.5202e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "241199b0-f83a-4d4c-99ad-71f1f28fd7d8"
+          },
+          {
+            "target": "b5672296-c986-4378-ba0f-9ee1bbae8db2"
+          },
+          {
+            "target": "e66e78f6-7f5f-4abb-8acb-9ea498acd250"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "83306fcc-c450-5666-8c42-9c33baeca325",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 4.6413999999999995e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "c8293fe6-9959-4009-a2d4-77fca7a97d96"
+          },
+          {
+            "target": "5c233dad-ebe6-46b0-9305-1f45e9362192"
+          },
+          {
+            "target": "e66e78f6-7f5f-4abb-8acb-9ea498acd250"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "389894b3-ff2e-5130-ad8d-cb67549c4bd6",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 2.0404000000000002e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "764416e3-37be-47d8-a435-a6e48bb851a3"
+          },
+          {
+            "target": "ada17620-2801-4aee-b310-3f465fa8c88e"
+          },
+          {
+            "target": "e66e78f6-7f5f-4abb-8acb-9ea498acd250"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "239c68e6-5624-5925-a74b-7c7564eb4697",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.08838e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "6387dd14-af62-4899-86d7-9f421080e371"
+          },
+          {
+            "target": "e66e78f6-7f5f-4abb-8acb-9ea498acd250"
+          },
+          {
+            "target": "241199b0-f83a-4d4c-99ad-71f1f28fd7d8"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "7f883704-6e35-555b-af53-8011f56eb8e8",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 7.2424e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "5e55c0ba-f260-45dd-99b9-2c03e844f5f0"
+          },
+          {
+            "target": "6387dd14-af62-4899-86d7-9f421080e371"
+          },
+          {
+            "target": "c8293fe6-9959-4009-a2d4-77fca7a97d96"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "a0aed8fa-fd2a-5865-83e7-5ed77cc1c83f",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.202e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "0bbe4e89-1f53-4f8f-a925-7da61ee3ba45"
+          },
+          {
+            "target": "5e55c0ba-f260-45dd-99b9-2c03e844f5f0"
+          },
+          {
+            "target": "764416e3-37be-47d8-a435-a6e48bb851a3"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "820b928d-c243-59d3-b9f6-b90e2da0fb03",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.03e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "0e2ea191-4a4c-4ab0-851a-e0386d6c4d81"
+          },
+          {
+            "target": "d46244a2-714a-4d11-ae53-8137ba55e92d"
+          },
+          {
+            "target": "de1b9d2a-be1a-4755-94e5-c3f2bea5351c"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "f5c6d8aa-b52e-578a-95e4-aa35180ebd5c",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.000000000000001e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "599c4451-be25-458d-a67d-180ac528fae1"
+          },
+          {
+            "target": "c7d34f50-c2e3-476d-baac-612d46e3a56b"
+          },
+          {
+            "target": "291ebe6e-18ca-4303-9689-bc4f79d6965e"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "e2f37c3f-9320-5aa0-a3a7-0dd856fec35c",
+        "residual": {
+          "magnitude": -0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "172887b8-0be0-45c2-b62b-dd1d145487d7"
+          },
+          {
+            "target": "0e2ea191-4a4c-4ab0-851a-e0386d6c4d81"
+          },
+          {
+            "target": "d9427bf9-68a7-44b3-8072-2dea71a7ba63"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "cd30ffe8-b5e8-5e33-8208-4e77f4df217f",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.000000000000001e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "a238c1bd-018a-4413-bd64-ab7d168f1962"
+          },
+          {
+            "target": "599c4451-be25-458d-a67d-180ac528fae1"
+          },
+          {
+            "target": "172887b8-0be0-45c2-b62b-dd1d145487d7"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "3c8b419b-722b-5455-899e-1dc64295a4b1",
+        "residual": {
+          "magnitude": 7.105427357601002e-15,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 5.672897196261683e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "3e2980f3-2035-46b6-a819-82d0a7c7c103"
+          },
+          {
+            "target": "a238c1bd-018a-4413-bd64-ab7d168f1962"
+          },
+          {
+            "target": "25e02d70-5954-4424-9da1-388a64cbb61b"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "5c31d601-f2c3-5805-baf3-77116dbd2500",
+        "residual": {
+          "magnitude": 1.1368683772161603e-13,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.01e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "53e56882-2540-4fdb-987e-b95c308e9cd7"
+          },
+          {
+            "target": "c7d34f50-c2e3-476d-baac-612d46e3a56b"
+          },
+          {
+            "target": "25e02d70-5954-4424-9da1-388a64cbb61b"
+          },
+          {
+            "target": "0e2ea191-4a4c-4ab0-851a-e0386d6c4d81"
+          },
+          {
+            "target": "25e02d70-5954-4424-9da1-388a64cbb61b"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "019cd3fa-c097-5cad-90a3-694cdad66355",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.0504e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "6094b6e7-63ac-4f80-bcca-6a77e60fc48e"
+          },
+          {
+            "target": "0bbe4e89-1f53-4f8f-a925-7da61ee3ba45"
+          },
+          {
+            "target": "de1b9d2a-be1a-4755-94e5-c3f2bea5351c"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "2596549a-e034-5c16-84eb-afd19d838b6c",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.100000000000002e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "c669a25a-f1ed-4476-94c7-633d5e799c3f"
+          },
+          {
+            "target": "d46244a2-714a-4d11-ae53-8137ba55e92d"
+          },
+          {
+            "target": "7d3197a4-17d9-460a-b640-85c6dff9b7d6"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "a096ab73-9a2f-510e-8aba-bdc941a7e947",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.0504e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "9a328872-1e6e-43e9-815f-969810c4c270"
+          },
+          {
+            "target": "6094b6e7-63ac-4f80-bcca-6a77e60fc48e"
+          },
+          {
+            "target": "4c9bd7cf-d1aa-4dee-8149-f4bd17f592ae"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "d1c03cb5-ffe8-5590-8c63-a61a92374f69",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1013999999999997e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "3a1b1807-8c48-46c7-9aa5-a91e4573b34f"
+          },
+          {
+            "target": "c669a25a-f1ed-4476-94c7-633d5e799c3f"
+          },
+          {
+            "target": "9a328872-1e6e-43e9-815f-969810c4c270"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "d8485d00-67c5-58ed-98ee-30c8da2938a0",
+        "residual": {
+          "magnitude": -1.1368683772161603e-13,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 9.63271028037383e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "d67a73a0-69c8-4a3a-9939-8c53b6fcacba"
+          },
+          {
+            "target": "3a1b1807-8c48-46c7-9aa5-a91e4573b34f"
+          },
+          {
+            "target": "25e02d70-5954-4424-9da1-388a64cbb61b"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "32e9840f-7074-5266-b695-2f57385ece96",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.0099999999999999e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "3fb89e16-cd87-4d42-bf97-689dbbf43d48"
+          },
+          {
+            "target": "c7d34f50-c2e3-476d-baac-612d46e3a56b"
+          },
+          {
+            "target": "25e02d70-5954-4424-9da1-388a64cbb61b"
+          },
+          {
+            "target": "d46244a2-714a-4d11-ae53-8137ba55e92d"
+          },
+          {
+            "target": "25e02d70-5954-4424-9da1-388a64cbb61b"
+          },
+          {
+            "target": "6094b6e7-63ac-4f80-bcca-6a77e60fc48e"
+          },
+          {
+            "target": "25e02d70-5954-4424-9da1-388a64cbb61b"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "5ea5814b-4e15-4231-b995-27309e124684",
+        "target": "3e9961d2-429c-5097-8712-b61130a64be2",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.0099999999999996e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "00688197-a05a-43de-8d72-38eea46313c7"
+          },
+          {
+            "target": "3e2980f3-2035-46b6-a819-82d0a7c7c103"
+          },
+          {
+            "target": "d67a73a0-69c8-4a3a-9939-8c53b6fcacba"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "feasible_candidate",
+        "message": "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made."
+      },
+      {
+        "severity": "info",
+        "code": "attempt_timing",
+        "message": "Elapsed monotonic time before persistence: 1.919129709 seconds."
+      }
+    ],
+    "trace": [
+      {
+        "kind": "validation",
+        "at": "2026-10-28T08:43:48.529717+00:00",
+        "message": "Validated additive composition, exact Model pin, scalar roles and recorded units.",
+        "document": "d8b764b2-e348-4ebe-b00f-d2e9d0e75e80"
+      },
+      {
+        "kind": "formulation",
+        "at": "2026-10-28T08:43:48.541747+00:00",
+        "message": "Expanded 53 scalar/Movement symbols and 37 affine constraints; limits 10000/20000."
+      },
+      {
+        "kind": "solve",
+        "at": "2026-10-28T08:43:49.959851+00:00",
+        "message": "Backend returned convergenceCriteriaSatisfied; independent acceptance follows when a candidate exists."
+      },
+      {
+        "kind": "publication",
+        "at": "2026-10-28T08:43:50.308483+00:00",
+        "message": "Accepted serialized immutable Model; store output before finalized Run.",
+        "document": "9b8252a6-cd8b-4da8-ba95-b877be422576"
+      }
+    ],
+    "outcomes": [
+      {
+        "decision": "a49322fb-da0b-5a0a-b9bf-c7354afee234",
+        "at": "2021-12-31",
+        "rule": null,
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "target": "960c94cb-b232-4611-ad50-da04154611b9"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            },
+            "available_at": "2021-12-31"
+          }
+        ],
+        "assignments": [
+          {
+            "target": {
+              "target": "291ebe6e-18ca-4303-9689-bc4f79d6965e"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "target": {
+              "target": "d9427bf9-68a7-44b3-8072-2dea71a7ba63"
+            },
+            "quantity": {
+              "magnitude": 0,
+              "units": "dimensionless"
+            }
+          }
+        ],
+        "terminated": false,
+        "termination_reason": null
+      },
+      {
+        "decision": "8b6bc31b-211c-588b-ba36-87d9752b6e5c",
+        "at": "2022-12-31",
+        "rule": null,
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "target": "68cf49dd-51b0-4b77-8dd5-f8a4ae407ddf"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            },
+            "available_at": "2022-12-31"
+          }
+        ],
+        "assignments": [
+          {
+            "target": {
+              "target": "7d3197a4-17d9-460a-b640-85c6dff9b7d6"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "target": {
+              "target": "4c9bd7cf-d1aa-4dee-8149-f4bd17f592ae"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          }
+        ],
+        "terminated": true,
+        "termination_reason": "fallback"
+      }
+    ]
+  }
+}

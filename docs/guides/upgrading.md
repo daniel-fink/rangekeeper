@@ -90,11 +90,39 @@ the computation fingerprints change once.
 
 For each stored 0.x document or Bundle, choose one route:
 
-- rebuild it from its source pipeline with 1.0.0a2;
-- convert it with the one-off conversion script
-  ([#120](https://github.com/daniel-fink/rangekeeper/issues/120)) when it is available.
+- **Rebuild** it from its source pipeline with 1.0.0a2. Use this route when you
+  have the pipeline: it gives documents that the 1.0 code wrote.
+- **Convert** it with the one-off [conversion tool](../../tools/upgrade/README.md)
+  ([#120](https://github.com/daniel-fink/rangekeeper/issues/120)). Use this route
+  for documents that you cannot rebuild, for example a Run with its evidence.
 
-Never rewrite the old artifact in place. A scenario realization saved before
+The conversion tool reads Model 0.7.0 and 0.8.0, Specification 0.7.0 and Run
+0.4.0, and Bundles that hold them. It changes the format version, the Period and
+Span fields `start` and `end`, `policy` to `rules`, `outcomes` to
+`rule_evidence`, and currency magnitudes to decimal text. Each document keeps its
+UUID, so put the converted documents in a new store or Bundle:
+
+```sh
+uv run python -m tools.upgrade documents old/model.json old/run.json --output converted
+uv run python -m tools.upgrade bundle old-bundle new-bundle
+```
+
+Never rewrite the old artifact in place.
+
+#### Currency amounts
+
+From 1.0.0a2, a magnitude in ISO 4217 units, such as `AUD`, is a `Decimal`
+([ADR-023](../decisions/023-decimal-money.md)). JSON and YAML store it as
+canonical decimal text, `"magnitude": "1250000.5"`, and the JSON reader rejects
+a number. The conversion tool rewrites stored documents. In code:
+
+| 1.0.0a1 | 1.0.0a2 |
+| --- | --- |
+| `quantity.magnitude * 1.1` for a currency Quantity | `quantity.number * 1.1`; a result in currency units becomes an amount when it is a record again |
+| `movement.magnitude` in arithmetic | `movement.number` |
+| `{"magnitude": 100.0, "units": "AUD"}` in data | `{"magnitude": "100", "units": "AUD"}` |
+| `rangekeeper.quantity.minor_unit` | `rangekeeper.money.minor_unit` (the codemod moves it) |
+| Rounding by hand | `Quantity.round()`, `money.round()`; the library never rounds on its own | A scenario realization saved before
 1.0.0a2 stays readable as data, but `replay` raises `ReplayUnavailableError` for
 it; generate it again.
 
