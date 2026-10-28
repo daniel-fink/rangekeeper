@@ -223,7 +223,7 @@ def validate_plan(plan):
 
 def validate_realizations(provenance, scope):
     """Check captured input/output references and delayed observation declarations."""
-    from rangekeeper.model.scope import reference_key, resolve_reference
+    from rangekeeper.model._scope import reference_key, resolve_reference
 
     realizations = provenance.get("scenarios") or []
     require_unique(realizations, "id", "scenario realization")
@@ -274,7 +274,7 @@ def validate_realizations(provenance, scope):
 
 def _validate_contents(item, scope):
     """Enforce complete captured shapes without importing generation algorithms."""
-    from rangekeeper.model.scope import reference_key, resolve_reference
+    from rangekeeper.model._scope import reference_key, resolve_reference
 
     plan = item["plan"]
     contract = method(plan["method"])

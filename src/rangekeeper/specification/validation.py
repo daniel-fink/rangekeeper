@@ -13,9 +13,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
 
+from rangekeeper.model._scope import Scope, numerical_units, reference_key
 from rangekeeper.model.expression.validation import ExpressionAnalysis
 from rangekeeper.model.formulation.preparation import prepare_formulations
-from rangekeeper.model.scope import Scope, numerical_units, reference_key
 from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.index import walk_data

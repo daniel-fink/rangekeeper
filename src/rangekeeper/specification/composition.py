@@ -13,7 +13,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from rangekeeper.model.scope import reference_key
+from rangekeeper.model._scope import reference_key
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.validation import (

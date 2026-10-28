@@ -28,7 +28,8 @@ See [calendar contracts](calculations.md).
 | Owner | Responsibility |
 | --- | --- |
 | `model.expression` | Generated expression exports, static domains, validation and pure numerical arithmetic |
-| `model.scope` | UUID-indexed mathematical declarations and explicit recorded scalar access |
+| `model._scope` | UUID-indexed mathematical declarations over raw mappings (internal) |
+| `model.targets` | The owning Value, units and recorded scalar of a Reference target in one Model |
 | `model.formulation.authoring` | `identify`, `identify_tree` and `declare` for stable declaration identities |
 | `model.formulation.flow` | `sum`, `scale`, `accumulate`, and symbolic shape/alignment helpers |
 | `model.formulation.growth` | `linear` and `compound` |

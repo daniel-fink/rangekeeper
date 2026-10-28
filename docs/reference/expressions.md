@@ -97,7 +97,8 @@ Entity characteristic already has a Value UUID, reference it directly.
 
 ## Analysis and uncertainty
 
-`model.scope` owns UUID-keyed declaration lookup. `model.formulation` collects
+`model._scope` owns UUID-keyed declaration lookup over raw mappings, and
+`model.targets` reads a Reference target in a typed Model. `model.formulation` collects
 owner-local declarations with original paths. `model.expression.validation`
 checks signatures, binds arguments and analyzes each expression once; its immutable
 ExpressionAnalysis contains node, domain and path maps. Constraints and objectives

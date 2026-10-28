@@ -4,7 +4,7 @@ from datetime import date
 from uuid import UUID
 
 from rangekeeper.model import Model
-from rangekeeper.model.scope import scope_for_model
+from rangekeeper.model._scope import scope_for_model
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import (
     ActionKind,

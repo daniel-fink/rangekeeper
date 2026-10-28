@@ -4,13 +4,13 @@ import math
 from datetime import date
 from uuid import UUID
 
-from rangekeeper.model.expression.validation import analyze_expressions
-from rangekeeper.model.scope import (
+from rangekeeper.model._scope import (
     numerical_units,
     recorded_quantity,
     reference_key,
     resolve_reference,
 )
+from rangekeeper.model.expression.validation import analyze_expressions
 from rangekeeper.quantity import default_units
 from rangekeeper.shared.validation import require
 from rangekeeper.specification.rule._availability import available_on, evidence_dates

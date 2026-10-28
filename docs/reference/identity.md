@@ -77,8 +77,9 @@ See [record operations](records.md), [calculations](calculations.md) and
 Internal declaration, expression-analysis and numerical symbol tables use UUID
 keys. Conversion to wire/backend strings occurs at those boundaries. Shared record
 traversal retains original JSON pointers and never follows References or traverses
-opaque Claim content. The numerical target helpers in `model.scope` use one
-Value/Movement ownership rule; reading a quantity never creates an assignment.
+opaque Claim content. The numerical target helpers in `model.targets` (typed
+records) and `model._scope` (raw mappings) use one Value/Movement ownership rule;
+reading a quantity never creates an assignment.
 
 
 Model-backed Stream calculations retain source Value references separately from

@@ -16,7 +16,8 @@ and [identity](identity.md) define shared construction and reference rules.
 | `model/{update,diff}.py` | Complete-section replacement and descriptive comparison |
 | `model/system/validation.py` | Entity, Assembly, Relationship and membership invariants |
 | `model/formulation/` | Located Formulations, owner-local codes and mathematical preparation |
-| `model/scope.py`, `model/expression/` | Declaration/target lookup, Value content, Function signatures and expression analysis |
+| `model/_scope.py`, `model/expression/` | Declaration lookup and Value content checks over raw mappings, Function signatures and expression analysis |
+| `model/targets.py` | Typed lookups of a Reference target: owning Value, units and recorded scalar |
 | `model/validation.py` | Public validation report and coordination of domain checks |
 
 The Model builds its `RecordIndex` once and reuses it for lookup, validation and

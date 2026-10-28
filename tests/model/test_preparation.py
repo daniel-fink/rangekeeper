@@ -17,6 +17,7 @@ from rangekeeper.model import (
     Metadata,
     Model,
 )
+from rangekeeper.model._scope import build_scope
 from rangekeeper.model.definitions import measure
 from rangekeeper.model.expression import ExpressionKind
 from rangekeeper.model.expression.domains import DomainCompatibility, compare_domains
@@ -25,7 +26,6 @@ from rangekeeper.model.expression.validation import (
     infer_query_domain,
 )
 from rangekeeper.model.formulation.preparation import prepare_formulations
-from rangekeeper.model.scope import build_scope
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.index import RecordIndex, walk_data
 from rangekeeper.schema.runtime import exact_equal
