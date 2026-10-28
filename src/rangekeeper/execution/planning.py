@@ -2,7 +2,6 @@
 
 from uuid import UUID
 
-from rangekeeper.io.store import RecordStore
 from rangekeeper.model import Model
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
@@ -10,6 +9,7 @@ from rangekeeper.shared.errors import (
     ReferenceTypeError,
     ValidationError,
 )
+from rangekeeper.shared.store import RecordStore
 from rangekeeper.specification import Composition, Specification
 from rangekeeper.specification.composition import collect_specifications, compose
 

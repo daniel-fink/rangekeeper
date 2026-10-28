@@ -6,7 +6,6 @@ from rangekeeper.execution import acceptance
 from rangekeeper.execution.attempt import Attempt
 from rangekeeper.execution.backends import Backend, PyomoHighs
 from rangekeeper.execution.planning import Plan
-from rangekeeper.io.store import RecordStore
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.run import Run, RunRecord, Severity, SolutionStatus
 from rangekeeper.run.report import completion_for
@@ -19,6 +18,7 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.errors import ValidationError
+from rangekeeper.shared.store import RecordStore
 from rangekeeper.specification import Composition, Specification
 
 
