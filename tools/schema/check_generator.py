@@ -1,5 +1,7 @@
 """Check that the generator rejects slots that records cannot represent.
 
+It also rejects a class or slot without a description.
+
 Run in the pinned schema environment, from the repository root.
 """
 
@@ -48,3 +50,20 @@ generation.check_slots(
     {"Example": {"part": meta(("Period", "record"), ("Claim", "uuid"))}}, reserved
 )
 print(f"Checked {len(cases)} rejected slot shapes")
+
+described = {"description": "An example.", "slots": {"part": "One part."}}
+missing = {
+    "class": {"Example": {**described, "description": None}},
+    "blank class": {"Example": {**described, "description": " "}},
+    "slot": {"Example": {**described, "slots": {"part": None}}},
+    "blank slot": {"Example": {**described, "slots": {"part": ""}}},
+}
+for label, metadata in missing.items():
+    try:
+        generation.check_descriptions(metadata)
+    except ValueError as error:
+        print(f"Rejected {label} without a description: {error}")
+    else:
+        raise SystemExit(f"The generator accepted a {label} without a description")
+generation.check_descriptions({"Example": described})
+print(f"Checked {len(missing)} missing descriptions")

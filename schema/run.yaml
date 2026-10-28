@@ -136,6 +136,7 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
       rule_evidence:
+        description: Ordered evidence of each evaluated Decision of the Specification rules.
         range: RuleEvidence
         inlined: true
         multivalued: true

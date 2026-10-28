@@ -166,6 +166,7 @@ classes:
         - range: Settings
           inlined: true
       rules:
+        description: Optional RuleSet with controlled targets and dated decisions.
         range: RuleSet
         inlined: true
   Objective:

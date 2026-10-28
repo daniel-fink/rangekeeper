@@ -70,17 +70,17 @@ class Action(Record):
 
     @property
     def kind(self) -> ActionKind:
-        'Kind.'
+        'Whether the action assigns a control or terminates the decision sequence.'
         return cast('ActionKind', self._field('kind'))
 
     @property
     def target(self) -> Reference | None:
-        'Target.'
+        'Controlled target to assign; required for assign and absent for terminate.'
         return cast('Reference | None', self._field('target'))
 
     @property
     def quantity(self) -> Quantity | None:
-        'Quantity.'
+        'Finite quantity to assign, with units compatible with the target; required for assign and absent for terminate.'
         return cast('Quantity | None', self._field('quantity'))
 
 
@@ -110,12 +110,12 @@ class Argument(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the Function parameter to which the argument binds.'
         return cast('str', self._field('name'))
 
     @property
     def expression(self) -> Expression:
-        'Expression.'
+        'Expression supplied for the parameter.'
         return cast('Expression', self._field('expression'))
 
 
@@ -287,7 +287,7 @@ class Assignment(Record):
 
     @property
     def target(self) -> Reference:
-        'Target.'
+        'Value or Movement to which the quantity is supplied.'
         return cast('Reference', self._field('target'))
 
     @property
@@ -361,17 +361,17 @@ class CalculationProvenance(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the calculation implementation.'
         return cast('str', self._field('name'))
 
     @property
     def fingerprint(self) -> str:
-        'Fingerprint.'
+        'Format-prefixed digest of the calculation manifest, which covers its sources, resources and dependency versions.'
         return cast('str', self._field('fingerprint'))
 
     @property
     def versions(self) -> tuple[LibraryVersion, ...]:
-        'Versions.'
+        'Dependency versions included in the fingerprint.'
         return cast('tuple[LibraryVersion, ...]', self._field('versions'))
 
 
@@ -405,7 +405,7 @@ class Call(Record):
 
     @property
     def function(self) -> UUID:
-        'Function.'
+        'UUID of the Function that the call applies.'
         return cast('UUID', self._field('function'))
 
     @property
@@ -492,17 +492,17 @@ class Claim(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Claim, referenced by Facts and by dependent Claims.'
         return cast('UUID', self._field('id'))
 
     @property
     def content(self) -> FrozenJSONValue | None:
-        'Content.'
+        'Candidate content; its structure depends on the supported target.'
         return cast('FrozenJSONValue | None', self._field('content'))
 
     @property
     def kind(self) -> ClaimKind:
-        'Kind.'
+        'Whether the content is sourced, asserted or derived.'
         return cast('ClaimKind', self._field('kind'))
 
     @property
@@ -512,7 +512,7 @@ class Claim(Record):
 
     @property
     def method(self) -> Method | None:
-        'Method.'
+        'Process used to obtain the content; required for asserted and derived Claims.'
         return cast('Method | None', self._field('method'))
 
 
@@ -641,7 +641,7 @@ class Constraint(Record):
 
 
 class ContentEntry(Record):
-    'ContentEntry'
+    'One key-value entry of mapping content.'
     __slots__ = ()
     _kind = 'ContentEntry'
 
@@ -666,12 +666,12 @@ class ContentEntry(Record):
 
     @property
     def key(self) -> PropertyContent:
-        'Key.'
+        'Content of the mapping key.'
         return cast('PropertyContent', self._field('key'))
 
     @property
     def value(self) -> PropertyContent:
-        'Value.'
+        'Content of the value for the key.'
         return cast('PropertyContent', self._field('value'))
 
 
@@ -706,7 +706,7 @@ class Criterion(Record):
 
     @property
     def classification(self) -> UUID:
-        'Classification.'
+        'UUID of the Classification that the Label must include.'
         return cast('UUID', self._field('classification'))
 
 
@@ -748,27 +748,27 @@ class Decision(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Decision, referenced by RuleEvidence.'
         return cast('UUID', self._field('id'))
 
     @property
     def at(self) -> Date:
-        'At.'
+        'Decision date; dates increase strictly within the RuleSet.'
         return cast('Date', self._field('at'))
 
     @property
     def observations(self) -> tuple[ObservationBinding, ...]:
-        'Observations.'
+        'Ordered observations that the rule conditions can read.'
         return cast('tuple[ObservationBinding, ...]', self._field('observations'))
 
     @property
     def rules(self) -> tuple[Rule, ...]:
-        'Rules.'
+        'Ordered rules; the first Rule whose condition is true supplies the actions.'
         return cast('tuple[Rule, ...]', self._field('rules'))
 
     @property
     def fallback(self) -> tuple[Action, ...]:
-        'Fallback.'
+        'Nonempty ordered actions applied when no rule condition is true.'
         return cast('tuple[Action, ...]', self._field('fallback'))
 
 
@@ -802,12 +802,12 @@ class Definitions(Record):
 
     @property
     def taxonomies(self) -> tuple[Taxonomy, ...] | None:
-        'Taxonomies.'
+        'Taxonomies of this Model; codes are unique within the collection.'
         return cast('tuple[Taxonomy, ...] | None', self._field('taxonomies'))
 
     @property
     def measures(self) -> tuple[Measure, ...] | None:
-        'Measures.'
+        'Measures of this Model; codes are unique within the collection.'
         return cast('tuple[Measure, ...] | None', self._field('measures'))
 
     @property
@@ -947,32 +947,32 @@ class Distribution(DistributionBehavior, Record):
 
     @property
     def kind(self) -> DistributionFamily:
-        'Kind.'
+        'Distribution family, which is uniform, triangular or PERT.'
         return cast('DistributionFamily', self._field('kind'))
 
     @property
     def lower(self) -> int | float:
-        'Lower.'
+        'Finite lower bound of the support, in units.'
         return cast('int | float', self._field('lower'))
 
     @property
     def upper(self) -> int | float:
-        'Upper.'
+        'Finite upper bound of the support, in units; it is not less than lower.'
         return cast('int | float', self._field('upper'))
 
     @property
     def mode(self) -> int | float | None:
-        'Mode.'
+        'Finite most likely value, between lower and upper; semantic checks require it for triangular and PERT.'
         return cast('int | float | None', self._field('mode'))
 
     @property
     def weighting(self) -> int | float | None:
-        'Weighting.'
+        'Finite nonnegative weighting of the mode in a PERT distribution; absence means 4.'
         return cast('int | float | None', self._field('weighting'))
 
     @property
     def units(self) -> str:
-        'Units.'
+        'Units of lower, upper and mode.'
         return cast('str', self._field('units'))
 
 
@@ -1064,12 +1064,12 @@ class Entry(Record):
 
     @property
     def key(self) -> str:
-        'Key.'
+        'Nonblank name of the address part, such as sheet or cell.'
         return cast('str', self._field('key'))
 
     @property
     def value(self) -> str:
-        'Value.'
+        'Nonblank text of the address part.'
         return cast('str', self._field('value'))
 
 
@@ -1140,7 +1140,7 @@ class Expression(Record):
 
     @property
     def kind(self) -> ExpressionKind:
-        'Kind.'
+        'Form of the Expression; it determines which content field is present.'
         return cast('ExpressionKind', self._field('kind'))
 
     @property
@@ -1160,7 +1160,7 @@ class Expression(Record):
 
     @property
     def operator(self) -> Operator | None:
-        'Operator.'
+        'Operator of a unary or binary Expression; absent for other kinds.'
         return cast('Operator | None', self._field('operator'))
 
     @property
@@ -1175,17 +1175,17 @@ class Expression(Record):
 
     @property
     def call(self) -> Call | None:
-        'Call.'
+        'Function call content of a call Expression.'
         return cast('Call | None', self._field('call'))
 
     @property
     def selection(self) -> Selection | None:
-        'Selection.'
+        'Member or index selection content of a selection Expression.'
         return cast('Selection | None', self._field('selection'))
 
     @property
     def query(self) -> Query | None:
-        'Query.'
+        'Embedded graph query of a query Expression; the Expression owns it.'
         return cast('Query | None', self._field('query'))
 
 
@@ -1229,7 +1229,7 @@ class Fact(Record):
 
     @property
     def reconciliation(self) -> Reconciliation | None:
-        'Reconciliation.'
+        'Optional explicit selection of one supporting Claim when the Claims conflict.'
         return cast('Reconciliation | None', self._field('reconciliation'))
 
 
@@ -1259,7 +1259,7 @@ class Filter(Record):
 
     @property
     def classification(self) -> UUID | None:
-        'Classification.'
+        'Exact Classification that a candidate Entity must have; taxonomy descendants do not match.'
         return cast('UUID | None', self._field('classification'))
 
     @property
@@ -1294,12 +1294,12 @@ class Flow(FlowBehavior, Record):
 
     @property
     def units(self) -> str:
-        'Units.'
+        'Units of every Movement magnitude in this Flow.'
         return cast('str', self._field('units'))
 
     @property
     def movements(self) -> tuple[Movement, ...]:
-        'Movements.'
+        'Ordered Movements; an empty list is a Flow with no entries.'
         return cast('tuple[Movement, ...]', self._field('movements'))
 
 
@@ -1455,12 +1455,12 @@ class Function(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Function, referenced by calls.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str:
-        'Code.'
+        'Case-sensitive code unique within the Model Function collection; not reference identity.'
         return cast('str', self._field('code'))
 
     @property
@@ -1470,7 +1470,7 @@ class Function(Record):
 
     @property
     def version(self) -> str:
-        'Version.'
+        'Version of this Function contract.'
         return cast('str', self._field('version'))
 
     @property
@@ -1525,12 +1525,12 @@ class Geometry(Record):
 
     @property
     def pin(self) -> GeometryPin:
-        'Pin.'
+        'Exact pin of the provider dataset that this Model owns.'
         return cast('GeometryPin', self._field('pin'))
 
     @property
     def mappings(self) -> tuple[GeometryMapping, ...] | None:
-        'Mappings.'
+        'Associations of Entities or Assemblies with typed source elements in the pinned dataset.'
         return cast('tuple[GeometryMapping, ...] | None', self._field('mappings'))
 
 
@@ -1572,27 +1572,27 @@ class GeometryElement(Record):
 
     @property
     def namespace(self) -> str:
-        'Namespace.'
+        'Provider-defined namespace of the element key.'
         return cast('str', self._field('namespace'))
 
     @property
     def kind(self) -> str:
-        'Kind.'
+        'Element kind; RK accepts object or group.'
         return cast('str', self._field('kind'))
 
     @property
     def key(self) -> str:
-        'Key.'
+        'Nonempty provider-defined identifier of the element in its namespace.'
         return cast('str', self._field('key'))
 
     @property
     def scope(self) -> str | None:
-        'Scope.'
+        'Optional provider-defined scope that qualifies the key.'
         return cast('str | None', self._field('scope'))
 
     @property
     def placement(self) -> tuple[str, ...] | None:
-        'Placement.'
+        'Optional ordered placement path that selects one placement of the element.'
         return cast('tuple[str, ...] | None', self._field('placement'))
 
 
@@ -1626,17 +1626,17 @@ class GeometryFile(Record):
 
     @property
     def path(self) -> str:
-        'Path.'
+        'Relative POSIX path under the Geometry root, without empty, dot or parent segments.'
         return cast('str', self._field('path'))
 
     @property
     def sha256(self) -> str:
-        'Sha256.'
+        'Lowercase hexadecimal SHA-256 digest of the file bytes.'
         return cast('str', self._field('sha256'))
 
     @property
     def size(self) -> int:
-        'Size.'
+        'File size in bytes.'
         return cast('int', self._field('size'))
 
 
@@ -1666,12 +1666,12 @@ class GeometryMapping(Record):
 
     @property
     def entity(self) -> UUID:
-        'Entity.'
+        'UUID of the mapped Entity or Assembly in this Model.'
         return cast('UUID', self._field('entity'))
 
     @property
     def element(self) -> GeometryElement:
-        'Element.'
+        'Typed source element in the pinned dataset that corresponds to the Entity.'
         return cast('GeometryElement', self._field('element'))
 
 
@@ -1729,17 +1729,17 @@ class GeometryPin(Record):
 
     @property
     def provider(self) -> str:
-        'Provider.'
+        'Code that names the Geometry provider; with format and format_version, it selects the provider adapter.'
         return cast('str', self._field('provider'))
 
     @property
     def format(self) -> str:
-        'Format.'
+        'Code that names the native dataset format.'
         return cast('str', self._field('format'))
 
     @property
     def format_version(self) -> str:
-        'Format version.'
+        'Version of the native dataset format.'
         return cast('str', self._field('format_version'))
 
     @property
@@ -1749,27 +1749,27 @@ class GeometryPin(Record):
 
     @property
     def specification_digest(self) -> str:
-        'Specification digest.'
+        'Lowercase hexadecimal SHA-256 digest of the pinned upstream specification.'
         return cast('str', self._field('specification_digest'))
 
     @property
     def content_digest(self) -> str:
-        'Content digest.'
+        'Lowercase hexadecimal SHA-256 digest of the file inventory sorted by path; validation recomputes it from files.'
         return cast('str', self._field('content_digest'))
 
     @property
     def files(self) -> tuple[GeometryFile, ...]:
-        'Files.'
+        'Inventory of the retained native files; each path is unique.'
         return cast('tuple[GeometryFile, ...]', self._field('files'))
 
     @property
     def source_address(self) -> str | None:
-        'Source address.'
+        'Optional address of the source dataset; it does not replace the digests.'
         return cast('str | None', self._field('source_address'))
 
     @property
     def source_version(self) -> str | None:
-        'Source version.'
+        'Optional version of the source dataset at the source address.'
         return cast('str | None', self._field('source_version'))
 
 
@@ -1887,12 +1887,12 @@ class LibraryVersion(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the dependency, such as python.'
         return cast('str', self._field('name'))
 
     @property
     def version(self) -> str:
-        'Version.'
+        'Version of the dependency.'
         return cast('str', self._field('version'))
 
 
@@ -1922,7 +1922,7 @@ class Location(Record):
 
     @property
     def source(self) -> UUID:
-        'Source.'
+        'UUID of the Source edition that contains this address.'
         return cast('UUID', self._field('source'))
 
     @property
@@ -2094,17 +2094,17 @@ class Method(Record):
 
     @property
     def code(self) -> str:
-        'Code.'
+        'Nonblank code that names the process.'
         return cast('str', self._field('code'))
 
     @property
     def version(self) -> str | None:
-        'Version.'
+        'Optional nonblank version of the process.'
         return cast('str | None', self._field('version'))
 
     @property
     def description(self) -> str | None:
-        'Description.'
+        'Optional nonblank explanation of the process.'
         return cast('str | None', self._field('description'))
 
 
@@ -2222,22 +2222,22 @@ class Movement(MovementBehavior, Record):
 
     @property
     def date(self) -> Date | None:
-        'Date.'
+        'Date of the entry; with a period, an independent payment or observation date.'
         return cast('Date | None', self._field('date'))
 
     @property
     def period(self) -> Period | None:
-        'Period.'
+        'Half-open Period of the entry.'
         return cast('Period | None', self._field('period'))
 
     @property
     def magnitude(self) -> int | float | None:
-        'Magnitude.'
+        'Amount in the Flow units; absent or null means unresolved, and zero is a known amount.'
         return cast('int | float | None', self._field('magnitude'))
 
     @property
     def claims(self) -> tuple[UUID, ...] | None:
-        'Claims.'
+        'Unique UUIDs of provenance Claims that support this Movement.'
         return cast('tuple[UUID, ...] | None', self._field('claims'))
 
 
@@ -2302,12 +2302,12 @@ class ObservationAvailability(Record):
 
     @property
     def target(self) -> Reference:
-        'Target.'
+        'Recorded Value or Movement; scenario validation requires a Movement.'
         return cast('Reference', self._field('target'))
 
     @property
     def available_at(self) -> Date:
-        'Available at.'
+        'Earliest date on which a rule can observe the target.'
         return cast('Date', self._field('available_at'))
 
 
@@ -2341,17 +2341,17 @@ class ObservationBinding(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the observation, unique within its Decision.'
         return cast('str', self._field('name'))
 
     @property
     def target(self) -> Reference:
-        'Target.'
+        'Value or Movement whose recorded or decided quantity the Decision observes.'
         return cast('Reference', self._field('target'))
 
     @property
     def available_at(self) -> Date | None:
-        'Available at.'
+        'Optional date that can delay availability; it cannot make the quantity available earlier.'
         return cast('Date | None', self._field('available_at'))
 
 
@@ -2389,22 +2389,22 @@ class ObservedQuantity(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the ObservationBinding that this quantity satisfies.'
         return cast('str', self._field('name'))
 
     @property
     def target(self) -> Reference:
-        'Target.'
+        'Observed Value or Movement, equal to the target of the ObservationBinding.'
         return cast('Reference', self._field('target'))
 
     @property
     def quantity(self) -> Quantity:
-        'Quantity.'
+        'Exact quantity supplied to the rule conditions.'
         return cast('Quantity', self._field('quantity'))
 
     @property
     def available_at(self) -> Date:
-        'Available at.'
+        'Date from which the quantity was available; it is not later than the Decision date.'
         return cast('Date', self._field('available_at'))
 
 
@@ -2442,7 +2442,7 @@ class Parameter(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Parameter name, unique within the Function; named arguments bind by this name.'
         return cast('str', self._field('name'))
 
     @property
@@ -2487,12 +2487,12 @@ class Period(PeriodBehavior, Record):
 
     @property
     def start(self) -> Date:
-        'Start.'
+        'First date of the period; it is included.'
         return cast('Date', self._field('start'))
 
     @property
     def end(self) -> Date:
-        'End.'
+        'Boundary date after the period; it is excluded and later than start.'
         return cast('Date', self._field('end'))
 
 
@@ -2534,7 +2534,7 @@ class Projection(Record):
 
     @property
     def kind(self) -> ProjectionKind:
-        'Kind.'
+        'Whether the query returns Entity identities or Values of the matching Entities.'
         return cast('ProjectionKind', self._field('kind'))
 
     @property
@@ -2549,12 +2549,12 @@ class Projection(Record):
 
     @property
     def cardinality(self) -> Cardinality | None:
-        'Cardinality.'
+        'Number of Values permitted for each Entity; required for value projection and absent for entity projection.'
         return cast('Cardinality | None', self._field('cardinality'))
 
     @property
     def missing(self) -> MissingHandling | None:
-        'Missing.'
+        'Treatment of an Entity with no matching Value; required for value projection and absent for entity projection.'
         return cast('MissingHandling | None', self._field('missing'))
 
 
@@ -2600,32 +2600,32 @@ class PropertyContent(Record):
 
     @property
     def kind(self) -> ContentKind:
-        'Kind.'
+        'Type tag; it determines which other fields are present and how text is read.'
         return cast('ContentKind', self._field('kind'))
 
     @property
     def text(self) -> str | None:
-        'Text.'
+        'Canonical text of a scalar value, such as an ISO date or a duration in microseconds; absent for null and container kinds.'
         return cast('str | None', self._field('text'))
 
     @property
     def zone(self) -> str | None:
-        'Zone.'
+        'Optional IANA time-zone key of a datetime or time value.'
         return cast('str | None', self._field('zone'))
 
     @property
     def fold(self) -> int | None:
-        'Fold.'
+        'Fold, 0 or 1, of a datetime or time value; it selects between repeated wall-clock times.'
         return cast('int | None', self._field('fold'))
 
     @property
     def items(self) -> tuple[PropertyContent, ...] | None:
-        'Items.'
+        'Ordered members of a list, tuple, set or frozenset; set members use a canonical order.'
         return cast('tuple[PropertyContent, ...] | None', self._field('items'))
 
     @property
     def entries(self) -> tuple[ContentEntry, ...] | None:
-        'Entries.'
+        'Ordered entries of a mapping or mapping proxy; keys are unique.'
         return cast('tuple[ContentEntry, ...] | None', self._field('entries'))
 
 
@@ -2663,22 +2663,22 @@ class Provenance(Record):
 
     @property
     def sources(self) -> tuple[Source, ...] | None:
-        'Sources.'
+        'Source editions referenced by Claim Locations; each Source is stored once.'
         return cast('tuple[Source, ...] | None', self._field('sources'))
 
     @property
     def claims(self) -> tuple[Claim, ...] | None:
-        'Claims.'
+        'Claims referenced by Facts and by upstream Claim dependencies; each Claim is stored once.'
         return cast('tuple[Claim, ...] | None', self._field('claims'))
 
     @property
     def facts(self) -> tuple[Fact, ...] | None:
-        'Facts.'
+        'Facts that connect graph objects or characteristics to supporting Claims; at most one Fact per target.'
         return cast('tuple[Fact, ...] | None', self._field('facts'))
 
     @property
     def scenarios(self) -> tuple[ScenarioRealization, ...] | None:
-        'Scenarios.'
+        'Captured scenario realizations, in order, with their inputs, paths and observation availability.'
         return cast('tuple[ScenarioRealization, ...] | None', self._field('scenarios'))
 
 
@@ -2755,7 +2755,7 @@ class Query(Record):
 
     @property
     def starting_at(self) -> UUID:
-        'Starting at.'
+        'UUID of the Entity in the containing Model revision where the query starts.'
         return cast('UUID', self._field('starting_at'))
 
     @property
@@ -2765,17 +2765,17 @@ class Query(Record):
 
     @property
     def filter(self) -> Filter | None:
-        'Filter.'
+        'Optional conditions applied to the candidates after traversal.'
         return cast('Filter | None', self._field('filter'))
 
     @property
     def projection(self) -> Projection:
-        'Projection.'
+        'Selection of Entity identities or Values from the filtered candidates.'
         return cast('Projection', self._field('projection'))
 
     @property
     def duplicates(self) -> DuplicateHandling:
-        'Duplicates.'
+        'Whether repeated projected UUIDs are kept or removed.'
         return cast('DuplicateHandling', self._field('duplicates'))
 
 
@@ -2805,12 +2805,12 @@ class RandomStream(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the parameter or input that the stream samples.'
         return cast('str', self._field('name'))
 
     @property
     def identifier(self) -> str:
-        'Identifier.'
+        'SHA-256 hexadecimal digest of the scenario key and stream component; with the plan seed, it seeds the stream.'
         return cast('str', self._field('identifier'))
 
 
@@ -2849,12 +2849,12 @@ class Reconciliation(Record):
 
     @property
     def status(self) -> ReconciliationStatus:
-        'Status.'
+        'Whether the selection is provisional or confirmed.'
         return cast('ReconciliationStatus', self._field('status'))
 
     @property
     def method(self) -> Method | None:
-        'Method.'
+        'Optional process used to make the selection.'
         return cast('Method | None', self._field('method'))
 
 
@@ -3004,7 +3004,7 @@ class Report(Record):
 
     @property
     def rule_evidence(self) -> tuple[RuleEvidence, ...] | None:
-        'Rule evidence.'
+        'Ordered evidence of each evaluated Decision of the Specification rules.'
         return cast('tuple[RuleEvidence, ...] | None', self._field('rule_evidence'))
 
 
@@ -3038,17 +3038,17 @@ class Rule(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Rule, referenced by RuleEvidence.'
         return cast('UUID', self._field('id'))
 
     @property
     def condition(self) -> Expression:
-        'Condition.'
+        'Boolean Expression that refers only to the observations of its Decision.'
         return cast('Expression', self._field('condition'))
 
     @property
     def actions(self) -> tuple[Action, ...]:
-        'Actions.'
+        'Nonempty ordered actions applied when this is the first true Rule; terminate can only be last.'
         return cast('tuple[Action, ...]', self._field('actions'))
 
 
@@ -3098,32 +3098,32 @@ class RuleEvidence(Record):
 
     @property
     def decision(self) -> UUID:
-        'Decision.'
+        'UUID of the evaluated Decision.'
         return cast('UUID', self._field('decision'))
 
     @property
     def at(self) -> Date:
-        'At.'
+        'Date of the evaluated Decision.'
         return cast('Date', self._field('at'))
 
     @property
     def rule(self) -> UUID | None:
-        'Rule.'
+        'UUID of the first Rule whose condition was true; absent or null when the fallback applied.'
         return cast('UUID | None', self._field('rule'))
 
     @property
     def observations(self) -> tuple[ObservedQuantity, ...]:
-        'Observations.'
+        'Observed quantities, in the order of the Decision observations.'
         return cast('tuple[ObservedQuantity, ...]', self._field('observations'))
 
     @property
     def assignments(self) -> tuple[Assignment, ...]:
-        'Assignments.'
+        'Assignments made by the applied actions, in action order.'
         return cast('tuple[Assignment, ...]', self._field('assignments'))
 
     @property
     def terminated(self) -> bool:
-        'Terminated.'
+        'Whether the applied actions terminated the decision sequence; no evidence follows a termination.'
         return cast('bool', self._field('terminated'))
 
     @property
@@ -3162,17 +3162,17 @@ class RuleSet(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the RuleSet.'
         return cast('UUID', self._field('id'))
 
     @property
     def targets(self) -> tuple[Reference, ...]:
-        'Targets.'
+        'Nonempty unique controlled targets; the decision actions must assign each one.'
         return cast('tuple[Reference, ...]', self._field('targets'))
 
     @property
     def decisions(self) -> tuple[Decision, ...]:
-        'Decisions.'
+        'Dated Decisions in strictly increasing date order.'
         return cast('tuple[Decision, ...]', self._field('decisions'))
 
 
@@ -3321,17 +3321,17 @@ class ScenarioParameter(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Parameter name of the market method contract, unique within the plan.'
         return cast('str', self._field('name'))
 
     @property
     def quantity(self) -> Quantity | None:
-        'Quantity.'
+        'Fixed quantity; give this or distribution, not both.'
         return cast('Quantity | None', self._field('quantity'))
 
     @property
     def distribution(self) -> Distribution | None:
-        'Distribution.'
+        'Distribution to sample; give this or quantity, not both.'
         return cast('Distribution | None', self._field('distribution'))
 
 
@@ -3373,27 +3373,27 @@ class ScenarioPlan(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the plan.'
         return cast('UUID', self._field('id'))
 
     @property
     def method(self) -> str:
-        'Method.'
+        'Code of the market method contract that the plan uses.'
         return cast('str', self._field('method'))
 
     @property
     def seed(self) -> int:
-        'Seed.'
+        'Nonnegative master seed of the random streams.'
         return cast('int', self._field('seed'))
 
     @property
     def periods(self) -> tuple[Period, ...]:
-        'Periods.'
+        'Nonempty ordered calendar periods of the generated paths; periods do not overlap.'
         return cast('tuple[Period, ...]', self._field('periods'))
 
     @property
     def parameters(self) -> tuple[ScenarioParameter, ...]:
-        'Parameters.'
+        'Parameters of the method; their names match the parameter inventory of the method.'
         return cast('tuple[ScenarioParameter, ...]', self._field('parameters'))
 
 
@@ -3455,52 +3455,52 @@ class ScenarioRealization(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the realization.'
         return cast('UUID', self._field('id'))
 
     @property
     def plan(self) -> ScenarioPlan:
-        'Plan.'
+        'Complete plan from which the scenario inputs were generated.'
         return cast('ScenarioPlan', self._field('plan'))
 
     @property
     def key(self) -> str:
-        'Key.'
+        'Scenario key; with the plan seed, it determines the random streams.'
         return cast('str', self._field('key'))
 
     @property
     def calculation(self) -> CalculationProvenance | None:
-        'Calculation.'
+        'Calculation that produced the realized paths; absent for inputs without realized paths.'
         return cast('CalculationProvenance | None', self._field('calculation'))
 
     @property
     def generator(self) -> str:
-        'Generator.'
+        'Random generation algorithm, such as numpy.SeedSequence/PCG64, or supplied for captured inputs.'
         return cast('str', self._field('generator'))
 
     @property
     def versions(self) -> tuple[LibraryVersion, ...]:
-        'Versions.'
+        'Dependency versions of the sampling or capture environment.'
         return cast('tuple[LibraryVersion, ...]', self._field('versions'))
 
     @property
     def streams(self) -> tuple[RandomStream, ...]:
-        'Streams.'
+        'Random streams used to sample the inputs; empty for supplied inputs.'
         return cast('tuple[RandomStream, ...]', self._field('streams'))
 
     @property
     def inputs(self) -> tuple[Binding, ...]:
-        'Inputs.'
+        'Bindings of the captured input Values.'
         return cast('tuple[Binding, ...]', self._field('inputs'))
 
     @property
     def outputs(self) -> tuple[Binding, ...]:
-        'Outputs.'
+        'Bindings of the realized path Values; empty until the paths are realized.'
         return cast('tuple[Binding, ...]', self._field('outputs'))
 
     @property
     def availability(self) -> tuple[ObservationAvailability, ...]:
-        'Availability.'
+        'Earliest observation dates of the recorded Movements.'
         return cast('tuple[ObservationAvailability, ...]', self._field('availability'))
 
 
@@ -3538,12 +3538,12 @@ class Selection(Record):
 
     @property
     def kind(self) -> SelectionKind:
-        'Kind.'
+        'Whether the selection reads a declared member or an indexed element.'
         return cast('SelectionKind', self._field('kind'))
 
     @property
     def base(self) -> Expression:
-        'Base.'
+        'Expression whose structured content supplies the member or element.'
         return cast('Expression', self._field('base'))
 
     @property
@@ -3661,12 +3661,12 @@ class Source(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Source edition, referenced by Locations.'
         return cast('UUID', self._field('id'))
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Nonblank human-readable name of the evidence artifact.'
         return cast('str', self._field('name'))
 
     @property
@@ -3676,17 +3676,17 @@ class Source(Record):
 
     @property
     def issued_at(self) -> Date | str | None:
-        'Issued at.'
+        'Optional date or date-time at which the source edition was issued.'
         return cast('Date | str | None', self._field('issued_at'))
 
     @property
     def received_at(self) -> Date | str | None:
-        'Received at.'
+        'Optional date or date-time at which the source edition was received.'
         return cast('Date | str | None', self._field('received_at'))
 
     @property
     def author(self) -> str | None:
-        'Author.'
+        'Optional nonblank author of the evidence artifact.'
         return cast('str | None', self._field('author'))
 
 
@@ -3720,17 +3720,17 @@ class Span(SpanBehavior, Period):
 
     @property
     def name(self) -> str | None:
-        'Name.'
+        'Optional name of the extent.'
         return cast('str | None', self._field('name'))
 
     @property
     def start(self) -> Date:
-        'Start.'
+        'First date of the period; it is included.'
         return cast('Date', self._field('start'))
 
     @property
     def end(self) -> Date:
-        'End.'
+        'Boundary date after the period; it is excluded and later than start.'
         return cast('Date', self._field('end'))
 
 
@@ -3846,7 +3846,7 @@ class Specification(Record):
 
     @property
     def rules(self) -> RuleSet | None:
-        'Rules.'
+        'Optional RuleSet with controlled targets and dated decisions.'
         return cast('RuleSet | None', self._field('rules'))
 
 
@@ -4038,7 +4038,7 @@ class Taxonomy(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Taxonomy across Model revisions.'
         return cast('UUID', self._field('id'))
 
     @property
@@ -4048,12 +4048,12 @@ class Taxonomy(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Nonblank human-readable name.'
         return cast('str', self._field('name'))
 
     @property
     def definition(self) -> str | None:
-        'Definition.'
+        'Optional explanatory text.'
         return cast('str | None', self._field('definition'))
 
     @property
@@ -4096,12 +4096,12 @@ class Traversal(Record):
 
     @property
     def kind(self) -> TraversalKind:
-        'Kind.'
+        'Whether the step follows classified Relationships or Assembly membership.'
         return cast('TraversalKind', self._field('kind'))
 
     @property
     def depth(self) -> Depth:
-        'Depth.'
+        'Whether the step follows exactly one edge or one or more edges.'
         return cast('Depth', self._field('depth'))
 
     @property
@@ -4111,7 +4111,7 @@ class Traversal(Record):
 
     @property
     def direction(self) -> Direction | None:
-        'Direction.'
+        'Direction in which to follow Relationships; required for relationship steps and absent for membership steps.'
         return cast('Direction | None', self._field('direction'))
 
 
@@ -4195,12 +4195,12 @@ class Value(Record):
 
     @property
     def flow(self) -> Flow | None:
-        'Flow.'
+        'Temporal quantities of a flow Value.'
         return cast('Flow | None', self._field('flow'))
 
     @property
     def content(self) -> PropertyContent | None:
-        'Content.'
+        'Inert typed content of a property Value.'
         return cast('PropertyContent | None', self._field('content'))
 
 
