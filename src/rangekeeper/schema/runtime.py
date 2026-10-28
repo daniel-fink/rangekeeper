@@ -374,7 +374,27 @@ class Record:
         data.update(_freeze(_normalize(self._kind, changed)))
         return _borrow(type(self), MappingProxyType(data))
 
+    def _set_checked(self, data: dict[str, object]) -> None:
+        """Set encoded constructor fields after the node check of this record.
+
+        The generated encoders copy each argument, and child records are already
+        checked, so the tree is not copied or validated again. A keyed
+        collection uses jsonschema, as in replace.
+        """
+        from rangekeeper.schema.checks import CHECKS
+        from rangekeeper.schema.validation import _slot_map, _validate_json
+
+        if hasattr(self, "_data"):
+            raise AttributeError("records are already initialized")
+        slots = _slot_map(self._kind)
+        if any(slots[name]["mapping"] for name in data):
+            _validate_json(self._kind, copy_json(data)).raise_if_invalid()
+        else:
+            _raise_issues(CHECKS[self._kind](data))
+        object.__setattr__(self, "_data", _freeze(_normalize(self._kind, data)))
+
     def _set_data(self, data: object) -> None:
+        """Copy, validate with jsonschema and freeze untrusted data."""
         from rangekeeper.schema.validation import _validate_json
 
         if hasattr(self, "_data"):

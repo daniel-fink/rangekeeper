@@ -2,7 +2,7 @@
   "artifacts": {
     "checks.py": "3aa3cae77fd746a9578a775f6c7a04abe2b0302395f32d0bfa357e2a0654d0cc",
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "records.py": "842abe0c5effa6df16a6c887195facbda22de05620dd0073d9fe76e35401f298",
+    "records.py": "5b0f775dbdc3f018686b1bd95d34d64f7c9c45a0ec6a01c6d2f1f8cb88bc90c3",
     "schema.json": "bf142c181b35980da584bef54538031f10424ee9eb2d8ed67b4ac39e46abc3a4",
     "slots.json": "8e859e14b7bcdc71d3fd31816f5d244f6e9e90ae7b8854bf8c5e9509762b8bc2"
   },
@@ -128,7 +128,7 @@
     "schema/settings.yaml": "857cfb5fa49ee77e8469f51a3d188714fde401352c23922b055fd8d107f10e96",
     "schema/specification.yaml": "e4e0ccd074b6f610543a1253b4590cae9b92cddd93060377fa101c9b0b1f229b",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "5bea558dff7696534f87425c0f6081a33d2ce3eb9a2cb016ce050e4740388262",
+    "tools/schema/generate.py": "9fcdc942714773ba07cf73a61b01e62356f788540189d53a63e4cb4eff990cc4",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"
   }
 }

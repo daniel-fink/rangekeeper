@@ -527,7 +527,11 @@ def encode_lines(fields, target, *, constructor):
 
 
 def record_init(fields):
-    """Return the keyword-only constructor of one record class."""
+    """Return the keyword-only constructor of one record class.
+
+    Typed arguments are trusted input: the constructor runs the node check of
+    this record, not jsonschema (ADR-011 validation tiers).
+    """
     args = [
         f"        {field}: {field_type(meta, True)}"
         + ("" if meta["required"] else " = UNSET")
@@ -540,7 +544,7 @@ def record_init(fields):
         "    ) -> None:",
         "        data: dict[str, object] = {}",
         *encode_lines(fields, "data", constructor=True),
-        "        self._set_data(data)",
+        "        self._set_checked(data)",
         "",
     ]
 

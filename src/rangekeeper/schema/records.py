@@ -102,7 +102,7 @@ class Action(Record):
             data['target'] = _encode_record(target, Reference, 'target')
         if quantity is not UNSET:
             data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: ActionKind | Unset = UNSET,
@@ -167,7 +167,7 @@ class Argument(Record):
         data: dict[str, object] = {}
         data['name'] = copy_json(name)
         data['expression'] = _encode_record(expression, Expression, 'expression')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -252,7 +252,7 @@ class Entity(Record):
             data['name'] = copy_json(name)
         if characteristics is not UNSET:
             data['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         classification: UUID | None | Unset | Omit = UNSET,
@@ -389,7 +389,7 @@ class Assembly(Entity):
             data['name'] = copy_json(name)
         if characteristics is not UNSET:
             data['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         entities: tuple[UUID, ...] | None | Unset | Omit = UNSET,
@@ -494,7 +494,7 @@ class Assignment(Record):
         data: dict[str, object] = {}
         data['target'] = _encode_record(target, Reference, 'target')
         data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         target: Reference | Unset = UNSET,
@@ -547,7 +547,7 @@ class Binding(Record):
         data: dict[str, object] = {}
         data['name'] = copy_json(name)
         data['value'] = _encode_uuid(value)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -609,7 +609,7 @@ class CalculationProvenance(Record):
         data['name'] = copy_json(name)
         data['fingerprint'] = copy_json(fingerprint)
         data['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -681,7 +681,7 @@ class Call(Record):
             data['arguments'] = _encode_many(arguments, lambda v: _encode_record(v, Expression, 'arguments'))
         if named_arguments is not UNSET:
             data['named_arguments'] = _encode_many(named_arguments, lambda v: _encode_record(v, Argument, 'named_arguments'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         function: UUID | Unset = UNSET,
@@ -748,7 +748,7 @@ class Characteristics(Record):
             data['labels'] = _encode_many(labels, lambda v: _encode_record(v, Label, 'labels'))
         if values is not UNSET:
             data['values'] = _encode_many(values, lambda v: _encode_record(v, Value, 'values'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         labels: tuple[Label, ...] | None | Unset | Omit = UNSET,
@@ -835,7 +835,7 @@ class Claim(Record):
             data['sources'] = self._encode_field('sources', sources)
         if method is not UNSET:
             data['method'] = _encode_record(method, Method, 'method')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -945,7 +945,7 @@ class Classification(Record):
             data['definition'] = copy_json(definition)
         if parent is not UNSET:
             data['parent'] = _encode_uuid(parent)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -1056,7 +1056,7 @@ class Constraint(Record):
         if description is not UNSET:
             data['description'] = copy_json(description)
         data['predicate'] = _encode_uuid(predicate)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -1139,7 +1139,7 @@ class ContentEntry(Record):
         data: dict[str, object] = {}
         data['key'] = _encode_record(key, PropertyContent, 'key')
         data['value'] = _encode_record(value, PropertyContent, 'value')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         key: PropertyContent | Unset = UNSET,
@@ -1192,7 +1192,7 @@ class Criterion(Record):
         data: dict[str, object] = {}
         data['key'] = copy_json(key)
         data['classification'] = _encode_uuid(classification)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         key: str | Unset = UNSET,
@@ -1273,7 +1273,7 @@ class Decision(Record):
         data['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservationBinding, 'observations'))
         data['rules'] = _encode_many(rules, lambda v: _encode_record(v, Rule, 'rules'))
         data['fallback'] = _encode_many(fallback, lambda v: _encode_record(v, Action, 'fallback'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -1362,7 +1362,7 @@ class Definitions(Record):
             data['measures'] = _encode_many(measures, lambda v: _encode_record(v, Measure, 'measures'))
         if functions is not UNSET:
             data['functions'] = _encode_many(functions, lambda v: _encode_record(v, Function, 'functions'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         taxonomies: tuple[Taxonomy, ...] | None | Unset | Omit = UNSET,
@@ -1488,7 +1488,7 @@ class Diagnostic(Record):
             data['tolerance'] = _encode_record(tolerance, Quantity, 'tolerance')
         if references is not UNSET:
             data['references'] = _encode_many(references, lambda v: _encode_record(v, Reference, 'references'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         severity: Severity | Unset = UNSET,
@@ -1637,7 +1637,7 @@ class Distribution(Record):
         if weighting is not UNSET:
             data['weighting'] = copy_json(weighting)
         data['units'] = copy_json(units)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: DistributionFamily | Unset = UNSET,
@@ -1758,7 +1758,7 @@ class Domain(Record):
             data['item_domain'] = _encode_record(item_domain, Domain, 'item_domain')
         if collection_kind is not UNSET:
             data['collection_kind'] = _encode_enum(collection_kind, CollectionKind, 'collection_kind')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: DomainKind | Unset = UNSET,
@@ -1843,7 +1843,7 @@ class Entry(Record):
         data: dict[str, object] = {}
         data['key'] = copy_json(key)
         data['value'] = copy_json(value)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         key: str | Unset = UNSET,
@@ -1986,7 +1986,7 @@ class Expression(Record):
             data['selection'] = _encode_record(selection, Selection, 'selection')
         if query is not UNSET:
             data['query'] = _encode_record(query, Query, 'query')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -2143,7 +2143,7 @@ class Fact(Record):
         data['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
         if reconciliation is not UNSET:
             data['reconciliation'] = _encode_record(reconciliation, Reconciliation, 'reconciliation')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         target: UUID | Unset = UNSET,
@@ -2208,7 +2208,7 @@ class Filter(Record):
             data['classification'] = _encode_uuid(classification)
         if labels is not UNSET:
             data['labels'] = _encode_many(labels, lambda v: _encode_record(v, Criterion, 'labels'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         classification: UUID | Unset | Omit = UNSET,
@@ -2265,7 +2265,7 @@ class Flow(Record):
         data: dict[str, object] = {}
         data['units'] = copy_json(units)
         data['movements'] = _encode_many(movements, lambda v: _encode_record(v, Movement, 'movements'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         units: str | Unset = UNSET,
@@ -2389,7 +2389,7 @@ class Formulation(Record):
             data['constraints'] = _encode_many(constraints, lambda v: _encode_record(v, Constraint, 'constraints'))
         if formulations is not UNSET:
             data['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -2580,7 +2580,7 @@ class Function(Record):
         data['unit_rule'] = copy_json(unit_rule)
         if empty_collection is not UNSET:
             data['empty_collection'] = _encode_enum(empty_collection, EmptyHandling, 'empty_collection')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -2694,7 +2694,7 @@ class Geometry(Record):
         data['pin'] = _encode_record(pin, GeometryPin, 'pin')
         if mappings is not UNSET:
             data['mappings'] = _encode_many(mappings, lambda v: _encode_record(v, GeometryMapping, 'mappings'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         pin: GeometryPin | Unset = UNSET,
@@ -2778,7 +2778,7 @@ class GeometryElement(Record):
             data['scope'] = copy_json(scope)
         if placement is not UNSET:
             data['placement'] = _encode_many(placement, lambda v: copy_json(v))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         namespace: str | Unset = UNSET,
@@ -2868,7 +2868,7 @@ class GeometryFile(Record):
         data['path'] = copy_json(path)
         data['sha256'] = copy_json(sha256)
         data['size'] = copy_json(size)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         path: str | Unset = UNSET,
@@ -2929,7 +2929,7 @@ class GeometryMapping(Record):
         data: dict[str, object] = {}
         data['entity'] = _encode_uuid(entity)
         data['element'] = _encode_record(element, GeometryElement, 'element')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         entity: UUID | Unset = UNSET,
@@ -3048,7 +3048,7 @@ class GeometryPin(Record):
             data['source_address'] = copy_json(source_address)
         if source_version is not UNSET:
             data['source_version'] = copy_json(source_version)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         provider: str | Unset = UNSET,
@@ -3170,7 +3170,7 @@ class Implementation(Record):
         data['kind'] = _encode_enum(kind, ImplementationKind, 'kind')
         data['name'] = copy_json(name)
         data['version'] = copy_json(version)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: ImplementationKind | Unset = UNSET,
@@ -3242,7 +3242,7 @@ class Label(Record):
         data['key'] = copy_json(key)
         if classifications is not UNSET:
             data['classifications'] = _encode_many(classifications, lambda v: _encode_uuid(v))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3305,7 +3305,7 @@ class LibraryVersion(Record):
         data: dict[str, object] = {}
         data['name'] = copy_json(name)
         data['version'] = copy_json(version)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -3360,7 +3360,7 @@ class Location(Record):
         data['source'] = _encode_uuid(source)
         if address is not UNSET:
             data['address'] = self._encode_field('address', address)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         source: UUID | Unset = UNSET,
@@ -3453,7 +3453,7 @@ class Measure(Record):
             data['definition'] = copy_json(definition)
         if tags is not UNSET:
             data['tags'] = _encode_many(tags, lambda v: copy_json(v))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3572,7 +3572,7 @@ class Metadata(Record):
             data['description'] = copy_json(description)
         if previous is not UNSET:
             data['previous'] = _encode_uuid(previous)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3666,7 +3666,7 @@ class Method(Record):
             data['version'] = copy_json(version)
         if description is not UNSET:
             data['description'] = copy_json(description)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         code: str | Unset = UNSET,
@@ -3762,7 +3762,7 @@ class Model(Record):
             data['provenance'] = _encode_record(provenance, Provenance, 'provenance')
         if geometry is not UNSET:
             data['geometry'] = _encode_record(geometry, Geometry, 'geometry')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
@@ -3888,7 +3888,7 @@ class Movement(Record):
             data['magnitude'] = copy_json(magnitude)
         if claims is not UNSET:
             data['claims'] = _encode_many(claims, lambda v: _encode_uuid(v))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -3983,7 +3983,7 @@ class Objective(Record):
         data: dict[str, object] = {}
         data['expression'] = _encode_uuid(expression)
         data['sense'] = _encode_enum(sense, ObjectiveKind, 'sense')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         expression: UUID | Unset = UNSET,
@@ -4036,7 +4036,7 @@ class ObservationAvailability(Record):
         data: dict[str, object] = {}
         data['target'] = _encode_record(target, Reference, 'target')
         data['available_at'] = _encode_date(available_at)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         target: Reference | Unset = UNSET,
@@ -4099,7 +4099,7 @@ class ObservationBinding(Record):
         data['target'] = _encode_record(target, Reference, 'target')
         if available_at is not UNSET:
             data['available_at'] = _encode_date(available_at)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -4180,7 +4180,7 @@ class ObservedQuantity(Record):
         data['target'] = _encode_record(target, Reference, 'target')
         data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
         data['available_at'] = _encode_date(available_at)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -4267,7 +4267,7 @@ class Parameter(Record):
         data['domain'] = _encode_record(domain, Domain, 'domain')
         data['kind'] = _encode_enum(kind, ParameterKind, 'kind')
         data['required'] = copy_json(required)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -4336,7 +4336,7 @@ class Period(Record):
         data: dict[str, object] = {}
         data['start'] = _encode_date(start)
         data['end'] = _encode_date(end)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         start: Date | Unset = UNSET,
@@ -4420,7 +4420,7 @@ class Projection(Record):
             data['cardinality'] = _encode_enum(cardinality, Cardinality, 'cardinality')
         if missing is not UNSET:
             data['missing'] = _encode_enum(missing, MissingHandling, 'missing')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: ProjectionKind | Unset = UNSET,
@@ -4546,7 +4546,7 @@ class PropertyContent(Record):
             data['items'] = _encode_many(items, lambda v: _encode_record(v, PropertyContent, 'items'))
         if entries is not UNSET:
             data['entries'] = _encode_many(entries, lambda v: _encode_record(v, ContentEntry, 'entries'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: ContentKind | Unset = UNSET,
@@ -4664,7 +4664,7 @@ class Provenance(Record):
             data['facts'] = _encode_many(facts, lambda v: _encode_record(v, Fact, 'facts'))
         if scenarios is not UNSET:
             data['scenarios'] = _encode_many(scenarios, lambda v: _encode_record(v, ScenarioRealization, 'scenarios'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         sources: tuple[Source, ...] | None | Unset | Omit = UNSET,
@@ -4741,7 +4741,7 @@ class Quantity(Record):
         data: dict[str, object] = {}
         data['magnitude'] = copy_json(magnitude)
         data['units'] = copy_json(units)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         magnitude: int | float | Unset = UNSET,
@@ -4823,7 +4823,7 @@ class Query(Record):
             data['filter'] = _encode_record(filter, Filter, 'filter')
         data['projection'] = _encode_record(projection, Projection, 'projection')
         data['duplicates'] = _encode_enum(duplicates, DuplicateHandling, 'duplicates')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         starting_at: UUID | Unset = UNSET,
@@ -4904,7 +4904,7 @@ class RandomStream(Record):
         data: dict[str, object] = {}
         data['name'] = copy_json(name)
         data['identifier'] = copy_json(identifier)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -4967,7 +4967,7 @@ class Reconciliation(Record):
         data['status'] = _encode_enum(status, ReconciliationStatus, 'status')
         if method is not UNSET:
             data['method'] = _encode_record(method, Method, 'method')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         selected: UUID | Unset = UNSET,
@@ -5021,7 +5021,7 @@ class Reference(Record):
     ) -> None:
         data: dict[str, object] = {}
         data['target'] = _encode_uuid(target)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         target: UUID | Unset = UNSET,
@@ -5095,7 +5095,7 @@ class Relationship(Record):
         data['target'] = _encode_uuid(target)
         if characteristics is not UNSET:
             data['characteristics'] = _encode_record(characteristics, Characteristics, 'characteristics')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         classification: UUID | Unset = UNSET,
@@ -5205,7 +5205,7 @@ class Report(Record):
             data['trace'] = _encode_many(trace, lambda v: _encode_record(v, Step, 'trace'))
         if rule_evidence is not UNSET:
             data['rule_evidence'] = _encode_many(rule_evidence, lambda v: _encode_record(v, RuleEvidence, 'rule_evidence'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         status: Status | Unset = UNSET,
@@ -5299,7 +5299,7 @@ class Rule(Record):
         data['id'] = _encode_uuid(id)
         data['condition'] = _encode_record(condition, Expression, 'condition')
         data['actions'] = _encode_many(actions, lambda v: _encode_record(v, Action, 'actions'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -5409,7 +5409,7 @@ class RuleEvidence(Record):
         data['terminated'] = copy_json(terminated)
         if termination_reason is not UNSET:
             data['termination_reason'] = copy_json(termination_reason)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         decision: UUID | Unset = UNSET,
@@ -5515,7 +5515,7 @@ class RuleSet(Record):
         data['id'] = _encode_uuid(id)
         data['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
         data['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -5605,7 +5605,7 @@ class Run(Record):
         if outputs is not UNSET:
             data['outputs'] = _encode_many(outputs, lambda v: _encode_uuid(v))
         data['report'] = _encode_record(report, Report, 'report')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
@@ -5708,7 +5708,7 @@ class Runtime(Record):
         data['implementations'] = _encode_many(implementations, lambda v: _encode_record(v, Implementation, 'implementations'))
         if settings is not UNSET:
             data['settings'] = _encode_record(settings, Settings, 'settings')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         started_at: str | None | Unset | Omit = UNSET,
@@ -5794,7 +5794,7 @@ class ScenarioParameter(Record):
             data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
         if distribution is not UNSET:
             data['distribution'] = _encode_record(distribution, Distribution, 'distribution')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | Unset = UNSET,
@@ -5887,7 +5887,7 @@ class ScenarioPlan(Record):
         data['seed'] = copy_json(seed)
         data['periods'] = _encode_many(periods, lambda v: _encode_record(v, Period, 'periods'))
         data['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, ScenarioParameter, 'parameters'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -6039,7 +6039,7 @@ class ScenarioRealization(Record):
         data['inputs'] = _encode_many(inputs, lambda v: _encode_record(v, Binding, 'inputs'))
         data['outputs'] = _encode_many(outputs, lambda v: _encode_record(v, Binding, 'outputs'))
         data['availability'] = _encode_many(availability, lambda v: _encode_record(v, ObservationAvailability, 'availability'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -6178,7 +6178,7 @@ class Selection(Record):
             data['member'] = copy_json(member)
         if index is not UNSET:
             data['index'] = _encode_record(index, Expression, 'index')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: SelectionKind | Unset = UNSET,
@@ -6284,7 +6284,7 @@ class Settings(Record):
             data['symbol_limit'] = copy_json(symbol_limit)
         if constraint_limit is not UNSET:
             data['constraint_limit'] = copy_json(constraint_limit)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         relative_tolerance: int | float | None | Unset | Omit = UNSET,
@@ -6412,7 +6412,7 @@ class Source(Record):
             data['received_at'] = self._encode_field('received_at', received_at)
         if author is not UNSET:
             data['author'] = copy_json(author)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -6513,7 +6513,7 @@ class Span(Period):
             data['name'] = copy_json(name)
         data['start'] = _encode_date(start)
         data['end'] = _encode_date(end)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         name: str | None | Unset | Omit = UNSET,
@@ -6667,7 +6667,7 @@ class Specification(Record):
             data['settings'] = _encode_record(settings, Settings, 'settings')
         if rules is not UNSET:
             data['rules'] = _encode_record(rules, RuleSet, 'rules')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         metadata: Metadata | Unset = UNSET,
@@ -6812,7 +6812,7 @@ class Status(Record):
         data: dict[str, object] = {}
         data['completion'] = _encode_enum(completion, CompletionStatus, 'completion')
         data['solution'] = _encode_enum(solution, SolutionStatus, 'solution')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         completion: CompletionStatus | Unset = UNSET,
@@ -6895,7 +6895,7 @@ class Step(Record):
             data['document'] = _encode_uuid(document)
         if target is not UNSET:
             data['target'] = _encode_uuid(target)
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: StepKind | Unset = UNSET,
@@ -7000,7 +7000,7 @@ class System(Record):
             data['assemblies'] = _encode_many(assemblies, lambda v: _encode_record(v, Assembly, 'assemblies'))
         if formulations is not UNSET:
             data['formulations'] = _encode_many(formulations, lambda v: _encode_record(v, Formulation, 'formulations'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         entities: tuple[Entity, ...] | None | Unset | Omit = UNSET,
@@ -7106,7 +7106,7 @@ class Taxonomy(Record):
         if definition is not UNSET:
             data['definition'] = copy_json(definition)
         data['classifications'] = _encode_many(classifications, lambda v: _encode_record(v, Classification, 'classifications'))
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
@@ -7205,7 +7205,7 @@ class Traversal(Record):
             data['classification'] = _encode_uuid(classification)
         if direction is not UNSET:
             data['direction'] = _encode_enum(direction, Direction, 'direction')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         kind: TraversalKind | Unset = UNSET,
@@ -7337,7 +7337,7 @@ class Value(Record):
             data['flow'] = _encode_record(flow, Flow, 'flow')
         if content is not UNSET:
             data['content'] = _encode_record(content, PropertyContent, 'content')
-        self._set_data(data)
+        self._set_checked(data)
 
     def replace(self, *,
         measure: UUID | None | Unset | Omit = UNSET,
