@@ -56,9 +56,22 @@ them into the `Issue` that they report.
 
 A Run `Diagnostic` records its code as text, a document and a target, numerical
 residuals and tolerances, and references to the Values and Movements that take
-part. An underdetermined solve references the unknowns that no row constrains.
-A limit failure has the code of the limit. See
-[execution](execution.md#settings-limits-and-conclusions).
+part. Its optional `values` field is one JSON object of the named inputs and
+evidence of the finding; the code gives the names. An underdetermined solve
+references the unknowns that no row constrains. A limit failure has the code of
+the limit. See [execution](execution.md#settings-limits-and-conclusions).
+
+| Code | `values` |
+| --- | --- |
+| `settings_adjusted` | `settings`: the names of the requested settings that changed or did not apply (required). `disposition`: for example `clamped` or `not_applied`. `effective`: the value that applied, when there is one |
+| `solver_termination` | `termination`: the backend termination. The other names are the backend evidence, for example `solution_status`, `simplex_iterations` and `solver_options` |
+| `solver_scaling` | `rows`: for each compiled row, its `constraint`, `divisor` and `residual_units` |
+
+```python
+for diagnostic in run.report.diagnostics:
+    if diagnostic.code == rk.errors.Code.SETTINGS_ADJUSTED:
+        print(diagnostic.values["settings"], diagnostic.values["disposition"])
+```
 
 ## Errors
 

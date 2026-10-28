@@ -1941,19 +1941,20 @@
   "Diagnostic": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, severity: Severity, code: str, message: str, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, severity: Severity, code: str, message: str, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>, values: JSONValue | None | Unset = <Unset>) -> None",
     "code": "property",
     "document": "property",
     "message": "property",
     "references": "property",
-    "replace": "method (self, *, severity: Severity | Unset = <Unset>, code: str | Unset = <Unset>, message: str | Unset = <Unset>, document: UUID | Unset | Omit = <Unset>, target: UUID | None | Unset | Omit = <Unset>, residual: Quantity | Unset | Omit = <Unset>, tolerance: Quantity | Unset | Omit = <Unset>, references: tuple[Reference, ...] | None | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, severity: Severity | Unset = <Unset>, code: str | Unset = <Unset>, message: str | Unset = <Unset>, document: UUID | Unset | Omit = <Unset>, target: UUID | None | Unset | Omit = <Unset>, residual: Quantity | Unset | Omit = <Unset>, tolerance: Quantity | Unset | Omit = <Unset>, references: tuple[Reference, ...] | None | Unset | Omit = <Unset>, values: JSONValue | None | Unset | Omit = <Unset>) -> Self",
     "residual": "property",
     "severity": "property",
     "target": "property",
-    "tolerance": "property"
+    "tolerance": "property",
+    "values": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, severity: Severity, code: str, message: str, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>) -> None"
+   "signature": "(*, severity: Severity, code: str, message: str, document: UUID | Unset = <Unset>, target: UUID | None | Unset = <Unset>, residual: Quantity | Unset = <Unset>, tolerance: Quantity | Unset = <Unset>, references: tuple[Reference, ...] | None | Unset = <Unset>, values: JSONValue | None | Unset = <Unset>) -> None"
   },
   "Implementation": {
    "kind": "class",

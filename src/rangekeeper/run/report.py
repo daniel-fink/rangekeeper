@@ -5,6 +5,7 @@ Tree validation adds exact revision and publication checks after resolution.
 """
 
 import math
+from collections.abc import Mapping
 from datetime import datetime
 
 from rangekeeper.schema.validation import supports_version
@@ -77,6 +78,20 @@ def validate_report(run, *, batch, effective=None):
     status = data["status"]
     completion, solution = status["completion"], status["solution"]
     findings = data.get("diagnostics") or []
+    for diagnostic in findings:
+        values = diagnostic.get("values")
+        require(
+            values is None or isinstance(values, Mapping),
+            "diagnostic values must be a JSON object",
+        )
+        if diagnostic["code"] == "settings_adjusted":
+            names = (values or {}).get("settings")
+            require(
+                isinstance(names, (list, tuple))
+                and bool(names)
+                and all(isinstance(name, str) for name in names),
+                "settings_adjusted requires values.settings",
+            )
     require(
         bool(findings)
         or (completion == "completed" and solution not in ("unknown", "infeasible")),
@@ -120,7 +135,8 @@ def validate_report(run, *, batch, effective=None):
             if value is not None and settings.get(key) != value:
                 require(
                     any(
-                        d["code"] == "settings_adjusted" and key in d["message"]
+                        d["code"] == "settings_adjusted"
+                        and key in ((d.get("values") or {}).get("settings") or ())
                         for d in findings
                     ),
                     "unaccounted requested setting",

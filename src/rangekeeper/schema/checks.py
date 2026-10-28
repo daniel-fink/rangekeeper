@@ -421,7 +421,7 @@ def check_Diagnostic(d, fields=None):
     if 'message' not in d:
         issues.append(('structure.required', 'message is required', ''))
     for name in d:
-        if name not in ('code', 'document', 'message', 'references', 'residual', 'severity', 'target', 'tolerance'):
+        if name not in ('code', 'document', 'message', 'references', 'residual', 'severity', 'target', 'tolerance', 'values'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'code' in d and (fields is None or 'code' in fields):
         v = d['code']
@@ -455,6 +455,10 @@ def check_Diagnostic(d, fields=None):
         v = d['tolerance']
         if not ((isinstance(v, Mapping))):
             issues.append(('structure.value', 'invalid tolerance', '/tolerance'))
+    if 'values' in d and (fields is None or 'values' in fields):
+        v = d['values']
+        if not (((((v is None or type(v) is bool or isinstance(v, Mapping) or _number(v) or type(v) is str))) or ((v is None)))):
+            issues.append(('structure.value', 'invalid values', '/values'))
     if not ((((not ('target' in d) or ('document' in d)) and (('target' in d) or True))) and (((not ('residual' in d) or ('document' in d and 'target' in d)) and (('residual' in d) or True))) and (((not ('tolerance' in d) or ('residual' in d)) and (('tolerance' in d) or True)))):
         issues.append(('structure.rule', 'a Diagnostic rule is not met', ''))
     return issues
