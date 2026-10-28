@@ -56,7 +56,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `quantity` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | — |
-| Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | `tuple[Period, ...]`; `PeriodIndex` in 0.8 |
+| Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | —; `PeriodIndex` in 0.8. Some functions still return `tuple[Period, ...]` |
 | Span | A named half-open range of time | `duration` | — |
 | Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | None (planned, #280) |
 | Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | The `extrapolate` and `distribute` functions, with `GrowthMethod` |

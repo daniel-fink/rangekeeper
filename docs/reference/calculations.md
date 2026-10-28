@@ -68,12 +68,12 @@ from rangekeeper.flow import ResamplingMethod
 span = Span.from_duration(
     name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1,
 )
-monthly = span.periods(Frequency.MONTH)
+monthly = span.periods(frequency=Frequency.MONTH)
 income = Stream({
     "Rent": Flow.from_periods(monthly, [100] * 12, units="AUD"),
     "Vacancy": Flow.from_periods(monthly, [-20] * 12, units="AUD"),
 })
-annual = income.resample(span.periods(Frequency.YEAR), method=ResamplingMethod.SUM)
+annual = income.resample(span.periods(frequency=Frequency.YEAR), method=ResamplingMethod.SUM)
 annual.display()
 assert annual.sum().movements[0].number == 960
 ```
@@ -184,6 +184,36 @@ equations of the Model relate draws, interest and repayments.
 `model.formulation.financial.interest` declares interest on an explicitly selected,
 nonnegative principal. Unknown rates and piecewise overdraft branches are
 unsupported.
+
+## Spans and Periods
+
+A `Span` is a named half-open range of time. Give its end, or a length: a whole
+number of days, weeks, months, quarters or years, as a Quantity or its text.
+`extend(by=)` returns a Span with the same start, a later end and no name.
+
+`Span.periods(frequency=, include_partial=False, month_roll=None)` returns a
+`Periods`: an ordered, gap-free sequence of Periods with one `Frequency`. Make
+one directly with `Periods(start=, frequency=, count=, month_roll=PRESERVE_END)`.
+
+```python
+from datetime import date
+
+import rangekeeper as rk
+
+holding = rk.duration.Span(start=date(2001, 1, 1), length="10 years", name="Holding")
+years = holding.extend(by="1 year").periods(frequency=rk.duration.Frequency.YEAR)
+len(years), years[-1], years.start, years.end, years.span
+years.trim(span=holding)  # the first 10 Periods; a partial overlap raises
+years.extend(count=2)  # two more steps from the same anchor
+years.containing(on=date(2005, 6, 30))  # the Period of 2005
+```
+
+`Periods` is a sequence: `len`, iteration and indexing work, and a slice with
+step one is a `Periods`. Two `Periods` are equal when they have the same
+frequency and the same Periods. Each Period is a calendar step from the first
+anchor, so `extend` keeps a month-end anchor. Only a Span partition with
+`include_partial=True` ends with a partial Period, and it cannot extend.
+`containing(on=)` raises `MissingReferenceError` for a date outside.
 
 ## Calendar choices
 

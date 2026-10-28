@@ -11,6 +11,7 @@ from rangekeeper.duration.calendar import (
 )
 from rangekeeper.duration.period import (
     Period,
+    Periods,
     Span,
     containing_period,
     cover,
@@ -37,4 +38,4 @@ __all__ = [
 """Schema-defined date intervals. Calendar operations live in ``duration``."""
 
 
-__all__ += ["Period", "Span"]
+__all__ += ["Period", "Periods", "Span"]
