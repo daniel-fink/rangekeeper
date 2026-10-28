@@ -118,9 +118,10 @@ def test_execution_closures_cover_every_module_that_runs(monkeypatch):
 
     traces = {"compiler": Trace(), "evaluator": Trace()}
     for module, name, role in (
-        (attempt.preparation, "prepare", "compiler"),
-        (attempt.compiler, "compile", "compiler"),
-        (attempt.acceptance, "check", "evaluator"),
+        (attempt.preparation, "validate", "compiler"),
+        (attempt.preparation, "bind_roles", "compiler"),
+        (attempt.compiler, "build_problem", "compiler"),
+        (attempt.acceptance, "verify", "evaluator"),
     ):
         monkeypatch.setattr(module, name, traces[role].wrap(getattr(module, name)))
     store, _ = setup()

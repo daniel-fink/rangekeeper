@@ -75,7 +75,7 @@ def test_batch_preparation_exports_and_resolves_each_revision_once(
 ):
     from collections import Counter
 
-    from rangekeeper.execution.planning import Plan
+    from rangekeeper.execution import resolve_cases
 
     model = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     common = specification(model=model.id)
@@ -90,7 +90,8 @@ def test_batch_preparation_exports_and_resolves_each_revision_once(
         return original(document)
 
     monkeypatch.setattr(Specification, "to_data", exported)
-    documents, compositions = Plan(resolver).resolve(root)
+    cases = resolve_cases(root, resolver=resolver)
+    documents, compositions = cases.documents, cases.compositions
 
     assert exports == {identity: 1 for identity in documents}
     assert len(documents) == leaf_count + 2

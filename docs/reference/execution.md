@@ -33,22 +33,45 @@ shared and inverse Specifications to pin the actual output, executes inverse,
 then executes a sequential batch. Synthetic expected-output fixtures do not stand
 in for execution results.
 
+## Stages
+
+Execution runs as typed stages ([ADR-013](../decisions/013-execution-and-extensions.md)).
+Each stage is a function in `rangekeeper.execution`. No stage writes to a store,
+and only the backend starts a process. `Executor` calls the stages for each case
+and stores the results.
+
+| # | Stage | Input | Result | Raises |
+| --- | --- | --- | --- | --- |
+| 1 | `resolve_cases(specification, *, resolver)` | The root Specification | `Cases`: the documents, the pinned Models and one composition for each leaf. `Cases` is also a resolver | Missing or wrong-kind revisions, cycles, a contradicted batch Model pin. A leaf whose composition fails keeps its `ValidationError` |
+| 2 | `validate(composition, *, resolver, units=None)` | One composition | `Validation`: the report, the input Model and the unit system | Nothing for a content problem; it is an issue in the report |
+| 3 | `bind_roles(validation, *, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
+| 4 | `build_problem(binding, *, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: affine rows that keep the original Constraint identity | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`; `NumericalError` |
+| 5 | `Backend.solve(problem, *, limits, remaining)` | An `AffineProblem` | `Result`: termination, candidate values and evidence | `BackendUnavailableError`, `NumericalError` |
+| 6 | `make_candidate(binding, values, *, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
+| 7 | `verify(binding, candidate, *, tolerances=Tolerances())` | The candidate | `Verification`: accepted or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
+| 8 | `assemble(specification, report, *, id, output, resolver, units=None)` | The report of one leaf | The finalized Run, validated once with the output laid over the resolver | `ValidationError` |
+
+`checkpoint` is a callable that raises `AttemptDeadlineError` when the attempt's
+time limit has passed. The stages call it between steps.
+
 ## Ownership and dependencies
 
 | Module | Responsibility |
 | --- | --- |
-| `execution/preparation.py` | Reuse the prepared exact composition and Model, retain contributor scope, collect imposed predicates and normalize assignments to Measure units. |
-| `execution/compiler.py` | Derive affine coefficients after assignments; check arithmetic capability and dimensions; retain original Constraint identity and row scaling. No Pyomo dependency. |
-| `execution/acceptance.py` | Check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
-| `execution/publication.py` | Construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
-| `execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
-| `execution/backends/base.py` | Narrow problem/result protocol; a backend candidate is a claim awaiting acceptance. |
+| `execution/planning.py` | Stage 1: the case graph, the pinned Models and one composition for each leaf. |
+| `execution/preparation.py` | Stages 2 and 3: validate the composition against its exact Model, keep the contributor scope, collect imposed predicates and normalize assignments to Measure units. |
+| `execution/compiler.py` | Stage 4: derive affine coefficients after assignments; check arithmetic capability, dimensions and the symbol and constraint limits; keep the original Constraint identity and row scaling. No Pyomo dependency. |
+| `execution/backends/base.py` | Stage 5: the narrow problem and result protocol; a backend candidate is a claim that waits for verification. |
 | `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
-| `execution/executor.py`, `planning.py` | Sequential batches, reference resolution and one composition per leaf. |
-| `execution/attempt.py` | Per-attempt deadline, preparation, backend result, independent acceptance and output-before-Run persistence. |
+| `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
+| `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
+| `execution/assembly.py` | Stage 8: make the finalized Run of one leaf and validate it against the candidate overlay. |
+| `execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
+| `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and the status of each expected failure. It stores nothing. |
+| `execution/executor.py` | Sequential batches, and output-before-Run persistence. |
 | `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
 
-Derived preparation/compiler/result objects are runtime operations, not a second
+Derived stage results are runtime objects, not a second
 authoritative field schema. Domain classes do not import execution or solvers.
 The existing public Run validator now accepts physically equivalent assignments
 through explicit conversion; its raw conformance entrypoint keeps strict defaults.

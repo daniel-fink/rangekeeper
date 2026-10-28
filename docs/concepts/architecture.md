@@ -136,10 +136,12 @@ show the target API in use.
 - Now: `model.specify(name=)` makes a Specification that pins one Model
   revision; `fix(key=quantity)` and `free("key")` each return a new
   Specification. Records add bounds and rules. `rangekeeper.execution.Executor(store).execute(specification)`
-  prepares and compiles the affine problem, solves it in a separate process,
-  verifies the candidate independently, and publishes the output Model and the
-  final Run. Read the results from the Run and the output Model. See the
-  [execution reference](../reference/execution.md).
+  runs the typed stages: it resolves the cases, validates each composition, binds
+  roles, builds the affine problem, solves it in a separate process, makes a
+  candidate, verifies it independently and assembles the Run. Then it publishes
+  the output Model and the final Run. Each stage is a public function that
+  writes to no store. Read the results from the Run and the output Model. See
+  the [execution reference](../reference/execution.md#stages).
 - 1.0 target:
   1. Write a Specification that pins one Model revision. Fix and free values,
      and add bounds or rules.
@@ -207,7 +209,7 @@ contents are not yet in their 1.0 owner:
 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry | — |
 | `specification` | The Specification document, composition, roles, and rule declarations and their validation | Rule queries over a `Window` replace the rule records ([#300](https://github.com/daniel-fink/rangekeeper/issues/300), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
 | `run` | The Run document, its report and outputs, and evidence validation. The internal `run._rule` has the rule trace check, with the exact condition truth and the availability rule that rule evaluation also uses | — |
-| `execution` | Preparation, compilation, backends, acceptance, publication and rule evaluation (`execution.rule`) | Sequential rule evaluation replaces `execution.rule.evaluate` ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
+| `execution` | The typed stages (case resolution, validation, role binding, problem building, candidates, verification and assembly), backends, the executor and rule evaluation (`execution.rule`) | Sequential rule evaluation replaces `execution.rule.evaluate` ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
 | `io` | JSON and YAML codecs, stores, Bundle and Polars export. It re-exports the `RecordStore` protocol from `shared` | — |
 
 The import-linter contract in [`pyproject.toml`](../../pyproject.toml) enforces the

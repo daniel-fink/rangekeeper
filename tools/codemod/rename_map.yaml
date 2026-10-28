@@ -469,6 +469,47 @@ symbols:
     new_name: AttemptDeadlineError
     status: agreed
     source: ADR-016
+  - module: rangekeeper.execution.compiler
+    name: Compiled
+    new_name: AffineProblem
+    new_module: rangekeeper.execution
+    status: agreed
+    source: "ADR-013, #125"
+    note: The typed result of the build-problem stage.
+  - module: rangekeeper.execution.compiler
+    name: compile
+    new_name: build_problem
+    new_module: rangekeeper.execution
+    status: agreed
+    source: "ADR-013, #125"
+    note: >-
+      `build_problem(binding, limits=)` also checks the symbol and constraint
+      limits; `constraint_limit=` is replaced by `limits=`.
+  - module: rangekeeper.execution.preparation
+    name: Prepared
+    new_name: Binding
+    new_module: rangekeeper.execution
+    status: agreed
+    source: "ADR-013, #125"
+    note: The typed result of the bind-roles stage.
+  - module: rangekeeper.execution.publication
+    name: candidate
+    new_name: make_candidate
+    new_module: rangekeeper.execution
+    status: agreed
+    source: "ADR-013, #125"
+  - module: rangekeeper.execution.acceptance
+    name: check
+    new_name: verify
+    new_module: rangekeeper.execution
+    status: agreed
+    source: "ADR-013, #125"
+  - module: rangekeeper.execution.acceptance
+    name: Acceptance
+    new_name: Verification
+    new_module: rangekeeper.execution
+    status: agreed
+    source: "ADR-013, #125"
   - module: rangekeeper.model.scope
     name: target_value
     new_module: rangekeeper.model.targets
@@ -502,6 +543,12 @@ symbols:
 # only when the old name is unique to the class. `apply: review` lists the
 # uses for the pass to change by hand.
 attributes:
+  - owner: rangekeeper.execution.compiler.Compiled
+    name: prepared
+    new_name: binding
+    apply: all
+    status: agreed
+    source: "ADR-013, #125"
   - owner: rangekeeper.specification.specification.Specification
     name: lock
     new_name: fix
@@ -708,6 +755,18 @@ removed:
     status: agreed
     source: ADR-012, ADR-014
     requires: [refactor]
+  - name: rangekeeper.execution.planning.Plan
+    replacement: >-
+      `rangekeeper.execution.resolve_cases(specification, resolver=)`. It
+      returns `Cases`, which is also a resolver
+    status: agreed
+    source: "ADR-013, #125"
+  - name: rangekeeper.execution.preparation.prepare
+    replacement: >-
+      `rangekeeper.execution.validate(composition, resolver=, units=)`, then
+      `rangekeeper.execution.bind_roles(validation)`
+    status: agreed
+    source: "ADR-013, #125"
   - name: rangekeeper.shared.errors.BoundaryError
     replacement: rangekeeper.errors.RangekeeperError
     status: agreed

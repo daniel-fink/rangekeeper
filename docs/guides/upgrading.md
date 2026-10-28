@@ -262,11 +262,18 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.expression.evaluation.UnsupportedExpression` | `UnsupportedError` | agreed | One error for unsupported expressions and problems. |
 | `rangekeeper.execution.errors.BackendUnavailable` | `BackendUnavailableError` | agreed |  |
 | `rangekeeper.execution.errors.AttemptDeadline` | `AttemptDeadlineError` | agreed |  |
+| `rangekeeper.execution.compiler.Compiled` | `rangekeeper.execution.AffineProblem` | agreed | The typed result of the build-problem stage. |
+| `rangekeeper.execution.compiler.compile` | `rangekeeper.execution.build_problem` | agreed | `build_problem(binding, limits=)` also checks the symbol and constraint limits; `constraint_limit=` is replaced by `limits=`. |
+| `rangekeeper.execution.preparation.Prepared` | `rangekeeper.execution.Binding` | agreed | The typed result of the bind-roles stage. |
+| `rangekeeper.execution.publication.candidate` | `rangekeeper.execution.make_candidate` | agreed |  |
+| `rangekeeper.execution.acceptance.check` | `rangekeeper.execution.verify` | agreed |  |
+| `rangekeeper.execution.acceptance.Acceptance` | `rangekeeper.execution.Verification` | agreed |  |
 | `rangekeeper.model.scope.target_value` | `rangekeeper.model.targets.target_value` | agreed |  |
 | `rangekeeper.model.scope.target_units` | `rangekeeper.model.targets.target_units` | agreed |  |
 | `rangekeeper.model.scope.recorded_scalar` | `rangekeeper.model.targets.recorded_scalar` | agreed |  |
 | `rangekeeper.quantity.minor_unit` | `rangekeeper.money.minor_unit` | agreed | The money module owns the ISO 4217 catalogue, boundaries and rounding. |
 | `rangekeeper.flow.ResamplingMethod` | `ResampleMethod` | agreed | The enum also gains SPLIT, which divides each amount over shorter Periods. |
+| `rangekeeper.execution.compiler.Compiled.prepared` | `binding` | agreed |  |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |
@@ -306,6 +313,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scenario.market.realize` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.market.generate` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.view.Market` | The MarketPaths document | agreed (needs refactor) |
+| `rangekeeper.execution.planning.Plan` | `rangekeeper.execution.resolve_cases(specification, resolver=)`. It returns `Cases`, which is also a resolver | agreed |
+| `rangekeeper.execution.preparation.prepare` | `rangekeeper.execution.validate(composition, resolver=, units=)`, then `rangekeeper.execution.bind_roles(validation)` | agreed |
 | `rangekeeper.shared.errors.BoundaryError` | rangekeeper.errors.RangekeeperError | agreed |
 | `rangekeeper.shared.errors.ValueEncodingError` | rangekeeper.errors.EncodingError | agreed |
 

@@ -1,4 +1,4 @@
-"""Lower declared scalar arithmetic to affine rows after applying fixed assignments.
+"""Stage 4: lower declared scalar arithmetic to affine rows after fixed assignments.
 
 The lowering is independent of Pyomo. Coefficients are expressed in each unknown's
 Measure units. Numerical acceptance does not use these rows: it reevaluates the
@@ -13,7 +13,8 @@ from types import MappingProxyType
 from uuid import UUID
 
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
-from rangekeeper.execution.preparation import Assertion, Prepared
+from rangekeeper.execution.preparation import Assertion, Binding
+from rangekeeper.execution.settings import Limits
 from rangekeeper.model.expression.evaluation import (
     evaluate as numerical,
 )
@@ -44,10 +45,10 @@ class Row:
 
 
 @dataclass(frozen=True)
-class Compiled:
+class AffineProblem:
     """Backend-independent feasibility problem, with traceable original assertions."""
 
-    prepared: Prepared
+    binding: Binding
     rows: tuple[Row, ...]
 
 
@@ -62,20 +63,20 @@ def _affine(constant: float, coefficients: Mapping[UUID, float], units: str) -> 
 
 
 class Compiler:
-    """One prepared scope; explicit recursive operations retain mathematical order."""
+    """One bound scope; explicit recursive operations retain mathematical order."""
 
     def __init__(
-        self, prepared: Prepared, checkpoint: Callable[[], None] = lambda: None
+        self, binding: Binding, checkpoint: Callable[[], None] = lambda: None
     ) -> None:
-        self.prepared = prepared
+        self.binding = binding
         self.checkpoint = checkpoint
 
     def convert(self, value: Affine, units: str) -> Affine:
         """Convert a whole affine expression; offset units are outside this slice."""
-        zero = self.prepared.units.convert(
+        zero = self.binding.units.convert(
             Quantity(magnitude=0, units=value.units), to=units
         )
-        one = self.prepared.units.convert(
+        one = self.binding.units.convert(
             Quantity(magnitude=1, units=value.units), to=units
         )
         if zero.number != 0:
@@ -108,11 +109,11 @@ class Compiler:
         if node.kind == ExpressionKind.REFERENCE:
             assert node.target is not None
             token = node.target.target
-            if token in self.prepared.assignments:
-                assigned = self.prepared.assignments[token]
+            if token in self.binding.assignments:
+                assigned = self.binding.assignments[token]
                 return _affine(assigned.number, {}, assigned.units)
-            if token in self.prepared.unknowns:
-                return _affine(0, {token: 1}, self.prepared.value_units[token])
+            if token in self.binding.unknowns:
+                return _affine(0, {token: 1}, self.binding.value_units[token])
             raise UnsupportedError("expression reference has no explicit solve role")
         if node.kind == ExpressionKind.UNARY and node.operator == Operator.NEGATE:
             assert node.operand is not None
@@ -194,21 +195,21 @@ class Compiler:
                 and child.kind is ExpressionKind.REFERENCE
                 and child.target is not None
             }
-            if not referenced <= self.prepared.assignments.keys():
+            if not referenced <= self.binding.assignments.keys():
                 raise UnsupportedError(
                     "strict predicates require only fixed assigned or literal operands"
                 )
             try:
                 left = numerical(
                     node.operands[0],
-                    self.prepared.assignments,
-                    units=self.prepared.units,
+                    self.binding.assignments,
+                    units=self.binding.units,
                 )
-                right = self.prepared.units.convert(
+                right = self.binding.units.convert(
                     numerical(
                         node.operands[1],
-                        self.prepared.assignments,
-                        units=self.prepared.units,
+                        self.binding.assignments,
+                        units=self.binding.units,
                     ),
                     to=left.units,
                 )
@@ -244,22 +245,33 @@ class Compiler:
         return (Row(item, node.operator.value, residual, scale),)
 
 
-def compile(
-    prepared: Prepared,
+def build_problem(
+    binding: Binding,
     *,
+    limits: Limits | None = None,
     checkpoint: Callable[[], None] = lambda: None,
-    constraint_limit: int | None = None,
-) -> Compiled:
-    """Produce immutable affine rows, retaining scoped diagnostics on capability errors."""
-    compiler = Compiler(prepared, checkpoint)
+) -> AffineProblem:
+    """Lower each assertion of ``binding`` to immutable affine rows.
+
+    Raise UnsupportedError, scoped to the original declaration, when a row is
+    outside the affine slice, or with a ``symbol_limit`` or ``constraint_limit``
+    code when the problem is larger than ``limits`` allows.
+    """
+    limits = Limits() if limits is None else limits
+    if len(binding.references) > limits.symbol_limit:
+        raise UnsupportedError(
+            f"expanded symbol limit {limits.symbol_limit} exceeded",
+            code=Code.SYMBOL_LIMIT,
+        )
+    compiler = Compiler(binding, checkpoint)
     rows: list[Row] = []
-    for item in prepared.assertions:
+    for item in binding.assertions:
         checkpoint()
         try:
             rows.extend(compiler.assertion(item))
-            if constraint_limit is not None and len(rows) > constraint_limit:
+            if len(rows) > limits.constraint_limit:
                 raise UnsupportedError(
-                    f"expanded constraint limit {constraint_limit} exceeded",
+                    f"expanded constraint limit {limits.constraint_limit} exceeded",
                     code=Code.CONSTRAINT_LIMIT,
                 )
         except UnsupportedError as error:
@@ -269,4 +281,4 @@ def compile(
                 document=item.document,
                 target=item.constraint.id,
             ) from error
-    return Compiled(prepared, tuple(rows))
+    return AffineProblem(binding, tuple(rows))

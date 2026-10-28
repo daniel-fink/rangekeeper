@@ -17,11 +17,13 @@ from rangekeeper.errors import Code
 from rangekeeper.execution import (
     Executor,
     Tolerances,
-    acceptance,
     backends,
+    bind_roles,
+    make_candidate,
     preparation,
-    publication,
+    verify,
 )
+from rangekeeper.execution import validate as validate_composition
 from rangekeeper.execution.backends import PyomoHighs, Result
 from rangekeeper.io import DirectoryStore, MemoryStore, yaml
 from rangekeeper.quantity import default_units
@@ -395,17 +397,15 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
         for d in run.report.diagnostics
     )
 
-    prepared = preparation.prepare(
-        specification.compose(resolver=store), resolver=store
+    binding = bind_roles(
+        validate_composition(specification.compose(resolver=store), resolver=store)
     )
-    proposed = publication.candidate(
-        prepared, {NOI: 550000, CAPITAL: 11000000}, run_id=uuid4()
-    )
+    proposed = make_candidate(binding, {NOI: 550000, CAPITAL: 11000000}, run_id=uuid4())
     changed = proposed.to_data()
     next(node for node in records(changed["system"]) if node.get("id") == str(RENT))[
         "quantity"
     ]["magnitude"] = 30001
-    assert not acceptance.check(prepared, Model.from_data(changed)).accepted
+    assert not verify(binding, Model.from_data(changed)).accepted
 
 
 def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
@@ -808,7 +808,7 @@ def test_scalar_preparation_reuses_the_composed_requirements(monkeypatch):
 
     store, _ = setup()
     specification = spec()
-    compose, prepare = implementation.compose, preparation.prepare
+    compose, check = implementation.compose, preparation.validate
     views = []
 
     def recorded(*args, **kwargs):
@@ -819,10 +819,10 @@ def test_scalar_preparation_reuses_the_composed_requirements(monkeypatch):
     def reused(view, **kwargs):
         assert views == [view]
         assert view is views[0]
-        return prepare(view, **kwargs)
+        return check(view, **kwargs)
 
     monkeypatch.setattr(implementation, "compose", recorded)
-    monkeypatch.setattr(preparation, "prepare", reused)
+    monkeypatch.setattr(preparation, "validate", reused)
     run = execute(store, specification)
     assert run.report.status.solution == SolutionStatus.FEASIBLE
     assert len(views) == 1

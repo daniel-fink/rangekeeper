@@ -1,4 +1,4 @@
-"""Sequential scalar attempts and batches over immutable revision stores."""
+"""One leaf attempt: run the pure stages in order and collect their evidence."""
 
 import time
 from collections.abc import Mapping
@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 from rangekeeper import money
 from rangekeeper.execution import (
     acceptance,
+    assembly,
     compiler,
     preparation,
     publication,
@@ -25,13 +26,11 @@ from rangekeeper.execution.errors import (
 from rangekeeper.execution.implementation import fingerprint
 from rangekeeper.model import Model
 from rangekeeper.quantity import UnitSystem, unit_systems
-from rangekeeper.run import ImplementationKind, Run, RunRecord, StepKind
-from rangekeeper.run import validate as validate_run
+from rangekeeper.run import ImplementationKind, Run, StepKind
 from rangekeeper.schema.records import (
     CompletionStatus,
     Diagnostic,
     Implementation,
-    Metadata,
     Reference,
     Report,
     Runtime,
@@ -42,10 +41,9 @@ from rangekeeper.schema.records import (
     Step,
 )
 from rangekeeper.schema.runtime import UNSET, JSONValue, Unset
-from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import UnitError, ValidationError
-from rangekeeper.shared.store import RecordStore
+from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.specification import Composition, Specification
 
 
@@ -54,31 +52,26 @@ def _now() -> str:
 
 
 class Attempt:
-    """One scalar attempt owns its deadline, candidate and report evidence.
+    """One leaf attempt owns its deadline, diagnostics and trace.
 
-    Preparation, backend solving, and independent acceptance stay separate.
-    Only finish persists records; expected failures still produce a finalized Run.
+    It calls the pure stages in order: validate, bind roles, build the problem,
+    solve, make a candidate, verify and assemble. It maps each expected failure
+    to a status, so a failure still gives a finalized Run. It stores nothing.
     """
 
     def __init__(
         self,
-        store: RecordStore,
         backend: Backend,
         units: UnitSystem | None,
         tolerances: acceptance.Tolerances,
         specification: Specification,
         view: Composition | ValidationError,
         *,
-        resolver=None,
+        resolver: DocumentResolver,
     ) -> None:
-        self.store, self.backend, self.units, self.tolerances = (
-            store,
-            backend,
-            units,
-            tolerances,
-        )
+        self.backend, self.units, self.tolerances = backend, units, tolerances
         self.specification, self.view = specification, view
-        self.resolver = resolver if resolver is not None else store
+        self.resolver = resolver
         self.run_id, self.started, self.clock = uuid4(), _now(), time.monotonic()
         self.findings: list[Diagnostic] = []
         self.trace: list[Step] = []
@@ -102,7 +95,7 @@ class Attempt:
             ),
         ]
         self.limits: settings.Limits | None = None
-        self.prepared: preparation.Prepared | None = None
+        self.binding: preparation.Binding | None = None
         self.result: Result | None = None
         self.output: Model | None = None
         self.completion: CompletionStatus = CompletionStatus.FAILED
@@ -142,8 +135,11 @@ class Attempt:
                 "execution deadline reached during preparation or compilation"
             )
 
-    def execute(self) -> Run:
-        """Run the bounded phases and account for each expected failure."""
+    def execute(self) -> tuple[Run, Model | None]:
+        """Run the stages, account for each expected failure, and return the Run.
+
+        Return the validated Run and its accepted output Model, if any.
+        """
         try:
             problem = self.prepare()
             result = self.solve(problem)
@@ -159,14 +155,14 @@ class Attempt:
                 CompletionStatus.FAILED,
                 (
                     SolutionStatus.NOT_ASSESSED
-                    if self.prepared is None
+                    if self.binding is None
                     else SolutionStatus.UNKNOWN
                 ),
             )
             self.diagnose(
                 (
                     Code.SPECIFICATION_INVALID
-                    if self.prepared is None
+                    if self.binding is None
                     else Code.NUMERICAL_REJECTION
                 ),
                 str(error),
@@ -211,18 +207,17 @@ class Attempt:
 
         return self.finish()
 
-    def prepare(self) -> compiler.Compiled:
-        """Validate roles and compile within the same parent deadline."""
+    def prepare(self) -> compiler.AffineProblem:
+        """Validate, bind roles and build the problem within one deadline."""
         if isinstance(self.view, ValidationError):
             raise self.view
         self.limits, adjustments = settings.resolve(self.view.requirements.settings)
         self.findings.extend(adjustments)
-        self.prepared = preparation.prepare(
-            self.view,
-            resolver=self.resolver,
-            units=self.units,
-            checkpoint=self.checkpoint,
+        validation = preparation.validate(
+            self.view, resolver=self.resolver, units=self.units
         )
+        self.checkpoint()
+        self.binding = preparation.bind_roles(validation, checkpoint=self.checkpoint)
         self.checkpoint()
         self.trace.append(
             Step(
@@ -232,26 +227,14 @@ class Attempt:
                 message="Validated additive composition, exact Model pin, scalar roles and recorded units.",
             )
         )
-        if len(self.prepared.references) > self.limits.symbol_limit:
-            raise UnsupportedError(
-                f"expanded symbol limit {self.limits.symbol_limit} exceeded",
-                code=Code.SYMBOL_LIMIT,
-            )
-        problem = compiler.compile(
-            self.prepared,
-            checkpoint=self.checkpoint,
-            constraint_limit=self.limits.constraint_limit,
+        problem = compiler.build_problem(
+            self.binding, limits=self.limits, checkpoint=self.checkpoint
         )
-        if len(problem.rows) > self.limits.constraint_limit:
-            raise UnsupportedError(
-                f"expanded constraint limit {self.limits.constraint_limit} exceeded",
-                code=Code.CONSTRAINT_LIMIT,
-            )
         self.trace.append(
             Step(
                 kind=StepKind.FORMULATION,
                 at=_now(),
-                message=f"Expanded {len(self.prepared.references)} scalar/Movement symbols and {len(problem.rows)} affine constraints; limits {self.limits.symbol_limit}/{self.limits.constraint_limit}.",
+                message=f"Expanded {len(self.binding.references)} scalar/Movement symbols and {len(problem.rows)} affine constraints; limits {self.limits.symbol_limit}/{self.limits.constraint_limit}.",
             )
         )
         if self.view.requirements.estimates:
@@ -276,7 +259,7 @@ class Attempt:
         self.checkpoint()
         return problem
 
-    def solve(self, problem: compiler.Compiled) -> Result:
+    def solve(self, problem: compiler.AffineProblem) -> Result:
         """Retain backend evidence without treating its candidate as accepted."""
         assert self.limits is not None
         self.result = self.backend.solve(
@@ -305,7 +288,7 @@ class Attempt:
 
     def accept(self, result: Result) -> None:
         """Check a serialized candidate against the original expressions."""
-        assert self.prepared is not None
+        assert self.binding is not None
         limited = result.termination in {
             "worker_deadline",
             "maxTimeLimit",
@@ -321,13 +304,13 @@ class Attempt:
         elif result.termination in {"error", "interrupted"}:
             self.completion = CompletionStatus.FAILED
         elif result.candidate is not None:
-            candidate = publication.candidate(
-                self.prepared, result.candidate, run_id=self.run_id
+            candidate = publication.make_candidate(
+                self.binding, result.candidate, run_id=self.run_id
             )
-            checked = acceptance.check(
-                self.prepared, candidate, tolerances=self.tolerances
+            checked = acceptance.verify(
+                self.binding, candidate, tolerances=self.tolerances
             )
-            units = unit_systems.describe(self.prepared.units)
+            units = unit_systems.describe(self.binding.units)
             self.implementations.extend(
                 (
                     Implementation(
@@ -359,7 +342,7 @@ class Attempt:
                         "unconstrained_values_initialized_to_zero"
                     )
                     free = [
-                        self.prepared.references[UUID(id)]
+                        self.binding.references[UUID(id)]
                         for id in (
                             unconstrained if isinstance(unconstrained, list) else ()
                         )
@@ -379,7 +362,7 @@ class Attempt:
                             else ""
                         ),
                         severity=Severity.WARNING,
-                        document=self.prepared.model.id if free else UNSET,
+                        document=self.binding.model.id if free else UNSET,
                         references=tuple(free) if free else UNSET,
                     )
             else:
@@ -390,8 +373,8 @@ class Attempt:
                     severity=Severity.ERROR,
                 )
 
-    def finish(self) -> Run:
-        """Validate the final report, then persist output before its producing Run."""
+    def finish(self) -> tuple[Run, Model | None]:
+        """Assemble and validate the Run; return it with its accepted output."""
         # No returned worker evidence means no claim that its iteration setting or
         # solver implementation actually ran. The parent deadline still applies.
         effective = (
@@ -432,37 +415,24 @@ class Attempt:
             Code.ATTEMPT_TIMING,
             f"Elapsed monotonic time before persistence: {time.monotonic() - self.clock:.9f} seconds.",
         )
-        run = Run(
-            RunRecord(
-                metadata=Metadata(
-                    id=self.run_id, schema_version=document_version("Run")
-                ),
-                specification=self.specification.id,
-                outputs=() if self.output is None else (self.output.id,),
-                report=Report(
-                    status=Status(completion=self.completion, solution=self.solution),
-                    runtime=Runtime(
-                        started_at=self.started,
-                        finished_at=_now(),
-                        implementations=tuple(self.implementations),
-                        settings=effective,
-                    ),
-                    diagnostics=tuple(self.findings),
-                    trace=tuple(self.trace),
-                    rule_evidence=()
-                    if self.prepared is None
-                    else self.prepared.rule_evidence,
-                ),
-            )
+        report = Report(
+            status=Status(completion=self.completion, solution=self.solution),
+            runtime=Runtime(
+                started_at=self.started,
+                finished_at=_now(),
+                implementations=tuple(self.implementations),
+                settings=effective,
+            ),
+            diagnostics=tuple(self.findings),
+            trace=tuple(self.trace),
+            rule_evidence=() if self.binding is None else self.binding.rule_evidence,
         )
-        resolver = (
-            self.store
-            if self.output is None
-            else publication.CandidateResolver(self.output, self.store)
+        run = assembly.assemble(
+            self.specification,
+            report,
+            id=self.run_id,
+            output=self.output,
+            resolver=self.resolver,
+            units=self.units if self.binding is None else self.binding.units,
         )
-        units = self.units if self.prepared is None else self.prepared.units
-        validate_run(run, resolver=resolver, units=units).raise_if_invalid()
-        if self.output is not None:
-            self.store.put(self.output)
-        self.store.put(run)
-        return run
+        return run, self.output
