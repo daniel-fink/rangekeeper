@@ -87,7 +87,9 @@ Collections specify one recursive `item_domain` and may require a set, bag, or s
 Units and function semantics are explicit prose contracts at this stage, not
 executable unit formulas. A structured Domain describes a Function contract; it does not itself define
 serialized Value content or executable members. Canonical Flow payloads exist;
-general Stream and Account member contracts remain separate requirements.
+general Stream member contracts remain a separate requirement. The `account`
+Domain kind is only a category name: there is no Account class, because a
+funding balance is the `cumulative()` sum of a Flow ([D2](../../examples/walkthrough/proposed/README.md#decisions)).
 
 Member selection reads a declared public member of the base content. Index selection
 uses the content's index convention. Sequences use zero-based nonnegative integer
@@ -199,12 +201,13 @@ The schemas and checks establish:
   and reused predicates, Boolean calls, and literal false predicates.
 
 The [structured-expression fixture](../../examples/schema/function-expressions.yaml) includes
-Flow total, annual IRR, a Span endpoint, Account transactions, and indexed balances.
+Flow total, annual IRR, a Span endpoint, the `transactions` member of a fixture-only
+`account` domain, and indexed balances.
 Its `input_domains` entries describe fixture-only domains, not serialized Value
 records. The checker supplies illustrative member domains for these examples.
 Canonical Flow Values already have a serialized payload. These fixtures do not
-establish general executable member or Function contracts for Flow, Stream or
-Account content.
+establish general executable member or Function contracts for Flow or Stream
+content.
 
 The checker does not evaluate Constraint satisfaction, traverse the graph, establish
 query result cardinalities, validate dimensions, find IRR roots, or solve equations.
@@ -228,7 +231,7 @@ The scalar execution subset and its independent acceptance checks are described
 in [scalar execution](execution.md). General symbolic graph-query execution
 and aggregation with symbolic members require further adapters. Flow Value
 payloads already exist. Define the missing structured Function/member
-contracts and backend support before claiming general Flow/Account expression
+contracts and backend support before claiming general Flow expression
 execution.
 Conditionals, slicing, grouping, unknown-dependent query membership, unrestricted
 graph query languages, and general-purpose code execution are outside this draft.

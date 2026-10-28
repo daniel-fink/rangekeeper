@@ -18,7 +18,7 @@ The [glossary](glossary.md) defines the terms.
 
 | # | Principle | Decision |
 | --- | --- | --- |
-| P1 | Three investigation roots: the **Model** (what the project is), the **Specification** (what we ask of it) and the **Run** (what happened). A **MarketPaths** document holds captured market paths. | [ADR-001](../decisions/001-document-roots.md), [ADR-014](../decisions/014-market-paths.md) |
+| P1 | Three investigation roots: the **Model** (what the project is), the **Specification** (what we ask of it) and the **Run** (what happened). A **MarketPaths** document holds captured market paths (1.0 target, [#298](https://github.com/daniel-fink/rangekeeper/issues/298)). | [ADR-001](../decisions/001-document-roots.md), [ADR-014](../decisions/014-market-paths.md) |
 | P2 | Equations state relationships only. A Specification decides which values are fixed and which are free. The same Model answers forward and inverse questions. | [ADR-001](../decisions/001-document-roots.md) |
 | P3 | LinkML is the only authority for fields. Records are generated from it. Behaviour is written by the owner of the concept. | [ADR-002](../decisions/002-records-and-identity.md), [ADR-011](../decisions/011-records-and-validation.md) |
 | P4 | Revisions are immutable and referenced by exact UUID. Stores are append-only. Nothing resolves to "the latest" without being asked. | [ADR-002](../decisions/002-records-and-identity.md) |
@@ -68,16 +68,23 @@ contracts enforce the rule.
 | 11 | `execution` | Case resolution, role binding, problem building, backends, verification, rule evaluation and publication |
 | 12 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
-`quantity` and `money` sit beside `shared`, below `duration`; `money` is below
-`quantity`. Users import from `rangekeeper`, `quantity`, `money`, `duration`, `profile`, `flow`, `market`, `finance`, `model`, `specification`, `execution`,
-`io` and `errors`. `schema` and `shared` are internal. Owners re-export the
-records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
+`quantity` and `money` sit between `schema` and `duration`; `money` is below
+`quantity`. Users import from `rangekeeper` and from the namespaces in
+`rangekeeper.__all__`: `quantity`, `money`, `duration`, `flow`, `finance`,
+`model`, `specification`, `run`, `execution`, `io` and `errors`. `schema` and
+`shared` are internal. `profile` and `market` are internal now; they become
+public with their 1.0.0b1 APIs
+([#303](https://github.com/daniel-fink/rangekeeper/issues/303),
+[#298](https://github.com/daniel-fink/rangekeeper/issues/298),
+[#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Owners re-export
+the records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
 and [ADR-017](../decisions/017-api-and-formats.md).
 
 ### Kinds of classes
 
-- **Documents** are validated, indexed facades: Model, Specification, Run and
-  MarketPaths.
+- **Documents** are validated, indexed facades: Model, Specification and Run.
+  MarketPaths joins them in 1.0
+  ([#298](https://github.com/daniel-fink/rangekeeper/issues/298)).
 - **Value types** are immutable records with behaviour: Quantity, Period, Span,
   Movement, Flow and Stream. They keep their own invariants.
 - **All other records** are plain data, read through their document.
@@ -86,34 +93,79 @@ Validation runs at commit points ([ADR-011](../decisions/011-records-and-validat
 
 ### How the parts connect
 
+The flows below have two parts. **Now** is the 1.0.0a2 API. **1.0 target** is
+the accepted design: the API does not exist yet. The linked gap issues track
+each missing part, and the
+[proposed walkthrough cells](../../examples/walkthrough/proposed/README.md)
+show the target API in use.
+
 **Author a Model** ([ADR-015](../decisions/015-authoring.md))
-1. Start a builder with `Model.build()`, or with `model.edit()` for a change.
-2. Add definitions, entities, relationships, values and equations.
-3. Call `commit()`. It validates once and returns a new immutable revision.
-4. Put the revision into an append-only store.
+- Now: make the generated records (Entities, Values, Formulations) and call
+  `Model.create(...)` or `Model.from_data(...)`. The helpers in
+  `rangekeeper.model.formulation` declare equations. `model.revise(Update(...))`
+  returns a new immutable revision. See the [Model reference](../reference/model.md).
+- 1.0 target:
+  1. Start a builder with `Model.build()`, or with `model.edit()` for a change.
+  2. Add definitions, entities, relationships, values and equations.
+  3. Call `commit()`. It validates once and returns a new immutable revision.
+  4. Put the revision into an append-only store.
+
+  Gap issues: [#141](https://github.com/daniel-fink/rangekeeper/issues/141),
+  [#281](https://github.com/daniel-fink/rangekeeper/issues/281),
+  [#283](https://github.com/daniel-fink/rangekeeper/issues/283),
+  [#284](https://github.com/daniel-fink/rangekeeper/issues/284),
+  [#305](https://github.com/daniel-fink/rangekeeper/issues/305).
 
 **Calculate with known data**
 1. Make Flows and Streams from dates, periods and amounts.
-2. Use Flow and Stream methods and `finance` operations.
+2. Use Flow and Stream methods and `finance` operations. Now, `finance.financial`
+   has `calculate_pv`, `calculate_xnpv` and `calculate_irr`. The 1.0 names `pv`,
+   `npv`, `irr` and `payment` follow
+   ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)).
 3. Read the resulting Flows or Quantities. No Model is necessary.
 
 **Investigate a Model** ([ADR-013](../decisions/013-execution-and-extensions.md))
-1. Write a Specification that pins one Model revision. Fix and free values,
-   and add bounds or rules.
-2. `solve` resolves cases and validates the composition.
-3. It binds roles and builds an `AffineProblem`.
-4. The backend solves the problem.
-5. The candidate is verified independently.
-6. `execute` also publishes the Run and the output Model to a store.
-7. Read solved values from the `Outcome`.
+- Now: write a Specification that pins one Model revision, with assignments,
+  bounds and rules. `rangekeeper.execution.Executor(store).execute(specification)`
+  prepares and compiles the affine problem, solves it in a separate process,
+  verifies the candidate independently, and publishes the output Model and the
+  final Run. Read the results from the Run and the output Model. See the
+  [execution reference](../reference/execution.md).
+- 1.0 target:
+  1. Write a Specification that pins one Model revision. Fix and free values,
+     and add bounds or rules.
+  2. `solve` resolves cases and validates the composition.
+  3. It binds roles and builds an `AffineProblem`.
+  4. The backend solves the problem.
+  5. The candidate is verified independently.
+  6. `execute` also publishes the Run and the output Model to a store.
+  7. Read solved values from the `Outcome`.
+
+  Gap issues: [#126](https://github.com/daniel-fink/rangekeeper/issues/126),
+  [#127](https://github.com/daniel-fink/rangekeeper/issues/127),
+  [#129](https://github.com/daniel-fink/rangekeeper/issues/129),
+  [#290](https://github.com/daniel-fink/rangekeeper/issues/290),
+  [#292](https://github.com/daniel-fink/rangekeeper/issues/292),
+  [#293](https://github.com/daniel-fink/rangekeeper/issues/293),
+  [#296](https://github.com/daniel-fink/rangekeeper/issues/296),
+  [#297](https://github.com/daniel-fink/rangekeeper/issues/297).
 
 **Work with market paths** ([ADR-014](../decisions/014-market-paths.md))
-1. Choose a path generator and its parameters.
-2. Generate market paths (`rk.market.Paths`) with a seed.
-3. Use `Specification.across(paths=)` to make one case for each path. Path series
-   fix the Model values with the same key; `series=` maps any others.
-4. Execute the batch. To compare strategies, run each Specification across the
-   same pinned paths.
+- Now: the internal `market` package has the deterministic kernels
+  (`market.dynamics`), the scenario plan, path generation, captured paths,
+  `Market` access and replay. See
+  [market paths and rules](../reference/market-paths-and-rules.md).
+- 1.0 target:
+  1. Choose a path generator (`rk.market.Dynamics`) and its parameters.
+  2. Generate market paths (`rk.market.Paths`) with a seed.
+  3. Use `Specification.across(paths=)` to make one case for each path. Path
+     series fix the Model values with the same key; `series=` maps any others.
+  4. Execute the batch. To compare strategies, run each Specification across the
+     same pinned paths.
+
+  Gap issues: [#298](https://github.com/daniel-fink/rangekeeper/issues/298),
+  [#299](https://github.com/daniel-fink/rangekeeper/issues/299),
+  [#306](https://github.com/daniel-fink/rangekeeper/issues/306).
 
 **Analyse structure**
 1. Select a View of a Model.
@@ -139,9 +191,9 @@ contents are not yet in their 1.0 owner:
 | `money` | The ISO 4217 catalogue and minor units, `to_number`, `to_amount` and `round` | — |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
 | `duration` | Frequency, Period, Span and calendar rules | — |
-| `profile` | Growth and distribution of known amounts over Periods: `extrapolate`, `distribute` and `GrowthMethod`; the Distribution owner (public as `rangekeeper.model.Distribution`) | Profile classes and `Flow.from_profile` replace the functions ([#298](https://github.com/daniel-fink/rangekeeper/issues/298)) |
+| `profile` | Growth and distribution of known amounts over Periods: `extrapolate`, `distribute` and `GrowthMethod`; the Distribution owner (public as `rangekeeper.model.Distribution`) | Profile classes and `Flow.from_profile` replace the functions ([#303](https://github.com/daniel-fink/rangekeeper/issues/303)) |
 | `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
-| `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#299](https://github.com/daniel-fink/rangekeeper/issues/299), [#303](https://github.com/daniel-fink/rangekeeper/issues/303)). Generation, `Market` and replay still import `model`, above `market` |
+| `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#298](https://github.com/daniel-fink/rangekeeper/issues/298), [#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Generation, `Market` and replay still import `model`, above `market` |
 | `finance` | Financial valuation: PV, NPV, IRR and day counts | `pv`, `npv`, `irr` and `payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry | — |
 | `specification` | The Specification document, composition, roles, and rule declarations and their validation | Rule queries over a `Window` replace the rule records ([#300](https://github.com/daniel-fink/rangekeeper/issues/300), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |

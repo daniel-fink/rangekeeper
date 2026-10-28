@@ -86,7 +86,7 @@ exclude_type_checking_imports = true
 
 [[tool.importlinter.contracts]]
 id = "layers"
-name = "The 12 layers of ADR-010"
+name = "The layers of ADR-010: 12 numbered layers, with money and quantity"
 type = "layers"
 containers = ["rangekeeper"]
 layers = [

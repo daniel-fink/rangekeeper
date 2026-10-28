@@ -10,6 +10,7 @@ check the lessons.
 | Path | Contents |
 | --- | --- |
 | `NN_slug.ipynb` | The lessons, in reading order. Lessons have no outputs in git |
+| [`proposed/`](proposed/README.md) | The proposed cells for each lesson and the design decisions D1–D44. The cells target the 1.0 API and do not run yet |
 | [`helpers/`](helpers) | Presentation helpers: chart style and charts (`theme`, `chart`, `plot`), graph display (`graph`), local display (`local`), the canonical Speckle envelope (`speckle`) and the geometry viewer (`geometry` and its assets) |
 | [`viewer/`](viewer/README.md) | The source and build of the geometry viewer |
 | [`resources/`](resources/README.md) | Images that the lessons show, with their rights |

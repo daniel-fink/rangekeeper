@@ -39,10 +39,11 @@ removed predecessor runtime.
 
 | Line | Branch | Status |
 | --- | --- | --- |
-| 1.x | `develop` | In development. The API on this branch is not on PyPI yet. |
+| 1.x | `develop` | In development. Pre-releases 1.0.0a1 and 1.0.0a2 are on PyPI: `pip install --pre rangekeeper`. The API changes between pre-releases. |
 | 0.8.x | [`support/0.8`](https://github.com/daniel-fink/rangekeeper/tree/support/0.8) | Bug and security fixes only, until an announced end of life. |
 
-Applications that use 0.8.x should declare `rangekeeper>=0.8.72,<0.9`. Then a
+0.8.x stays the stable line: `pip install rangekeeper` without `--pre` installs
+it. Applications that use 0.8.x should declare `rangekeeper>=0.8.72,<0.9`. Then a
 1.0 release on PyPI does not replace their version. [SECURITY.md](SECURITY.md)
 lists the supported versions; the [release guide](docs/contributing/releasing.md)
 gives the release procedure.

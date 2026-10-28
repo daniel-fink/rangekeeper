@@ -10,9 +10,9 @@ and [identity](identity.md) define shared construction and reference rules.
 
 | Owner | Responsibility |
 | --- | --- |
-| `model/model.py` | Model facade, construction, UUID lookup and revision |
+| `model/model.py` | Model facade, construction, UUID lookup, Value and Label lookup by UUID or by owner and key (`Model.value`, `Model.label`), and revision |
 | `schema/index.py` | Schema-directed UUID, type and nearest-owner index with original paths |
-| `model/{characteristics,definitions,provenance}.py` | Owner-local Value/Label lookup, catalogue lookup, Facts and upstream Locations |
+| `model/{definitions,provenance}.py` | Catalogue lookup, Facts and upstream Locations |
 | `model/{update,diff}.py` | Complete-section replacement and descriptive comparison |
 | `model/system/validation.py` | Entity, Assembly, Relationship and membership invariants |
 | `model/formulation/` | Located Formulations, owner-local codes and mathematical preparation |
@@ -43,8 +43,7 @@ reused. No cache spans revisions or independent validation operations.
 
 ```python
 from uuid import uuid4
-from rangekeeper.schema import Metadata
-from rangekeeper.model import Model, Entity, System, Definitions, Measure, Characteristics, Value, ValueKind, Update
+from rangekeeper.model import Metadata, Model, Entity, System, Definitions, Measure, Characteristics, Value, ValueKind, Update
 from rangekeeper.quantity import Quantity
 from rangekeeper.model.diff import between
 
@@ -174,8 +173,9 @@ timezone/fold and negative zero retain their meaning. `decode` returns detached
 data. Arbitrary classes, callbacks, cycles and nonfinite numbers fail.
 
 A property timestamp does not become a Flow coordinate. A Pint object inside
-legacy Feature content requires an explicit mapping; the migration converter
-reports unsupported content rather than changing its type.
+legacy Feature content requires an explicit mapping; the one-off conversion tool
+(`python -m tools.upgrade`, see [upgrading](../guides/upgrading.md)) reports
+unsupported content rather than changing its type.
 
 ## Validation reports and failures
 

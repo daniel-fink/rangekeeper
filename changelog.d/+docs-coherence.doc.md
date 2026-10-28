@@ -1,0 +1,1 @@
+The documentation now matches 1.0.0a2: the architecture and glossary mark the planned 1.0 API (with its gap issues) apart from what exists, the reference pages use `fix` and `free`, public import paths and the `execution` module paths, and the README and installation guide document `pip install --pre rangekeeper` for the pre-releases, with 0.8.x as the stable line.

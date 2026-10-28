@@ -1,10 +1,21 @@
 # Install Rangekeeper
 
 Rangekeeper provides immutable `Model`, `Specification` and `Run` records, Model-backed graph operations, numerical calculations and Pyomo/HiGHS
-execution. This guide installs the checked-out source. The current architecture
-must not be assumed to match an earlier published PyPI release.
+execution. Use Python 3.12 or 3.13.
 
-Use Python 3.12 or 3.13. From the repository root:
+The 1.0 pre-releases (1.0.0a1 and 1.0.0a2) are on PyPI. Install the latest
+pre-release with:
+
+```sh
+python -m pip install --pre rangekeeper
+```
+
+The API and the document formats change between pre-releases; pin the exact
+version, for example `rangekeeper==1.0.0a2`. 0.8.x stays the stable line:
+`pip install rangekeeper` without `--pre` installs it. See the
+[versions table](../../README.md#versions).
+
+To install the checked-out source instead, run from the repository root:
 
 ```sh
 python -m pip install .
@@ -48,7 +59,7 @@ for other operations:
 from rangekeeper import Model, Specification, Run
 from rangekeeper.model import formulation
 from rangekeeper import execution
-from rangekeeper.shared.table import Table, Row
+from rangekeeper.flow import Flow, Stream
 ```
 
 The [architecture](../concepts/architecture.md) owns the package map. Read the
