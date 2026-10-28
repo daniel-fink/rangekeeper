@@ -1,6 +1,6 @@
 # ADR-012: Naming convention, glossary and the rename pass
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; rename pass and codemod implemented in 1.0.0a2 (#93–#96, #311); later renames follow the gap issues under #169. Recorded: 2026-10-26.
 
 ## Problem
 

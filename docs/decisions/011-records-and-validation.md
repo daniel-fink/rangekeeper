@@ -1,6 +1,6 @@
 # ADR-011: Records, behaviour and validation
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; implemented in 1.0.0a2 (#106–#116, #111). Recorded: 2026-10-26.
 
 ## Problem
 
