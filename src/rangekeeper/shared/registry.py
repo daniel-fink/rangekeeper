@@ -319,7 +319,10 @@ def _origin(name: str) -> str | None:
         except (ImportError, ValueError):
             spec = None
         origin = None if spec is None else spec.origin
-    return origin if isinstance(origin, str) and origin.endswith(".py") else None
+    # A launcher can name a file that does not exist, such as pytest.exe\__main__.py.
+    if isinstance(origin, str) and origin.endswith(".py") and Path(origin).is_file():
+        return origin
+    return None
 
 
 def _package(root: str, origin: str) -> Path | None:

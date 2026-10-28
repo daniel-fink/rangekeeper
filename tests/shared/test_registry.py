@@ -192,10 +192,11 @@ def test_fingerprints_are_lazy_and_follow_the_source(monkeypatch):
 
 
 def test_fingerprints_cover_code_without_a_module_file():
-    namespace: dict = {"__name__": "__main__"}
-    exec("class Script:\n    def greet(self):\n        return 'script'\n", namespace)
-    # exec has no source to read; the fingerprint still names the class.
-    assert fingerprint(namespace["Script"]()).startswith(FORMAT + ":")
+    for module in ("__main__", "rk_unimported_script"):
+        namespace: dict = {"__name__": module}
+        exec("class Script:\n    def greet(self):\n        return 'x'\n", namespace)
+        # exec leaves no source to read; the fingerprint still names the class.
+        assert fingerprint(namespace["Script"]()).startswith(FORMAT + ":")
 
 
 def test_registration_is_thread_safe():
