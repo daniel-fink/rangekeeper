@@ -64,7 +64,16 @@ flow = Flow(units="m", movements=(resolved,)).check(resolved=True)
 assert flow.total().magnitude == 10
 ```
 
-Constructors, `from_data` and `replace` validate structure. Generated signatures
+Validation runs in tiers ([ADR-011](../decisions/011-records-and-validation.md#when-validation-runs)):
+
+| Tier | Where | What |
+| --- | --- | --- |
+| Node checks | Typed constructors and `replace` | The record's own fields and class rules, generated from the JSON Schema. Child records are already checked |
+| Structural | `from_data`, `from_json`, the codecs (`rk.io.json`, `rk.io.yaml`) and `DirectoryStore` reads | jsonschema over the whole tree |
+| Semantic | `Model`, `Specification` and `Run` construction, so `create`, `revise` and `from_data`; composition before execution; Run publication | Document rules, references, units and dimensions |
+
+Record data (a mapping) passed to a typed constructor for a record field is
+untrusted and gets the structural tier. Generated signatures
 let type checkers reject unknown fields, wrong record types and invalid enum
 values. Typed constructors and `replace` require canonical Enum members; raw wire
 strings belong at `from_data`/`from_json`. Runtime checks reject nonfinite numbers, cyclic data and invalid field

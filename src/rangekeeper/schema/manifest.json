@@ -2,7 +2,7 @@
   "artifacts": {
     "checks.py": "72116dd8f85d7456c1b29b99b865d5c05378ff6550bb1b5c0107e346fb5cb9f7",
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "records.py": "cc45a494a0e0dced0cd2fb82de3f3508d4e44b81b3aa33794441936a842ce900",
+    "records.py": "07937ddc2c0946aa843b81d2e3945ea791cf7f2f8d5b8d4f3eb6cb2c531b04da",
     "schema.json": "2423d5676d333ced0e434cb3462123caa89196c34ad10d940d4226be33bf5af2",
     "slots.json": "e36e7d305c19d107408a8a94def81507485813efc6e08078f61922b9d0335333"
   },
@@ -128,7 +128,7 @@
     "schema/settings.yaml": "857cfb5fa49ee77e8469f51a3d188714fde401352c23922b055fd8d107f10e96",
     "schema/specification.yaml": "730f04d5a16624aa0afe0951beeb408b824286c54c96874fc5d39d9439d39461",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "2d70b8a71516e01ddff48fc1c746abd98e9927aca72073a5e1d8ce834bd3a255",
+    "tools/schema/generate.py": "e8e0df53ffc2fb4e8a03bc21efe7048e5b35cb0f302c23ee5982d0473a7ee3bc",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"
   }
 }
