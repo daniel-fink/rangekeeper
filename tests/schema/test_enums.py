@@ -11,7 +11,7 @@ from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.run import CompletionStatus
 from rangekeeper.schema.enums import _ENUM_TYPES
 from rangekeeper.shared.errors import ValidationError
-from rangekeeper.specification.policy import Action, ActionKind
+from rangekeeper.specification.rule import Action, ActionKind
 
 
 def test_generated_enums_are_unique_plain_enums_with_unchanged_wire_values():

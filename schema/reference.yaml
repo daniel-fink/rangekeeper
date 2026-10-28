@@ -29,6 +29,7 @@ classes:
       record duplicates the Value declaration. Recorded content is reused only by supplying it explicitly.
     attributes:
       target:
+        description: Value or Movement to which the quantity is supplied.
         range: Reference
         required: true
         inlined: true

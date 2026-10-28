@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from types import MappingProxyType
 
 from rangekeeper.shared.encoding import digest, encode
-from rangekeeper.shared.errors import EncodingError, ValueEncodingError
+from rangekeeper.shared.errors import EncodingError
 
 
 def freeze(value: object) -> object:
@@ -28,10 +28,7 @@ def _freeze(value: object, active: set[int]) -> object:
             return tuple(_freeze(item, active) for item in value)
         finally:
             active.remove(id(value))
-    try:
-        encode(value)
-    except ValueEncodingError as exc:
-        raise EncodingError(str(exc)) from exc
+    encode(value)
     return value
 
 

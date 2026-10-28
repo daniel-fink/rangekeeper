@@ -14,6 +14,7 @@ from rangekeeper.schema.runtime import (
     comparison_data,
     exact_equal,
 )
+from rangekeeper.shared import pointer
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model
@@ -67,7 +68,7 @@ def between(before: "Model", after: "Model") -> Diff:
                 visit(
                     a.get(key, UNSET),
                     b.get(key, UNSET),
-                    path + "/" + key.replace("~", "~0").replace("/", "~1"),
+                    pointer.child(path, key),
                 )
         elif isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
             for index in range(max(len(a), len(b))):

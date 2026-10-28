@@ -18,7 +18,7 @@ from rangekeeper.schema.enums import CompletionStatus
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.records import Diagnostic, Quantity, Step
 from rangekeeper.schema.runtime import Record, exact_equal
-from rangekeeper.schema.validation import document_version, supports_version
+from rangekeeper.schema.validation import checked, document_version, supports_version
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -28,7 +28,7 @@ from rangekeeper.shared.errors import (
     UnitError,
 )
 from rangekeeper.shared.references import DocumentResolver
-from rangekeeper.shared.validation import bounded, checked, require, require_acyclic
+from rangekeeper.shared.validation import bounded, require, require_acyclic
 from rangekeeper.specification.composition import (
     compose_specification,
     specification_catalogue,
@@ -145,16 +145,7 @@ def validate(
             units=units,
         )
     except (MissingReferenceError, ReferenceTypeError, IdentityConflictError) as error:
-        code = (
-            "reference.missing"
-            if isinstance(error, MissingReferenceError)
-            else (
-                "reference.kind"
-                if isinstance(error, ReferenceTypeError)
-                else "reference.identity"
-            )
-        )
-        return ValidationReport((Issue(code, str(error), run.id),))
+        return ValidationReport((Issue(error.code, str(error), run.id),))
 
 
 def collect_documents(
@@ -457,19 +448,20 @@ class _RunValidation:
                     )
                 else:
                     if (
-                        effective.get("policy")
+                        effective.get("rules")
                         and not outputs
                         and (
-                            run["report"].get("outcomes") or solution != "not_assessed"
+                            run["report"].get("rule_evidence")
+                            or solution != "not_assessed"
                         )
                     ):
-                        from rangekeeper.specification.policy.validation import (
-                            validate_outcomes,
+                        from rangekeeper.specification.rule.validation import (
+                            validate_evidence,
                         )
 
-                        validate_outcomes(
-                            effective["policy"],
-                            run["report"].get("outcomes") or [],
+                        validate_evidence(
+                            effective["rules"],
+                            run["report"].get("rule_evidence") or [],
                             scope=scope,
                             provenance=model.get("provenance") or {},
                             units=self.units,

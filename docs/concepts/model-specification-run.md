@@ -6,8 +6,9 @@ revisions; a display name never resolves a document implicitly.
 
 Import the three facades from `rangekeeper`. Their capability packages follow
 their ownership: `model.system` owns graph views, `model.formulation` owns passive
-equation builders, `duration` owns calendar rules, and `model.scenario` owns
-captured futures. Policy operations belong to `specification.policy`; numerical
+equation builders, `duration` owns calendar rules, `profile` owns growth and
+distribution profiles, and `market` owns path generators and captured futures. Rule
+operations belong to `specification.rule`; numerical
 execution belongs to `execution`. Generated records and their runtime live in
 `schema`, while reusable tables, units live in `quantity`, and reusable tables and resolver contracts live in `shared`.
 
@@ -28,7 +29,7 @@ ownership, graph relationships and mathematical constraints remain separate.
 ## Specification
 
 A Specification selects an exact input Model and supplies assignments, unknowns,
-estimates, bounds, objectives or policy requirements. `Reference` identifies
+estimates, bounds, objectives or rules. `Reference` identifies
 a Value or Movement by UUID. Includes compose additive
 contributions; conflicting declarations fail. Cases describe separate attempts in
 a batch. A partial contribution can exist before all external references resolve.
@@ -37,7 +38,7 @@ a batch. A partial contribution can exist before all external references resolve
 `Composition.validate` checks that view against its resolver and preserves original
 source attribution. Execution support is narrower than the full schema:
 the [executor](../reference/execution.md) supports finite affine feasibility, including
-temporal equations and the supported exogenous policy slice. Declaring an objective
+temporal equations and the supported exogenous rule slice. Declaring an objective
 or nonlinear expression does not mean that executor can solve it.
 
 ## Run
@@ -48,8 +49,8 @@ solution status have different meanings. A deadline or backend error does not pr
 infeasibility. A batch accounts for each direct case and the union of its outputs.
 
 The Report retains diagnostics, runtime implementations and settings, trace steps
-and policy outcomes where applicable. `Policy.decisions` contains declared Decision
-records; `Report.outcomes` contains DecisionOutcome evidence. Local construction checks the report.
+and rule evidence where applicable. `RuleSet.decisions` contains declared Decision
+records; `Report.rule_evidence` contains RuleEvidence records. Local construction checks the report.
 Resolver-backed validation also checks document kinds, references, lineage and
 permitted publication changes. It does not rerun mathematics. Independent numerical
 acceptance occurs in execution before an output is published.
@@ -73,19 +74,19 @@ Strict JSON/YAML codecs use an explicit root kind. Stores are append-only by UUI
 Reusing an ID for different content is an error. Source workflows retain Claims and
 source addresses; dataframe and viewer projections are detached from this evidence.
 
-## Scenarios and policy
+## Market paths and rules
 
-A captured scenario records a realization, generator identity, versions and
-availability. Replay uses captured values. A policy observes only information
+A captured market path records a realization, generator identity, versions and
+availability. Replay uses captured values. A rule observes only information
 available at the decision date, selects a declared action, and records its reason.
-Financial observation formulas belong to the application policy; generic replay
+Financial observation formulas belong to the application's rules; generic replay
 owns causal availability and termination.
 
 These contracts support comparing fixed strategies and adaptive choices on the same
 captured futures. They do not promise general stochastic optimization, endogenous
-policy search, nonlinear execution or arbitrary runtime Functions.
+rule search, nonlinear execution or arbitrary runtime Functions.
 
 See [architecture](architecture.md), [Model](../reference/model.md),
 [Specification](../reference/specification.md),
-[expressions](../reference/expressions.md), [scenarios](../reference/scenarios-and-policies.md) and
+[expressions](../reference/expressions.md), [market paths and rules](../reference/market-paths-and-rules.md) and
 [Runs/storage](../reference/run-and-storage.md) for the detailed contracts.

@@ -1,16 +1,21 @@
 """Small document-kind dispatch shared by codecs and stores; no field definitions."""
 
 from collections.abc import Mapping
-from typing import cast
+from typing import TypeAlias, TypeVar, cast
 from uuid import UUID
 
-from rangekeeper.io.store import D, Document, Model, Run, Specification
+from rangekeeper.model.model import Model
+from rangekeeper.run.run import Run
 from rangekeeper.shared.errors import (
     DecodeError,
     IdentityConflictError,
     ReferenceTypeError,
     RevisionConflictError,
 )
+from rangekeeper.specification.specification import Specification
+
+Document: TypeAlias = Model | Specification | Run
+D = TypeVar("D", bound=Document)
 
 KINDS: dict[str, type[Document]] = {
     kind.__name__: kind for kind in (Model, Specification, Run)

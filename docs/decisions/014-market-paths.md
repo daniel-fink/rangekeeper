@@ -123,7 +123,7 @@ document.
 [ADR-021](021-sequential-decisions.md) confirms how availability attaches to case
 assignments and how a case refers to a path member.
 
-The [scenario reference](../reference/scenarios-and-policies.md) changes when
+The [scenario reference](../reference/market-paths-and-rules.md) changes when
 the implementation lands.
 
 ## Sources and related decisions

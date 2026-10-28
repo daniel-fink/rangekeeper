@@ -10,7 +10,7 @@ from uuid import UUID
 
 from rangekeeper.execution.backends.base import Result
 from rangekeeper.execution.compiler import Compiled
-from rangekeeper.execution.errors import BackendUnavailable, NumericalError
+from rangekeeper.execution.errors import BackendUnavailableError, NumericalError
 from rangekeeper.execution.settings import Limits
 from rangekeeper.schema.records import Implementation
 
@@ -70,7 +70,7 @@ class PyomoHighs:
         try:
             data = json.loads(completed.stdout)
             if data.get("unavailable"):
-                raise BackendUnavailable(data["unavailable"])
+                raise BackendUnavailableError(data["unavailable"])
             if data.get("error"):
                 raise NumericalError(data["error"])
             values = data.get("candidate")

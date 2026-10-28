@@ -52,7 +52,9 @@ to make that independent copy.
 ignores only schema-declared unordered collection order. Both preserve scalar types,
 signed floating zero, multiplicity, field presence and opaque-content order. Neither
 performs unit conversion. Model/Specification revision checks live in `schema/revision.py`;
-content-hash encodings remain separate provenance contracts.
+content-hash encodings remain separate provenance contracts. A revision check ignores
+the Metadata slots that the schema marks with the `lineage` annotation (`id` and
+`previous`); every other field is content.
 
 Store idempotency and revision conflict checks use schema equivalence. Run output
 validation uses exact comparison for preserved historical Claims. A schema-unordered
