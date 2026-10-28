@@ -7,7 +7,7 @@ import math
 from collections.abc import Mapping
 from datetime import date as Date
 from types import MappingProxyType
-from typing import TypeAlias, TypeVar
+from typing import TypeAlias, TypeVar, cast
 from uuid import UUID
 
 FrozenJSONValue: TypeAlias = (
@@ -160,12 +160,82 @@ def comparison_data(kind: str, data: Mapping) -> dict:
     return result
 
 
+EMPTY: Mapping[str, FrozenJSONValue] = MappingProxyType({})
+
+
+def _encode_uuid(value):
+    return str(value) if isinstance(value, UUID) else copy_json(value)
+
+
+def _encode_date(value):
+    return value.isoformat() if type(value) is Date else copy_json(value)
+
+
+def _encode_enum(value, enum, name):
+    if value is None:
+        return None
+    if not isinstance(value, enum):
+        raise TypeError(f"{name}: expected {enum.__name__}")
+    return value.value
+
+
+def _encode_record(value, cls, name):
+    if isinstance(value, Record):
+        if not isinstance(value, cls):
+            raise TypeError(f"{name}: incompatible record {value._kind}")
+        # The frozen tree is copied once, by _set_data.
+        return value._data
+    return copy_json(value)
+
+
+def _encode_many(value, encode):
+    if isinstance(value, (tuple, list)):
+        return [encode(item) for item in value]
+    return encode(value)
+
+
+def _decode_uuid(value):
+    return UUID(value) if isinstance(value, str) else value
+
+
+def _decode_uuids(values):
+    if values is None:
+        return None
+    return tuple(UUID(v) if isinstance(v, str) else v for v in values)
+
+
+def _decode_enum(value, enum):
+    return None if value is None else enum(value)
+
+
+def _decode_date(value):
+    if isinstance(value, str):
+        try:
+            return Date.fromisoformat(value)
+        except ValueError:
+            return value
+    return value
+
+
+def _decode_dates(values):
+    return None if values is None else tuple(_decode_date(v) for v in values)
+
+
+def _borrow(cls, data):
+    """Return a record of ``cls`` that shares an already validated frozen tree."""
+    record = cls.__new__(cls)
+    object.__setattr__(record, "_data", data)
+    return record
+
+
 class Record:
     """Immutable schema record. Constructors check structure, not cross-record semantics."""
 
-    __slots__ = ("_data",)
+    __slots__ = ("_data", "_cache")
     _kind: str
+    _SLOTS: Mapping[str, Mapping]
     _data: Mapping[str, FrozenJSONValue]
+    _cache: dict[str, object]
 
     def __new__(cls, *args, **kwargs):
         """Create an instance of the registered owner class of this kind."""
@@ -178,67 +248,51 @@ class Record:
     def __delattr__(self, name):
         raise AttributeError("records are immutable")
 
-    def _initialize(self, fields: Mapping[str, object]) -> None:
-        self._set_data(self._encode(fields))
-
-    def _encode(self, fields: Mapping[str, object]) -> dict[str, object]:
-        """Encode typed field values once for both construction and replacement."""
+    def _encode_field(self, name: str, value: object) -> object:
+        """Encode one union field; generated code encodes every other field."""
         from rangekeeper.schema.enums import _ENUM_TYPES
         from rangekeeper.schema.records import _TYPES
         from rangekeeper.schema.validation import _slot_map
 
-        slots = _slot_map(self._kind)
-        data = {}
-        for name, value in fields.items():
-            if name not in slots:
-                raise TypeError(f"{self._kind}: unknown field {name!r}")
-            if value is UNSET:
-                continue
-            meta = slots[name]
+        meta = _slot_map(self._kind)[name]
 
-            def encode(item):
-                enum = next(
-                    (o for o in meta["options"] if o["category"] == "enum"), None
-                )
-                if enum is not None and item is not None:
-                    expected = _ENUM_TYPES[enum["kind"]]
-                    if not isinstance(item, expected):
-                        raise TypeError(f"{name}: expected {expected.__name__}")
-                    return item.value
-                if isinstance(item, Record):
-                    if not any(
-                        o["category"] == "record"
-                        and isinstance(item, _TYPES[o["kind"]])
-                        for o in meta["options"]
-                    ):
-                        raise TypeError(f"{name}: incompatible record {item._kind}")
-                    return item.to_data()
-                if isinstance(item, UUID) and any(
-                    o["category"] == "uuid" for o in meta["options"]
-                ):
-                    return str(item)
-                if type(item) is Date and any(
-                    o["category"] == "primitive" and o["kind"] == "date"
+        def encode(item):
+            enum = next((o for o in meta["options"] if o["category"] == "enum"), None)
+            if enum is not None and item is not None:
+                expected = _ENUM_TYPES[enum["kind"]]
+                if not isinstance(item, expected):
+                    raise TypeError(f"{name}: expected {expected.__name__}")
+                return item.value
+            if isinstance(item, Record):
+                if not any(
+                    o["category"] == "record" and isinstance(item, _TYPES[o["kind"]])
                     for o in meta["options"]
                 ):
-                    return item.isoformat()
-                return copy_json(item)
+                    raise TypeError(f"{name}: incompatible record {item._kind}")
+                return item._data
+            if isinstance(item, UUID) and any(
+                o["category"] == "uuid" for o in meta["options"]
+            ):
+                return str(item)
+            if type(item) is Date and any(
+                o["category"] == "primitive" and o["kind"] == "date"
+                for o in meta["options"]
+            ):
+                return item.isoformat()
+            return copy_json(item)
 
-            data[name] = (
-                [encode(item) for item in value]
-                if meta["many"] and isinstance(value, (tuple, list))
-                else encode(value)
-            )
-        return data
+        if meta["many"] and isinstance(value, (tuple, list)):
+            return [encode(item) for item in value]
+        return encode(value)
 
     def _replace(self: R, fields: Mapping[str, object]) -> R:
-        """Copy supplied fields without collapsing omitted, null and empty values.
+        """Copy encoded fields without collapsing omitted, null and empty values.
 
         Generated signatures provide field types and reject unknown keywords. This
         primitive changes content only; document revision rules belong to facades.
         """
-        data = self.to_data()
-        data.update(self._encode(fields))
+        data: dict[str, object] = dict(self._data)
+        data.update(fields)
         return type(self).from_data(data)
 
     def _set_data(self, data: object) -> None:
@@ -291,7 +345,33 @@ class Record:
         """
         return tuple(self._data)
 
+    def _child(self, name: str, cls: type[Record], many: bool) -> object:
+        """Decode a record field once; later reads return the cached children."""
+        try:
+            cache = self._cache
+        except AttributeError:
+            cache = {}
+            object.__setattr__(self, "_cache", cache)
+        if name in cache:
+            return cache[name]
+        if name not in self._data:
+            result: object = () if many else None
+        else:
+            value = self._data[name]
+            if value is None:
+                result = None
+            elif many:
+                result = tuple(
+                    _borrow(cls, item) if isinstance(item, Mapping) else item
+                    for item in cast(tuple, value)
+                )
+            else:
+                result = _borrow(cls, value) if isinstance(value, Mapping) else value
+        cache[name] = result
+        return result
+
     def _field(self, name):
+        """Decode one union field; generated properties decode every other field."""
         from rangekeeper.schema.enums import _ENUM_TYPES
         from rangekeeper.schema.records import _TYPES
         from rangekeeper.schema.validation import _slot_map

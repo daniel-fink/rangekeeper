@@ -22,7 +22,7 @@ the shared record layer and its method ownership.
 | `rangekeeper/schema/kinds.py` | The kind registry: the owner class that each kind constructs and decodes to |
 | `rangekeeper/schema/runtime.py` | Shared field encoding, strict JSON copying, freezing, replacement, field presence and schema equivalence |
 | `rangekeeper/flow`, `rangekeeper/duration`, `rangekeeper/finance/_distribution.py` | Owner subclasses with the methods of Flow and Movement, Period and Span, and Distribution; no field declarations |
-| `rangekeeper/schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
+| `rangekeeper/schema/{schema,slots,manifest}.json` | Structural checks, a packaged copy of the slot metadata and reproducible generation fingerprints |
 | `model`, `specification`, `run` | Document-wide validation, references and revision rules |
 | `flow`, `finance` | Operations that combine records or require an explicit financial or temporal interpretation |
 
@@ -37,6 +37,11 @@ names each owner module, so a decode loads the owner on first use. An owner keep
 Schema inheritance remains intact: `Assembly` is an `Entity`; `Span` is a
 `Period`. Workflow computation fingerprints include the owner modules, so changes
 to these methods affect recorded computation identity.
+
+The generator selects the encoder and decoder of each field and gives each class
+its slot metadata (`_SLOTS`). The runtime does not read `slots.json`. A record
+decodes each child record field once and keeps the result, so `flow.movements` is
+the same tuple at each read.
 
 Handwritten methods use local imports for schema constructors and optional
 numerical libraries. Importing records does not load a solver, dataframe, plotting
