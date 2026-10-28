@@ -169,7 +169,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.specification.policy` | `rangekeeper.specification.rule` | agreed | "Policy" is not used. The rule queries of ADR-021 replace the records later (#215). |
 | `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.rule` | draft (needs refactor) | Rule evaluation moves to `execution` (#102). The lazy exports of `specification.rule` load it by its short name. |
 | `rangekeeper.shared.units` | `rangekeeper.quantity` | agreed | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
-| `rangekeeper.io.store` | `rangekeeper.shared.store` | draft (needs refactor) | The protocol imports Model, Specification and Run; these imports must become type-only. |
+| `rangekeeper.io.store` | `rangekeeper.io` | agreed | The `RecordStore` protocol is defined in the internal `shared.store`, so `execution` does not import `io`. Import `RecordStore` and `Document` from `rangekeeper.io`. |
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
 | `rangekeeper.model.scenario` | `rangekeeper.market` | agreed | The generators, paths and replay move as they are. `rk.market.Paths` and the MarketPaths document replace the scenario plan (#299, #303). |
 | `rangekeeper.model.scenario.market` | `rangekeeper.market.generation` | draft | Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name. |
