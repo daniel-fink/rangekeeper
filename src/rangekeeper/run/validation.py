@@ -18,7 +18,7 @@ from rangekeeper.schema.enums import CompletionStatus
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.records import Diagnostic, Quantity, Step
 from rangekeeper.schema.runtime import Record, exact_equal
-from rangekeeper.schema.validation import document_version, supports_version
+from rangekeeper.schema.validation import checked, document_version, supports_version
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -28,7 +28,7 @@ from rangekeeper.shared.errors import (
     UnitError,
 )
 from rangekeeper.shared.references import DocumentResolver
-from rangekeeper.shared.validation import bounded, checked, require, require_acyclic
+from rangekeeper.shared.validation import bounded, require, require_acyclic
 from rangekeeper.specification.composition import (
     compose_specification,
     specification_catalogue,

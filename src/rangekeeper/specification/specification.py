@@ -14,14 +14,14 @@ from rangekeeper.schema.index import RecordIndex
 from rangekeeper.schema.records import Metadata
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.revision import check_revision
-from rangekeeper.schema.validation import document_version, supports_version
-from rangekeeper.shared.errors import UnsupportedVersionError
-from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.validation import (
-    bounded,
-    require,
+from rangekeeper.schema.validation import (
+    document_version,
+    supports_version,
     validate_known_reference_types,
 )
+from rangekeeper.shared.errors import UnsupportedVersionError
+from rangekeeper.shared.references import SpecificationResolver
+from rangekeeper.shared.validation import bounded, require
 from rangekeeper.specification.composition import (
     Composition,
     validate_local_header,
