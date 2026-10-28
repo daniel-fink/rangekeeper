@@ -498,14 +498,14 @@ def test_run_child_diagnostics_identify_the_child_and_report_field():
 
 
 @pytest.mark.parametrize("published", [False, True])
-def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
+def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
     """Exercise real converted comparisons through both public entry points."""
     from copy import deepcopy
 
     from rangekeeper.io import MemoryStore
     from rangekeeper.quantity import UnitSystem
     from rangekeeper.run import Run, validate
-    from rangekeeper.specification.policy import Policy, evaluate
+    from rangekeeper.specification.rule import RuleSet, evaluate
 
     conversions = []
 
@@ -548,7 +548,7 @@ def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
         ),
     )
     action = dict(kind="assign", target=reference, quantity=amount)
-    policy = Policy.from_data(
+    rules = RuleSet.from_data(
         dict(
             id=str(uuid4()),
             targets=[reference],
@@ -592,14 +592,14 @@ def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
         )
     )
     model = Model.from_data(data)
-    result = evaluate(policy, model=model, units=units)
-    assert result.outcomes[0].rule == UUID(rule)
+    result = evaluate(rules, model=model, units=units)
+    assert result.evidence[0].rule == UUID(rule)
     assert len(conversions) >= 2
     assert all(
         context is units and source == "cm" and target == "m"
         for context, source, target in conversions
     )
-    spec = specification(model=model.id, policy=policy)
+    spec = specification(model=model.id, rules=rules)
     store = MemoryStore()
     for document in (model, spec):
         store.put(document)
@@ -615,7 +615,7 @@ def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
                     dict(kind="evaluator", name="unit-context-test", version="1")
                 ]
             ),
-            outcomes=[item.to_data() for item in result.outcomes],
+            rule_evidence=[item.to_data() for item in result.evidence],
         ),
     )
     if published:
@@ -632,7 +632,7 @@ def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
             dict(
                 severity="info",
                 code="trace_only",
-                message="Policy evaluated without publication",
+                message="Rules evaluated without publication",
             )
         ]
     run = Run.from_data(raw)

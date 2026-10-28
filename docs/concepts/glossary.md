@@ -2,8 +2,9 @@
 
 This page defines the words that Rangekeeper uses. Each word has one meaning. The
 **Owner** column gives the 1.0 package ([ADR-010](../decisions/010-layers-and-packages.md)).
-The **Current name** column shows a different name used until the 1.0.0a2 rename
-pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
+The **Current name** column shows the name that the code uses now, where it is
+different. The [rename map](../guides/upgrading.md#100a2-rename-map) gives each
+move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 ## Documents
 
@@ -13,7 +14,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Model | Project knowledge: definitions, system, provenance and an optional geometry pin | `model` | — |
 | Specification | An investigation of one Model revision: fixed and free values, estimates, bounds, objectives, rules, includes and cases | `specification` | — |
 | Run | Finalized evidence of one attempt or batch: status, report, output Models and child Runs | `run` | — |
-| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record | `market` | `MarketPaths`; `ScenarioRealization` inside Model provenance |
+| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record | `market` | `ScenarioPlan` and `ScenarioRealization`, inside Model provenance |
 | Bundle | A delivered set of documents with their exact dependencies | `io` | — |
 | Revision | One immutable version of a document, identified by its Metadata UUID | `schema` | — |
 
@@ -46,31 +47,31 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
-| Quantity | A magnitude with units; `rk.Quantity` at the root | `quantity` | `model.measure.Quantity` |
+| Quantity | A magnitude with units; `rk.Quantity` at the root | `quantity` | — |
 | Units | A unit string, such as `AUD per year` | `quantity` | — |
 | Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `quantity` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | — |
 | Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | `tuple[Period, ...]`; `PeriodIndex` in 0.8 |
 | Span | A named half-open range of time | `duration` | — |
-| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | `"never"` string |
-| Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | `calculations.projection` (`Extrapolation`, `Distribution` projections) |
+| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | — |
+| Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | The `extrapolate` and `distribute` functions, with `GrowthMethod` |
 | Movement | One dated or period-based amount | `flow` | — |
-| Flow | An ordered series of Movements in one unit | `flow` | `model.flux.Flow` |
-| Stream | A set of named Flows that operations treat together | `flow` | Line names called `labels` |
+| Flow | An ordered series of Movements in one unit | `flow` | — |
+| Stream | A set of named Flows that operations treat together | `flow` | — |
 
 ## Investigation and evidence
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
 | Role | What a Specification says about a value: fixed, free, decided, estimate or bound. `Specification.roles` lists them | `specification` | — |
-| Fix | Supply a known value for an investigation (an Assignment) | `specification` | `lock` |
-| Free | Make a value an unknown that the solve finds. A value that is not fixed is free | `specification` | `unlock` |
+| Fix | Supply a known value for an investigation (an Assignment) | `specification` | — |
+| Free | Make a value an unknown that the solve finds. A value that is not fixed is free | `specification` | — |
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |
 | Composition | The effective investigation after included Specifications are combined | `specification` | — |
 | Case | One entry in a batch Specification, for example one market path | `specification` | — |
-| Rule | A query that fixes one value during the solve: the first date in a `Window` when a condition holds, or a default, written `window.where(condition=...).first(otherwise=...)` and fixed by key ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word "policy" is not used | `specification` | `Decision`, `Rule` and `Action` records |
-| Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | Policy control |
+| Rule | A query that fixes one value during the solve: the first date in a `Window` when a condition holds, or a default, written `window.where(condition=...).first(otherwise=...)` and fixed by key ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word "policy" is not used | `specification` | `RuleSet`, with `Decision`, `Rule` and `Action` records, in `specification.rule` |
+| Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | A target of the `RuleSet` |
 | Window | The dates on which a rule may act: by default, each date on which a value that its condition reads becomes known, or the first day of each of its `Periods`; between optional `earliest` and `latest` bounds | `specification` | Review dates, window |
 | Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | — |
 | Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | — |
@@ -83,7 +84,7 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Verification | Independent check of a candidate against the original equations | `execution` | Acceptance |
 | Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | — |
 | Underdetermined | A result with free unknowns that the equations do not fix | `execution` | Feasible with a warning |
-| Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | Policy outcomes |
+| Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | — |
 | Diagnostic | One coded finding with structured fields | `shared` | Also `findings` and `issues` |
 | Fingerprint | A digest that identifies an implementation and its import closure | `shared` | — |
 
@@ -95,13 +96,13 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Hierarchy | A tree built from Relationships or memberships | `model` | — |
 | Rollup | Totals of values over a Hierarchy | `model` | `Reduction` |
 | Rollup definition | `rk.model.Rollup(of=, over=, roots=, contributors=)`: what a rollup adds up, over which relationship, from which roots and contributors. `value(..., rollup=)` declares a value with it | `model` | — |
-| Rollup result | The value and coverage of a rollup | `model` | `model.system.reduction.Aggregation` |
-| Flow aggregate | The result of aggregating Flows, with coverage | `flow` | `calculations.series.Aggregation` |
+| Rollup result | The value and coverage of a rollup | `model` | — |
+| Flow aggregate | The result of aggregating Flows, with coverage | `flow` | — |
 | Coverage | Which contributors had a value, and which did not | `model`, `flow` | Four different types |
 | Pivot | A cross-tab of rollup results by rows and columns | `model` | — |
 | Filter | A declarative selection by classification, labels, number comparisons and presence | `model` | Classification and exact label criteria only |
 | Path | One possible history of external conditions: named Flows with availability | `market` | Scenario |
-| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `ScenarioPlan` method; `MarketDynamics` |
+| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `ScenarioPlan` method; the kernels in `market.dynamics` |
 
 ## Authoring
 

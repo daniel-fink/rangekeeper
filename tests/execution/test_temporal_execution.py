@@ -378,7 +378,7 @@ def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypa
 
 def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
     """Use independently computed amounts to exercise the remaining builders."""
-    from rangekeeper.model.formulation import account
+    from rangekeeper.model.formulation import financial
 
     model, ids = oracle()
     data = model.system.to_data()
@@ -405,7 +405,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
             initial=Reference(target=ids["initial"]),
             accumulation=ids["discounted"],
         ),
-        account.interest(
+        financial.interest(
             model,
             id=uuid4(),
             principal=ids["discounted"],
@@ -507,7 +507,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
             m.magnitude for m in output.value(ids[name]).flow.movements
         ] == pytest.approx(expected)
     with pytest.raises(ValueError, match="overdraft"):
-        account.interest(
+        financial.interest(
             model,
             id=uuid4(),
             principal=ids["discounted"],

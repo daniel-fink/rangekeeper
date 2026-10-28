@@ -19,7 +19,7 @@ this order:
 
 ### Run the consumer codemod
 
-The codemod applies the [rename map](#100a2-rename-map-draft) to code that uses
+The codemod applies the [rename map](#100a2-rename-map) to code that uses
 Rangekeeper. It changes imports, qualified names, renamed functions, classes,
 attributes and keyword arguments, and Python code blocks in Markdown and
 notebooks. It moves no files. The tool is in the Rangekeeper repository, not in
@@ -71,11 +71,11 @@ alias paths, for example `from rangekeeper.model.expression import Reference`
 becomes `from rangekeeper.model import Reference`. It lists an access through a
 module, such as `system.Entity`, for review.
 
-The codemod does not apply the entries that wait for decisions in
-[#255](https://github.com/daniel-fink/rangekeeper/pull/255), for example `pv`,
-`npv`, `irr`, growth profiles and the builder names. The
-[decisions under review](#decisions-under-review) table lists them. A later
-release changes these names.
+The codemod does not apply the entries that need later work, for example `pv`,
+`npv`, `irr`, growth profiles and the builder names. The map gives their 1.0
+names, and the [changes of API shape](#changes-of-api-shape) table lists the
+decisions of [#255](https://github.com/daniel-fink/rangekeeper/pull/255) that
+change call shapes. A later release makes these changes.
 
 ### Document formats 1.0.0
 
@@ -115,9 +115,9 @@ This table lists the public names that 1.x consumers use, with their state in
 | `model.system.classified`, `Model.descendants` | Unchanged | — |
 | `model.system.reducers` | Unchanged | Part of the `Reduction` split |
 | `shared.units.UnitSystem`, `default_units` | `rangekeeper.quantity.UnitSystem`, `default_units` (the codemod moves them). `Model.unit_system` is unchanged | — |
-| `model.measure.Quantity`, `model.Quantity` | `rangekeeper.Quantity` and `rangekeeper.quantity.Quantity` (the codemod moves them) | Quantity text in API arguments ([#255](https://github.com/daniel-fink/rangekeeper/pull/255), pending) |
+| `model.measure.Quantity`, `model.Quantity` | `rangekeeper.Quantity` and `rangekeeper.quantity.Quantity` (the codemod moves them) | Quantity text in API arguments ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D13, D16) |
 | `model.system.System`, `Entity`, `Assembly`, `Relationship` | `rangekeeper.model` only (the codemod moves them). `model.system` keeps the views, rollups and pivots | — |
-| `rangekeeper.Model`, `model.Definitions` | Unchanged; the Model format is 1.0.0 | Builder names ([#255](https://github.com/daniel-fink/rangekeeper/pull/255), pending) |
+| `rangekeeper.Model`, `model.Definitions` | Unchanged; the Model format is 1.0.0 | Builder names ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D6, D16) |
 | `io.bundle.Reader`, `write`, `Reader(..., check_index=False)` | Unchanged API. A Bundle with 0.x documents does not open | Identifiers `rangekeeper.bundle/1` and `rangekeeper.parquet/1`; the format freezes at 1.0.0b1 (ADR-017) |
 
 Three routes help a 1.x consumer:
@@ -129,10 +129,9 @@ Three routes help a 1.x consumer:
 - rebuild or convert for stored Bundles
   ([#120](https://github.com/daniel-fink/rangekeeper/issues/120)).
 
-## 1.0.0a2 rename map (draft)
+## 1.0.0a2 rename map
 
-This section is a draft. Release 1.0.0a2 moves modules into the 1.0 layers and
-applies the glossary names in one pass
+Release 1.0.0a2 moves modules into the 1.0 layers and applies the glossary names
 ([ADR-010](../decisions/010-layers-and-packages.md),
 [ADR-012](../decisions/012-naming-and-glossary.md)). The
 [codemod](../../tools/codemod/README.md) applies this map. The map file
@@ -142,11 +141,10 @@ of these tables.
 Each entry has a status:
 
 - **agreed**: an accepted ADR gives the 1.0 name.
-- **draft**: the ADR gives the direction, and the map proposes the exact name.
-  [#93](https://github.com/daniel-fink/rangekeeper/issues/93) finalises it.
-- **pending**: the name depends on a decision under review in
-  [#255](https://github.com/daniel-fink/rangekeeper/pull/255), the proposed
-  walkthrough cells. The codemod does not apply it.
+- **draft**: the ADR or a walkthrough decision of
+  [#255](https://github.com/daniel-fink/rangekeeper/pull/255) gives the direction,
+  and the map gives the exact name
+  ([#93](https://github.com/daniel-fink/rangekeeper/issues/93)).
 - **open**: the 1.0 name is not decided. The codemod does not apply it.
 
 "Needs schema" means that the name is a generated record field; the schema changes
@@ -165,13 +163,16 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.series` | `rangekeeper.flow` | agreed | The module is removed (#103). Its options and FlowAggregate are in `rangekeeper.flow`; Flow and Stream methods replace its functions (see the removed names). |
 | `rangekeeper.schema.behaviors.flow` | `rangekeeper.flow.behavior` | draft (needs refactor) | The generated Flow and Movement records load these behaviours, so the schema runtime must find them in `flow` without an upward import. |
 | `rangekeeper.calculations` | `rangekeeper.finance` | agreed |  |
-| `rangekeeper.calculations.projection` | `rangekeeper.finance.growth` | pending | #255 D12: growth and distribution profiles move to `rangekeeper.profile`, applied by `Flow.from_profile`. |
+| `rangekeeper.calculations.projection` | `rangekeeper.profile` | agreed | Growth and distribution profiles. The word "projection" is not used. Profile classes and `Flow.from_profile` follow (#298). |
+| `rangekeeper.calculations.dynamics` | `rangekeeper.market.dynamics` | agreed | Path generators are series maths, so they leave `finance`. `rk.market.Dynamics` follows (#299). |
 | `rangekeeper.run.execution` | `rangekeeper.execution` | agreed |  |
-| `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.policy` | draft (needs refactor) | The lazy exports of `specification.policy` load it by its short name. |
-| `rangekeeper.shared.units` | `rangekeeper.quantity` | draft | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
+| `rangekeeper.specification.policy` | `rangekeeper.specification.rule` | agreed | "Policy" is not used. The rule queries of ADR-021 replace the records later (#215). |
+| `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.rule` | draft (needs refactor) | Rule evaluation moves to `execution` (#102). The lazy exports of `specification.rule` load it by its short name. |
+| `rangekeeper.shared.units` | `rangekeeper.quantity` | agreed | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
 | `rangekeeper.io.store` | `rangekeeper.shared.store` | draft (needs refactor) | The protocol imports Model, Specification and Run; these imports must become type-only. |
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
-| `rangekeeper.model.scenario` | `rangekeeper.finance.paths` | draft (needs refactor) | Path generators and the MarketPaths document replace the scenario plan. |
+| `rangekeeper.model.scenario` | `rangekeeper.market` | agreed | The generators, paths and replay move as they are. `rk.market.Paths` and the MarketPaths document replace the scenario plan (#299, #303). |
+| `rangekeeper.model.scenario.market` | `rangekeeper.market.generation` | draft | Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name. |
 | `src/tests/` | `tests/` | agreed | The pass moves the suite to the top level. #177 adds the sub-folders that mirror the packages, and tests/contracts, tests/integration and tests/walkthrough. |
 
 ### Renamed names
@@ -183,7 +184,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.system.reduction.Reduction` | `QuantityRollup` | draft (needs refactor) | The scalar and Flow modes split into QuantityRollup and FlowRollup, with one Reducer enum. |
 | `rangekeeper.model.duration.calendar.measure` | `count_steps` | draft |  |
 | `rangekeeper.model.duration.period.align` | `containing_period` | draft |  |
-| `rangekeeper.model.measure.Quantity` | `rangekeeper.quantity.Quantity` | draft | `rangekeeper.Quantity` at the root also gives the record. |
+| `rangekeeper.model.measure.Quantity` | `rangekeeper.quantity.Quantity` | agreed | `rangekeeper.Quantity` at the root also gives the record. |
 | `rangekeeper.model.measure.Measure` | `rangekeeper.model.Measure` | draft | The `model.measure` shim is removed; `rangekeeper.model` re-exports the record. |
 | `rangekeeper.model.distribution.Distribution` | `rangekeeper.model.Distribution` | draft | The `model.distribution` shim is removed. |
 | `rangekeeper.model.distribution.DistributionFamily` | `rangekeeper.model.DistributionFamily` | draft |  |
@@ -202,15 +203,21 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scenario.Distribution` | `rangekeeper.model.Distribution` | agreed | One canonical path for each public name. |
 | `rangekeeper.model.Quantity` | `rangekeeper.quantity.Quantity` | agreed | One canonical path for each public name. |
 | `rangekeeper.schema.behaviors.flow.MissingValueHandling` | — | open | One persisted enum (MissingHandling) and one runtime enum with a distinct name. |
-| `rangekeeper.calculations.financial.calculate_pv` | `pv` | pending | #255 D14 and D19 with #167: `rangekeeper.finance.pv(flow=, rate=, on=)`. |
-| `rangekeeper.calculations.financial.calculate_xnpv` | `npv` | pending | #255 D19 with #167: `rangekeeper.finance.npv(flow=, rate=, on=)`. |
-| `rangekeeper.calculations.financial.calculate_irr` | `irr` | pending | #255 D4 with #164: `rangekeeper.finance.irr`, also an equation function. |
-| `rangekeeper.calculations.projection.project_values` | — | pending | #255 D12: `rangekeeper.flow.Flow.from_profile(profile=, periods=, initial=)` with `rangekeeper.profile` growth profiles. |
-| `rangekeeper.calculations.projection.distribute` | — | pending | #255 D12: `Flow.from_profile(profile=, periods=, total=)` with `rangekeeper.profile.Uniform` or `SCurve`. |
-| `rangekeeper.calculations.projection.ProjectionMethod` | — | pending | #255 D12: profile classes replace the method enum; the word projection is not used. |
-| `rangekeeper.model.expression.authoring.sum` | — | pending | #255 D6 and D18: equation strings on entity handles replace the expression builders. ADR-012 forbids public names that shadow builtins. |
-| `rangekeeper.model.formulation.authoring.declare` | — | pending | #255 D6 and D16: `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)` and `date(...)`. |
-| `rangekeeper.execution.errors.UnsupportedProblem` | `UnsupportedError` | agreed | Every error name ends in `Error`. `rangekeeper.errors` exports every error. |
+| `rangekeeper.calculations.financial.calculate_pv` | `pv` | agreed (needs refactor) | `rangekeeper.finance.pv(flow=, rate=, on=)`, with keyword-only arguments (#167). |
+| `rangekeeper.calculations.financial.calculate_xnpv` | `npv` | agreed (needs refactor) | `rangekeeper.finance.npv(flow=, rate=, on=)`, with keyword-only arguments (#167). |
+| `rangekeeper.calculations.financial.calculate_irr` | `irr` | agreed (needs refactor) | `rangekeeper.finance.irr(flow=)`, also an equation function (#164, #167). |
+| `rangekeeper.calculations.projection.ProjectionMethod` | `GrowthMethod` | draft | The word "projection" is not used. Profile classes replace the enum (#298). |
+| `rangekeeper.calculations.projection.project_values` | `grow_values` | draft | The word "projection" is not used. `Flow.from_profile` replaces it (#298). |
+| `rangekeeper.model.formulation.account.interest` | `rangekeeper.model.formulation.financial.interest` | draft | The account module is removed; passive interest stays with the other financial equations. |
+| `rangekeeper.model.scenario.replay.replay` | `rangekeeper.market.replay` | agreed | One canonical path for each public name. |
+| `rangekeeper.model.scenario.replay.ReplayUnavailableError` | `rangekeeper.market.ReplayUnavailableError` | agreed | One canonical path for each public name. |
+| `rangekeeper.schema.records.Policy` | `RuleSet` | draft (needs schema) | The record that a Specification holds as `rules`. The schema module `policy` becomes `rule`. `Rule` keeps its name. ADR-021's rule queries replace these records (#215). |
+| `rangekeeper.schema.records.DecisionOutcome` | `RuleEvidence` | draft (needs schema) | The evidence of one rule decision, in `Report.rule_evidence`. |
+| `rangekeeper.specification.policy.result.PolicyResult` | `RuleResult` | agreed |  |
+| `rangekeeper.specification.policy.observation.PolicyCapabilityError` | `RuleCapabilityError` | agreed |  |
+| `rangekeeper.specification.policy.validation.validate_policy` | `validate_rules` | agreed |  |
+| `rangekeeper.specification.policy.validation.validate_outcomes` | `validate_evidence` | agreed | It checks the `RuleEvidence` records of a Run report. |
+| `rangekeeper.execution.errors.UnsupportedProblem` | `UnsupportedError` | agreed | Every error name ends in `Error`. |
 | `rangekeeper.model.expression.evaluation.UnsupportedExpression` | `UnsupportedError` | agreed | One error for unsupported expressions and problems. |
 | `rangekeeper.execution.errors.BackendUnavailable` | `BackendUnavailableError` | agreed |  |
 | `rangekeeper.execution.errors.AttemptDeadline` | `AttemptDeadlineError` | agreed |  |
@@ -219,10 +226,14 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |
 | `rangekeeper.schema.records.Period.end_exclusive` | `end` | agreed | Also Span. |
 | `rangekeeper.model.flux.Stream.labels` | `names` | draft | Each use needs review. Classification `labels` keep their name. The package pass renamed the Stream field by hand; the consumer pass lists the uses to check. |
+| `rangekeeper.schema.records.Specification.policy` | `rules` | draft (needs schema) | Each use needs review. The Specification field and its wire key. `spec.rules` holds all of a Specification's rules. |
+| `rangekeeper.schema.records.Report.outcomes` | `rule_evidence` | draft (needs schema) | Each use needs review. The Run report field and its wire key. |
+| `rangekeeper.specification.policy.result.PolicyResult.outcomes` | `evidence` | agreed | Each use needs review. The `RuleEvidence` records of one evaluation. |
 | `findings` | `diagnostics` | draft | Each use needs review. |
 | `issues` | `diagnostics` | draft | Each use needs review. |
 | Any call: `start_inclusive=` | `start=` | agreed |  |
 | Any call: `end_exclusive=` | `end=` | agreed |  |
+| `rangekeeper.specification.policy.evaluation.evaluate`: `policy=` | `rules=` | agreed |  |
 | `rangekeeper.model.flux.Stream.select`: `labels=` | `names=` | draft |  |
 | `rangekeeper.model.flux.Stream.from_values`: `labels=` | `names=` | draft |  |
 
@@ -230,6 +241,10 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 
 | Current | Use instead | Status |
 | --- | --- | --- |
+| `rangekeeper.calculations.account` | Compose the funding with Flows: a balance is `cumulative()`, and interest is `rangekeeper.finance.interest` (#255 D2, D23). A how-to recipe follows (#194) | agreed |
+| `rangekeeper.model.formulation.account.schedule` | Equations over Flows, such as `funding_need = -(net_cash_flow + loan_interest).cumulative()`. A Model declares no account (#255 D2) | agreed |
+| `rangekeeper.model.expression.authoring.sum` | Equation text or `rangekeeper.expressions` on entity handles (#255 D6, D18, D32). ADR-012 forbids public names that shadow builtins | agreed (needs refactor) |
+| `rangekeeper.model.formulation.authoring.declare` | `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)`, `date(...)` and `equations(...)` (#255 D6, D16) | agreed (needs refactor) |
 | `rangekeeper.calculations.series.align` | Stream(flows, join=, missing=).align() | agreed |
 | `rangekeeper.calculations.series.multiply` | Flow.multiply(*others) | agreed |
 | `rangekeeper.calculations.series.integrate` | Flow.integrate(exposures=, day_count=, units=) | agreed |
@@ -237,27 +252,32 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.series.aggregate` | Stream.aggregate(method=), Stream.sum(), Stream.min() and Stream.max() | agreed |
 | `rangekeeper.calculations.series.Alignment` | The Stream that Stream.align() returns; Stream.aggregate() replaces Alignment.reduce() | agreed |
 | `rangekeeper.model.characteristics` | Value and Label access on the owner record; re-exports in rangekeeper.model | agreed |
-| `rangekeeper.model.scenario.market.ScenarioPlan` | Path generators and the MarketPaths document | agreed |
-| `rangekeeper.model.scenario.market.sample` | Path generators and the MarketPaths document | agreed |
-| `rangekeeper.model.scenario.market.capture` | Path generators and the MarketPaths document | agreed |
-| `rangekeeper.model.scenario.market.realize` | Path generators and the MarketPaths document | agreed |
-| `rangekeeper.model.scenario.market.generate` | Path generators and the MarketPaths document | agreed |
-| `rangekeeper.model.scenario.view.Market` | The MarketPaths document | agreed |
+| `rangekeeper.model.scenario.market.ScenarioPlan` | Path generators and the MarketPaths document | agreed (needs refactor) |
+| `rangekeeper.model.scenario.market.sample` | Path generators and the MarketPaths document | agreed (needs refactor) |
+| `rangekeeper.model.scenario.market.capture` | Path generators and the MarketPaths document | agreed (needs refactor) |
+| `rangekeeper.model.scenario.market.realize` | Path generators and the MarketPaths document | agreed (needs refactor) |
+| `rangekeeper.model.scenario.market.generate` | Path generators and the MarketPaths document | agreed (needs refactor) |
+| `rangekeeper.model.scenario.view.Market` | The MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.shared.errors.BoundaryError` | rangekeeper.errors.RangekeeperError | agreed |
 | `rangekeeper.shared.errors.ValueEncodingError` | rangekeeper.errors.EncodingError | agreed |
 
-### Decisions under review
+### Changes of API shape
 
-These decisions change API shapes, not only names. They wait for the review of
-the proposed walkthrough cells.
+These decisions change API shapes, not only names. The codemod does not apply
+them; the issues that the table names make the changes.
 
-| Topic | Proposal |
-| --- | --- |
-| Quantity text in API arguments | #255 D13, D16 and D17: arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year. |
-| Keyword-only arguments | #255 D14: every Rangekeeper call names its arguments. |
-| Model authoring and builder names | #255 D6, D16 and D18: `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles. |
-| Specification calls | #255 D7 and D8: `fix`, `free`, `cases`, `across` and `decide` each return a new Specification; unfixed values are free. |
-| Loan payment | #255 D19 with #167: `rangekeeper.finance.payment(principal=, rate=, term=, frequency=)`. |
+| Topic | 1.0 | Source |
+| --- | --- | --- |
+| Quantity text in API arguments | Arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year. | #255 D13, D16, D17 |
+| Keyword-only arguments | Every Rangekeeper call names its arguments. | #255 D14 |
+| Model authoring and builder names | `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles. | #255 D6, D16, D18 |
+| Specification calls | `fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. | #255 D7, D8 |
+| Loan payment | `rangekeeper.finance.payment(principal=, rate=, term=, frequency=)` (#167). | #255 D19 |
+| Funding accounts | There is no account class and no account declaration. A balance is `cumulative()` of a Flow. | #255 D2, D23 |
+| Growth and distribution profiles | `rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#298). | #255 D12 |
+| Market paths | `rk.market.Dynamics`, `rk.market.generate` and `rk.market.Paths` replace the scenario plan and the trend and cycle kernels (#299, #303). | #255 D29, D31 |
+| Fixed words are enums | Diagnostic codes are `rk.errors.Code` (#154); "the event does not happen" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings. | #255 D26 |
+| Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215). | ADR-021, |
 
 <!-- rename-map:end -->
 

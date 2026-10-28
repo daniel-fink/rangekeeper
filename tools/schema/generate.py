@@ -9,6 +9,7 @@ conformance tools; the package does not contain it.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import importlib.metadata
 import json
@@ -16,6 +17,7 @@ import keyword
 import re
 import tempfile
 from pathlib import Path
+from typing import NamedTuple
 
 import yaml
 from jsonschema import Draft202012Validator
@@ -39,6 +41,20 @@ BEHAVIORS = {
     "Period": ("period", "PeriodBehavior"),
     "Span": ("span", "SpanBehavior"),
     "Distribution": ("distribution", "DistributionBehavior"),
+}
+# Members that records.py adds to every class besides its fields.
+GENERATED = {"replace", "_kind"}
+PRIMITIVES = {
+    "string": "str",
+    "Code": "str",
+    "URI": "str",
+    "integer": "int",
+    "decimal": "int | float",
+    "double": "int | float",
+    "float": "int | float",
+    "boolean": "bool",
+    "date": "Date",
+    "datetime": "str",
 }
 
 
@@ -103,11 +119,16 @@ def simplify_conjunctions(node):
             del node["anyOf"]
 
 
-def generate(*, native_module: bool = False):
-    """Return the packaged artifacts, plus native.py when native_module is set."""
+def check_dependencies():
+    """Return the installed generator versions; stop when they differ from PINNED."""
     versions = {name: importlib.metadata.version(name) for name in PINNED}
     if versions != PINNED:
         raise SystemExit(f"Use tools/schema/requirements.txt; observed {versions}")
+    return versions
+
+
+def read_sources():
+    """Return the bytes of every input that the manifest fingerprints."""
     sources = {
         f"schema/{p.name}": p.read_bytes()
         for p in sorted((ROOT / "schema").glob("*.yaml"))
@@ -119,289 +140,385 @@ def generate(*, native_module: bool = False):
     sources["tools/schema/requirements.txt"] = (
         Path(__file__).with_name("requirements.txt").read_bytes()
     )
-    with tempfile.TemporaryDirectory(prefix="rk-generate-") as directory:
-        directory = Path(directory)
-        for name, value in sources.items():
-            if name.startswith("schema/"):
-                (directory / Path(name).name).write_bytes(value)
-        bundle = directory / "bundle.yaml"
-        bundle.write_bytes(sources["tools/schema/bundle.yaml"])
-        view = SchemaView(str(bundle))
-        classes = view.all_classes()
-        enums = view.all_enums()
-        schema = json.loads(
-            JsonSchemaGenerator(
-                str(bundle), top_class="Model", not_closed=False
-            ).serialize()
+    return sources
+
+
+class Loaded(NamedTuple):
+    """The resolved LinkML bundle and its derived JSON Schema."""
+
+    view: SchemaView
+    classes: dict
+    enums: dict
+    shared: dict
+    opaque: frozenset
+    native: str
+
+
+def load(directory: Path, sources) -> Loaded:
+    """Resolve the schema imports into one bundle in a temporary directory."""
+    for name, value in sources.items():
+        if name.startswith("schema/"):
+            (directory / Path(name).name).write_bytes(value)
+    bundle = directory / "bundle.yaml"
+    bundle.write_bytes(sources["tools/schema/bundle.yaml"])
+    view = SchemaView(str(bundle))
+    classes = view.all_classes()
+    enums = view.all_enums()
+    schema = json.loads(
+        JsonSchemaGenerator(
+            str(bundle), top_class="Model", not_closed=False
+        ).serialize()
+    )
+    # Every root uses the same complete definitions; no inferred tree-root choice.
+    shared = {
+        "$schema": schema["$schema"],
+        "$id": schema["$id"],
+        "$defs": schema["$defs"],
+    }
+    simplify_conjunctions(shared)
+    Draft202012Validator.check_schema(shared)
+    opaque = frozenset(
+        name
+        for name, cls in classes.items()
+        if str(cls.class_uri) in ("linkml:Any", "https://w3id.org/linkml/Any")
+    )
+    native = PythonGenerator(str(bundle), metadata=False).serialize()
+    if str(directory) in native or str(directory) in encoded(shared):
+        raise ValueError("Generator leaked temporary source path")
+    return Loaded(view, classes, enums, shared, opaque, native)
+
+
+def slot_options(loaded: Loaded, field):
+    """Return the distinct wire options of one induced slot."""
+    options = []
+    for variant in field.any_of or [field]:
+        kind = variant.range or field.range or "string"
+        inline = variant.inlined if variant.inlined is not None else field.inlined
+        inline = bool(inline or variant.inlined_as_list or field.inlined_as_list)
+        if kind in loaded.opaque:
+            category = "opaque"
+        elif kind == "UUID" or kind in loaded.classes and not inline:
+            category = "uuid"
+        elif kind in loaded.classes:
+            category = "record"
+        elif kind in loaded.enums:
+            category = "enum"
+        else:
+            category = "primitive"
+        option = {"kind": kind, "category": category}
+        if option not in options:
+            options.append(option)
+    return options
+
+
+def keyed_options(name, field, prop):
+    """Return the options of a keyed collection from its JSON Schema values.
+
+    LinkML keyed collections may use reduced dictionaries or scalar values.
+    Preserve both wire forms rather than inventing Entry IDs.
+    """
+    options = []
+    for variant in prop["additionalProperties"].get("anyOf", []):
+        if "$ref" in variant:
+            options.append({"kind": field.range, "category": "keyed"})
+        elif "type" in variant:
+            options.append({"kind": variant["type"], "category": "primitive"})
+        else:
+            raise ValueError(f"Unsupported keyed collection: {name}.{field.name}")
+    if not options:
+        raise ValueError(f"Unsupported keyed collection: {name}.{field.name}")
+    return options
+
+
+def class_slots(loaded: Loaded, name):
+    """Return the slot metadata of one class, in induced order."""
+    result = {}
+    for field in loaded.view.class_induced_slots(name):
+        prop = loaded.shared["$defs"][name].get("properties", {}).get(field.name, {})
+        mapping = bool(field.multivalued and "additionalProperties" in prop)
+        options = (
+            keyed_options(name, field, prop) if mapping else slot_options(loaded, field)
         )
-        # Every root uses the same complete definitions; no inferred tree-root choice.
-        shared = {
-            "$schema": schema["$schema"],
-            "$id": schema["$id"],
-            "$defs": schema["$defs"],
-        }
-        simplify_conjunctions(shared)
-        Draft202012Validator.check_schema(shared)
-        opaque = {
-            name
-            for name, cls in classes.items()
-            if str(cls.class_uri) in ("linkml:Any", "https://w3id.org/linkml/Any")
-        }
-        native = PythonGenerator(str(bundle), metadata=False).serialize()
-        if str(directory) in native or str(directory) in encoded(shared):
-            raise ValueError("Generator leaked temporary source path")
-        slots = {}
-        for name in sorted(classes):
-            slots[name] = {}
-            for field in view.class_induced_slots(name):
-                variants = field.any_of or [field]
-                options = []
-                for variant in variants:
-                    kind = variant.range or field.range or "string"
-                    inline = (
-                        variant.inlined
-                        if variant.inlined is not None
-                        else field.inlined
-                    )
-                    inline = bool(
-                        inline or variant.inlined_as_list or field.inlined_as_list
-                    )
-                    category = (
-                        "opaque"
-                        if kind in opaque
-                        else (
-                            "uuid"
-                            if kind == "UUID" or kind in classes and not inline
-                            else (
-                                "record"
-                                if kind in classes
-                                else "enum"
-                                if kind in enums
-                                else "primitive"
-                            )
-                        )
-                    )
-                    option = {"kind": kind, "category": category}
-                    if option not in options:
-                        options.append(option)
-                prop = shared["$defs"][name].get("properties", {}).get(field.name, {})
-                mapping = bool(field.multivalued and "additionalProperties" in prop)
-                if mapping:
-                    # LinkML keyed collections may use reduced dictionaries or scalar
-                    # values. Preserve both wire forms rather than inventing Entry IDs.
-                    options = []
-                    for variant in prop["additionalProperties"].get("anyOf", []):
-                        if "$ref" in variant:
-                            options.append({"kind": field.range, "category": "keyed"})
-                        elif "type" in variant:
-                            options.append(
-                                {"kind": variant["type"], "category": "primitive"}
-                            )
-                        else:
-                            raise ValueError(
-                                f"Unsupported keyed collection: {name}.{field.name}"
-                            )
-                    if not options:
-                        raise ValueError(
-                            f"Unsupported keyed collection: {name}.{field.name}"
-                        )
-                nullable = Draft202012Validator({**shared, **prop}).is_valid(None)
-                slots[name][field.name] = dict(
-                    options=options,
-                    required=bool(field.required),
-                    many=bool(field.multivalued),
-                    mapping=mapping,
-                    nullable=nullable,
-                    ordered=bool(field.list_elements_ordered),
-                )
-                if any(o["category"] == "enum" for o in options) and (
-                    len(options) != 1 or mapping or field.multivalued
-                ):
-                    raise ValueError(
-                        f"Unsupported enum slot shape: {name}.{field.name}"
-                    )
-        lines = [
-            "# Generated by tools/schema/generate.py; do not edit.",
-            "from __future__ import annotations",
-            "",
-            "from typing import cast",
-            "from collections.abc import Mapping",
-            "from uuid import UUID",
-            "from datetime import date as Date",
-            "from .runtime import Record, Unset, UNSET, FrozenJSONValue, JSONValue",
-            *[
-                f"from .behaviors.{module} import {behavior}"
-                for module, behavior in BEHAVIORS.values()
-            ],
+        nullable = Draft202012Validator({**loaded.shared, **prop}).is_valid(None)
+        result[field.name] = dict(
+            options=options,
+            required=bool(field.required),
+            many=bool(field.multivalued),
+            mapping=mapping,
+            nullable=nullable,
+            ordered=bool(field.list_elements_ordered),
+        )
+    return result
+
+
+def slots(loaded: Loaded):
+    """Return the slot metadata of every class."""
+    return {name: class_slots(loaded, name) for name in sorted(loaded.classes)}
+
+
+def reserved_names():
+    """Return the attribute names that a generated field must not shadow.
+
+    The names come from the source of the record runtime and the behaviours,
+    so the generator does not import the package.
+    """
+    sources = [ROOT / "src/rangekeeper/schema/runtime.py"]
+    sources += [
+        ROOT / f"src/rangekeeper/schema/behaviors/{module}.py"
+        for module, _ in BEHAVIORS.values()
+    ]
+    wanted = {"Record"} | {behavior for _, behavior in BEHAVIORS.values()}
+    names = {}
+    for path in sources:
+        for node in ast.parse(path.read_text()).body:
+            if isinstance(node, ast.ClassDef) and node.name in wanted:
+                names[node.name] = {
+                    target for child in node.body for target in _defined_names(child)
+                }
+    return names
+
+
+def _defined_names(node):
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+        return {node.name}
+    if isinstance(node, ast.Assign):
+        return {t.id for t in node.targets if isinstance(t, ast.Name)}
+    if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+        return {node.target.id}
+    return set()
+
+
+def check_slots(slots, reserved):
+    """Reject slot names and shapes that the generated records cannot represent.
+
+    - A slot name must be a Python identifier that is not a keyword.
+    - A slot name must not shadow a method or attribute of Record or of the
+      behaviour of its class.
+    - A slot has at most one inlined record type, so decoding is not ambiguous.
+    - An enum slot has one option and is not a collection.
+    """
+    record = reserved["Record"] | GENERATED
+    for name, fields in slots.items():
+        behavior = reserved.get(BEHAVIORS.get(name, (None, None))[1], set())
+        for field, meta in fields.items():
+            label = f"{name}.{field}"
+            if not field.isidentifier() or keyword.iskeyword(field):
+                raise ValueError(f"Slot name is not a Python identifier: {label}")
+            if field in record or field in behavior:
+                raise ValueError(f"Slot name shadows a record method: {label}")
+            categories = [option["category"] for option in meta["options"]]
+            if categories.count("record") + categories.count("keyed") > 1:
+                raise ValueError(f"Slot has more than one record type: {label}")
+            if "enum" in categories and (
+                len(categories) != 1 or meta["mapping"] or meta["many"]
+            ):
+                raise ValueError(f"Unsupported enum slot shape: {name}.{field}")
+
+
+def field_type(meta, argument=False):
+    """Return the Python annotation of one field, as an argument or a property."""
+    variants = []
+    for option in meta["options"]:
+        kind, category = option["kind"], option["category"]
+        if category == "uuid":
+            typ = "UUID"
+        elif category == "opaque":
+            typ = "JSONValue" if argument else "FrozenJSONValue"
+        elif category == "keyed":
+            typ = (
+                "Mapping[str, JSONValue]"
+                if argument
+                else "Mapping[str, FrozenJSONValue]"
+            )
+        elif category in ("record", "enum"):
+            typ = kind
+        else:
+            typ = PRIMITIVES.get(kind)
+            if typ is None:
+                raise ValueError(f"Unsupported primitive {kind}")
+        if typ not in variants:
+            variants.append(typ)
+    typ = " | ".join(variants)
+    if meta["mapping"]:
+        typ = f"Mapping[str, {typ}]"
+    elif meta["many"]:
+        typ = f"tuple[{typ}, ...]"
+    if meta["nullable"] or not argument and not meta["required"] and not meta["many"]:
+        typ += " | None"
+    if argument and not meta["required"]:
+        typ += " | Unset"
+    return typ
+
+
+def record_header(loaded: Loaded):
+    """Return the imports and aliases at the top of records.py."""
+    lines = [
+        "# Generated by tools/schema/generate.py; do not edit.",
+        "from __future__ import annotations",
+        "",
+        "from typing import cast",
+        "from collections.abc import Mapping",
+        "from uuid import UUID",
+        "from datetime import date as Date",
+        "from .runtime import Record, Unset, UNSET, FrozenJSONValue, JSONValue",
+        *[
+            f"from .behaviors.{module} import {behavior}"
+            for module, behavior in BEHAVIORS.values()
+        ],
+        "",
+    ]
+    lines += [f"from .enums import {name} as {name}" for name in sorted(loaded.enums)]
+    lines += [f"{name} = FrozenJSONValue" for name in sorted(loaded.opaque)]
+    lines += [""]
+    return lines
+
+
+def record_class(loaded: Loaded, name, fields):
+    """Return the source lines of one record class."""
+    parent = loaded.classes[name].is_a
+    bases = [str(parent or "Record")]
+    if name in BEHAVIORS:
+        bases.insert(0, BEHAVIORS[name][1])
+    lines = [
+        f"class {name}({', '.join(bases)}):",
+        f"    {str(loaded.classes[name].description or name)!r}",
+        "    __slots__ = ()",
+        f"    _kind = {name!r}",
+        "",
+    ]
+    lines += record_init(fields)
+    lines += record_replace(name, fields)
+    lines += record_properties(loaded, name, fields)
+    lines.append("")
+    return lines
+
+
+def record_init(fields):
+    """Return the keyword-only constructor of one record class."""
+    args = [
+        f"        {field}: {field_type(meta, True)}"
+        + ("" if meta["required"] else " = UNSET")
+        + ","
+        for field, meta in fields.items()
+    ]
+    return [
+        "    def __init__(self, *,",
+        *args,
+        "    ) -> None:",
+        "        self._initialize({",
+        *[f"            {field!r}: {field}," for field in fields],
+        "        })",
+        "",
+    ]
+
+
+def record_replace(name, fields):
+    """Return the typed replace method of one record class.
+
+    Replacement uses the same field encoder and structural validation as
+    construction. UNSET preserves the existing field's presence and value.
+    """
+    lines = ["    def replace(self, *,"]
+    for field, meta in fields.items():
+        typ = field_type(meta, True)
+        if "Unset" not in typ:
+            typ += " | Unset"
+        lines.append(f"        {field}: {typ} = UNSET,")
+    return lines + [
+        f"    ) -> {name}:",
+        '        """Return a validated copy; omitted arguments preserve field presence and value."""',
+        "        return self._replace({",
+        *[f"            {field!r}: {field}," for field in fields],
+        "        })",
+        "",
+    ]
+
+
+def record_properties(loaded: Loaded, name, fields):
+    """Return one read-only property for each field of one record class."""
+    descriptions = {
+        field.name: field.description for field in loaded.view.class_induced_slots(name)
+    }
+    lines = []
+    for field, meta in fields.items():
+        typ = field_type(meta)
+        doc = descriptions[field] or field.replace("_", " ").capitalize() + "."
+        lines += [
+            "    @property",
+            f"    def {field}(self) -> {typ}:",
+            f"        {str(doc)!r}",
+            f"        return cast({typ!r}, self._field({field!r}))",
             "",
         ]
-        lines += [f"from .enums import {name} as {name}" for name in sorted(enums)]
-        for name in sorted(opaque):
-            lines += [f"{name} = FrozenJSONValue"]
-        lines += [""]
+    return lines
 
-        def field_type(meta, argument=False):
-            variants = []
-            for option in meta["options"]:
-                kind, category = option["kind"], option["category"]
-                if category == "uuid":
-                    typ = "UUID"
-                elif category == "opaque":
-                    typ = "JSONValue" if argument else "FrozenJSONValue"
-                elif category == "keyed":
-                    typ = (
-                        "Mapping[str, JSONValue]"
-                        if argument
-                        else "Mapping[str, FrozenJSONValue]"
-                    )
-                elif category in ("record", "enum"):
-                    typ = kind
-                else:
-                    typ = {
-                        "string": "str",
-                        "Code": "str",
-                        "URI": "str",
-                        "integer": "int",
-                        "decimal": "int | float",
-                        "double": "int | float",
-                        "float": "int | float",
-                        "boolean": "bool",
-                        "date": "Date",
-                        "datetime": "str",
-                    }.get(kind)
-                    if typ is None:
-                        raise ValueError(f"Unsupported primitive {kind}")
-                if typ not in variants:
-                    variants.append(typ)
-            typ = " | ".join(variants)
-            if meta["mapping"]:
-                typ = f"Mapping[str, {typ}]"
-            elif meta["many"]:
-                typ = f"tuple[{typ}, ...]"
-            if (
-                meta["nullable"]
-                or not argument
-                and not meta["required"]
-                and not meta["many"]
-            ):
-                typ += " | None"
-            if argument and not meta["required"]:
-                typ += " | Unset"
-            return typ
 
-        done = set(opaque)
+def records_source(loaded: Loaded, slots):
+    """Return records.py, with each parent class before its children."""
+    lines = record_header(loaded)
+    done = set(loaded.opaque)
 
-        def emit(name):
-            if name in done:
-                return
-            parent = classes[name].is_a
-            if parent:
-                emit(str(parent))
-            fields = slots[name]
-            bases = [str(parent or "Record")]
-            if name in BEHAVIORS:
-                bases.insert(0, BEHAVIORS[name][1])
-            lines.extend(
-                [
-                    f"class {name}({', '.join(bases)}):",
-                    f"    {str(classes[name].description or name)!r}",
-                    "    __slots__ = ()",
-                    f"    _kind = {name!r}",
-                    "",
-                ]
-            )
-            args = []
-            for field, meta in fields.items():
-                args.append(
-                    f"        {field}: {field_type(meta, True)}"
-                    + ("" if meta["required"] else " = UNSET")
-                    + ","
-                )
-            lines.extend(
-                [
-                    "    def __init__(self, *,",
-                    *args,
-                    "    ) -> None:",
-                    "        self._initialize({",
-                ]
-            )
-            lines.extend([f"            {field!r}: {field}," for field in fields])
-            lines.extend(["        })", ""])
-            # Replacement uses the same field encoder and structural validation as
-            # construction. UNSET preserves the existing field's presence/value.
-            lines.extend(["    def replace(self, *,"])
-            for field, meta in fields.items():
-                typ = field_type(meta, True)
-                if "Unset" not in typ:
-                    typ += " | Unset"
-                lines.append(f"        {field}: {typ} = UNSET,")
-            lines.extend(
-                [
-                    f"    ) -> {name}:",
-                    '        """Return a validated copy; omitted arguments preserve field presence and value."""',
-                    "        return self._replace({",
-                    *[f"            {field!r}: {field}," for field in fields],
-                    "        })",
-                    "",
-                ]
-            )
-            descriptions = {
-                field.name: field.description
-                for field in view.class_induced_slots(name)
-            }
-            for field, meta in fields.items():
-                typ = field_type(meta)
-                lines.extend(
-                    [
-                        "    @property",
-                        f"    def {field}(self) -> {typ}:",
-                        f"        {str(descriptions[field] or field.replace('_', ' ').capitalize() + '.')!r}",
-                        f"        return cast({typ!r}, self._field({field!r}))",
-                        "",
-                    ]
-                )
-            lines.append("")
-            done.add(name)
+    def emit(name):
+        if name in done:
+            return
+        parent = loaded.classes[name].is_a
+        if parent:
+            emit(str(parent))
+        lines.extend(record_class(loaded, name, slots[name]))
+        done.add(name)
 
-        for name in sorted(classes):
-            emit(name)
-        lines.extend(
-            [
-                "_TYPES = {",
-                *[f"    {n!r}: {n}," for n in sorted(classes) if n not in opaque],
-                "}",
-                "",
-                "__all__ = " + repr(sorted(set(classes) | set(enums))),
-                "",
-            ]
-        )
-        files = {
-            "enums.py": enum_source(enums),
-            "records.py": "\n".join(lines),
-            "schema.json": encoded(shared),
-            "slots.json": encoded(slots),
-        }
-        manifest = {
-            "generator_version": 1,
-            "dependencies": versions,
-            "sources": {
-                name: hashlib.sha256(data).hexdigest() for name, data in sources.items()
-            },
-            "document_versions": {
-                kind: yaml.safe_load(sources[f"schema/{kind.lower()}.yaml"])["version"]
-                for kind in ("Model", "Specification", "Run")
-            },
-            "classes": sorted(classes),
-            "opaque_classes": sorted(opaque),
-            "artifacts": {
-                name: hashlib.sha256(data.encode()).hexdigest()
-                for name, data in files.items()
-            },
-        }
-        files["manifest.json"] = encoded(manifest)
-        if native_module:
-            files["native.py"] = native
-        return files
+    for name in sorted(loaded.classes):
+        emit(name)
+    lines += [
+        "_TYPES = {",
+        *[f"    {n!r}: {n}," for n in sorted(loaded.classes) if n not in loaded.opaque],
+        "}",
+        "",
+        "__all__ = " + repr(sorted(set(loaded.classes) | set(loaded.enums))),
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def manifest(loaded: Loaded, versions, sources, files):
+    """Return the manifest of dependencies, source and artifact hashes, and versions."""
+    return {
+        "generator_version": 1,
+        "dependencies": versions,
+        "sources": {
+            name: hashlib.sha256(data).hexdigest() for name, data in sources.items()
+        },
+        "document_versions": {
+            kind: yaml.safe_load(sources[f"schema/{kind.lower()}.yaml"])["version"]
+            for kind in ("Model", "Specification", "Run")
+        },
+        "classes": sorted(loaded.classes),
+        "opaque_classes": sorted(loaded.opaque),
+        "artifacts": {
+            name: hashlib.sha256(data.encode()).hexdigest()
+            for name, data in files.items()
+        },
+    }
+
+
+def generate(*, native_module: bool = False):
+    """Return the packaged artifacts, plus native.py when native_module is set."""
+    versions = check_dependencies()
+    sources = read_sources()
+    with tempfile.TemporaryDirectory(prefix="rk-generate-") as directory:
+        loaded = load(Path(directory), sources)
+    metadata = slots(loaded)
+    check_slots(metadata, reserved_names())
+    files = {
+        "enums.py": enum_source(loaded.enums),
+        "records.py": records_source(loaded, metadata),
+        "schema.json": encoded(loaded.shared),
+        "slots.json": encoded(metadata),
+    }
+    files["manifest.json"] = encoded(manifest(loaded, versions, sources, files))
+    if native_module:
+        files["native.py"] = loaded.native
+    return files
 
 
 def main():

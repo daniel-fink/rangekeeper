@@ -13,11 +13,11 @@ from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
     Assignment,
     Constraint,
-    DecisionOutcome,
     Expression,
     Movement,
     Quantity,
     Reference,
+    RuleEvidence,
     Value,
 )
 from rangekeeper.shared.references import SpecificationResolver
@@ -46,7 +46,7 @@ class Prepared:
     assertions: tuple[Assertion, ...]
     units: UnitSystem
     references: Mapping[UUID, Reference]
-    outcomes: tuple[DecisionOutcome, ...] = ()
+    rule_evidence: tuple[RuleEvidence, ...] = ()
 
 
 def prepare(
@@ -101,29 +101,29 @@ def prepare(
     role_references = list(requirements.unknowns or ()) + [
         a.target for a in requirements.assignments or ()
     ]
-    outcomes: tuple[DecisionOutcome, ...] = ()
-    policy_assignments: tuple[Assignment, ...] = ()
-    if requirements.policy is not None:
+    rule_evidence: tuple[RuleEvidence, ...] = ()
+    rule_assignments: tuple[Assignment, ...] = ()
+    if requirements.rules is not None:
         unknown_tokens = {ref.target for ref in requirements.unknowns or ()}
         if any(
             binding.target.target in unknown_tokens
-            for point in requirements.policy.decisions
+            for point in requirements.rules.decisions
             for binding in point.observations
         ):
             raise UnsupportedError(
-                "policy observation targets an endogenous unknown; sequential numerical policies are unsupported"
+                "rule observation targets an endogenous unknown; sequential numerical rules are unsupported"
             )
-        from rangekeeper.specification.policy.evaluation import evaluate
-        from rangekeeper.specification.policy.observation import PolicyCapabilityError
+        from rangekeeper.specification.rule.evaluation import evaluate
+        from rangekeeper.specification.rule.observation import RuleCapabilityError
 
         try:
-            policy_result = evaluate(requirements.policy, model=model, units=units)
+            rule_result = evaluate(requirements.rules, model=model, units=units)
             checkpoint()
-        except PolicyCapabilityError as error:
+        except RuleCapabilityError as error:
             raise UnsupportedError(str(error)) from error
-        outcomes = policy_result.outcomes
-        policy_assignments = policy_result.assignments
-        role_references.extend(a.target for a in policy_assignments)
+        rule_evidence = rule_result.evidence
+        rule_assignments = rule_result.assignments
+        role_references.extend(a.target for a in rule_assignments)
     if any(ref.target not in model_values for ref in role_references):
         raise UnsupportedError(
             "Specification-local Value publication requires a later adapter"
@@ -134,7 +134,7 @@ def prepare(
         item.target.target: units.convert(
             item.quantity, to=value_units[item.target.target]
         )
-        for item in (*(requirements.assignments or ()), *policy_assignments)
+        for item in (*(requirements.assignments or ()), *rule_assignments)
     }
     return Prepared(
         model,
@@ -148,5 +148,5 @@ def prepare(
         ),
         units,
         MappingProxyType(references),
-        outcomes,
+        rule_evidence,
     )

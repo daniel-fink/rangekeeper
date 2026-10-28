@@ -23,6 +23,11 @@ generator attaches those behaviors to selected records and generates typed
 | Reusable wire examples | `examples/schema/` |
 | Positive/negative conformance procedures | `schema/checks/` |
 
+The generator is a set of small functions: it loads the bundle, derives the
+slot metadata, checks it, emits the records and writes the manifest. It stops
+when a slot name is a Python keyword or shadows a record or behaviour method,
+or when one slot has more than one record type.
+
 Do not edit generated files by hand. Create a separate environment with
 [`tools/schema/requirements.txt`](../../tools/schema/requirements.txt). From the
 repository root, with that environment active:
@@ -119,7 +124,7 @@ Use [records](../reference/records.md) for construction, presence, immutability
 and intrinsic methods; use [identity](../reference/identity.md) for revision scope
 and comparison. [Expressions](../reference/expressions.md),
 [calculations](../reference/calculations.md) and
-[scenarios and policies](../reference/scenarios-and-policies.md) own the domain
+[market paths and rules](../reference/market-paths-and-rules.md) own the domain
 meaning of their fields. [Run and storage](../reference/run-and-storage.md) owns
 publication and stored evidence.
 

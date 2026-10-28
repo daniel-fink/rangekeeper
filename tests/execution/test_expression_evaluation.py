@@ -14,7 +14,7 @@ from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.model.expression.evaluation import evaluate as numerical
 from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.shared.errors import UnitError
-from rangekeeper.specification.policy.predicate import evaluate as predicate
+from rangekeeper.specification.rule.predicate import evaluate as predicate
 
 
 def literal(amount, units="dimensionless"):
@@ -88,7 +88,7 @@ def test_reference_and_negation_use_only_supplied_values():
         (Operator.GREATER_THAN_OR_EQUAL, False),
     ],
 )
-def test_policy_comparisons_remain_exact(operator, expected):
+def test_rule_comparisons_remain_exact(operator, expected):
     assert (
         predicate(
             binary(operator, literal(1, "m"), literal(100.00000001, "cm")),
@@ -99,7 +99,7 @@ def test_policy_comparisons_remain_exact(operator, expected):
     )
 
 
-def test_near_equality_is_exact_for_policy_but_has_an_acceptance_residual():
+def test_near_equality_is_exact_for_rules_but_has_an_acceptance_residual():
     expression = binary(Operator.EQUAL, literal(1), literal(1 + 1e-10))
     assert predicate(expression, {}, units=default_units) is False
     relation, left, right, exact = next(
@@ -168,9 +168,7 @@ def test_boolean_equality_negation_and_short_circuit():
         (binary(Operator.POWER, literal(-1), literal(0.5)), ValueError),
     ],
 )
-def test_policy_arithmetic_errors_and_numerical_acceptance_translation(
-    expression, error
-):
+def test_rule_arithmetic_errors_and_numerical_acceptance_translation(expression, error):
     with pytest.raises(error):
         predicate(expression, {}, units=default_units)
     comparison = binary(Operator.EQUAL, expression, literal(0))
@@ -194,7 +192,7 @@ def test_conjunction_diagnostics_preserve_expression_order():
 
 
 def test_availability_combines_dates_without_runtime_imports():
-    from rangekeeper.specification.policy._availability import available_on
+    from rangekeeper.specification.rule._availability import available_on
 
     assert available_on() is None
     assert available_on(period_end=date(2027, 2, 1)) == date(2027, 1, 31)
@@ -207,20 +205,20 @@ def test_availability_combines_dates_without_runtime_imports():
         declared=date(2027, 1, 5),
     ) == date(2027, 1, 5)
     for imports in (
-        "import rangekeeper.specification.validation; import rangekeeper.specification.policy._availability",
-        "import rangekeeper.specification.policy._availability; import rangekeeper.specification.validation",
+        "import rangekeeper.specification.validation; import rangekeeper.specification.rule._availability",
+        "import rangekeeper.specification.rule._availability; import rangekeeper.specification.validation",
     ):
         subprocess.run(
             [
                 sys.executable,
                 "-c",
                 imports
-                + "; import sys; assert not any(n.startswith(('rangekeeper.specification.policy.evaluation', 'rangekeeper.execution.compiler', 'numpy', 'scipy', 'pint', 'pyomo')) for n in sys.modules)",
+                + "; import sys; assert not any(n.startswith(('rangekeeper.specification.rule.evaluation', 'rangekeeper.execution.compiler', 'numpy', 'scipy', 'pint', 'pyomo')) for n in sys.modules)",
             ],
             check=True,
         )
     for imports in (
-        "import rangekeeper.specification.validation; from rangekeeper.specification.policy import evaluate",
-        "from rangekeeper.specification.policy import evaluate; import rangekeeper.specification.validation",
+        "import rangekeeper.specification.validation; from rangekeeper.specification.rule import evaluate",
+        "from rangekeeper.specification.rule import evaluate; import rangekeeper.specification.validation",
     ):
         subprocess.run([sys.executable, "-c", imports], check=True)

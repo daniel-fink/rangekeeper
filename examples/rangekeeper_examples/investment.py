@@ -13,6 +13,7 @@ from uuid import UUID, uuid4
 from rangekeeper.duration import Frequency, PeriodTiming, make_periods, offset
 from rangekeeper.finance import financial
 from rangekeeper.flow import Flow, Movement
+from rangekeeper.market.view import Market
 from rangekeeper.model import (
     Definitions,
     Formulation,
@@ -41,17 +42,16 @@ from rangekeeper.model.expression.authoring import (
 from rangekeeper.model.formulation import declare
 from rangekeeper.model.formulation.authoring import identify, identify_tree
 from rangekeeper.model.formulation.flow import aligned, shape
-from rangekeeper.model.scenario.view import Market
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.records import (
     Assignment,
-    Policy,
+    RuleSet,
 )
 from rangekeeper.schema.records import (
     Specification as SpecificationRecord,
 )
 from rangekeeper.specification import Specification
-from rangekeeper.specification.policy import (
+from rangekeeper.specification.rule import (
     Action,
     ActionKind,
     Decision,
@@ -352,17 +352,17 @@ def formulate(model: Model) -> Model:
 
 
 def specify(
-    model: Model, *, policy: Policy | None = None, sale_period: int | None = None
+    model: Model, *, rules: RuleSet | None = None, sale_period: int | None = None
 ) -> Specification:
     """Explicitly fix input parameters/path and select result unknowns and controls.
 
-    A policy owns controls exclusively. Without one, sale_period defaults to the
+    Rules own controls exclusively. Without one, sale_period defaults to the
     final horizon. This call alone does not solve, save or alter any Model.
     """
     v, factors, caps = _inputs(model)
     count = len(_flow(v["holding"]).movements)
-    if policy is not None and sale_period is not None:
-        raise ValueError("choose a policy or fixed sale period")
+    if rules is not None and sale_period is not None:
+        raise ValueError("choose rules or fixed sale period")
     sale_period = count if sale_period is None else sale_period
     if type(sale_period) is not int or not 1 <= sale_period <= count:
         raise ValueError("sale period outside investment horizon")
@@ -374,7 +374,7 @@ def specify(
     assignments.extend(assign_flow(model, factors.id))
     if caps:
         assignments.extend(assign_flow(model, caps.id))
-    if policy is None:
+    if rules is None:
         for i in range(count):
             assignments.extend(
                 (
@@ -407,7 +407,7 @@ def specify(
             model=model.id,
             assignments=tuple(assignments),
             unknowns=unknowns,
-            policy=policy,
+            rules=rules,
         )
     )
 
@@ -480,7 +480,7 @@ def report(model: Model) -> InvestmentReport:
     )
 
 
-def build_stop_gain_resale_policy(
+def build_stop_gain_resale_rules(
     model: Model,
     *,
     id: UUID | None = None,
@@ -490,7 +490,7 @@ def build_stop_gain_resale_policy(
     threshold: float = 1.2,
     minimum_holding_periods: int = 3,
     mapping: Mapping[UUID, UUID] | None = None,
-) -> Policy:
+) -> RuleSet:
     """Declare one sale at first factor > threshold, otherwise at the final horizon.
 
     Decisions occur on each period's last included date. The sale period has
@@ -521,7 +521,7 @@ def build_stop_gain_resale_policy(
         if set(mapping) != {h.id for h, _ in controls} or not set(
             mapping.values()
         ) <= set(factors):
-            raise ValueError("policy mapping must cover every control coordinate")
+            raise ValueError("rule mapping must cover every control coordinate")
         rows = [(h, (factors[mapping[h.id]], matches[0])) for h, matches in controls]
     if (
         not rows
@@ -590,13 +590,13 @@ def build_stop_gain_resale_policy(
                 fallback=fallback,
             )
         )
-    return Policy(id=id, targets=targets, decisions=tuple(points))
+    return RuleSet(id=id, targets=targets, decisions=tuple(points))
 
 
 def horizon_returns(model: Model) -> Flow:
     """Calculate dated IRR for each hypothetical sale horizon from accepted amounts.
 
-    These are hindsight alternatives, not policy decisions. Each sale includes
+    These are hindsight alternatives, not rule decisions. Each sale includes
     the current period's operating amount and its potential sale proceeds.
     """
     from datetime import timedelta

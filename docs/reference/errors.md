@@ -91,8 +91,8 @@ except rk.errors.ValidationError as error:
 | `DecodeError`, `EncodingError` | `ValueError` | `DECODE`, `ENCODING` |
 | `TableError` | `ValueError` | `TABLE` |
 | `model.system`: `SelectionError`, `AggregationError` | `ValueError` | `SELECTION`, `AGGREGATION` |
-| `model.scenario`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
-| `specification.policy`: `PolicyCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
+| `market`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
+| `specification.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
 | `NumericalError` | `ValueError` | `NUMERICAL_FAILURE` |
 | `BackendUnavailableError`, `AttemptDeadlineError` | `RuntimeError` | `BACKEND_UNAVAILABLE`, `ATTEMPT_DEADLINE` |
 | `PublishedFileError` | `OSError` | `PUBLISHED_FILE` |

@@ -11,7 +11,7 @@ imports:
 - formulation
 - settings
 - reference
-- policy
+- rule
 default_prefix: rk
 default_range: string
 classes:
@@ -76,11 +76,11 @@ classes:
       promoted into governing mathematics in the output Model. Publishing output content must preserve valid references
       without silently imposing Specification-local constraints. Run and output-publication contracts are separate.
     - Structural validation, reference checking, and role completeness do not prove feasibility, boundedness, uniqueness,
-      convergence, or backend support. Policy execution, sampling, temporal content, and structural interventions
+      convergence, or backend support. Rule execution, sampling, temporal content, and structural interventions
       are deferred; a dedicated Scenario or Evaluation class is not introduced. The objectives collection preserves
       preference order. Other collections here are unordered; the child schemas preserve order where mathematics
       requires it.
-    - Policy-controlled targets are a third, disjoint role category. Exactly one contributor may supply a Policy.
+    - Rule-controlled targets are a third, disjoint role category. Exactly one contributor may supply a RuleSet.
       Actual decisions must supply all controlled assignments before compilation.
     attributes:
       metadata:
@@ -135,7 +135,7 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: false
-        description: Unique scalar or Movement unknowns; explicit and disjoint from assignments and policy targets.
+        description: Unique scalar or Movement unknowns; explicit and disjoint from assignments and rule targets.
       estimates:
         description: Initial numerical estimates for unknown Values, used to initialize a solve without fixing them.
         range: Assignment
@@ -165,8 +165,8 @@ classes:
         all_of:
         - range: Settings
           inlined: true
-      policy:
-        range: Policy
+      rules:
+        range: RuleSet
         inlined: true
   Objective:
     description: A scalar numerical Expression and the sense in which its result is preferred.

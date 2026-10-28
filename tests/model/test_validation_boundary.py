@@ -351,7 +351,7 @@ def test_recursive_property_content_is_still_checked(case, indexed):
 @pytest.fixture(scope="module")
 def scenario_data():
     from rangekeeper.duration import Frequency, make_periods
-    from rangekeeper.model.scenario import market
+    from rangekeeper.market import generation as market
 
     base = Model.from_data(
         {"metadata": {"id": str(UUID(int=910)), "schema_version": "1.0.0"}}
