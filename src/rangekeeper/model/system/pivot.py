@@ -23,6 +23,8 @@ from rangekeeper.model.system.rollup import (
     Coverage,
     RollupEntry,
     RollupResult,
+    _Decision,
+    _decision,
 )
 from rangekeeper.quantity import Quantity
 from rangekeeper.shared.arguments import require_text
@@ -253,12 +255,14 @@ class Pivot:
 def _base_rule(
     rollup: "_Rollup",
     rows: Hierarchy,
-) -> Callable[[Entity], bool]:
-    rule = rollup.contributors
+) -> Callable[[Entity], bool | None]:
+    rule = _decision(rollup.contributors, rows.view.model)
     if rule is Contributor.ALL:
         return lambda entity: True
     if rule is Contributor.LEAVES:
         return lambda entity: not rows.children(entity.id)
+    if isinstance(rule, _Decision):
+        return rule
 
     def checked(entity: Entity) -> bool:
         eligible = rule(entity)
@@ -284,9 +288,14 @@ def _member(model, label, classes):
 
 
 def _rule(base, tests):
-    if not tests:
-        return base
-    return lambda entity: base(entity) and all(test(entity) for test in tests)
+    """Require the column tests, then the base rule, which may be undecided.
+
+    An Entity outside the column is not a contributor of the column, even when
+    the base rule cannot decide it.
+    """
+    return _Decision(
+        lambda entity: all(test(entity) for test in tests) and base(entity)
+    )
 
 
 def _label_root(model, rows: Hierarchy, label: str) -> UUID | None:
