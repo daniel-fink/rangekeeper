@@ -24,9 +24,11 @@ classes:
       membership edges.
     attributes:
       kind:
+        description: Whether the step follows classified Relationships or Assembly membership.
         range: TraversalKind
         required: true
       depth:
+        description: Whether the step follows exactly one edge or one or more edges.
         range: Depth
         required: true
       classification:
@@ -39,6 +41,8 @@ classes:
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
       direction:
+        description: Direction in which to follow Relationships; required for relationship steps and absent
+          for membership steps.
         range: Direction
     rules:
     - preconditions:
@@ -75,6 +79,7 @@ classes:
         - range: string
         pattern: \S
       classification:
+        description: UUID of the Classification that the Label must include.
         range: Classification
         required: true
         inlined: false
@@ -91,6 +96,8 @@ classes:
       must match. An absent classification or Label does not match. An empty filter matches every candidate.
     attributes:
       classification:
+        description: Exact Classification that a candidate Entity must have; taxonomy descendants do not
+          match.
         range: Classification
         inlined: false
         pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
@@ -119,6 +126,7 @@ classes:
       of a matching Value, never to its numerical content.
     attributes:
       kind:
+        description: Whether the query returns Entity identities or Values of the matching Entities.
         range: ProjectionKind
         required: true
       key:
@@ -137,8 +145,12 @@ classes:
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
       cardinality:
+        description: Number of Values permitted for each Entity; required for value projection and absent for
+          entity projection.
         range: Cardinality
       missing:
+        description: Treatment of an Entity with no matching Value; required for value projection and absent
+          for entity projection.
         range: MissingHandling
     rules:
     - preconditions:
@@ -195,6 +207,7 @@ classes:
       may not.
     attributes:
       starting_at:
+        description: UUID of the Entity in the containing Model revision where the query starts.
         range: Entity
         required: true
         inlined: false
@@ -214,12 +227,14 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
       filter:
+        description: Optional conditions applied to the candidates after traversal.
         range: Filter
         inlined: true
         all_of:
         - range: Filter
           inlined: true
       projection:
+        description: Selection of Entity identities or Values from the filtered candidates.
         range: Projection
         required: true
         inlined: true
@@ -227,6 +242,7 @@ classes:
         - range: Projection
           inlined: true
       duplicates:
+        description: Whether repeated projected UUIDs are kept or removed.
         range: DuplicateHandling
         required: true
 enums:

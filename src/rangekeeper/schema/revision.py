@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING
 
 from rangekeeper.schema.runtime import comparison_data, exact_equal
+from rangekeeper.schema.validation import _slot_map
 from rangekeeper.shared.errors import RevisionConflictError, UnsupportedVersionError
 
 if TYPE_CHECKING:
@@ -31,11 +32,11 @@ def check_revision(
         comparison_data(before._kind, before._data),
         comparison_data(after._kind, after._data),
     )
+    # The schema marks the revision identity and lineage slots of Metadata.
+    lineage = {key for key, slot in _slot_map("Metadata").items() if slot["lineage"]}
     for data, metadata in ((left, old), (right, new)):
         data["metadata"] = {
-            key: value
-            for key, value in metadata._data.items()
-            if key not in ("id", "previous")
+            key: value for key, value in metadata._data.items() if key not in lineage
         }
     if exact_equal(left, right):
         raise RevisionConflictError(

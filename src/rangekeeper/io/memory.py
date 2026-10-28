@@ -3,8 +3,16 @@
 from threading import RLock
 from uuid import UUID
 
-from rangekeeper.io._document import require_revision, require_same, trusted
-from rangekeeper.io.store import D, Document, Model, Run, Specification
+from rangekeeper.io._document import (
+    D,
+    Document,
+    Model,
+    Run,
+    Specification,
+    require_revision,
+    require_same,
+    trusted,
+)
 from rangekeeper.run.validation import validate as validate_run
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import MissingReferenceError

@@ -106,6 +106,9 @@ are never overwritten; a failed write can leave an unpublished directory.
 For the main Model, `geometry=` and `provider=` remain convenient single-source
 arguments. `geometries={model_uuid: directory}` supplies native directories;
 `providers={(provider, format, format_version): adapter}` supplies trusted decoders.
+When neither argument supplies an adapter for a pin, the writer and
+`verify_geometry()` use the provider registered under the pin's provider name in
+`rangekeeper.io.geometry_providers` ([extension points](extensions.md)).
 A source for one Model can serve another with the same complete pin. Unknown or
 undeclared sources fail. `geometry_path(model_uuid)` locates its retained dataset.
 `verify_geometry()` checks every distinct pin, including supporting Models when the

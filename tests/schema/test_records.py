@@ -369,3 +369,16 @@ def test_construction_copies_once_and_keeps_boundary_failures(monkeypatch):
     with pytest.raises(ValidationError):
         r.Claim.from_data(malformed)
     assert not validate("Claim", malformed).valid
+
+
+def test_lineage_annotation_marks_revision_identity_slots():
+    from rangekeeper.schema.records import _TYPES
+    from rangekeeper.schema.validation import slots_for
+
+    lineage = {
+        (kind, name)
+        for kind in _TYPES
+        for name, slot in slots_for(kind).items()
+        if slot["lineage"]
+    }
+    assert lineage == {("Metadata", "id"), ("Metadata", "previous")}

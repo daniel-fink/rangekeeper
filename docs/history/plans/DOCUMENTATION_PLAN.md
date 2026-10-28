@@ -64,7 +64,7 @@ docs/
     run-and-storage.md             finalized evidence, codecs and stores
     expressions.md                 syntax, domains, queries and Constraints
     calculations.md                Flow, calendars, arithmetic and accounts
-    scenarios-and-policies.md      captured futures, availability and outcomes
+    market-paths-and-rules.md      captured futures, availability and outcomes
     execution.md                   supported mathematics and acceptance
     system.md                      Model views, membership and reductions
     tables.md                      detached Table, projections, Polars and CSV
@@ -125,7 +125,7 @@ anchors where practical; update every maintained caller when an anchor changes.
 | `RUN_AND_STORAGE.md` | `reference/run-and-storage.md`; retain local versus resolved checks and publication failure semantics. |
 | `EXPRESSION_CONTRACT.md` | `reference/expressions.md`; distinguish represented domains from implemented execution. |
 | `CALCULATIONS.md` | `reference/calculations.md`; retain account, coordinate, missing-value and timing contracts. |
-| `SCENARIOS_AND_POLICIES.md` | `reference/scenarios-and-policies.md`; retain separate declaration, observation, evidence and replay contracts. |
+| `SCENARIOS_AND_POLICIES.md` | `reference/market-paths-and-rules.md`; retain separate declaration, observation, evidence and replay contracts. |
 | `SCALAR_EXECUTION.md` | `reference/execution.md`; move the complete example instructions to `guides/examples.md`, linking its source. |
 | `GRAPH_MODEL.md` | `reference/system.md`; use current Model terminology and retain explicit hierarchy and coverage rules. |
 | `CONSUMER_MIGRATION.md` | Extract current Table/projection/Polars/CSV contracts to `reference/tables.md`; workflow contracts to `reference/workflow.md`; run/export steps to `guides/source-workflows.md`; retired-name mappings to `guides/upgrading.md`. |
@@ -140,7 +140,7 @@ anchors where practical; update every maintained caller when an anchor changes.
 | `WORKFLOW_EXAMPLES.md` | Fold into `guides/source-workflows.md`; link to accommodation and equipment sources under `examples/`. |
 | `GRASSHOPPER.md` | `guides/grasshopper.md`; current .NET build, authoring, identity and cross-language instructions. |
 | `LEGACY_UPGRADE_GUIDE.md` | `guides/upgrading.md`; retain explicit compatibility breaks and migration order; link to current contracts instead of repeating them. |
-| `CONTRIBUTING.md`, `RK_NAMING.md` | Contributor rules and general naming rules go to `contributing/README.md`; scenario-specific names and examples go to `reference/scenarios-and-policies.md`; add `contributing/documentation.md` from the rules below. |
+| `CONTRIBUTING.md`, `RK_NAMING.md` | Contributor rules and general naming rules go to `contributing/README.md`; scenario-specific names and examples go to `reference/market-paths-and-rules.md`; add `contributing/documentation.md` from the rules below. |
 | `VERIFICATION.md` | `contributing/verification.md`; current commands and evidence limits, not accumulated historical counts. |
 | `SCHEMA.md` | `contributing/schema.md`; source authority, generation and conformance procedure; link to record and expression references for meaning. |
 | `LAYOUT_TOOLCHAIN.md` | `contributing/layout-acceptance.md`; preserve pinned toolchain, installer and strict acceptance procedure. |

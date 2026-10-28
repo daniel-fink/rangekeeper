@@ -1,12 +1,12 @@
 """Statically checked Model projection and source workflow calls."""
 
 from rangekeeper import Model
+from rangekeeper.market import Market
 from rangekeeper.model import Distribution, Value
-from rangekeeper.model.scenario import Market
 from rangekeeper.model.system import Hierarchy, View
 from rangekeeper.model.system.table import ValueColumn, to_table
 from rangekeeper.shared.table import Table
-from rangekeeper.specification.policy import PolicyResult
+from rangekeeper.specification.rule import RuleResult
 
 
 def consume(model: Model) -> Table:
@@ -21,5 +21,5 @@ def consume_market(market: "Market", distribution: "Distribution") -> "Value":
     distribution.check()
     value: Value = market.space_market_price_factors
     rates: Value = market.implied_reversion_cap_rates
-    result: PolicyResult = PolicyResult(())
+    result: RuleResult = RuleResult(())
     return value

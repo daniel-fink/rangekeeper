@@ -11,6 +11,7 @@ def uid(name):
 
 import pytest
 
+from rangekeeper.errors import Code
 from rangekeeper.model.expression.validation import (
     infer_expression_domain,
     validate_constraint_predicates,
@@ -98,7 +99,13 @@ def test_report_keeps_semantic_context_and_revision_identity():
         document={"metadata": {"id": str(identity)}},
     )
     assert report.issues == (
-        Issue("semantic.unique", "duplicate code: same", identity, "/items/1/code"),
+        Issue(
+            Code.UNIQUE,
+            "duplicate code: same",
+            identity,
+            "/items/1/code",
+            values={"field": "code", "value": "same"},
+        ),
     )
 
 

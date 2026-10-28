@@ -1,14 +1,14 @@
-# Rename map for the 1.0.0a2 rename pass (draft for #93).
+# Rename map for the 1.0.0a2 rename pass (#93).
 #
 # The codemod in this folder reads this file. `render.py` writes the table in
 # docs/guides/upgrading.md from it; do not edit that table by hand.
 #
 # Each entry has a status:
 #   agreed  - the 1.0 name is in an accepted ADR (010, 012 or 018).
-#   draft   - the ADR gives the direction; this map proposes the exact name or
-#             location. #93 finalises it.
-#   pending - depends on a decision under review in #255 (the proposed
-#             walkthrough cells). The codemod does not apply it.
+#   draft   - the ADR or a walkthrough decision gives the direction; this map
+#             gives the exact name or location.
+#   pending - depends on a decision under review. The codemod does not apply
+#             it. No entry is pending since #255 (decisions D1-D44).
 #   open    - the 1.0 name is not decided. The codemod does not apply it.
 #
 # `requires` names work that the codemod cannot do alone:
@@ -86,44 +86,64 @@ modules:
     status: agreed
     source: ADR-010, ADR-012
   - old: rangekeeper.calculations.projection
-    new: rangekeeper.finance.growth
-    status: pending
-    source: ADR-012
-    pending: "#255 D12: growth and distribution profiles move to `rangekeeper.profile`, applied by `Flow.from_profile`."
+    new: rangekeeper.profile
+    status: agreed
+    source: ADR-010, #255 D12
+    note: >-
+      Growth and distribution profiles. The word "projection" is not used.
+      Profile classes and `Flow.from_profile` follow (#298).
+  - old: rangekeeper.calculations.dynamics
+    new: rangekeeper.market.dynamics
+    status: agreed
+    source: ADR-010, #255 D29
+    note: Path generators are series maths, so they leave `finance`. `rk.market.Dynamics` follows (#299).
   - old: rangekeeper.run.execution
     new: rangekeeper.execution
     status: agreed
     source: ADR-010
+  - old: rangekeeper.specification.policy
+    new: rangekeeper.specification.rule
+    status: agreed
+    source: ADR-021, #255 D41
+    note: '"Policy" is not used. The rule queries of ADR-021 replace the records later (#215).'
   - old: rangekeeper.specification.policy.evaluation
-    new: rangekeeper.execution.policy
+    new: rangekeeper.execution.rule
     status: draft
-    source: ADR-010
+    source: ADR-010, #255 D41
     requires: [refactor]
-    note: The lazy exports of `specification.policy` load it by its short name.
+    note: Rule evaluation moves to `execution` (#102). The lazy exports of `specification.rule` load it by its short name.
   - old: rangekeeper.shared.units
     new: rangekeeper.quantity
-    status: draft
+    status: agreed
     source: ADR-010, #255 D13
     note: >-
       The namespace that holds the unit system, the registry and `isclose` is
       `rangekeeper.quantity`, so "units" keeps one meaning: a unit string.
       `Quantity` is also at the root.
   - old: rangekeeper.io.store
-    new: rangekeeper.shared.store
-    status: draft
-    source: ADR-010
-    requires: [refactor]
-    note: The protocol imports Model, Specification and Run; these imports must become type-only.
+    new: rangekeeper.io
+    status: agreed
+    source: ADR-010, #98
+    note: >-
+      The `RecordStore` protocol is defined in the internal `shared.store`, so
+      `execution` does not import `io`. Import `RecordStore` and `Document`
+      from `rangekeeper.io`.
   - old: rangekeeper.model.system.projection
     new: rangekeeper.model.system.table
     status: draft
     source: ADR-012
   - old: rangekeeper.model.scenario
-    new: rangekeeper.finance.paths
+    new: rangekeeper.market
+    status: agreed
+    source: ADR-010, ADR-014, #255 D29
+    note: >-
+      The generators, paths and replay move as they are. `rk.market.Paths`
+      and the MarketPaths document replace the scenario plan (#299, #303).
+  - old: rangekeeper.model.scenario.market
+    new: rangekeeper.market.generation
     status: draft
-    source: ADR-010, ADR-014
-    requires: [refactor]
-    note: Path generators and the MarketPaths document replace the scenario plan.
+    source: ADR-010, #255 D29
+    note: Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name.
 
 # Other file moves, relative to the repository root.
 paths:
@@ -170,7 +190,7 @@ symbols:
   - module: rangekeeper.model.measure
     name: Quantity
     new_module: rangekeeper.quantity
-    status: draft
+    status: agreed
     source: ADR-010, #255 D13
     note: "`rangekeeper.Quantity` at the root also gives the record."
   - module: rangekeeper.model.measure
@@ -282,46 +302,114 @@ symbols:
   - module: rangekeeper.calculations.financial
     name: calculate_pv
     new_name: pv
-    status: pending
-    source: ADR-012
-    pending: "#255 D14 and D19 with #167: `rangekeeper.finance.pv(flow=, rate=, on=)`."
+    status: agreed
+    source: ADR-012, #255 D14, D19
+    requires: [refactor]
+    note: "`rangekeeper.finance.pv(flow=, rate=, on=)`, with keyword-only arguments (#167)."
   - module: rangekeeper.calculations.financial
     name: calculate_xnpv
     new_name: npv
-    status: pending
-    source: ADR-012
-    pending: "#255 D19 with #167: `rangekeeper.finance.npv(flow=, rate=, on=)`."
+    status: agreed
+    source: ADR-012, #255 D19
+    requires: [refactor]
+    note: "`rangekeeper.finance.npv(flow=, rate=, on=)`, with keyword-only arguments (#167)."
   - module: rangekeeper.calculations.financial
     name: calculate_irr
     new_name: irr
-    status: pending
-    source: ADR-012
-    pending: "#255 D4 with #164: `rangekeeper.finance.irr`, also an equation function."
-  - module: rangekeeper.calculations.projection
-    name: project_values
-    status: pending
-    source: ADR-012
-    pending: "#255 D12: `rangekeeper.flow.Flow.from_profile(profile=, periods=, initial=)` with `rangekeeper.profile` growth profiles."
-  - module: rangekeeper.calculations.projection
-    name: distribute
-    status: pending
-    source: ADR-012
-    pending: "#255 D12: `Flow.from_profile(profile=, periods=, total=)` with `rangekeeper.profile.Uniform` or `SCurve`."
+    status: agreed
+    source: ADR-012, #255 D4
+    requires: [refactor]
+    note: "`rangekeeper.finance.irr(flow=)`, also an equation function (#164, #167)."
   - module: rangekeeper.calculations.projection
     name: ProjectionMethod
-    status: pending
-    source: ADR-012
-    pending: "#255 D12: profile classes replace the method enum; the word projection is not used."
-  - module: rangekeeper.model.expression.authoring
-    name: sum
-    status: pending
-    source: ADR-012
-    pending: "#255 D6 and D18: equation strings on entity handles replace the expression builders. ADR-012 forbids public names that shadow builtins."
-  - module: rangekeeper.model.formulation.authoring
-    name: declare
-    status: pending
-    source: ADR-015
-    pending: "#255 D6 and D16: `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)` and `date(...)`."
+    new_name: GrowthMethod
+    status: draft
+    source: ADR-012, #255 D12
+    note: The word "projection" is not used. Profile classes replace the enum (#298).
+  - module: rangekeeper.calculations.projection
+    name: project_values
+    new_name: grow_values
+    status: draft
+    source: ADR-012, #255 D12
+    note: The word "projection" is not used. `Flow.from_profile` replaces it (#298).
+  - module: rangekeeper.model.formulation.account
+    name: interest
+    new_module: rangekeeper.model.formulation.financial
+    status: draft
+    source: "#255 D2, D23"
+    note: The account module is removed; passive interest stays with the other financial equations.
+  - module: rangekeeper.model.scenario.replay
+    name: replay
+    new_module: rangekeeper.market
+    status: agreed
+    source: ADR-017, #255 D29
+    note: One canonical path for each public name.
+  - module: rangekeeper.model.scenario.replay
+    name: ReplayUnavailableError
+    new_module: rangekeeper.market
+    status: agreed
+    source: ADR-017, #255 D29
+    note: One canonical path for each public name.
+  - module: rangekeeper.schema.records
+    name: Policy
+    new_name: RuleSet
+    status: draft
+    source: ADR-021, #255 D41
+    requires: [schema]
+    note: >-
+      The record that a Specification holds as `rules`. The schema module
+      `policy` becomes `rule`. `Rule` keeps its name. ADR-021's rule queries
+      replace these records (#215).
+  - module: rangekeeper.schema.records
+    name: DecisionOutcome
+    new_name: RuleEvidence
+    status: draft
+    source: ADR-021, #255 D41
+    requires: [schema]
+    note: The evidence of one rule decision, in `Report.rule_evidence`.
+  - module: rangekeeper.specification.policy.result
+    name: PolicyResult
+    new_name: RuleResult
+    status: agreed
+    source: "#255 D41"
+  - module: rangekeeper.specification.policy.observation
+    name: PolicyCapabilityError
+    new_name: RuleCapabilityError
+    status: agreed
+    source: "#255 D41"
+  - module: rangekeeper.specification.policy.validation
+    name: validate_policy
+    new_name: validate_rules
+    status: agreed
+    source: "#255 D41"
+  - module: rangekeeper.specification.policy.validation
+    name: validate_outcomes
+    new_name: validate_evidence
+    status: agreed
+    source: "#255 D41"
+    note: It checks the `RuleEvidence` records of a Run report.
+  - module: rangekeeper.execution.errors
+    name: UnsupportedProblem
+    new_name: UnsupportedError
+    status: agreed
+    source: ADR-016, #255 D26
+    note: Every error name ends in `Error`.
+  - module: rangekeeper.model.expression.evaluation
+    name: UnsupportedExpression
+    new_name: UnsupportedError
+    status: agreed
+    source: ADR-016
+    note: One error for unsupported expressions and problems.
+  - module: rangekeeper.execution.errors
+    name: BackendUnavailable
+    new_name: BackendUnavailableError
+    status: agreed
+    source: ADR-016
+  - module: rangekeeper.execution.errors
+    name: AttemptDeadline
+    new_name: AttemptDeadlineError
+    status: agreed
+    source: ADR-016
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it
@@ -365,6 +453,29 @@ attributes:
     note: >-
       Classification `labels` keep their name. The package pass renamed the
       Stream field by hand; the consumer pass lists the uses to check.
+  - owner: rangekeeper.schema.records.Specification
+    name: policy
+    new_name: rules
+    apply: review
+    status: draft
+    source: ADR-021, #255 D41
+    requires: [schema]
+    note: The Specification field and its wire key. `spec.rules` holds all of a Specification's rules.
+  - owner: rangekeeper.schema.records.Report
+    name: outcomes
+    new_name: rule_evidence
+    apply: review
+    status: draft
+    source: ADR-021, #255 D41
+    requires: [schema]
+    note: The Run report field and its wire key.
+  - owner: rangekeeper.specification.policy.result.PolicyResult
+    name: outcomes
+    new_name: evidence
+    apply: review
+    status: agreed
+    source: "#255 D41"
+    note: The `RuleEvidence` records of one evaluation.
   - owner: "*"
     name: findings
     new_name: diagnostics
@@ -391,6 +502,11 @@ parameters:
     new_name: end
     status: agreed
     source: ADR-012
+  - callable: rangekeeper.specification.policy.evaluation.evaluate
+    name: policy
+    new_name: rules
+    status: agreed
+    source: "#255 D41"
   - callable: rangekeeper.model.flux.Stream.select
     name: labels
     new_name: names
@@ -403,8 +519,35 @@ parameters:
     source: ADR-012
 
 # Names removed with no direct replacement. The codemod does not change these
-# uses; it lists them with the replacement.
+# uses; it lists them with the replacement. Entries with `requires: [refactor]`
+# are removed by later work; the codemod lists them only with `--with refactor`.
 removed:
+  - name: rangekeeper.calculations.account
+    replacement: >-
+      Compose the funding with Flows: a balance is `cumulative()`, and interest
+      is `rangekeeper.finance.interest` (#255 D2, D23). A how-to recipe follows (#194)
+    status: agreed
+    source: "#255 D2"
+  - name: rangekeeper.model.formulation.account.schedule
+    replacement: >-
+      Equations over Flows, such as `funding_need = -(net_cash_flow +
+      loan_interest).cumulative()`. A Model declares no account (#255 D2)
+    status: agreed
+    source: "#255 D2"
+  - name: rangekeeper.model.expression.authoring.sum
+    replacement: >-
+      Equation text or `rangekeeper.expressions` on entity handles (#255 D6,
+      D18, D32). ADR-012 forbids public names that shadow builtins
+    status: agreed
+    source: ADR-012, #255 D18
+    requires: [refactor]
+  - name: rangekeeper.model.formulation.authoring.declare
+    replacement: >-
+      `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=,
+      units=)`, `flow(...)`, `date(...)` and `equations(...)` (#255 D6, D16)
+    status: agreed
+    source: ADR-015, #255 D6
+    requires: [refactor]
   - name: rangekeeper.calculations.series.align
     replacement: Stream(flows, join=, missing=).align()
     status: agreed
@@ -437,45 +580,84 @@ removed:
     replacement: Path generators and the MarketPaths document
     status: agreed
     source: ADR-012, ADR-014
+    requires: [refactor]
   - name: rangekeeper.model.scenario.market.sample
     replacement: Path generators and the MarketPaths document
     status: agreed
     source: ADR-012, ADR-014
+    requires: [refactor]
   - name: rangekeeper.model.scenario.market.capture
     replacement: Path generators and the MarketPaths document
     status: agreed
     source: ADR-012, ADR-014
+    requires: [refactor]
   - name: rangekeeper.model.scenario.market.realize
     replacement: Path generators and the MarketPaths document
     status: agreed
     source: ADR-012, ADR-014
+    requires: [refactor]
   - name: rangekeeper.model.scenario.market.generate
     replacement: Path generators and the MarketPaths document
     status: agreed
     source: ADR-012, ADR-014
+    requires: [refactor]
   - name: rangekeeper.model.scenario.view.Market
     replacement: The MarketPaths document
     status: agreed
     source: ADR-012, ADR-014
+    requires: [refactor]
+  - name: rangekeeper.shared.errors.BoundaryError
+    replacement: rangekeeper.errors.RangekeeperError
+    status: agreed
+    source: ADR-016
+  - name: rangekeeper.shared.errors.ValueEncodingError
+    replacement: rangekeeper.errors.EncodingError
+    status: agreed
+    source: ADR-016
 
-# Decisions under review in #255 that change API shapes, not names. They are
-# listed in the upgrade guide draft. The codemod does not apply them.
+# Decisions of #255 that change API shapes, not names. They are listed in the
+# upgrade guide. The codemod does not apply them.
 notes:
   - topic: Quantity text in API arguments
-    status: pending
-    pending: "#255 D13, D16 and D17: arguments take unit text such as `\"7 % pa\"`; `per` divides and `pa` means per year."
+    status: agreed
+    source: "#255 D13, D16, D17"
+    note: Arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year.
   - topic: Keyword-only arguments
-    status: pending
-    pending: "#255 D14: every Rangekeeper call names its arguments."
+    status: agreed
+    source: "#255 D14"
+    note: Every Rangekeeper call names its arguments.
   - topic: Model authoring and builder names
-    status: pending
-    pending: "#255 D6, D16 and D18: `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles."
+    status: agreed
+    source: "#255 D6, D16, D18"
+    note: "`rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles."
   - topic: Specification calls
-    status: pending
-    pending: "#255 D7 and D8: `fix`, `free`, `cases`, `across` and `decide` each return a new Specification; unfixed values are free."
+    status: agreed
+    source: "#255 D7, D8"
+    note: "`fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free."
   - topic: Loan payment
-    status: pending
-    pending: "#255 D19 with #167: `rangekeeper.finance.payment(principal=, rate=, term=, frequency=)`."
+    status: agreed
+    source: "#255 D19"
+    note: "`rangekeeper.finance.payment(principal=, rate=, term=, frequency=)` (#167)."
+  - topic: Funding accounts
+    status: agreed
+    source: "#255 D2, D23"
+    note: There is no account class and no account declaration. A balance is `cumulative()` of a Flow.
+  - topic: Growth and distribution profiles
+    status: agreed
+    source: "#255 D12"
+    note: "`rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#298)."
+  - topic: Market paths
+    status: agreed
+    source: "#255 D29, D31"
+    note: "`rk.market.Dynamics`, `rk.market.generate` and `rk.market.Paths` replace the scenario plan and the trend and cycle kernels (#299, #303)."
+  - topic: Fixed words are enums
+    status: agreed
+    source: "#255 D26"
+    note: "Diagnostic codes are `rk.errors.Code` (#154); \"the event does not happen\" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings."
+  - topic: Rules
+    status: agreed
+    source: ADR-021, #255 D41, D42
+    note: "A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215)."
 
 # Exact text edits for cases that the rules do not cover. Each edit applies
 # only when `old` occurs once in the file, so a second run changes nothing.
@@ -495,6 +677,6 @@ fixups:
   - path: src/tests/test_legacy_boundary.py
     old: "        \"table\",\n"
     new: ""
-    status: draft
+    status: agreed
     source: ADR-012
-    note: The guard lists the retired 0.x module `model.system.table`; the draft map reuses the name for `model.system.projection`. #93 confirms the reuse.
+    note: The guard lists the retired 0.x module `model.system.table`; 1.0 reuses the name for `model.system.projection`.

@@ -86,16 +86,28 @@ For Tables, row IDs and Claims remain separate metadata. Homogeneous supported
 scalars use native Polars columns; opaque or mixed cells use Object columns to
 avoid silent coercion. `to_table(frame)` copies frame cells into unidentified Rows.
 
-For Flows, `to_frame` includes movement identity, coordinates, periods, Claim
-references and `_present` field-presence metadata. `from_frame(frame, *, units)`
-requires that explicit movement format and an explicit unit string. It validates
-the resulting Flow; NaN is invalid, not an alias for missing. See
-[calculations](calculations.md) for movement and missing-value rules.
+For Flows, `to_frame` has one column for each Movement slot, in schema order,
+then `_present` field-presence metadata. The columns and their types come from the
+generated slot metadata, not from a list in the code:
+
+| Slot | Polars type |
+| --- | --- |
+| UUID, string and date (wire text) | `String` |
+| UUID collection, such as `claims` | `List(String)` |
+| Record, such as `period` | `Struct`; `Null` when no row has a value |
+| Number, such as `magnitude` | `Int64` when all values are integers, `Float64` when all are floats, `Object` when they mix or exceed `Int64` |
+
+The round trip is lossless: integer magnitudes stay integers and floats stay floats.
+`from_frame(frame, *, units)` requires that explicit movement format and an
+explicit unit string. It validates the resulting Flow; NaN is invalid, not an alias
+for missing. See [calculations](calculations.md) for movement and missing-value rules.
 
 `polars.dates(flow, *, name="magnitude", timing=None)` is a display projection.
 A Period-only coordinate requires an explicit timing convention. A recorded payment
 date takes precedence, including when the Movement also has a Period. This projection omits
 movement IDs, matching keys, coverage and Claims; use `to_frame` for interchange.
+Its magnitudes and the line columns of a Stream frame are `Float64` numerical
+projections, so integers become floats.
 
 ## Text and CSV projections
 

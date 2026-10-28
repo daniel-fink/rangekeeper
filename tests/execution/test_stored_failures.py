@@ -1,4 +1,4 @@
-"""Unsupported predicates and incomplete policy traces become stored failed Runs."""
+"""Unsupported predicates and incomplete rules traces become stored failed Runs."""
 
 from uuid import uuid4
 
@@ -8,7 +8,7 @@ from rangekeeper import Model, Specification
 from rangekeeper.execution import Executor
 from rangekeeper.io import MemoryStore
 from rangekeeper.run import CompletionStatus, SolutionStatus, validate
-from rangekeeper.specification.policy import Policy, PolicyCapabilityError, evaluate
+from rangekeeper.specification.rule import RuleCapabilityError, RuleSet, evaluate
 
 
 def identity():
@@ -122,7 +122,7 @@ def test_fixed_strict_predicate_failures_become_stored_runs(unsupported):
         assert str(diagnostic.target) == constraint_id
 
 
-def test_incomplete_selected_policy_trace_uses_capability_failure_boundary():
+def test_incomplete_selected_rule_trace_uses_capability_failure_boundary():
     measure, target = identity(), identity()
     reference = {"target": target}
     model = Model.from_data(
@@ -155,7 +155,7 @@ def test_incomplete_selected_policy_trace_uses_capability_failure_boundary():
             },
         }
     )
-    policy = {
+    rules = {
         "id": identity(),
         "targets": [reference],
         "decisions": [
@@ -188,11 +188,11 @@ def test_incomplete_selected_policy_trace_uses_capability_failure_boundary():
         {
             "metadata": metadata(),
             "model": str(model.id),
-            "policy": policy,
+            "rules": rules,
         }
     )
-    with pytest.raises(PolicyCapabilityError, match="each controlled target"):
-        evaluate(Policy.from_data(policy), model=model)
+    with pytest.raises(RuleCapabilityError, match="each controlled target"):
+        evaluate(RuleSet.from_data(rules), model=model)
     failed_run(
         model,
         specification,

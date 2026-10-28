@@ -1,10 +1,14 @@
 """Check that the generator rejects slots that records cannot represent.
 
+It also rejects a class or slot without a description.
+
 Run in the pinned schema environment, from the repository root.
 """
 
 import importlib.util
 from pathlib import Path
+
+from linkml_runtime.linkml_model.meta import SlotDefinition
 
 spec = importlib.util.spec_from_file_location(
     "generation", Path(__file__).with_name("generate.py")
@@ -45,6 +49,43 @@ for label, slots in cases.items():
 generation.check_slots(
     {"Example": {"part": meta(("Period", "record"), ("Claim", "uuid"))}}, reserved
 )
+print(f"Checked {len(cases)} rejected slot shapes")
+
+described = {"description": "An example.", "slots": {"part": "One part."}}
+missing = {
+    "class": {"Example": {**described, "description": None}},
+    "blank class": {"Example": {**described, "description": " "}},
+    "slot": {"Example": {**described, "slots": {"part": None}}},
+    "blank slot": {"Example": {**described, "slots": {"part": ""}}},
+}
+for label, metadata in missing.items():
+    try:
+        generation.check_descriptions(metadata)
+    except ValueError as error:
+        print(f"Rejected {label} without a description: {error}")
+    else:
+        raise SystemExit(f"The generator accepted a {label} without a description")
+generation.check_descriptions({"Example": described})
+print(f"Checked {len(missing)} missing descriptions")
+
+
+def field(**annotations):
+    return SlotDefinition(name="field", annotations=annotations)
+
+
+assert generation.slot_annotations("Example", field()) == {"lineage": False}
+assert generation.slot_annotations("Example", field(lineage=True)) == {"lineage": True}
+for label, value in {
+    "unknown annotation": field(other=True),
+    "text annotation": field(lineage="true"),
+}.items():
+    try:
+        generation.slot_annotations("Example", value)
+    except ValueError as error:
+        print(f"Rejected {label}: {error}")
+    else:
+        raise SystemExit(f"The generator accepted a {label}")
+
 compiler = generation.CheckCompiler({"$defs": {}}, (), ())
 for schema in ({"type": "string", "uniqueItems": True}, {"format": "email"}):
     try:
@@ -53,4 +94,4 @@ for schema in ({"type": "string", "uniqueItems": True}, {"format": "email"}):
         print(f"Rejected node check keyword: {error}")
     else:
         raise SystemExit(f"The node check compiler accepted {schema}")
-print(f"Checked {len(cases)} rejected slot shapes and 2 node check keywords")
+print("Checked 2 node check keywords")

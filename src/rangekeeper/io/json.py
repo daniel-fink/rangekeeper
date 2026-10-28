@@ -3,33 +3,18 @@
 import json as _json
 from pathlib import Path
 
-from rangekeeper.io._document import require_kind, restore, trusted
+from rangekeeper.io._document import D, Document, require_kind, restore, trusted
 from rangekeeper.io.atomic import write_new
-from rangekeeper.io.store import D, Document
 from rangekeeper.schema.runtime import copy_json
+from rangekeeper.shared.encoding import parse_json
 from rangekeeper.shared.errors import DecodeError
 
 
 def _parse(text: str) -> object:
-    """Reject duplicate keys and non-JSON numbers at every depth, including opaque data."""
-    if not isinstance(text, str):
-        raise TypeError("text must be a string")
-
-    def unique(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise DecodeError(f"duplicate JSON key: {key}")
-            result[key] = value
-        return result
-
-    def constant(value):
-        raise DecodeError(f"non-JSON number: {value}")
-
+    """Parse with the shared JSON policy and copy the result as detached data."""
+    data = parse_json(text)
     try:
-        return copy_json(
-            _json.loads(text, object_pairs_hook=unique, parse_constant=constant)
-        )
+        return copy_json(data)
     except (ValueError, TypeError) as error:
         raise DecodeError(str(error)) from error
 

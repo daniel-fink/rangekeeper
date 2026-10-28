@@ -5,6 +5,10 @@ from pathlib import Path
 from uuid import UUID
 
 from rangekeeper.io._document import (
+    Document,
+    Model,
+    Run,
+    Specification,
     envelope,
     from_envelope,
     require_revision,
@@ -13,7 +17,6 @@ from rangekeeper.io._document import (
 )
 from rangekeeper.io.atomic import write_new
 from rangekeeper.io.json import _parse
-from rangekeeper.io.store import Document, Model, Run, Specification
 from rangekeeper.run.validation import validate as validate_run
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import DecodeError, MissingReferenceError

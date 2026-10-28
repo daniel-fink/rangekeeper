@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper.shared.validation import require
+from rangekeeper.shared.validation import require, require_new
 
 
 @dataclass(frozen=True)
@@ -44,15 +44,13 @@ def build_scope(document, local_values=()) -> Scope:
 
     def add(collection, record):
         identity = UUID(record["id"])
-        require(identity not in identities, f"duplicate identity: {identity}")
-        identities.add(identity)
+        require_new(identities, identity)
         collection[identity] = record
 
     for measure in document.get("definitions", {}).get("measures", []):
         add(measures, measure)
     for taxonomy in document.get("definitions", {}).get("taxonomies", []):
-        require(UUID(taxonomy["id"]) not in identities, "duplicate taxonomy identity")
-        identities.add(UUID(taxonomy["id"]))
+        require_new(identities, UUID(taxonomy["id"]), label="taxonomy identity")
         for classification in taxonomy["classifications"]:
             add(classifications, classification)
 
@@ -64,8 +62,7 @@ def build_scope(document, local_values=()) -> Scope:
             domains[UUID(value["id"])]["measure"] = value["measure"]
         for movement in (value.get("flow") or {}).get("movements") or ():
             identity = UUID(movement["id"])
-            require(identity not in identities, f"duplicate identity: {identity}")
-            identities.add(identity)
+            require_new(identities, identity)
             targets[identity] = (value, movement)
 
     system = (document.get("system") or {}) if "metadata" in document else document

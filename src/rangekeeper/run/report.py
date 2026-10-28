@@ -71,8 +71,8 @@ def validate_report(run, *, batch, effective=None):
     data = run["report"]
     if effective is not None:
         require(
-            not data.get("outcomes") or effective.get("policy") is not None,
-            "decision evidence requires a policy",
+            not data.get("rule_evidence") or effective.get("rules") is not None,
+            "decision evidence requires rules",
         )
     status = data["status"]
     completion, solution = status["completion"], status["solution"]

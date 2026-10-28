@@ -5,20 +5,7 @@ import os
 import tempfile
 from pathlib import Path
 
-
-class PublishedFileError(OSError):
-    """The complete file is visible, but its durability was not confirmed."""
-
-    published = True
-
-    def __init__(self, path: Path, error: OSError):
-        self.path = path
-        self.error = error
-        super().__init__(
-            error.errno,
-            f"File published; durability was not confirmed: {error}",
-            str(path),
-        )
+from rangekeeper.shared.errors import PublishedFileError
 
 
 class PublishedFileInterrupted(KeyboardInterrupt):

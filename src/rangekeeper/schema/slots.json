@@ -1,6 +1,7 @@
 {
   "Action": {
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -14,6 +15,7 @@
       "required": true
     },
     "quantity": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -27,6 +29,7 @@
       "required": false
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -42,6 +45,7 @@
   },
   "Argument": {
     "expression": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -55,6 +59,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -70,6 +75,7 @@
   },
   "Assembly": {
     "characteristics": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -83,6 +89,7 @@
       "required": false
     },
     "classification": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -96,6 +103,7 @@
       "required": false
     },
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -109,6 +117,7 @@
       "required": false
     },
     "entities": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -122,6 +131,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -135,6 +145,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -148,6 +159,7 @@
       "required": false
     },
     "relationships": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -163,6 +175,7 @@
   },
   "Assignment": {
     "quantity": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -176,6 +189,7 @@
       "required": true
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -191,6 +205,7 @@
   },
   "Binding": {
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -204,6 +219,7 @@
       "required": true
     },
     "value": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -219,6 +235,7 @@
   },
   "CalculationProvenance": {
     "fingerprint": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -232,6 +249,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -245,6 +263,7 @@
       "required": true
     },
     "versions": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -260,6 +279,7 @@
   },
   "Call": {
     "arguments": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -273,6 +293,7 @@
       "required": false
     },
     "function": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -286,6 +307,7 @@
       "required": true
     },
     "named_arguments": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -301,6 +323,7 @@
   },
   "Characteristics": {
     "labels": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -314,6 +337,7 @@
       "required": false
     },
     "values": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -329,6 +353,7 @@
   },
   "Claim": {
     "content": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -342,6 +367,7 @@
       "required": true
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -355,6 +381,7 @@
       "required": true
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -368,6 +395,7 @@
       "required": true
     },
     "method": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -381,6 +409,7 @@
       "required": false
     },
     "sources": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -400,6 +429,7 @@
   },
   "Classification": {
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -413,6 +443,7 @@
       "required": true
     },
     "definition": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -426,6 +457,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -439,6 +471,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -452,6 +485,7 @@
       "required": true
     },
     "parent": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -467,6 +501,7 @@
   },
   "Constraint": {
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -480,6 +515,7 @@
       "required": false
     },
     "description": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -493,6 +529,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -506,6 +543,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -519,6 +557,7 @@
       "required": false
     },
     "predicate": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -535,6 +574,7 @@
   "Content": {},
   "ContentEntry": {
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -548,6 +588,7 @@
       "required": true
     },
     "value": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -563,6 +604,7 @@
   },
   "Criterion": {
     "classification": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -576,6 +618,7 @@
       "required": true
     },
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -591,6 +634,7 @@
   },
   "Decision": {
     "at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -604,6 +648,7 @@
       "required": true
     },
     "fallback": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -617,6 +662,7 @@
       "required": true
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -630,6 +676,7 @@
       "required": true
     },
     "observations": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -643,6 +690,7 @@
       "required": true
     },
     "rules": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -656,101 +704,9 @@
       "required": true
     }
   },
-  "DecisionOutcome": {
-    "assignments": {
-      "many": true,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "Assignment"
-        }
-      ],
-      "ordered": true,
-      "required": true
-    },
-    "at": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "primitive",
-          "kind": "date"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "decision": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "observations": {
-      "many": true,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "ObservedQuantity"
-        }
-      ],
-      "ordered": true,
-      "required": true
-    },
-    "rule": {
-      "many": false,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": false
-    },
-    "terminated": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "primitive",
-          "kind": "boolean"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "termination_reason": {
-      "many": false,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "primitive",
-          "kind": "string"
-        }
-      ],
-      "ordered": false,
-      "required": false
-    }
-  },
   "Definitions": {
     "functions": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -764,6 +720,7 @@
       "required": false
     },
     "measures": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -777,6 +734,7 @@
       "required": false
     },
     "taxonomies": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -792,6 +750,7 @@
   },
   "Diagnostic": {
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -805,6 +764,7 @@
       "required": true
     },
     "document": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -818,6 +778,7 @@
       "required": false
     },
     "message": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -831,6 +792,7 @@
       "required": true
     },
     "references": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -844,6 +806,7 @@
       "required": false
     },
     "residual": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -857,6 +820,7 @@
       "required": false
     },
     "severity": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -870,6 +834,7 @@
       "required": true
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -883,6 +848,7 @@
       "required": false
     },
     "tolerance": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -898,6 +864,7 @@
   },
   "Distribution": {
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -911,6 +878,7 @@
       "required": true
     },
     "lower": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -924,6 +892,7 @@
       "required": true
     },
     "mode": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -937,6 +906,7 @@
       "required": false
     },
     "units": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -950,6 +920,7 @@
       "required": true
     },
     "upper": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -963,6 +934,7 @@
       "required": true
     },
     "weighting": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -978,6 +950,7 @@
   },
   "Domain": {
     "collection_kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -991,6 +964,7 @@
       "required": false
     },
     "item_domain": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1004,6 +978,7 @@
       "required": false
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1017,6 +992,7 @@
       "required": true
     },
     "measure": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1030,6 +1006,7 @@
       "required": false
     },
     "units": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1045,6 +1022,7 @@
   },
   "Entity": {
     "characteristics": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1058,6 +1036,7 @@
       "required": false
     },
     "classification": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1071,6 +1050,7 @@
       "required": false
     },
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1084,6 +1064,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1097,6 +1078,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1112,6 +1094,7 @@
   },
   "Entry": {
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1125,6 +1108,7 @@
       "required": true
     },
     "value": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1140,6 +1124,7 @@
   },
   "Expression": {
     "boolean": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1153,6 +1138,7 @@
       "required": false
     },
     "call": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1166,6 +1152,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1179,6 +1166,7 @@
       "required": true
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1192,6 +1180,7 @@
       "required": true
     },
     "operand": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1205,6 +1194,7 @@
       "required": false
     },
     "operands": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1218,6 +1208,7 @@
       "required": false
     },
     "operator": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1231,6 +1222,7 @@
       "required": false
     },
     "quantity": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1244,6 +1236,7 @@
       "required": false
     },
     "query": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1257,6 +1250,7 @@
       "required": false
     },
     "selection": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1270,6 +1264,7 @@
       "required": false
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1285,6 +1280,7 @@
   },
   "Fact": {
     "claims": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -1298,6 +1294,7 @@
       "required": true
     },
     "reconciliation": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1311,6 +1308,7 @@
       "required": false
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1338,6 +1336,7 @@
   },
   "Filter": {
     "classification": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1351,6 +1350,7 @@
       "required": false
     },
     "labels": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1366,6 +1366,7 @@
   },
   "Flow": {
     "movements": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -1379,6 +1380,7 @@
       "required": true
     },
     "units": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1394,6 +1396,7 @@
   },
   "Formulation": {
     "bindings": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1407,6 +1410,7 @@
       "required": false
     },
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1420,6 +1424,7 @@
       "required": false
     },
     "constraints": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1433,6 +1438,7 @@
       "required": false
     },
     "description": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1446,6 +1452,7 @@
       "required": false
     },
     "expressions": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1459,6 +1466,7 @@
       "required": false
     },
     "formulations": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1472,6 +1480,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1485,6 +1494,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1498,6 +1508,7 @@
       "required": false
     },
     "values": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1513,6 +1524,7 @@
   },
   "Function": {
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1526,6 +1538,7 @@
       "required": true
     },
     "empty_collection": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1539,6 +1552,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1552,6 +1566,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1565,6 +1580,7 @@
       "required": true
     },
     "parameters": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1578,6 +1594,7 @@
       "required": false
     },
     "result": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1591,6 +1608,7 @@
       "required": true
     },
     "semantics": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1604,6 +1622,7 @@
       "required": true
     },
     "unit_rule": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1617,6 +1636,7 @@
       "required": true
     },
     "version": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1632,6 +1652,7 @@
   },
   "Geometry": {
     "mappings": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1645,6 +1666,7 @@
       "required": false
     },
     "pin": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1660,6 +1682,7 @@
   },
   "GeometryElement": {
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1673,6 +1696,7 @@
       "required": true
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1686,6 +1710,7 @@
       "required": true
     },
     "namespace": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1699,6 +1724,7 @@
       "required": true
     },
     "placement": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1712,6 +1738,7 @@
       "required": false
     },
     "scope": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1727,6 +1754,7 @@
   },
   "GeometryFile": {
     "path": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1740,6 +1768,7 @@
       "required": true
     },
     "sha256": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1753,6 +1782,7 @@
       "required": true
     },
     "size": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1768,6 +1798,7 @@
   },
   "GeometryMapping": {
     "element": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1781,6 +1812,7 @@
       "required": true
     },
     "entity": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1796,6 +1828,7 @@
   },
   "GeometryPin": {
     "content_digest": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1809,6 +1842,7 @@
       "required": true
     },
     "files": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -1822,6 +1856,7 @@
       "required": true
     },
     "format": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1835,6 +1870,7 @@
       "required": true
     },
     "format_version": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1848,6 +1884,7 @@
       "required": true
     },
     "provider": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1861,6 +1898,7 @@
       "required": true
     },
     "source_address": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1874,6 +1912,7 @@
       "required": false
     },
     "source_version": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -1887,6 +1926,7 @@
       "required": false
     },
     "specification": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1900,6 +1940,7 @@
       "required": true
     },
     "specification_digest": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1915,6 +1956,7 @@
   },
   "Implementation": {
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1928,6 +1970,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1941,6 +1984,7 @@
       "required": true
     },
     "version": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1956,6 +2000,7 @@
   },
   "Label": {
     "classifications": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -1969,6 +2014,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1982,6 +2028,7 @@
       "required": true
     },
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -1997,6 +2044,7 @@
   },
   "LibraryVersion": {
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2010,6 +2058,7 @@
       "required": true
     },
     "version": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2025,6 +2074,7 @@
   },
   "Location": {
     "address": {
+      "lineage": false,
       "many": true,
       "mapping": true,
       "nullable": true,
@@ -2042,6 +2092,7 @@
       "required": false
     },
     "source": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2057,6 +2108,7 @@
   },
   "Measure": {
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2070,6 +2122,7 @@
       "required": true
     },
     "definition": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2083,6 +2136,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2096,6 +2150,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2109,6 +2164,7 @@
       "required": true
     },
     "tags": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2122,6 +2178,7 @@
       "required": false
     },
     "units": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2137,6 +2194,7 @@
   },
   "Metadata": {
     "description": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2150,6 +2208,7 @@
       "required": false
     },
     "id": {
+      "lineage": true,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2163,6 +2222,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2176,6 +2236,7 @@
       "required": false
     },
     "previous": {
+      "lineage": true,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2189,6 +2250,7 @@
       "required": false
     },
     "schema_version": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2204,6 +2266,7 @@
   },
   "Method": {
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2217,6 +2280,7 @@
       "required": true
     },
     "description": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2230,6 +2294,7 @@
       "required": false
     },
     "version": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2245,6 +2310,7 @@
   },
   "Model": {
     "definitions": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2258,6 +2324,7 @@
       "required": false
     },
     "geometry": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2271,6 +2338,7 @@
       "required": false
     },
     "metadata": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2284,6 +2352,7 @@
       "required": true
     },
     "provenance": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2297,6 +2366,7 @@
       "required": false
     },
     "system": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2312,6 +2382,7 @@
   },
   "Movement": {
     "claims": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2325,6 +2396,7 @@
       "required": false
     },
     "date": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2338,6 +2410,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2351,6 +2424,7 @@
       "required": true
     },
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2364,6 +2438,7 @@
       "required": false
     },
     "magnitude": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2377,6 +2452,7 @@
       "required": false
     },
     "period": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2392,6 +2468,7 @@
   },
   "Objective": {
     "expression": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2405,6 +2482,7 @@
       "required": true
     },
     "sense": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2420,6 +2498,7 @@
   },
   "ObservationAvailability": {
     "available_at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2433,6 +2512,7 @@
       "required": true
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2448,6 +2528,7 @@
   },
   "ObservationBinding": {
     "available_at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2461,6 +2542,7 @@
       "required": false
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2474,6 +2556,7 @@
       "required": true
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2489,6 +2572,7 @@
   },
   "ObservedQuantity": {
     "available_at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2502,6 +2586,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2515,6 +2600,7 @@
       "required": true
     },
     "quantity": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2528,6 +2614,7 @@
       "required": true
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2543,6 +2630,7 @@
   },
   "Parameter": {
     "domain": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2556,6 +2644,7 @@
       "required": true
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2569,6 +2658,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2582,6 +2672,7 @@
       "required": true
     },
     "required": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2597,6 +2688,7 @@
   },
   "Period": {
     "end": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2610,6 +2702,7 @@
       "required": true
     },
     "start": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2623,49 +2716,9 @@
       "required": true
     }
   },
-  "Policy": {
-    "decisions": {
-      "many": true,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "Decision"
-        }
-      ],
-      "ordered": true,
-      "required": true
-    },
-    "id": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "targets": {
-      "many": true,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "Reference"
-        }
-      ],
-      "ordered": true,
-      "required": true
-    }
-  },
   "Projection": {
     "cardinality": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2679,6 +2732,7 @@
       "required": false
     },
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2692,6 +2746,7 @@
       "required": false
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2705,6 +2760,7 @@
       "required": true
     },
     "measure": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2718,6 +2774,7 @@
       "required": false
     },
     "missing": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2733,6 +2790,7 @@
   },
   "PropertyContent": {
     "entries": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2746,6 +2804,7 @@
       "required": false
     },
     "fold": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2759,6 +2818,7 @@
       "required": false
     },
     "items": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2772,6 +2832,7 @@
       "required": false
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2785,6 +2846,7 @@
       "required": true
     },
     "text": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2798,6 +2860,7 @@
       "required": false
     },
     "zone": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -2813,6 +2876,7 @@
   },
   "Provenance": {
     "claims": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2826,6 +2890,7 @@
       "required": false
     },
     "facts": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2839,6 +2904,7 @@
       "required": false
     },
     "scenarios": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2852,6 +2918,7 @@
       "required": false
     },
     "sources": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2867,6 +2934,7 @@
   },
   "Quantity": {
     "magnitude": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2880,6 +2948,7 @@
       "required": true
     },
     "units": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2895,6 +2964,7 @@
   },
   "Query": {
     "duplicates": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2908,6 +2978,7 @@
       "required": true
     },
     "filter": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2921,6 +2992,7 @@
       "required": false
     },
     "projection": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2934,6 +3006,7 @@
       "required": true
     },
     "starting_at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2947,6 +3020,7 @@
       "required": true
     },
     "steps": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -2962,6 +3036,7 @@
   },
   "RandomStream": {
     "identifier": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2975,6 +3050,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2990,6 +3066,7 @@
   },
   "Reconciliation": {
     "method": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3003,6 +3080,7 @@
       "required": false
     },
     "selected": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3016,6 +3094,7 @@
       "required": true
     },
     "status": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3031,6 +3110,7 @@
   },
   "Reference": {
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3046,6 +3126,7 @@
   },
   "Relationship": {
     "characteristics": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3059,6 +3140,7 @@
       "required": false
     },
     "classification": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3072,6 +3154,7 @@
       "required": true
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3085,6 +3168,7 @@
       "required": true
     },
     "source": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3098,6 +3182,7 @@
       "required": true
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3113,6 +3198,7 @@
   },
   "Report": {
     "diagnostics": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3125,20 +3211,22 @@
       "ordered": false,
       "required": false
     },
-    "outcomes": {
+    "rule_evidence": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
       "options": [
         {
           "category": "record",
-          "kind": "DecisionOutcome"
+          "kind": "RuleEvidence"
         }
       ],
       "ordered": true,
       "required": false
     },
     "runtime": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3152,6 +3240,7 @@
       "required": false
     },
     "status": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3165,6 +3254,7 @@
       "required": true
     },
     "trace": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3180,6 +3270,7 @@
   },
   "Rule": {
     "actions": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3193,6 +3284,7 @@
       "required": true
     },
     "condition": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3206,6 +3298,7 @@
       "required": true
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3219,8 +3312,153 @@
       "required": true
     }
   },
+  "RuleEvidence": {
+    "assignments": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Assignment"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "at": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "decision": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "observations": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "ObservedQuantity"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "rule": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "terminated": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "boolean"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "termination_reason": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    }
+  },
+  "RuleSet": {
+    "decisions": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Decision"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "id": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "targets": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Reference"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    }
+  },
   "Run": {
     "metadata": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3234,6 +3472,7 @@
       "required": true
     },
     "outputs": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3247,6 +3486,7 @@
       "required": false
     },
     "report": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3260,6 +3500,7 @@
       "required": true
     },
     "spawns": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3273,6 +3514,7 @@
       "required": false
     },
     "specification": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3288,6 +3530,7 @@
   },
   "Runtime": {
     "finished_at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3301,6 +3544,7 @@
       "required": false
     },
     "implementations": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3314,6 +3558,7 @@
       "required": true
     },
     "settings": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3327,6 +3572,7 @@
       "required": false
     },
     "started_at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3342,6 +3588,7 @@
   },
   "ScenarioParameter": {
     "distribution": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3355,6 +3602,7 @@
       "required": false
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3368,6 +3616,7 @@
       "required": true
     },
     "quantity": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3383,6 +3632,7 @@
   },
   "ScenarioPlan": {
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3396,6 +3646,7 @@
       "required": true
     },
     "method": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3409,6 +3660,7 @@
       "required": true
     },
     "parameters": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3422,6 +3674,7 @@
       "required": true
     },
     "periods": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3435,6 +3688,7 @@
       "required": true
     },
     "seed": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3450,6 +3704,7 @@
   },
   "ScenarioRealization": {
     "availability": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3463,6 +3718,7 @@
       "required": true
     },
     "calculation": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3476,6 +3732,7 @@
       "required": false
     },
     "generator": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3489,6 +3746,7 @@
       "required": true
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3502,6 +3760,7 @@
       "required": true
     },
     "inputs": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3515,6 +3774,7 @@
       "required": true
     },
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3528,6 +3788,7 @@
       "required": true
     },
     "outputs": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3541,6 +3802,7 @@
       "required": true
     },
     "plan": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3554,6 +3816,7 @@
       "required": true
     },
     "streams": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3567,6 +3830,7 @@
       "required": true
     },
     "versions": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -3582,6 +3846,7 @@
   },
   "Selection": {
     "base": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3595,6 +3860,7 @@
       "required": true
     },
     "index": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3608,6 +3874,7 @@
       "required": false
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3621,6 +3888,7 @@
       "required": true
     },
     "member": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3636,6 +3904,7 @@
   },
   "Settings": {
     "constraint_limit": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3649,6 +3918,7 @@
       "required": false
     },
     "iteration_limit": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3662,6 +3932,7 @@
       "required": false
     },
     "relative_tolerance": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3675,6 +3946,7 @@
       "required": false
     },
     "symbol_limit": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3688,6 +3960,7 @@
       "required": false
     },
     "time_limit": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3703,6 +3976,7 @@
   },
   "Source": {
     "author": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3716,6 +3990,7 @@
       "required": false
     },
     "checksum": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3729,6 +4004,7 @@
       "required": true
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3742,6 +4018,7 @@
       "required": true
     },
     "issued_at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3759,6 +4036,7 @@
       "required": false
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3772,6 +4050,7 @@
       "required": true
     },
     "received_at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3791,6 +4070,7 @@
   },
   "Span": {
     "end": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3804,6 +4084,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -3817,6 +4098,7 @@
       "required": false
     },
     "start": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3832,6 +4114,7 @@
   },
   "Specification": {
     "assignments": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3845,6 +4128,7 @@
       "required": false
     },
     "cases": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3858,6 +4142,7 @@
       "required": false
     },
     "estimates": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3871,6 +4156,7 @@
       "required": false
     },
     "formulations": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3884,6 +4170,7 @@
       "required": false
     },
     "includes": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3897,6 +4184,7 @@
       "required": false
     },
     "metadata": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3910,6 +4198,7 @@
       "required": true
     },
     "model": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3923,6 +4212,7 @@
       "required": false
     },
     "objectives": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3935,20 +4225,22 @@
       "ordered": true,
       "required": false
     },
-    "policy": {
+    "rules": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
       "options": [
         {
           "category": "record",
-          "kind": "Policy"
+          "kind": "RuleSet"
         }
       ],
       "ordered": false,
       "required": false
     },
     "settings": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3962,6 +4254,7 @@
       "required": false
     },
     "unknowns": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -3977,6 +4270,7 @@
   },
   "Status": {
     "completion": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3990,6 +4284,7 @@
       "required": true
     },
     "solution": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4005,6 +4300,7 @@
   },
   "Step": {
     "at": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -4018,6 +4314,7 @@
       "required": false
     },
     "document": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4031,6 +4328,7 @@
       "required": false
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4044,6 +4342,7 @@
       "required": true
     },
     "message": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4057,6 +4356,7 @@
       "required": true
     },
     "target": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -4072,6 +4372,7 @@
   },
   "System": {
     "assemblies": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -4085,6 +4386,7 @@
       "required": false
     },
     "entities": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -4098,6 +4400,7 @@
       "required": false
     },
     "formulations": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -4111,6 +4414,7 @@
       "required": false
     },
     "relationships": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": true,
@@ -4126,6 +4430,7 @@
   },
   "Taxonomy": {
     "classifications": {
+      "lineage": false,
       "many": true,
       "mapping": false,
       "nullable": false,
@@ -4139,6 +4444,7 @@
       "required": true
     },
     "code": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4152,6 +4458,7 @@
       "required": true
     },
     "definition": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -4165,6 +4472,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4178,6 +4486,7 @@
       "required": true
     },
     "name": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4193,6 +4502,7 @@
   },
   "Traversal": {
     "classification": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4206,6 +4516,7 @@
       "required": false
     },
     "depth": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4219,6 +4530,7 @@
       "required": true
     },
     "direction": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4232,6 +4544,7 @@
       "required": false
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4247,6 +4560,7 @@
   },
   "Value": {
     "content": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -4260,6 +4574,7 @@
       "required": false
     },
     "description": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -4273,6 +4588,7 @@
       "required": false
     },
     "flow": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -4286,6 +4602,7 @@
       "required": false
     },
     "id": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4299,6 +4616,7 @@
       "required": true
     },
     "key": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4312,6 +4630,7 @@
       "required": true
     },
     "kind": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -4325,6 +4644,7 @@
       "required": true
     },
     "measure": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,
@@ -4338,6 +4658,7 @@
       "required": false
     },
     "quantity": {
+      "lineage": false,
       "many": false,
       "mapping": false,
       "nullable": true,

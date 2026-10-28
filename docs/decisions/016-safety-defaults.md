@@ -54,7 +54,8 @@ never reports a unit mismatch as an unsupported capability.
 
 ### Diagnostics
 
-- A `DiagnosticCode` enum gives the code for each diagnostic.
+- An enum gives the code for each diagnostic. It is `rangekeeper.errors.Code`
+  (walkthrough decision D26), not `DiagnosticCode`.
 - Diagnostics carry structured fields: targets, values and evidence.
 - Messages name objects by code or key and by UUID.
 - The library never parses message text.

@@ -77,7 +77,7 @@ public static class Validator
                             continue;
                         }
                         var reference = options.FirstOrDefault(o => o!["category"]!.GetValue<string>() == "uuid" && o["kind"]!.GetValue<string>() != "UUID");
-                        if (reference is not null && !(kind == "Metadata" && field.Key == "previous")) references.Add((Guid.Parse(scalar.GetValue<string>()), options.Where(o => o!["category"]!.GetValue<string>() == "uuid").Select(o => o!["kind"]!.GetValue<string>()).ToArray(), element.Path));
+                        if (reference is not null && !slot["lineage"]!.GetValue<bool>()) references.Add((Guid.Parse(scalar.GetValue<string>()), options.Where(o => o!["category"]!.GetValue<string>() == "uuid").Select(o => o!["kind"]!.GetValue<string>()).ToArray(), element.Path));
                     }
                 }
             }
