@@ -298,8 +298,31 @@ contributors of its subtree.
   RollupResult equals `execute(hierarchy)` when `only` is None.
 
 An Entity has one Classification. When `only` and `by` come from different
-Taxonomies, no Entity matches both, so the class columns are empty. Labels are not
-read.
+Taxonomies, no Entity matches both, so the class columns are empty.
+
+### Columns by a label key
+
+`label="use"` splits the columns by a Label key instead of the Entity's
+Classification ([ADR-017](../decisions/017-api-and-formats.md)):
+
+```python
+gfa = QuantityRollup(key="gfa", units="m^2")
+by_use = gfa.pivot(buildings, label="use")  # columns: residential, hotel, retail
+by_use.value(building_a_id, hotel_id)
+by_use.partition(building_a_id)  # overlap, uncovered, outside
+```
+
+- A column holds the Entities whose Label with that key includes the column's
+  Classification or, unless `exclusive`, one of its sub-types.
+- A Label can include several Classifications, so an Entity can be in several
+  sibling columns. `partition` reports it in `overlap`. An Entity without the
+  Label is in no column: `partition` reports it in `uncovered`.
+- Without `by`, the columns start at the root of the one Taxonomy whose
+  Classifications the rows' Labels with that key use. Labels that use several
+  Taxonomies raise `AggregationError`; pass `by` to choose. When no row has the
+  Label, the pivot has the "All" column alone.
+- `only` still tests the Entity's Classification. `Pivot.label` records the key;
+  it is None for Classification columns.
 
 `PivotColumn(classification, parent, depth, result)` describes one column.
 The "All" column has depth 0 and no parent. A `parent` of None on a depth-1 column
