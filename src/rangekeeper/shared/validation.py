@@ -10,6 +10,7 @@ from typing import TypeVar
 from uuid import UUID
 
 from rangekeeper.schema.runtime import Record
+from rangekeeper.shared import pointer
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import ContractError
 
@@ -42,7 +43,6 @@ def require_unique(
     once and never changed. ``path`` is the collection's JSON Pointer.
     """
     seen = set()
-    token = field.replace("~", "~0").replace("/", "~1")
     for index, record in enumerate(records):
         value = record.get(field)
         if value is not None:
@@ -50,9 +50,30 @@ def require_unique(
                 value not in seen,
                 f"duplicate {label}: {value}",
                 code="semantic.unique",
-                path=f"{path}/{index}/{token}",
+                path=pointer.child(path, index, field),
             )
             seen.add(value)
+
+
+def require_new(
+    identities: set,
+    identity: Hashable,
+    *,
+    label: str = "identity",
+    path: str = "",
+) -> None:
+    """Add one declared identity to ``identities``; reject an identity seen before.
+
+    This is the one duplicate-identity check. Callers own the scope of
+    ``identities``, for example one document or one composition.
+    """
+    require(
+        identity not in identities,
+        f"duplicate {label}: {identity}",
+        code="semantic.identity",
+        path=path,
+    )
+    identities.add(identity)
 
 
 def require_acyclic(
@@ -92,7 +113,7 @@ def require_ownership(document: object, *, path: str = "") -> None:
     MUST exclude opaque payloads first (for example Claim.content). Typed record
     traversal belongs to the domain index, not this generic dict/list check.
     """
-    identities = set()
+    identities: set[Hashable] = set()
     active: set[int] = set()
 
     def visit(node, current: str) -> None:
@@ -108,20 +129,12 @@ def require_ownership(document: object, *, path: str = "") -> None:
         children: Iterable[tuple[object, object]]
         if isinstance(node, Mapping):
             if "id" in node:
-                identity = node["id"]
-                require(
-                    identity not in identities,
-                    f"duplicate identity: {identity}",
-                    code="semantic.identity",
-                    path=current + "/id",
-                )
-                identities.add(identity)
+                require_new(identities, node["id"], path=current + "/id")
             children = node.items()
         else:
             children = enumerate(node)
-        for key, child in children:
-            token = str(key).replace("~", "~0").replace("/", "~1")
-            visit(child, current + "/" + token)
+        for key, value in children:
+            visit(value, pointer.child(current, key))
         active.remove(id(node))
 
     visit(document, path)
@@ -135,14 +148,7 @@ def require_declarations(documents):
     for kind, data in documents:
         for record, path in walk_data(kind, data):
             if "id" in record:
-                identity = record["id"]
-                require(
-                    identity not in identities,
-                    f"duplicate identity: {identity}",
-                    code="semantic.identity",
-                    path=path + "/id",
-                )
-                identities.add(identity)
+                require_new(identities, record["id"], path=path + "/id")
     return identities
 
 

@@ -12,6 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.protocols import Validator
 from jsonschema.validators import extend
 
+from rangekeeper.shared import pointer
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 
 
@@ -170,10 +171,7 @@ def _validate_json(kind: str, data: object) -> ValidationReport:
     """Check an already detached JSON tree at the internal record boundary."""
     issues = []
     for schema_error in _validator(kind).iter_errors(data):
-        path = "".join(
-            "/" + str(part).replace("~", "~0").replace("/", "~1")
-            for part in schema_error.absolute_path
-        )
+        path = pointer.child("", *schema_error.absolute_path)
         issues.append(
             Issue(
                 f"structure.{schema_error.validator}", schema_error.message, path=path

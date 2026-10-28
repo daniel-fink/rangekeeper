@@ -13,7 +13,7 @@ from rangekeeper.model.expression.domains import (
 )
 from rangekeeper.model.scope import Scope, resolve_reference
 from rangekeeper.shared.errors import ContractError
-from rangekeeper.shared.validation import require
+from rangekeeper.shared.validation import require, require_new
 
 
 def validate_function_signature(function, *, scope: Scope) -> None:
@@ -116,8 +116,7 @@ def infer_query_domain(query, *, scope: Scope) -> dict:
 
 def _infer_expression_domain(node, seen, *, scope: Scope, analysis, path) -> dict:
     """Validate one expression tree and infer its coarse domain without evaluating it."""
-    require(UUID(node["id"]) not in seen, "duplicate Expression identity")
-    seen.add(UUID(node["id"]))
+    require_new(seen, UUID(node["id"]), label="Expression identity")
     kind = node["kind"]
     if kind == "quantity":
         import math
@@ -209,14 +208,12 @@ def _require_constraint_identities(constraints, *, scope: Scope) -> set[UUID]:
     """Reserve Constraint declarations before walking the combined expression scope."""
     seen = set(scope.identities)
     for index, constraint in enumerate(constraints):
-        identity = UUID(constraint["id"])
-        require(
-            identity not in seen,
-            "duplicate Constraint identity",
-            code="semantic.identity",
+        require_new(
+            seen,
+            UUID(constraint["id"]),
+            label="Constraint identity",
             path=f"/constraints/{index}/id",
         )
-        seen.add(identity)
     return seen
 
 
