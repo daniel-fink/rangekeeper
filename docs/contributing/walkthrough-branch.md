@@ -34,14 +34,33 @@ Do not change the bytes of the shared source capture in
 A change to a teaching assumption needs a matching change to its manifest entry
 and its origin in `origins.json`.
 
-## Publish the book
+## Publish the site
 
-Code and lesson merges do not publish the book. Keep the Pages source and
-`gh-pages` unchanged while the book is in progress. When the book is ready:
+Code and lesson merges do not publish the book or the docs site. Keep the Pages
+source and `gh-pages` unchanged while the book is in progress. Today `gh-pages`
+holds the earlier book at its root.
 
-1. Execute and validate the lessons, then convert them and check the local
-   preview of the docs site.
-2. Publish the reviewed HTML to `gh-pages` as a separate, explicit action.
+Zensical's fork of mike publishes each release line in its own folder, `/1.0/`
+from `develop` and `/0.8/` from `support/0.8`. It also writes `versions.json`,
+which the version selector reads. Publication needs explicit approval. When
+the book is ready:
+
+1. Execute and validate the lessons, then check the local
+   [preview of the docs site](README.md#docs-site).
+2. With approval, stage the pages and commit the version to a local `gh-pages`.
+   From the repository root:
+
+   ```sh
+   uv sync --locked --all-extras --group versions
+   uv run --locked --no-sync python tools/docs/site.py stage
+   uv run --locked --no-sync mike deploy 1.0
+   ```
+
+   `mike serve` shows the local `gh-pages` with its version selector. A
+   `mike deploy` without `--push` changes only the local branch.
+3. Push `gh-pages` as a separate, explicit action. The root redirect
+   (`mike set-default`) replaces the earlier book at the root; decide it with the
+   `/0.8/` site ([#72](https://github.com/daniel-fink/rangekeeper/issues/72)).
 
 ## History
 

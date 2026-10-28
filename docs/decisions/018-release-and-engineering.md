@@ -1,6 +1,6 @@
 # ADR-018: Release lines, versioning and engineering practice
 
-Status: accepted for 1.0; release lines, pre-releases, versions, changelog and CI implemented (1.0.0a1, 1.0.0a2); docs site pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; release lines, pre-releases, versions, changelog and CI implemented (1.0.0a1, 1.0.0a2); docs site build implemented (#191), publication pending. Recorded: 2026-10-26.
 
 ## Problem
 

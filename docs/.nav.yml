@@ -1,0 +1,13 @@
+# Site navigation for Zensical (awesome-nav). tools/docs/site.py generates the
+# walkthrough/ and api/ folders.
+nav:
+  - Home: README.md
+  - Walkthrough: walkthrough
+  - Guides: guides
+  - Concepts: concepts
+  - Reference: reference
+  - API reference: api
+  - Decisions: decisions
+  - Contributing: contributing
+  - History: history
+  - Research: research

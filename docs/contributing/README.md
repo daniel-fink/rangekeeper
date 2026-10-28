@@ -54,7 +54,9 @@ independent .NET build.
 
 `pyproject.toml` declares compatible version ranges. Exact versions appear only
 in `uv.lock`. The `dev` group includes the `lint` and `notebook` groups;
-`ipykernel` is a notebook dependency, not a runtime dependency.
+`ipykernel` is a notebook dependency, not a runtime dependency. The `docs` group
+builds the [docs site](#docs-site); `versions` adds mike to publish it. They are
+not in `dev`.
 
 Import an optional dependency where the feature needs it, inside
 `rangekeeper.shared.optional.requires`. The resulting `ImportError` names the
@@ -156,6 +158,7 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 | `generated files` | `tools/schema/generate.py --check`, `check_generator.py`, `generate_csharp.py --check`, `verify_native.py` and `typecheck.py` in the pinned schema environment |
 | `dotnet` | Restores and builds the C# Model library and fixture runner in `examples/grasshopper` with the package version, then round-trips the cross-language fixtures through C# |
 | `docs` | `tools/docs/check.py` |
+| `site` | The strict [docs site](#docs-site) build: each lesson from a fresh kernel, then Zensical with the API reference. Fixture design data and four market paths. It does not publish |
 | `test` | The full suite with all extras, on Linux and macOS with Python 3.12 and 3.13, and on Windows with Python 3.13 |
 | `extra` | The wheel with no extra, then with each extra alone, on Python 3.12 without the lock file. `tools/ci/check_extra.py` imports every module, requires an installation hint for each failure, and runs a small operation of the extra |
 | `walkthrough` | The Geometry viewer asset manifest hashes, the helper tests, including charts, graph display, local display and the Speckle envelope, and the lesson checks, then each lesson from a fresh kernel and its conversion for the docs site, in the locked walkthrough environment. Fixture design data and four market paths |
@@ -163,9 +166,47 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 
 The test jobs skip no tests, and no test needs a display or network access. `-rs` lists any skips in the log.
 
-CI does not build the Grasshopper components, which need the Rhino assemblies,
-or the documentation site. Run those
-[verification](verification.md) procedures locally when the change affects them.
+CI does not build the Grasshopper components, which need the Rhino assemblies.
+Run that [verification](verification.md) procedure locally when the change
+affects them.
+
+## Docs site
+
+The docs site uses Zensical, with mkdocstrings for the API reference
+([ADR-018](../decisions/018-release-and-engineering.md#documentation-site)).
+[`zensical.toml`](../../zensical.toml) configures the site, and `docs/.nav.yml`
+gives the navigation. To preview the site, from the repository root:
+
+```sh
+uv run --locked --all-extras --group docs python tools/docs/site.py serve
+```
+
+Then open http://localhost:8000.
+[`tools/docs/site.py`](../../tools/docs/site.py) copies `docs/` to `_build/docs`
+and adds two generated parts:
+
+- `walkthrough/`: each lesson, run from a fresh kernel in the locked
+  [walkthrough environment](../guides/walkthroughs.md#explore-the-lessons), then
+  [converted](../guides/walkthroughs.md#convert-for-the-docs-site);
+- `api/`: one mkdocstrings page for each public module in `rangekeeper.__all__`.
+  The docstrings are the content, so write them for readers.
+
+A link from `docs/` to a lesson notebook goes to the lesson page. A link to
+another file outside `docs/` goes to the file on GitHub, at `develop` or at the
+ref that `--ref` gives. The files in `docs/` do not change.
+
+| Option | Effect |
+| --- | --- |
+| `serve` | Stage the pages and serve them. The preview reloads when the staged pages change; after you edit `docs/`, run the command again |
+| `build` | Stage the pages and run the strict build of the `site` CI job, to `_build/site` |
+| `stage` | Stage the pages only, for example before mike |
+| `--no-lessons` | Do not run the lessons; the walkthrough page links to the notebooks |
+| `--ref REF` | The git ref for links to files outside `docs/` |
+
+The lessons read `RK_DESIGN_MODE` and `RK_PATH_COUNT`; the CI job sets `fixture`
+and `4`. A build or preview does not publish the site. The
+[walkthrough procedure](walkthrough-branch.md#publish-the-site) gives the
+versioned publication.
 
 ## Layer rules
 
