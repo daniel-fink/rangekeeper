@@ -1,7 +1,8 @@
 # Contributing
 
 Start with [installation](../guides/installation.md) and the
-[architecture](../concepts/architecture.md). Follow
+[architecture](../concepts/architecture.md). [Make a change](change.md) gives
+the steps for one pull request; this page explains the tools. Follow
 [documentation upkeep](documentation.md) during every change. Use
 [verification](verification.md) to select checks for the affected contracts.
 

@@ -1,7 +1,8 @@
 # Contributing
 
 Follow the [code of conduct](CODE_OF_CONDUCT.md).
-See [the contributor guide](docs/contributing/README.md) for setup, code style, verification and documentation rules.
+See [the contributor guide](docs/contributing/README.md) for setup, code style, verification and documentation rules,
+and [make a change](docs/contributing/change.md) for the steps from a branch to a merged pull request.
 
 Agents and developers must apply the
 [documentation upkeep procedure](docs/contributing/documentation.md#routine-upkeep-for-agents-and-developers)
