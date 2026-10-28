@@ -43,3 +43,4 @@ for commands. [History](../history/README.md) explains the earlier sequencing.
 
 Add new dated evidence as a new folder with its own README. Do not rewrite
 archived evidence.
+| [Record runtime costs — 2026-10-28](record-runtime-2026-10-28/README.md) | Construction, replacement, decoding and field access of generated records, before and after each ADR-011 runtime change. |
