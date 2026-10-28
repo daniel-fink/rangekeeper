@@ -29,6 +29,7 @@
     "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.flow.Movement",
     "revise": "method (self, update: rangekeeper.model.update.Update) -> Model",
     "source": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Source",
+    "specify": "method (self, *, name: str | None = None, description: str | None = None) -> Specification",
     "system": "property",
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
@@ -75,11 +76,11 @@
   "Specification": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, record: rangekeeper.schema.records.Specification) -> None",
+    "__init__": "method (self, record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
-    "fix": "method (self, target: UUID | Reference, quantity: Quantity | Mapping[UUID, Quantity] | None = None, *, id: uuid.UUID, model: Model, ids: Sequence[UUID] | None = None, recorded: bool = False, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> Specification",
-    "free": "method (self, target: UUID | Reference, *, id: uuid.UUID, model: Model, ids: Sequence[UUID] | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> Specification",
+    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | Mapping[UUID, Quantity]] | None = None, /, **values: Quantity | Mapping[UUID, Quantity]) -> Specification",
+    "free": "method (self, *targets: str | UUID | Reference) -> Specification",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Specification",
     "id": "property",
     "metadata": "property",
@@ -89,7 +90,7 @@
     "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
    "module": "rangekeeper.specification.specification",
-   "signature": "(record: rangekeeper.schema.records.Specification) -> None"
+   "signature": "(record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None"
   },
   "duration": {
    "kind": "module",
@@ -1393,6 +1394,7 @@
     "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.flow.Movement",
     "revise": "method (self, update: rangekeeper.model.update.Update) -> Model",
     "source": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Source",
+    "specify": "method (self, *, name: str | None = None, description: str | None = None) -> Specification",
     "system": "property",
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
@@ -2363,11 +2365,11 @@
   "Specification": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, record: rangekeeper.schema.records.Specification) -> None",
+    "__init__": "method (self, record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
-    "fix": "method (self, target: UUID | Reference, quantity: Quantity | Mapping[UUID, Quantity] | None = None, *, id: uuid.UUID, model: Model, ids: Sequence[UUID] | None = None, recorded: bool = False, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> Specification",
-    "free": "method (self, target: UUID | Reference, *, id: uuid.UUID, model: Model, ids: Sequence[UUID] | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> Specification",
+    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | Mapping[UUID, Quantity]] | None = None, /, **values: Quantity | Mapping[UUID, Quantity]) -> Specification",
+    "free": "method (self, *targets: str | UUID | Reference) -> Specification",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Specification",
     "id": "property",
     "metadata": "property",
@@ -2377,7 +2379,7 @@
     "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
    "module": "rangekeeper.specification.specification",
-   "signature": "(record: rangekeeper.schema.records.Specification) -> None"
+   "signature": "(record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None"
   },
   "SpecificationRecord": {
    "kind": "class",

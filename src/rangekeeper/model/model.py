@@ -46,8 +46,13 @@ from rangekeeper.shared.references import SpecificationResolver
 
 if TYPE_CHECKING:
     from rangekeeper.model.draft import ModelDraft
+    from rangekeeper.specification import Specification
 
 K = TypeVar("K", Value, Label)
+
+# The Specification facade, which ``rangekeeper.specification`` registers when it
+# loads. That layer is above this one, so this module cannot import it (ADR-010).
+_SPECIFICATION: "type[Specification] | None" = None
 
 
 @dataclass(frozen=True, init=False, eq=False)
@@ -407,6 +412,46 @@ class Model:
         identity = self._keys.get((kind, owner, require_text(key, "key")))
         return None if identity is None else cast(K, self._index.records[identity])
 
+    def _value_at(self, path: str) -> Value:
+        """Return the Value at a key or a dotted path, such as ``building_a.income``.
+
+        A bare key must name one Value in the revision; a dotted path names the
+        code of its Entity or Assembly and then its key. No match raises
+        MissingReferenceError; several matches raise AmbiguousReferenceError
+        with their dotted paths.
+        """
+        text = require_text(path, "key")
+        if "." in text:
+            code, key = text.split(".", 1)
+            return self.value(owner=self.entity(code=code).id, key=key)
+        owners = [
+            owner
+            for kind, owner, key in self._keys
+            if kind is Value and key == text and owner is not None
+        ]
+        if len(owners) == 1:
+            return self._local(Value, owners[0], text)  # type: ignore[return-value]
+        if owners:
+            raise AmbiguousReferenceError(
+                text,
+                kind="Value",
+                by="key",
+                where=self._index.where,
+                candidates=[f"{self._path(owner)}.{text}" for owner in owners],
+            )
+        keys = sorted({key for kind, _, key in self._keys if kind is Value})
+        raise MissingReferenceError(
+            text,
+            kind="Value",
+            by="key",
+            where=self._index.where,
+            candidates=get_close_matches(text, keys, n=3),
+        )
+
+    def _path(self, owner: UUID) -> str:
+        """Return the code of an owner, or its UUID when it has no code."""
+        return getattr(self._index.records[owner], "code", None) or str(owner)
+
     def movement(self, id: UUID) -> Movement:
         """Resolve one Movement by identity, independently of matching keys."""
         return self._index.get(id, Movement)
@@ -499,3 +544,18 @@ class Model:
         from rangekeeper.model.draft import ModelDraft
 
         return ModelDraft._start(self, name=name, description=description)
+
+    def specify(
+        self,
+        *,
+        name: str | None = None,
+        description: str | None = None,
+    ) -> "Specification":
+        """Return a new Specification of this revision, with no roles yet.
+
+        The Specification pins this revision and keeps it, so that ``fix`` and
+        ``free`` find values by key. Its Metadata has a new UUID, the schema
+        version, and ``name`` and ``description`` when given.
+        """
+        assert _SPECIFICATION is not None  # rangekeeper imports specification
+        return _SPECIFICATION._start(self, name=name, description=description)

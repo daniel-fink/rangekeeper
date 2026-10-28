@@ -139,7 +139,8 @@ def forward_specification(model, ids):
                 for name in ("A_net", "A_annual", "B_net", "B_annual", "portfolio")
                 for r in unknown_flow(model, ids[name])
             ),
-        )
+        ),
+        model=model,
     )
 
 
@@ -156,17 +157,9 @@ def solve_example():
     solved = store.load_model(forward.record.outputs[0])
     assert solved.value(ids["portfolio"]).flow.movements[0].number == 2760
     reverse = forward_specification(solved, ids).fix(
-        ids["portfolio"],
-        Quantity(magnitude=2880, units="AUD"),
-        id=uuid4(),
-        model=solved,
+        {ids["portfolio"]: Quantity(magnitude=2880, units="AUD")}
     )
-    reverse = reverse.free(
-        ids["A_rent"],
-        ids=(solved.value(ids["A_rent"]).flow.movements[-1].id,),
-        id=uuid4(),
-        model=solved,
-    )
+    reverse = reverse.free(solved.value(ids["A_rent"]).flow.movements[-1].id)
     inverse = Executor(store).execute(reverse)
     assert inverse.report.status.solution is SolutionStatus.FEASIBLE, (
         inverse.report.to_data()
