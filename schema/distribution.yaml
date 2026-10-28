@@ -13,19 +13,26 @@ classes:
     description: Serializable distribution parameters, with explicit units; no live random generator.
     attributes:
       kind:
+        description: Distribution family, which is uniform, triangular or PERT.
         range: DistributionFamily
         required: true
       lower:
+        description: Finite lower bound of the support, in units.
         range: double
         required: true
       upper:
+        description: Finite upper bound of the support, in units; it is not less than lower.
         range: double
         required: true
       mode:
+        description: Finite most likely value, between lower and upper; semantic checks require it for
+          triangular and PERT.
         range: double
       weighting:
+        description: Finite nonnegative weighting of the mode in a PERT distribution; absence means 4.
         range: double
       units:
+        description: Units of lower, upper and mode.
         range: string
         required: true
 enums:

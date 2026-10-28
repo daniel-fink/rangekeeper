@@ -19,13 +19,16 @@ _LAZY_MODULES = frozenset(
         "finance",
         "io",
         "duration",
+        "errors",
         "execution",
         "flow",
         "quantity",
+        "profile",
+        "market",
     }
 )
 # Internal packages load on access but are not public (ADR-010).
-_INTERNAL = frozenset({"schema", "shared"})
+_INTERNAL = frozenset({"schema", "shared", "market", "profile"})
 __all__ = [
     "Model",
     "Specification",

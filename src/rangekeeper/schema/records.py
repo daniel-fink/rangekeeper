@@ -29,7 +29,7 @@ from .runtime import (
 )
 
 if TYPE_CHECKING:
-    from rangekeeper.finance._distribution import Distribution as _Distribution
+    from rangekeeper.profile import Distribution as _Distribution
     from rangekeeper.flow import Flow as _Flow
     from rangekeeper.flow import Movement as _Movement
     from rangekeeper.duration import Period as _Period
@@ -73,19 +73,22 @@ class Action(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False}}
+                      'ordered': False,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -122,17 +125,17 @@ class Action(Record):
 
     @property
     def kind(self) -> ActionKind:
-        'Kind.'
+        'Whether the action assigns a control or terminates the decision sequence.'
         return cast('ActionKind', _decode_enum(self._data.get('kind'), ActionKind))
 
     @property
     def target(self) -> Reference | None:
-        'Target.'
+        'Controlled target to assign; required for assign and absent for terminate.'
         return cast('Reference | None', self._child('target', Reference, False))
 
     @property
     def quantity(self) -> Quantity | None:
-        'Quantity.'
+        'Finite quantity to assign, with units compatible with the target; required for assign and absent for terminate.'
         return cast('Quantity | None', self._child('quantity', Quantity, False))
 
 
@@ -146,13 +149,15 @@ class Argument(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'expression': {'options': [{'kind': 'Expression', 'category': 'record'}],
                         'required': True,
                         'many': False,
                         'mapping': False,
                         'nullable': False,
-                        'ordered': False}}
+                        'ordered': False,
+                        'lineage': False}}
     )
 
     def __init__(self, *,
@@ -178,12 +183,12 @@ class Argument(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the Function parameter to which the argument binds.'
         return cast('str', self._data.get('name'))
 
     @property
     def expression(self) -> Expression:
-        'Expression.'
+        'Expression supplied for the parameter.'
         return cast('Expression', self._child('expression', Expression, False))
 
 
@@ -197,32 +202,37 @@ class Entity(Record):
                             'many': False,
                             'mapping': False,
                             'nullable': True,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
                 'required': True,
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'characteristics': {'options': [{'kind': 'Characteristics',
                                           'category': 'record'}],
                              'required': False,
                              'many': False,
                              'mapping': False,
                              'nullable': True,
-                             'ordered': False}}
+                             'ordered': False,
+                             'lineage': False}}
     )
 
     def __init__(self, *,
@@ -309,44 +319,51 @@ class Assembly(Entity):
                       'many': True,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'relationships': {'options': [{'kind': 'Relationship', 'category': 'uuid'}],
                            'required': False,
                            'many': True,
                            'mapping': False,
                            'nullable': True,
-                           'ordered': False},
+                           'ordered': False,
+                           'lineage': False},
          'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
                             'required': False,
                             'many': False,
                             'mapping': False,
                             'nullable': True,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
                 'required': True,
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'characteristics': {'options': [{'kind': 'Characteristics',
                                           'category': 'record'}],
                              'required': False,
                              'many': False,
                              'mapping': False,
                              'nullable': True,
-                             'ordered': False}}
+                             'ordered': False,
+                             'lineage': False}}
     )
 
     def __init__(self, *,
@@ -459,13 +476,15 @@ class Assignment(Record):
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
                       'required': True,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False}}
+                      'ordered': False,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -491,7 +510,7 @@ class Assignment(Record):
 
     @property
     def target(self) -> Reference:
-        'Target.'
+        'Value or Movement to which the quantity is supplied.'
         return cast('Reference', self._child('target', Reference, False))
 
     @property
@@ -510,13 +529,15 @@ class Binding(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'value': {'options': [{'kind': 'Value', 'category': 'uuid'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False}}
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -561,19 +582,22 @@ class CalculationProvenance(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'fingerprint': {'options': [{'kind': 'string', 'category': 'primitive'}],
                          'required': True,
                          'many': False,
                          'mapping': False,
                          'nullable': False,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'versions': {'options': [{'kind': 'LibraryVersion', 'category': 'record'}],
                       'required': True,
                       'many': True,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': True}}
+                      'ordered': True,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -604,17 +628,17 @@ class CalculationProvenance(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the calculation implementation.'
         return cast('str', self._data.get('name'))
 
     @property
     def fingerprint(self) -> str:
-        'Fingerprint.'
+        'Format-prefixed digest of the calculation manifest, which covers its sources, resources and dependency versions.'
         return cast('str', self._data.get('fingerprint'))
 
     @property
     def versions(self) -> tuple[LibraryVersion, ...]:
-        'Versions.'
+        'Dependency versions included in the fingerprint.'
         return cast('tuple[LibraryVersion, ...]', self._child('versions', LibraryVersion, True))
 
 
@@ -628,19 +652,22 @@ class Call(Record):
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'arguments': {'options': [{'kind': 'Expression', 'category': 'record'}],
                        'required': False,
                        'many': True,
                        'mapping': False,
                        'nullable': True,
-                       'ordered': True},
+                       'ordered': True,
+                       'lineage': False},
          'named_arguments': {'options': [{'kind': 'Argument', 'category': 'record'}],
                              'required': False,
                              'many': True,
                              'mapping': False,
                              'nullable': True,
-                             'ordered': True}}
+                             'ordered': True,
+                             'lineage': False}}
     )
 
     def __init__(self, *,
@@ -677,7 +704,7 @@ class Call(Record):
 
     @property
     def function(self) -> UUID:
-        'Function.'
+        'UUID of the Function that the call applies.'
         return cast('UUID', _decode_uuid(self._data.get('function')))
 
     @property
@@ -701,13 +728,15 @@ class Characteristics(Record):
                     'many': True,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'values': {'options': [{'kind': 'Value', 'category': 'record'}],
                     'required': False,
                     'many': True,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -758,32 +787,37 @@ class Claim(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'content': {'options': [{'kind': 'Content', 'category': 'opaque'}],
                      'required': True,
                      'many': False,
                      'mapping': False,
                      'nullable': True,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'kind': {'options': [{'kind': 'ClaimKind', 'category': 'enum'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'sources': {'options': [{'kind': 'Location', 'category': 'record'},
                                  {'kind': 'Claim', 'category': 'uuid'}],
                      'required': False,
                      'many': True,
                      'mapping': False,
                      'nullable': True,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'method': {'options': [{'kind': 'Method', 'category': 'record'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -830,17 +864,17 @@ class Claim(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Claim, referenced by Facts and by dependent Claims.'
         return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def content(self) -> FrozenJSONValue | None:
-        'Content.'
+        'Candidate content; its structure depends on the supported target.'
         return self._data.get('content')
 
     @property
     def kind(self) -> ClaimKind:
-        'Kind.'
+        'Whether the content is sourced, asserted or derived.'
         return cast('ClaimKind', _decode_enum(self._data.get('kind'), ClaimKind))
 
     @property
@@ -850,7 +884,7 @@ class Claim(Record):
 
     @property
     def method(self) -> Method | None:
-        'Method.'
+        'Process used to obtain the content; required for asserted and derived Claims.'
         return cast('Method | None', self._child('method', Method, False))
 
 
@@ -864,31 +898,36 @@ class Classification(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'definition': {'options': [{'kind': 'string', 'category': 'primitive'}],
                         'required': False,
                         'many': False,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'parent': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -969,31 +1008,36 @@ class Constraint(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'predicate': {'options': [{'kind': 'Expression', 'category': 'uuid'}],
                        'required': True,
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False}}
+                       'ordered': False,
+                       'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1068,7 +1112,7 @@ class Constraint(Record):
 
 
 class ContentEntry(Record):
-    'ContentEntry'
+    'One key-value entry of mapping content.'
     __slots__ = ()
     _kind = 'ContentEntry'
     _SLOTS = _freeze(
@@ -1077,13 +1121,15 @@ class ContentEntry(Record):
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'value': {'options': [{'kind': 'PropertyContent', 'category': 'record'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False}}
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1109,12 +1155,12 @@ class ContentEntry(Record):
 
     @property
     def key(self) -> PropertyContent:
-        'Key.'
+        'Content of the mapping key.'
         return cast('PropertyContent', self._child('key', PropertyContent, False))
 
     @property
     def value(self) -> PropertyContent:
-        'Value.'
+        'Content of the value for the key.'
         return cast('PropertyContent', self._child('value', PropertyContent, False))
 
 
@@ -1128,13 +1174,15 @@ class Criterion(Record):
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
                             'required': True,
                             'many': False,
                             'mapping': False,
                             'nullable': False,
-                            'ordered': False}}
+                            'ordered': False,
+                            'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1165,12 +1213,12 @@ class Criterion(Record):
 
     @property
     def classification(self) -> UUID:
-        'Classification.'
+        'UUID of the Classification that the Label must include.'
         return cast('UUID', _decode_uuid(self._data.get('classification')))
 
 
 class Decision(Record):
-    'One dated policy decision with explicit observations, first-match rules and fallback.'
+    'One dated rule decision with explicit observations, first-match rules and fallback.'
     __slots__ = ()
     _kind = 'Decision'
     _SLOTS = _freeze(
@@ -1179,32 +1227,37 @@ class Decision(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'at': {'options': [{'kind': 'date', 'category': 'primitive'}],
                 'required': True,
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'observations': {'options': [{'kind': 'ObservationBinding',
                                        'category': 'record'}],
                           'required': True,
                           'many': True,
                           'mapping': False,
                           'nullable': False,
-                          'ordered': True},
+                          'ordered': True,
+                          'lineage': False},
          'rules': {'options': [{'kind': 'Rule', 'category': 'record'}],
                    'required': True,
                    'many': True,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': True},
+                   'ordered': True,
+                   'lineage': False},
          'fallback': {'options': [{'kind': 'Action', 'category': 'record'}],
                       'required': True,
                       'many': True,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': True}}
+                      'ordered': True,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1245,167 +1298,28 @@ class Decision(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Decision, referenced by RuleEvidence.'
         return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def at(self) -> Date:
-        'At.'
+        'Decision date; dates increase strictly within the RuleSet.'
         return cast('Date', _decode_date(self._data.get('at')))
 
     @property
     def observations(self) -> tuple[ObservationBinding, ...]:
-        'Observations.'
+        'Ordered observations that the rule conditions can read.'
         return cast('tuple[ObservationBinding, ...]', self._child('observations', ObservationBinding, True))
 
     @property
     def rules(self) -> tuple[Rule, ...]:
-        'Rules.'
+        'Ordered rules; the first Rule whose condition is true supplies the actions.'
         return cast('tuple[Rule, ...]', self._child('rules', Rule, True))
 
     @property
     def fallback(self) -> tuple[Action, ...]:
-        'Fallback.'
+        'Nonempty ordered actions applied when no rule condition is true.'
         return cast('tuple[Action, ...]', self._child('fallback', Action, True))
-
-
-class DecisionOutcome(Record):
-    'Recorded outcome of one evaluated decision; absence of a rule means fallback.'
-    __slots__ = ()
-    _kind = 'DecisionOutcome'
-    _SLOTS = _freeze(
-        {'decision': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                      'required': True,
-                      'many': False,
-                      'mapping': False,
-                      'nullable': False,
-                      'ordered': False},
-         'at': {'options': [{'kind': 'date', 'category': 'primitive'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False},
-         'rule': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                  'required': False,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': True,
-                  'ordered': False},
-         'observations': {'options': [{'kind': 'ObservedQuantity',
-                                       'category': 'record'}],
-                          'required': True,
-                          'many': True,
-                          'mapping': False,
-                          'nullable': False,
-                          'ordered': True},
-         'assignments': {'options': [{'kind': 'Assignment', 'category': 'record'}],
-                         'required': True,
-                         'many': True,
-                         'mapping': False,
-                         'nullable': False,
-                         'ordered': True},
-         'terminated': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
-                        'required': True,
-                        'many': False,
-                        'mapping': False,
-                        'nullable': False,
-                        'ordered': False},
-         'termination_reason': {'options': [{'kind': 'string',
-                                             'category': 'primitive'}],
-                                'required': False,
-                                'many': False,
-                                'mapping': False,
-                                'nullable': True,
-                                'ordered': False}}
-    )
-
-    def __init__(self, *,
-        decision: UUID,
-        at: Date,
-        rule: UUID | None | Unset = UNSET,
-        observations: tuple[ObservedQuantity, ...],
-        assignments: tuple[Assignment, ...],
-        terminated: bool,
-        termination_reason: str | None | Unset = UNSET,
-    ) -> None:
-        data: dict[str, object] = {}
-        data['decision'] = _encode_uuid(decision)
-        data['at'] = _encode_date(at)
-        if rule is not UNSET:
-            data['rule'] = _encode_uuid(rule)
-        data['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
-        data['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
-        data['terminated'] = copy_json(terminated)
-        if termination_reason is not UNSET:
-            data['termination_reason'] = copy_json(termination_reason)
-        self._set_checked(data)
-
-    def replace(self, *,
-        decision: UUID | Unset = UNSET,
-        at: Date | Unset = UNSET,
-        rule: UUID | None | Unset | Omit = UNSET,
-        observations: tuple[ObservedQuantity, ...] | Unset = UNSET,
-        assignments: tuple[Assignment, ...] | Unset = UNSET,
-        terminated: bool | Unset = UNSET,
-        termination_reason: str | None | Unset | Omit = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if decision is not UNSET:
-            changes['decision'] = _encode_uuid(decision)
-        if at is not UNSET:
-            changes['at'] = _encode_date(at)
-        if rule is OMIT:
-            changes['rule'] = OMIT
-        elif rule is not UNSET:
-            changes['rule'] = _encode_uuid(rule)
-        if observations is not UNSET:
-            changes['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
-        if assignments is not UNSET:
-            changes['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
-        if terminated is not UNSET:
-            changes['terminated'] = copy_json(terminated)
-        if termination_reason is OMIT:
-            changes['termination_reason'] = OMIT
-        elif termination_reason is not UNSET:
-            changes['termination_reason'] = copy_json(termination_reason)
-        return self._replace(changes)
-
-    @property
-    def decision(self) -> UUID:
-        'Decision.'
-        return cast('UUID', _decode_uuid(self._data.get('decision')))
-
-    @property
-    def at(self) -> Date:
-        'At.'
-        return cast('Date', _decode_date(self._data.get('at')))
-
-    @property
-    def rule(self) -> UUID | None:
-        'Rule.'
-        return cast('UUID | None', _decode_uuid(self._data.get('rule')))
-
-    @property
-    def observations(self) -> tuple[ObservedQuantity, ...]:
-        'Observations.'
-        return cast('tuple[ObservedQuantity, ...]', self._child('observations', ObservedQuantity, True))
-
-    @property
-    def assignments(self) -> tuple[Assignment, ...]:
-        'Assignments.'
-        return cast('tuple[Assignment, ...]', self._child('assignments', Assignment, True))
-
-    @property
-    def terminated(self) -> bool:
-        'Terminated.'
-        return cast('bool', self._data.get('terminated'))
-
-    @property
-    def termination_reason(self) -> str | None:
-        'Reason for termination, required when terminated is true.'
-        return cast('str | None', self._data.get('termination_reason'))
 
 
 class Definitions(Record):
@@ -1418,19 +1332,22 @@ class Definitions(Record):
                         'many': True,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'measures': {'options': [{'kind': 'Measure', 'category': 'record'}],
                       'required': False,
                       'many': True,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'functions': {'options': [{'kind': 'Function', 'category': 'record'}],
                        'required': False,
                        'many': True,
                        'mapping': False,
                        'nullable': True,
-                       'ordered': False}}
+                       'ordered': False,
+                       'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1470,12 +1387,12 @@ class Definitions(Record):
 
     @property
     def taxonomies(self) -> tuple[Taxonomy, ...] | None:
-        'Taxonomies.'
+        'Taxonomies of this Model; codes are unique within the collection.'
         return cast('tuple[Taxonomy, ...] | None', self._child('taxonomies', Taxonomy, True))
 
     @property
     def measures(self) -> tuple[Measure, ...] | None:
-        'Measures.'
+        'Measures of this Model; codes are unique within the collection.'
         return cast('tuple[Measure, ...] | None', self._child('measures', Measure, True))
 
     @property
@@ -1494,49 +1411,57 @@ class Diagnostic(Record):
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'message': {'options': [{'kind': 'string', 'category': 'primitive'}],
                      'required': True,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'document': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'target': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'residual': {'options': [{'kind': 'Quantity', 'category': 'record'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'tolerance': {'options': [{'kind': 'Quantity', 'category': 'record'}],
                        'required': False,
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'references': {'options': [{'kind': 'Reference', 'category': 'record'}],
                         'required': False,
                         'many': True,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': True}}
+                        'ordered': True,
+                        'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1656,37 +1581,43 @@ class Distribution(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'lower': {'options': [{'kind': 'double', 'category': 'primitive'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'upper': {'options': [{'kind': 'double', 'category': 'primitive'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'mode': {'options': [{'kind': 'double', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'weighting': {'options': [{'kind': 'double', 'category': 'primitive'}],
                        'required': False,
                        'many': False,
                        'mapping': False,
                        'nullable': True,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False}}
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1738,32 +1669,32 @@ class Distribution(Record):
 
     @property
     def kind(self) -> DistributionFamily:
-        'Kind.'
+        'Distribution family, which is uniform, triangular or PERT.'
         return cast('DistributionFamily', _decode_enum(self._data.get('kind'), DistributionFamily))
 
     @property
     def lower(self) -> int | float:
-        'Lower.'
+        'Finite lower bound of the support, in units.'
         return cast('int | float', self._data.get('lower'))
 
     @property
     def upper(self) -> int | float:
-        'Upper.'
+        'Finite upper bound of the support, in units; it is not less than lower.'
         return cast('int | float', self._data.get('upper'))
 
     @property
     def mode(self) -> int | float | None:
-        'Mode.'
+        'Finite most likely value, between lower and upper; semantic checks require it for triangular and PERT.'
         return cast('int | float | None', self._data.get('mode'))
 
     @property
     def weighting(self) -> int | float | None:
-        'Weighting.'
+        'Finite nonnegative weighting of the mode in a PERT distribution; absence means 4.'
         return cast('int | float | None', self._data.get('weighting'))
 
     @property
     def units(self) -> str:
-        'Units.'
+        'Units of lower, upper and mode.'
         return cast('str', self._data.get('units'))
 
 
@@ -1777,32 +1708,37 @@ class Domain(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
                    'required': False,
                    'many': False,
                    'mapping': False,
                    'nullable': True,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'measure': {'options': [{'kind': 'Measure', 'category': 'uuid'}],
                      'required': False,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'item_domain': {'options': [{'kind': 'Domain', 'category': 'record'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': False,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'collection_kind': {'options': [{'kind': 'CollectionKind',
                                           'category': 'enum'}],
                              'required': False,
                              'many': False,
                              'mapping': False,
                              'nullable': False,
-                             'ordered': False}}
+                             'ordered': False,
+                             'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1889,13 +1825,15 @@ class Entry(Record):
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'value': {'options': [{'kind': 'string', 'category': 'primitive'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False}}
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -1921,12 +1859,12 @@ class Entry(Record):
 
     @property
     def key(self) -> str:
-        'Key.'
+        'Nonblank name of the address part, such as sheet or cell.'
         return cast('str', self._data.get('key'))
 
     @property
     def value(self) -> str:
-        'Value.'
+        'Nonblank text of the address part.'
         return cast('str', self._data.get('value'))
 
 
@@ -1940,67 +1878,78 @@ class Expression(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'kind': {'options': [{'kind': 'ExpressionKind', 'category': 'enum'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'boolean': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
                      'required': False,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'operator': {'options': [{'kind': 'Operator', 'category': 'enum'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'operands': {'options': [{'kind': 'Expression', 'category': 'record'}],
                       'required': False,
                       'many': True,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': True},
+                      'ordered': True,
+                      'lineage': False},
          'operand': {'options': [{'kind': 'Expression', 'category': 'record'}],
                      'required': False,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'call': {'options': [{'kind': 'Call', 'category': 'record'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'selection': {'options': [{'kind': 'Selection', 'category': 'record'}],
                        'required': False,
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'query': {'options': [{'kind': 'Query', 'category': 'record'}],
                    'required': False,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False}}
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2103,7 +2052,7 @@ class Expression(Record):
 
     @property
     def kind(self) -> ExpressionKind:
-        'Kind.'
+        'Form of the Expression; it determines which content field is present.'
         return cast('ExpressionKind', _decode_enum(self._data.get('kind'), ExpressionKind))
 
     @property
@@ -2123,7 +2072,7 @@ class Expression(Record):
 
     @property
     def operator(self) -> Operator | None:
-        'Operator.'
+        'Operator of a unary or binary Expression; absent for other kinds.'
         return cast('Operator | None', _decode_enum(self._data.get('operator'), Operator))
 
     @property
@@ -2138,17 +2087,17 @@ class Expression(Record):
 
     @property
     def call(self) -> Call | None:
-        'Call.'
+        'Function call content of a call Expression.'
         return cast('Call | None', self._child('call', Call, False))
 
     @property
     def selection(self) -> Selection | None:
-        'Selection.'
+        'Member or index selection content of a selection Expression.'
         return cast('Selection | None', self._child('selection', Selection, False))
 
     @property
     def query(self) -> Query | None:
-        'Query.'
+        'Embedded graph query of a query Expression; the Expression owns it.'
         return cast('Query | None', self._child('query', Query, False))
 
 
@@ -2165,20 +2114,23 @@ class Fact(Record):
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'claims': {'options': [{'kind': 'Claim', 'category': 'uuid'}],
                     'required': True,
                     'many': True,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'reconciliation': {'options': [{'kind': 'Reconciliation',
                                          'category': 'record'}],
                             'required': False,
                             'many': False,
                             'mapping': False,
                             'nullable': True,
-                            'ordered': False}}
+                            'ordered': False,
+                            'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2222,7 +2174,7 @@ class Fact(Record):
 
     @property
     def reconciliation(self) -> Reconciliation | None:
-        'Reconciliation.'
+        'Optional explicit selection of one supporting Claim when the Claims conflict.'
         return cast('Reconciliation | None', self._child('reconciliation', Reconciliation, False))
 
 
@@ -2236,13 +2188,15 @@ class Filter(Record):
                             'many': False,
                             'mapping': False,
                             'nullable': False,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'labels': {'options': [{'kind': 'Criterion', 'category': 'record'}],
                     'required': False,
                     'many': True,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': True}}
+                    'ordered': True,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2274,7 +2228,7 @@ class Filter(Record):
 
     @property
     def classification(self) -> UUID | None:
-        'Classification.'
+        'Exact Classification that a candidate Entity must have; taxonomy descendants do not match.'
         return cast('UUID | None', _decode_uuid(self._data.get('classification')))
 
     @property
@@ -2293,13 +2247,15 @@ class Flow(Record):
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'movements': {'options': [{'kind': 'Movement', 'category': 'record'}],
                        'required': True,
                        'many': True,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': True}}
+                       'ordered': True,
+                       'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2325,12 +2281,12 @@ class Flow(Record):
 
     @property
     def units(self) -> str:
-        'Units.'
+        'Units of every Movement magnitude in this Flow.'
         return cast('str', self._data.get('units'))
 
     @property
     def movements(self) -> tuple[_Movement, ...]:
-        'Movements.'
+        'Ordered Movements; an empty list is a Flow with no entries.'
         return cast('tuple[_Movement, ...]', self._child('movements', Movement, True))
 
 
@@ -2344,55 +2300,64 @@ class Formulation(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'bindings': {'options': [{'kind': 'Binding', 'category': 'record'}],
                       'required': False,
                       'many': True,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'values': {'options': [{'kind': 'Value', 'category': 'record'}],
                     'required': False,
                     'many': True,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'expressions': {'options': [{'kind': 'Expression', 'category': 'record'}],
                          'required': False,
                          'many': True,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'constraints': {'options': [{'kind': 'Constraint', 'category': 'record'}],
                          'required': False,
                          'many': True,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'formulations': {'options': [{'kind': 'Formulation', 'category': 'record'}],
                           'required': False,
                           'many': True,
                           'mapping': False,
                           'nullable': True,
-                          'ordered': False}}
+                          'ordered': False,
+                          'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2531,56 +2496,65 @@ class Function(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'version': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                      'required': True,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'parameters': {'options': [{'kind': 'Parameter', 'category': 'record'}],
                         'required': False,
                         'many': True,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': True},
+                        'ordered': True,
+                        'lineage': False},
          'result': {'options': [{'kind': 'Domain', 'category': 'record'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'semantics': {'options': [{'kind': 'string', 'category': 'primitive'}],
                        'required': True,
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'unit_rule': {'options': [{'kind': 'string', 'category': 'primitive'}],
                        'required': True,
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'empty_collection': {'options': [{'kind': 'EmptyHandling',
                                            'category': 'enum'}],
                               'required': False,
                               'many': False,
                               'mapping': False,
                               'nullable': False,
-                              'ordered': False}}
+                              'ordered': False,
+                              'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2647,12 +2621,12 @@ class Function(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Function, referenced by calls.'
         return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def code(self) -> str:
-        'Code.'
+        'Case-sensitive code unique within the Model Function collection; not reference identity.'
         return cast('str', self._data.get('code'))
 
     @property
@@ -2662,7 +2636,7 @@ class Function(Record):
 
     @property
     def version(self) -> str:
-        'Version.'
+        'Version of this Function contract.'
         return cast('str', self._data.get('version'))
 
     @property
@@ -2701,13 +2675,15 @@ class Geometry(Record):
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'mappings': {'options': [{'kind': 'GeometryMapping', 'category': 'record'}],
                       'required': False,
                       'many': True,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False}}
+                      'ordered': False,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2736,12 +2712,12 @@ class Geometry(Record):
 
     @property
     def pin(self) -> GeometryPin:
-        'Pin.'
+        'Exact pin of the provider dataset that this Model owns.'
         return cast('GeometryPin', self._child('pin', GeometryPin, False))
 
     @property
     def mappings(self) -> tuple[GeometryMapping, ...] | None:
-        'Mappings.'
+        'Associations of Entities or Assemblies with typed source elements in the pinned dataset.'
         return cast('tuple[GeometryMapping, ...] | None', self._child('mappings', GeometryMapping, True))
 
 
@@ -2755,31 +2731,36 @@ class GeometryElement(Record):
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'kind': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
                  'required': True,
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'scope': {'options': [{'kind': 'string', 'category': 'primitive'}],
                    'required': False,
                    'many': False,
                    'mapping': False,
                    'nullable': True,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'placement': {'options': [{'kind': 'string', 'category': 'primitive'}],
                        'required': False,
                        'many': True,
                        'mapping': False,
                        'nullable': True,
-                       'ordered': True}}
+                       'ordered': True,
+                       'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2826,27 +2807,27 @@ class GeometryElement(Record):
 
     @property
     def namespace(self) -> str:
-        'Namespace.'
+        'Provider-defined namespace of the element key.'
         return cast('str', self._data.get('namespace'))
 
     @property
     def kind(self) -> str:
-        'Kind.'
+        'Element kind; RK accepts object or group.'
         return cast('str', self._data.get('kind'))
 
     @property
     def key(self) -> str:
-        'Key.'
+        'Nonempty provider-defined identifier of the element in its namespace.'
         return cast('str', self._data.get('key'))
 
     @property
     def scope(self) -> str | None:
-        'Scope.'
+        'Optional provider-defined scope that qualifies the key.'
         return cast('str | None', self._data.get('scope'))
 
     @property
     def placement(self) -> tuple[str, ...] | None:
-        'Placement.'
+        'Optional ordered placement path that selects one placement of the element.'
         return cast('tuple[str, ...] | None', self._data.get('placement', ()))
 
 
@@ -2860,19 +2841,22 @@ class GeometryFile(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'sha256': {'options': [{'kind': 'string', 'category': 'primitive'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'size': {'options': [{'kind': 'integer', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False}}
+                  'ordered': False,
+                  'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2903,17 +2887,17 @@ class GeometryFile(Record):
 
     @property
     def path(self) -> str:
-        'Path.'
+        'Relative POSIX path under the Geometry root, without empty, dot or parent segments.'
         return cast('str', self._data.get('path'))
 
     @property
     def sha256(self) -> str:
-        'Sha256.'
+        'Lowercase hexadecimal SHA-256 digest of the file bytes.'
         return cast('str', self._data.get('sha256'))
 
     @property
     def size(self) -> int:
-        'Size.'
+        'File size in bytes.'
         return cast('int', self._data.get('size'))
 
 
@@ -2927,13 +2911,15 @@ class GeometryMapping(Record):
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'element': {'options': [{'kind': 'GeometryElement', 'category': 'record'}],
                      'required': True,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False}}
+                     'ordered': False,
+                     'lineage': False}}
     )
 
     def __init__(self, *,
@@ -2959,12 +2945,12 @@ class GeometryMapping(Record):
 
     @property
     def entity(self) -> UUID:
-        'Entity.'
+        'UUID of the mapped Entity or Assembly in this Model.'
         return cast('UUID', _decode_uuid(self._data.get('entity')))
 
     @property
     def element(self) -> GeometryElement:
-        'Element.'
+        'Typed source element in the pinned dataset that corresponds to the Entity.'
         return cast('GeometryElement', self._child('element', GeometryElement, False))
 
 
@@ -2978,56 +2964,65 @@ class GeometryPin(Record):
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'format': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'format_version': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                             'required': True,
                             'many': False,
                             'mapping': False,
                             'nullable': False,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'specification': {'options': [{'kind': 'string', 'category': 'primitive'}],
                            'required': True,
                            'many': False,
                            'mapping': False,
                            'nullable': False,
-                           'ordered': False},
+                           'ordered': False,
+                           'lineage': False},
          'specification_digest': {'options': [{'kind': 'string',
                                                'category': 'primitive'}],
                                   'required': True,
                                   'many': False,
                                   'mapping': False,
                                   'nullable': False,
-                                  'ordered': False},
+                                  'ordered': False,
+                                  'lineage': False},
          'content_digest': {'options': [{'kind': 'string', 'category': 'primitive'}],
                             'required': True,
                             'many': False,
                             'mapping': False,
                             'nullable': False,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'files': {'options': [{'kind': 'GeometryFile', 'category': 'record'}],
                    'required': True,
                    'many': True,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'source_address': {'options': [{'kind': 'string', 'category': 'primitive'}],
                             'required': False,
                             'many': False,
                             'mapping': False,
                             'nullable': True,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'source_version': {'options': [{'kind': 'string', 'category': 'primitive'}],
                             'required': False,
                             'many': False,
                             'mapping': False,
                             'nullable': True,
-                            'ordered': False}}
+                            'ordered': False,
+                            'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3094,17 +3089,17 @@ class GeometryPin(Record):
 
     @property
     def provider(self) -> str:
-        'Provider.'
+        'Code that names the Geometry provider; with format and format_version, it selects the provider adapter.'
         return cast('str', self._data.get('provider'))
 
     @property
     def format(self) -> str:
-        'Format.'
+        'Code that names the native dataset format.'
         return cast('str', self._data.get('format'))
 
     @property
     def format_version(self) -> str:
-        'Format version.'
+        'Version of the native dataset format.'
         return cast('str', self._data.get('format_version'))
 
     @property
@@ -3114,27 +3109,27 @@ class GeometryPin(Record):
 
     @property
     def specification_digest(self) -> str:
-        'Specification digest.'
+        'Lowercase hexadecimal SHA-256 digest of the pinned upstream specification.'
         return cast('str', self._data.get('specification_digest'))
 
     @property
     def content_digest(self) -> str:
-        'Content digest.'
+        'Lowercase hexadecimal SHA-256 digest of the file inventory sorted by path; validation recomputes it from files.'
         return cast('str', self._data.get('content_digest'))
 
     @property
     def files(self) -> tuple[GeometryFile, ...]:
-        'Files.'
+        'Inventory of the retained native files; each path is unique.'
         return cast('tuple[GeometryFile, ...]', self._child('files', GeometryFile, True))
 
     @property
     def source_address(self) -> str | None:
-        'Source address.'
+        'Optional address of the source dataset; it does not replace the digests.'
         return cast('str | None', self._data.get('source_address'))
 
     @property
     def source_version(self) -> str | None:
-        'Source version.'
+        'Optional version of the source dataset at the source address.'
         return cast('str | None', self._data.get('source_version'))
 
 
@@ -3148,19 +3143,22 @@ class Implementation(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'version': {'options': [{'kind': 'string', 'category': 'primitive'}],
                      'required': True,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False}}
+                     'ordered': False,
+                     'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3215,20 +3213,23 @@ class Label(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
                  'required': True,
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'classifications': {'options': [{'kind': 'Classification',
                                           'category': 'uuid'}],
                              'required': False,
                              'many': True,
                              'mapping': False,
                              'nullable': True,
-                             'ordered': False}}
+                             'ordered': False,
+                             'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3286,13 +3287,15 @@ class LibraryVersion(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'version': {'options': [{'kind': 'string', 'category': 'primitive'}],
                      'required': True,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False}}
+                     'ordered': False,
+                     'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3318,12 +3321,12 @@ class LibraryVersion(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the dependency, such as python.'
         return cast('str', self._data.get('name'))
 
     @property
     def version(self) -> str:
-        'Version.'
+        'Version of the dependency.'
         return cast('str', self._data.get('version'))
 
 
@@ -3337,14 +3340,16 @@ class Location(Record):
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'address': {'options': [{'kind': 'Entry', 'category': 'keyed'},
                                  {'kind': 'string', 'category': 'primitive'}],
                      'required': False,
                      'many': True,
                      'mapping': True,
                      'nullable': True,
-                     'ordered': False}}
+                     'ordered': False,
+                     'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3373,7 +3378,7 @@ class Location(Record):
 
     @property
     def source(self) -> UUID:
-        'Source.'
+        'UUID of the Source edition that contains this address.'
         return cast('UUID', _decode_uuid(self._data.get('source')))
 
     @property
@@ -3392,37 +3397,43 @@ class Measure(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'definition': {'options': [{'kind': 'string', 'category': 'primitive'}],
                         'required': False,
                         'many': False,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'tags': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': False,
                   'many': True,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False}}
+                  'ordered': False,
+                  'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3513,31 +3524,36 @@ class Metadata(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': True},
          'schema_version': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                             'required': True,
                             'many': False,
                             'mapping': False,
                             'nullable': False,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'previous': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False}}
+                      'ordered': False,
+                      'lineage': True}}
     )
 
     def __init__(self, *,
@@ -3621,19 +3637,22 @@ class Method(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'version': {'options': [{'kind': 'string', 'category': 'primitive'}],
                      'required': False,
                      'many': False,
                      'mapping': False,
                      'nullable': True,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False}}
+                         'ordered': False,
+                         'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3670,17 +3689,17 @@ class Method(Record):
 
     @property
     def code(self) -> str:
-        'Code.'
+        'Nonblank code that names the process.'
         return cast('str', self._data.get('code'))
 
     @property
     def version(self) -> str | None:
-        'Version.'
+        'Optional nonblank version of the process.'
         return cast('str | None', self._data.get('version'))
 
     @property
     def description(self) -> str | None:
-        'Description.'
+        'Optional nonblank explanation of the process.'
         return cast('str | None', self._data.get('description'))
 
 
@@ -3694,31 +3713,36 @@ class Model(Record):
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'definitions': {'options': [{'kind': 'Definitions', 'category': 'record'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': False,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'system': {'options': [{'kind': 'System', 'category': 'record'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'provenance': {'options': [{'kind': 'Provenance', 'category': 'record'}],
                         'required': False,
                         'many': False,
                         'mapping': False,
                         'nullable': False,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'geometry': {'options': [{'kind': 'Geometry', 'category': 'record'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False}}
+                      'ordered': False,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3805,37 +3829,43 @@ class Movement(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
                  'required': False,
                  'many': False,
                  'mapping': False,
                  'nullable': True,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'date': {'options': [{'kind': 'date', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'period': {'options': [{'kind': 'Period', 'category': 'record'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'magnitude': {'options': [{'kind': 'decimal', 'category': 'primitive'}],
                        'required': False,
                        'many': False,
                        'mapping': False,
                        'nullable': True,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'claims': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
                     'required': False,
                     'many': True,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3906,22 +3936,22 @@ class Movement(Record):
 
     @property
     def date(self) -> Date | None:
-        'Date.'
+        'Date of the entry; with a period, an independent payment or observation date.'
         return cast('Date | None', _decode_date(self._data.get('date')))
 
     @property
     def period(self) -> _Period | None:
-        'Period.'
+        'Half-open Period of the entry.'
         return cast('_Period | None', self._child('period', Period, False))
 
     @property
     def magnitude(self) -> int | float | None:
-        'Magnitude.'
+        'Amount in the Flow units; absent or null means unresolved, and zero is a known amount.'
         return cast('int | float | None', self._data.get('magnitude'))
 
     @property
     def claims(self) -> tuple[UUID, ...] | None:
-        'Claims.'
+        'Unique UUIDs of provenance Claims that support this Movement.'
         return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('claims', ())))
 
 
@@ -3935,13 +3965,15 @@ class Objective(Record):
                         'many': False,
                         'mapping': False,
                         'nullable': False,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'sense': {'options': [{'kind': 'ObjectiveKind', 'category': 'enum'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False}}
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -3977,7 +4009,7 @@ class Objective(Record):
 
 
 class ObservationAvailability(Record):
-    'Earliest date a recorded Value or Movement may be supplied to a policy.'
+    'Earliest date a recorded Value or Movement may be supplied to a rule.'
     __slots__ = ()
     _kind = 'ObservationAvailability'
     _SLOTS = _freeze(
@@ -3986,13 +4018,15 @@ class ObservationAvailability(Record):
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
                           'required': True,
                           'many': False,
                           'mapping': False,
                           'nullable': False,
-                          'ordered': False}}
+                          'ordered': False,
+                          'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4018,12 +4052,12 @@ class ObservationAvailability(Record):
 
     @property
     def target(self) -> Reference:
-        'Target.'
+        'Recorded Value or Movement; scenario validation requires a Movement.'
         return cast('Reference', self._child('target', Reference, False))
 
     @property
     def available_at(self) -> Date:
-        'Available at.'
+        'Earliest date on which a rule can observe the target.'
         return cast('Date', _decode_date(self._data.get('available_at')))
 
 
@@ -4037,19 +4071,22 @@ class ObservationBinding(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
                           'required': False,
                           'many': False,
                           'mapping': False,
                           'nullable': True,
-                          'ordered': False}}
+                          'ordered': False,
+                          'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4083,17 +4120,17 @@ class ObservationBinding(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the observation, unique within its Decision.'
         return cast('str', self._data.get('name'))
 
     @property
     def target(self) -> Reference:
-        'Target.'
+        'Value or Movement whose recorded or decided quantity the Decision observes.'
         return cast('Reference', self._child('target', Reference, False))
 
     @property
     def available_at(self) -> Date | None:
-        'Available at.'
+        'Optional date that can delay availability; it cannot make the quantity available earlier.'
         return cast('Date | None', _decode_date(self._data.get('available_at')))
 
 
@@ -4107,25 +4144,29 @@ class ObservedQuantity(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
                       'required': True,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
                           'required': True,
                           'many': False,
                           'mapping': False,
                           'nullable': False,
-                          'ordered': False}}
+                          'ordered': False,
+                          'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4161,22 +4202,22 @@ class ObservedQuantity(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the ObservationBinding that this quantity satisfies.'
         return cast('str', self._data.get('name'))
 
     @property
     def target(self) -> Reference:
-        'Target.'
+        'Observed Value or Movement, equal to the target of the ObservationBinding.'
         return cast('Reference', self._child('target', Reference, False))
 
     @property
     def quantity(self) -> Quantity:
-        'Quantity.'
+        'Exact quantity supplied to the rule conditions.'
         return cast('Quantity', self._child('quantity', Quantity, False))
 
     @property
     def available_at(self) -> Date:
-        'Available at.'
+        'Date from which the quantity was available; it is not later than the Decision date.'
         return cast('Date', _decode_date(self._data.get('available_at')))
 
 
@@ -4190,25 +4231,29 @@ class Parameter(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'domain': {'options': [{'kind': 'Domain', 'category': 'record'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'kind': {'options': [{'kind': 'ParameterKind', 'category': 'enum'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'required': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
                       'required': True,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False}}
+                      'ordered': False,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4244,7 +4289,7 @@ class Parameter(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Parameter name, unique within the Function; named arguments bind by this name.'
         return cast('str', self._data.get('name'))
 
     @property
@@ -4273,13 +4318,15 @@ class Period(Record):
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'end': {'options': [{'kind': 'date', 'category': 'primitive'}],
                  'required': True,
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False}}
+                 'ordered': False,
+                 'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4305,80 +4352,13 @@ class Period(Record):
 
     @property
     def start(self) -> Date:
-        'Start.'
+        'First date of the period; it is included.'
         return cast('Date', _decode_date(self._data.get('start')))
 
     @property
     def end(self) -> Date:
-        'End.'
+        'Boundary date after the period; it is excluded and later than start.'
         return cast('Date', _decode_date(self._data.get('end')))
-
-
-class Policy(Record):
-    'Finite policy owning explicit controlled targets and ordered dated decisions.'
-    __slots__ = ()
-    _kind = 'Policy'
-    _SLOTS = _freeze(
-        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False},
-         'targets': {'options': [{'kind': 'Reference', 'category': 'record'}],
-                     'required': True,
-                     'many': True,
-                     'mapping': False,
-                     'nullable': False,
-                     'ordered': True},
-         'decisions': {'options': [{'kind': 'Decision', 'category': 'record'}],
-                       'required': True,
-                       'many': True,
-                       'mapping': False,
-                       'nullable': False,
-                       'ordered': True}}
-    )
-
-    def __init__(self, *,
-        id: UUID,
-        targets: tuple[Reference, ...],
-        decisions: tuple[Decision, ...],
-    ) -> None:
-        data: dict[str, object] = {}
-        data['id'] = _encode_uuid(id)
-        data['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
-        data['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
-        self._set_checked(data)
-
-    def replace(self, *,
-        id: UUID | Unset = UNSET,
-        targets: tuple[Reference, ...] | Unset = UNSET,
-        decisions: tuple[Decision, ...] | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if id is not UNSET:
-            changes['id'] = _encode_uuid(id)
-        if targets is not UNSET:
-            changes['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
-        if decisions is not UNSET:
-            changes['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
-        return self._replace(changes)
-
-    @property
-    def id(self) -> UUID:
-        'Id.'
-        return cast('UUID', _decode_uuid(self._data.get('id')))
-
-    @property
-    def targets(self) -> tuple[Reference, ...]:
-        'Targets.'
-        return cast('tuple[Reference, ...]', self._child('targets', Reference, True))
-
-    @property
-    def decisions(self) -> tuple[Decision, ...]:
-        'Decisions.'
-        return cast('tuple[Decision, ...]', self._child('decisions', Decision, True))
 
 
 class Projection(Record):
@@ -4391,31 +4371,36 @@ class Projection(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
                  'required': False,
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'measure': {'options': [{'kind': 'Measure', 'category': 'uuid'}],
                      'required': False,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'cardinality': {'options': [{'kind': 'Cardinality', 'category': 'enum'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': False,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'missing': {'options': [{'kind': 'MissingHandling', 'category': 'enum'}],
                      'required': False,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False}}
+                     'ordered': False,
+                     'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4468,7 +4453,7 @@ class Projection(Record):
 
     @property
     def kind(self) -> ProjectionKind:
-        'Kind.'
+        'Whether the query returns Entity identities or Values of the matching Entities.'
         return cast('ProjectionKind', _decode_enum(self._data.get('kind'), ProjectionKind))
 
     @property
@@ -4483,12 +4468,12 @@ class Projection(Record):
 
     @property
     def cardinality(self) -> Cardinality | None:
-        'Cardinality.'
+        'Number of Values permitted for each Entity; required for value projection and absent for entity projection.'
         return cast('Cardinality | None', _decode_enum(self._data.get('cardinality'), Cardinality))
 
     @property
     def missing(self) -> MissingHandling | None:
-        'Missing.'
+        'Treatment of an Entity with no matching Value; required for value projection and absent for entity projection.'
         return cast('MissingHandling | None', _decode_enum(self._data.get('missing'), MissingHandling))
 
 
@@ -4502,37 +4487,43 @@ class PropertyContent(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'text': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'zone': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'fold': {'options': [{'kind': 'integer', 'category': 'primitive'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'items': {'options': [{'kind': 'PropertyContent', 'category': 'record'}],
                    'required': False,
                    'many': True,
                    'mapping': False,
                    'nullable': True,
-                   'ordered': True},
+                   'ordered': True,
+                   'lineage': False},
          'entries': {'options': [{'kind': 'ContentEntry', 'category': 'record'}],
                      'required': False,
                      'many': True,
                      'mapping': False,
                      'nullable': True,
-                     'ordered': True}}
+                     'ordered': True,
+                     'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4593,32 +4584,32 @@ class PropertyContent(Record):
 
     @property
     def kind(self) -> ContentKind:
-        'Kind.'
+        'Type tag; it determines which other fields are present and how text is read.'
         return cast('ContentKind', _decode_enum(self._data.get('kind'), ContentKind))
 
     @property
     def text(self) -> str | None:
-        'Text.'
+        'Canonical text of a scalar value, such as an ISO date or a duration in microseconds; absent for null and container kinds.'
         return cast('str | None', self._data.get('text'))
 
     @property
     def zone(self) -> str | None:
-        'Zone.'
+        'Optional IANA time-zone key of a datetime or time value.'
         return cast('str | None', self._data.get('zone'))
 
     @property
     def fold(self) -> int | None:
-        'Fold.'
+        'Fold, 0 or 1, of a datetime or time value; it selects between repeated wall-clock times.'
         return cast('int | None', self._data.get('fold'))
 
     @property
     def items(self) -> tuple[PropertyContent, ...] | None:
-        'Items.'
+        'Ordered members of a list, tuple, set or frozenset; set members use a canonical order.'
         return cast('tuple[PropertyContent, ...] | None', self._child('items', PropertyContent, True))
 
     @property
     def entries(self) -> tuple[ContentEntry, ...] | None:
-        'Entries.'
+        'Ordered entries of a mapping or mapping proxy; keys are unique.'
         return cast('tuple[ContentEntry, ...] | None', self._child('entries', ContentEntry, True))
 
 
@@ -4632,26 +4623,30 @@ class Provenance(Record):
                      'many': True,
                      'mapping': False,
                      'nullable': True,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'claims': {'options': [{'kind': 'Claim', 'category': 'record'}],
                     'required': False,
                     'many': True,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'facts': {'options': [{'kind': 'Fact', 'category': 'record'}],
                    'required': False,
                    'many': True,
                    'mapping': False,
                    'nullable': True,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'scenarios': {'options': [{'kind': 'ScenarioRealization',
                                     'category': 'record'}],
                        'required': False,
                        'many': True,
                        'mapping': False,
                        'nullable': True,
-                       'ordered': True}}
+                       'ordered': True,
+                       'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4699,22 +4694,22 @@ class Provenance(Record):
 
     @property
     def sources(self) -> tuple[Source, ...] | None:
-        'Sources.'
+        'Source editions referenced by Claim Locations; each Source is stored once.'
         return cast('tuple[Source, ...] | None', self._child('sources', Source, True))
 
     @property
     def claims(self) -> tuple[Claim, ...] | None:
-        'Claims.'
+        'Claims referenced by Facts and by upstream Claim dependencies; each Claim is stored once.'
         return cast('tuple[Claim, ...] | None', self._child('claims', Claim, True))
 
     @property
     def facts(self) -> tuple[Fact, ...] | None:
-        'Facts.'
+        'Facts that connect graph objects or characteristics to supporting Claims; at most one Fact per target.'
         return cast('tuple[Fact, ...] | None', self._child('facts', Fact, True))
 
     @property
     def scenarios(self) -> tuple[ScenarioRealization, ...] | None:
-        'Scenarios.'
+        'Captured scenario realizations, in order, with their inputs, paths and observation availability.'
         return cast('tuple[ScenarioRealization, ...] | None', self._child('scenarios', ScenarioRealization, True))
 
 
@@ -4728,13 +4723,15 @@ class Quantity(Record):
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'units': {'options': [{'kind': 'string', 'category': 'primitive'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False}}
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4779,31 +4776,36 @@ class Query(Record):
                          'many': False,
                          'mapping': False,
                          'nullable': False,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'steps': {'options': [{'kind': 'Traversal', 'category': 'record'}],
                    'required': False,
                    'many': True,
                    'mapping': False,
                    'nullable': True,
-                   'ordered': True},
+                   'ordered': True,
+                   'lineage': False},
          'filter': {'options': [{'kind': 'Filter', 'category': 'record'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'projection': {'options': [{'kind': 'Projection', 'category': 'record'}],
                         'required': True,
                         'many': False,
                         'mapping': False,
                         'nullable': False,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'duplicates': {'options': [{'kind': 'DuplicateHandling', 'category': 'enum'}],
                         'required': True,
                         'many': False,
                         'mapping': False,
                         'nullable': False,
-                        'ordered': False}}
+                        'ordered': False,
+                        'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4850,7 +4852,7 @@ class Query(Record):
 
     @property
     def starting_at(self) -> UUID:
-        'Starting at.'
+        'UUID of the Entity in the containing Model revision where the query starts.'
         return cast('UUID', _decode_uuid(self._data.get('starting_at')))
 
     @property
@@ -4860,17 +4862,17 @@ class Query(Record):
 
     @property
     def filter(self) -> Filter | None:
-        'Filter.'
+        'Optional conditions applied to the candidates after traversal.'
         return cast('Filter | None', self._child('filter', Filter, False))
 
     @property
     def projection(self) -> Projection:
-        'Projection.'
+        'Selection of Entity identities or Values from the filtered candidates.'
         return cast('Projection', self._child('projection', Projection, False))
 
     @property
     def duplicates(self) -> DuplicateHandling:
-        'Duplicates.'
+        'Whether repeated projected UUIDs are kept or removed.'
         return cast('DuplicateHandling', _decode_enum(self._data.get('duplicates'), DuplicateHandling))
 
 
@@ -4884,13 +4886,15 @@ class RandomStream(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'identifier': {'options': [{'kind': 'string', 'category': 'primitive'}],
                         'required': True,
                         'many': False,
                         'mapping': False,
                         'nullable': False,
-                        'ordered': False}}
+                        'ordered': False,
+                        'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4916,12 +4920,12 @@ class RandomStream(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Name of the parameter or input that the stream samples.'
         return cast('str', self._data.get('name'))
 
     @property
     def identifier(self) -> str:
-        'Identifier.'
+        'SHA-256 hexadecimal digest of the scenario key and stream component; with the plan seed, it seeds the stream.'
         return cast('str', self._data.get('identifier'))
 
 
@@ -4935,19 +4939,22 @@ class Reconciliation(Record):
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'status': {'options': [{'kind': 'ReconciliationStatus', 'category': 'enum'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'method': {'options': [{'kind': 'Method', 'category': 'record'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -4986,12 +4993,12 @@ class Reconciliation(Record):
 
     @property
     def status(self) -> ReconciliationStatus:
-        'Status.'
+        'Whether the selection is provisional or confirmed.'
         return cast('ReconciliationStatus', _decode_enum(self._data.get('status'), ReconciliationStatus))
 
     @property
     def method(self) -> Method | None:
-        'Method.'
+        'Optional process used to make the selection.'
         return cast('Method | None', self._child('method', Method, False))
 
 
@@ -5005,7 +5012,8 @@ class Reference(Record):
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5040,32 +5048,37 @@ class Relationship(Record):
                             'many': False,
                             'mapping': False,
                             'nullable': False,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
                 'required': True,
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'source': {'options': [{'kind': 'Entity', 'category': 'uuid'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'target': {'options': [{'kind': 'Entity', 'category': 'uuid'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'characteristics': {'options': [{'kind': 'Characteristics',
                                           'category': 'record'}],
                              'required': False,
                              'many': False,
                              'mapping': False,
                              'nullable': True,
-                             'ordered': False}}
+                             'ordered': False,
+                             'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5143,31 +5156,36 @@ class Report(Record):
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'runtime': {'options': [{'kind': 'Runtime', 'category': 'record'}],
                      'required': False,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'diagnostics': {'options': [{'kind': 'Diagnostic', 'category': 'record'}],
                          'required': False,
                          'many': True,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'trace': {'options': [{'kind': 'Step', 'category': 'record'}],
                    'required': False,
                    'many': True,
                    'mapping': False,
                    'nullable': True,
-                   'ordered': True},
-         'outcomes': {'options': [{'kind': 'DecisionOutcome', 'category': 'record'}],
-                      'required': False,
-                      'many': True,
-                      'mapping': False,
-                      'nullable': True,
-                      'ordered': True}}
+                   'ordered': True,
+                   'lineage': False},
+         'rule_evidence': {'options': [{'kind': 'RuleEvidence', 'category': 'record'}],
+                           'required': False,
+                           'many': True,
+                           'mapping': False,
+                           'nullable': True,
+                           'ordered': True,
+                           'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5175,7 +5193,7 @@ class Report(Record):
         runtime: Runtime | Unset = UNSET,
         diagnostics: tuple[Diagnostic, ...] | None | Unset = UNSET,
         trace: tuple[Step, ...] | None | Unset = UNSET,
-        outcomes: tuple[DecisionOutcome, ...] | None | Unset = UNSET,
+        rule_evidence: tuple[RuleEvidence, ...] | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         data['status'] = _encode_record(status, Status, 'status')
@@ -5185,8 +5203,8 @@ class Report(Record):
             data['diagnostics'] = _encode_many(diagnostics, lambda v: _encode_record(v, Diagnostic, 'diagnostics'))
         if trace is not UNSET:
             data['trace'] = _encode_many(trace, lambda v: _encode_record(v, Step, 'trace'))
-        if outcomes is not UNSET:
-            data['outcomes'] = _encode_many(outcomes, lambda v: _encode_record(v, DecisionOutcome, 'outcomes'))
+        if rule_evidence is not UNSET:
+            data['rule_evidence'] = _encode_many(rule_evidence, lambda v: _encode_record(v, RuleEvidence, 'rule_evidence'))
         self._set_checked(data)
 
     def replace(self, *,
@@ -5194,7 +5212,7 @@ class Report(Record):
         runtime: Runtime | Unset | Omit = UNSET,
         diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = UNSET,
         trace: tuple[Step, ...] | None | Unset | Omit = UNSET,
-        outcomes: tuple[DecisionOutcome, ...] | None | Unset | Omit = UNSET,
+        rule_evidence: tuple[RuleEvidence, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -5212,10 +5230,10 @@ class Report(Record):
             changes['trace'] = OMIT
         elif trace is not UNSET:
             changes['trace'] = _encode_many(trace, lambda v: _encode_record(v, Step, 'trace'))
-        if outcomes is OMIT:
-            changes['outcomes'] = OMIT
-        elif outcomes is not UNSET:
-            changes['outcomes'] = _encode_many(outcomes, lambda v: _encode_record(v, DecisionOutcome, 'outcomes'))
+        if rule_evidence is OMIT:
+            changes['rule_evidence'] = OMIT
+        elif rule_evidence is not UNSET:
+            changes['rule_evidence'] = _encode_many(rule_evidence, lambda v: _encode_record(v, RuleEvidence, 'rule_evidence'))
         return self._replace(changes)
 
     @property
@@ -5239,9 +5257,9 @@ class Report(Record):
         return cast('tuple[Step, ...] | None', self._child('trace', Step, True))
 
     @property
-    def outcomes(self) -> tuple[DecisionOutcome, ...] | None:
-        'Outcomes.'
-        return cast('tuple[DecisionOutcome, ...] | None', self._child('outcomes', DecisionOutcome, True))
+    def rule_evidence(self) -> tuple[RuleEvidence, ...] | None:
+        'Ordered evidence of each evaluated Decision of the Specification rules.'
+        return cast('tuple[RuleEvidence, ...] | None', self._child('rule_evidence', RuleEvidence, True))
 
 
 class Rule(Record):
@@ -5254,19 +5272,22 @@ class Rule(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'condition': {'options': [{'kind': 'Expression', 'category': 'record'}],
                        'required': True,
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'actions': {'options': [{'kind': 'Action', 'category': 'record'}],
                      'required': True,
                      'many': True,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': True}}
+                     'ordered': True,
+                     'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5297,18 +5318,234 @@ class Rule(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Rule, referenced by RuleEvidence.'
         return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def condition(self) -> Expression:
-        'Condition.'
+        'Boolean Expression that refers only to the observations of its Decision.'
         return cast('Expression', self._child('condition', Expression, False))
 
     @property
     def actions(self) -> tuple[Action, ...]:
-        'Actions.'
+        'Nonempty ordered actions applied when this is the first true Rule; terminate can only be last.'
         return cast('tuple[Action, ...]', self._child('actions', Action, True))
+
+
+class RuleEvidence(Record):
+    'Recorded evidence of one evaluated decision; absence of a rule means fallback.'
+    __slots__ = ()
+    _kind = 'RuleEvidence'
+    _SLOTS = _freeze(
+        {'decision': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False,
+                      'lineage': False},
+         'at': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False,
+                'lineage': False},
+         'rule': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False,
+                  'lineage': False},
+         'observations': {'options': [{'kind': 'ObservedQuantity',
+                                       'category': 'record'}],
+                          'required': True,
+                          'many': True,
+                          'mapping': False,
+                          'nullable': False,
+                          'ordered': True,
+                          'lineage': False},
+         'assignments': {'options': [{'kind': 'Assignment', 'category': 'record'}],
+                         'required': True,
+                         'many': True,
+                         'mapping': False,
+                         'nullable': False,
+                         'ordered': True,
+                         'lineage': False},
+         'terminated': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False,
+                        'lineage': False},
+         'termination_reason': {'options': [{'kind': 'string',
+                                             'category': 'primitive'}],
+                                'required': False,
+                                'many': False,
+                                'mapping': False,
+                                'nullable': True,
+                                'ordered': False,
+                                'lineage': False}}
+    )
+
+    def __init__(self, *,
+        decision: UUID,
+        at: Date,
+        rule: UUID | None | Unset = UNSET,
+        observations: tuple[ObservedQuantity, ...],
+        assignments: tuple[Assignment, ...],
+        terminated: bool,
+        termination_reason: str | None | Unset = UNSET,
+    ) -> None:
+        data: dict[str, object] = {}
+        data['decision'] = _encode_uuid(decision)
+        data['at'] = _encode_date(at)
+        if rule is not UNSET:
+            data['rule'] = _encode_uuid(rule)
+        data['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
+        data['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
+        data['terminated'] = copy_json(terminated)
+        if termination_reason is not UNSET:
+            data['termination_reason'] = copy_json(termination_reason)
+        self._set_checked(data)
+
+    def replace(self, *,
+        decision: UUID | Unset = UNSET,
+        at: Date | Unset = UNSET,
+        rule: UUID | None | Unset | Omit = UNSET,
+        observations: tuple[ObservedQuantity, ...] | Unset = UNSET,
+        assignments: tuple[Assignment, ...] | Unset = UNSET,
+        terminated: bool | Unset = UNSET,
+        termination_reason: str | None | Unset | Omit = UNSET,
+    ) -> Self:
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
+        changes: dict[str, object] = {}
+        if decision is not UNSET:
+            changes['decision'] = _encode_uuid(decision)
+        if at is not UNSET:
+            changes['at'] = _encode_date(at)
+        if rule is OMIT:
+            changes['rule'] = OMIT
+        elif rule is not UNSET:
+            changes['rule'] = _encode_uuid(rule)
+        if observations is not UNSET:
+            changes['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
+        if assignments is not UNSET:
+            changes['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
+        if terminated is not UNSET:
+            changes['terminated'] = copy_json(terminated)
+        if termination_reason is OMIT:
+            changes['termination_reason'] = OMIT
+        elif termination_reason is not UNSET:
+            changes['termination_reason'] = copy_json(termination_reason)
+        return self._replace(changes)
+
+    @property
+    def decision(self) -> UUID:
+        'UUID of the evaluated Decision.'
+        return cast('UUID', _decode_uuid(self._data.get('decision')))
+
+    @property
+    def at(self) -> Date:
+        'Date of the evaluated Decision.'
+        return cast('Date', _decode_date(self._data.get('at')))
+
+    @property
+    def rule(self) -> UUID | None:
+        'UUID of the first Rule whose condition was true; absent or null when the fallback applied.'
+        return cast('UUID | None', _decode_uuid(self._data.get('rule')))
+
+    @property
+    def observations(self) -> tuple[ObservedQuantity, ...]:
+        'Observed quantities, in the order of the Decision observations.'
+        return cast('tuple[ObservedQuantity, ...]', self._child('observations', ObservedQuantity, True))
+
+    @property
+    def assignments(self) -> tuple[Assignment, ...]:
+        'Assignments made by the applied actions, in action order.'
+        return cast('tuple[Assignment, ...]', self._child('assignments', Assignment, True))
+
+    @property
+    def terminated(self) -> bool:
+        'Whether the applied actions terminated the decision sequence; no evidence follows a termination.'
+        return cast('bool', self._data.get('terminated'))
+
+    @property
+    def termination_reason(self) -> str | None:
+        'Reason for termination, required when terminated is true.'
+        return cast('str | None', self._data.get('termination_reason'))
+
+
+class RuleSet(Record):
+    'The rules of a Specification, owning explicit controlled targets and ordered dated decisions.'
+    __slots__ = ()
+    _kind = 'RuleSet'
+    _SLOTS = _freeze(
+        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
+                'required': True,
+                'many': False,
+                'mapping': False,
+                'nullable': False,
+                'ordered': False,
+                'lineage': False},
+         'targets': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                     'required': True,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': False,
+                     'ordered': True,
+                     'lineage': False},
+         'decisions': {'options': [{'kind': 'Decision', 'category': 'record'}],
+                       'required': True,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': True,
+                       'lineage': False}}
+    )
+
+    def __init__(self, *,
+        id: UUID,
+        targets: tuple[Reference, ...],
+        decisions: tuple[Decision, ...],
+    ) -> None:
+        data: dict[str, object] = {}
+        data['id'] = _encode_uuid(id)
+        data['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
+        data['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
+        self._set_checked(data)
+
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        targets: tuple[Reference, ...] | Unset = UNSET,
+        decisions: tuple[Decision, ...] | Unset = UNSET,
+    ) -> Self:
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
+        changes: dict[str, object] = {}
+        if id is not UNSET:
+            changes['id'] = _encode_uuid(id)
+        if targets is not UNSET:
+            changes['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
+        if decisions is not UNSET:
+            changes['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
+        return self._replace(changes)
+
+    @property
+    def id(self) -> UUID:
+        'Stable identity of the RuleSet.'
+        return cast('UUID', _decode_uuid(self._data.get('id')))
+
+    @property
+    def targets(self) -> tuple[Reference, ...]:
+        'Nonempty unique controlled targets; the decision actions must assign each one.'
+        return cast('tuple[Reference, ...]', self._child('targets', Reference, True))
+
+    @property
+    def decisions(self) -> tuple[Decision, ...]:
+        'Dated Decisions in strictly increasing date order.'
+        return cast('tuple[Decision, ...]', self._child('decisions', Decision, True))
 
 
 class Run(Record):
@@ -5321,31 +5558,36 @@ class Run(Record):
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'specification': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                            'required': True,
                            'many': False,
                            'mapping': False,
                            'nullable': False,
-                           'ordered': False},
+                           'ordered': False,
+                           'lineage': False},
          'spawns': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                     'required': False,
                     'many': True,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'outputs': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                      'required': False,
                      'many': True,
                      'mapping': False,
                      'nullable': True,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'report': {'options': [{'kind': 'Report', 'category': 'record'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5426,26 +5668,30 @@ class Runtime(Record):
                         'many': False,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'finished_at': {'options': [{'kind': 'datetime', 'category': 'primitive'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'implementations': {'options': [{'kind': 'Implementation',
                                           'category': 'record'}],
                              'required': True,
                              'many': True,
                              'mapping': False,
                              'nullable': False,
-                             'ordered': False},
+                             'ordered': False,
+                             'lineage': False},
          'settings': {'options': [{'kind': 'Settings', 'category': 'record'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False}}
+                      'ordered': False,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5519,19 +5765,22 @@ class ScenarioParameter(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'distribution': {'options': [{'kind': 'Distribution', 'category': 'record'}],
                           'required': False,
                           'many': False,
                           'mapping': False,
                           'nullable': True,
-                          'ordered': False}}
+                          'ordered': False,
+                          'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5568,17 +5817,17 @@ class ScenarioParameter(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Parameter name of the market method contract, unique within the plan.'
         return cast('str', self._data.get('name'))
 
     @property
     def quantity(self) -> Quantity | None:
-        'Quantity.'
+        'Fixed quantity; give this or distribution, not both.'
         return cast('Quantity | None', self._child('quantity', Quantity, False))
 
     @property
     def distribution(self) -> _Distribution | None:
-        'Distribution.'
+        'Distribution to sample; give this or quantity, not both.'
         return cast('_Distribution | None', self._child('distribution', Distribution, False))
 
 
@@ -5592,32 +5841,37 @@ class ScenarioPlan(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'method': {'options': [{'kind': 'string', 'category': 'primitive'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'seed': {'options': [{'kind': 'integer', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'periods': {'options': [{'kind': 'Period', 'category': 'record'}],
                      'required': True,
                      'many': True,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': True},
+                     'ordered': True,
+                     'lineage': False},
          'parameters': {'options': [{'kind': 'ScenarioParameter',
                                      'category': 'record'}],
                         'required': True,
                         'many': True,
                         'mapping': False,
                         'nullable': False,
-                        'ordered': True}}
+                        'ordered': True,
+                        'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5658,27 +5912,27 @@ class ScenarioPlan(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the plan.'
         return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def method(self) -> str:
-        'Method.'
+        'Code of the market method contract that the plan uses.'
         return cast('str', self._data.get('method'))
 
     @property
     def seed(self) -> int:
-        'Seed.'
+        'Nonnegative master seed of the random streams.'
         return cast('int', self._data.get('seed'))
 
     @property
     def periods(self) -> tuple[_Period, ...]:
-        'Periods.'
+        'Nonempty ordered calendar periods of the generated paths; periods do not overlap.'
         return cast('tuple[_Period, ...]', self._child('periods', Period, True))
 
     @property
     def parameters(self) -> tuple[ScenarioParameter, ...]:
-        'Parameters.'
+        'Parameters of the method; their names match the parameter inventory of the method.'
         return cast('tuple[ScenarioParameter, ...]', self._child('parameters', ScenarioParameter, True))
 
 
@@ -5692,63 +5946,73 @@ class ScenarioRealization(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'plan': {'options': [{'kind': 'ScenarioPlan', 'category': 'record'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'key': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                  'required': True,
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'calculation': {'options': [{'kind': 'CalculationProvenance',
                                       'category': 'record'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'generator': {'options': [{'kind': 'string', 'category': 'primitive'}],
                        'required': True,
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'versions': {'options': [{'kind': 'LibraryVersion', 'category': 'record'}],
                       'required': True,
                       'many': True,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': True},
+                      'ordered': True,
+                      'lineage': False},
          'streams': {'options': [{'kind': 'RandomStream', 'category': 'record'}],
                      'required': True,
                      'many': True,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': True},
+                     'ordered': True,
+                     'lineage': False},
          'inputs': {'options': [{'kind': 'Binding', 'category': 'record'}],
                     'required': True,
                     'many': True,
                     'mapping': False,
                     'nullable': False,
-                    'ordered': True},
+                    'ordered': True,
+                    'lineage': False},
          'outputs': {'options': [{'kind': 'Binding', 'category': 'record'}],
                      'required': True,
                      'many': True,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': True},
+                     'ordered': True,
+                     'lineage': False},
          'availability': {'options': [{'kind': 'ObservationAvailability',
                                        'category': 'record'}],
                           'required': True,
                           'many': True,
                           'mapping': False,
                           'nullable': False,
-                          'ordered': True}}
+                          'ordered': True,
+                          'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5817,52 +6081,52 @@ class ScenarioRealization(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the realization.'
         return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def plan(self) -> ScenarioPlan:
-        'Plan.'
+        'Complete plan from which the scenario inputs were generated.'
         return cast('ScenarioPlan', self._child('plan', ScenarioPlan, False))
 
     @property
     def key(self) -> str:
-        'Key.'
+        'Scenario key; with the plan seed, it determines the random streams.'
         return cast('str', self._data.get('key'))
 
     @property
     def calculation(self) -> CalculationProvenance | None:
-        'Calculation.'
+        'Calculation that produced the realized paths; absent for inputs without realized paths.'
         return cast('CalculationProvenance | None', self._child('calculation', CalculationProvenance, False))
 
     @property
     def generator(self) -> str:
-        'Generator.'
+        'Random generation algorithm, such as numpy.SeedSequence/PCG64, or supplied for captured inputs.'
         return cast('str', self._data.get('generator'))
 
     @property
     def versions(self) -> tuple[LibraryVersion, ...]:
-        'Versions.'
+        'Dependency versions of the sampling or capture environment.'
         return cast('tuple[LibraryVersion, ...]', self._child('versions', LibraryVersion, True))
 
     @property
     def streams(self) -> tuple[RandomStream, ...]:
-        'Streams.'
+        'Random streams used to sample the inputs; empty for supplied inputs.'
         return cast('tuple[RandomStream, ...]', self._child('streams', RandomStream, True))
 
     @property
     def inputs(self) -> tuple[Binding, ...]:
-        'Inputs.'
+        'Bindings of the captured input Values.'
         return cast('tuple[Binding, ...]', self._child('inputs', Binding, True))
 
     @property
     def outputs(self) -> tuple[Binding, ...]:
-        'Outputs.'
+        'Bindings of the realized path Values; empty until the paths are realized.'
         return cast('tuple[Binding, ...]', self._child('outputs', Binding, True))
 
     @property
     def availability(self) -> tuple[ObservationAvailability, ...]:
-        'Availability.'
+        'Earliest observation dates of the recorded Movements.'
         return cast('tuple[ObservationAvailability, ...]', self._child('availability', ObservationAvailability, True))
 
 
@@ -5876,25 +6140,29 @@ class Selection(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'base': {'options': [{'kind': 'Expression', 'category': 'record'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'member': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False},
+                    'ordered': False,
+                    'lineage': False},
          'index': {'options': [{'kind': 'Expression', 'category': 'record'}],
                    'required': False,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False}}
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -5936,12 +6204,12 @@ class Selection(Record):
 
     @property
     def kind(self) -> SelectionKind:
-        'Kind.'
+        'Whether the selection reads a declared member or an indexed element.'
         return cast('SelectionKind', _decode_enum(self._data.get('kind'), SelectionKind))
 
     @property
     def base(self) -> Expression:
-        'Base.'
+        'Expression whose structured content supplies the member or element.'
         return cast('Expression', self._child('base', Expression, False))
 
     @property
@@ -5966,31 +6234,36 @@ class Settings(Record):
                                 'many': False,
                                 'mapping': False,
                                 'nullable': True,
-                                'ordered': False},
+                                'ordered': False,
+                                'lineage': False},
          'iteration_limit': {'options': [{'kind': 'integer', 'category': 'primitive'}],
                              'required': False,
                              'many': False,
                              'mapping': False,
                              'nullable': True,
-                             'ordered': False},
+                             'ordered': False,
+                             'lineage': False},
          'time_limit': {'options': [{'kind': 'decimal', 'category': 'primitive'}],
                         'required': False,
                         'many': False,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'symbol_limit': {'options': [{'kind': 'integer', 'category': 'primitive'}],
                           'required': False,
                           'many': False,
                           'mapping': False,
                           'nullable': True,
-                          'ordered': False},
+                          'ordered': False,
+                          'lineage': False},
          'constraint_limit': {'options': [{'kind': 'integer', 'category': 'primitive'}],
                               'required': False,
                               'many': False,
                               'mapping': False,
                               'nullable': True,
-                              'ordered': False}}
+                              'ordered': False,
+                              'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6080,39 +6353,45 @@ class Source(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'checksum': {'options': [{'kind': 'string', 'category': 'primitive'}],
                       'required': True,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'issued_at': {'options': [{'kind': 'date', 'category': 'primitive'},
                                    {'kind': 'datetime', 'category': 'primitive'}],
                        'required': False,
                        'many': False,
                        'mapping': False,
                        'nullable': True,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'received_at': {'options': [{'kind': 'date', 'category': 'primitive'},
                                      {'kind': 'datetime', 'category': 'primitive'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'author': {'options': [{'kind': 'string', 'category': 'primitive'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6167,12 +6446,12 @@ class Source(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Source edition, referenced by Locations.'
         return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Nonblank human-readable name of the evidence artifact.'
         return cast('str', self._data.get('name'))
 
     @property
@@ -6182,17 +6461,17 @@ class Source(Record):
 
     @property
     def issued_at(self) -> Date | str | None:
-        'Issued at.'
+        'Optional date or date-time at which the source edition was issued.'
         return cast('Date | str | None', self._field('issued_at'))
 
     @property
     def received_at(self) -> Date | str | None:
-        'Received at.'
+        'Optional date or date-time at which the source edition was received.'
         return cast('Date | str | None', self._field('received_at'))
 
     @property
     def author(self) -> str | None:
-        'Author.'
+        'Optional nonblank author of the evidence artifact.'
         return cast('str | None', self._data.get('author'))
 
 
@@ -6206,19 +6485,22 @@ class Span(Period):
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'start': {'options': [{'kind': 'date', 'category': 'primitive'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'end': {'options': [{'kind': 'date', 'category': 'primitive'}],
                  'required': True,
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False}}
+                 'ordered': False,
+                 'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6252,17 +6534,17 @@ class Span(Period):
 
     @property
     def name(self) -> str | None:
-        'Name.'
+        'Optional name of the extent.'
         return cast('str | None', self._data.get('name'))
 
     @property
     def start(self) -> Date:
-        'Start.'
+        'First date of the period; it is included.'
         return cast('Date', _decode_date(self._data.get('start')))
 
     @property
     def end(self) -> Date:
-        'End.'
+        'Boundary date after the period; it is excluded and later than start.'
         return cast('Date', _decode_date(self._data.get('end')))
 
 
@@ -6276,67 +6558,78 @@ class Specification(Record):
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'model': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                    'required': False,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'includes': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                       'required': False,
                       'many': True,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'cases': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                    'required': False,
                    'many': True,
                    'mapping': False,
                    'nullable': True,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'assignments': {'options': [{'kind': 'Assignment', 'category': 'record'}],
                          'required': False,
                          'many': True,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'unknowns': {'options': [{'kind': 'Reference', 'category': 'record'}],
                       'required': False,
                       'many': True,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'estimates': {'options': [{'kind': 'Assignment', 'category': 'record'}],
                        'required': False,
                        'many': True,
                        'mapping': False,
                        'nullable': True,
-                       'ordered': False},
+                       'ordered': False,
+                       'lineage': False},
          'formulations': {'options': [{'kind': 'Formulation', 'category': 'record'}],
                           'required': False,
                           'many': True,
                           'mapping': False,
                           'nullable': True,
-                          'ordered': False},
+                          'ordered': False,
+                          'lineage': False},
          'objectives': {'options': [{'kind': 'Objective', 'category': 'record'}],
                         'required': False,
                         'many': True,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': True},
+                        'ordered': True,
+                        'lineage': False},
          'settings': {'options': [{'kind': 'Settings', 'category': 'record'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
-         'policy': {'options': [{'kind': 'Policy', 'category': 'record'}],
-                    'required': False,
-                    'many': False,
-                    'mapping': False,
-                    'nullable': True,
-                    'ordered': False}}
+                      'ordered': False,
+                      'lineage': False},
+         'rules': {'options': [{'kind': 'RuleSet', 'category': 'record'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': True,
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6350,7 +6643,7 @@ class Specification(Record):
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
         settings: Settings | Unset = UNSET,
-        policy: Policy | None | Unset = UNSET,
+        rules: RuleSet | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         data['metadata'] = _encode_record(metadata, Metadata, 'metadata')
@@ -6372,8 +6665,8 @@ class Specification(Record):
             data['objectives'] = _encode_many(objectives, lambda v: _encode_record(v, Objective, 'objectives'))
         if settings is not UNSET:
             data['settings'] = _encode_record(settings, Settings, 'settings')
-        if policy is not UNSET:
-            data['policy'] = _encode_record(policy, Policy, 'policy')
+        if rules is not UNSET:
+            data['rules'] = _encode_record(rules, RuleSet, 'rules')
         self._set_checked(data)
 
     def replace(self, *,
@@ -6387,7 +6680,7 @@ class Specification(Record):
         formulations: tuple[Formulation, ...] | None | Unset | Omit = UNSET,
         objectives: tuple[Objective, ...] | None | Unset | Omit = UNSET,
         settings: Settings | Unset | Omit = UNSET,
-        policy: Policy | None | Unset | Omit = UNSET,
+        rules: RuleSet | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -6429,10 +6722,10 @@ class Specification(Record):
             changes['settings'] = OMIT
         elif settings is not UNSET:
             changes['settings'] = _encode_record(settings, Settings, 'settings')
-        if policy is OMIT:
-            changes['policy'] = OMIT
-        elif policy is not UNSET:
-            changes['policy'] = _encode_record(policy, Policy, 'policy')
+        if rules is OMIT:
+            changes['rules'] = OMIT
+        elif rules is not UNSET:
+            changes['rules'] = _encode_record(rules, RuleSet, 'rules')
         return self._replace(changes)
 
     @property
@@ -6462,7 +6755,7 @@ class Specification(Record):
 
     @property
     def unknowns(self) -> tuple[Reference, ...] | None:
-        'Unique scalar or Movement unknowns; explicit and disjoint from assignments and policy targets.'
+        'Unique scalar or Movement unknowns; explicit and disjoint from assignments and rule targets.'
         return cast('tuple[Reference, ...] | None', self._child('unknowns', Reference, True))
 
     @property
@@ -6486,9 +6779,9 @@ class Specification(Record):
         return cast('Settings | None', self._child('settings', Settings, False))
 
     @property
-    def policy(self) -> Policy | None:
-        'Policy.'
-        return cast('Policy | None', self._child('policy', Policy, False))
+    def rules(self) -> RuleSet | None:
+        'Optional RuleSet with controlled targets and dated decisions.'
+        return cast('RuleSet | None', self._child('rules', RuleSet, False))
 
 
 class Status(Record):
@@ -6501,13 +6794,15 @@ class Status(Record):
                         'many': False,
                         'mapping': False,
                         'nullable': False,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'solution': {'options': [{'kind': 'SolutionStatus', 'category': 'enum'}],
                       'required': True,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False}}
+                      'ordered': False,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6543,7 +6838,7 @@ class Status(Record):
 
 
 class Step(Record):
-    'One ordered record of execution activity, without prescribing scheduling or policy logic.'
+    'One ordered record of execution activity, without prescribing scheduling or rule logic.'
     __slots__ = ()
     _kind = 'Step'
     _SLOTS = _freeze(
@@ -6552,31 +6847,36 @@ class Step(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'at': {'options': [{'kind': 'datetime', 'category': 'primitive'}],
                 'required': False,
                 'many': False,
                 'mapping': False,
                 'nullable': True,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'message': {'options': [{'kind': 'string', 'category': 'primitive'}],
                      'required': True,
                      'many': False,
                      'mapping': False,
                      'nullable': False,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'document': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'target': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
                     'required': False,
                     'many': False,
                     'mapping': False,
                     'nullable': True,
-                    'ordered': False}}
+                    'ordered': False,
+                    'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6660,25 +6960,29 @@ class System(Record):
                       'many': True,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'relationships': {'options': [{'kind': 'Relationship', 'category': 'record'}],
                            'required': False,
                            'many': True,
                            'mapping': False,
                            'nullable': True,
-                           'ordered': False},
+                           'ordered': False,
+                           'lineage': False},
          'assemblies': {'options': [{'kind': 'Assembly', 'category': 'record'}],
                         'required': False,
                         'many': True,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'formulations': {'options': [{'kind': 'Formulation', 'category': 'record'}],
                           'required': False,
                           'many': True,
                           'mapping': False,
                           'nullable': True,
-                          'ordered': False}}
+                          'ordered': False,
+                          'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6755,32 +7059,37 @@ class Taxonomy(Record):
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'code': {'options': [{'kind': 'Code', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'definition': {'options': [{'kind': 'string', 'category': 'primitive'}],
                         'required': False,
                         'many': False,
                         'mapping': False,
                         'nullable': True,
-                        'ordered': False},
+                        'ordered': False,
+                        'lineage': False},
          'classifications': {'options': [{'kind': 'Classification',
                                           'category': 'record'}],
                              'required': True,
                              'many': True,
                              'mapping': False,
                              'nullable': False,
-                             'ordered': False}}
+                             'ordered': False,
+                             'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6824,7 +7133,7 @@ class Taxonomy(Record):
 
     @property
     def id(self) -> UUID:
-        'Id.'
+        'Stable identity of the Taxonomy across Model revisions.'
         return cast('UUID', _decode_uuid(self._data.get('id')))
 
     @property
@@ -6834,12 +7143,12 @@ class Taxonomy(Record):
 
     @property
     def name(self) -> str:
-        'Name.'
+        'Nonblank human-readable name.'
         return cast('str', self._data.get('name'))
 
     @property
     def definition(self) -> str | None:
-        'Definition.'
+        'Optional explanatory text.'
         return cast('str | None', self._data.get('definition'))
 
     @property
@@ -6858,25 +7167,29 @@ class Traversal(Record):
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'depth': {'options': [{'kind': 'Depth', 'category': 'enum'}],
                    'required': True,
                    'many': False,
                    'mapping': False,
                    'nullable': False,
-                   'ordered': False},
+                   'ordered': False,
+                   'lineage': False},
          'classification': {'options': [{'kind': 'Classification', 'category': 'uuid'}],
                             'required': False,
                             'many': False,
                             'mapping': False,
                             'nullable': False,
-                            'ordered': False},
+                            'ordered': False,
+                            'lineage': False},
          'direction': {'options': [{'kind': 'Direction', 'category': 'enum'}],
                        'required': False,
                        'many': False,
                        'mapping': False,
                        'nullable': False,
-                       'ordered': False}}
+                       'ordered': False,
+                       'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6918,12 +7231,12 @@ class Traversal(Record):
 
     @property
     def kind(self) -> TraversalKind:
-        'Kind.'
+        'Whether the step follows classified Relationships or Assembly membership.'
         return cast('TraversalKind', _decode_enum(self._data.get('kind'), TraversalKind))
 
     @property
     def depth(self) -> Depth:
-        'Depth.'
+        'Whether the step follows exactly one edge or one or more edges.'
         return cast('Depth', _decode_enum(self._data.get('depth'), Depth))
 
     @property
@@ -6933,7 +7246,7 @@ class Traversal(Record):
 
     @property
     def direction(self) -> Direction | None:
-        'Direction.'
+        'Direction in which to follow Relationships; required for relationship steps and absent for membership steps.'
         return cast('Direction | None', _decode_enum(self._data.get('direction'), Direction))
 
 
@@ -6947,49 +7260,57 @@ class Value(Record):
                      'many': False,
                      'mapping': False,
                      'nullable': True,
-                     'ordered': False},
+                     'ordered': False,
+                     'lineage': False},
          'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
                       'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': True,
-                      'ordered': False},
+                      'ordered': False,
+                      'lineage': False},
          'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
                 'required': True,
                 'many': False,
                 'mapping': False,
                 'nullable': False,
-                'ordered': False},
+                'ordered': False,
+                'lineage': False},
          'key': {'options': [{'kind': 'string', 'category': 'primitive'}],
                  'required': True,
                  'many': False,
                  'mapping': False,
                  'nullable': False,
-                 'ordered': False},
+                 'ordered': False,
+                 'lineage': False},
          'kind': {'options': [{'kind': 'ValueKind', 'category': 'enum'}],
                   'required': True,
                   'many': False,
                   'mapping': False,
                   'nullable': False,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'description': {'options': [{'kind': 'string', 'category': 'primitive'}],
                          'required': False,
                          'many': False,
                          'mapping': False,
                          'nullable': True,
-                         'ordered': False},
+                         'ordered': False,
+                         'lineage': False},
          'flow': {'options': [{'kind': 'Flow', 'category': 'record'}],
                   'required': False,
                   'many': False,
                   'mapping': False,
                   'nullable': True,
-                  'ordered': False},
+                  'ordered': False,
+                  'lineage': False},
          'content': {'options': [{'kind': 'PropertyContent', 'category': 'record'}],
                      'required': False,
                      'many': False,
                      'mapping': False,
                      'nullable': True,
-                     'ordered': False}}
+                     'ordered': False,
+                     'lineage': False}}
     )
 
     def __init__(self, *,
@@ -7090,12 +7411,12 @@ class Value(Record):
 
     @property
     def flow(self) -> _Flow | None:
-        'Flow.'
+        'Temporal quantities of a flow Value.'
         return cast('_Flow | None', self._child('flow', Flow, False))
 
     @property
     def content(self) -> PropertyContent | None:
-        'Content.'
+        'Inert typed content of a property Value.'
         return cast('PropertyContent | None', self._child('content', PropertyContent, False))
 
 
@@ -7114,7 +7435,6 @@ _TYPES = {
     'ContentEntry': ContentEntry,
     'Criterion': Criterion,
     'Decision': Decision,
-    'DecisionOutcome': DecisionOutcome,
     'Definitions': Definitions,
     'Diagnostic': Diagnostic,
     'Distribution': Distribution,
@@ -7147,7 +7467,6 @@ _TYPES = {
     'ObservedQuantity': ObservedQuantity,
     'Parameter': Parameter,
     'Period': Period,
-    'Policy': Policy,
     'Projection': Projection,
     'PropertyContent': PropertyContent,
     'Provenance': Provenance,
@@ -7159,6 +7478,8 @@ _TYPES = {
     'Relationship': Relationship,
     'Report': Report,
     'Rule': Rule,
+    'RuleEvidence': RuleEvidence,
+    'RuleSet': RuleSet,
     'Run': Run,
     'Runtime': Runtime,
     'ScenarioParameter': ScenarioParameter,
@@ -7192,7 +7513,6 @@ _SLOTS = {
     'ContentEntry': ContentEntry._SLOTS,
     'Criterion': Criterion._SLOTS,
     'Decision': Decision._SLOTS,
-    'DecisionOutcome': DecisionOutcome._SLOTS,
     'Definitions': Definitions._SLOTS,
     'Diagnostic': Diagnostic._SLOTS,
     'Distribution': Distribution._SLOTS,
@@ -7225,7 +7545,6 @@ _SLOTS = {
     'ObservedQuantity': ObservedQuantity._SLOTS,
     'Parameter': Parameter._SLOTS,
     'Period': Period._SLOTS,
-    'Policy': Policy._SLOTS,
     'Projection': Projection._SLOTS,
     'PropertyContent': PropertyContent._SLOTS,
     'Provenance': Provenance._SLOTS,
@@ -7237,6 +7556,8 @@ _SLOTS = {
     'Relationship': Relationship._SLOTS,
     'Report': Report._SLOTS,
     'Rule': Rule._SLOTS,
+    'RuleEvidence': RuleEvidence._SLOTS,
+    'RuleSet': RuleSet._SLOTS,
     'Run': Run._SLOTS,
     'Runtime': Runtime._SLOTS,
     'ScenarioParameter': ScenarioParameter._SLOTS,
@@ -7256,11 +7577,11 @@ _SLOTS = {
 }
 
 _OWNERS = {
-    'Distribution': 'rangekeeper.finance._distribution',
+    'Distribution': 'rangekeeper.profile',
     'Flow': 'rangekeeper.flow',
     'Movement': 'rangekeeper.flow',
     'Period': 'rangekeeper.duration',
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionOutcome', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']

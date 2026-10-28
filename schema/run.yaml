@@ -10,7 +10,7 @@ prefixes:
 imports:
 - settings
 - measure
-- policy
+- rule
 default_prefix: rk
 default_range: string
 classes:
@@ -53,7 +53,7 @@ classes:
       in messages without pretending that an unresolved diagnostic target resolved.
     - Status and report evidence are declarations about execution. Structural and reference validation
       alone do not prove constraint satisfaction, optimality, numerical reproducibility, or that execution
-      actually occurred. Policy-specific traces, temporal histories, solver-specific options, retry coordination,
+      actually occurred. Rule-specific traces, temporal histories, solver-specific options, retry coordination,
       and partial snapshot publication require further contracts.
     attributes:
       metadata:
@@ -135,8 +135,9 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: true
-      outcomes:
-        range: DecisionOutcome
+      rule_evidence:
+        description: Ordered evidence of each evaluated Decision of the Specification rules.
+        range: RuleEvidence
         inlined: true
         multivalued: true
         inlined_as_list: true
@@ -307,7 +308,7 @@ classes:
           residual:
             required: true
   Step:
-    description: One ordered record of execution activity, without prescribing scheduling or policy logic.
+    description: One ordered record of execution activity, without prescribing scheduling or rule logic.
     notes:
     - Trace list order records event order, not a dependency or scheduling instruction. Supplied timestamps
       must be nondecreasing and timezone-qualified. Several steps can share a timestamp.
@@ -316,7 +317,7 @@ classes:
       in message. When objectives lead to accepted non-batch outputs, each output requires a selection
       step. No mandatory winner is implied for a batch comparison.
     - This initial trace uses explanatory messages and scoped references. It is not a complete machine-readable
-      policy/action language, numerical proof, or external artifact manifest.
+      rule/action language, numerical proof, or external artifact manifest.
     attributes:
       kind:
         description: Kind of recorded execution activity.

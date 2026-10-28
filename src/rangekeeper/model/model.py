@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from uuid import UUID, uuid4
 
 from rangekeeper.flow import Movement
-from rangekeeper.model.update import Update
+from rangekeeper.model.update import SECTIONS, Update
 from rangekeeper.quantity import UnitSystem, default_units
 from rangekeeper.schema.index import RecordIndex, RecordLocation, record_at
 from rangekeeper.schema.records import (
@@ -277,10 +277,7 @@ class Model:
         )
         candidate = self._record.replace(
             metadata=metadata,
-            definitions=update.definitions,
-            system=update.system,
-            provenance=update.provenance,
-            geometry=update.geometry,
+            **{name: getattr(update, name) for name in SECTIONS},
         )
         check_revision(self._record, candidate)
         return type(self)(candidate, units=self._units)

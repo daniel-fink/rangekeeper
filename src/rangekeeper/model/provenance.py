@@ -90,7 +90,7 @@ __all__ += ["ClaimKind", "ReconciliationStatus"]
 
 def check_provenance(provenance, *, scope, targets, paths):
     """Check captured evidence relationships without evaluating Claim content."""
-    from rangekeeper.model.scenario.contracts import validate_realizations
+    from rangekeeper.market.contracts import validate_realizations
 
     validate_realizations(provenance, scope)
 

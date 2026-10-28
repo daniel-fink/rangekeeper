@@ -16,7 +16,11 @@ from uuid import UUID
 from rangekeeper.model.scope import reference_key
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.records import Specification as SpecificationRecord
-from rangekeeper.schema.validation import document_version, supports_version
+from rangekeeper.schema.validation import (
+    document_version,
+    slots_for,
+    supports_version,
+)
 from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
@@ -43,9 +47,10 @@ REQUIREMENTS = (
     "formulations",
     "objectives",
     "settings",
-    "policy",
+    "rules",
 )
-FIELDS = {"metadata", "model", "includes", "cases", *REQUIREMENTS}
+# The closed set of Specification fields comes from the schema slots.
+FIELDS = frozenset(slots_for("Specification"))
 
 
 def validate_local_header(doc, schema_version):
@@ -156,13 +161,13 @@ def validate_roles(document):
         "assigned and unknown roles overlap",
     )
     controls = [
-        reference_key(ref) for ref in (document.get("policy") or {}).get("targets", ())
+        reference_key(ref) for ref in (document.get("rules") or {}).get("targets", ())
     ]
-    groups["policy"] = set(controls)
-    require(len(controls) == len(groups["policy"]), "duplicate policy-controlled role")
+    groups["rules"] = set(controls)
+    require(len(controls) == len(groups["rules"]), "duplicate rule-controlled role")
     require(
-        not groups["policy"] & (groups["assignments"] | groups["unknowns"]),
-        "policy-controlled roles overlap",
+        not groups["rules"] & (groups["assignments"] | groups["unknowns"]),
+        "rule-controlled roles overlap",
     )
     return groups
 
@@ -263,9 +268,9 @@ def compose_specification(
             if value is not None:
                 claim(("settings", name), source, f"/settings/{name}")
                 effective.setdefault("settings", {})[name] = deepcopy(value)
-        if doc.get("policy"):
-            claim(("policy",), source, "/policy")
-            effective["policy"] = deepcopy(doc["policy"])
+        if doc.get("rules"):
+            claim(("rules",), source, "/rules")
+            effective["rules"] = deepcopy(doc["rules"])
         if doc.get("objectives"):
             claim(("objectives",), source, "/objectives")
             effective["objectives"] = deepcopy(doc["objectives"])
@@ -289,13 +294,7 @@ def compose_specification(
         try:
             snapshots.append(Specification.from_data(document))
         except ValidationError as error:
-            issue = error.report.issues[0]
-            raise ContractError(
-                issue.message,
-                code=issue.code,
-                path=issue.path,
-                document_id=issue.document_id,
-            ) from error
+            raise ContractError.from_issue(error.report.issues[0]) from error
         except (ValueError, TypeError) as error:
             raise ContractError(str(error)) from error
     result = object.__new__(Composition)

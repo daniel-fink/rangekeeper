@@ -7,12 +7,40 @@ from hashlib import sha256
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from rangekeeper.shared.errors import ValueEncodingError
+from rangekeeper.shared.errors import DecodeError, EncodingError
 
 
 def canonical_json(value: object) -> str:
     """Serialize a value as sorted, compact, ASCII-only JSON."""
     return json.dumps(value, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
+
+
+def parse_json(text: str) -> object:
+    """Parse JSON text; reject duplicate keys and non-JSON numbers at every depth.
+
+    This is the one JSON policy for every Rangekeeper reader. Errors raise
+    DecodeError, including those of opaque content.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise DecodeError(f"duplicate JSON key: {key}")
+            result[key] = value
+        return result
+
+    def constant(value):
+        raise DecodeError(f"non-JSON number: {value}")
+
+    try:
+        return json.loads(text, object_pairs_hook=unique, parse_constant=constant)
+    except DecodeError:
+        raise
+    except ValueError as error:
+        raise DecodeError(str(error)) from error
 
 
 def digest(value: object) -> str:
@@ -36,7 +64,7 @@ def encode(value: object) -> object:
         return ["int", str(value)]
     if type(value) is float:
         if not math.isfinite(value):
-            raise ValueEncodingError("unsupported_value", "Non-finite float")
+            raise EncodingError("Non-finite float")
         return ["float", value.hex()]
     if type(value) is str:
         return ["str", value]
@@ -44,7 +72,7 @@ def encode(value: object) -> object:
         return ["uuid", value.hex]
     if isinstance(value, (datetime, time)) and kind in (datetime, time):
         if value.tzinfo is not None and type(value.tzinfo) not in (timezone, ZoneInfo):
-            raise ValueEncodingError("unsupported_value", "Mutable/custom timezone")
+            raise EncodingError("Mutable/custom timezone")
         zone = value.tzinfo.key if isinstance(value.tzinfo, ZoneInfo) else None
         return [kind.__name__, value.isoformat(), value.fold, zone]
     if type(value) is date:
@@ -58,6 +86,4 @@ def encode(value: object) -> object:
             "frozenset",
             sorted((encode(item) for item in value), key=canonical_json),
         ]
-    raise ValueEncodingError(
-        "unsupported_value", f"Expected immutable supported value, got {kind.__name__}"
-    )
+    raise EncodingError(f"Expected immutable supported value, got {kind.__name__}")

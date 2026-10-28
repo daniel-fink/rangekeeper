@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pytest
 
-from rangekeeper import Model
+from rangekeeper import Model, profile
 from rangekeeper.duration import (
     DayCount,
     Frequency,
@@ -18,14 +18,7 @@ from rangekeeper.duration import (
     offset,
     year_fraction,
 )
-from rangekeeper.finance import financial, projection
-from rangekeeper.finance.account import (
-    Account,
-    Balance,
-    CurrentInterest,
-    InterestTreatment,
-)
-from rangekeeper.finance.projection import PaddingMode, ProjectionMethod
+from rangekeeper.finance import financial
 from rangekeeper.flow import (
     AggregationMethod,
     AlignmentJoin,
@@ -39,6 +32,7 @@ from rangekeeper.io import json as codec
 from rangekeeper.io.memory import MemoryStore
 from rangekeeper.model import Distribution
 from rangekeeper.model.content import ContentKind, decode, encode
+from rangekeeper.profile import GrowthMethod, PaddingMode
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import DistributionFamily, ValueKind
 from rangekeeper.schema.records import (
@@ -354,22 +348,20 @@ def test_distribution_sampling_and_mass(kind):
         dist.mass([1, 3, 2])
 
 
-def test_projection_and_partition_invariants():
-    assert projection.project_values(
-        100, count=3, method=ProjectionMethod.LINEAR, rate=2
-    ) == (
+def test_profile_and_partition_invariants():
+    assert profile.grow_values(100, count=3, method=GrowthMethod.LINEAR, rate=2) == (
         100,
         102,
         104,
     )
-    assert projection.project_values(
-        100, count=3, method=ProjectionMethod.COMPOUND, rate=0.1
+    assert profile.grow_values(
+        100, count=3, method=GrowthMethod.COMPOUND, rate=0.1
     ) == pytest.approx((100, 110, 121))
-    assert projection.pad(
+    assert profile.pad(
         [2, 3], before=1, after=2, left=PaddingMode.UNITIZE, right=PaddingMode.EXTEND
     ) == (1, 2, 3, 3, 3)
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=7)
-    flow = projection.distribute(
+    flow = profile.distribute(
         Quantity(magnitude=100, units="sqm"),
         periods=periods,
         distribution=Distribution.pert(),
@@ -394,48 +386,6 @@ def test_financial_independent_examples():
         financial.calculate_irr(flow, guess=-1)
 
 
-@pytest.mark.parametrize(
-    "method,expected",
-    [("simple", 100), ("compound", 121), ("capitalized", 100 / 0.9**2)],
-)
-def test_account_interest_modes(method, expected):
-    result = Account.calculate(
-        annual([0, 0]),
-        starting=Quantity(magnitude=100, units="AUD"),
-        rate=0.1,
-        treatment=(
-            InterestTreatment.SEPARATE
-            if method == "simple"
-            else InterestTreatment.FINANCED
-        ),
-        current_interest=(
-            CurrentInterest.INCLUDED
-            if method == "capitalized"
-            else CurrentInterest.EXCLUDED
-        ),
-    )
-    assert result.closing.movements[-1].magnitude == pytest.approx(expected)
-    if method != "simple":
-        assert result.interest.total().magnitude == pytest.approx(expected - 100)
-
-
-def test_account_overdraft_and_timing():
-    result = Account.calculate(
-        annual([-150, 100, -200]), starting=Quantity(magnitude=100, units="AUD")
-    )
-    assert [s.magnitude for s in result.closing.movements] == [0, 50, 0]
-    assert [s.magnitude for s in result.overdraft_balance.movements] == [-50, 0, -150]
-    assert [s.magnitude for s in result.overdraft.movements] == [-50, 50, -150]
-    for timing, interest in [("advance", 11), ("arrears", 10)]:
-        result = Account.calculate(
-            annual([10]),
-            starting=Quantity(magnitude=100, units="AUD"),
-            rate=0.1,
-            balance=Balance.CLOSING if timing == "advance" else Balance.OPENING,
-        )
-        assert result.interest.movements[0].magnitude == pytest.approx(interest)
-
-
 def test_adapter_exports_are_detached():
     from rangekeeper.io import polars as po
 
@@ -448,7 +398,7 @@ def test_adapter_exports_are_detached():
 
 
 def test_dynamics_fixed_inputs():
-    from rangekeeper.finance.dynamics import (
+    from rangekeeper.market.dynamics import (
         accumulate_volatility,
         calculate_autoregression,
         calculate_cycle,
