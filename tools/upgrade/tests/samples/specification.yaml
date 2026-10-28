@@ -1,0 +1,222 @@
+metadata:
+  id: d8b764b2-e348-4ebe-b00f-d2e9d0e75e80
+  schema_version: 0.7.0
+model: 5ea5814b-4e15-4231-b995-27309e124684
+assignments:
+- target:
+    target: d04261cd-4a62-46a1-a3ff-0dd0bff28b2e
+  quantity:
+    magnitude: 100.0
+    units: AUD
+- target:
+    target: 4a97871a-1166-4ceb-bce4-e97b6eb16966
+  quantity:
+    magnitude: 0.0
+    units: AUD
+- target:
+    target: baaffead-e6e6-4ebc-9eb6-ca65581e6144
+  quantity:
+    magnitude: 0.02
+    units: dimensionless
+- target:
+    target: b5672296-c986-4378-ba0f-9ee1bbae8db2
+  quantity:
+    magnitude: 0.05
+    units: dimensionless
+- target:
+    target: 5c233dad-ebe6-46b0-9305-1f45e9362192
+  quantity:
+    magnitude: 0.35
+    units: dimensionless
+- target:
+    target: ada17620-2801-4aee-b310-3f465fa8c88e
+  quantity:
+    magnitude: 0.1
+    units: dimensionless
+- target:
+    target: de1b9d2a-be1a-4755-94e5-c3f2bea5351c
+  quantity:
+    magnitude: 0.05
+    units: dimensionless
+- target:
+    target: 25e02d70-5954-4424-9da1-388a64cbb61b
+  quantity:
+    magnitude: 0.07
+    units: dimensionless
+- target:
+    target: 7209bd14-7c6c-4b96-9dec-b28055e16b9e
+  quantity:
+    magnitude: 1000.0
+    units: AUD
+- target:
+    target: 960c94cb-b232-4611-ad50-da04154611b9
+  quantity:
+    magnitude: 1
+    units: dimensionless
+- target:
+    target: 68cf49dd-51b0-4b77-8dd5-f8a4ae407ddf
+  quantity:
+    magnitude: 1
+    units: dimensionless
+- target:
+    target: 80ca4bbc-f232-42a2-ba29-ee91b1b263e7
+  quantity:
+    magnitude: 1
+    units: dimensionless
+unknowns:
+- target: 00688197-a05a-43de-8d72-38eea46313c7
+- target: b28eef6e-ddc1-4fbe-855f-0b29cf0400b3
+- target: 01c5d630-8bef-41ba-afe8-f203771d1940
+- target: 7e9ecbce-49fd-4823-a8f2-d4b2e6027b8e
+- target: 12067201-2de9-498f-93a6-79e9a6f07fc2
+- target: 3a4c3801-ada6-4d05-8ebe-d0d3fa823544
+- target: e66e78f6-7f5f-4abb-8acb-9ea498acd250
+- target: e960307f-1d9d-44e4-b9ff-c441caeeabdb
+- target: 53795b2f-fd42-4812-90d8-d7bd99760056
+- target: 241199b0-f83a-4d4c-99ad-71f1f28fd7d8
+- target: b864b18b-5b75-4ed0-a5ef-16360c9374a5
+- target: 1a3419dd-c8fd-4120-afcb-42e6eea53117
+- target: 6387dd14-af62-4899-86d7-9f421080e371
+- target: 9a78dc0a-ff2f-437b-925b-b269c7b7a845
+- target: bf37af10-5aeb-4735-ad0f-650bb1db5395
+- target: c8293fe6-9959-4009-a2d4-77fca7a97d96
+- target: 1bf7d7f8-d9f3-429e-8924-e70b786e0ab2
+- target: 5e2b1d0a-ff39-4fe5-a222-13f15e288a7b
+- target: 5e55c0ba-f260-45dd-99b9-2c03e844f5f0
+- target: 2ac7a63c-6691-404d-ad48-346186cb430f
+- target: b91546a1-4027-43ab-88f2-86560cdba965
+- target: 764416e3-37be-47d8-a435-a6e48bb851a3
+- target: c7d34f50-c2e3-476d-baac-612d46e3a56b
+- target: d46244a2-714a-4d11-ae53-8137ba55e92d
+- target: 0bbe4e89-1f53-4f8f-a925-7da61ee3ba45
+- target: 0e2ea191-4a4c-4ab0-851a-e0386d6c4d81
+- target: 6094b6e7-63ac-4f80-bcca-6a77e60fc48e
+- target: 599c4451-be25-458d-a67d-180ac528fae1
+- target: c669a25a-f1ed-4476-94c7-633d5e799c3f
+- target: 172887b8-0be0-45c2-b62b-dd1d145487d7
+- target: 9a328872-1e6e-43e9-815f-969810c4c270
+- target: a238c1bd-018a-4413-bd64-ab7d168f1962
+- target: 3a1b1807-8c48-46c7-9aa5-a91e4573b34f
+- target: 3e2980f3-2035-46b6-a819-82d0a7c7c103
+- target: d67a73a0-69c8-4a3a-9939-8c53b6fcacba
+- target: 53e56882-2540-4fdb-987e-b95c308e9cd7
+- target: 3fb89e16-cd87-4d42-bf97-689dbbf43d48
+policy:
+  id: 072611d6-3c46-4c12-a887-35f3956cb8d0
+  targets:
+  - target: 291ebe6e-18ca-4303-9689-bc4f79d6965e
+  - target: d9427bf9-68a7-44b3-8072-2dea71a7ba63
+  - target: 7d3197a4-17d9-460a-b640-85c6dff9b7d6
+  - target: 4c9bd7cf-d1aa-4dee-8149-f4bd17f592ae
+  decisions:
+  - id: a49322fb-da0b-5a0a-b9bf-c7354afee234
+    at: '2021-12-31'
+    observations:
+    - name: pricing_factor
+      target:
+        target: 960c94cb-b232-4611-ad50-da04154611b9
+    rules:
+    - id: 6b171f83-b62e-5691-bad1-fb64b8a02009
+      condition:
+        id: 017ef7ac-2f7a-5251-97a5-8195444f7960
+        kind: binary
+        operator: greater_than
+        operands:
+        - id: fd3fcb1b-9342-5684-9024-644ac32d78a9
+          kind: reference
+          target:
+            target: 960c94cb-b232-4611-ad50-da04154611b9
+        - id: e958bfe0-8055-5c89-819c-bae038c30c86
+          kind: quantity
+          quantity:
+            magnitude: 1.2
+            units: dimensionless
+      actions:
+      - kind: assign
+        target:
+          target: 291ebe6e-18ca-4303-9689-bc4f79d6965e
+        quantity:
+          magnitude: 1
+          units: dimensionless
+      - kind: assign
+        target:
+          target: d9427bf9-68a7-44b3-8072-2dea71a7ba63
+        quantity:
+          magnitude: 1
+          units: dimensionless
+      - kind: assign
+        target:
+          target: 7d3197a4-17d9-460a-b640-85c6dff9b7d6
+        quantity:
+          magnitude: 0
+          units: dimensionless
+      - kind: assign
+        target:
+          target: 4c9bd7cf-d1aa-4dee-8149-f4bd17f592ae
+        quantity:
+          magnitude: 0
+          units: dimensionless
+      - kind: terminate
+    fallback:
+    - kind: assign
+      target:
+        target: 291ebe6e-18ca-4303-9689-bc4f79d6965e
+      quantity:
+        magnitude: 1
+        units: dimensionless
+    - kind: assign
+      target:
+        target: d9427bf9-68a7-44b3-8072-2dea71a7ba63
+      quantity:
+        magnitude: 0
+        units: dimensionless
+  - id: 8b6bc31b-211c-588b-ba36-87d9752b6e5c
+    at: '2022-12-31'
+    observations:
+    - name: pricing_factor
+      target:
+        target: 68cf49dd-51b0-4b77-8dd5-f8a4ae407ddf
+    rules:
+    - id: 189e058f-81f7-5e52-9bea-cb65efdd3c34
+      condition:
+        id: aeefa2e9-33b7-5cc2-bf13-89bb812d3e38
+        kind: binary
+        operator: greater_than
+        operands:
+        - id: 62169c2c-b596-53f6-a9ea-622546c3a15e
+          kind: reference
+          target:
+            target: 68cf49dd-51b0-4b77-8dd5-f8a4ae407ddf
+        - id: e9be2aca-dd28-5ae2-8137-c0812fa53fc2
+          kind: quantity
+          quantity:
+            magnitude: 1.2
+            units: dimensionless
+      actions:
+      - kind: assign
+        target:
+          target: 7d3197a4-17d9-460a-b640-85c6dff9b7d6
+        quantity:
+          magnitude: 1
+          units: dimensionless
+      - kind: assign
+        target:
+          target: 4c9bd7cf-d1aa-4dee-8149-f4bd17f592ae
+        quantity:
+          magnitude: 1
+          units: dimensionless
+      - kind: terminate
+    fallback:
+    - kind: assign
+      target:
+        target: 7d3197a4-17d9-460a-b640-85c6dff9b7d6
+      quantity:
+        magnitude: 1
+        units: dimensionless
+    - kind: assign
+      target:
+        target: 4c9bd7cf-d1aa-4dee-8149-f4bd17f592ae
+      quantity:
+        magnitude: 1
+        units: dimensionless
+    - kind: terminate

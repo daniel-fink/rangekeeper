@@ -260,5 +260,5 @@ namespaces = false
 "rangekeeper.schema" = ["*.json"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "tools/codemod/tests"]
+testpaths = ["tests", "tools/codemod/tests", "tools/upgrade/tests"]
 pythonpath = ["src"]
