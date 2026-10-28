@@ -23,9 +23,9 @@ from linkml_runtime.utils.schemaview import SchemaView
 from rangekeeper.model._scope import build_scope as _build_scope
 from rangekeeper.model.expression.domains import DomainCompatibility, compare_domains
 from rangekeeper.model.expression.validation import (
+    check_constraint_predicates,
+    check_function_signature,
     infer_expression_domain,
-    validate_constraint_predicates,
-    validate_function_signature,
 )
 from rangekeeper.shared.errors import ContractError
 from rangekeeper.shared.validation import require_unique
@@ -44,7 +44,7 @@ from types import MappingProxyType
 def build_scope(document):
     scope = _build_scope(document)
     for function in scope.functions.values():
-        validate_function_signature(function, scope=scope)
+        check_function_signature(function, scope=scope)
     inputs = document.get("input_domains") or []
     return replace(
         scope,
@@ -67,7 +67,7 @@ def build_scope(document):
 def validate_fixture_constraints(constraints, expressions, *, scope):
     """Expression fixtures have one owning collection for Constraint codes."""
     require_unique(constraints, "code", "Constraint code", path="/constraints")
-    validate_constraint_predicates(constraints, expressions, scope=scope)
+    check_constraint_predicates(constraints, expressions, scope=scope)
 
 
 SCHEMA = Path(__file__).resolve().parents[1]

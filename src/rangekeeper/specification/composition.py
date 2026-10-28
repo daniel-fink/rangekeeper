@@ -53,7 +53,7 @@ REQUIREMENTS = (
 FIELDS = frozenset(slots_for("Specification"))
 
 
-def validate_local_header(doc, schema_version):
+def check_local_header(doc, schema_version):
     """Check one contribution's header without resolving external revisions."""
     require(set(doc) <= FIELDS, "reference must resolve to a Specification")
     metadata = doc["metadata"]
@@ -129,7 +129,7 @@ class Composition:
         return prepare(self, resolver=resolver, units=units).report
 
 
-def validate_settings(settings):
+def check_settings(settings):
     """Require positive, finite settings and a relative_tolerance below one."""
     for value in settings.values():
         require(
@@ -143,7 +143,7 @@ def validate_settings(settings):
         )
 
 
-def validate_roles(document):
+def check_roles(document):
     """Return local role sets after checking duplicates and disjoint ownership."""
     groups = {}
     for field in ("assignments", "unknowns", "estimates"):
@@ -189,7 +189,7 @@ def specification_catalogue(root, specifications, schema_version):
             return
         require(ref in catalogue, f"unresolved Specification reference: {ref}")
         doc = catalogue[ref]
-        validate_local_header(doc, schema_version)
+        check_local_header(doc, schema_version)
         metadata = doc["metadata"]
         require(metadata["id"] == ref, "Specification catalogue identity mismatch")
         active.add(ref)
@@ -253,7 +253,7 @@ def compose_specification(
         sources[key] = Source(UUID(source), path)
 
     for doc in contributors:
-        validate_roles(doc)
+        check_roles(doc)
         source = doc["metadata"]["id"]
         if doc.get("model") is not None:
             model_ids.add(doc["model"])
@@ -283,7 +283,7 @@ def compose_specification(
     require(len(model_ids) <= 1, "conflicting input Model revisions")
     if model_ids:
         effective["model"] = next(iter(model_ids))
-    validate_roles(effective)
+    check_roles(effective)
     from rangekeeper.specification.specification import Specification
 
     snapshots = []

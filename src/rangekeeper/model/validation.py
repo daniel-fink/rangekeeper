@@ -34,6 +34,7 @@ from rangekeeper.shared.validation import bounded, require, require_acyclic
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model
+    from rangekeeper.shared.references import SpecificationResolver
 
 
 def validate(
@@ -59,6 +60,23 @@ def validate(
     issues: list[Issue] = []
     record = checked_record("Model", model, "", issues)
     return _validate(record, history=history, units=units, initial_issues=issues)
+
+
+def validate_document(
+    model: "Model",
+    *,
+    resolver: "SpecificationResolver | None" = None,
+    units: UnitSystem | None = None,
+) -> ValidationReport:
+    """Report the semantic problems of one Model revision; raise none for them.
+
+    The check uses ``units``, or the unit system of the revision. A Model
+    references no other document, so ``resolver`` reads nothing. Lineage is
+    optional context: a store need not hold the predecessor.
+    """
+    return _validate(
+        model._record, index=model._index, units=units or model.unit_system
+    )
 
 
 def _validate(

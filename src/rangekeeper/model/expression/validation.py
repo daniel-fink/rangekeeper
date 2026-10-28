@@ -18,7 +18,7 @@ from rangekeeper.shared.errors import ContractError
 from rangekeeper.shared.validation import require, require_new
 
 
-def validate_function_signature(function, *, scope: Scope) -> None:
+def check_function_signature(function, *, scope: Scope) -> None:
     """Check parameter ordering, domain references and empty-collection behavior."""
     names = set()
     optional_seen = False
@@ -37,12 +37,12 @@ def validate_function_signature(function, *, scope: Scope) -> None:
                 )
             else:
                 optional_seen = True
-        validate_domain_references(parameter["domain"], scope=scope)
+        check_domain_references(parameter["domain"], scope=scope)
         if parameter["domain"]["kind"] == "collection":
             require(
                 "empty_collection" in function, "missing empty-collection behaviour"
             )
-    validate_domain_references(function["result"], scope=scope)
+    check_domain_references(function["result"], scope=scope)
     if function.get("empty_collection") == "zero":
         require(
             function["result"]["kind"] in ("number", "quantity", "measurement"),
@@ -50,15 +50,15 @@ def validate_function_signature(function, *, scope: Scope) -> None:
         )
 
 
-def validate_domain_references(domain, *, scope: Scope) -> None:
+def check_domain_references(domain, *, scope: Scope) -> None:
     """Require Measure references within this scope, including collection item domains."""
     if "measure" in domain:
         require(UUID(domain["measure"]) in scope.measures, "unknown signature Measure")
     if "item_domain" in domain:
-        validate_domain_references(domain["item_domain"], scope=scope)
+        check_domain_references(domain["item_domain"], scope=scope)
 
 
-def validate_query_references(query, *, scope: Scope) -> None:
+def check_query_references(query, *, scope: Scope) -> None:
     """Check declared query references without traversing the graph."""
     require(
         UUID(query["starting_at"]) in scope.entities, "unknown Query starting Entity"
@@ -84,7 +84,7 @@ def validate_query_references(query, *, scope: Scope) -> None:
 
 def infer_query_domain(query, *, scope: Scope) -> dict:
     """Infer a conservative collection domain from declared candidates only."""
-    validate_query_references(query, scope=scope)
+    check_query_references(query, scope=scope)
     projection = query["projection"]
     if projection["kind"] == "entity":
         item_domain = dict(kind="entity")
@@ -221,7 +221,7 @@ def _require_constraint_identities(constraints, *, scope: Scope) -> set[UUID]:
     return seen
 
 
-def validate_constraint_predicates(
+def check_constraint_predicates(
     constraints,
     expressions,
     *,
@@ -229,7 +229,7 @@ def validate_constraint_predicates(
     expression_paths=None,
     constraint_paths=None,
 ):
-    """Validate mathematical identities, predicate references and Boolean domains.
+    """Check mathematical identities, predicate references and Boolean domains.
 
     Names/codes must be checked separately in each owning collection. Constraint
     and expression UUIDs share this combined scope; multiple Constraints may refer

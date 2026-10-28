@@ -14,7 +14,7 @@ from rangekeeper.specification.composition import (
     compose_specification,
     specification_catalogue,
 )
-from rangekeeper.specification.validation import validate_batch, validate_specification
+from rangekeeper.specification.validation import check_batch, check_specification
 
 
 def check_composition(schema, validators, module, model, version, model_version):
@@ -51,7 +51,7 @@ def check_composition(schema, validators, module, model, version, model_version)
     def check(doc, extra=()):
         nonlocal accepted
         composition, cat = compose(doc, extra)
-        validate_specification(doc, model, version, model_version, specifications=cat)
+        check_specification(doc, model, version, model_version, specifications=cat)
         accepted += 1
         return composition
 
@@ -91,9 +91,7 @@ def check_composition(schema, validators, module, model, version, model_version)
             )
             == common_id
         )
-    paths = validate_batch(
-        batch, models, version, model_version, specifications=catalogue
-    )
+    paths = check_batch(batch, models, version, model_version, specifications=catalogue)
     assert {path[-1] for path in paths} == set(batch["cases"])
     accepted += 1
 
@@ -196,7 +194,7 @@ def check_composition(schema, validators, module, model, version, model_version)
     cat = dict(catalogue, **{bad["metadata"]["id"]: bad})
     reject(
         "batch input Model assertion",
-        lambda: validate_batch(bad, models, version, model_version, specifications=cat),
+        lambda: check_batch(bad, models, version, model_version, specifications=cat),
     )
     # A batch Model pin does not repair an incomplete case.
     missing_model = deepcopy(forward)
@@ -204,26 +202,24 @@ def check_composition(schema, validators, module, model, version, model_version)
     cat = dict(catalogue, **{missing_model["metadata"]["id"]: missing_model})
     reject(
         "requires an input Model",
-        lambda: validate_batch(
-            batch, models, version, model_version, specifications=cat
-        ),
+        lambda: check_batch(batch, models, version, model_version, specifications=cat),
     )
     reject(
         "unresolved input Model",
-        lambda: validate_batch(
+        lambda: check_batch(
             batch, {}, version, model_version, specifications=catalogue
         ),
     )
     reject(
         "batch is not one",
-        lambda: validate_specification(
+        lambda: check_specification(
             batch, model, version, model_version, specifications=catalogue
         ),
     )
     outer = record(
         "outer-batch", cases=[batch["metadata"]["id"], forward["metadata"]["id"]]
     )
-    nested_paths = validate_batch(
+    nested_paths = check_batch(
         outer, models, version, model_version, specifications=catalogue
     )
     assert len(nested_paths) == 3 and len(set(nested_paths)) == 3
@@ -232,7 +228,7 @@ def check_composition(schema, validators, module, model, version, model_version)
     collision_batch["metadata"]["id"] = model_id
     reject(
         "duplicate identity",
-        lambda: validate_batch(
+        lambda: check_batch(
             collision_batch, models, version, model_version, specifications=catalogue
         ),
     )
@@ -347,7 +343,7 @@ def check_composition(schema, validators, module, model, version, model_version)
         validators["Specification"].validate(after)
         restored[after["metadata"]["id"]] = after
     assert (
-        validate_batch(
+        check_batch(
             restored[batch["metadata"]["id"]],
             models,
             version,

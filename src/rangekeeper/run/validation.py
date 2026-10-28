@@ -10,9 +10,9 @@ from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import Quantity, UnitSystem, default_units
 from rangekeeper.run.outputs import validate_outputs
 from rangekeeper.run.report import (
+    check_non_batch_status,
+    check_report,
     completion_for,
-    validate_non_batch_status,
-    validate_report,
 )
 from rangekeeper.schema.enums import CompletionStatus
 from rangekeeper.schema.index import walk_data
@@ -34,7 +34,7 @@ from rangekeeper.specification.composition import (
     specification_catalogue,
 )
 from rangekeeper.specification.specification import Specification
-from rangekeeper.specification.validation import validate_specification
+from rangekeeper.specification.validation import check_specification
 
 if TYPE_CHECKING:
     from rangekeeper.run.run import Run
@@ -103,6 +103,20 @@ def validate_records(
         ).check(),
         document=root,
     )
+
+
+def validate_document(
+    run: "Run",
+    *,
+    resolver: "DocumentResolver | None" = None,
+    units: UnitSystem | None = None,
+) -> ValidationReport:
+    """Report the problems of one Run: local rules, or the tree with ``resolver``."""
+    if resolver is None:
+        from rangekeeper.run.run import _validate_local
+
+        return _validate_local(run.record)
+    return validate(run, resolver=resolver, units=units)
 
 
 def validate(
@@ -401,7 +415,7 @@ class _RunValidation:
                         "batch input Model assertion mismatch",
                     )
             else:
-                validate_non_batch_status(run)
+                check_non_batch_status(run)
                 try:
                     spec_id = spec["metadata"]["id"]
                     if spec_id not in self.compositions:
@@ -421,7 +435,7 @@ class _RunValidation:
                             model, self.model_version
                         )
                     if spec_id not in self.prepared_scopes:
-                        scope, _ = validate_specification(
+                        scope, _ = check_specification(
                             spec,
                             model,
                             self.spec_version,
@@ -496,7 +510,7 @@ class _RunValidation:
                                 error.path = "/outputs"
                             raise
             try:
-                validate_report(run, batch=batch, effective=effective)
+                check_report(run, batch=batch, effective=effective)
             except ContractError as error:
                 if not error.path:
                     error.path = "/report"

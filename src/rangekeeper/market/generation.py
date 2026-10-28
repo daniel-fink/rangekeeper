@@ -28,7 +28,7 @@ from rangekeeper.market.components import make_cyclicality as make_cyclicality
 from rangekeeper.market.components import make_noise as make_noise
 from rangekeeper.market.components import make_trend as make_trend
 from rangekeeper.market.components import make_volatility as make_volatility
-from rangekeeper.market.contracts import check_values, method, validate_plan
+from rangekeeper.market.contracts import check_plan, check_values, method
 from rangekeeper.market.implementation import calculation_provenance
 from rangekeeper.market.random import create_generator, stream_identifier
 from rangekeeper.market.view import Market
@@ -94,13 +94,13 @@ def make_plan(
         periods=tuple(periods),
         parameters=_parameters(**dict(sorted(values.items()))),
     )
-    validate(plan)
+    check_scenario_plan(plan)
     return plan
 
 
-def validate(plan: ScenarioPlan) -> None:
-    """Validate a complete plan without randomness or numerical generation."""
-    validate_plan(plan.to_data())
+def check_scenario_plan(plan: ScenarioPlan) -> None:
+    """Check a complete plan without randomness or numerical generation."""
+    check_plan(plan.to_data())
 
 
 def _scenario_key(key):
@@ -283,7 +283,7 @@ def sample(model: Model, plan: ScenarioPlan, *, scenario_key: str) -> Model:
     This draws randomness from stable streams. It does not construct output paths
     or write files. Use capture() when the inputs are already known.
     """
-    validate(plan)
+    check_scenario_plan(plan)
     return _sample(model, plan, _scenario_key(scenario_key))
 
 
@@ -301,7 +301,7 @@ def capture(
     p1, p2, ... are assigned in the plan's explicit period order. Missing, extra,
     nonfinite or wrongly sized inputs fail; no input or store is changed.
     """
-    validate(plan)
+    check_scenario_plan(plan)
     return _record_inputs(
         model,
         plan,
@@ -345,7 +345,7 @@ def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
     Input Values and provenance are retained. Paths use stable Movement UUIDs, period labels and
     dates. Forward-derived ratios carry availability at the next period end.
     """
-    validate(plan)
+    check_scenario_plan(plan)
     return _realize(model, plan, draws=draws)
 
 
@@ -419,7 +419,7 @@ def _worker(payload):
     """Process boundary accepts and returns only detached dictionaries and strings."""
     model_data, plan_data, key = payload
     model, plan = Model.from_data(model_data), ScenarioPlan.from_data(plan_data)
-    validate(plan)
+    check_scenario_plan(plan)
     result = _generate_one(model, plan, key)
     return result.model.to_data(), result.realization.to_data()
 
@@ -432,7 +432,7 @@ def generate(
     Duplicate/blank keys and nonpositive worker counts fail. Random generators and
     record wrappers never cross the process boundary. Persistence is explicit.
     """
-    validate(plan)
+    check_scenario_plan(plan)
     keys = tuple(scenario_keys)
     if (
         type(workers) is not int

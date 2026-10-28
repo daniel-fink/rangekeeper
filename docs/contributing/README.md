@@ -192,6 +192,19 @@ when one word would lose domain meaning. Put a record's invariant on its owner;
 keep cross-record validation, execution and IO at their explicit boundaries.
 Owner subclasses of generated records declare no persistent fields.
 
+Validation helpers use one verb family
+([ADR-011](../decisions/011-records-and-validation.md#validation-api)):
+
+| Verb | Returns | On a content problem |
+| --- | --- | --- |
+| `validate*` | A `ValidationReport` | Adds an `Issue`; raises nothing |
+| `check*` | Nothing, or the checked input | Raises a `RangekeeperError`, usually `ContractError` or `ValidationError` |
+| `require*` | Nothing | Raises `ContractError` for one rule |
+
+`bounded(issues, check, document=...)` turns a `check*` function into a report.
+Each document's `validate_document` (in its package's `validation` module) is
+the one implementation behind `validate()` and `check()`.
+
 Use composition between runtime services instead of inheritance with hidden
 state. For example, `Executor` traverses batches, `Plan` resolves their graph,
 and `Attempt` owns one scalar execution. A layout `Formulation` owns symbolic

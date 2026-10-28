@@ -163,7 +163,7 @@ def decode(content: PropertyContent) -> object:
         raise ValueError(f"invalid property content: {error}") from error
 
 
-def validate_content(content: PropertyContent) -> None:
+def check_content(content: PropertyContent) -> None:
     """Check conditional shape and scalar meaning beyond structural validation."""
     decode(content)
 

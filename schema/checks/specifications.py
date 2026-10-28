@@ -22,7 +22,7 @@ from linkml_runtime.utils.schemaview import SchemaView
 
 from rangekeeper.schema.index import walk_data
 from rangekeeper.shared.errors import ContractError
-from rangekeeper.specification.validation import validate_specification
+from rangekeeper.specification.validation import check_specification
 
 
 def records(system):
@@ -246,16 +246,16 @@ for document, snapshot in valid:
     before = copy.deepcopy((document, snapshot))
     validators["Specification"].validate(document)
     validators["Model"].validate(snapshot)
-    scope, _ = validate_specification(document, snapshot, VERSION, MODEL_VERSION)
+    scope, _ = check_specification(document, snapshot, VERSION, MODEL_VERSION)
     assert (document, snapshot) == before
 assert model == model_before
 assert (
-    validate_specification(reused, recorded, VERSION, MODEL_VERSION)[0].values[
+    check_specification(reused, recorded, VERSION, MODEL_VERSION)[0].values[
         UUID(values["annual_rent_per_home"])
     ]["quantity"]["magnitude"]
     == 30000
 )
-validate_specification(
+check_specification(
     reused, recorded, VERSION, MODEL_VERSION, history=[inverse["metadata"]]
 )
 
@@ -482,7 +482,7 @@ for document, snapshot, message, kwargs in semantic:
     validators["Specification"].validate(document)
     validators["Model"].validate(snapshot)
     try:
-        validate_specification(document, snapshot, VERSION, MODEL_VERSION, **kwargs)
+        check_specification(document, snapshot, VERSION, MODEL_VERSION, **kwargs)
     except ContractError as error:
         assert message in str(error), (message, str(error))
     else:
@@ -538,8 +538,7 @@ with TemporaryDirectory(prefix="rk-specification-") as temp:
             after,
         )
         validators["Specification"].validate(after)
-        # Stock LinkML writes magnitudes as text; validate the exact document.
-        validate_specification(document, snapshot, VERSION, MODEL_VERSION)
+        check_specification(after, snapshot, VERSION, MODEL_VERSION)
         restored = json_loader.loads(
             json.dumps(after), target_class=module.Specification
         )

@@ -6,7 +6,7 @@ import pytest
 
 from rangekeeper.errors import Code
 from rangekeeper.model import Model, Value
-from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.model.formulation.validation import check_formulation_names
 from rangekeeper.schema.index import RecordIndex
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.errors import ContractError, ReferenceTypeError, ValidationError
@@ -141,7 +141,7 @@ def test_local_naming_checks_each_collection_from_one_shot_iterables(nested, one
     if one_shot:
         roots = iter(roots)
     with pytest.raises(ContractError) as failure:
-        validate_formulation_names(roots)
+        check_formulation_names(roots)
     parent = "/formulations/0/formulations/0" if nested else "/formulations/0"
     assert failure.value.path == parent + "/bindings/1/name"
 

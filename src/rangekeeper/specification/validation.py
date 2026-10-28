@@ -33,24 +33,99 @@ from rangekeeper.shared.errors import (
     ContractError,
     IdentityConflictError,
     MissingReferenceError,
+    RangekeeperError,
     ReferenceTypeError,
     UnitError,
+    ValidationError,
 )
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.shared.validation import bounded, require, require_acyclic
 from rangekeeper.specification.composition import (
     Composition,
     batch_cases,
+    check_roles,
+    collect_specifications,
+    compose,
     compose_specification,
     specification_catalogue,
-    validate_roles,
 )
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model
+    from rangekeeper.specification.specification import Specification
 
 
-def validate_specification(
+def validate_document(
+    specification: "Specification",
+    *,
+    resolver: SpecificationResolver | None = None,
+    units: UnitSystem | None = None,
+) -> ValidationReport:
+    """Report the problems of one Specification; raise none for content problems.
+
+    Without ``resolver``, repeat the local rules. With it, resolve the case graph
+    once, then compose and validate each concrete case once. A batch also checks
+    that each case uses the input Model that the batch pins.
+    """
+    from rangekeeper.specification.specification import _validate_local
+
+    report = _validate_local(specification.record)
+    if resolver is None or not report.valid:
+        return report
+    try:
+        documents, catalogue = collect_specifications(specification, resolver=resolver)
+    except ValidationError as error:
+        return error.report
+    except RangekeeperError as error:
+        return ValidationReport((Issue(error.code, str(error), specification.id),))
+    issues: list[Issue] = []
+    compositions: dict[UUID, Composition | None] = {}
+
+    def visit(current: "Specification", pins: tuple[UUID, ...]) -> None:
+        if current.record.cases:
+            if current.record.model is not None:
+                pins += (current.record.model,)
+            for identity in current.record.cases:
+                visit(documents[identity], pins)
+            return
+        if current.id not in compositions:
+            try:
+                composition = compose(
+                    current, resolver=resolver, documents=documents, catalogue=catalogue
+                )
+            except ValidationError as error:
+                compositions[current.id] = None
+                issues.extend(error.report.issues)
+            else:
+                compositions[current.id] = composition
+                issues.extend(
+                    composition.validate(resolver=resolver, units=units).issues
+                )
+        resolved = compositions[current.id]
+        if resolved is None or resolved.model_id is None:
+            return
+        for pin in pins:
+            if pin != resolved.model_id:
+                issues.append(
+                    Issue(
+                        Code.BATCH_MODEL,
+                        f"case {current.id} uses Model {resolved.model_id}, "
+                        f"but its batch pins Model {pin}",
+                        current.id,
+                        targets=(resolved.model_id, pin),
+                        values={
+                            "case": str(current.id),
+                            "model": str(resolved.model_id),
+                            "pinned": str(pin),
+                        },
+                    )
+                )
+
+    visit(specification, ())
+    return ValidationReport(tuple(issues))
+
+
+def check_specification(
     specification,
     model,
     schema_version,
@@ -62,7 +137,7 @@ def validate_specification(
     composition=None,
     validate_input=True,
 ):
-    """Validate one concrete composition and roles without changing its inputs.
+    """Check one concrete composition and roles without changing its inputs.
 
     The caller supplies structurally validated Model/Specification documents and
     an optional UUID-keyed Specification catalogue. Historical Metadata, if
@@ -103,7 +178,7 @@ def validate_specification(
         if item.id != composition.root_id
     )
     try:
-        return _validate_concrete(
+        return _check_concrete(
             effective,
             model,
             schema_version,
@@ -123,7 +198,7 @@ def validate_specification(
         raise ContractError.from_issue(issue) from error
 
 
-def validate_batch(
+def check_batch(
     specification,
     models,
     schema_version,
@@ -132,7 +207,7 @@ def validate_batch(
     specifications=None,
     units_compatible=None,
 ):
-    """Validate every leaf independently; return case paths, not runs or results."""
+    """Check every leaf independently; return case paths, not runs or results."""
     catalogue = specification_catalogue(specification, specifications, schema_version)
     paths, prepared, validated = [], {}, set()
     for path, leaf, assertions in batch_cases(
@@ -166,7 +241,7 @@ def validate_batch(
             )
         )
         if identity not in validated:
-            validate_specification(
+            check_specification(
                 leaf,
                 models[model_id],
                 schema_version,
@@ -180,7 +255,7 @@ def validate_batch(
     return paths
 
 
-def _validate_concrete(
+def _check_concrete(
     specification,
     model,
     schema_version,
@@ -252,7 +327,7 @@ def _validate_concrete(
                     units_compatible(actual, expected), "incompatible supplied units"
                 )
 
-    roles = validate_roles(specification)
+    roles = check_roles(specification)
     assigned, unknowns, controlled = (
         roles["assignments"],
         roles["unknowns"],
@@ -309,9 +384,9 @@ def _validate_concrete(
         values={"keys": tuple(_key(scope, identity) for identity in missing)},
     )
 
-    from rangekeeper.specification.composition import validate_settings
+    from rangekeeper.specification.composition import check_settings
 
-    validate_settings(specification.get("settings") or {})
+    check_settings(specification.get("settings") or {})
     return scope, analysis
 
 
@@ -346,7 +421,7 @@ def validate_records(
     def check():
         versions = document_version("Specification"), document_version("Model")
         if data.get("cases"):
-            validate_batch(
+            check_batch(
                 data,
                 model_data,
                 *versions,
@@ -359,7 +434,7 @@ def validate_records(
             model = model_data.get(effective.get("model"))
             if model is None:
                 raise ContractError("unresolved input Model revision")
-            validate_specification(
+            check_specification(
                 data,
                 model,
                 *versions,
@@ -460,7 +535,7 @@ def prepare(
 
         def check():
             nonlocal scope, analysis
-            scope, analysis = validate_specification(
+            scope, analysis = check_specification(
                 effective,
                 resolved_model._record._data,
                 document_version("Specification"),
