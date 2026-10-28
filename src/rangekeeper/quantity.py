@@ -216,7 +216,7 @@ class Quantity(records.Quantity):
 
     def _invariants(self) -> None:
         """Require a currency amount in currency units and a number in other units."""
-        _require(self._data["magnitude"], self.units)
+        _require(self._data["magnitude"], self.units, is_currency(self.units))
 
     @property
     def number(self) -> float:

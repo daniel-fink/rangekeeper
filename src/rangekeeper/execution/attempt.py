@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from typing import cast
 from uuid import UUID, uuid4
 
+from rangekeeper import money
 from rangekeeper.execution import (
     acceptance,
     compiler,
@@ -92,6 +93,12 @@ class Attempt:
                 kind=ImplementationKind.SOLVER,
                 name=solver.qualified_name,
                 version=solver.fingerprint,
+            ),
+            # The numerical convention for currency amounts (ADR-023).
+            Implementation(
+                kind=ImplementationKind.CONVENTION,
+                name="rangekeeper.money",
+                version=money.CONVENTION,
             ),
         ]
         self.limits: settings.Limits | None = None

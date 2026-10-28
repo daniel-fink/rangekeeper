@@ -163,6 +163,15 @@ role's entry modules in `rangekeeper`: `shared.fingerprints.import_closure` read
 the import statements with `ast` and does not import the modules. Shared
 arithmetic changes alter both identities. Comments and docstrings do not. A
 missing entry or imported module fails explicitly.
+Each Run with a Runtime also records the numerical convention for currency
+amounts as `Implementation(kind=convention, name="rangekeeper.money",
+version=money.CONVENTION)` ([ADR-023](../decisions/023-decimal-money.md)).
+Version `1` means float64 inside, `math.fsum` for sums, `to_number` correctly
+rounded and `to_amount` at 15 significant digits, half even. Acceptance compares
+assignments exactly and other values in float64 with its tolerances; it never
+rounds to minor units. Publication copies each assigned amount without
+conversion and writes each solved amount through `to_amount`. A residual or
+tolerance in currency units is an amount.
 Solver implementation/version evidence remains owned by the backend. The
 backend's own fingerprint comes from its [registration](extensions.md#fingerprints). Workflow and
 scenario calculations share hashing mechanics but retain separate manifests and

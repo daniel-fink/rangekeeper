@@ -647,6 +647,7 @@
     "negate": "method (self) -> Flow",
     "replace": "method (self, *, units: str | Unset = <Unset>, movements: tuple[Movement, ...] | Unset = <Unset>) -> Self",
     "resample": "method (self, periods: Sequence[Period], *, method: ResamplingMethod, weighting: MeanWeighting | None = None, missing: MissingValueHandling = MissingValueHandling.ERROR) -> Flow",
+    "round": "method (self, *, places: int | None = None, mode: str = 'ROUND_HALF_EVEN') -> Flow",
     "scale": "method (self, factor: float) -> Flow",
     "total": "method (self, *, missing: MissingValueHandling = MissingValueHandling.ERROR) -> Quantity | None",
     "trim": "method (self, span: Period) -> Flow",
@@ -1894,6 +1895,10 @@
   }
  },
  "rangekeeper.money": {
+  "CONVENTION": {
+   "kind": "value",
+   "type": "str"
+  },
   "CURRENCIES": {
    "kind": "value",
    "type": "tuple"

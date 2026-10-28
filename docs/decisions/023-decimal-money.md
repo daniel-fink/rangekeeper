@@ -1,8 +1,7 @@
 # ADR-023: Store currency amounts as Decimal and calculate in float64
 
-Status: accepted for 1.0; implementation in progress (records, encodings and
-boundaries in [#117](https://github.com/daniel-fink/rangekeeper/issues/117)).
-Recorded: 2026-10-27.
+Status: accepted for 1.0; implemented in 1.0.0a2
+([#117](https://github.com/daniel-fink/rangekeeper/issues/117)). Recorded: 2026-10-27.
 
 ## Problem
 

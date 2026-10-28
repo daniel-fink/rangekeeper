@@ -5,6 +5,8 @@ Run from the repository root:
     uv run python tools/performance/records.py --output records.json
 
 Each value is the median time of one operation in microseconds.
+``flow_construct`` builds currency amounts (ADR-023); ``flow_construct_float``
+builds the same Flow in ``m^2``, the float64 baseline.
 """
 
 import argparse
@@ -45,6 +47,9 @@ def run(movements, repeat):
         movements=movements,
         flow_construct=median(
             lambda: Flow.from_periods(periods, magnitudes, units="AUD"), repeat
+        ),
+        flow_construct_float=median(
+            lambda: Flow.from_periods(periods, magnitudes, units="m^2"), repeat
         ),
         flow_from_data=median(lambda: Flow.from_data(data), repeat),
         flow_replace=median(lambda: flow.replace(units="USD"), repeat),
