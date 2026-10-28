@@ -210,3 +210,34 @@ def test_a_standalone_movement_keeps_decimal_text():
     movement = Movement(id=uuid4(), date=DAYS[0], magnitude=Decimal("2.50"))
     assert movement.to_data()["magnitude"] == "2.5"
     assert movement.number == 2.5
+
+
+def test_flow_and_stream_sums_give_the_same_amount():
+    from rangekeeper.flow import Stream
+
+    values = ("0.10", "0.20", "1250000.33")
+    first = Flow.from_events(DAYS, values, units="AUD")
+    second = Flow.from_events(DAYS, ("0.10", "0.10", "0.10"), units="AUD")
+    combined = Stream({"a": first, "b": second}).sum()
+    assert [m.magnitude for m in combined.movements] == [
+        Decimal("0.2"),
+        Decimal("0.3"),
+        Decimal("1250000.43"),
+    ]
+    stream_total = Stream({"a": first}).sum().total()
+    assert stream_total is not None and stream_total == first.total()
+
+
+def test_flow_round_rounds_each_movement():
+    split = Flow.from_events(DAYS, ("100",) * 3, units="AUD").scale(1 / 3)
+    rounded = split.round()
+    assert [m.magnitude for m in rounded.movements] == [Decimal("33.33")] * 3
+    assert rounded.total().magnitude == Decimal("99.99")
+    assert Flow.from_events(
+        DAYS, ("100",) * 3, units="AUD"
+    ).total().round().magnitude == (Decimal("300"))
+    assert {m.id for m in rounded.movements}.isdisjoint(m.id for m in split.movements)
+    gaps = Flow.from_events(DAYS, ("1.005", None, "2"), units="AUD").round()
+    assert [m.magnitude for m in gaps.movements] == [Decimal("1"), None, Decimal("2")]
+    with pytest.raises(UnitError):
+        Flow.from_events(DAYS, (1, 2, 3), units="m^2").round()

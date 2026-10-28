@@ -9,14 +9,22 @@ import math
 from collections.abc import Mapping, Sequence
 from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from uuid import UUID, uuid4
 
 from rangekeeper.flow._options import MissingValueHandling
-from rangekeeper.money import _encoded, _require, is_currency, to_number
+from rangekeeper.money import (
+    ROUND_HALF_EVEN,
+    _encoded,
+    _require,
+    is_currency,
+    to_number,
+)
+from rangekeeper.money import round as _round
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
 from rangekeeper.schema.runtime import UNSET
+from rangekeeper.shared.errors import UnitError
 
 if TYPE_CHECKING:
     from rangekeeper.duration import Period
@@ -147,8 +155,11 @@ class Flow(records.Flow):
             return data
         result, changed = [], False
         for movement in movements:
-            if isinstance(movement, Mapping) and movement.get("magnitude") is not None:
-                magnitude = movement["magnitude"]
+            magnitude = (
+                movement.get("magnitude") if isinstance(movement, Mapping) else None
+            )
+            # The Movement field encoder already made decimal text canonical.
+            if magnitude is not None and type(magnitude) is not str:
                 encoded = _encoded(magnitude)
                 if encoded is not magnitude:
                     movement, changed = {**movement, "magnitude": encoded}, True
@@ -192,8 +203,9 @@ class Flow(records.Flow):
                     raise ValueError(
                         "repeated event dates require distinct nonblank matching keys"
                     )
+        currency = is_currency(self.units)
         for movement in self.movements:
-            _require(movement._data.get("magnitude"), self.units)
+            _require(movement._data.get("magnitude"), self.units, currency)
 
     def check(self, *, resolved: bool = False, units: UnitSystem | None = None) -> Flow:
         """Check the units against a unit system; resolved=True also requires numbers.
@@ -237,6 +249,11 @@ class Flow(records.Flow):
         for value in dates:
             require_date(value)
         selected_keys = tuple(keys) if keys is not None else (None,) * len(dates)
+        if is_currency(units):
+            # Convert once here, so the Flow need not rebuild its Movements.
+            magnitudes = [
+                None if v is None else cast(str, _encoded(v)) for v in magnitudes
+            ]
         result = factory(
             units=units,
             movements=tuple(
@@ -289,6 +306,11 @@ class Flow(records.Flow):
             raise ValueError(
                 "periods, magnitudes, dates, keys and IDs must have equal lengths"
             )
+        if is_currency(units):
+            # Convert once here, so the Flow need not rebuild its Movements.
+            magnitudes = [
+                None if v is None else cast(str, _encoded(v)) for v in magnitudes
+            ]
         movements = []
         for i, (period, magnitude) in enumerate(zip(periods, magnitudes, strict=True)):
             day = dates[i] if dates is not None else None
@@ -350,6 +372,35 @@ class Flow(records.Flow):
                 s.replace(
                     id=uuid4(),
                     magnitude=(None if s.magnitude is None else s.number * factor),
+                )
+                for s in flow.movements
+            )
+        )
+
+    def round(self, *, places: int | None = None, mode: str = ROUND_HALF_EVEN) -> Flow:
+        """Round each amount to ``places``, by default the minor unit (ADR-023).
+
+        Only currency amounts round; see ``rangekeeper.money.round``. The
+        movements get fresh IDs and unresolved movements stay unresolved. The
+        total of the rounded movements can differ from the rounded total.
+        """
+        flow = self
+        if not is_currency(flow.units):
+            raise UnitError(f"{flow.units!r} is not a currency; only amounts round")
+        return flow.replace(
+            movements=tuple(
+                s.replace(
+                    id=uuid4(),
+                    magnitude=(
+                        None
+                        if s.magnitude is None
+                        else _round(
+                            Decimal(s.magnitude),
+                            flow.units,
+                            places=places,
+                            mode=mode,
+                        )
+                    ),
                 )
                 for s in flow.movements
             )

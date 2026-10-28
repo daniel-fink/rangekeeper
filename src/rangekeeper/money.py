@@ -26,8 +26,9 @@ from moneyed import list_all_currencies
 from rangekeeper.shared.amounts import (
     DIGITS,
     canonical,
-    digits,
+    float_text,
     text,
+    text_digits,
     to_amount,
     to_number,
 )
@@ -35,6 +36,11 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import UnitError
 
 CURRENCIES = tuple(currency.code for currency in list_all_currencies())
+# The version of the numerical convention that each Run records as the
+# Implementation ``rangekeeper.money`` (ADR-023): float64 inside, math.fsum for
+# sums, to_number correctly rounded and to_amount at 15 significant digits,
+# half even. A change to one of these rules needs a new version.
+CONVENTION = "1"
 
 # ISO 4217 lists no minor unit ("N.A.") for these codes; py-moneyed gives 1.
 _NO_MINOR_UNIT = frozenset(
@@ -111,29 +117,33 @@ def _encoded(value: object) -> object:
     if type(value) is int:
         return text(Decimal(value))
     if type(value) is float and math.isfinite(value):
-        return text(to_amount(value))
+        return float_text(value)
     return value
 
 
-def _require(value: object, units: object) -> None:
-    """Raise ValueError when a serialized magnitude does not match its units."""
+def _require(value: object, units: str, currency: bool) -> None:
+    """Raise ValueError when a serialized magnitude does not match its units.
+
+    ``currency`` is ``is_currency(units)``; a Flow computes it once.
+    """
     if value is None:
         return
     if type(value) is str:
-        if not is_currency(units):  # type: ignore[arg-type]
+        if not currency:
             raise _broken(
                 f"a magnitude in {units!r} is a number, not decimal text "
                 f"{value!r}; only ISO 4217 currency units take an amount",
                 Code.CURRENCY_AMOUNT,
             )
-        count = digits(Decimal(value))
+        # Record checks run first, so the text is canonical.
+        count = text_digits(value)
         if count > DIGITS:
             raise _broken(
                 f"currency amount {value} has {count} significant digits; "
                 f"the limit is {DIGITS}",
                 Code.AMOUNT_DIGITS,
             )
-    elif is_currency(units):  # type: ignore[arg-type]
+    elif currency:
         suggestion = _encoded(value)
         hint = f"; use {suggestion!r}" if type(suggestion) is str else ""
         raise _broken(
@@ -175,6 +185,7 @@ def round(  # noqa: A001 - the money rounding helper of ADR-023
 
 
 __all__ = [
+    "CONVENTION",
     "CURRENCIES",
     "DIGITS",
     "MODES",

@@ -117,8 +117,9 @@ its own `units`; a Movement uses the `units` of its Flow. Rates such as
   back with `to_amount`.
 
 The library rounds only on request. `Quantity.round(places=None,
-mode=ROUND_HALF_EVEN)` and `money.round(amount, code, ...)` round to the minor
-unit by default. A code without a minor unit needs `places`; a negative `places`
+mode=ROUND_HALF_EVEN)`, `Flow.round(...)` and `money.round(amount, code, ...)`
+round to the minor unit by default. `Flow.round` rounds each Movement, so the
+total of the rounded movements can differ from the rounded total. A code without a minor unit needs `places`; a negative `places`
 rounds to tens or hundreds. `mode` is one of the rounding constants of the
 `decimal` module.
 
