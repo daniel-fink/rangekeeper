@@ -1,29 +1,190 @@
-"""Growth and distribution profiles over known Periods, with explicit origin and padding."""
+"""Profiles: how an amount develops over Periods.
+
+A growth profile (``Constant``, ``Linear``, ``Compounding``) gives a multiple
+of an initial amount for each Period; the first Period holds the initial
+amount. A distribution profile (``Uniform``, ``SCurve``) gives each Period's
+share of a total. ``rangekeeper.flow.Flow.from_profile`` makes the Flow, with
+``initial=`` for a growth profile and ``total=`` for a distribution profile.
+Profiles register in ``profiles`` (ADR-013).
+"""
 
 from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from dataclasses import dataclass
 from enum import Enum, unique
 from itertools import pairwise
+from typing import ClassVar, Literal, Protocol, runtime_checkable
 
 from rangekeeper.duration import Period
-from rangekeeper.flow import Flow
-from rangekeeper.quantity import Quantity
+from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.schema import records
 from rangekeeper.schema.enums import DistributionFamily
 from rangekeeper.schema.kinds import register
 from rangekeeper.shared.optional import requires
+from rangekeeper.shared.registry import Registry
 
 # Distribution is public as rangekeeper.model.Distribution (one public path).
 __all__ = [
-    "GrowthMethod",
-    "PaddingMode",
-    "distribute",
-    "extrapolate",
-    "grow_values",
-    "pad",
+    "Compounding",
+    "Constant",
+    "Linear",
+    "Profile",
+    "SCurve",
+    "Uniform",
+    "profiles",
 ]
+
+
+@runtime_checkable
+class Profile(Protocol):
+    """How an amount develops over Periods.
+
+    ``takes`` names the amount that the profile needs: ``"initial"`` for a
+    growth profile, ``"total"`` for a distribution profile. ``factors``
+    returns one number for each Period: a multiple of the initial amount, or
+    a share of the total. The shares of a distribution profile add up to one.
+    """
+
+    takes: ClassVar[Literal["initial", "total"]]
+
+    def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
+        """Return one factor for each Period."""
+        ...
+
+
+def _rate(rate: Quantity | str) -> float:
+    """Return a rate per year, such as ``"2 % pa"``, as a number per year."""
+    quantity = Quantity(text=rate) if isinstance(rate, str) else rate
+    if not isinstance(quantity, records.Quantity):
+        raise TypeError("rate must be a Quantity or its text, such as '2 % pa'")
+    value = default_units.convert(quantity, to="pa").number
+    if not math.isfinite(value) or value <= -1:
+        raise ValueError("a growth rate must be greater than -100 % pa")
+    return value
+
+
+def _years(periods: Sequence[Period]) -> tuple[float, ...]:
+    """Return the years from the start of the first Period to the start of each.
+
+    A start on the same day of the month as the first counts whole months, so
+    twelve months are one year. Other starts count days, at 365.25 days a year.
+    """
+    if not periods:
+        return ()
+    first = periods[0].start
+    return tuple(
+        ((p.start.year - first.year) * 12 + p.start.month - first.month) / 12
+        if p.start.day == first.day
+        else (p.start - first).days / 365.25
+        for p in periods
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class Constant:
+    """Growth profile: the initial amount in every Period."""
+
+    takes: ClassVar[Literal["initial", "total"]] = "initial"
+
+    def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
+        """Return one for each Period."""
+        return (1.0,) * len(periods)
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class Linear:
+    """Growth profile: the initial amount grows by ``rate`` of itself each year.
+
+    The factor of a Period that starts ``t`` years after the first is
+    ``1 + rate * t``.
+    """
+
+    rate: float
+    takes: ClassVar[Literal["initial", "total"]] = "initial"
+
+    def __init__(self, *, rate: Quantity | str) -> None:
+        object.__setattr__(self, "rate", _rate(rate))
+
+    def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
+        """Return ``1 + rate * t`` for each Period."""
+        return tuple(1 + self.rate * t for t in _years(periods))
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class Compounding:
+    """Growth profile: the initial amount compounds at ``rate`` per year.
+
+    The factor of a Period that starts ``t`` years after the first is
+    ``(1 + rate) ** t``, so yearly Periods at ``"2 % pa"`` give 1, 1.02,
+    1.0404 and so on.
+    """
+
+    rate: float
+    takes: ClassVar[Literal["initial", "total"]] = "initial"
+
+    def __init__(self, *, rate: Quantity | str) -> None:
+        object.__setattr__(self, "rate", _rate(rate))
+
+    def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
+        """Return ``(1 + rate) ** t`` for each Period."""
+        return tuple((1 + self.rate) ** t for t in _years(periods))
+
+
+@dataclass(frozen=True, slots=True)
+class Uniform:
+    """Distribution profile: an equal share of the total in each Period."""
+
+    takes: ClassVar[Literal["initial", "total"]] = "total"
+
+    def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
+        """Return ``1 / n`` for each of ``n`` Periods."""
+        if not periods:
+            raise ValueError("a distribution needs at least one Period")
+        return (1 / len(periods),) * len(periods)
+
+
+@dataclass(frozen=True, slots=True)
+class SCurve:
+    """Distribution profile: shares that rise, then fall, along an S-shaped total.
+
+    Each Period's share is the increase of a cumulative distribution over its
+    equal part of the Periods. The default is ``3x² - 2x³``, the cumulative
+    distribution of Beta(2, 2). ``distribution`` gives another one, such as
+    ``rangekeeper.model.Distribution.pert()``, in units of the fraction of the
+    Periods.
+    """
+
+    distribution: Distribution | None = None
+    takes: ClassVar[Literal["initial", "total"]] = "total"
+
+    def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
+        """Return the increase of the cumulative distribution over each Period."""
+        if not periods:
+            raise ValueError("a distribution needs at least one Period")
+        bounds = [i / len(periods) for i in range(len(periods) + 1)]
+        if self.distribution is None:
+            cumulative = [x * x * (3 - 2 * x) for x in bounds]
+            return tuple(b - a for a, b in pairwise(cumulative))
+        low, high = self.distribution.lower, self.distribution.upper
+        if low == high:
+            return (1.0,) + (0.0,) * (len(periods) - 1)
+        return self.distribution.mass([low + (high - low) * x for x in bounds])
+
+
+# Profiles by name, for equation text and extensions (ADR-013). Each name holds
+# a profile class; an installed distribution can add one in the entry point
+# group ``rangekeeper.profiles``.
+profiles: Registry[type] = Registry("profiles", type)
+for _name, _profile in (
+    ("constant", Constant),
+    ("linear", Linear),
+    ("compounding", Compounding),
+    ("uniform", Uniform),
+    ("scurve", SCurve),
+):
+    profiles.register(_name, _profile)
 
 
 @register
@@ -307,66 +468,3 @@ def pad(
         + tuple(values)
         + fill(right, after, values[-1] if values else None)
     )
-
-
-def extrapolate(
-    initial: Quantity,
-    *,
-    periods: Sequence[Period],
-    method: GrowthMethod = GrowthMethod.RECURRING,
-    rate: float = 0,
-    origin: int = 0,
-    factors: Sequence[float] | None = None,
-) -> Flow:
-    """Evaluate a known Quantity path over caller-selected periods."""
-    return Flow.from_periods(
-        periods,
-        grow_values(
-            initial.number,
-            count=len(periods),
-            method=method,
-            rate=rate,
-            origin=origin,
-            factors=factors,
-        ),
-        units=initial.units,
-    )
-
-
-def distribute(
-    quantity: Quantity,
-    *,
-    periods: Sequence[Period],
-    distribution: Distribution | None = None,
-    weights: Sequence[float] | None = None,
-) -> Flow:
-    """Distribute a total without changing mass; explicit weights must sum to one.
-
-    A distribution allocates equal increments of its support, not equal durations.
-    Supply explicit duration weights when allocation should follow elapsed time.
-    """
-    if not periods or weights is not None and distribution is not None:
-        raise ValueError("allocation needs periods and at most one weight source")
-    if weights is None:
-        distribution = distribution or Distribution.uniform()
-        bounds = [
-            distribution.lower
-            + (distribution.upper - distribution.lower) * i / len(periods)
-            for i in range(len(periods) + 1)
-        ]
-        if distribution.lower == distribution.upper:
-            weights = (1.0,) + (0.0,) * (len(periods) - 1)
-        else:
-            weights = distribution.mass(bounds)
-    if (
-        len(weights) != len(periods)
-        or any(not math.isfinite(w) or w < 0 for w in weights)
-        or not math.isclose(math.fsum(weights), 1, abs_tol=1e-12)
-    ):
-        raise ValueError(
-            "allocation weights must be finite, nonnegative and sum to one"
-        )
-    values = [quantity.number * w for w in weights]
-    # Assign roundoff to the final bucket so total content retains the stated amount.
-    values[-1] += quantity.number - math.fsum(values)
-    return Flow.from_periods(periods, values, units=quantity.units)

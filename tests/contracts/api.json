@@ -122,6 +122,10 @@
    "kind": "module",
    "module": "rangekeeper.money"
   },
+  "profile": {
+   "kind": "module",
+   "module": "rangekeeper.profile"
+  },
   "quantity": {
    "kind": "module",
    "module": "rangekeeper.quantity"
@@ -659,6 +663,7 @@
     "extent": "method (self, *, include_zeroes: bool = False) -> tuple[date, date] | None",
     "from_events": "classmethod (cls, dates: Sequence[date], magnitudes: Sequence[Decimal | str | int | float | None], *, units: str, keys: Sequence[str | None] | None = None, ids: Sequence[UUID] | None = None) -> Flow",
     "from_periods": "classmethod (cls, periods: Sequence[Period], magnitudes: Sequence[Decimal | str | int | float | None], *, units: str, dates: Sequence[date | None] | None = None, ids: Sequence[UUID] | None = None, keys: Sequence[str | None] | None = None) -> Flow",
+    "from_profile": "classmethod (cls, *, profile: Profile, periods: Sequence[Period], initial: Quantity | str | None = None, total: Quantity | str | None = None) -> Flow",
     "integrate": "method (self, *, exposures: Sequence[Quantity] | None = None, day_count: DayCount | None = None, units: str | None = None) -> Flow",
     "movements": "property",
     "multiply": "method (self, *others: Flow) -> Flow",
@@ -1959,44 +1964,63 @@
   }
  },
  "rangekeeper.profile": {
-  "GrowthMethod": {
-   "kind": "enum",
-   "members": [
-    "RECURRING",
-    "LINEAR",
-    "COMPOUND",
-    "DYNAMIC"
-   ],
-   "module": "rangekeeper.profile"
-  },
-  "PaddingMode": {
-   "kind": "enum",
-   "members": [
-    "NIL",
-    "UNITIZE",
-    "EXTEND"
-   ],
-   "module": "rangekeeper.profile"
-  },
-  "distribute": {
-   "kind": "function",
+  "Compounding": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, rate: Quantity | str) -> None",
+    "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
+   },
    "module": "rangekeeper.profile",
-   "signature": "(quantity: Quantity, *, periods: Sequence[Period], distribution: Distribution | None = None, weights: Sequence[float] | None = None) -> Flow"
+   "signature": "(*, rate: Quantity | str) -> None"
   },
-  "extrapolate": {
-   "kind": "function",
+  "Constant": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self) -> None",
+    "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
+   },
    "module": "rangekeeper.profile",
-   "signature": "(initial: Quantity, *, periods: Sequence[Period], method: GrowthMethod = GrowthMethod.RECURRING, rate: float = 0, origin: int = 0, factors: Sequence[float] | None = None) -> Flow"
+   "signature": "() -> None"
   },
-  "grow_values": {
-   "kind": "function",
+  "Linear": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, rate: Quantity | str) -> None",
+    "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
+   },
    "module": "rangekeeper.profile",
-   "signature": "(initial: float, *, count: int, method: GrowthMethod = GrowthMethod.RECURRING, rate: float = 0, origin: int = 0, factors: Sequence[float] | None = None) -> tuple[float, ...]"
+   "signature": "(*, rate: Quantity | str) -> None"
   },
-  "pad": {
-   "kind": "function",
+  "Profile": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *args, **kwargs)",
+    "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
+   },
    "module": "rangekeeper.profile",
-   "signature": "(values: Sequence[float], *, before: int = 0, after: int = 0, left: PaddingMode = PaddingMode.NIL, right: PaddingMode = PaddingMode.NIL) -> tuple[float, ...]"
+   "signature": "(*args, **kwargs)"
+  },
+  "SCurve": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, distribution: Distribution | None = None) -> None",
+    "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
+   },
+   "module": "rangekeeper.profile",
+   "signature": "(distribution: Distribution | None = None) -> None"
+  },
+  "Uniform": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self) -> None",
+    "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
+   },
+   "module": "rangekeeper.profile",
+   "signature": "() -> None"
+  },
+  "profiles": {
+   "kind": "value",
+   "type": "Registry"
   }
  },
  "rangekeeper.quantity": {

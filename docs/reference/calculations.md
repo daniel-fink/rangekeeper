@@ -264,6 +264,41 @@ equations of the Model relate draws, interest and repayments.
 nonnegative principal. Unknown rates and piecewise overdraft branches are
 unsupported.
 
+## Profiles
+
+A profile says how an amount develops over Periods (D12). `rangekeeper.profile`
+has two kinds:
+
+| Profile | Kind | Factor for each Period |
+| --- | --- | --- |
+| `Constant()` | Growth, `initial=` | 1 |
+| `Linear(rate=)` | Growth, `initial=` | `1 + rate * t` |
+| `Compounding(rate=)` | Growth, `initial=` | `(1 + rate) ** t` |
+| `Uniform()` | Distribution, `total=` | `1 / n` |
+| `SCurve(distribution=None)` | Distribution, `total=` | The increase of an S-shaped cumulative distribution over each Period's equal part: by default `3x² - 2x³` (Beta(2, 2)), or the `Distribution` given, such as `Distribution.pert()` |
+
+`rate` is a rate per year, a Quantity or its text, such as `"2 % pa"`. `t` is the
+years from the start of the first Period to the start of each: a start on the
+same day of the month counts whole months, otherwise days at 365.25 a year.
+
+`Flow.from_profile(profile=, periods=, initial= or total=)` makes the Flow. A
+growth profile takes `initial=`, and the first Period holds it. A distribution
+profile takes `total=`; the last Period takes the remainder, so the amounts add
+up to the total. A profile refuses the other keyword, so a total is never
+compounded by mistake. The amount gives the Flow its units.
+
+```python
+growth = rk.profile.Compounding(rate="2 % pa")
+pgi = rk.flow.Flow.from_profile(profile=growth, periods=years, initial="100 USD")
+fees = rk.flow.Flow.from_profile(
+    profile=rk.profile.SCurve(), periods=build, total="3e6 AUD"
+)
+```
+
+A new profile is a class whose instances have `takes` (`"initial"` or `"total"`)
+and `factors(*, periods)`. Register it in `rangekeeper.profile.profiles`
+([extensions](extensions.md)).
+
 ## Spans and Periods
 
 A `Span` is a named half-open range of time. Give its end, or a length: a whole

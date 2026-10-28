@@ -59,7 +59,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | —; `PeriodIndex` in 0.8. Some functions still return `tuple[Period, ...]` |
 | Span | A named half-open range of time | `duration` | — |
 | Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | None (planned, #280) |
-| Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | The `extrapolate` and `distribute` functions, with `GrowthMethod` |
+| Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | — |
 | Movement | One dated or period-based amount | `flow` | — |
 | Flow | An ordered series of Movements in one unit | `flow` | — |
 | Stream | A set of named Flows that operations treat together | `flow` | — |

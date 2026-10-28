@@ -87,7 +87,11 @@ def test_flow_construction_detachment_and_negation():
 
 def test_allocation_and_annual_resampling_preserve_total():
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
-    flow = profile.distribute(Quantity(magnitude=100, units="AUD"), periods=periods)
+    flow = Flow.from_profile(
+        profile=profile.Uniform(),
+        periods=periods,
+        total=Quantity(magnitude=100, units="AUD"),
+    )
     assert amounts(flow) == pytest.approx((4,) * 25)
     years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
     reduced = flow.negate().resample(periods=years, method=ResampleMethod.SUM)
@@ -119,8 +123,10 @@ def test_sampling_is_explicit_before_allocation():
     assert all(2 <= x <= 8 for x in draws)
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
     for amount in draws:
-        flow = profile.distribute(
-            Quantity(magnitude=amount, units="AUD"), periods=periods
+        flow = Flow.from_profile(
+            profile=profile.Uniform(),
+            periods=periods,
+            total=Quantity(magnitude=amount, units="AUD"),
         )
         assert flow.total().number == pytest.approx(amount)
 
@@ -128,13 +134,14 @@ def test_sampling_is_explicit_before_allocation():
 def test_stream_selection_and_mixed_frequency_totals():
     measure = Measure(id=uuid4(), code="cash", name="Cash", units="AUD")
     flows = [
-        profile.distribute(
-            Quantity(magnitude=total, units="AUD"),
+        Flow.from_profile(
+            profile=profile.Uniform(),
             periods=make_periods(
                 date(2020, 1, 1),
                 frequency=Frequency(freq),
                 count=count,
             ),
+            total=Quantity(magnitude=total, units="AUD"),
         )
         for total, freq, count in (
             (100, "year", 3),

@@ -17,13 +17,14 @@ internal, so use the registry objects that the owning packages export.
 | Execution backends | `rangekeeper.execution.backends.registry` | `execution.backends.Backend` | `pyomo-highs` | A `solver` implementation in each Run |
 | Unit systems | `rangekeeper.quantity.unit_systems` | `quantity.UnitSystem` | `default` | An `evaluator` implementation in each Run that reaches acceptance |
 | Geometry providers | `rangekeeper.io.geometry_providers` | `io.GeometryProvider` | none | — |
+| Profiles | `rangekeeper.profile.profiles` | Profile classes; each instance satisfies `profile.Profile` | `constant`, `linear`, `compounding`, `uniform`, `scurve` | None yet: `Flow.from_profile` calculates on known data. Equations that name a profile record it ([#309](https://github.com/daniel-fink/rangekeeper/issues/309)) |
 
-The path generators of `rangekeeper.market`, the profiles of
-`rangekeeper.profile` and the equation functions of `rangekeeper.expressions`
-use the same pattern when their 1.0 APIs land
+The path generators of `rangekeeper.market` and the equation functions of
+`rangekeeper.expressions` use the same pattern when their 1.0 APIs land
 ([#299](https://github.com/daniel-fink/rangekeeper/issues/299),
-[#303](https://github.com/daniel-fink/rangekeeper/issues/303),
-[#309](https://github.com/daniel-fink/rangekeeper/issues/309)).
+[#309](https://github.com/daniel-fink/rangekeeper/issues/309)). The profiles
+registry holds classes, not instances, because a profile has parameters, such
+as `Compounding(rate=)`.
 
 ## Register an implementation
 

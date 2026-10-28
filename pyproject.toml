@@ -108,8 +108,6 @@ layers = [
 # Upward imports that a planned change removes. Each entry names its issue;
 # remove the entry with the import.
 ignore_imports = [
-    # #303: profile classes and Flow.from_profile replace extrapolate and distribute.
-    "rangekeeper.profile -> rangekeeper.flow",
     # #298, #299: Dynamics, generate and Paths replace the scenario plan, which
     # samples, captures and replays market paths into a Model.
     "rangekeeper.market._replay -> rangekeeper.model",
