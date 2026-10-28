@@ -15,7 +15,7 @@ from dataclasses import dataclass, replace
 from decimal import Decimal
 from functools import lru_cache
 from importlib.metadata import version
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from rangekeeper.money import (
     CURRENCIES,
@@ -29,6 +29,7 @@ from rangekeeper.money import (
 from rangekeeper.money import round as _round
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
+from rangekeeper.shared.amounts import text as _amount_text
 from rangekeeper.shared.errors import UnitError
 from rangekeeper.shared.fingerprints import manifest_digest
 from rangekeeper.shared.registry import Registry
@@ -192,18 +193,190 @@ def _registry(currencies: tuple[str, ...], definitions: tuple[str, ...] = ()):
     return registry
 
 
+def _is_number(value: object) -> bool:
+    return type(value) in (int, float)
+
+
+def _magnitude_text(magnitude: Decimal | int | float) -> str:
+    """Return a magnitude as text that reads back to the same value."""
+    if isinstance(magnitude, Decimal):
+        return _amount_text(magnitude)
+    if isinstance(magnitude, float) and magnitude.is_integer():
+        return str(int(magnitude)) if abs(magnitude) < 1e15 else repr(magnitude)
+    return repr(magnitude)
+
+
+@dataclass(frozen=True, slots=True)
+class _Product:
+    """How to multiply or divide magnitudes in two units.
+
+    Multiply each magnitude by its scale, combine them, then multiply by
+    ``factor`` to get a magnitude in ``units``.
+    """
+
+    left: float
+    right: float
+    factor: float
+    units: str
+
+
+def _plain(registry, units: str):
+    """Return the scale and Pint units of one unit; a dimensionless unit is plain."""
+    quantity = registry.Quantity(1, default_units._parse(units))
+    if quantity.dimensionless:
+        return float(quantity.to("dimensionless").magnitude), None
+    return 1.0, quantity
+
+
+@lru_cache(maxsize=1024)
+def _product(left: str, right: str, divide: bool) -> _Product:
+    """Return the scales, factor and units of ``left * right`` or ``left / right``.
+
+    A dimensionless operand, such as ``%``, becomes its plain number first. When
+    the other operand is a plain number, its units text stays as written.
+    Otherwise units of the same dimension cancel, so ``% pa * year`` is
+    dimensionless and ``AUD pa * year`` is ``AUD``.
+    """
+    registry = _registry(default_units.currencies, default_units.definitions)
+    (a_scale, a), (b_scale, b) = _plain(registry, left), _plain(registry, right)
+    if b is None:
+        return _Product(a_scale, b_scale, 1.0, "dimensionless" if a is None else left)
+    if a is None and not divide:
+        return _Product(a_scale, b_scale, 1.0, right)
+    result = (
+        (registry.Quantity(1, "dimensionless") if a is None else a) / b
+        if divide
+        else a * b
+    ).to_reduced_units()
+    if result.dimensionless:
+        return _Product(
+            a_scale,
+            b_scale,
+            float(result.to("dimensionless").magnitude),
+            "dimensionless",
+        )
+    return _Product(a_scale, b_scale, float(result.magnitude), _units_text(result))
+
+
+def _units_text(quantity) -> str:
+    """Return the units of a Pint result in the registry's short spellings."""
+    units = str(quantity.units).replace("per_annum", "pa")
+    return "per " + units[4:] if units.startswith("1 / ") else units
+
+
+@lru_cache(maxsize=1024)
+def _sum_scale(left: str, right: str) -> float:
+    """Return the factor that converts a magnitude in ``right`` to ``left`` units."""
+    if left == right:
+        default_units.validate_units(left)
+        return 1.0
+    if not default_units.compatible(left, right):
+        raise UnitError(f"cannot add or subtract {right!r} and {left!r}")
+    return default_units.convert(Quantity(magnitude=1.0, units=right), to=left).number
+
+
 @register
 class Quantity(records.Quantity):
     """A finite magnitude with explicit units.
+
+    Make one from text, ``Quantity(text="7 % pa")``, or from a magnitude and
+    units, ``Quantity(magnitude=0.07, units="pa")``. Text is parsed with the
+    default unit system; unknown units raise UnitError with suggestions.
 
     In ISO 4217 currency units the magnitude is a currency amount: a
     ``Decimal`` with at most 15 significant digits (ADR-023). Construction
     converts an ``int`` exactly, decimal text exactly and a ``float`` through
     ``money.to_amount``. In other units the magnitude is an ``int`` or a
     ``float``.
+
+    Arithmetic checks units. ``+`` and ``-`` need compatible units and give
+    the units of the left operand. ``*`` and ``/`` combine the units; a
+    dimensionless operand such as ``5 %`` acts as its plain number, and a
+    dimensionless result has the units ``dimensionless``.
     """
 
     __slots__ = ()
+
+    def __init__(
+        self,
+        *,
+        magnitude: Decimal | str | int | float | None = None,
+        units: str | None = None,
+        text: str | None = None,
+    ) -> None:
+        if text is not None:
+            if magnitude is not None or units is not None:
+                raise TypeError("give text, or magnitude and units, not both")
+            magnitude, units = default_units._split(text)
+        elif magnitude is None or units is None:
+            raise TypeError("give text, or magnitude and units")
+        super().__init__(magnitude=magnitude, units=units)
+
+    def __repr__(self) -> str:
+        return f"Quantity(text={str(self)!r})"
+
+    def __str__(self) -> str:
+        return f"{_magnitude_text(self.magnitude)} {self.units}"
+
+    def to(self, *, units: str) -> "Quantity":
+        """Return this Quantity in other, compatible units; currencies never convert."""
+        return default_units.convert(self, to=units)
+
+    def __neg__(self) -> "Quantity":
+        return Quantity(magnitude=-self.magnitude, units=self.units)
+
+    def __pos__(self) -> "Quantity":
+        return self
+
+    def __abs__(self) -> "Quantity":
+        return self if self.magnitude >= 0 else -self
+
+    def __add__(self, other: object) -> "Quantity":
+        if not isinstance(other, Quantity):
+            return NotImplemented
+        scale = _sum_scale(self.units, other.units)
+        return self._result(self.number + other.number * scale, self.units)
+
+    def __sub__(self, other: object) -> "Quantity":
+        if not isinstance(other, Quantity):
+            return NotImplemented
+        scale = _sum_scale(self.units, other.units)
+        return self._result(self.number - other.number * scale, self.units)
+
+    def __mul__(self, other: object) -> "Quantity":
+        return self._combine(other, divide=False, reverse=False)
+
+    def __rmul__(self, other: object) -> "Quantity":
+        return self._combine(other, divide=False, reverse=True)
+
+    def __truediv__(self, other: object) -> "Quantity":
+        return self._combine(other, divide=True, reverse=False)
+
+    def __rtruediv__(self, other: object) -> "Quantity":
+        return self._combine(other, divide=True, reverse=True)
+
+    def _combine(self, other: object, *, divide: bool, reverse: bool):
+        if _is_number(other):
+            number = float(cast(int | float, other))
+            if not reverse:
+                value = self.number / number if divide else self.number * number
+                return self._result(value, self.units)
+            left, right = Quantity(magnitude=number, units="dimensionless"), self
+        elif isinstance(other, Quantity):
+            left, right = (other, self) if reverse else (self, other)
+        else:
+            return NotImplemented
+        product = _product(left.units, right.units, divide)
+        a, b = left.number * product.left, right.number * product.right
+        return self._result(
+            (a / b if divide else a * b) * product.factor, product.units
+        )
+
+    @staticmethod
+    def _result(value: float, units: str) -> "Quantity":
+        if not math.isfinite(value):
+            raise UnitError(f"arithmetic in {units!r} produced a non-finite magnitude")
+        return Quantity(magnitude=value, units=units)
 
     @classmethod
     def _coerce(cls, data: dict[str, object]) -> dict[str, object]:
@@ -428,6 +601,11 @@ class UnitSystem:
         The units keep their spelling. A number inside the units raises UnitError,
         and the suggestion moves the scale into the magnitude.
         """
+        magnitude, units = self._split(text)
+        return Quantity(magnitude=magnitude, units=units)
+
+    def _split(self, text: str) -> tuple[str | float, str]:
+        """Return the magnitude and checked units of quantity text."""
         if not isinstance(text, str):
             raise TypeError("quantity text must be str")
         match = _QUANTITY.fullmatch(text)
@@ -457,9 +635,7 @@ class UnitSystem:
                 suggestions=(suggestion,),
             ) from error
         # A currency amount is read from its text, never through float.
-        return Quantity(
-            magnitude=match[1] if is_currency(units) else magnitude, units=units
-        )
+        return (match[1] if is_currency(units) else magnitude), units
 
     def minor_unit(self, code: str) -> int | None:
         """Return the ISO 4217 minor unit of a currency in this system, or None if it has none."""

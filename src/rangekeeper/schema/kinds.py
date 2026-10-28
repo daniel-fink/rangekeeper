@@ -9,6 +9,7 @@ owner, so a decode loads the owner on first use without a static upward import.
 
 from __future__ import annotations
 
+import inspect
 import sys
 from importlib import import_module
 from typing import TYPE_CHECKING, TypeVar
@@ -26,7 +27,10 @@ def register(cls: R) -> R:
     """Register an owner subclass for its kind and return it unchanged.
 
     The class must subclass the generated record of its kind directly, keep
-    ``__slots__ = ()``, keep the generated constructor and not shadow a field.
+    ``__slots__ = ()`` and not shadow a field. It keeps the generated
+    constructor, or extends it: an owner ``__init__`` accepts every field as a
+    keyword-only argument, adds only arguments that are not fields, such as
+    ``Quantity(text=)``, and calls the generated constructor.
     """
     from rangekeeper.schema.records import _OWNERS, _TYPES
     from rangekeeper.schema.validation import _slot_map
@@ -40,8 +44,21 @@ def register(cls: R) -> R:
         raise TypeError(f"{kind} is owned by {owner}, not {cls.__module__}")
     if cls.__dict__.get("__slots__") != ():
         raise TypeError(f"{cls.__name__} must declare __slots__ = ()")
-    if "__init__" in cls.__dict__ or "__new__" in cls.__dict__:
+    if "__new__" in cls.__dict__:
         raise TypeError(f"{cls.__name__} must keep the generated constructor")
+    if "__init__" in cls.__dict__:
+        accepted = inspect.signature(cls.__dict__["__init__"]).parameters
+        lost = [
+            name
+            for name in _slot_map(kind)
+            if name not in accepted
+            or accepted[name].kind is not inspect.Parameter.KEYWORD_ONLY
+        ]
+        if lost:
+            raise TypeError(
+                f"{cls.__name__} constructor must accept the fields "
+                f"{', '.join(lost)} as keyword-only arguments"
+            )
     shadowed = sorted(set(_slot_map(kind)) & set(cls.__dict__))
     if shadowed:
         raise TypeError(f"{cls.__name__} shadows fields: {', '.join(shadowed)}")

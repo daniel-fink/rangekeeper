@@ -33,7 +33,10 @@ The owner of a value type subclasses its generated record, for example
 class), `from_data`, `from_json`, nested property decoding and traversal
 therefore return the owner class with its methods. The generated `_OWNERS` table
 names each owner module, so a decode loads the owner on first use. An owner keeps
-`__slots__ = ()` and the generated constructor, and does not shadow a field.
+`__slots__ = ()` and does not shadow a field. It keeps the generated constructor
+or extends it: an owner `__init__` takes every field as a keyword-only argument,
+adds only arguments that are not fields, such as `Quantity(text=)`, and calls the
+generated constructor.
 Schema inheritance remains intact: `Assembly` is an `Entity`; `Span` is a
 `Period`. Workflow computation fingerprints include the owner modules, so changes
 to these methods affect recorded computation identity.
