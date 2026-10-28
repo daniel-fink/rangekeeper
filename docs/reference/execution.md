@@ -116,7 +116,8 @@ time limit has passed. The stages call it between steps.
 | `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
-| `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and the status of each expected failure. It stores nothing. |
+| `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and one `except` arm for the expected failures. It stores nothing. |
+| `execution/statuses.py` | `FAILURES`: one row for each expected error, with its completion, solution and diagnostic code. `TERMINATIONS`: one row for each `Termination`. |
 | `execution/pipeline.py` | `solve`: the stages for each case of a batch, in order. `execute`: `solve`, then output-before-Run publication. |
 | `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
 
@@ -198,8 +199,21 @@ Generic code reads only the backend's `Termination`:
 | `ERROR` | failed | `unknown` | `error`, `interrupted` |
 | `UNKNOWN` | completed | `feasible` only for an accepted candidate, else `unknown` | any other condition |
 
-The `solver_termination` evidence keeps the backend's own condition as
-`termination_condition`. Limits, ambiguous termination and solver failure do not
+`execution.statuses.TERMINATIONS` holds this table. The `solver_termination`
+evidence keeps the backend's own condition as `termination_condition`.
+
+An expected error ends an attempt with a failed Run, not an exception.
+`execution.statuses.FAILURES` maps each one; any other error raises to the caller.
+"Bound" means that `bind_roles` returned; "solved" means that the backend returned.
+
+| Error | Completion | Solution | Diagnostic code |
+| --- | --- | --- | --- |
+| `AttemptDeadlineError` | limited | `not_assessed` | `attempt_deadline` (warning) |
+| `ValidationError` | failed | `not_assessed`; `unknown` once bound | `specification_invalid`; `numerical_rejection` once bound |
+| `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | The error's own code, for example `symbol_limit` |
+| `UnitError` | failed | `not_assessed`; `unknown` once solved | `unsupported_capability` |
+| `BackendUnavailableError` | failed | `not_assessed` | `backend_unavailable` |
+| `NumericalError`, `ArithmeticError` | failed | `unknown` | `numerical_failure` | Limits, ambiguous termination and solver failure do not
 prove infeasibility. A zero-objective feasibility solve establishes no preference
 optimum. `build_problem` computes the equality rank and the free variables in
 pure Python, for every backend: Gaussian elimination on rows divided by their

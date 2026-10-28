@@ -14,15 +14,13 @@ from rangekeeper.execution import (
     preparation,
     publication,
     settings,
+    statuses,
 )
 from rangekeeper.execution.backends import Backend, registry
-from rangekeeper.execution.backends.base import BackendResult, Termination
+from rangekeeper.execution.backends.base import BackendResult
 from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.errors import (
     AttemptDeadlineError,
-    BackendUnavailableError,
-    NumericalError,
-    UnsupportedError,
 )
 from rangekeeper.execution.implementation import fingerprint
 from rangekeeper.execution.outcome import Outcome
@@ -44,7 +42,7 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.runtime import UNSET, JSONValue, Unset
 from rangekeeper.shared.codes import Code
-from rangekeeper.shared.errors import UnitError, ValidationError
+from rangekeeper.shared.errors import RangekeeperError, ValidationError
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.specification import Composition, Specification
 
@@ -104,6 +102,7 @@ class Attempt:
         self.output: Model | None = None
         self.completion: CompletionStatus = CompletionStatus.FAILED
         self.solution: SolutionStatus = SolutionStatus.NOT_ASSESSED
+        self.reached = statuses.Reached.NOTHING
 
     def diagnose(
         self,
@@ -145,68 +144,26 @@ class Attempt:
             problem = self.prepare()
             result = self.solve(problem)
             self.accept(problem, result)
-        except AttemptDeadlineError as error:
-            self.completion, self.solution = (
-                CompletionStatus.LIMITED,
-                SolutionStatus.NOT_ASSESSED,
-            )
-            self.diagnose(Code.ATTEMPT_DEADLINE, str(error), severity=Severity.WARNING)
-        except ValidationError as error:
-            self.completion, self.solution = (
-                CompletionStatus.FAILED,
-                (
-                    SolutionStatus.NOT_ASSESSED
-                    if self.binding is None
-                    else SolutionStatus.UNKNOWN
-                ),
-            )
-            self.diagnose(
-                (
-                    Code.SPECIFICATION_INVALID
-                    if self.binding is None
-                    else Code.NUMERICAL_REJECTION
-                ),
-                str(error),
-                severity=Severity.ERROR,
-            )
-        except (UnsupportedError, UnitError) as error:
-            self.completion, self.solution = (
-                CompletionStatus.FAILED,
-                (
-                    SolutionStatus.NOT_ASSESSED
-                    if self.result is None
-                    else SolutionStatus.UNKNOWN
-                ),
-            )
-            self.diagnose(
-                (
-                    error.code
-                    if isinstance(error, UnsupportedError)
-                    else Code.UNSUPPORTED_CAPABILITY
-                ),
-                str(error),
-                severity=Severity.ERROR,
-                document=(
-                    error.document
-                    if isinstance(error, UnsupportedError) and error.document
-                    else UNSET
-                ),
-                target=(
-                    error.target
-                    if isinstance(error, UnsupportedError) and error.target
-                    else UNSET
-                ),
-            )
-        except BackendUnavailableError as error:
-            self.diagnose(Code.BACKEND_UNAVAILABLE, str(error), severity=Severity.ERROR)
-        except (NumericalError, ArithmeticError) as error:
-            self.completion, self.solution = (
-                CompletionStatus.FAILED,
-                SolutionStatus.UNKNOWN,
-            )
-            self.diagnose(Code.NUMERICAL_FAILURE, str(error), severity=Severity.ERROR)
-
+        except statuses.EXPECTED as error:
+            self.fail(error)
         return self.finish()
+
+    def fail(self, error: BaseException) -> None:
+        """Set the status and diagnostic of an expected failure from its table."""
+        status = statuses.failure(error, self.reached)
+        self.completion, self.solution = status.completion, status.solution
+        code = status.code
+        if code is None:
+            # A row without a code is for an error that carries its own.
+            assert isinstance(error, RangekeeperError)
+            code = error.code
+        self.diagnose(
+            code,
+            str(error),
+            severity=status.severity,
+            document=getattr(error, "document", None) or UNSET,
+            target=getattr(error, "target", None) or UNSET,
+        )
 
     def prepare(self) -> compiler.AffineProblem:
         """Validate, bind roles and build the problem within one deadline."""
@@ -223,6 +180,7 @@ class Attempt:
         self.binding = preparation.bind_roles(
             self.validation, checkpoint=self.checkpoint
         )
+        self.reached = statuses.Reached.BOUND
         self.checkpoint()
         self.trace.append(
             Step(
@@ -259,6 +217,7 @@ class Attempt:
             remaining=self.limits.time_limit - (time.monotonic() - self.clock),
             options=self.config.backend_options,
         )
+        self.reached = statuses.Reached.SOLVED
         self.implementations.extend(self.result.implementations)
         self.findings.extend(self.result.diagnostics)
         self.diagnose(
@@ -282,17 +241,9 @@ class Attempt:
     def accept(self, problem: compiler.AffineProblem, result: BackendResult) -> None:
         """Check a serialized candidate against the original expressions."""
         assert self.binding is not None
-        self.completion = (
-            CompletionStatus.LIMITED
-            if result.termination is Termination.LIMIT
-            else CompletionStatus.COMPLETED
-        )
-        self.solution = SolutionStatus.UNKNOWN
-        if result.termination is Termination.INFEASIBLE:
-            self.solution = SolutionStatus.INFEASIBLE
-        elif result.termination is Termination.ERROR:
-            self.completion = CompletionStatus.FAILED
-        elif result.candidate is not None:
+        ending = statuses.TERMINATIONS[result.termination]
+        self.completion, self.solution = ending.completion, ending.solution
+        if ending.verify and result.candidate is not None:
             candidate = publication.make_candidate(
                 self.binding, result.candidate, run_id=self.run_id
             )
