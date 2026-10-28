@@ -133,8 +133,9 @@ show the target API in use.
 3. Read the resulting Flows or Quantities. No Model is necessary.
 
 **Investigate a Model** ([ADR-013](../decisions/013-execution-and-extensions.md))
-- Now: write a Specification that pins one Model revision, with assignments,
-  bounds and rules. `rangekeeper.execution.Executor(store).execute(specification)`
+- Now: `model.specify(name=)` makes a Specification that pins one Model
+  revision; `fix(key=quantity)` and `free("key")` each return a new
+  Specification. Records add bounds and rules. `rangekeeper.execution.Executor(store).execute(specification)`
   prepares and compiles the affine problem, solves it in a separate process,
   verifies the candidate independently, and publishes the output Model and the
   final Run. Read the results from the Run and the output Model. See the

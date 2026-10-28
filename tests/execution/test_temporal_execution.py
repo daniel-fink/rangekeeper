@@ -123,7 +123,8 @@ def investigate(model, ids, *, inverse=False):
                 *unknown_flow(model, ids["cash"]),
                 *unknown_flow(model, ids["discounted"]),
             ),
-        )
+        ),
+        model=model,
     )
 
 

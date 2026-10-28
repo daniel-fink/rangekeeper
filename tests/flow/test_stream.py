@@ -378,14 +378,9 @@ def test_underdetermined_and_inconsistent_reverse_cases():
     store = MemoryStore()
     store.put(model)
     base = forward_specification(model, ids)
-    reverse = base.fix(
-        ids["portfolio"], Quantity(magnitude=2880, units="AUD"), id=uuid4(), model=model
-    )
+    reverse = base.fix({ids["portfolio"]: Quantity(magnitude=2880, units="AUD")})
     under = reverse.free(
-        ids["A_rent"],
-        ids=[m.id for m in model.value(ids["A_rent"]).flow.movements[-2:]],
-        id=uuid4(),
-        model=model,
+        *[m.id for m in model.value(ids["A_rent"]).flow.movements[-2:]]
     )
     run = Executor(store).execute(under)
     assert run.report.status.solution is SolutionStatus.FEASIBLE
@@ -402,14 +397,22 @@ def test_underdetermined_and_inconsistent_reverse_cases():
 def test_role_editing_is_explicit_atomic_and_revision_pinned():
     model, ids = hierarchy_model()
     base = forward_specification(model, ids)
-    with pytest.raises(ValueError, match="quantity|recorded"):
-        base.fix(ids["A_rent"], id=uuid4(), model=model)
-    unlocked = base.free(ids["A_rent"], id=uuid4(), model=model)
+    with pytest.raises(TypeError, match="Quantity"):
+        base.fix({ids["A_rent"]: None})
+    unlocked = base.free(ids["A_rent"])
     targets = {m.id for m in model.value(ids["A_rent"]).flow.movements}
     assert targets <= {r.target for r in unlocked.record.unknowns}
     assert not targets & {a.target.target for a in unlocked.record.assignments}
     assert unlocked.metadata.previous == base.id
-    relocked = unlocked.fix(ids["A_rent"], recorded=True, id=uuid4(), model=model)
+    flow = model.value(ids["A_rent"]).flow
+    relocked = unlocked.fix(
+        {
+            ids["A_rent"]: {
+                m.id: Quantity(magnitude=m.magnitude, units=flow.units)
+                for m in flow.movements
+            }
+        }
+    )
     assert not targets & {r.target for r in relocked.record.unknowns}
     assert len(base.record.assignments) == len(relocked.record.assignments)
     from rangekeeper.model import Metadata
@@ -421,10 +424,12 @@ def test_role_editing_is_explicit_atomic_and_revision_pinned():
     included = Specification(
         SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"), includes=(base.id,)
-        )
+        ),
+        model=model,
+        resolver=store,
     )
     with pytest.raises(ValueError, match="inherited"):
-        included.free(ids["A_rent"], id=uuid4(), model=model, resolver=store)
+        included.free(ids["A_rent"])
 
 
 @pytest.mark.parametrize("method", [R.MEAN, R.FIRST, R.LAST])
@@ -550,13 +555,8 @@ def test_rule_and_scalar_role_editing():
 
     model, ids = oracle()
     base = investigate(model, ids)
-    unlocked = base.free(Reference(target=ids["initial"]), id=uuid4(), model=model)
-    locked = unlocked.fix(
-        Reference(target=ids["initial"]),
-        Quantity(magnitude=120, units="AUD"),
-        id=uuid4(),
-        model=model,
-    )
+    unlocked = base.free(Reference(target=ids["initial"]))
+    locked = unlocked.fix({ids["initial"]: Quantity(magnitude=120, units="AUD")})
     assert (
         next(
             a.quantity.magnitude
@@ -565,10 +565,8 @@ def test_rule_and_scalar_role_editing():
         )
         == 120
     )
-    with pytest.raises(ValueError):
-        unlocked.fix(
-            Reference(target=ids["initial"]), recorded=True, id=uuid4(), model=model
-        )
+    with pytest.raises(TypeError, match="Quantity"):
+        unlocked.fix({ids["initial"]: 120})
 
 
 def test_role_edit_rejects_rule_control_without_changing_the_specification():
@@ -586,10 +584,10 @@ def test_role_edit_rejects_rule_control_without_changing_the_specification():
             id=uuid4(), targets=(Reference(target=ids["initial"]),), decisions=()
         ),
     )
-    controlled = Specification(record)
+    controlled = Specification(record, model=model)
     before = controlled.to_data()
     with pytest.raises(ValueError, match="rule-controlled"):
-        controlled.free(Reference(target=ids["initial"]), id=uuid4(), model=model)
+        controlled.free(Reference(target=ids["initial"]))
     assert controlled.to_data() == before
 
 

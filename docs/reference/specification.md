@@ -131,21 +131,46 @@ Function can still be unsupported by the selected executor.
 
 ## Fix and free quantities
 
-`specification.fix(target, quantity, id=..., model=...)` returns a new revision
-with explicit assignments. `free(target, id=..., model=...)` removes matching
-local assignments and declares unknowns. Both retain the equations and unrelated
-Specification content. The new metadata records `previous=specification.id`.
-Neither method saves or executes the revision.
+`model.specify(*, name=None, description=None)` returns a new Specification of
+that Model revision, with no roles yet. Its Metadata has a new UUID, the schema
+version, the name and the description. Each chained call returns a new
+Specification; the Specification that it is called on does not change. The new
+Metadata has a new UUID and `previous=specification.id`, and keeps the name and
+description. No call saves or executes the revision.
 
-A target can be a scalar Reference, Movement UUID or Flow Value UUID. For a Flow,
-`ids=` selects Movement UUIDs; omission selects all its declared Movements. One
-Quantity applies to every selected target, or a mapping supplies a Quantity per
-selected UUID. Use `recorded=True` instead of quantity to copy recorded values
-explicitly; unresolved amounts fail. An omitted quantity never means reuse.
+```python
+front = (
+    model.specify(name="Front door")
+    .fix(land_cost=rk.Quantity(text="20e6 AUD"), works_cost=works)
+    .free("total_cost")
+)
+back = front.fix(total_cost=rk.Quantity(text="60e6 AUD")).free("land_cost")
+```
 
-`fix` removes matching local unknowns and estimates. Role editing requires the
-pinned Model. Included contributions require `resolver=`; inherited roles and
-rule-controlled targets must be edited at their owner. Composition is checked
-after editing, and normal execution still performs full effective validation.
-Annual totals alone do not determine monthly allocations; an underdetermined
-investigation returns a feasible candidate with a rank diagnostic.
+`fix(**values)` fixes each named value to a Quantity, and `free(*targets)` frees
+each target: the solve finds it. A fix or free replaces an earlier fix or free
+of the same target in this Specification, and `fix` also removes its estimates.
+Both retain the equations and unrelated Specification content.
+
+| Target | Meaning |
+| --- | --- |
+| A key, `fix(land_cost=...)` or `free("land_cost")` | The one Value of the Model with that key. Several Values with the key raise `AmbiguousReferenceError` with their dotted paths |
+| A dotted path, `fix({"building_a.income": ...})` or `free("building_a.income")` | The Value with that key on the Entity or Assembly with that code |
+| A Value or Movement UUID, or a Reference | That Value or Movement |
+
+`fix` takes the targets that are not keywords, such as dotted paths and UUIDs, in
+a mapping as its first argument. One Quantity fixes a scalar Value, or each
+Movement of a Flow Value; a mapping from Movement UUIDs to Quantities fixes those
+Movements only. A Flow target of `free` frees each of its Movements. Each
+Quantity must convert to the units of its target (`UnitError`).
+
+Key lookup needs the pinned Model. A Specification from `model.specify()` keeps
+it, and so does each Specification that a chained call returns. For a record,
+pass it: `Specification(record, model=model)`; a record that pins another revision
+raises `ValueError`. A Specification with includes also needs
+`Specification(record, model=model, resolver=store)`. The Model and resolver are
+not saved with the document. Inherited roles and rule-controlled targets must be
+edited at their owner. Composition is checked after each edit, and normal
+execution still performs full effective validation. Annual totals alone do not
+determine monthly allocations; an underdetermined investigation returns a
+feasible candidate with a rank diagnostic.
