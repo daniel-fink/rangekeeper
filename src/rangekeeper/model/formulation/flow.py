@@ -29,7 +29,7 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError, UnsupportedError
 
 
-def shape(model: Model, value: UUID) -> Flow:
+def shape(*, model: Model, value: UUID) -> Flow:
     """Return the declared Flow shape of a Flow Value."""
     record = model.value(value)
     if record.kind is not ValueKind.FLOW or record.flow is None:
@@ -40,10 +40,10 @@ def shape(model: Model, value: UUID) -> Flow:
 
 
 def aligned(
+    *,
     model: Model,
     members: Sequence[UUID],
     reference: UUID,
-    *,
     shapes: Mapping[UUID, Flow] | None = None,
 ) -> list[tuple[Movement, tuple[Movement, ...]]]:
     """Match member coordinates in reference order; amounts and solve roles are unused."""
@@ -52,7 +52,7 @@ def aligned(
     prepared = dict(shapes or {})
     for identity in (*members, reference):
         if identity not in prepared:
-            prepared[identity] = shape(model, identity)
+            prepared[identity] = shape(model=model, value=identity)
     return alignment([prepared[identity] for identity in members], prepared[reference])
 
 
@@ -106,9 +106,11 @@ def sum(
                 ),
             ),
         )
-        for m, matches in aligned(model, summands, total, shapes=shapes)
+        for m, matches in aligned(
+            model=model, members=summands, reference=total, shapes=shapes
+        )
     ]
-    return declare(id, "sum", equations, (*summands, total))
+    return declare(id=id, name="sum", equations=equations, values=(*summands, total))
 
 
 def scale(
@@ -130,7 +132,7 @@ def scale(
         else (multiplicand, multiplier)
     )
     equations = []
-    for m, matches in aligned(model, sources, product):
+    for m, matches in aligned(model=model, members=sources, reference=product):
         ref = (
             multiplier
             if isinstance(multiplier, Reference)
@@ -148,10 +150,10 @@ def scale(
             )
         )
     return declare(
-        id,
-        "scale",
-        equations,
-        (
+        id=id,
+        name="scale",
+        equations=equations,
+        values=(
             multiplicand,
             (
                 target_value(model, multiplier).id
@@ -178,7 +180,9 @@ def accumulate(
     no overdraft branch or hidden initial zero is introduced.
     """
     equations, prior = [], initial
-    for m, matches in aligned(model, (increments,), accumulation):
+    for m, matches in aligned(
+        model=model, members=(increments,), reference=accumulation
+    ):
         current = Reference(target=m.id)
         equations.append(
             (
@@ -191,10 +195,10 @@ def accumulate(
         )
         prior = current
     return declare(
-        id,
-        "accumulation",
-        equations,
-        (increments, target_value(model, initial).id, accumulation),
+        id=id,
+        name="accumulation",
+        equations=equations,
+        values=(increments, target_value(model, initial).id, accumulation),
     )
 
 
@@ -262,7 +266,10 @@ def resample(
     two fixed means (MEAN and ELAPSED_MEAN), FIRST and LAST are supported. No
     roles, allocation or amounts are inferred.
     """
-    source, grouped = shape(model, sequence), shape(model, resampled)
+    source, grouped = (
+        shape(model=model, value=sequence),
+        shape(model=model, value=resampled),
+    )
     if any(m.period is None for m in grouped.movements):
         raise ContractError(
             "a resampled Flow needs bounded periods", targets=(resampled,)
@@ -277,4 +284,6 @@ def resample(
         (str(m.id), equal(reference(Reference(target=m.id)), term))
         for m, term in zip(grouped.movements, terms, strict=True)
     ]
-    return declare(id, "resample", equations, (sequence, resampled))
+    return declare(
+        id=id, name="resample", equations=equations, values=(sequence, resampled)
+    )

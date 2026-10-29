@@ -184,9 +184,9 @@ def test_unknown_classification_is_rejected_by_filters_and_rules():
     with pytest.raises(MissingReferenceError):
         View(model).filter(entity_classification=uuid4(), exclusive=True)
     with pytest.raises(MissingReferenceError):
-        classified(model, uuid4())
+        classified(model=model, classification=uuid4())
     with pytest.raises(TypeError):
-        classified(object(), uuid4())
+        classified(model=object(), classification=uuid4())
 
 
 def test_classified_contributor_rule_selects_sub_types_unless_exclusive():
@@ -204,15 +204,30 @@ def test_classified_contributor_rule_selects_sub_types_unless_exclusive():
         return result.root_value, result.coverage(building.id).selected
 
     two_bed = tuple(item.id for item in entities[:3])
-    assert total(classified(model, kinds["2B"].id))[1] == two_bed
-    assert total(classified(model, kinds["2B"].id))[0].magnitude == 111
-    assert total(classified(model, kinds["2B"].id, exclusive=True))[0].magnitude == 1
-    assert total(classified(model, kinds["apartment"].id))[0].magnitude == 1111
-    assert total(classified(model, kinds["apartment"].id, exclusive=True)) == (
+    assert total(classified(model=model, classification=kinds["2B"].id))[1] == two_bed
+    assert (
+        total(classified(model=model, classification=kinds["2B"].id))[0].magnitude
+        == 111
+    )
+    assert (
+        total(classified(model=model, classification=kinds["2B"].id, exclusive=True))[
+            0
+        ].magnitude
+        == 1
+    )
+    assert (
+        total(classified(model=model, classification=kinds["apartment"].id))[
+            0
+        ].magnitude
+        == 1111
+    )
+    assert total(
+        classified(model=model, classification=kinds["apartment"].id, exclusive=True)
+    ) == (
         None,
         (),
     )
-    rule = classified(model, kinds["unit"].id)
+    rule = classified(model=model, classification=kinds["unit"].id)
     assert [rule(entity) for entity in entities] == [True] * 5 + [False]
     assert rule(building) is False
 
@@ -245,4 +260,4 @@ def test_deep_taxonomy_descendants_do_not_use_the_call_stack():
         "other",
     )
     assert codes(View(model).filter(entity_classification=chain["c1"].id)) == ("leaf",)
-    assert classified(model, chain["c1"].id)(model.entity(leaf.id))
+    assert classified(model=model, classification=chain["c1"].id)(model.entity(leaf.id))

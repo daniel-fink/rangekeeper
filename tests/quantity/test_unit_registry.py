@@ -377,14 +377,16 @@ def test_derived_operations_default_to_the_model_unit_system():
     view = View(model)
     population = view.quantities("levels", units="level")
     assert [q.magnitude for q in population.quantities] == [12]
-    table = to_table(view, columns=(ValueColumn("levels", "levels", "level"),))
+    table = to_table(
+        view, columns=(ValueColumn(name="levels", key="levels", units="level"),)
+    )
     assert table.rows[0].values["levels"] == 12
     result = view.rollup(definition=QuantityRollup(key="levels", units="level"))
     assert result[model.find_entities(code="A")[0].id].magnitude == 12
     with pytest.raises(UnitError):
         to_table(
             view,
-            columns=(ValueColumn("levels", "levels", "level"),),
+            columns=(ValueColumn(name="levels", key="levels", units="level"),),
             units=default_units,
         )
 

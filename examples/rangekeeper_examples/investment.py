@@ -500,10 +500,10 @@ def build_stop_gain_resale_rules(
         raise ValueError("explicit resale roles must supply all three Values")
     id = id or uuid4()
     if mapping is None:
-        rows = aligned(model, (pricing_factor, sale), holding)
+        rows = aligned(model=model, members=(pricing_factor, sale), reference=holding)
     else:
-        factors = {m.id: m for m in shape(model, pricing_factor).movements}
-        controls = aligned(model, (sale,), holding)
+        factors = {m.id: m for m in shape(model=model, value=pricing_factor).movements}
+        controls = aligned(model=model, members=(sale,), reference=holding)
         if set(mapping) != {h.id for h, _ in controls} or not set(
             mapping.values()
         ) <= set(factors):
@@ -546,10 +546,12 @@ def build_stop_gain_resale_rules(
             name="pricing_factor", target=Reference(target=factor.id)
         )
         condition = identify_tree(
-            id,
-            "resale",
-            str(h.id),
-            binary(Operator.GREATER_THAN, ref(observation.target), literal(threshold)),
+            owner=id,
+            operation="resale",
+            key=str(h.id),
+            expression=binary(
+                Operator.GREATER_THAN, ref(observation.target), literal(threshold)
+            ),
         )
         rules = (
             (

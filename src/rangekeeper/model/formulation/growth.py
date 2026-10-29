@@ -31,7 +31,7 @@ def compound(
     equations affine; an unknown rate generally does not. No amounts are read.
     """
     equations, prior = [], initial
-    for index, item in enumerate(shape(model, series).movements):
+    for index, item in enumerate(shape(model=model, value=series).movements):
         current = Reference(target=item.id)
         rhs = (
             reference(prior)
@@ -41,10 +41,10 @@ def compound(
         equations.append((str(item.id), equal(reference(current), rhs)))
         prior = current
     return declare(
-        id,
-        "compound",
-        equations,
-        (target_value(model, initial).id, target_value(model, rate).id, series),
+        id=id,
+        name="compound",
+        equations=equations,
+        values=(target_value(model, initial).id, target_value(model, rate).id, series),
     )
 
 
@@ -69,11 +69,15 @@ def linear(
                 add(reference(initial), multiply(literal(i), reference(increment))),
             ),
         )
-        for i, m in enumerate(shape(model, series).movements)
+        for i, m in enumerate(shape(model=model, value=series).movements)
     ]
     return declare(
-        id,
-        "linear",
-        equations,
-        (target_value(model, initial).id, target_value(model, increment).id, series),
+        id=id,
+        name="linear",
+        equations=equations,
+        values=(
+            target_value(model, initial).id,
+            target_value(model, increment).id,
+            series,
+        ),
     )

@@ -236,13 +236,13 @@ def test_filter_keeps_selection_and_removes_incident_edges():
 
 def test_membership_and_relationship_direction_are_distinct():
     model, root, a, b, c, edges, _ = fixture(overlap=True)
-    assert entities_in(model, root.id) == (
+    assert entities_in(model=model, assembly=root.id) == (
         model.entity(a.id),
         model.entity(b.id),
         model.entity(c.id),
     )
-    assert relationships_in(model, root.id) == edges
-    assert tuple(x.code for x in containing_assemblies(model, b.id)) == (
+    assert relationships_in(model=model, assembly=root.id) == edges
+    assert tuple(x.code for x in containing_assemblies(model=model, entity=b.id)) == (
         "root",
         "other",
     )
@@ -254,9 +254,9 @@ def test_membership_and_relationship_direction_are_distinct():
     assert not empty_edges.is_arborescence
     for func in (entities_in, relationships_in):
         with pytest.raises(ReferenceTypeError):
-            func(model, a.id)
+            func(model=model, assembly=a.id)
     with pytest.raises(TypeError):
-        entities_in(model, root.id, recursive=1)
+        entities_in(model=model, assembly=root.id, recursive=1)
 
 
 def test_nested_membership_deduplicates_but_hierarchy_rejects_shared_child():
@@ -264,10 +264,10 @@ def test_nested_membership_deduplicates_but_hierarchy_rejects_shared_child():
     other = model.system.assemblies[1]
     outer = Assembly(id=uuid4(), code="outer", entities=(root.id, other.id))
     model = revise(model, lambda data: data["assemblies"].append(outer.to_data()))
-    members = entities_in(model, outer.id, recursive=True)
+    members = entities_in(model=model, assembly=outer.id, recursive=True)
     assert tuple(x.id for x in members) == (a.id, b.id, c.id, root.id, other.id)
     assert tuple(
-        x.code for x in containing_assemblies(model, b.id, recursive=True)
+        x.code for x in containing_assemblies(model=model, entity=b.id, recursive=True)
     ) == ("root", "other", "outer")
     view = View(model, entities=(outer.id, *(x.id for x in members)), relationships=())
     with pytest.raises(HierarchyError) as error:

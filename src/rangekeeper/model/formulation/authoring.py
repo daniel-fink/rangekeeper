@@ -17,7 +17,11 @@ def identify(owner: UUID, *parts: str | UUID) -> UUID:
 
 
 def identify_tree(
-    owner: UUID, operation: str, key: str, expression: Expression
+    *,
+    owner: UUID,
+    operation: str,
+    key: str,
+    expression: Expression,
 ) -> Expression:
     """Give each owned occurrence a distinct path identity, preserving operand order."""
     data = expression.to_data()
@@ -37,6 +41,7 @@ def identify_tree(
 
 
 def declare(
+    *,
     id: UUID,
     name: str,
     equations: Sequence[tuple[str | UUID, Expression]],
@@ -54,7 +59,8 @@ def declare(
         )
     operation = name
     expressions = tuple(
-        identify_tree(id, operation, key, expression) for key, expression in entries
+        identify_tree(owner=id, operation=operation, key=key, expression=expression)
+        for key, expression in entries
     )
     constraints = tuple(
         Constraint(

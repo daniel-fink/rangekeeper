@@ -13,6 +13,7 @@ ValueSelector = Callable[[Model, Entity], Value | None]
 def _local_value(
     model: Model,
     entity: Entity,
+    *,
     key: str,
     measure: UUID | None,
 ) -> Value | None:
@@ -55,7 +56,7 @@ def select_value(key: str, *, measure: UUID | None = None) -> ValueSelector:
         canonical = model.entity(entity.id)
         if measure is not None:
             model._index.get(measure, Measure)
-        return _local_value(model, canonical, key, measure)
+        return _local_value(model, canonical, key=key, measure=measure)
 
     return select
 

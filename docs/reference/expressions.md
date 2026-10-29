@@ -424,9 +424,9 @@ from rangekeeper.model.formulation import declare
 from rangekeeper.model import Reference
 
 capitalisation = declare(
-    relation_id,
-    "capitalisation",
-    [
+    id=relation_id,
+    name="capitalisation",
+    equations=[
         (
             str(value_movement.id),
             equal(
@@ -437,7 +437,7 @@ capitalisation = declare(
             ),
         )
     ],
-    [value_id, income_id, rate_value_id],
+    values=[value_id, income_id, rate_value_id],
 )
 ```
 

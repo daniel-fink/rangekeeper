@@ -147,7 +147,7 @@ def price(reducer=Reducer.SUM, **kw):
 
 
 def magnitude(pivot, row, column=None):
-    value = pivot.value(row, column)
+    value = pivot.value(row=row, column=column)
     return None if value is None else value.number
 
 
@@ -163,8 +163,8 @@ def test_single_column_pivot_is_the_same_as_execute():
         assert [column.classification for column in pivot.columns] == [None]
         assert pivot.column().result == expected
         for id in rows.preorder():
-            assert pivot.cell(id) == expected.entries[id]
-            assert pivot.value(id) == expected.value(id)
+            assert pivot.cell(row=id) == expected.entries[id]
+            assert pivot.value(row=id) == expected.value(id)
     assert magnitude(pivot, ids["building"]) == 2880
 
 
@@ -181,8 +181,10 @@ def test_columns_include_sub_types_with_subtotals_through_the_tree():
     assert magnitude(pivot, ids["L2"], kinds["2B"]) == 550
     assert magnitude(pivot, ids["building"], kinds["3B"]) == 900
     assert magnitude(pivot, ids["u2"], kinds["2B"]) == 200
-    assert pivot.value(ids["u3"], kinds["2B"]) is None
-    assert pivot.coverage(ids["u3"], kinds["2B"]).status is CoverageStatus.EMPTY
+    assert pivot.value(row=ids["u3"], column=kinds["2B"]) is None
+    assert (
+        pivot.coverage(row=ids["u3"], column=kinds["2B"]).status is CoverageStatus.EMPTY
+    )
     assert pivot.children() == pivot.columns[1:]
 
 
@@ -198,20 +200,20 @@ def test_deeper_columns_name_their_parent_column():
     ]
     assert magnitude(pivot, ids["building"], kinds["2B+S"]) == 450
     # Records classified exactly as 2B are in no sub-column of 2B.
-    split = pivot.partition(ids["building"], kinds["2B"])
+    split = pivot.partition(row=ids["building"], column=kinds["2B"])
     assert not split.complete
     assert split.uncovered == records(ids, "u1")
     assert split.overlap == () and split.outside == ()
-    assert pivot.partition(ids["building"], kinds["2B+S"]).uncovered == records(
-        ids, "u2", "u8"
-    )
+    assert pivot.partition(
+        row=ids["building"], column=kinds["2B+S"]
+    ).uncovered == records(ids, "u2", "u8")
 
 
 def test_exclusive_columns_match_only_their_own_class():
     model, rows, kinds, ids = project()
     pivot = price().pivot(rows, by=kinds["apartment"], depth=2, exclusive=True)
     assert magnitude(pivot, ids["building"], kinds["2B"]) == 100
-    split = pivot.partition(ids["building"], kinds["2B"])
+    split = pivot.partition(row=ids["building"], column=kinds["2B"])
     assert split.uncovered == records(ids, "u1")
     assert split.outside == records(ids, "u2", "u6", "u8")
     assert not split.complete
@@ -222,20 +224,27 @@ def test_overlapping_sibling_columns_are_reported():
     reduction = price()
 
     def column(kind):
-        rule = classified(model, kinds[kind])
+        rule = classified(model=model, classification=kinds[kind])
         leaf = lambda entity: not rows.children(entity.id) and rule(entity)
         aggregation = replace(reduction, contributors=leaf).execute(rows)
-        return PivotColumn(kinds[kind], None, 1, aggregation)
+        return PivotColumn(
+            classification=kinds[kind], parent=None, depth=1, result=aggregation
+        )
 
     pivot = Pivot(
-        rows,
-        (
-            PivotColumn(None, None, 0, reduction.execute(rows)),
+        rows=rows,
+        columns=(
+            PivotColumn(
+                classification=None,
+                parent=None,
+                depth=0,
+                result=reduction.execute(rows),
+            ),
             column("2B"),
             column("2B+S"),
         ),
     )
-    split = pivot.partition(ids["building"])
+    split = pivot.partition(row=ids["building"])
     assert split.overlap == records(ids, "u2", "u8")
     assert split.uncovered == records(ids, "u3", "u4", "u5", "u7", "u9")
     assert not split.complete
@@ -249,13 +258,13 @@ def test_unclassified_records_are_uncovered():
         kinds["apartment"],
         kinds["retail"],
     ]
-    split = pivot.partition(ids["building"])
+    split = pivot.partition(row=ids["building"])
     assert split.uncovered == records(ids, "u5", "u9")
     assert not split.complete
-    assert pivot.partition(ids["L1"]).uncovered == records(ids, "u5")
+    assert pivot.partition(row=ids["L1"]).uncovered == records(ids, "u5")
     # Restricted to the Taxonomy, the columns add up to All.
     scoped = price().pivot(rows, by=kinds["unit"], only=kinds["unit"])
-    assert scoped.partition(ids["building"]).complete
+    assert scoped.partition(row=ids["building"]).complete
     assert magnitude(scoped, ids["building"]) == magnitude(
         scoped, ids["building"], kinds["apartment"]
     ) + magnitude(scoped, ids["building"], kinds["retail"])
@@ -264,18 +273,20 @@ def test_unclassified_records_are_uncovered():
 def test_incomplete_coverage_stays_visible_per_cell():
     model, rows, kinds, ids = project(missing=("u7",))
     pivot = price().pivot(rows, by=kinds["apartment"])
-    assert pivot.value(ids["building"], kinds["3B"]) is None
-    assert pivot.available_value(ids["building"], kinds["3B"]).magnitude == 400
-    coverage = pivot.coverage(ids["building"], kinds["3B"])
+    assert pivot.value(row=ids["building"], column=kinds["3B"]) is None
+    assert (
+        pivot.available_value(row=ids["building"], column=kinds["3B"]).magnitude == 400
+    )
+    coverage = pivot.coverage(row=ids["building"], column=kinds["3B"])
     assert coverage.status is CoverageStatus.INCOMPLETE
     assert coverage.missing == records(ids, "u7")
-    assert pivot.value(ids["building"]) is None
+    assert pivot.value(row=ids["building"]) is None
     assert magnitude(pivot, ids["building"], kinds["2B"]) == 850
     assert magnitude(pivot, ids["L1"], kinds["3B"]) == 400
     # Partition compares selected records, so a missing value does not change it.
-    assert pivot.partition(ids["building"], kinds["3B"]).uncovered == records(
-        ids, "u3", "u7"
-    )
+    assert pivot.partition(
+        row=ids["building"], column=kinds["3B"]
+    ).uncovered == records(ids, "u3", "u7")
 
 
 def test_means_use_raw_contributors_in_every_cell():
@@ -296,8 +307,11 @@ def test_only_narrows_every_column_including_a_different_taxonomy():
     same = price().pivot(rows, by=kinds["apartment"], only=kinds["2B"])
     assert magnitude(same, ids["building"]) == 850
     assert magnitude(same, ids["building"], kinds["2B"]) == 850
-    assert same.coverage(ids["building"], kinds["3B"]).status is CoverageStatus.EMPTY
-    assert same.partition(ids["building"]).complete
+    assert (
+        same.coverage(row=ids["building"], column=kinds["3B"]).status
+        is CoverageStatus.EMPTY
+    )
+    assert same.partition(row=ids["building"]).complete
     # An Entity has one Classification, so no record is both 2B and north.
     other = price().pivot(rows, by=kinds["aspect"], only=kinds["2B"])
     assert [c.classification for c in other.columns] == [
@@ -306,9 +320,9 @@ def test_only_narrows_every_column_including_a_different_taxonomy():
         kinds["south"],
     ]
     assert magnitude(other, ids["building"]) == 850
-    assert other.value(ids["building"], kinds["north"]) is None
-    assert other.coverage(ids["building"], kinds["north"]).selected == ()
-    assert other.partition(ids["building"]).uncovered == records(
+    assert other.value(row=ids["building"], column=kinds["north"]) is None
+    assert other.coverage(row=ids["building"], column=kinds["north"]).selected == ()
+    assert other.partition(row=ids["building"]).uncovered == records(
         ids, "u1", "u2", "u6", "u8"
     )
     # Without only, the north column holds the north record.
@@ -324,7 +338,9 @@ def test_count_pivot_counts_each_column():
         units=None,
         contributors=Contributor.LEAVES,
     ).pivot(rows, by=kinds["apartment"])
-    assert pivot.value(ids["building"]) == Quantity(magnitude=9, units="dimensionless")
+    assert pivot.value(row=ids["building"]) == Quantity(
+        magnitude=9, units="dimensionless"
+    )
     assert magnitude(pivot, ids["building"], kinds["2B"]) == 4
     assert magnitude(pivot, ids["L2"], kinds["3B"]) == 1
 
@@ -359,15 +375,20 @@ def test_pivot_validates_its_arguments_and_columns():
         reduction.pivot(View(model))
     whole = reduction.execute(rows)
     with pytest.raises(RollupError):
-        Pivot(rows, ())
+        Pivot(rows=rows, columns=())
     with pytest.raises(RollupError):
-        PivotColumn(kinds["2B"], None, 0, whole)
+        PivotColumn(classification=kinds["2B"], parent=None, depth=0, result=whole)
     with pytest.raises(RollupError):
         Pivot(
-            rows,
-            (
-                PivotColumn(None, None, 0, whole),
-                PivotColumn(kinds["2B+S"], kinds["2B"], 2, whole),
+            rows=rows,
+            columns=(
+                PivotColumn(classification=None, parent=None, depth=0, result=whole),
+                PivotColumn(
+                    classification=kinds["2B+S"],
+                    parent=kinds["2B"],
+                    depth=2,
+                    result=whole,
+                ),
             ),
         )
     other = Hierarchy.from_membership(
@@ -375,8 +396,18 @@ def test_pivot_validates_its_arguments_and_columns():
         root=ids["L1"],
     )
     with pytest.raises(RollupError):
-        Pivot(rows, (PivotColumn(None, None, 0, reduction.execute(other)),))
+        Pivot(
+            rows=rows,
+            columns=(
+                PivotColumn(
+                    classification=None,
+                    parent=None,
+                    depth=0,
+                    result=reduction.execute(other),
+                ),
+            ),
+        )
     pivot = reduction.pivot(rows, by=kinds["apartment"])
     with pytest.raises(MissingReferenceError) as error:
-        pivot.value(ids["building"], kinds["retail"])
+        pivot.value(row=ids["building"], column=kinds["retail"])
     assert (error.value.kind, error.value.requested) == ("PivotColumn", kinds["retail"])

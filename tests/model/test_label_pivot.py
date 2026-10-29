@@ -130,7 +130,7 @@ GFA = QuantityRollup(key="gfa", units="m^2", require_complete=False)
 
 
 def number(pivot, row, column=None):
-    value = pivot.value(row, column)
+    value = pivot.value(row=row, column=column)
     return None if value is None else value.number
 
 
@@ -173,17 +173,17 @@ def test_by_chooses_the_column_parent_and_depth_goes_deeper():
 def test_coverage_reports_overlap_uncovered_and_outside():
     model, rows, ids = project()
     pivot = GFA.pivot(rows, label="use", by=USE["use"])
-    a = pivot.partition(ids["A"])
+    a = pivot.partition(row=ids["A"])
     # a3 is both hotel and retail; a4 has no use label.
     assert a.overlap == (ids["a3"],)
     assert a.uncovered == (ids["a4"],)
     assert a.outside == () and not a.complete
-    b = pivot.partition(ids["B"])
+    b = pivot.partition(row=ids["B"])
     # b3's label is from another Taxonomy, so no use column holds it.
     assert b.uncovered == (ids["b3"],) and b.overlap == ()
     exact = GFA.pivot(rows, label="use", by=USE["use"], exclusive=True)
     # With exclusive columns, apartment is in no column.
-    assert exact.partition(ids["A"]).uncovered == (ids["a2"], ids["a4"])
+    assert exact.partition(row=ids["A"]).uncovered == (ids["a2"], ids["a4"])
 
 
 def test_missing_values_stay_visible_in_label_columns():
@@ -191,19 +191,19 @@ def test_missing_values_stay_visible_in_label_columns():
     pivot = QuantityRollup(key="gfa", units="m^2").pivot(
         rows, label="use", by=USE["use"]
     )
-    coverage = pivot.coverage(ids["B"], USE["retail"])
+    coverage = pivot.coverage(row=ids["B"], column=USE["retail"])
     assert coverage.missing == (ids["b2"],)
     assert coverage.status is CoverageStatus.INCOMPLETE
-    assert pivot.value(ids["B"], USE["retail"]) is None
-    assert pivot.available_value(ids["B"], USE["retail"]) is None
-    assert pivot.value(ids["B"], USE["hotel"]).number == 1000
+    assert pivot.value(row=ids["B"], column=USE["retail"]) is None
+    assert pivot.available_value(row=ids["B"], column=USE["retail"]) is None
+    assert pivot.value(row=ids["B"], column=USE["hotel"]).number == 1000
 
 
 def test_only_narrows_the_label_columns_by_entity_classification():
     model, rows, ids = project()
     pivot = GFA.pivot(rows, label="use", by=USE["use"], only=USE["hotel"])
     # No floor has the hotel Classification itself; only labels name it.
-    assert pivot.coverage(ids["site"]).status is CoverageStatus.EMPTY
+    assert pivot.coverage(row=ids["site"]).status is CoverageStatus.EMPTY
 
 
 def test_a_label_without_any_values_gives_the_all_column_alone():

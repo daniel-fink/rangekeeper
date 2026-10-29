@@ -48,7 +48,7 @@ See [calendar contracts](calculations.md).
 | `rangekeeper_examples.investment` | The model-specific resale rules and investment author/formulate/specify/report operations |
 
 Builders return immutable declarations. They do not solve or read recorded amounts
-as hidden constants. `model.formulation.authoring.declare(id, name, equations, values)`
+as hidden constants. `rk.model.formulation.declare(id=, name=, equations=, values=)`
 assembles custom finite mathematics. IDs use the Formulation UUID, operation,
 Movement UUID or equation label, and expression path. Operand order is preserved.
 Coordinate mismatches and ambiguous duplicates fail. Reversion uses an explicit

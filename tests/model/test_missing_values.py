@@ -221,15 +221,20 @@ def test_a_pivot_keeps_undecided_contributors_in_every_column():
     model, rows, ids = project()
     pivot = nla(contributors=large()).pivot(rows, by=KIND["space"].id)
     for column in (None, FLOOR.id):
-        assert pivot.coverage(ids["b"], column).undecided == (ids["f3"], ids["f4"])
-        assert pivot.value(ids["b"], column) is None
+        assert pivot.coverage(row=ids["b"], column=column).undecided == (
+            ids["f3"],
+            ids["f4"],
+        )
+        assert pivot.value(row=ids["b"], column=column) is None
 
 
 def test_rollup_errors_have_the_rollup_code() -> None:
     # Rollup is the word for totals over a hierarchy (D38, #388).
     model, rows, ids = project()
     with pytest.raises(RollupError) as raised:
-        Coverage((ids["f1"],), (), ())  # measured and missing must cover selected
+        Coverage(
+            selected=(ids["f1"],), measured=(), missing=()
+        )  # measured and missing must cover selected
     assert raised.value.code is Code.ROLLUP
     assert Code.ROLLUP == "rollup"
     assert not hasattr(Code, "AGGREGATION")
@@ -252,13 +257,19 @@ def test_flow_rollups_take_a_filter_and_count_undecided_owners():
 
 def test_coverage_keeps_undecided_owners_apart_from_selected_ones():
     a, b = uuid4(), uuid4()
-    assert Coverage((a,), (a,), (), (b,)).status is CoverageStatus.INCOMPLETE
-    assert Coverage((), (), (), (b,)).status is CoverageStatus.INCOMPLETE
-    assert Coverage((), (), ()).status is CoverageStatus.EMPTY
+    assert (
+        Coverage(selected=(a,), measured=(a,), missing=(), undecided=(b,)).status
+        is CoverageStatus.INCOMPLETE
+    )
+    assert (
+        Coverage(selected=(), measured=(), missing=(), undecided=(b,)).status
+        is CoverageStatus.INCOMPLETE
+    )
+    assert Coverage(selected=(), measured=(), missing=()).status is CoverageStatus.EMPTY
     with pytest.raises(RollupError):
-        Coverage((a,), (a,), (), (a,))
+        Coverage(selected=(a,), measured=(a,), missing=(), undecided=(a,))
     with pytest.raises(RollupError):
-        Coverage((), (), (), (b, b))
+        Coverage(selected=(), measured=(), missing=(), undecided=(b, b))
 
 
 def test_contributors_reject_other_types():
