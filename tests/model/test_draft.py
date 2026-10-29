@@ -12,6 +12,7 @@ from rangekeeper.model.expression.authoring import (
     add,
     binary,
     date_literal,
+    divide,
     equal,
     literal,
     reference,
@@ -23,6 +24,7 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
     ContractError,
+    EquationError,
     MissingReferenceError,
     RevisionConflictError,
     UnitError,
@@ -227,8 +229,8 @@ def test_flows_have_movements_only_when_declared_with_periods():
 def test_equations_are_checked_when_added():
     draft, project = costs()
     land = project.ref(key="land_cost")
-    with pytest.raises(TypeError, match="text"):
-        project.equations("land_cost = 1 AUD")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="text or an Expression"):
+        project.equations(42)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="Boolean"):
         project.equations(add(ref(land), literal(1, "AUD")))
     stranger = ValueHandle(uuid4(), "other", project.id, "AUD")
@@ -236,6 +238,80 @@ def test_equations_are_checked_when_added():
         project.equations(equal(ref(land), ref(stranger)))
     with pytest.raises(TypeError):
         project.equations()
+
+
+def records(expression):
+    """Return exported Expression records without the UUIDs of their nodes."""
+
+    def strip(data):
+        if isinstance(data, dict):
+            return {key: strip(value) for key, value in data.items() if key != "id"}
+        if isinstance(data, list):
+            return [strip(item) for item in data]
+        return data
+
+    return strip(expression.to_data())
+
+
+def test_equation_text_makes_the_records_of_the_record_constructors():
+    draft = rk.Model(name="Value").edit()
+    project = draft.add_entity(code="project", classification="project")
+    value = project.value(key="value", units="AUD")
+    noi = project.value(key="noi", units="AUD pa")
+    cap_rate = project.value(key="cap_rate", units="% pa")
+    project.equations("value = noi / cap_rate")
+    project.equations(equal(ref(value), divide(ref(noi), ref(cap_rate))))
+    model = draft.commit()
+    (formulation,) = model.system.formulations
+    text, record = formulation.expressions
+    assert records(text) == records(record)
+    assert [c.predicate for c in formulation.constraints] == [text.id, record.id]
+
+
+def test_equation_text_is_checked_when_added_and_adds_nothing_on_failure():
+    draft, project = costs()
+    with pytest.raises(EquationError) as error:
+        project.equations(
+            "total_cost = land_cost + works_cost",
+            "total_cost = land_cost + work_cost",
+        )
+    assert (error.value.code, error.value.start, error.value.end) == (
+        Code.REFERENCE_MISSING,
+        25,
+        34,
+    )
+    assert error.value.suggestions == ("works_cost", "total_cost")
+    with pytest.raises(EquationError) as error:
+        project.equations("total_cost + 1 AUD")
+    assert error.value.code is Code.PREDICATE
+    with pytest.raises(EquationError) as error:
+        project.equations("total_cost == land_cost")
+    assert error.value.code is Code.EQUATION_SYNTAX
+    # A failed call adds no equation; the draft keeps the one of ``costs``.
+    (formulation,) = draft.commit().system.formulations
+    assert len(formulation.constraints) == 1
+
+
+def test_equation_text_names_a_value_of_another_entity_by_code_and_key():
+    draft = rk.Model(name="Two buildings").edit()
+    building = draft.add_entity(code="building_a", classification="building")
+    income = building.value(key="income", units="AUD pa")
+    project = draft.add_entity(code="project", classification="project")
+    total = project.value(key="income", units="AUD pa")
+    project.equations("income = building_a.income")
+    model = draft.commit()
+    (expression,) = model.system.formulations[0].expressions
+    assert [operand.target.target for operand in expression.operands] == [
+        total.id,
+        income.id,
+    ]
+    project = model.edit().entity(code="project")
+    with pytest.raises(EquationError) as error:
+        project.equations("income = building_b.income")
+    assert error.value.suggestions == ("building_a",)
+    with pytest.raises(EquationError) as error:
+        project.equations("income = income.total")
+    assert error.value.code is Code.REFERENCE_MISSING
 
 
 def test_assemblies_and_relationships_refer_to_entities_by_handle_or_code():
@@ -401,9 +477,10 @@ def test_date_keys_follow_the_value_rules():
 
 
 def test_lesson_03_cell_5_dates_and_their_equations():
-    # Cell 03·5 declares the plan's dates and relates them. Equation text and
-    # add_formulation come later (#145, #305); these are the same equations as
-    # Expression records on the entity's default Formulation.
+    # Cell 03·5 declares the plan's dates and relates them, in equation text.
+    # add_formulation (#305) and the dates that equations define (#282) come
+    # later: these equations go to the default Formulation, and every date is
+    # declared.
     model = rk.Model(name="Mixed-use base plan")
     draft = model.edit()
     project = draft.add_entity(code="project", classification="project")
@@ -412,20 +489,16 @@ def test_lesson_03_cell_5_dates_and_their_equations():
     start = project.date(key="start_date")
     b_start = project.date(key="b_start")
     shared_start = project.date(key="shared_start")
-    a_start = project.date(key="a_start")
-    a_open = project.date(key="a_open")
-    b_open = project.date(key="b_open")
+    project.date(key="a_start")
+    project.date(key="a_open")
+    project.date(key="b_open")
     project.equations(
-        equal(ref(shared_start), ref(start)),
-        equal(ref(a_start), add(ref(shared_start), literal(1, "year"))),
-        equal(ref(a_open), add(ref(a_start), literal(2, "years"))),
-        equal(ref(b_open), add(ref(b_start), literal(2, "years"))),
-        binary(
-            Operator.GREATER_THAN_OR_EQUAL,
-            ref(b_start),
-            add(ref(shared_start), literal(1, "year")),
-        ),
-        binary(Operator.NOT_EQUAL, ref(start), date_literal(rk.duration.NEVER)),
+        "shared_start = start_date",
+        "a_start = shared_start + 1 year",
+        "a_open = a_start + 2 years",
+        "b_open = b_start + 2 years",
+        "b_start >= shared_start + 1 year",
+        "start_date != NEVER",
     )
     model = draft.commit()
     values = model.entity(code="project").characteristics.values
@@ -436,7 +509,19 @@ def test_lesson_03_cell_5_dates_and_their_equations():
         "b_start",
     ]
     assert {value.kind for value in values} == {ValueKind.DATE}
-    assert len(model.formulation(model.system.formulations[0].id).constraints) == 6
+    formulation = model.formulation(model.system.formulations[0].id)
+    assert len(formulation.constraints) == 6
+    bound, never = formulation.expressions[4:]
+    assert records(bound) == records(
+        binary(
+            Operator.GREATER_THAN_OR_EQUAL,
+            ref(b_start),
+            add(ref(shared_start), literal(1, "year")),
+        )
+    )
+    assert records(never) == records(
+        binary(Operator.NOT_EQUAL, ref(start), date_literal(rk.duration.NEVER))
+    )
 
 
 def test_a_date_equation_needs_dates_and_calendar_lengths():

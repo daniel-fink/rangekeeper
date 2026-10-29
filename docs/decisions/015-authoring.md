@@ -1,6 +1,7 @@
 # ADR-015: Authoring with builders, equations and identities
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; partly implemented (see the
+[decision index](README.md)). Recorded: 2026-10-26.
 
 ## Problem
 

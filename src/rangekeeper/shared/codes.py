@@ -117,6 +117,11 @@ class Code(StrEnum):
     TABLE = "table"
     UNSUPPORTED_VERSION = "unsupported_version"
 
+    # Equation text: text that does not parse, and a function, method or member
+    # that equation text cannot use.
+    EQUATION_SYNTAX = "equation.syntax"
+    EQUATION_FUNCTION = "equation.function"
+
     # A selected graph that is not one rooted tree.
     HIERARCHY_CYCLE = "hierarchy.cycle"
     HIERARCHY_DISCONNECTED = "hierarchy.disconnected"

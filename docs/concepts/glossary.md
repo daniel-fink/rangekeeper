@@ -41,6 +41,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Label | A Classification attached to an Entity in addition to its main Classification | `model` | — |
 | Formulation | A named set of equations over Values, such as "Funding". It does not say which values are known. `project.add_formulation(name=)` makes one and `project.formulation(name=)` finds one; each takes `equations(...)` | `model` | The `Formulation` record. The handles: none (planned, #305) |
 | Equation | One relation that must hold between values: an equality, or a bound such as `b_start >= shared_start + 1 year`. It is written as text or in Python with `rx` (`rangekeeper.expressions`), and stored as a Constraint over Expressions in a Formulation. It has no calculation direction | `model` | The `Constraint` record. `rx`: none (planned, #309) |
+| Equation text | An equation written as a string: the Python form with `=` for equality, `and`, `or` and `not`, quantity literals such as `2 years`, and `NEVER`. Names are value keys, or `code.key` for a value of another entity. `project.equations("noi = coverage * debt_service")` reads it into Expression records | `model` | `EntityHandle.equations`. Equation functions and Flow methods: none (planned, #278) |
 | Expression | One mathematical expression in an equation | `model` | — |
 | Provenance | Sources, Claims and Facts that support recorded content | `model` | — |
 | Geometry pin | An exact link to native geometry files and their Entity mappings | `model` | — |
@@ -60,7 +61,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Period | One half-open time interval with `start` and `end` | `duration` | — |
 | Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | —; `PeriodIndex` in 0.8 |
 | Span | A named half-open range of time | `duration` | — |
-| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | None (planned, #280) |
+| Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | — |
 | Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | — |
 | Movement | One dated or period-based amount | `flow` | — |
 | Flow | An ordered series of Movements in one unit | `flow` | — |
@@ -120,7 +121,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Draft | A mutable set of additions or changes to a Model, from `model.edit()`. `commit()` checks it once and returns a new revision | `model` | `ModelDraft` |
 | Namespace | A UUID that makes the IDs of a Model and its drafts deterministic | `model` | `rk.Model(namespace=)` derives the IDs that a draft makes; the tested contract and stored namespace are planned (#146, #147) |
 | Handle | A draft's reference to an object, such as an entity or a value, by its UUID. A value's handle also builds equations with Python operators | `model`, `expressions` | `EntityHandle` and `ValueHandle`; operators are planned (#309), and Formulation handles (#305) |
-| Expressions (`rx`) | The Python form of equations: `import rangekeeper.expressions as rx`. It mirrors the equation functions of the text form and makes the same records | `expressions` | None (planned, #309). Now nested `equal(left=..., right=add(...))` constructors in `rangekeeper.model.expression.authoring` |
+| Expressions (`rx`) | The Python form of equations: `import rangekeeper.expressions as rx`. It mirrors the equation functions of the text form and makes the same records | `expressions` | None (planned, #309). Now equation text, or the provisional record constructors in `rangekeeper.model.expression.authoring` |
 
 ## Words with one meaning only
 

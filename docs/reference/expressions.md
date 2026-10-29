@@ -4,9 +4,14 @@ This guide specifies representations and meaning. Structural and bounded semanti
 checks enforce this contract. The [executor](execution.md) implements the
 documented affine subset; representation alone does not promise execution support.
 
-Use `rangekeeper.model.expression.authoring` for passive literal, reference and
-operator constructors. `rangekeeper.model.formulation` owns equation builders;
-these builders return declarations and do not read recorded amounts or solve them.
+Write an equation as text on an entity handle:
+`project.equations("noi = coverage * debt_service")` ([equation text](#equation-text)).
+`rangekeeper.model.expression.authoring` has passive literal, reference and
+operator constructors for records. It is provisional, not part of the 1.0 API:
+the Python form of equations is `rx`
+([#309](https://github.com/daniel-fink/rangekeeper/issues/309)).
+`rangekeeper.model.formulation` owns equation builders; these builders return
+declarations and do not read recorded amounts or solve them.
 
 ## Composition and identity
 
@@ -52,6 +57,114 @@ String literal nodes are deferred until a concrete operation requires them.
 This does not remove string result domains: a reference, selection, or call can
 return such content under its declared contract. Selector names and
 characteristic keys are schema fields, not string literal expressions.
+
+## Equation text
+
+An entity handle takes equations as text, one or several in a call
+([Model reference](model.md#make-and-change-a-model)):
+
+```python
+project.equations(
+    "total_cost = land_cost + works_cost",
+    "noi = coverage * debt_service",
+)
+```
+
+Equation text is the Python form of an equation inside a string, with four
+changes ([ADR-015](../decisions/015-authoring.md),
+[D32](../../examples/walkthrough/proposed/README.md#decisions)):
+
+- `=` is equality. Python's `==` is an error that suggests `=`.
+- `and`, `or` and `not` are the logical operators. `&`, `|` and `~` are errors
+  that suggest them; `^` suggests `**`.
+- A number followed by unit words is a quantity literal, with no quotes.
+- `NEVER` is the constant `rk.duration.NEVER`.
+
+The text becomes the Expression records of the [table above](#composition-and-identity),
+with a new UUID for each node. They are the records that the record constructors
+make: `"value = noi / cap_rate"` gives
+`equal(reference(value), divide(reference(noi), reference(cap_rate)))`.
+
+| Form | Text | Records |
+| --- | --- | --- |
+| Name | `land_cost` | `reference` to the Value with this key on the same entity |
+| Dotted name | `building_a.income` | `reference` to the Value `income` of the entity with the code `building_a` |
+| Quantity literal | `0 AUD`, `2 years`, `7 % pa`, `750 AUD per sqm pa` | `quantity`: the Quantity that `rk.Quantity(text=...)` makes from the same text. A bare number, such as `1`, is `dimensionless` |
+| Constant | `True`, `False`, `NEVER` | `boolean`; `never` |
+| Negation, `not` | `-a`, `not a` | `unary` |
+| Arithmetic | `a + b`, `a - b`, `a * b`, `a / b`, `a ** b` | `binary` |
+| Comparison | `a = b`, `a != b`, `a < b`, `a <= b`, `a > b`, `a >= b` | `binary`, Boolean |
+| Logic | `a and b`, `a or b` | `binary`, Boolean |
+| Brackets | `(a + b) * c` | No node of their own |
+
+Operators bind as in Python. A higher level binds tighter:
+
+| Level | Operators | Grouping |
+| --- | --- | --- |
+| 1 | `or` | Left |
+| 2 | `and` | Left |
+| 3 | `not` | — |
+| 4 | `=`, `!=`, `<`, `<=`, `>`, `>=` | None: `a < b < c` is an error; write `a < b and b < c` |
+| 5 | `+`, `-` | Left: `a - b - c` is `(a - b) - c` |
+| 6 | `*`, `/` | Left |
+| 7 | Negation `-` | — |
+| 8 | `**` | Right: `a ** b ** c` is `a ** (b ** c)`, and `-a ** 2` is `-(a ** 2)` |
+
+`rangekeeper.model.expression.text.render` writes records as equation text with
+the fewest brackets that keep the meaning. Text that an entity handle reads
+reads back to the same records. Diagnostics use the same text: an unsupported
+equation in a solve is `"noi = coverage * debt_service"`. A date literal has
+no text form yet; it is written `<date 2027-01-01>`.
+
+**Quantity literals.** A literal is a number and the words of its units, joined
+by spaces: names, `%` and `per`. The literal ends at the first token that is not
+a unit word. So `*` and `/` are never part of a literal: `1 year * rate` is
+`(1 year) * rate`, and `1 AUD / year` divides by a value with the key `year`.
+Brackets make a long literal easier to read: `nla * (750 AUD per sqm pa)`. Unit
+words contain no numbers ([units](units.md)). The Model's unit system reads the
+units when the equation is added.
+
+**Reserved words.** A value key is a Python identifier that is not a Python
+keyword. `rx`, `rk` and `NEVER` are also reserved. Equation text keeps Python's
+own words `and`, `or`, `not`, `True` and `False`; another Python keyword, such as
+`if` or `None`, is an error.
+
+**Functions and methods.** A call parses with Python's rules for arguments:
+positional arguments first, then named arguments, each name once. Equation
+functions have names in the `rx.` namespace, such as `rx.max(a, b)`, and Flow
+methods are written on a value, such as `operating.at(on=sale_date)`. No
+equation function or method is available yet, so a call raises `EquationError`
+with the code `EQUATION_FUNCTION`. Text that writes `rk.` gets the suggestion
+`rx.`, because `rk.` computes on values now, and a function name without `rx.`
+gets `rx.<name>`. The function catalogue
+([#278](https://github.com/daniel-fink/rangekeeper/issues/278)) and its registry
+([#309](https://github.com/daniel-fink/rangekeeper/issues/309)) add the functions
+and methods. Flow-valued equations are
+[#279](https://github.com/daniel-fink/rangekeeper/issues/279), and keyed members
+such as `rent[use]` are [#284](https://github.com/daniel-fink/rangekeeper/issues/284).
+
+**Errors.** The draft checks each equation when it is added. When one equation
+of a call fails, the call adds none. Text that does not make an equation raises
+`EquationError` ([errors](errors.md#errors)). `text[start:end]` is the part
+that fails, and the message marks it:
+
+```text
+Value with key 'work_cost' not found in Entity project; nearest: works_cost, total_cost
+  total_cost = land_cost + work_cost
+                           ^^^^^^^^^
+```
+
+| Code | Cause |
+| --- | --- |
+| `EQUATION_SYNTAX` | The text does not parse: an unexpected or a missing token, a bracket that is not closed, a chained comparison, or a Python spelling such as `==`. `suggestions` gives the spelling of equation text |
+| `REFERENCE_MISSING`, `REFERENCE_AMBIGUOUS` | A name matches no Value, or several. `suggestions` gives the nearest keys or codes |
+| `UNITS` | The units of a literal are not valid. The error marks the unit words |
+| `EQUATION_FUNCTION` | A call, a method, or a member of a value |
+| `PREDICATE` | The text is not Boolean, for example `total_cost + 1 AUD` |
+
+`commit()` then validates the domains of every expression with the revision,
+for example a date compared with an amount. Dimensional checks of equations are
+[#151](https://github.com/daniel-fink/rangekeeper/issues/151).
 
 ## Dates and NEVER
 

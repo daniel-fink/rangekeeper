@@ -30,6 +30,7 @@ contract: a Run that is read back has the same code text.
 | References | `reference.*` | `REFERENCE_MISSING`, `REFERENCE_AMBIGUOUS`, `REFERENCE_KIND` |
 | Batches | `batch.*` | `BATCH_MODEL` |
 | Hierarchies | `hierarchy.*` | `HIERARCHY_CYCLE`, `HIERARCHY_MULTIPLE_PARENTS` |
+| Equation text | `equation.*` | `EQUATION_SYNTAX` (text that does not parse), `EQUATION_FUNCTION` (a function, method or member that equation text cannot use) |
 | Other errors | Bare words | `DECODE`, `ENCODING`, `REVISION_CONFLICT`, `UNSUPPORTED_VERSION` |
 | Execution | Bare words in Run diagnostics | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED` |
 
@@ -125,6 +126,7 @@ all of its fields through `pickle`.
 | `RevisionConflictError` | `ValueError` | `REVISION_CONFLICT` |
 | `UnsupportedVersionError` | `ValueError` | `UNSUPPORTED_VERSION` |
 | `UnitError` | `ValueError` | `UNITS`. `suggestions` gives spellings to try |
+| `EquationError` | `ValueError` | `EQUATION_SYNTAX` by default, or the code of the failure: `REFERENCE_MISSING`, `REFERENCE_AMBIGUOUS`, `UNITS`, `EQUATION_FUNCTION` or `PREDICATE`. `text[start:end]` is the part of the equation text that fails, and `suggestions` gives text to try ([equation text](expressions.md#equation-text)) |
 | `DecodeError`, `EncodingError` | `ValueError` | `DECODE`, `ENCODING` |
 | `TableError` | `ValueError` | `TABLE` |
 | `UnknownExtensionError` | `LookupError` | `EXTENSION_UNKNOWN`. `suggestions` gives registered names to try ([extension points](extensions.md)) |

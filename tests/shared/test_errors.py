@@ -113,6 +113,7 @@ def test_an_error_without_a_class_code_takes_one():
 # The keywords that some errors need besides the common fields.
 REQUIRED = {
     errors.PublishedFileError: {"file": Path("published.json")},
+    errors.EquationError: {"text": "a = b c", "start": 6, "end": 7},
     OutcomeError: {"status": Status.INFEASIBLE},
 }
 
@@ -179,6 +180,26 @@ def test_unsupported_error_keeps_its_fields_through_pickle():
         (target,),
         "noi = coverage * debt_service",
         ("coverage", "debt_service"),
+    )
+
+
+def test_equation_error_marks_the_part_that_fails_and_keeps_it_through_pickle():
+    error = errors.EquationError(
+        "unexpected 'c'",
+        text="a = b c",
+        start=6,
+        end=7,
+        suggestions=["*"],
+    )
+    assert error.code is Code.EQUATION_SYNTAX
+    assert str(error) == "unexpected 'c'\n  a = b c\n        ^"
+    copy = pickle.loads(pickle.dumps(error))
+    assert (str(copy), copy.code, copy.start, copy.end, copy.suggestions) == (
+        str(error),
+        Code.EQUATION_SYNTAX,
+        6,
+        7,
+        ("*",),
     )
 
 
