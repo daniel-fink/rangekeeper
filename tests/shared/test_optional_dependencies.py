@@ -57,7 +57,7 @@ def test_core_needs_no_optional_extra():
                 raise AssertionError(module + " imported without its extra")
         from rangekeeper.io import yaml
         try:
-            yaml.loads("a: 1", kind=Model)
+            yaml.loads(text="a: 1", kind=Model)
         except ImportError as error:
             assert "rangekeeper[yaml]" in str(error), error
         else:

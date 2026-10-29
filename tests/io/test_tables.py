@@ -134,7 +134,7 @@ def test_polars_flow_round_trip_keeps_number_types(magnitudes, dtype):
     assert frame.schema["magnitude"] == dtype
     assert set(frame.columns) == {*slots_for("Movement"), "_present"}
     assert frame.columns[0] == "id" and frame.columns[-1] == "_present"
-    restored = polars.from_frame(frame, units=flow.units)
+    restored = polars.from_frame(frame=frame, units=flow.units)
     assert [type(m.magnitude) for m in restored.movements] == [
         type(m) for m in magnitudes
     ]
@@ -169,7 +169,7 @@ def test_polars_dates_needs_another_magnitude_name():
     from rangekeeper.errors import Code, ContractError
 
     with pytest.raises(ContractError) as raised:
-        polars.dates(_flow((1,)), name="date")
+        polars.dates(flow=_flow((1,)), name="date")
     assert raised.value.code is Code.CONTRACT
 
 

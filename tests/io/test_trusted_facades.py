@@ -50,7 +50,7 @@ def test_put_and_dumps_do_not_validate_a_facade_again(model, counted, tmp_path):
     DirectoryStore(tmp_path / "records").put(model)
     assert counted == ["structure:Model", "semantic:Model"]
     counted.clear()
-    assert codec.loads(text, kind=rk.Model).to_data() == model.to_data()
+    assert codec.loads(text=text, kind=rk.Model).to_data() == model.to_data()
     assert "structure:Model" in counted and "semantic:Model" in counted
 
 

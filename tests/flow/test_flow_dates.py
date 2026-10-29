@@ -161,8 +161,8 @@ def test_polars_date_projection():
 
     flow = Flow.from_periods(periods=[JANUARY], magnitudes=[100], units="AUD")
     with pytest.raises(ValueError, match="explicit timing"):
-        dates(flow)
-    assert dates(flow, timing=PeriodTiming.LAST)["date"].to_list() == [
+        dates(flow=flow)
+    assert dates(flow=flow, timing=PeriodTiming.LAST)["date"].to_list() == [
         date(2026, 1, 31)
     ]
 
@@ -194,6 +194,6 @@ def test_date_and_period_null_presence_survives_frames():
         }
     )
     assert (
-        module.from_frame(module.to_frame(flow), units=flow.units).to_data()
+        module.from_frame(frame=module.to_frame(flow), units=flow.units).to_data()
         == flow.to_data()
     )

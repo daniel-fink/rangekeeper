@@ -94,12 +94,12 @@ Use the explicit `rangekeeper.io.bundle` module. Its public names are `write`,
 from rangekeeper.io.bundle import write, Reader
 
 manifest = write(
-    new_directory,
-    result_model,
+    root=new_directory,
+    model=result_model,
     documents=[run, next_specification],
     resolver=record_store,
 )
-reader = Reader(new_directory)
+reader = Reader(root=new_directory)
 result = reader.model()  # main Model
 inputs = reader.load_model(input_uuid)  # exact retained Model
 spec = reader.load_specification(spec_uuid)
@@ -114,15 +114,15 @@ dependency cycles fail. Run validation uses the complete retained resolver.
 The writer checks round trips and publishes the manifest last. Existing destinations
 are never overwritten; a failed write can leave an unpublished directory.
 
-`write(root, model, *, documents=(), resolver=None, geometry=GeometrySources(),
-parquet=ParquetOptions())` takes each option by keyword:
+`write(*, root, model, documents=(), resolver=None, geometry=GeometrySources(),
+parquet=ParquetOptions())` takes each argument by keyword:
 
 ```python
 from rangekeeper.io.bundle import GeometrySources, ParquetOptions
 
 write(
-    new_directory,
-    model,
+    root=new_directory,
+    model=model,
     geometry=GeometrySources(
         directories={model.id: native_directory},
         providers={("example", "example-format", "1"): adapter},
@@ -139,7 +139,7 @@ adapter. When `providers` has no adapter for a pin, the writer and
 A source for one Model can serve another with the same complete pin. Unknown or
 undeclared sources fail. `ParquetOptions` sets the Parquet codec (`none`,
 `snappy`, `gzip`, `brotli`, `lz4` or `zstd`) and the most rows in a row group;
-neither changes the Bundle identity. `Reader(root, *, providers=, limits=,
+neither changes the Bundle identity. `Reader(*, root, providers=, limits=,
 index=)` takes the same `providers` mapping for `verify_geometry()`.
 `geometry_path(model_uuid)` locates a retained dataset.
 `verify_geometry()` checks every distinct pin, including supporting Models when the
@@ -155,14 +155,14 @@ predicate/limit pushdown and 128 MB working memory; no full Arrow index copy pre
 the query. Opening still reconstructs and verifies all retained documents. It
 validates each document once; caller-owned documents given to `write` are
 validated again as detached snapshots.
-`Reader(path, index=IndexCheck.SCHEMA)` skips comparing the derived record and
+`Reader(root=path, index=IndexCheck.SCHEMA)` skips comparing the derived record and
 reference index with the reconstructed documents; it still checks their schemas
 and file hashes. Use it only for a Bundle whose index a full open
 (`IndexCheck.FULL`, the default) already verified, with files unchanged since.
 Offsets are scoped to that root and query. Limits are 1–1,000 rows.
 `ReadLimits(documents=1000, bytes=4 GiB, rows=1_000_000)` limits the documents,
 the retained bytes and the physical canonical/index rows of the Bundle; pass
-another value as `Reader(path, limits=ReadLimits(rows=...))`. The reader also
+another value as `Reader(root=path, limits=ReadLimits(rows=...))`. The reader also
 limits the Bundle to 10,000 files, 256 MiB compressed canonical tables and
 512 MiB declared expanded table bytes. These are proof bounds, not validated
 production capacity or a hard native-call deadline. A count that is not an `int`

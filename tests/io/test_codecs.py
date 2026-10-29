@@ -54,7 +54,7 @@ def test_every_fixture_roundtrips_without_storage_envelopes(path, codec):
     data = pyyaml.safe_load(path.read_text())
     document = kind.from_data(data)
     text = codec.dumps(document)
-    assert codec.loads(text, kind=kind).to_data() == document.to_data()
+    assert codec.loads(text=text, kind=kind).to_data() == document.to_data()
     assert "document" not in pyyaml.safe_load(text)  # report references remain nested
 
 
@@ -81,19 +81,19 @@ def test_every_fixture_roundtrips_without_storage_envelopes(path, codec):
 )
 def test_ambiguous_or_non_json_text_is_rejected(codec, text):
     with pytest.raises(DecodeError):
-        codec.loads(text, kind=rk.Model)
+        codec.loads(text=text, kind=rk.Model)
 
 
 @pytest.mark.parametrize("codec", [json, yaml])
 def test_codecs_require_kind_and_distinguish_decode_shape_and_version_errors(codec):
     with pytest.raises(TypeError):
-        codec.loads("{}", kind=dict)
+        codec.loads(text="{}", kind=dict)
     with pytest.raises(ValidationError):
-        codec.loads("{}", kind=rk.Model)
+        codec.loads(text="{}", kind=rk.Model)
     data = minimal().to_data()
     data["metadata"]["schema_version"] = "999"
     with pytest.raises(UnsupportedVersionError):
-        codec.loads(stdjson.dumps(data), kind=rk.Model)
+        codec.loads(text=stdjson.dumps(data), kind=rk.Model)
 
 
 def test_yaml_preserves_json_scalar_meaning_inside_opaque_claims():
@@ -112,7 +112,7 @@ def test_yaml_preserves_json_scalar_meaning_inside_opaque_claims():
     }
     data["provenance"]["claims"][0]["content"] = opaque
     document = rk.Model.from_data(data)
-    restored = yaml.loads(yaml.dumps(document), kind=rk.Model)
+    restored = yaml.loads(text=yaml.dumps(document), kind=rk.Model)
     assert stdjson.dumps(restored.to_data()) == stdjson.dumps(document.to_data())
     assert restored.to_data()["provenance"]["claims"][0]["content"] == opaque
     # Timestamp-looking scalars remain strings even when supplied without quotes.
@@ -121,23 +121,23 @@ def test_yaml_preserves_json_scalar_meaning_inside_opaque_claims():
         .replace("'2026-10-02'", "2026-10-02")
         .replace("'2026-10-02T00:00:00Z'", "2026-10-02T00:00:00Z")
     )
-    assert yaml.loads(text, kind=rk.Model).to_data() == document.to_data()
+    assert yaml.loads(text=text, kind=rk.Model).to_data() == document.to_data()
 
 
 @pytest.mark.parametrize("codec", [json, yaml])
 def test_file_codec_never_overwrites_and_preserves_existing_bytes(codec, tmp_path):
     path = tmp_path / "document.txt"
     document = minimal()
-    assert codec.write(document, path) == path
+    assert codec.write(document=document, path=path) == path
     original = path.read_bytes()
-    assert codec.read(path, kind=rk.Model).id == document.id
+    assert codec.read(path=path, kind=rk.Model).id == document.id
     with pytest.raises(FileExistsError):
-        codec.write(document, path)
+        codec.write(document=document, path=path)
     assert path.read_bytes() == original
     assert list(tmp_path.iterdir()) == [path]
     path.write_bytes(b"\xff")
     with pytest.raises(DecodeError):
-        codec.read(path, kind=rk.Model)
+        codec.read(path=path, kind=rk.Model)
 
 
 def test_store_pins_snapshots_and_preserves_old_revisions(store):
@@ -419,5 +419,5 @@ def test_codec_preserves_permission_errors(tmp_path, monkeypatch):
 
     monkeypatch.setattr(_atomic.tempfile, "mkstemp", denied)
     with pytest.raises(PermissionError):
-        json.write(minimal(), tmp_path / "file.json")
+        json.write(document=minimal(), path=tmp_path / "file.json")
     assert list(tmp_path.iterdir()) == []

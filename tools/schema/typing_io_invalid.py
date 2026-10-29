@@ -4,8 +4,8 @@ import rangekeeper as rk
 from rangekeeper.io import MemoryStore, json
 from rangekeeper.run import validate
 
-model: rk.Model = json.loads("{}", kind=rk.Run)
-json.loads("{}", kind=dict)
+model: rk.Model = json.loads(text="{}", kind=rk.Run)
+json.loads(text="{}", kind=dict)
 MemoryStore().put({})
 MemoryStore().load_run("not a UUID")
 validate(rk.Model.from_data({}), resolver=MemoryStore())

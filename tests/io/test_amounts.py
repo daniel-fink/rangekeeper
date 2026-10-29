@@ -23,7 +23,7 @@ ROOT = Path(__file__).parents[2]
 
 def money_model() -> Model:
     """Return a Model with a currency amount, a rate, an area and a currency Flow."""
-    model = yaml.read(ROOT / "examples/schema/model.yaml", kind=Model)
+    model = yaml.read(path=ROOT / "examples/schema/model.yaml", kind=Model)
     data = model.to_data()
     measures = {units: str(uuid4()) for units in ("AUD", "AUD/m^2", "m^2")}
     data["definitions"]["measures"] += [
@@ -84,12 +84,12 @@ def test_json_is_strict_and_the_error_gives_the_canonical_text():
     data = stdjson.loads(json.dumps(money_model()))
     find(data, "price")["quantity"]["magnitude"] = 1.5
     with pytest.raises(ValidationError) as error:
-        json.loads(stdjson.dumps(data), kind=Model)
+        json.loads(text=stdjson.dumps(data), kind=Model)
     assert error.value.report.issues[0].code == Code.CURRENCY_AMOUNT
     assert "'1.5'" in str(error.value)
     find(data, "price")["quantity"]["magnitude"] = "1.50"
     with pytest.raises(ValidationError) as error:
-        json.loads(stdjson.dumps(data), kind=Model)
+        json.loads(text=stdjson.dumps(data), kind=Model)
     issue = error.value.report.issues[0]
     assert issue.code == Code.CURRENCY_AMOUNT
     assert issue.values["expected"] == "1.5"
@@ -97,7 +97,7 @@ def test_json_is_strict_and_the_error_gives_the_canonical_text():
     find(data, "price")["quantity"]["magnitude"] = "1.5"
     find(data, "rent")["quantity"]["magnitude"] = "450.5"
     with pytest.raises(ValidationError) as error:
-        json.loads(stdjson.dumps(data), kind=Model)
+        json.loads(text=stdjson.dumps(data), kind=Model)
     assert error.value.report.issues[0].code == Code.CURRENCY_AMOUNT
 
 
@@ -107,18 +107,18 @@ def test_yaml_reads_numerals_from_their_source_text():
     assert "magnitude: '1250000.5'" in text
     authored = text.replace("magnitude: '1250000.5'", "magnitude: 1250000.50")
     assert authored != text
-    assert exact_equal(yaml.loads(authored, kind=Model).to_data(), model.to_data())
+    assert exact_equal(yaml.loads(text=authored, kind=Model).to_data(), model.to_data())
     precise = text.replace("magnitude: '1250000.5'", "magnitude: 0.123456789012345")
-    read = yaml.loads(precise, kind=Model).to_data()
+    read = yaml.loads(text=precise, kind=Model).to_data()
     assert find(read, "price")["quantity"]["magnitude"] == "0.123456789012345"
     quoted = text.replace("magnitude: '1250000.5'", 'magnitude: "1250000.500"')
-    assert exact_equal(yaml.loads(quoted, kind=Model).to_data(), model.to_data())
+    assert exact_equal(yaml.loads(text=quoted, kind=Model).to_data(), model.to_data())
 
 
 @pytest.mark.parametrize("codec", [json, yaml])
 def test_codecs_round_trip_amounts_rates_and_geometry_exactly(codec):
     model = money_model()
-    restored = codec.loads(codec.dumps(model), kind=Model)
+    restored = codec.loads(text=codec.dumps(model), kind=Model)
     assert exact_equal(restored.to_data(), model.to_data())
     price = restored.value(UUID(find(model.to_data(), "price")["id"]))
     assert price.quantity.magnitude == Decimal("1250000.5")
@@ -130,8 +130,8 @@ def test_bundle_round_trips_amounts_and_stores_canonical_text(tmp_path):
     from rangekeeper.io.bundle import Reader, write
 
     model = money_model()
-    write(tmp_path / "bundle", model)
-    restored = Reader(tmp_path / "bundle").model()
+    write(root=tmp_path / "bundle", model=model)
+    restored = Reader(root=tmp_path / "bundle").model()
     assert exact_equal(restored.to_data(), model.to_data())
     tables = list((tmp_path / "bundle").rglob("Quantity.parquet"))
     assert tables

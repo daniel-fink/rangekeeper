@@ -62,7 +62,7 @@ def optional_backend():
 
 def data(name):
     kind = Model if name.startswith("model") else Specification
-    return yaml.read(EXAMPLES / f"{name}.yaml", kind=kind).to_data()
+    return yaml.read(path=EXAMPLES / f"{name}.yaml", kind=kind).to_data()
 
 
 def fresh(document):
@@ -405,7 +405,7 @@ def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
             config=ExecutionConfig(backend="pyomo"),
         )
     registry: Registry[backends.Backend] = Registry("backends", backends.Backend)
-    registry.register("wrong", WrongCandidate())
+    registry.register(name="wrong", implementation=WrongCandidate())
     monkeypatch.setattr(backends, "registry", registry)
     monkeypatch.setattr("rangekeeper.execution.pipeline.registry", registry)
     monkeypatch.setattr("rangekeeper.execution.attempt.registry", registry)

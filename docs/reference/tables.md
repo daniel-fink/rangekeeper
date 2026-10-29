@@ -109,11 +109,11 @@ generated slot metadata, not from a list in the code:
 | Number, such as `magnitude` | `Int64` when all values are integers, `Float64` when all are floats, `Object` when they mix or exceed `Int64` |
 
 The round trip is lossless: integer magnitudes stay integers and floats stay floats.
-`from_frame(frame, *, units)` requires that explicit movement format and an
+`from_frame(*, frame, units)` requires that explicit movement format and an
 explicit unit string. It validates the resulting Flow; NaN is invalid, not an alias
 for missing. See [calculations](calculations.md) for movement and missing-value rules.
 
-`polars.dates(flow, *, name="magnitude", timing=None)` is a display projection.
+`polars.dates(*, flow, name="magnitude", timing=None)` is a display projection.
 A Period-only coordinate requires an explicit timing convention. A recorded payment
 date takes precedence, including when the Movement also has a Period. This projection omits
 movement IDs, matching keys, coverage and Claims; use `to_frame` for interchange.

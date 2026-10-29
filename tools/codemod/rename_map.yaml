@@ -1066,7 +1066,11 @@ notes:
   - topic: Bundle options
     status: agreed
     source: "#411, #422"
-    note: "`rk.io.bundle.write(root, model, *, documents=, resolver=, geometry=, parquet=)` and `Reader(root, *, providers=, limits=, index=)`. `geometry=GeometrySources(directories={model_id: path}, providers={(provider, format, format_version): adapter})` replaces `geometry=`, `geometries=`, `provider=` and `providers=` of `write`; a pin with no provider uses `rk.io.geometry_providers`. `parquet=ParquetOptions(compression=, row_group_size=)` replaces `compression=` and `row_group_size=`. `limits=ReadLimits(documents=, bytes=, rows=)` replaces `max_documents=`, `max_bytes=` and `max_rows=`; `index=IndexCheck.SCHEMA` replaces `check_index=False`. `Reader` has no `provider=`."
+    note: "`rk.io.bundle.write(root=, model=, documents=, resolver=, geometry=, parquet=)` and `Reader(root=, providers=, limits=, index=)`. `geometry=GeometrySources(directories={model_id: path}, providers={(provider, format, format_version): adapter})` replaces `geometry=`, `geometries=`, `provider=` and `providers=` of `write`; a pin with no provider uses `rk.io.geometry_providers`. `parquet=ParquetOptions(compression=, row_group_size=)` replaces `compression=` and `row_group_size=`. `limits=ReadLimits(documents=, bytes=, rows=)` replaces `max_documents=`, `max_bytes=` and `max_rows=`; `index=IndexCheck.SCHEMA` replaces `check_index=False`. `Reader` has no `provider=`."
+  - topic: Keyword-only arguments in io and the extension registries
+    status: agreed
+    source: "#410 D14"
+    note: "Name each argument: `rk.io.json` and `rk.io.yaml` `loads(text=, kind=)`, `read(path=, kind=)` and `write(document=, path=)`; `rk.io.bundle.write(root=, model=, ...)` and `Reader(root=, ...)`; `rk.io.polars.dates(flow=, ...)` and `from_frame(frame=, units=)`; `GeometryProvider.validate(path=, geometry=)`, so a provider declares `def validate(self, *, path, geometry)`; and `register(name=, implementation=)` on `unit_systems`, `geometry_providers`, `profiles` and the execution backends `registry`. The store protocol stays positional: `put(document)` and `load_model(id)`, `load_specification(id)` and `load_run(id)`."
   - topic: Rules
     status: agreed
     source: "ADR-021, #255 D41, D42"

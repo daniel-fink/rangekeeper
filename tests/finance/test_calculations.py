@@ -156,11 +156,11 @@ def test_model_flow_content_store_and_stream():
     assert model.owner_of(a.id) == entity.id
     store = MemoryStore()
     store.put(model)
-    restored = codec.loads(codec.dumps(model), kind=Model)
+    restored = codec.loads(text=codec.dumps(model), kind=Model)
     assert restored.to_data() == model.to_data() == store.load_model(model.id).to_data()
     from rangekeeper.io import yaml
 
-    restored_yaml = yaml.loads(yaml.dumps(model), kind=Model)
+    restored_yaml = yaml.loads(text=yaml.dumps(model), kind=Model)
     assert restored_yaml.to_data() == model.to_data()
     assert type(restored_yaml.value(a.id).flow.movements[0].period.start) is date
     data = restored.to_data()
@@ -404,7 +404,7 @@ def test_adapter_exports_are_detached():
 
     flow = annual([0, None, 2])
     frame = po.to_frame(flow)
-    assert po.from_frame(frame, units=flow.units) == flow
+    assert po.from_frame(frame=frame, units=flow.units) == flow
     cells = frame.to_dicts()
     cells[0]["period"]["start"] = "2000-01-01"
     assert flow.movements[0].period.start == date(2020, 1, 1)
@@ -512,7 +512,9 @@ def test_polars_preserves_explicit_null_and_omission():
             ],
         }
     )
-    assert from_frame(to_frame(flow), units=flow.units).to_data() == flow.to_data()
+    assert (
+        from_frame(frame=to_frame(flow), units=flow.units).to_data() == flow.to_data()
+    )
 
 
 def test_invalid_timezone_is_a_domain_validation_error():

@@ -643,7 +643,7 @@ def _plan_geometry(
         )
         if source is None:
             raise ValueError("Geometry needs its exact native files")
-        provider.validate(source, geometry)
+        provider.validate(path=source, geometry=geometry)
         path = "geometry" if _pin(model) == pin else "assets/" + digest(pin)
         paths[str(document.id)] = path
         datasets[digest(pin)] = (path, source, geometry)
@@ -661,7 +661,9 @@ def _copy_geometry(
             destination = root / path / entry.path
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source / entry.path, destination)
-        _provider(geometry.pin.to_data(), providers).validate(root / path, geometry)
+        _provider(geometry.pin.to_data(), providers).validate(
+            path=root / path, geometry=geometry
+        )
 
 
 def _flush(root: Path) -> list[str]:
@@ -675,9 +677,9 @@ def _flush(root: Path) -> list[str]:
 
 
 def write(
+    *,
     root: Path,
     model: Model,
-    *,
     documents: Iterable[Document] = (),
     resolver: DocumentResolver | None = None,
     geometry: GeometrySources = _NO_GEOMETRY,
@@ -1018,8 +1020,8 @@ class Reader(_Documents):
 
     def __init__(
         self,
-        root: Path,
         *,
+        root: Path,
         providers: Mapping[ProviderKey, GeometryProvider] = _NO_PROVIDERS,
         limits: ReadLimits = _LIMITS,
         index: IndexCheck = IndexCheck.FULL,
@@ -1177,7 +1179,9 @@ class Reader(_Documents):
             if digest(pin) in checked:
                 continue
             path = self.root / self.manifest["geometry_paths"][str(document.id)]
-            _provider(pin, self.providers).validate(path, document.geometry)
+            _provider(pin, self.providers).validate(
+                path=path, geometry=document.geometry
+            )
             checked.add(digest(pin))
 
     def copy_to(self, store: RecordStore) -> tuple[dict[str, str], ...]:

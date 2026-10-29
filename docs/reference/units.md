@@ -197,7 +197,7 @@ distribution can add a system in the entry point group `rangekeeper.unit_systems
 ```python
 from rangekeeper.quantity import default_units, unit_systems
 
-unit_systems.register("storeys", default_units.register(name="storey"))
+unit_systems.register(name="storeys", implementation=default_units.register(name="storey"))
 unit_systems.get("storeys").validate_units("storey")
 ```
 

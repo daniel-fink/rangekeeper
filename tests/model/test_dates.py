@@ -87,7 +87,7 @@ def test_a_date_value_records_a_date_never_or_nothing():
     )
     assert (b_start.date, b_start.never) == (None, NEVER)
     assert (sale.date, sale.never, sale.measure) == (None, None, None)
-    again = rk.io.json.loads(rk.io.json.dumps(plan), kind=rk.Model)
+    again = rk.io.json.loads(text=rk.io.json.dumps(plan), kind=rk.Model)
     assert again.to_data() == plan.to_data()
 
 
@@ -261,5 +261,5 @@ def test_date_content_survives_a_bundle(tmp_path):
         date_value("sale_date"),
     ]
     plan = rk.Model.from_data(model_data(values, equations))
-    write(tmp_path / "bundle", plan)
-    assert Reader(tmp_path / "bundle").model().to_data() == plan.to_data()
+    write(root=tmp_path / "bundle", model=plan)
+    assert Reader(root=tmp_path / "bundle").model().to_data() == plan.to_data()

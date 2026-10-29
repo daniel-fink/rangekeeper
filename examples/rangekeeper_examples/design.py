@@ -530,7 +530,7 @@ def fixture() -> Model:
     from rangekeeper.io import json as codec
 
     return codec.loads(
-        files("rangekeeper_examples").joinpath("data/design.json").read_text(),
+        text=files("rangekeeper_examples").joinpath("data/design.json").read_text(),
         kind=Model,
     )
 

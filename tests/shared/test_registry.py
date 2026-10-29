@@ -49,7 +49,7 @@ def declare(monkeypatch, group, **names):
 
 def test_registered_implementation_is_found_by_name():
     registry: Registry[Greeter] = Registry("greeters", Greeter)
-    registration = registry.register("hello", HELLO)
+    registration = registry.register(name="hello", implementation=HELLO)
     assert registry.get("hello") is HELLO
     assert registry.registration("hello") is registration
     assert registry.names() == ("hello",)
@@ -62,12 +62,12 @@ def test_registered_implementation_is_found_by_name():
 def test_registration_checks_the_protocol_and_the_name():
     registry: Registry[Greeter] = Registry("greeters", Greeter)
     with pytest.raises(TypeError, match="must be Greeter"):
-        registry.register("text", "not a greeter")
+        registry.register(name="text", implementation="not a greeter")
     for name in ("", "Hello", "1st", "a b", "a--b", "trailing-"):
         with pytest.raises(ValueError, match="invalid greeters name"):
-            registry.register(name, HELLO)
+            registry.register(name=name, implementation=HELLO)
     for name in ("pyomo-highs", "imperial_us", "speckle.v2", "a1"):
-        registry.register(name, HELLO)
+        registry.register(name=name, implementation=HELLO)
 
 
 def test_protocols_must_be_runtime_checkable():
@@ -82,19 +82,19 @@ def test_protocols_must_be_runtime_checkable():
 
 def test_a_used_name_needs_an_explicit_replacement():
     registry: Registry[Greeter] = Registry("greeters", Greeter)
-    first = registry.register("hello", HELLO)
-    assert registry.register("hello", HELLO) is first
+    first = registry.register(name="hello", implementation=HELLO)
+    assert registry.register(name="hello", implementation=HELLO) is first
     other = Other()
     with pytest.raises(ExtensionConflictError, match="replace=True"):
-        registry.register("hello", other)
+        registry.register(name="hello", implementation=other)
     assert registry.get("hello") is HELLO
-    registry.register("hello", other, replace=True)
+    registry.register(name="hello", implementation=other, replace=True)
     assert registry.get("hello") is other
 
 
 def test_unknown_names_fail_with_suggestions():
     registry: Registry[Greeter] = Registry("greeters", Greeter)
-    registry.register("pyomo-highs", HELLO)
+    registry.register(name="pyomo-highs", implementation=HELLO)
     with pytest.raises(UnknownExtensionError, match="did you mean") as error:
         registry.get("pyomo-hghs")
     assert error.value.suggestions == ("pyomo-highs",)
@@ -110,7 +110,7 @@ def test_entry_points_load_on_first_lookup(monkeypatch):
     monkeypatch.setitem(sys.modules, "greeter_plugin", module)
     declare(monkeypatch, "rangekeeper.greeters", other="greeter_plugin:greeter")
     registry: Registry[Greeter] = Registry("greeters", Greeter)
-    registry.register("hello", HELLO)
+    registry.register(name="hello", implementation=HELLO)
     assert registry.names() == ("hello", "other")
     assert registry.get("other") is module.greeter
     assert registry.registration("other").qualified_name == (
@@ -124,7 +124,7 @@ def test_entry_points_cannot_replace_a_registered_name(monkeypatch):
     monkeypatch.setitem(sys.modules, "greeter_plugin", module)
     declare(monkeypatch, "rangekeeper.greeters", hello="greeter_plugin:greeter")
     registry: Registry[Greeter] = Registry("greeters", Greeter)
-    registry.register("hello", HELLO)
+    registry.register(name="hello", implementation=HELLO)
     assert registry.get("hello") is HELLO
 
 
@@ -156,7 +156,7 @@ def test_entry_points_must_satisfy_the_protocol(monkeypatch):
 
 def test_describe_names_registered_and_unregistered_implementations():
     registry: Registry[Greeter] = Registry("greeters", Greeter)
-    registry.register("hello", HELLO)
+    registry.register(name="hello", implementation=HELLO)
     assert registry.describe(HELLO).qualified_name == "rangekeeper.greeters:hello"
     other = registry.describe(Other())
     assert not other.registered
@@ -170,8 +170,16 @@ def test_state_fingerprints_come_from_the_registry():
     registry: Registry[Greeter] = Registry(
         "greeters", Greeter, fingerprint=lambda item: "state:" + item.greet()
     )
-    assert registry.register("hello", HELLO).fingerprint == "state:hello"
-    assert registry.register("x", Other(), fingerprint="given").fingerprint == "given"
+    assert (
+        registry.register(name="hello", implementation=HELLO).fingerprint
+        == "state:hello"
+    )
+    assert (
+        registry.register(
+            name="x", implementation=Other(), fingerprint="given"
+        ).fingerprint
+        == "given"
+    )
 
 
 def test_fingerprints_are_lazy_and_follow_the_source(monkeypatch):
@@ -179,7 +187,7 @@ def test_fingerprints_are_lazy_and_follow_the_source(monkeypatch):
     registry: Registry[Greeter] = Registry(
         "greeters", Greeter, fingerprint=lambda item: calls.append(item) or "f"
     )
-    registration = registry.register("hello", HELLO)
+    registration = registry.register(name="hello", implementation=HELLO)
     assert calls == []
     assert registration.fingerprint == registration.fingerprint == "f"
     assert calls == [HELLO]
@@ -204,7 +212,7 @@ def test_registration_is_thread_safe():
     found = []
 
     def register():
-        found.append(registry.register("hello", HELLO))
+        found.append(registry.register(name="hello", implementation=HELLO))
 
     threads = [threading.Thread(target=register) for _ in range(8)]
     for thread in threads:
@@ -235,13 +243,15 @@ def test_bundles_fall_back_to_registered_geometry_providers(monkeypatch):
     from rangekeeper.io.geometry import find
 
     class Provider:
-        def validate(self, path, geometry):
+        def validate(self, *, path, geometry):
             return None
 
     registry: Registry[GeometryProvider] = Registry(
         "geometry_providers", GeometryProvider
     )
-    provider = registry.register("speckle", Provider()).implementation
+    provider = registry.register(
+        name="speckle", implementation=Provider()
+    ).implementation
     monkeypatch.setattr(geometry, "geometry_providers", registry)
     assert find("speckle") is provider
     assert find("Speckle") is None

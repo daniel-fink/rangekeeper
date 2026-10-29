@@ -75,7 +75,7 @@ def decode_model(payload: Mapping[str, object]) -> Model:
     if not isinstance(raw, str):
         raise MappingError("canonical Model JSON must be a string", path="/rk_model")
     try:
-        model = codec.loads(raw, kind=Model)
+        model = codec.loads(text=raw, kind=Model)
     except (ValueError, TypeError, LookupError) as error:
         raise MappingError(str(error), path="/rk_model") from error
     validate_associations(model, payload.get(FIELDS["associations"], []))

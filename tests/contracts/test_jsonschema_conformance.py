@@ -196,7 +196,7 @@ def test_non_json_inputs_and_duplicate_keys_still_fail_at_public_boundaries():
         assert not report.valid
         assert report.issues[0].code == "structure.json"
     with pytest.raises(DecodeError, match="duplicate JSON key"):
-        codec.loads('{"metadata":{"id":"a","id":"b"}}', kind=Model)
+        codec.loads(text='{"metadata":{"id":"a","id":"b"}}', kind=Model)
 
 
 def outcome(data):

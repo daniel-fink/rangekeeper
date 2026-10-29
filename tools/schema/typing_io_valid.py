@@ -19,8 +19,8 @@ from rangekeeper.run import (
 from rangekeeper.shared.references import DocumentResolver, SpecificationResolver
 
 model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
-loaded: rk.Model = json.loads(json.dumps(model), kind=rk.Model)
-yaml_model: rk.Model = yaml.loads(yaml.dumps(model), kind=rk.Model)
+loaded: rk.Model = json.loads(text=json.dumps(model), kind=rk.Model)
+yaml_model: rk.Model = yaml.loads(text=yaml.dumps(model), kind=rk.Model)
 store: RecordStore = MemoryStore()
 resolver: DocumentResolver = DirectoryStore(Path("unused"))
 investigation: SpecificationResolver = store
@@ -48,4 +48,4 @@ run = rk.Run(
     )
 )
 validate(run, resolver=store)
-restored: rk.Run = json.loads(json.dumps(run), kind=rk.Run)
+restored: rk.Run = json.loads(text=json.dumps(run), kind=rk.Run)

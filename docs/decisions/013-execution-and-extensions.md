@@ -86,7 +86,7 @@ It reuses one worker for each executor session:
 ### Extension points
 
 Every extension point uses one pattern: a `Protocol`, and a registry with
-`register(name, implementation)`. Third-party packages can register through an
+`register(name=, implementation=)`. Third-party packages can register through an
 optional Python entry point group, `rangekeeper.<point>`. Each implementation
 has a fingerprint, and evidence records it.
 

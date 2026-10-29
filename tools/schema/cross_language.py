@@ -120,10 +120,10 @@ if a.mode == "prepare":
         )
     )
     a.directory.mkdir(parents=True, exist_ok=True)
-    codec.write(model, a.directory / "python.json")
+    codec.write(document=model, path=a.directory / "python.json")
 else:
-    before = codec.read(a.directory / "python.json", kind=Model)
-    after = codec.read(a.directory / "csharp.json", kind=Model)
+    before = codec.read(path=a.directory / "python.json", kind=Model)
+    after = codec.read(path=a.directory / "csharp.json", kind=Model)
     assert before.to_data() == after.to_data()
     print(
         "Python → C# → Python: all content, presence and ordered mathematics preserved"

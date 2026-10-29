@@ -24,7 +24,7 @@ def documents(paths: list[Path], output: Path, *, release: str) -> None:
         kind = kind_of(data)
         document = KINDS[kind].from_data(convert(data, kind, release=release))
         codec = yaml_codec if is_yaml else json_codec
-        codec.write(document, output / path.name)
+        codec.write(document=document, path=output / path.name)
         print(f"{path} -> {output / path.name} ({kind} {document.id})")
 
 

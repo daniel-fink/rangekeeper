@@ -41,8 +41,10 @@ def test_record_query_filters_in_parquet_without_arrow_materialization(
             ),
         )
     )
-    write(tmp_path / "bundle", model, parquet=ParquetOptions(row_group_size=64))
-    reader = Reader(tmp_path / "bundle")
+    write(
+        root=tmp_path / "bundle", model=model, parquet=ParquetOptions(row_group_size=64)
+    )
+    reader = Reader(root=tmp_path / "bundle")
 
     def forbidden(*args, **kwargs):
         raise AssertionError("Record queries must not materialize an Arrow table")
@@ -83,8 +85,8 @@ def test_records_page_in_numeric_path_order(tmp_path):
             ),
         )
     )
-    write(tmp_path / "bundle", model)
-    reader = Reader(tmp_path / "bundle")
+    write(root=tmp_path / "bundle", model=model)
+    reader = Reader(root=tmp_path / "bundle")
 
     paths, offset = [], 0
     while offset is not None:
@@ -102,7 +104,7 @@ def test_opening_validates_each_retained_document_once(tmp_path, monkeypatch):
     model = Model.from_data(
         yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
     )
-    write(tmp_path / "bundle", model)
+    write(root=tmp_path / "bundle", model=model)
     original = Model.from_data.__func__
     calls = []
 
@@ -111,7 +113,7 @@ def test_opening_validates_each_retained_document_once(tmp_path, monkeypatch):
         return original(cls, data, **kwargs)
 
     monkeypatch.setattr(Model, "from_data", classmethod(counted))
-    reader = Reader(tmp_path / "bundle")
+    reader = Reader(root=tmp_path / "bundle")
     assert calls == [str(model.id)]
     assert exact_equal(reader.model().to_data(), model.to_data())
 
@@ -127,7 +129,7 @@ def test_index_check_rejects_a_rehashed_index_unless_it_is_skipped(tmp_path):
         yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
     )
     root = tmp_path / "bundle"
-    write(root, model)
+    write(root=root, model=model)
     index = root / "model/records.parquet"
     table = pq.read_table(index)
     pq.write_table(table.slice(1), index)
@@ -139,14 +141,14 @@ def test_index_check_rejects_a_rehashed_index_unless_it_is_skipped(tmp_path):
     ]
     marker.write_text(json.dumps(manifest))
     with pytest.raises(ValueError, match="Derived reference index"):
-        Reader(root)
+        Reader(root=root)
     # Skipping trusts an index verified earlier; the files still match their hashes.
-    reader = Reader(root, index=IndexCheck.SCHEMA)
+    reader = Reader(root=root, index=IndexCheck.SCHEMA)
     assert exact_equal(reader.model().to_data(), model.to_data())
     damaged = index.read_bytes()
     index.write_bytes(damaged[:-1] + bytes([damaged[-1] ^ 1]))
     with pytest.raises(ValueError):
-        Reader(root, index=IndexCheck.SCHEMA)
+        Reader(root=root, index=IndexCheck.SCHEMA)
 
 
 @pytest.mark.parametrize(
@@ -156,8 +158,8 @@ def test_complete_model_reconstruction_from_schema_tables(tmp_path, filename):
     model = Model.from_data(
         yaml.safe_load((ROOT / "examples/schema" / filename).read_text())
     )
-    write(tmp_path / "bundle", model)
-    reconstructed = Reader(tmp_path / "bundle").model()
+    write(root=tmp_path / "bundle", model=model)
+    reconstructed = Reader(root=tmp_path / "bundle").model()
     assert exact_equal(reconstructed.to_data(), model.to_data())
     assert not list((tmp_path / "bundle").rglob("model.json"))
 
@@ -166,8 +168,10 @@ def test_presence_scalar_types_and_collection_order(tmp_path):
     data = yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
     model = Model.from_data(data)
     before = model.to_data()
-    write(tmp_path / "bundle", model, parquet=ParquetOptions(row_group_size=1))
-    assert exact_equal(Reader(tmp_path / "bundle").model().to_data(), before)
+    write(
+        root=tmp_path / "bundle", model=model, parquet=ParquetOptions(row_group_size=1)
+    )
+    assert exact_equal(Reader(root=tmp_path / "bundle").model().to_data(), before)
     reordered = deepcopy(before)
     for name in ("entities", "relationships", "assemblies"):
         if name in reordered.get("system", {}):
@@ -181,7 +185,7 @@ def test_unknown_format_unsafe_inventory_and_limits(tmp_path):
     model = Model.from_data(
         dict(metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"))
     )
-    write(tmp_path / "bundle", model)
+    write(root=tmp_path / "bundle", model=model)
     path = tmp_path / "bundle/manifest.json"
     original = json.loads(path.read_text())
     for mutate in (
@@ -192,10 +196,10 @@ def test_unknown_format_unsafe_inventory_and_limits(tmp_path):
         mutate(changed)
         path.write_text(json.dumps(changed))
         with pytest.raises(ValueError):
-            Reader(tmp_path / "bundle")
+            Reader(root=tmp_path / "bundle")
     path.write_text(json.dumps(original))
     with pytest.raises(ValueError):
-        Reader(tmp_path / "bundle", limits=ReadLimits(rows=1))
+        Reader(root=tmp_path / "bundle", limits=ReadLimits(rows=1))
 
 
 @pytest.mark.parametrize(
@@ -219,9 +223,9 @@ def test_the_index_check_is_an_index_check(tmp_path):
     model = Model.from_data(
         dict(metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"))
     )
-    write(tmp_path / "bundle", model)
+    write(root=tmp_path / "bundle", model=model)
     with pytest.raises(TypeError, match="IndexCheck"):
-        Reader(tmp_path / "bundle", index=False)
+        Reader(root=tmp_path / "bundle", index=False)
 
 
 class _Provider:
@@ -230,7 +234,7 @@ class _Provider:
     def __init__(self):
         self.checked = []
 
-    def validate(self, path, geometry):
+    def validate(self, *, path, geometry):
         for entry in geometry.pin.files:
             assert (path / entry.path).read_bytes()
         self.checked.append(path)
@@ -269,16 +273,16 @@ def test_geometry_files_are_copied_and_checked_by_their_provider(tmp_path):
     sources = GeometrySources(
         directories={model.id: tmp_path / "source"}, providers={key: provider}
     )
-    manifest = write(tmp_path / "bundle", model, geometry=sources)
+    manifest = write(root=tmp_path / "bundle", model=model, geometry=sources)
     assert manifest["geometry_paths"] == {str(model.id): "geometry"}
     # The source, the copy, and the copy again when write reads the Bundle back.
     assert len(provider.checked) == 3
-    reader = Reader(tmp_path / "bundle", providers={key: provider})
+    reader = Reader(root=tmp_path / "bundle", providers={key: provider})
     assert reader.geometry_path() == reader.root / "geometry"
     reader.verify_geometry()
     assert provider.checked[-1] == reader.root / "geometry"
     with pytest.raises(ValueError, match="explicit provider"):
-        Reader(tmp_path / "bundle").verify_geometry()
+        Reader(root=tmp_path / "bundle").verify_geometry()
 
 
 def test_geometry_needs_its_files_and_a_provider(tmp_path):
@@ -286,20 +290,20 @@ def test_geometry_needs_its_files_and_a_provider(tmp_path):
     key = ("synthetic", "test-format", "1")
     with pytest.raises(ValueError, match="native files"):
         write(
-            tmp_path / "none",
-            model,
+            root=tmp_path / "none",
+            model=model,
             geometry=GeometrySources(providers={key: _Provider()}),
         )
     with pytest.raises(ValueError, match="explicit provider"):
         write(
-            tmp_path / "unchecked",
-            model,
+            root=tmp_path / "unchecked",
+            model=model,
             geometry=GeometrySources(directories={model.id: tmp_path / "source"}),
         )
     other = UUID(int=2)
     with pytest.raises(ValueError, match="no declared Model pin"):
         write(
-            tmp_path / "unknown",
-            model,
+            root=tmp_path / "unknown",
+            model=model,
             geometry=GeometrySources(directories={other: tmp_path / "source"}),
         )

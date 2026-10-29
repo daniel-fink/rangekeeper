@@ -12,8 +12,8 @@ from rangekeeper.shared.registry import Registry
 registry: Registry[Backend] = Registry("backends", Backend)
 # The worker runs as a module in a child process, so no import reaches it.
 registry.register(
-    "pyomo-highs",
-    PyomoHighs(),
+    name="pyomo-highs",
+    implementation=PyomoHighs(),
     modules=("rangekeeper.execution.backends._worker",),
 )
 
