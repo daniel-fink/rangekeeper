@@ -1,8 +1,8 @@
-"""Period and Span, and half-open periods from explicit anchors and calendar grids."""
+"""Period, Span and Periods: half-open periods from an anchor and a calendar step."""
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from datetime import date, timedelta
 from itertools import pairwise
 from typing import overload
@@ -14,6 +14,8 @@ from rangekeeper.duration.calendar import (
     elapsed_days,
     offset,
     require_date,
+    require_frequency,
+    require_month_roll,
 )
 from rangekeeper.duration.calendar import PeriodTiming as PeriodTiming
 from rangekeeper.quantity import Quantity, default_units
@@ -230,7 +232,15 @@ class Periods(Sequence[Period]):
         )
 
     @classmethod
-    def _of(cls, periods, *, frequency, month_roll, anchor, first) -> Periods:
+    def _of(
+        cls,
+        periods: Iterable[Period],
+        *,
+        frequency: Frequency,
+        month_roll: MonthRoll,
+        anchor: date,
+        first: int,
+    ) -> Periods:
         result = object.__new__(cls)
         result._set(
             tuple(periods),
@@ -241,7 +251,15 @@ class Periods(Sequence[Period]):
         )
         return result
 
-    def _set(self, periods, *, frequency, month_roll, anchor, first) -> None:
+    def _set(
+        self,
+        periods: tuple[Period, ...],
+        *,
+        frequency: Frequency,
+        month_roll: MonthRoll,
+        anchor: date,
+        first: int,
+    ) -> None:
         if not isinstance(frequency, Frequency):
             raise TypeError("frequency must be a Frequency")
         self._periods: tuple[Period, ...] = periods
@@ -250,7 +268,7 @@ class Periods(Sequence[Period]):
         self._anchor: date = anchor
         self._first: int = first
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: object) -> None:
         if hasattr(self, "_first"):
             raise AttributeError("Periods are immutable")
         object.__setattr__(self, name, value)
@@ -388,7 +406,9 @@ def make_periods(
     month_roll: MonthRoll = MonthRoll.PRESERVE_END,
 ) -> tuple[Period, ...]:
     """Create adjacent periods using cumulative offsets from the original anchor."""
-    offset(start, frequency=frequency, count=0, month_roll=month_roll)
+    require_date(start)
+    require_frequency(frequency)
+    require_month_roll(month_roll)
     if type(count) is not int or count < 0:
         raise ValueError("period count must be a nonnegative integer")
     boundaries = [
@@ -409,7 +429,8 @@ def periods_between(
     """Partition an interval; require explicit permission for a partial final period."""
     if elapsed_days(start, end) < 0:
         raise ValueError("end precedes start")
-    offset(start, frequency=frequency, count=0, month_roll=month_roll)
+    require_frequency(frequency)
+    require_month_roll(month_roll)
     if type(include_partial) is not bool:
         raise TypeError("include_partial must be a Boolean")
     count = count_steps(start, end, frequency=frequency, month_roll=month_roll)
@@ -422,60 +443,6 @@ def periods_between(
             raise ValueError("span contains a partial final period")
         result += (make_period(previous, end),)
     return result
-
-
-def containing_period(
-    value: date,
-    *,
-    frequency: Frequency,
-    week_start: int = 0,
-    year_start_month: int = 1,
-    origin: date | None = None,
-) -> Period:
-    """Return the containing calendar period; multi-year grids need an origin.
-
-    Weekday zero means Monday. An origin must match the fiscal boundary. It
-    defines a continuous grid on both sides of that date.
-    """
-    offset(value, frequency=frequency, count=0)
-    if type(week_start) is not int or not 0 <= week_start <= 6:
-        raise ValueError("week_start must be an integer from zero to six")
-    if type(year_start_month) is not int or not 1 <= year_start_month <= 12:
-        raise ValueError("year_start_month must be an integer from one to twelve")
-    if origin is not None:
-        require_date(origin)
-    days, months = frequency.step
-    if days:
-        if year_start_month != 1:
-            raise ValueError("year_start_month applies only to month-based grids")
-        if frequency is Frequency.DAY:
-            if origin is not None or week_start != 0:
-                raise ValueError("day alignment needs no origin or weekday")
-            start = value
-        else:
-            if origin is not None and origin.weekday() != week_start:
-                raise ValueError("origin conflicts with week_start")
-            start = value - timedelta(days=(value.weekday() - week_start) % 7)
-        return make_period(start, start + timedelta(days=days))
-    if week_start != 0:
-        raise ValueError("week_start applies only to week grids")
-    if months > 12:
-        if origin is None:
-            raise ValueError("multi-year alignment requires an explicit origin")
-        if origin.day != 1 or origin.month != year_start_month:
-            raise ValueError("origin conflicts with year_start_month")
-        anchor = origin.year * 12 + origin.month - 1
-    else:
-        if origin is not None:
-            raise ValueError("origin applies only to multi-year grids")
-        if frequency is Frequency.MONTH and year_start_month != 1:
-            raise ValueError("month alignment needs no fiscal year start")
-        anchor = year_start_month - 1
-    index = value.year * 12 + value.month - 1
-    first = anchor + ((index - anchor) // months) * months
-    year, month = divmod(first, 12)
-    start = date(year, month + 1, 1)
-    return make_period(start, offset(start, frequency=frequency))
 
 
 def cover(periods: Sequence[Period], *, name: str | None = None) -> Span:

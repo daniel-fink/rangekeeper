@@ -56,7 +56,9 @@ Status: accepted for 1.0; release lines, pre-releases, versions, changelog and C
   their annotation codes from the ruff structure baseline. The order is:
   1. the root module, `errors` and `money`
      ([#400](https://github.com/daniel-fink/rangekeeper/issues/400));
-  2. `duration`, `finance`, `profile` and `quantity`;
+  2. `duration` (strict since
+     [#403](https://github.com/daniel-fink/rangekeeper/issues/403)), `finance`,
+     `profile` and `quantity`;
   3. `execution`, `run` and `specification`, after the execution fixes of
      [#377](https://github.com/daniel-fink/rangekeeper/issues/377);
   4. `flow`, `model` and `io`, each with its split in

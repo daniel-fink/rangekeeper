@@ -6,6 +6,7 @@ import pytest
 
 from rangekeeper.duration import (
     Frequency,
+    MonthGrid,
     MonthRoll,
     Period,
     PeriodTiming,
@@ -35,67 +36,28 @@ def test_month_rules_keep_the_original_anchor():
     assert offset(date(2026, 4, 30), frequency=Frequency.WEEK) == date(2026, 5, 7)
 
 
-@pytest.mark.parametrize(
-    "frequency,expected",
-    [
-        (Frequency.DAY, (date(2026, 8, 20), date(2026, 8, 21))),
-        (Frequency.WEEK, (date(2026, 8, 17), date(2026, 8, 24))),
-        (Frequency.MONTH, (date(2026, 8, 1), date(2026, 9, 1))),
-        (Frequency.QUARTER, (date(2026, 7, 1), date(2026, 10, 1))),
-        (Frequency.HALFYEAR, (date(2026, 7, 1), date(2027, 1, 1))),
-        (Frequency.YEAR, (date(2026, 1, 1), date(2027, 1, 1))),
-    ],
-)
-def test_calendar_containing_period(frequency, expected):
-    result = containing_period(date(2026, 8, 20), frequency=frequency)
-    assert (result.first, result.end) == expected
-
-
-def test_fiscal_alignment_and_explicit_month_end_selection():
-    year = containing_period(
-        date(2026, 3, 3), frequency=Frequency.YEAR, year_start_month=7
-    )
-    assert (year.first, year.end) == (date(2025, 7, 1), date(2026, 7, 1))
-    half = containing_period(
-        date(2026, 3, 3), frequency=Frequency.HALFYEAR, year_start_month=7
-    )
-    assert (half.first, half.end) == (date(2026, 1, 1), date(2026, 7, 1))
-    anchor = containing_period(date(2026, 1, 15), frequency=Frequency.MONTH).resolve(
-        timing=PeriodTiming.LAST
-    )
+def test_a_period_resolves_its_last_day_for_a_month_end_anchor():
+    anchor = containing_period(
+        on=date(2026, 1, 15), grid=MonthGrid(frequency=Frequency.MONTH)
+    ).resolve(timing=PeriodTiming.LAST)
     assert anchor == date(2026, 1, 31)
     assert make_periods(anchor, frequency=Frequency.MONTH, count=1)[0].end == date(
         2026, 2, 28
     )
 
 
-@pytest.mark.parametrize(
-    "frequency,first,end",
-    [
-        (Frequency.BIENNIUM, date(2025, 7, 1), date(2027, 7, 1)),
-        (Frequency.QUINQUENNIUM, date(2026, 7, 1), date(2031, 7, 1)),
-        (Frequency.DECADE, date(2021, 7, 1), date(2031, 7, 1)),
-    ],
-)
-def test_multiyear_origins_and_exclusive_boundaries(frequency, first, end):
-    p = containing_period(
-        date(2026, 8, 1),
-        frequency=frequency,
-        origin=date(2021, 7, 1),
-        year_start_month=7,
-    )
-    assert (p.first, p.end) == (first, end)
-    assert (
-        containing_period(
-            p.end, frequency=frequency, origin=date(2021, 7, 1), year_start_month=7
-        ).first
-        == end
-    )
-    with pytest.raises(ValueError, match="origin"):
-        containing_period(date(2026, 8, 1), frequency=frequency)
-    with pytest.raises(ValueError, match="conflicts"):
-        containing_period(
-            date(2026, 8, 1), frequency=frequency, origin=date(2021, 7, 1)
+def test_each_frequency_steps_by_days_or_by_months():
+    for frequency in Frequency:
+        days, months = frequency.step
+        assert (days > 0) != (months > 0), frequency
+    with pytest.raises(TypeError, match="Frequency"):
+        count_steps(date(2026, 1, 1), date(2027, 1, 1), frequency="year")
+    with pytest.raises(TypeError, match="MonthRoll"):
+        count_steps(
+            date(2026, 1, 1),
+            date(2027, 1, 1),
+            frequency=Frequency.YEAR,
+            month_roll="clamp",
         )
 
 
@@ -215,14 +177,6 @@ def test_date_range_boundaries_and_anchor_preserving_extension():
         date(2026, 3, 30),
         date(2026, 4, 30),
     ]
-    quarter = containing_period(
-        date(2026, 6, 30), frequency=Frequency.QUARTER, year_start_month=7
-    )
-    assert (quarter.first, quarter.last, quarter.end) == (
-        date(2026, 4, 1),
-        date(2026, 6, 30),
-        date(2026, 7, 1),
-    )
 
 
 def test_year_fraction_matches_pyxirr_day_counts():

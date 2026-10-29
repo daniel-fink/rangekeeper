@@ -10,11 +10,18 @@ from rangekeeper.duration.calendar import (
     year_fraction,
 )
 from rangekeeper.duration.dates import NEVER, Never, shift
+from rangekeeper.duration.grid import (
+    DayGrid,
+    Grid,
+    MonthGrid,
+    MultiYearGrid,
+    WeekGrid,
+    containing_period,
+)
 from rangekeeper.duration.period import (
     Period,
     Periods,
     Span,
-    containing_period,
     cover,
     make_period,
     make_periods,
@@ -32,6 +39,11 @@ __all__ = [
     "make_period",
     "make_periods",
     "periods_between",
+    "Grid",
+    "DayGrid",
+    "WeekGrid",
+    "MonthGrid",
+    "MultiYearGrid",
     "containing_period",
     "cover",
     "NEVER",
