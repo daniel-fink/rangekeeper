@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 from uuid import uuid4
 
-from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.duration import Frequency, Periods
 from rangekeeper.flow import MissingValueHandling as Missing
 from rangekeeper.flow import ResampleMethod, Stream
 from rangekeeper.model import (
@@ -30,8 +30,8 @@ from rangekeeper.schema.records import Flow
 
 def hierarchy_case(legacy):
     start = time.perf_counter()
-    months = make_periods(date(2000, 1, 1), frequency=Frequency.MONTH, count=120)
-    years = make_periods(date(2000, 1, 1), frequency=Frequency.YEAR, count=10)
+    months = Periods(start=date(2000, 1, 1), frequency=Frequency.MONTH, count=120)
+    years = Periods(start=date(2000, 1, 1), frequency=Frequency.YEAR, count=10)
     measure = Measure(id=uuid4(), code="money", name="Money", units="AUD")
     entities = []
     buildings = []
@@ -110,8 +110,8 @@ def hierarchy_case(legacy):
 
 
 def mixed_case(legacy):
-    monthly = make_periods(date(2000, 1, 1), frequency=Frequency.MONTH, count=24)
-    annual = make_periods(date(2000, 1, 1), frequency=Frequency.YEAR, count=2)
+    monthly = Periods(start=date(2000, 1, 1), frequency=Frequency.MONTH, count=24)
+    annual = Periods(start=date(2000, 1, 1), frequency=Frequency.YEAR, count=2)
     flows = {}
     for i in range(100):
         periods = monthly[i % 12 :] if i % 2 else annual

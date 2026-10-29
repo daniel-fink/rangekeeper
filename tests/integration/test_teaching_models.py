@@ -7,7 +7,7 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper import execution
-from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.duration import Frequency, Periods
 from rangekeeper.io import MemoryStore
 from rangekeeper.market.generation import generate, make_plan
 from rangekeeper.model import Distribution, DistributionFamily, Metadata, Model
@@ -68,8 +68,8 @@ def test_deterministic_horizon_comparison(initial, increment, terminal):
 def test_probabilistic_and_flexible_use_identical_captured_paths():
     base = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     plan = make_plan(
-        periods=make_periods(
-            datetime.date(2021, 1, 1), frequency=Frequency.YEAR, count=4
+        periods=Periods(
+            start=datetime.date(2021, 1, 1), frequency=Frequency.YEAR, count=4
         ),
         seed=17,
         method="market.independent",

@@ -369,13 +369,13 @@ import math, sys
 import pyxirr
 from rangekeeper.finance.financial import calculate_pv, calculate_xnpv, calculate_irr
 
-from rangekeeper.duration import make_periods, Frequency, PeriodTiming
+from rangekeeper.duration import Periods, Frequency, PeriodTiming
 flow = Flow.from_events([date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units='AUD')
 assert abs(calculate_xnpv(flow, rate=.1, valuation_date=date(2026, 1, 1)).magnitude) < 1e-9
 result = calculate_irr(flow)
 assert math.isclose(result.rate, .1) and result.method == 'pyxirr.xirr'
 assert abs(result.residual.magnitude) < 1e-9
-future = Flow.from_periods(make_periods(date(2026, 1, 1), frequency=Frequency.YEAR, count=1), [110], units='AUD')
+future = Flow.from_periods(Periods(start=date(2026, 1, 1), frequency=Frequency.YEAR, count=1), [110], units='AUD')
 assert math.isclose(calculate_pv(future, rate=.1).movements[0].magnitude, 100)
 assert math.isclose(calculate_xnpv(future, rate=.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.END).magnitude, 100)
 assert calculate_xnpv(Flow.from_events([], [], units='AUD'), rate=0.1, valuation_date=date(2026, 1, 1)).magnitude == 0
@@ -469,7 +469,7 @@ assert display_stream.to_frame()['Receipts'].to_list() == [0, None] + [None] * 1
 from rangekeeper.duration import Span, Frequency
 from rangekeeper.quantity import Quantity
 from rangekeeper import profile
-periods = Span.from_duration(name='Forecast', start=date(2026, 1, 1), frequency=Frequency.YEAR, count=2).periods(frequency=Frequency.YEAR)
+periods = Span(name='Forecast', start=date(2026, 1, 1), length='2 years').periods(frequency=Frequency.YEAR)
 assert [m.number for m in Flow.from_profile(profile=profile.Compounding(rate='2 % pa'), periods=periods, initial=Quantity(magnitude=100, units='AUD')).movements] == [100, 102]
 assert Flow.from_profile(profile=profile.SCurve(), periods=periods, total='100 AUD').total().magnitude == 100
 table = Table(columns=('code', 'status', 'value'), rows=({'code': '001', 'status': 'NA', 'value': None},))

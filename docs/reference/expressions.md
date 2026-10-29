@@ -72,7 +72,7 @@ month is 28 February, and 28 February plus one month is 31 March
 ([calendar rules](calculations.md)). Validation rejects every other operation on a
 date: the difference of two dates, a date and a number or an amount, negation,
 multiplication and a comparison of a date with a Quantity.
-`rk.duration.shift(on, by=)` applies the same arithmetic in Python, and
+`rk.duration.shift(on=, by=)` applies the same arithmetic in Python, and
 `rangekeeper.model.expression.evaluation.evaluate_date` and `compare_dates`
 evaluate date Expressions from supplied values. The executor does not solve
 date equations yet.

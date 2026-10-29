@@ -749,6 +749,31 @@ removed:
       explicit 14-day Periods for a grid. There is no fortnight frequency
     status: agreed
     source: "#399, #402"
+  - name: rangekeeper.duration.make_period
+    replacement: "`Period(start=, end=)`"
+    status: agreed
+    source: "#399, #404"
+  - name: rangekeeper.duration.make_periods
+    replacement: >-
+      `Periods(start=, frequency=, count=, month_roll=)`. It returns a
+      `Periods`, not a tuple: compare it with another `Periods`, and use
+      `tuple(periods)` for a tuple
+    status: agreed
+    source: "#399, #404"
+  - name: rangekeeper.duration.periods_between
+    replacement: >-
+      `Span(start=, end=).periods(frequency=, include_partial=, month_roll=)`,
+      which returns a `Periods`. A Span is not empty, so the start must be
+      before the end
+    status: agreed
+    source: "#399, #404"
+  - name: rangekeeper.duration.Span.from_duration
+    replacement: >-
+      `Span(start=, length="10 years", name=)`, or `Periods(start=,
+      frequency=, count=, month_roll=).span` for a half-year, a decade or
+      another `MonthRoll`
+    status: agreed
+    source: "#399, #404"
   - name: rangekeeper.model.system.reducers
     replacement: >-
       The `rangekeeper.model.system.Reducer` enum: `SUM`, `MEAN`, `MIN`, `MAX`
@@ -940,6 +965,10 @@ notes:
     status: agreed
     source: "#255 D26"
     note: "Diagnostic codes are `rk.errors.Code` (#154); \"the event does not happen\" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings."
+  - topic: Date shift
+    status: agreed
+    source: "#255 D14, D25, #389"
+    note: "`rk.duration.shift(value, by=)` is now `shift(on=, by=)`. `rk.duration.DateValue` (a date or `NEVER`) names its type. `shift` moves a date value by a length; `offset(value, frequency=, count=, month_roll=)` moves a date by whole steps of a Frequency."
   - topic: Calendar grids
     status: agreed
     source: "#399, #403"

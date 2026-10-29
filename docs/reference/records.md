@@ -163,9 +163,9 @@ Flow
 Period (also inherited by Span)
   resolve(*, timing) -> date
 
-Span
-  from_duration(*, name, start, frequency, count, month_roll=None) -> Span
-  periods(frequency, *, include_partial=False, month_roll=None) -> tuple[Period, ...]
+Span(*, start, end=None, length=None, name=UNSET)  give end or length
+  extend(*, by, name=None) -> Span
+  periods(*, frequency, include_partial=False, month_roll=MonthRoll.PRESERVE_END) -> Periods
 
 Distribution
   uniform(...) / triangular(...) / pert(...) / symmetric(...)

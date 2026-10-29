@@ -149,6 +149,10 @@
   }
  },
  "rangekeeper.duration": {
+  "DateValue": {
+   "kind": "alias",
+   "value": "datetime.date | rangekeeper.schema.enums.Never"
+  },
   "DayCount": {
    "kind": "enum",
    "members": [
@@ -267,10 +271,9 @@
     "end": "property",
     "extend": "method (self, *, by: Quantity | str, name: str | None = None) -> Span",
     "first": "property",
-    "from_duration": "classmethod (cls, *, name: str, start: date, frequency: Frequency, count: int, month_roll: MonthRoll | None = None) -> Span",
     "last": "property",
     "name": "property",
-    "periods": "method (self, *, frequency: Frequency, include_partial: bool = False, month_roll: MonthRoll | None = None) -> Periods",
+    "periods": "method (self, *, frequency: Frequency, include_partial: bool = False, month_roll: MonthRoll = MonthRoll.PRESERVE_END) -> Periods",
     "replace": "method (self, *, name: str | None | Unset | Omit = <Unset>, start: Date | Unset = <Unset>, end: Date | Unset = <Unset>) -> Self",
     "resolve": "method (self, *, timing: PeriodTiming) -> date",
     "start": "property"
@@ -302,30 +305,15 @@
    "module": "rangekeeper.duration.period",
    "signature": "(periods: Sequence[Period], *, name: str | None = None) -> Span"
   },
-  "make_period": {
-   "kind": "function",
-   "module": "rangekeeper.duration.period",
-   "signature": "(start: date, end: date) -> Period"
-  },
-  "make_periods": {
-   "kind": "function",
-   "module": "rangekeeper.duration.period",
-   "signature": "(start: date, *, frequency: Frequency, count: int, month_roll: MonthRoll = MonthRoll.PRESERVE_END) -> tuple[Period, ...]"
-  },
   "offset": {
    "kind": "function",
    "module": "rangekeeper.duration.calendar",
    "signature": "(value: date, *, frequency: Frequency, count: int = 1, month_roll: MonthRoll = MonthRoll.PRESERVE_END) -> date"
   },
-  "periods_between": {
-   "kind": "function",
-   "module": "rangekeeper.duration.period",
-   "signature": "(start: date, end: date, *, frequency: Frequency, include_partial: bool = False, month_roll: MonthRoll = MonthRoll.PRESERVE_END) -> tuple[Period, ...]"
-  },
   "shift": {
    "kind": "function",
    "module": "rangekeeper.duration.dates",
-   "signature": "(on: DateValue, *, by: Quantity | str) -> DateValue"
+   "signature": "(*, on: DateValue, by: Quantity | str) -> DateValue"
   },
   "year_fraction": {
    "kind": "function",

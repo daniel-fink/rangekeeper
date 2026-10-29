@@ -9,13 +9,10 @@ from uuid import UUID, uuid5
 
 import pytest
 
-from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.duration import Frequency, Periods
 from rangekeeper.market import ReplayUnavailableError, replay
 from rangekeeper.market import generation as market
-from rangekeeper.market.implementation import (
-    calculation_manifest,
-    source_paths,
-)
+from rangekeeper.market.implementation import calculation_manifest, source_paths
 from rangekeeper.model import Metadata, Model, Provenance, Update
 from rangekeeper.shared.fingerprints import manifest_digest
 
@@ -27,7 +24,7 @@ def base():
 def plan(**kwargs):
     return market.make_plan(
         id=UUID(int=10001),
-        periods=make_periods(date(2026, 1, 1), frequency=Frequency.YEAR, count=3),
+        periods=Periods(start=date(2026, 1, 1), frequency=Frequency.YEAR, count=3),
         seed=123,
         **kwargs,
     )

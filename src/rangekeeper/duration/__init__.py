@@ -1,4 +1,4 @@
-"""Date-only operations independent of dataframes, storage and execution."""
+"""Dates, Periods and calendar rules, independent of dataframes, storage and execution."""
 
 from rangekeeper.duration.calendar import (
     DayCount,
@@ -9,7 +9,7 @@ from rangekeeper.duration.calendar import (
     offset,
     year_fraction,
 )
-from rangekeeper.duration.dates import NEVER, Never, shift
+from rangekeeper.duration.dates import NEVER, DateValue, Never, shift
 from rangekeeper.duration.grid import (
     DayGrid,
     Grid,
@@ -18,15 +18,7 @@ from rangekeeper.duration.grid import (
     WeekGrid,
     containing_period,
 )
-from rangekeeper.duration.period import (
-    Period,
-    Periods,
-    Span,
-    cover,
-    make_period,
-    make_periods,
-    periods_between,
-)
+from rangekeeper.duration.period import Period, Periods, Span, cover
 
 __all__ = [
     "Frequency",
@@ -36,22 +28,18 @@ __all__ = [
     "offset",
     "count_steps",
     "year_fraction",
-    "make_period",
-    "make_periods",
-    "periods_between",
+    "Period",
+    "Periods",
+    "Span",
+    "cover",
     "Grid",
     "DayGrid",
     "WeekGrid",
     "MonthGrid",
     "MultiYearGrid",
     "containing_period",
-    "cover",
     "NEVER",
     "Never",
+    "DateValue",
     "shift",
 ]
-
-"""Schema-defined date intervals. Calendar operations live in ``duration``."""
-
-
-__all__ += ["Period", "Periods", "Span"]

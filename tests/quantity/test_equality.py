@@ -6,13 +6,13 @@ from decimal import Decimal
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.duration import make_periods
+from rangekeeper.duration import Periods
 from rangekeeper.duration.calendar import Frequency
 from rangekeeper.errors import UnitError
 from rangekeeper.flow import Flow
 from rangekeeper.quantity import Quantity, isclose
 
-YEARS = make_periods(date(2001, 1, 1), frequency=Frequency.YEAR, count=3)
+YEARS = Periods(start=date(2001, 1, 1), frequency=Frequency.YEAR, count=3)
 
 
 def test_quantities_are_equal_by_value():

@@ -9,14 +9,12 @@ from rangekeeper.duration import (
     MonthGrid,
     MonthRoll,
     Period,
+    Periods,
     PeriodTiming,
     Span,
     containing_period,
     count_steps,
-    make_period,
-    make_periods,
     offset,
-    periods_between,
 )
 from rangekeeper.flow import Flow
 
@@ -27,7 +25,7 @@ def test_month_rules_keep_the_original_anchor():
         date(2026, 4, 30), frequency=Frequency.MONTH, month_roll=MonthRoll.CLAMP
     ) == date(2026, 5, 30)
     for day, march in ((30, 30), (31, 31)):
-        periods = make_periods(date(2026, 1, day), frequency=Frequency.MONTH, count=2)
+        periods = Periods(start=date(2026, 1, day), frequency=Frequency.MONTH, count=2)
         assert [p.end for p in periods] == [date(2026, 2, 28), date(2026, 3, march)]
         assert periods[0].first == date(2026, 1, day)
     assert offset(date(2026, 1, 15), frequency=Frequency.MONTH, count=0) == date(
@@ -41,7 +39,7 @@ def test_a_period_resolves_its_last_day_for_a_month_end_anchor():
         on=date(2026, 1, 15), grid=MonthGrid(frequency=Frequency.MONTH)
     ).resolve(timing=PeriodTiming.LAST)
     assert anchor == date(2026, 1, 31)
-    assert make_periods(anchor, frequency=Frequency.MONTH, count=1)[0].end == date(
+    assert Periods(start=anchor, frequency=Frequency.MONTH, count=1)[0].end == date(
         2026, 2, 28
     )
 
@@ -78,32 +76,27 @@ def test_complete_step_measurement_is_sign_symmetric():
 
 
 def test_empty_requests_validate_configuration_eagerly():
+    month = Span(start=date(2026, 1, 1), end=date(2026, 2, 1))
     for kwargs in (
         {"frequency": "month"},
         {"frequency": Frequency.MONTH, "month_roll": "clamp"},
     ):
         with pytest.raises(TypeError):
-            make_periods(date(2026, 1, 1), count=0, **kwargs)
+            Periods(start=date(2026, 1, 1), count=0, **kwargs)
         with pytest.raises(TypeError):
-            periods_between(date(2026, 1, 1), date(2026, 1, 1), **kwargs)
+            month.periods(**kwargs)
     with pytest.raises(TypeError, match="Boolean"):
-        periods_between(
-            date(2026, 1, 1),
-            date(2026, 1, 1),
-            frequency=Frequency.MONTH,
-            include_partial=1,
-        )
+        month.periods(frequency=Frequency.MONTH, include_partial=1)
     with pytest.raises(ValueError):
-        make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=True)
+        Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=True)
     with pytest.raises(TypeError):
         offset(datetime(2026, 1, 1), frequency=Frequency.MONTH)
     with pytest.raises(ValueError, match="partial"):
-        periods_between(date(2026, 1, 1), date(2026, 2, 2), frequency=Frequency.MONTH)
-    periods = periods_between(
-        date(2026, 1, 1),
-        date(2026, 2, 2),
-        frequency=Frequency.MONTH,
-        include_partial=True,
+        Span(start=date(2026, 1, 1), end=date(2026, 2, 2)).periods(
+            frequency=Frequency.MONTH
+        )
+    periods = Span(start=date(2026, 1, 1), end=date(2026, 2, 2)).periods(
+        frequency=Frequency.MONTH, include_partial=True
     )
     assert [(p.first, p.end) for p in periods] == [
         (date(2026, 1, 1), date(2026, 2, 1)),
@@ -112,7 +105,7 @@ def test_empty_requests_validate_configuration_eagerly():
 
 
 def test_derived_period_dates_do_not_become_stored_fields():
-    p = make_period(date(2024, 2, 29), date(2024, 3, 1))
+    p = Period(start=date(2024, 2, 29), end=date(2024, 3, 1))
     assert p.first == p.last == date(2024, 2, 29)
     assert p.end == date(2024, 3, 1)
     assert set(p.to_data()) == {"start", "end"}
@@ -158,19 +151,19 @@ def test_all_frequency_offsets_and_counts_have_independent_expected_dates(
 def test_date_range_boundaries_and_anchor_preserving_extension():
     assert offset(date.min, frequency=Frequency.DAY, count=0) == date.min
     assert offset(date.max, frequency=Frequency.MONTH, count=0) == date.max
-    assert make_periods(date.max, frequency=Frequency.MONTH, count=0) == ()
+    assert len(Periods(start=date.max, frequency=Frequency.MONTH, count=0)) == 0
     for day, count in ((date.min, -1), (date.max, 1)):
         with pytest.raises((OverflowError, ValueError)):
             offset(day, frequency=Frequency.DAY, count=count)
-    remainder = periods_between(
-        date(9999, 12, 30), date.max, frequency=Frequency.MONTH, include_partial=True
+    remainder = Span(start=date(9999, 12, 30), end=date.max).periods(
+        frequency=Frequency.MONTH, include_partial=True
     )
     assert [(p.first, p.end) for p in remainder] == [(date(9999, 12, 30), date.max)]
     # Extension retains the supplied original anchor; a clamped endpoint cannot
     # determine whether the intended continuation was March 30 or March 31.
     anchor = date(2026, 1, 30)
-    initial = make_periods(anchor, frequency=Frequency.MONTH, count=1)
-    extended = make_periods(anchor, frequency=Frequency.MONTH, count=3)
+    initial = Periods(start=anchor, frequency=Frequency.MONTH, count=1)
+    extended = Periods(start=anchor, frequency=Frequency.MONTH, count=3)
     assert extended[:1] == initial
     assert [p.end for p in extended] == [
         date(2026, 2, 28),

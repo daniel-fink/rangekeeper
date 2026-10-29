@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.duration import Frequency, Span, make_period, make_periods
+from rangekeeper.duration import Frequency, Period, Periods, Span
 from rangekeeper.flow import (
     Flow,
     MeanWeighting,
@@ -50,7 +50,7 @@ def test_model_can_select_different_reductions_for_the_same_flow(reduction, expe
     )
     before = flow.to_data()
     result = flow.resample(
-        periods=[make_period(date(2026, 1, 1), date(2026, 2, 1))],
+        periods=[Period(start=date(2026, 1, 1), end=date(2026, 2, 1))],
         method=ResampleMethod(reduction),
         weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
     )
@@ -59,9 +59,9 @@ def test_model_can_select_different_reductions_for_the_same_flow(reduction, expe
 
 
 def test_means_require_a_choice_and_do_not_infer_weighting_from_units():
-    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=2)
+    periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=2)
     flow = Flow.from_periods(periods, [10, 20], units="dimensionless")
-    target = [make_period(periods[0].start, periods[-1].end)]
+    target = [Period(start=periods[0].start, end=periods[-1].end)]
     with pytest.raises(ValueError, match="weighting"):
         flow.resample(periods=target, method=ResampleMethod.MEAN)
     observed = flow.resample(
@@ -75,7 +75,7 @@ def test_means_require_a_choice_and_do_not_infer_weighting_from_units():
 
 
 def test_products_preserve_time_dimensions_and_scaled_dimensionless_units():
-    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=1)
+    periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=1)
     rates = Flow.from_periods(periods, [2], units="AUD/day")
     factors = Flow.from_periods(periods, [50], units="percent")
     squared = rates.multiply(rates, factors).convert(units="AUD**2/day**2")
@@ -96,7 +96,7 @@ def test_exposure_is_an_explicit_operation_without_a_rate_classification():
 
 @pytest.mark.parametrize("reduction", ["sum", "last", "mean"])
 def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
-    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
+    periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
     flow = Flow.from_periods(periods[:2], [10, None], units="AUD")
     result = lines([flow]).resample(
         periods=periods,
@@ -109,7 +109,7 @@ def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
 
 
 def test_flow_and_stream_trim_take_the_same_span():
-    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
+    periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
     flow = Flow.from_periods(periods, [1, 2, 3], units="AUD")
     span = Span(start=periods[1].start, end=periods[2].end, name="later")
     assert [m.number for m in flow.trim(span=span).movements] == [2, 3]

@@ -10,7 +10,7 @@ from datetime import date
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from rangekeeper.duration import Frequency, PeriodTiming, make_periods, offset
+from rangekeeper.duration import Frequency, Periods, PeriodTiming, offset
 from rangekeeper.finance import financial
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.market.view import Market
@@ -36,20 +36,13 @@ from rangekeeper.model.expression.authoring import (
     multiply,
     power,
 )
-from rangekeeper.model.expression.authoring import (
-    reference as ref,
-)
+from rangekeeper.model.expression.authoring import reference as ref
 from rangekeeper.model.formulation import declare
 from rangekeeper.model.formulation.authoring import identify, identify_tree
 from rangekeeper.model.formulation.flow import aligned, shape
 from rangekeeper.quantity import Quantity
-from rangekeeper.schema.records import (
-    Assignment,
-    RuleSet,
-)
-from rangekeeper.schema.records import (
-    Specification as SpecificationRecord,
-)
+from rangekeeper.schema.records import Assignment, RuleSet
+from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.specification import Specification
 from rangekeeper.specification.rule import (
     Action,
@@ -123,8 +116,8 @@ def author(
         or p["cap_rate"] <= 0
     ):
         raise ValueError("invalid investment ratios")
-    periods = make_periods(
-        offset(p["start_date"], frequency=Frequency.YEAR),
+    periods = Periods(
+        start=offset(p["start_date"], frequency=Frequency.YEAR),
         frequency=Frequency.YEAR,
         count=p["num_periods"] + 1,
     )
@@ -133,7 +126,7 @@ def author(
         if scenario
         else Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     )
-    if scenario and tuple(scenario.realization.plan.periods) != periods:
+    if scenario and tuple(scenario.realization.plan.periods) != tuple(periods):
         raise ValueError("scenario periods must match the complete investment horizon")
     money, ratio = uuid4(), uuid4()
     records = []

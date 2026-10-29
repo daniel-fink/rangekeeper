@@ -7,15 +7,15 @@ import time
 from datetime import date
 from pathlib import Path
 
-from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.duration import Frequency, Periods
 from rangekeeper.flow import Flow, ResampleMethod, Stream
 
 
 def run(count, months):
     start = time.perf_counter()
-    periods = make_periods(date(2000, 1, 1), frequency=Frequency.MONTH, count=months)
-    annual = make_periods(
-        date(2000, 1, 1), frequency=Frequency.YEAR, count=months // 12
+    periods = Periods(start=date(2000, 1, 1), frequency=Frequency.MONTH, count=months)
+    annual = Periods(
+        start=date(2000, 1, 1), frequency=Frequency.YEAR, count=months // 12
     )
     flows = {
         str(i): Flow.from_periods(periods, [float(i + 1)] * months, units="AUD")

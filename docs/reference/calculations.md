@@ -133,12 +133,7 @@ from rangekeeper.flow import Stream
 from rangekeeper.duration import Span, Frequency
 from rangekeeper.flow import ResampleMethod
 
-span = Span.from_duration(
-    name="Operations",
-    start=date(2027, 1, 1),
-    frequency=Frequency.YEAR,
-    count=1,
-)
+span = Span(name="Operations", start=date(2027, 1, 1), length="1 year")
 monthly = span.periods(frequency=Frequency.MONTH)
 income = Stream(
     flows={
@@ -365,7 +360,7 @@ kind of grid, or an origin that is not the first day of a month, raises
 
 A date value is a calendar date or `rk.duration.NEVER`. NEVER means the event
 does not happen; `None` means missing. NEVER is the one member of the
-`rk.duration.Never` enum. `rk.duration.shift(on, by=)` returns the date a whole
+`rk.duration.Never` enum. `rk.duration.shift(on=, by=)` returns the date a whole
 length later, or earlier for a negative length:
 
 ```python
@@ -373,10 +368,10 @@ from datetime import date
 
 import rangekeeper as rk
 
-rk.duration.shift(date(2027, 1, 1), by="1 year")  # date(2028, 1, 1)
-rk.duration.shift(date(2027, 1, 31), by="1 month")  # date(2027, 2, 28)
-rk.duration.shift(date(2027, 1, 1), by="-3 months")  # date(2026, 10, 1)
-rk.duration.shift(rk.duration.NEVER, by="1 year")  # rk.duration.NEVER
+rk.duration.shift(on=date(2027, 1, 1), by="1 year")  # date(2028, 1, 1)
+rk.duration.shift(on=date(2027, 1, 31), by="1 month")  # date(2027, 2, 28)
+rk.duration.shift(on=date(2027, 1, 1), by="-3 months")  # date(2026, 10, 1)
+rk.duration.shift(on=rk.duration.NEVER, by="1 year")  # rk.duration.NEVER
 ```
 
 A length is a whole number of days, weeks, months, quarters or years; other units
@@ -388,9 +383,11 @@ the same rules ([expressions](expressions.md#dates-and-never)).
 
 `Frequency` owns the nine supported steps, from a day to a decade. There is no
 fortnight step: offset by `Frequency.WEEK` with `count=2`, or give 14-day
-Periods explicitly. `duration.offset`, `count_steps`, `containing_period` and
-the grids, `cover`, `make_period`, `make_periods` and `periods_between` use
-native dates.
+Periods explicitly. `Period`, `Span`, `Periods`, `offset`, `count_steps`,
+`containing_period` and the grids, and `cover` use native dates. `shift(on=,
+by=)` moves a date value, which can be `NEVER`, by a length; `offset(value,
+frequency=, count=, month_roll=)` moves a date by whole steps of a `Frequency`,
+with an explicit `MonthRoll`.
 Month offsets default to `MonthRoll.PRESERVE_END`; `CLAMP` is explicit. These rules
 are independent of the Period wire-field migration. `DayCount` owns supported
 financial year fractions; imported PyXIRR constants remain an adapter detail.
@@ -412,10 +409,10 @@ member for bounded periods:
 
 ```python
 from datetime import date
-from rangekeeper.duration import DayCount, Frequency, make_periods
+from rangekeeper.duration import DayCount, Frequency, Periods
 from rangekeeper.flow import Flow
 
-periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
+periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
 rates = Flow.from_periods(periods, (120, 120, 120), units="AUD/year")
 amounts = rates.integrate(day_count=DayCount.ACTUAL_365, units="AUD")
 assert abs(amounts.total().magnitude - 120 * 90 / 365) < 1e-9

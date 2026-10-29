@@ -7,7 +7,7 @@ import plotly.io as pio
 import pytest
 from helpers.chart import plot_distribution, plot_flows, plot_pairs
 
-from rangekeeper.duration import Frequency, PeriodTiming, make_periods
+from rangekeeper.duration import Frequency, Periods, PeriodTiming
 from rangekeeper.flow import Flow
 
 
@@ -34,7 +34,7 @@ def test_flow_panels_preserve_dates_units_signs_and_inputs():
 
 
 def test_period_flows_require_explicit_timing_and_resolved_values():
-    periods = make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=2)
+    periods = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=2)
     flow = Flow.from_periods(periods, [10, 20], units="AUD")
     with pytest.raises(ValueError):
         plot_flows({"Rent": flow})

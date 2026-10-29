@@ -27,9 +27,7 @@ from rangekeeper.specification.targets import assign_flow, unknown_flow
 
 
 def collection():
-    extent = Span.from_duration(
-        name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=11
-    )
+    extent = Span(name="Operations", start=date(2027, 1, 1), length="11 years")
     monthly = extent.periods(frequency=Frequency.MONTH)
     stream = Stream(
         flows={
@@ -45,9 +43,7 @@ def collection():
 
 
 def hierarchy_model():
-    span = Span.from_duration(
-        name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1
-    )
+    span = Span(name="Operations", start=date(2027, 1, 1), length="1 year")
     monthly, annual = (
         span.periods(frequency=Frequency.MONTH),
         span.periods(frequency=Frequency.YEAR),

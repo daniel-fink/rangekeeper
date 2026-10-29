@@ -5,20 +5,13 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.duration import (
-    Frequency,
-    Period,
-    PeriodTiming,
-    make_period,
-    make_periods,
-    offset,
-)
+from rangekeeper.duration import Frequency, Period, Periods, PeriodTiming, offset
 from rangekeeper.finance import financial
 from rangekeeper.flow import AlignmentJoin, Flow, Movement, ResampleMethod
 from rangekeeper.shared.errors import ValidationError
 from tests.streams import lines
 
-JANUARY = make_period(date(2026, 1, 1), date(2026, 2, 1))
+JANUARY = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
 
 
 def test_schema_date_or_timestamp_union_retains_timestamp_support():
@@ -65,7 +58,7 @@ def test_date_records_and_detached_wire_format():
 def test_datetimes_are_not_flow_coordinates(value):
     for operation in (
         lambda: Flow.from_events([value], [1], units="m"),
-        lambda: make_period(value, date(2026, 2, 1)),
+        lambda: Period(start=value, end=date(2026, 2, 1)),
         lambda: offset(value, frequency=Frequency.DAY),
         lambda: Movement(id=uuid4(), key="event", date=value),
         lambda: Period(start=value, end=date(2026, 2, 1)),
@@ -119,7 +112,7 @@ def test_payment_date_is_independent_of_coverage():
     assert flow.trim(span=JANUARY) == flow
     assert flow.extent() == (JANUARY.start, JANUARY.end)
     with pytest.raises(ValueError, match="crosses a movement period"):
-        flow.trim(span=make_period(date(2026, 1, 2), JANUARY.end))
+        flow.trim(span=Period(start=date(2026, 1, 2), end=JANUARY.end))
     # Period aggregation states coverage, rather than inventing one payment date.
     aggregated = flow.resample(periods=[JANUARY], method=ResampleMethod.SUM)
     assert aggregated.movements[0].magnitude == 100
@@ -132,7 +125,7 @@ def test_payment_date_is_independent_of_coverage():
 
 
 def test_period_irr_requires_timing_and_resolves_payment_order():
-    periods = make_periods(date(2026, 1, 1), frequency=Frequency.YEAR, count=2)
+    periods = Periods(start=date(2026, 1, 1), frequency=Frequency.YEAR, count=2)
     flow = Flow.from_periods(periods, [-100, 110], units="AUD")
     with pytest.raises(ValueError, match="explicit timing"):
         financial.calculate_irr(flow)
