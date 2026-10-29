@@ -14,6 +14,10 @@ to no store:
 8. ``assemble`` makes the ``Outcome`` of a leaf, and ``assemble_batch`` the
    Outcome of a batch.
 
+An ``Outcome`` reads its result by key, ``outcome["land_cost"]``. Its
+``status`` is a ``Status``, and ``raise_for_status()`` raises when the solve
+found no determined result.
+
 ``solve`` runs the stages for each case and writes nothing. ``execute`` solves,
 then publishes the outputs and the Runs to a store.
 ``ExecutionConfig`` holds the backend, unit system, limits, tolerances and
@@ -25,7 +29,8 @@ from rangekeeper.execution.analysis import Analysis
 from rangekeeper.execution.assembly import assemble, assemble_batch
 from rangekeeper.execution.compiler import AffineProblem, Relation, Row, build_problem
 from rangekeeper.execution.config import ExecutionConfig
-from rangekeeper.execution.outcome import Outcome
+from rangekeeper.execution.errors import OutcomeError
+from rangekeeper.execution.outcome import Evidence, Outcome, Status
 from rangekeeper.execution.pipeline import execute, solve
 from rangekeeper.execution.planning import Cases, resolve_cases
 from rangekeeper.execution.preparation import (
@@ -44,11 +49,14 @@ __all__ = [
     "Assertion",
     "Binding",
     "Cases",
+    "Evidence",
     "ExecutionConfig",
     "Limits",
     "Outcome",
+    "OutcomeError",
     "Relation",
     "Row",
+    "Status",
     "Tolerances",
     "Validation",
     "Verification",

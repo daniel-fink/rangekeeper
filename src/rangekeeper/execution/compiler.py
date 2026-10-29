@@ -14,7 +14,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper.execution.analysis import Analysis, equality_rank
+from rangekeeper.execution.analysis import Analysis, equality_rank, undetermined
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
 from rangekeeper.execution.preparation import Assertion, Binding
 from rangekeeper.execution.settings import Limits
@@ -307,17 +307,17 @@ def build_problem(
             ) from error
     variables = tuple(binding.unknowns)
     constrained = {key for row in rows for key in row.residual.coefficients}
+    equalities = [
+        row.residual.coefficients for row in rows if row.relation is Relation.EQUAL
+    ]
+    rank = equality_rank(equalities, len(variables))
     analysis = Analysis(
-        rank=equality_rank(
-            [
-                row.residual.coefficients
-                for row in rows
-                if row.relation is Relation.EQUAL
-            ],
-            len(variables),
-        ),
+        rank=rank,
         unknown_count=len(variables),
         free=tuple(id for id in variables if id not in constrained),
         has_bounds=any(row.relation is not Relation.EQUAL for row in rows),
+        undetermined=(
+            undetermined(equalities, variables) if rank < len(variables) else ()
+        ),
     )
     return AffineProblem(binding, variables, tuple(rows), analysis)

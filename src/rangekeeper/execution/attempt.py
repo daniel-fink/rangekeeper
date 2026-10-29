@@ -16,6 +16,7 @@ from rangekeeper.execution import (
     settings,
     statuses,
 )
+from rangekeeper.execution.analysis import Analysis
 from rangekeeper.execution.backends import Backend, registry
 from rangekeeper.execution.backends.base import BackendResult
 from rangekeeper.execution.config import ExecutionConfig
@@ -274,8 +275,7 @@ class Attempt:
                 )
                 analysis = problem.analysis
                 if analysis.underdetermined:
-                    # Name the unknowns that no row constrains.
-                    free = [self.binding.references[id] for id in analysis.free]
+                    free = [self.binding.references[id] for id in self.free(analysis)]
                     self.diagnose(
                         (
                             Code.UNIQUENESS_NOT_ASSESSED
@@ -284,7 +284,7 @@ class Attempt:
                         ),
                         f"Numerical equality rank {analysis.rank} for {analysis.unknown_count} unknowns. Bounds may restrict freedom; this is one accepted candidate, not a uniqueness proof."
                         + (
-                            " No row constrains these unknowns; the candidate holds the backend's value for each: "
+                            " The equations do not determine these free unknowns; the candidate holds one value for each: "
                             + ", ".join(str(ref.target) for ref in free)
                             + "."
                             if free
@@ -305,6 +305,21 @@ class Attempt:
                     "Serialized candidate failed independent acceptance; no output was published.",
                     severity=Severity.ERROR,
                 )
+
+    def free(self, analysis: Analysis) -> tuple[UUID, ...]:
+        """Return the undetermined unknowns to name, in unknown order.
+
+        These are the undetermined unknowns that the Specification frees by
+        name. When it names none of them, they are all the undetermined
+        unknowns. An unknown that no row constrains is always named.
+        """
+        assert self.binding is not None
+        named = {
+            ref.target for ref in self.binding.composition.requirements.unknowns or ()
+        }
+        named.update(analysis.free)
+        chosen = tuple(id for id in analysis.undetermined if id in named)
+        return chosen or analysis.undetermined
 
     def finish(self) -> Outcome:
         """Assemble the Outcome; validate its Run unless a later commit point will."""

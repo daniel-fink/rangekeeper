@@ -33,9 +33,8 @@ solving raises, `execute` writes nothing.
 
 An `Outcome` holds the finalized `run`, the accepted `outputs` in the order of
 `run.record.outputs`, and for a batch one Outcome in `cases` for each direct
-case. `walk()` yields each case before its batch. The reading API (`outcome["key"]`,
-`.status`, `.raise_for_status()`) follows in
-[#127](https://github.com/daniel-fink/rangekeeper/issues/127).
+case. `walk()` yields each case before its batch. See
+[read an Outcome](#read-an-outcome).
 
 Each execution validates once ([#132](https://github.com/daniel-fink/rangekeeper/issues/132)):
 
@@ -59,6 +58,54 @@ Use the [examples guide](../guides/examples.md) for the complete valuation proce
 shared and inverse Specifications to pin the actual output, executes inverse,
 then executes a sequential batch. Synthetic expected-output fixtures do not stand
 in for execution results.
+
+## Read an Outcome
+
+Read a solved value by its key or dotted path. A scalar value gives a
+`Quantity`; a Flow value gives its `Flow`:
+
+```python
+outcome = rk.execution.solve(back, store)
+outcome.raise_for_status()
+outcome["land_cost"]  # a Quantity in AUD
+outcome["project.land_cost"]  # the same value, by its dotted path
+```
+
+| Member | Leaf | Batch |
+| --- | --- | --- |
+| `outcome["key"]` | The solved value. Without an output, the error of `raise_for_status()` | `TypeError`: read a case |
+| `quantity(reference)` | The solved Quantity of a scalar Value or a Movement, by `Reference` or UUID | `TypeError` |
+| `model` | The accepted output Model. Without one, the error of `raise_for_status()` | `TypeError` |
+| `status` | A `Status`, from the Run report | The status of the first leaf case, in `walk()` order, that is not `FEASIBLE`; else `FEASIBLE` |
+| `raise_for_status()` | Returns the Outcome when its status is `FEASIBLE`; otherwise raises | Raises for the first leaf case that is not `FEASIBLE` |
+| `free_unknowns` | The keys of the free values that the equations do not determine | `TypeError` |
+| `diagnostics` | The Run's diagnostics, in report order | The batch Run's diagnostics |
+| `evidence` | The typed solver `Evidence` | `TypeError` |
+
+`rk.execution.Status` has one member for each result:
+
+| `Status` | Run report | `raise_for_status()` raises |
+| --- | --- | --- |
+| `FEASIBLE` | Solution `feasible`, and no `underdetermined` diagnostic | Nothing |
+| `UNDERDETERMINED` | Solution `feasible`, with an `underdetermined` diagnostic | `OutcomeError`, code `underdetermined` |
+| `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination` |
+| `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError` |
+| `INVALID` | Failed, with `specification_invalid` | `ValidationError` |
+| `FAILED` | Failed, with `numerical_failure`, `numerical_rejection` or `backend_unavailable`, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
+| `UNSUPPORTED` | Failed, with any other error diagnostic: the code of an `UnsupportedError`, such as `unsupported_capability` or `symbol_limit` | `UnsupportedError` with that code, `document` and `target` |
+
+Each error carries the code of the diagnostic that gives the reason.
+`OutcomeError` also has `status`. In an underdetermined Outcome, `outcome["key"]`
+still reads every value; a free unknown holds one candidate value.
+
+`free_unknowns` names the undetermined unknowns that the Specification frees by
+name. When it names none of them, it names every undetermined unknown. An
+unknown is undetermined when its value can change while every equality row still
+holds. Bounds can still restrict these values (`uniqueness_not_assessed`).
+
+`Evidence` holds the backend's `termination` (None when no backend ran), the
+backend's own `backend` evidence, `equality_rank` and `unknown_count` from the
+rank analysis of an underdetermined solve, and the Run's `implementations`.
 
 ## Configuration
 
@@ -113,7 +160,7 @@ time limit has passed. The stages call it between steps.
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
-| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes. |
+| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `Status`, `raise_for_status()`, `free_unknowns` and `Evidence`. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and one `except` arm for the expected failures. It stores nothing. |
@@ -220,7 +267,8 @@ pure Python, for every backend: Gaussian elimination on rows divided by their
 largest coefficient, where an entry at or below `max(rows, unknowns)` times the
 machine epsilon counts as zero. Bounds may constrain otherwise free directions,
 so rank alone is not a uniqueness proof. The `underdetermined` or
-`uniqueness_not_assessed` diagnostic names the unknowns that no row constrains;
+`uniqueness_not_assessed` diagnostic references the free unknowns that the
+equations do not determine, as `free_unknowns` reads them;
 `pyomo-highs` gives each of them the value zero.
 
 ## Independent acceptance and immutable publication

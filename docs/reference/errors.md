@@ -59,7 +59,7 @@ A Run `Diagnostic` records its code as text, a document and a target, numerical
 residuals and tolerances, and references to the Values and Movements that take
 part. Its optional `values` field is one JSON object of the named inputs and
 evidence of the finding; the code gives the names. An underdetermined solve
-references the unknowns that no row constrains. A limit failure has the code of
+references the free unknowns that the equations do not determine. A limit failure has the code of
 the limit. See [execution](execution.md#settings-limits-and-conclusions).
 
 | Code | `values` |

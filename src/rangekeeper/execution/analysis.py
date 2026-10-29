@@ -12,14 +12,18 @@ class Analysis:
 
     ``rank`` is the numerical rank of the equality rows over ``unknown_count``
     unknowns. ``free`` names the unknowns that no row constrains, in unknown
-    order. ``has_bounds`` is true when an inequality row exists; bounds can
-    restrict directions that the equality rank leaves free.
+    order. ``undetermined`` names the unknowns that the equality rows do not
+    fix, in unknown order: each free unknown, and each unknown whose value
+    changes along a direction that the rows leave free. ``has_bounds`` is true
+    when an inequality row exists; bounds can restrict directions that the
+    equality rank leaves free.
     """
 
     rank: int
     unknown_count: int
     free: tuple[UUID, ...]
     has_bounds: bool
+    undetermined: tuple[UUID, ...] = ()
 
     @property
     def underdetermined(self) -> bool:
@@ -54,3 +58,54 @@ def equality_rank(rows: Sequence[Mapping[UUID, float]], unknown_count: int) -> i
             column = max(row, key=lambda key: abs(row[key]))
             pivots.append((column, row))
     return len(pivots)
+
+
+def undetermined(
+    rows: Sequence[Mapping[UUID, float]], unknowns: Sequence[UUID]
+) -> tuple[UUID, ...]:
+    """Return the unknowns that the equality rows do not fix, in unknown order.
+
+    The rows are reduced to reduced row echelon form, with the pivots and the
+    zero threshold of ``equality_rank``. An unknown without a pivot is free. A
+    pivot unknown is undetermined when its reduced row keeps a coefficient on a
+    free unknown: its value then changes with that free unknown.
+    """
+    tolerance = max(len(rows), len(unknowns), 1) * sys.float_info.epsilon
+    pivots: dict[UUID, dict[UUID, float]] = {}
+    for coefficients in rows:
+        largest = max((abs(value) for value in coefficients.values()), default=0.0)
+        if largest == 0:
+            continue
+        row = {key: value / largest for key, value in coefficients.items()}
+        for column, pivot in pivots.items():
+            factor = row.get(column)
+            if factor:
+                row = _eliminate(row, pivot, factor, tolerance)
+        if not row:
+            continue
+        column = max(row, key=lambda key: abs(row[key]))
+        scale = row[column]
+        row = {key: value / scale for key, value in row.items()}
+        for other, pivot in pivots.items():
+            factor = pivot.get(column)
+            if factor:
+                pivots[other] = _eliminate(pivot, row, factor, tolerance)
+        pivots[column] = row
+    found = set()
+    for column, row in pivots.items():
+        if any(key not in pivots for key in row):
+            found.add(column)
+    return tuple(id for id in unknowns if id not in pivots or id in found)
+
+
+def _eliminate(
+    row: Mapping[UUID, float],
+    pivot: Mapping[UUID, float],
+    factor: float,
+    tolerance: float,
+) -> dict[UUID, float]:
+    """Subtract ``factor`` times a pivot row whose pivot is 1; drop entries near 0."""
+    result = dict(row)
+    for key, value in pivot.items():
+        result[key] = result.get(key, 0.0) - factor * value
+    return {key: value for key, value in result.items() if abs(value) > tolerance}
