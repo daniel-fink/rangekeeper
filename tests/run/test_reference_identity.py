@@ -142,12 +142,13 @@ def test_constructor_ids_are_explicit_but_decoders_never_invent_them():
 
 
 def test_coordinate_index_preserves_unresolved_records_and_rejects_duplicates():
+    """Test the private index directly: Stream, Flow and formulation alignment use it."""
     day = date(2027, 1, 1)
     movements = tuple(Movement(id=uuid4(), date=day, key=key) for key in ("z", "a"))
     flow = Flow(units="AUD", movements=movements)
     before = flow.to_data()
-    index = flow.coordinate_index()
-    assert tuple(index) == tuple(movement.coordinate for movement in movements)
+    index = flow._coordinate_index()
+    assert tuple(index) == tuple(movement._coordinate for movement in movements)
     assert tuple(index.values()) == movements
     index.clear()
     assert flow.to_data() == before

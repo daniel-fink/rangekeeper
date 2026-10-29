@@ -11,6 +11,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from datetime import date
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from rangekeeper.duration.calendar import DayCount, require_date
@@ -19,13 +20,16 @@ from rangekeeper.flow import Flow
 from rangekeeper.quantity import Quantity
 from rangekeeper.shared.optional import requires
 
+if TYPE_CHECKING:
+    import pyxirr
 
-def resolve_day_count(convention: DayCount):
+
+def resolve_day_count(convention: DayCount) -> pyxirr.DayCount:
     """Map one shared convention to its PyXIRR day count."""
     if not isinstance(convention, DayCount):
         raise TypeError("convention must be a DayCount")
     with requires("calculations"):
-        import pyxirr
+        import pyxirr  # noqa: PLC0415 - optional dependency
 
     return {
         DayCount.ACTUAL_365: pyxirr.DayCount.ACT_365F,
@@ -49,7 +53,7 @@ def calculate_pv(flow: Flow, *, rate: float, first_period: int = 1) -> Flow:
     after valuation. No date convention is inferred from period coverage.
     """
     with requires("calculations"):
-        import pyxirr
+        import pyxirr  # noqa: PLC0415 - optional dependency
 
     flow.require_resolved()
     if not math.isfinite(rate) or rate <= -1 or type(first_period) is not int:
@@ -83,7 +87,7 @@ def calculate_xnpv(
     Empty Flows have zero value and never enter PyXIRR's empty-date path.
     """
     with requires("calculations"):
-        import pyxirr
+        import pyxirr  # noqa: PLC0415 - optional dependency
 
     flow.require_resolved()
     if timing is not None and not isinstance(timing, PeriodTiming):
@@ -132,7 +136,7 @@ def calculate_irr(
     residual reporting; it does not change the solver or the acceptance check.
     """
     with requires("calculations"):
-        import pyxirr
+        import pyxirr  # noqa: PLC0415 - optional dependency
 
     flow.require_resolved()
     if timing is not None and not isinstance(timing, PeriodTiming):
