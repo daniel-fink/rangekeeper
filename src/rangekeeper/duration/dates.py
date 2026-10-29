@@ -44,7 +44,7 @@ def shift(*, on: DateValue, by: Quantity | str) -> DateValue:
     if value is NEVER:
         return NEVER
     assert isinstance(value, date)
-    return offset(value, frequency=frequency, count=count)
+    return offset(value=value, frequency=frequency, count=count)
 
 
 def order(value: DateValue) -> tuple[int, date]:

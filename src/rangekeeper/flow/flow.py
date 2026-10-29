@@ -158,7 +158,7 @@ def _magnitude(value: Amount, units: str) -> Decimal | int | float | None:
     if isinstance(value, records.Quantity):
         if value.units == units:
             return value.magnitude
-        return default_units.convert(value, to=units).magnitude
+        return default_units.convert(quantity=value, to=units).magnitude
     if value is not None and not _is_number(value) and not isinstance(value, Decimal):
         raise TypeError(f"amount {value!r} is not a number or a Quantity")
     return value
@@ -537,7 +537,7 @@ class Flow(records.Flow):
                         None
                         if s.magnitude is None
                         else unit_system.convert(
-                            Quantity(magnitude=s.magnitude, units=flow.units),
+                            quantity=Quantity(magnitude=s.magnitude, units=flow.units),
                             to=units,
                         ).magnitude
                     )
@@ -577,8 +577,8 @@ class Flow(records.Flow):
                         None
                         if s.magnitude is None
                         else _round(
-                            Decimal(s.magnitude),
-                            flow.units,
+                            amount=Decimal(s.magnitude),
+                            currency=flow.units,
                             places=places,
                             mode=mode,
                         )
@@ -949,7 +949,7 @@ class Flow(records.Flow):
                 None
                 if movement.magnitude is None
                 else default_units.convert(
-                    Quantity(
+                    quantity=Quantity(
                         magnitude=movement.number * exposure.number,
                         units=product_unit,
                     ),
@@ -1109,7 +1109,7 @@ def _target(
     start = min(period.start for period in covered)
     end = max(period.end for period in covered)
     count = count_steps(start, end, frequency=frequency)
-    if offset(start, frequency=frequency, count=count) != end:
+    if offset(value=start, frequency=frequency, count=count) != end:
         raise AlignmentError(
             f"{frequency.value} Periods from {start} do not end at {end}; give periods=",
             code=Code.ALIGNMENT_PARTIAL,

@@ -149,7 +149,7 @@ def to_table(
                 result = (
                     None
                     if item is None or item.quantity is None
-                    else units.convert(item.quantity, to=c.units).magnitude
+                    else units.convert(quantity=item.quantity, to=c.units).magnitude
                 )
             elif isinstance(c, PropertyColumn):
                 item = view.model._local(Value, entity.id, c.key)

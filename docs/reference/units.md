@@ -117,11 +117,11 @@ to try instead, when the registry knows any. The message repeats them.
 | `compatible(left, right)` | Compares dimensions, not scale. Metres and feet are compatible. Different currencies are not. |
 | `canonical(*, units)` | Returns the canonical text of the units: one name for each unit, in a fixed order. `"years"` and `"yr"` both give `"year"`. Two spellings of the same units give the same text. |
 | `multiply(left, right)`, `divide(numerator, denominator)` | Return the canonical text of the product or quotient. |
-| `convert(quantity, *, to)` | Returns a new finite Quantity. Incompatible units raise `UnitError`. Currencies never convert. |
+| `convert(*, quantity, to)` | Returns a new finite Quantity. Incompatible units raise `UnitError`. Currencies never convert. |
 | `parse_quantity(text)` | Splits quantity text, such as `"7 % pa"` or `"20e6 AUD"`, into a Quantity. The units keep their spelling. |
 | `minor_unit(code)` | Returns the ISO 4217 minor unit of a currency in the system |
-| `register(name, *, definition=None, aliases=())` | Returns a new system with one more unit. Without a definition, the unit has its own dimension. |
-| `alias(alias, unit)` | Returns a new system with one more spelling of a known unit |
+| `register(*, name, definition=None, aliases=())` | Returns a new system with one more unit. Without a definition, the unit has its own dimension. |
+| `alias(*, alias, unit)` | Returns a new system with one more spelling of a known unit |
 
 The function `rangekeeper.money.minor_unit(code)` gives the ISO 4217 minor unit
 of any catalogue code: `AUD` 2, `JPY` 0, `KWD` 3, `CLF` 4. A code that ISO 4217
@@ -131,9 +131,9 @@ lists without a minor unit, such as `XAU` or `XXX`, gives `None`.
 ```python
 from rangekeeper.quantity import default_units
 
-storeys = default_units.register("storey").alias("level", "storey")
+storeys = default_units.register(name="storey").alias(alias="level", unit="storey")
 storeys.compatible("level", "storey")  # True
-default_units.register("rood", definition="1011.7141056 * sqm")
+default_units.register(name="rood", definition="1011.7141056 * sqm")
 ```
 
 `register` and `alias` do not change the original system. They refuse a spelling
@@ -172,7 +172,7 @@ its own `units`; a Movement uses the `units` of its Flow. Rates such as
   back with `to_amount`.
 
 The library rounds only on request. `Quantity.round(places=None,
-mode=RoundingMode.HALF_EVEN)`, `Flow.round(...)` and `money.round(amount, code, ...)`
+mode=RoundingMode.HALF_EVEN)`, `Flow.round(...)` and `money.round(amount=, currency=, ...)`
 round to the minor unit by default. `Flow.round` rounds each Movement, so the
 total of the rounded movements can differ from the rounded total. A code without a minor unit needs `places`, or the call raises `UnitError`; a
 negative `places` rounds to tens or hundreds. `mode` is a
@@ -197,7 +197,7 @@ distribution can add a system in the entry point group `rangekeeper.unit_systems
 ```python
 from rangekeeper.quantity import default_units, unit_systems
 
-unit_systems.register("storeys", default_units.register("storey"))
+unit_systems.register("storeys", default_units.register(name="storey"))
 unit_systems.get("storeys").validate_units("storey")
 ```
 

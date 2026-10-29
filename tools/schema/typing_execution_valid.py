@@ -21,11 +21,11 @@ def investigate(specification: Specification) -> Run:
         tolerances=Tolerances(relative=1e-10),
         backend_options={"presolve": "off"},
     )
-    return execute(specification, MemoryStore(), config=config).run
+    return execute(specification=specification, store=MemoryStore(), config=config).run
 
 
 def answer(specification: Specification, store: MemoryStore) -> Outcome:
-    outcome = solve(specification, store)
+    outcome = solve(specification=specification, resolver=store)
     run: Run = outcome.run
     assert run.id == outcome.run.id
     return solve(specification=specification)

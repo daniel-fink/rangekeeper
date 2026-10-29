@@ -314,12 +314,12 @@
   "cover": {
    "kind": "function",
    "module": "rangekeeper.duration.period",
-   "signature": "(periods: Sequence[Period], *, name: str | None = None) -> Span"
+   "signature": "(*, periods: Sequence[Period], name: str | None = None) -> Span"
   },
   "offset": {
    "kind": "function",
    "module": "rangekeeper.duration.calendar",
-   "signature": "(value: date, *, frequency: Frequency, count: int = 1, month_roll: MonthRoll = MonthRoll.PRESERVE_END) -> date"
+   "signature": "(*, value: date, frequency: Frequency, count: int = 1, month_roll: MonthRoll = MonthRoll.PRESERVE_END) -> date"
   },
   "shift": {
    "kind": "function",
@@ -626,50 +626,50 @@
   "AffineProblem": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, binding: rangekeeper.execution.preparation.Binding, variables: tuple[uuid.UUID, ...], rows: tuple[rangekeeper.execution.compiler.Row, ...], analysis: rangekeeper.execution.analysis.Analysis) -> None",
+    "__init__": "method (self, *, binding: rangekeeper.execution.preparation.Binding, variables: tuple[uuid.UUID, ...], rows: tuple[rangekeeper.execution.compiler.Row, ...], analysis: rangekeeper.execution.analysis.Analysis) -> None",
     "bounds": "property",
     "equalities": "property"
    },
    "module": "rangekeeper.execution.compiler",
-   "signature": "(binding: rangekeeper.execution.preparation.Binding, variables: tuple[uuid.UUID, ...], rows: tuple[rangekeeper.execution.compiler.Row, ...], analysis: rangekeeper.execution.analysis.Analysis) -> None"
+   "signature": "(*, binding: rangekeeper.execution.preparation.Binding, variables: tuple[uuid.UUID, ...], rows: tuple[rangekeeper.execution.compiler.Row, ...], analysis: rangekeeper.execution.analysis.Analysis) -> None"
   },
   "Analysis": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, equality_rank: int, unknown_count: int, undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None",
+    "__init__": "method (self, *, equality_rank: int, unknown_count: int, undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None",
     "underdetermined": "property"
    },
    "module": "rangekeeper.execution.analysis",
-   "signature": "(equality_rank: int, unknown_count: int, undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None"
+   "signature": "(*, equality_rank: int, unknown_count: int, undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "Assertion": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, document: uuid.UUID, constraint: rangekeeper.schema.records.Constraint, predicate: rangekeeper.schema.records.Expression) -> None"
+    "__init__": "method (self, *, document: uuid.UUID, constraint: rangekeeper.schema.records.Constraint, predicate: rangekeeper.schema.records.Expression) -> None"
    },
    "module": "rangekeeper.execution.preparation",
-   "signature": "(document: uuid.UUID, constraint: rangekeeper.schema.records.Constraint, predicate: rangekeeper.schema.records.Expression) -> None"
+   "signature": "(*, document: uuid.UUID, constraint: rangekeeper.schema.records.Constraint, predicate: rangekeeper.schema.records.Expression) -> None"
   },
   "Binding": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple()) -> None",
+    "__init__": "method (self, *, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple()) -> None",
     "key": "method (self, reference: rangekeeper.schema.records.Reference) -> str",
     "text": "method (self, expression: rangekeeper.schema.records.Expression) -> str"
    },
    "module": "rangekeeper.execution.preparation",
-   "signature": "(model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple()) -> None"
+   "signature": "(*, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple()) -> None"
   },
   "Cases": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None",
+    "__init__": "method (self, *, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
     "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification"
    },
    "module": "rangekeeper.execution.planning",
-   "signature": "(root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
+   "signature": "(*, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
   },
   "DecisionResult": {
    "kind": "enum",
@@ -684,32 +684,32 @@
   "Evidence": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, termination: rangekeeper.execution.backends.base.Termination | None = None, backend: collections.abc.Mapping[str, None | bool | int | float | str | collections.abc.Mapping[str, 'FrozenJSONValue'] | tuple['FrozenJSONValue', ...]] = <_HAS_DEFAULT_FACTORY_CLASS>, equality_rank: int | None = None, unknown_count: int | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple()) -> None"
+    "__init__": "method (self, *, termination: rangekeeper.execution.backends.base.Termination | None = None, backend: collections.abc.Mapping[str, None | bool | int | float | str | collections.abc.Mapping[str, 'FrozenJSONValue'] | tuple['FrozenJSONValue', ...]] = <_HAS_DEFAULT_FACTORY_CLASS>, equality_rank: int | None = None, unknown_count: int | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple()) -> None"
    },
    "module": "rangekeeper.execution.outcome",
-   "signature": "(termination: rangekeeper.execution.backends.base.Termination | None = None, backend: collections.abc.Mapping[str, None | bool | int | float | str | collections.abc.Mapping[str, 'FrozenJSONValue'] | tuple['FrozenJSONValue', ...]] = <_HAS_DEFAULT_FACTORY_CLASS>, equality_rank: int | None = None, unknown_count: int | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple()) -> None"
+   "signature": "(*, termination: rangekeeper.execution.backends.base.Termination | None = None, backend: collections.abc.Mapping[str, None | bool | int | float | str | collections.abc.Mapping[str, 'FrozenJSONValue'] | tuple['FrozenJSONValue', ...]] = <_HAS_DEFAULT_FACTORY_CLASS>, equality_rank: int | None = None, unknown_count: int | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple()) -> None"
   },
   "ExecutionConfig": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+    "__init__": "method (self, *, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
    },
    "module": "rangekeeper.execution.config",
-   "signature": "(backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+   "signature": "(*, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
   },
   "Limits": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, time_limit: float = 30, iteration_limit: int = 100000, symbol_limit: int = 10000, constraint_limit: int = 20000) -> None",
+    "__init__": "method (self, *, time_limit: float = 30, iteration_limit: int = 100000, symbol_limit: int = 10000, constraint_limit: int = 20000) -> None",
     "record": "method (self) -> rangekeeper.schema.records.Settings"
    },
    "module": "rangekeeper.execution.settings",
-   "signature": "(time_limit: float = 30, iteration_limit: int = 100000, symbol_limit: int = 10000, constraint_limit: int = 20000) -> None"
+   "signature": "(*, time_limit: float = 30, iteration_limit: int = 100000, symbol_limit: int = 10000, constraint_limit: int = 20000) -> None"
   },
   "Outcome": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple(), key: str | None = None) -> None",
+    "__init__": "method (self, *, run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple(), key: str | None = None) -> None",
     "case": "method (self, *, key: str) -> Outcome",
     "diagnostics": "property",
     "evidence": "property",
@@ -723,7 +723,7 @@
     "walk": "method (self) -> collections.abc.Iterator['Outcome']"
    },
    "module": "rangekeeper.execution.outcome",
-   "signature": "(run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple(), key: str | None = None) -> None"
+   "signature": "(*, run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple(), key: str | None = None) -> None"
   },
   "OutcomeError": {
    "kind": "class",
@@ -747,10 +747,10 @@
   "Pair": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, case: str | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
+    "__init__": "method (self, *, case: str | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
    },
    "module": "rangekeeper.execution.comparison",
-   "signature": "(case: str | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
+   "signature": "(*, case: str | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
   },
   "Paired": {
    "kind": "class",
@@ -778,10 +778,10 @@
   "Row": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, assertion: rangekeeper.execution.preparation.Assertion, relation: rangekeeper.execution.compiler.Relation, residual: rangekeeper.execution.compiler.Affine) -> None"
+    "__init__": "method (self, *, assertion: rangekeeper.execution.preparation.Assertion, relation: rangekeeper.execution.compiler.Relation, residual: rangekeeper.execution.compiler.Affine) -> None"
    },
    "module": "rangekeeper.execution.compiler",
-   "signature": "(assertion: rangekeeper.execution.preparation.Assertion, relation: rangekeeper.execution.compiler.Relation, residual: rangekeeper.execution.compiler.Affine) -> None"
+   "signature": "(*, assertion: rangekeeper.execution.preparation.Assertion, relation: rangekeeper.execution.compiler.Relation, residual: rangekeeper.execution.compiler.Affine) -> None"
   },
   "SideBySide": {
    "kind": "class",
@@ -808,36 +808,36 @@
   "Tolerances": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, absolute: float = 1e-08, relative: float = 1e-09) -> None"
+    "__init__": "method (self, *, absolute: float = 1e-08, relative: float = 1e-09) -> None"
    },
    "module": "rangekeeper.execution.acceptance",
-   "signature": "(absolute: float = 1e-08, relative: float = 1e-09) -> None"
+   "signature": "(*, absolute: float = 1e-08, relative: float = 1e-09) -> None"
   },
   "Validation": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
+    "__init__": "method (self, *, report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
    },
    "module": "rangekeeper.execution.preparation",
-   "signature": "(report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
+   "signature": "(*, report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
   },
   "Verification": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, passed: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
+    "__init__": "method (self, *, passed: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
    },
    "module": "rangekeeper.execution.acceptance",
-   "signature": "(passed: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
+   "signature": "(*, passed: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
   },
   "assemble": {
    "kind": "function",
    "module": "rangekeeper.execution.assembly",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, report: rangekeeper.schema.records.Report, *, id: uuid.UUID, output: rangekeeper.model.model.Model | None) -> rangekeeper.execution.outcome.Outcome"
+   "signature": "(*, specification: rangekeeper.specification.specification.Specification, report: rangekeeper.schema.records.Report, id: uuid.UUID, output: rangekeeper.model.model.Model | None) -> rangekeeper.execution.outcome.Outcome"
   },
   "assemble_batch": {
    "kind": "function",
    "module": "rangekeeper.execution.assembly",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, cases: collections.abc.Sequence[rangekeeper.execution.outcome.Outcome]) -> rangekeeper.execution.outcome.Outcome"
+   "signature": "(*, specification: rangekeeper.specification.specification.Specification, cases: collections.abc.Sequence[rangekeeper.execution.outcome.Outcome]) -> rangekeeper.execution.outcome.Outcome"
   },
   "bind_roles": {
    "kind": "function",
@@ -857,12 +857,12 @@
   "execute": {
    "kind": "function",
    "module": "rangekeeper.execution.pipeline",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, store: rangekeeper.shared.store.RecordStore, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> rangekeeper.execution.outcome.Outcome"
+   "signature": "(*, specification: rangekeeper.specification.specification.Specification, store: rangekeeper.shared.store.RecordStore, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> rangekeeper.execution.outcome.Outcome"
   },
   "make_candidate": {
    "kind": "function",
    "module": "rangekeeper.execution.publication",
-   "signature": "(binding: rangekeeper.execution.preparation.Binding, unknowns: collections.abc.Mapping[uuid.UUID, float], *, run_id: uuid.UUID) -> rangekeeper.model.model.Model"
+   "signature": "(*, binding: rangekeeper.execution.preparation.Binding, unknowns: collections.abc.Mapping[uuid.UUID, float], run_id: uuid.UUID) -> rangekeeper.model.model.Model"
   },
   "resolve_cases": {
    "kind": "function",
@@ -872,7 +872,7 @@
   "solve": {
    "kind": "function",
    "module": "rangekeeper.execution.pipeline",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, resolver: rangekeeper.shared.references.DocumentResolver | None = None, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> rangekeeper.execution.outcome.Outcome"
+   "signature": "(*, specification: rangekeeper.specification.specification.Specification, resolver: rangekeeper.shared.references.DocumentResolver | None = None, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> rangekeeper.execution.outcome.Outcome"
   },
   "validate": {
    "kind": "function",
@@ -882,7 +882,7 @@
   "verify": {
    "kind": "function",
    "module": "rangekeeper.execution.acceptance",
-   "signature": "(binding: rangekeeper.execution.preparation.Binding, candidate: rangekeeper.model.model.Model, *, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> rangekeeper.execution.acceptance.Verification"
+   "signature": "(*, binding: rangekeeper.execution.preparation.Binding, candidate: rangekeeper.model.model.Model, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> rangekeeper.execution.acceptance.Verification"
   }
  },
  "rangekeeper.execution.backends": {
@@ -898,10 +898,10 @@
   "BackendResult": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, termination: rangekeeper.execution.backends.base.Termination, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...] = tuple(), limits: rangekeeper.execution.settings.Limits | None = None) -> None"
+    "__init__": "method (self, *, termination: rangekeeper.execution.backends.base.Termination, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...] = tuple(), limits: rangekeeper.execution.settings.Limits | None = None) -> None"
    },
    "module": "rangekeeper.execution.backends.base",
-   "signature": "(termination: rangekeeper.execution.backends.base.Termination, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...] = tuple(), limits: rangekeeper.execution.settings.Limits | None = None) -> None"
+   "signature": "(*, termination: rangekeeper.execution.backends.base.Termination, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...] = tuple(), limits: rangekeeper.execution.settings.Limits | None = None) -> None"
   },
   "PyomoHighs": {
    "kind": "class",
@@ -931,10 +931,10 @@
   "Observation": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
+    "__init__": "method (self, *, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
    },
    "module": "rangekeeper.execution.rule.result",
-   "signature": "(at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
+   "signature": "(*, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
   },
   "RuleCapabilityError": {
    "kind": "class",
@@ -947,11 +947,11 @@
   "RuleResult": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None",
+    "__init__": "method (self, *, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None",
     "assignments": "property"
    },
    "module": "rangekeeper.execution.rule.result",
-   "signature": "(evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None"
+   "signature": "(*, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None"
   },
   "evaluate": {
    "kind": "function",
@@ -2633,7 +2633,7 @@
   "round": {
    "kind": "function",
    "module": "rangekeeper.money",
-   "signature": "(amount: decimal.Decimal, currency: str, *, places: int | None = None, mode: rangekeeper.money.RoundingMode = RoundingMode.HALF_EVEN) -> decimal.Decimal"
+   "signature": "(*, amount: decimal.Decimal, currency: str, places: int | None = None, mode: rangekeeper.money.RoundingMode = RoundingMode.HALF_EVEN) -> decimal.Decimal"
   },
   "to_amount": {
    "kind": "function",
@@ -2724,21 +2724,21 @@
   "UnitSystem": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, currencies: tuple[str, ...] = tuple('ADP', 'AED', 'AFA', 'AFN', 'ALK', 'ALL', 'AMD', 'ANG', 'AOA', 'AOK', 'AON', 'AOR', 'ARA', 'ARL', 'ARM', 'ARP', 'ARS', 'ATS', 'AUD', 'AWG', 'AZM', 'AZN', 'BAD', 'BAM', 'BAN', 'BBD', 'BDT', 'BEC', 'BEF', 'BEL', 'BGL', 'BGM', 'BGN', 'BGO', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOL', 'BOP', 'BOV', 'BRB', 'BRC', 'BRE', 'BRL', 'BRN', 'BRR', 'BRZ', 'BSD', 'BTN', 'BUK', 'BWP', 'BYB', 'BYN', 'BYR', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLE', 'CLF', 'CLP', 'CNH', 'CNX', 'CNY', 'COP', 'COU', 'CRC', 'CSD', 'CSK', 'CUC', 'CUP', 'CVE', 'CYP', 'CZK', 'DDM', 'DEM', 'DJF', 'DKK', 'DOP', 'DZD', 'ECS', 'ECV', 'EEK', 'EGP', 'ERN', 'ESA', 'ESB', 'ESP', 'ETB', 'EUR', 'FIM', 'FJD', 'FKP', 'FRF', 'GBP', 'GEK', 'GEL', 'GHC', 'GHS', 'GIP', 'GMD', 'GNF', 'GNS', 'GQE', 'GRD', 'GTQ', 'GWE', 'GWP', 'GYD', 'HKD', 'HNL', 'HRD', 'HRK', 'HTG', 'HUF', 'IDR', 'IEP', 'ILP', 'ILR', 'ILS', 'IMP', 'INR', 'IQD', 'IRR', 'ISJ', 'ISK', 'ITL', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRH', 'KRO', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LTL', 'LTT', 'LUC', 'LUF', 'LUL', 'LVL', 'LVR', 'LYD', 'MAD', 'MAF', 'MCF', 'MDC', 'MDL', 'MGA', 'MGF', 'MKD', 'MKN', 'MLF', 'MMK', 'MNT', 'MOP', 'MRO', 'MRU', 'MTL', 'MTP', 'MUR', 'MVP', 'MVR', 'MWK', 'MXN', 'MXP', 'MXV', 'MYR', 'MZE', 'MZM', 'MZN', 'NAD', 'NGN', 'NIC', 'NIO', 'NLG', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEI', 'PEN', 'PES', 'PGK', 'PHP', 'PKR', 'PLN', 'PLZ', 'PTE', 'PYG', 'QAR', 'RHD', 'ROL', 'RON', 'RSD', 'RUB', 'RUR', 'RWF', 'SAR', 'SBD', 'SCR', 'SDD', 'SDG', 'SDP', 'SEK', 'SGD', 'SHP', 'SIT', 'SKK', 'SLE', 'SLL', 'SOS', 'SRD', 'SRG', 'SSP', 'STD', 'STN', 'SUR', 'SVC', 'SYP', 'SZL', 'THB', 'TJR', 'TJS', 'TMM', 'TMT', 'TND', 'TOP', 'TPE', 'TRL', 'TRY', 'TTD', 'TVD', 'TWD', 'TZS', 'UAH', 'UAK', 'UGS', 'UGX', 'USD', 'USN', 'USS', 'UYI', 'UYP', 'UYU', 'UYW', 'UZS', 'VEB', 'VED', 'VEF', 'VES', 'VND', 'VNN', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XEU', 'XFO', 'XFU', 'XOF', 'XPD', 'XPF', 'XPT', 'XRE', 'XSU', 'XTS', 'XUA', 'XXX', 'YDD', 'YER', 'YUD', 'YUM', 'YUN', 'YUR', 'ZAL', 'ZAR', 'ZMK', 'ZMW', 'ZRN', 'ZRZ', 'ZWD', 'ZWL', 'ZWN', 'ZWR'), definitions: tuple[str, ...] = tuple()) -> None",
-    "alias": "method (self, alias: str, unit: str) -> UnitSystem",
+    "__init__": "method (self, *, currencies: tuple[str, ...] = tuple('ADP', 'AED', 'AFA', 'AFN', 'ALK', 'ALL', 'AMD', 'ANG', 'AOA', 'AOK', 'AON', 'AOR', 'ARA', 'ARL', 'ARM', 'ARP', 'ARS', 'ATS', 'AUD', 'AWG', 'AZM', 'AZN', 'BAD', 'BAM', 'BAN', 'BBD', 'BDT', 'BEC', 'BEF', 'BEL', 'BGL', 'BGM', 'BGN', 'BGO', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOL', 'BOP', 'BOV', 'BRB', 'BRC', 'BRE', 'BRL', 'BRN', 'BRR', 'BRZ', 'BSD', 'BTN', 'BUK', 'BWP', 'BYB', 'BYN', 'BYR', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLE', 'CLF', 'CLP', 'CNH', 'CNX', 'CNY', 'COP', 'COU', 'CRC', 'CSD', 'CSK', 'CUC', 'CUP', 'CVE', 'CYP', 'CZK', 'DDM', 'DEM', 'DJF', 'DKK', 'DOP', 'DZD', 'ECS', 'ECV', 'EEK', 'EGP', 'ERN', 'ESA', 'ESB', 'ESP', 'ETB', 'EUR', 'FIM', 'FJD', 'FKP', 'FRF', 'GBP', 'GEK', 'GEL', 'GHC', 'GHS', 'GIP', 'GMD', 'GNF', 'GNS', 'GQE', 'GRD', 'GTQ', 'GWE', 'GWP', 'GYD', 'HKD', 'HNL', 'HRD', 'HRK', 'HTG', 'HUF', 'IDR', 'IEP', 'ILP', 'ILR', 'ILS', 'IMP', 'INR', 'IQD', 'IRR', 'ISJ', 'ISK', 'ITL', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRH', 'KRO', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LTL', 'LTT', 'LUC', 'LUF', 'LUL', 'LVL', 'LVR', 'LYD', 'MAD', 'MAF', 'MCF', 'MDC', 'MDL', 'MGA', 'MGF', 'MKD', 'MKN', 'MLF', 'MMK', 'MNT', 'MOP', 'MRO', 'MRU', 'MTL', 'MTP', 'MUR', 'MVP', 'MVR', 'MWK', 'MXN', 'MXP', 'MXV', 'MYR', 'MZE', 'MZM', 'MZN', 'NAD', 'NGN', 'NIC', 'NIO', 'NLG', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEI', 'PEN', 'PES', 'PGK', 'PHP', 'PKR', 'PLN', 'PLZ', 'PTE', 'PYG', 'QAR', 'RHD', 'ROL', 'RON', 'RSD', 'RUB', 'RUR', 'RWF', 'SAR', 'SBD', 'SCR', 'SDD', 'SDG', 'SDP', 'SEK', 'SGD', 'SHP', 'SIT', 'SKK', 'SLE', 'SLL', 'SOS', 'SRD', 'SRG', 'SSP', 'STD', 'STN', 'SUR', 'SVC', 'SYP', 'SZL', 'THB', 'TJR', 'TJS', 'TMM', 'TMT', 'TND', 'TOP', 'TPE', 'TRL', 'TRY', 'TTD', 'TVD', 'TWD', 'TZS', 'UAH', 'UAK', 'UGS', 'UGX', 'USD', 'USN', 'USS', 'UYI', 'UYP', 'UYU', 'UYW', 'UZS', 'VEB', 'VED', 'VEF', 'VES', 'VND', 'VNN', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XEU', 'XFO', 'XFU', 'XOF', 'XPD', 'XPF', 'XPT', 'XRE', 'XSU', 'XTS', 'XUA', 'XXX', 'YDD', 'YER', 'YUD', 'YUM', 'YUN', 'YUR', 'ZAL', 'ZAR', 'ZMK', 'ZMW', 'ZRN', 'ZRZ', 'ZWD', 'ZWL', 'ZWN', 'ZWR'), definitions: tuple[str, ...] = tuple()) -> None",
+    "alias": "method (self, *, alias: str, unit: str) -> UnitSystem",
     "canonical": "method (self, *, units: str) -> str",
     "compatible": "method (self, left: str, right: str) -> bool",
-    "convert": "method (self, quantity: rangekeeper.schema.records.Quantity, *, to: str) -> rangekeeper.quantity.Quantity",
+    "convert": "method (self, *, quantity: rangekeeper.schema.records.Quantity, to: str) -> rangekeeper.quantity.Quantity",
     "divide": "method (self, numerator: str, denominator: str) -> str",
     "fingerprint": "property",
     "minor_unit": "method (self, code: str) -> int | None",
     "multiply": "method (self, left: str, right: str) -> str",
     "parse_quantity": "method (self, text: str) -> rangekeeper.quantity.Quantity",
-    "register": "method (self, name: str, *, definition: str | None = None, aliases: tuple[str, ...] = tuple()) -> UnitSystem",
+    "register": "method (self, *, name: str, definition: str | None = None, aliases: tuple[str, ...] = tuple()) -> UnitSystem",
     "validate_units": "method (self, text: str) -> None"
    },
    "module": "rangekeeper.quantity",
-   "signature": "(currencies: tuple[str, ...] = tuple('ADP', 'AED', 'AFA', 'AFN', 'ALK', 'ALL', 'AMD', 'ANG', 'AOA', 'AOK', 'AON', 'AOR', 'ARA', 'ARL', 'ARM', 'ARP', 'ARS', 'ATS', 'AUD', 'AWG', 'AZM', 'AZN', 'BAD', 'BAM', 'BAN', 'BBD', 'BDT', 'BEC', 'BEF', 'BEL', 'BGL', 'BGM', 'BGN', 'BGO', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOL', 'BOP', 'BOV', 'BRB', 'BRC', 'BRE', 'BRL', 'BRN', 'BRR', 'BRZ', 'BSD', 'BTN', 'BUK', 'BWP', 'BYB', 'BYN', 'BYR', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLE', 'CLF', 'CLP', 'CNH', 'CNX', 'CNY', 'COP', 'COU', 'CRC', 'CSD', 'CSK', 'CUC', 'CUP', 'CVE', 'CYP', 'CZK', 'DDM', 'DEM', 'DJF', 'DKK', 'DOP', 'DZD', 'ECS', 'ECV', 'EEK', 'EGP', 'ERN', 'ESA', 'ESB', 'ESP', 'ETB', 'EUR', 'FIM', 'FJD', 'FKP', 'FRF', 'GBP', 'GEK', 'GEL', 'GHC', 'GHS', 'GIP', 'GMD', 'GNF', 'GNS', 'GQE', 'GRD', 'GTQ', 'GWE', 'GWP', 'GYD', 'HKD', 'HNL', 'HRD', 'HRK', 'HTG', 'HUF', 'IDR', 'IEP', 'ILP', 'ILR', 'ILS', 'IMP', 'INR', 'IQD', 'IRR', 'ISJ', 'ISK', 'ITL', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRH', 'KRO', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LTL', 'LTT', 'LUC', 'LUF', 'LUL', 'LVL', 'LVR', 'LYD', 'MAD', 'MAF', 'MCF', 'MDC', 'MDL', 'MGA', 'MGF', 'MKD', 'MKN', 'MLF', 'MMK', 'MNT', 'MOP', 'MRO', 'MRU', 'MTL', 'MTP', 'MUR', 'MVP', 'MVR', 'MWK', 'MXN', 'MXP', 'MXV', 'MYR', 'MZE', 'MZM', 'MZN', 'NAD', 'NGN', 'NIC', 'NIO', 'NLG', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEI', 'PEN', 'PES', 'PGK', 'PHP', 'PKR', 'PLN', 'PLZ', 'PTE', 'PYG', 'QAR', 'RHD', 'ROL', 'RON', 'RSD', 'RUB', 'RUR', 'RWF', 'SAR', 'SBD', 'SCR', 'SDD', 'SDG', 'SDP', 'SEK', 'SGD', 'SHP', 'SIT', 'SKK', 'SLE', 'SLL', 'SOS', 'SRD', 'SRG', 'SSP', 'STD', 'STN', 'SUR', 'SVC', 'SYP', 'SZL', 'THB', 'TJR', 'TJS', 'TMM', 'TMT', 'TND', 'TOP', 'TPE', 'TRL', 'TRY', 'TTD', 'TVD', 'TWD', 'TZS', 'UAH', 'UAK', 'UGS', 'UGX', 'USD', 'USN', 'USS', 'UYI', 'UYP', 'UYU', 'UYW', 'UZS', 'VEB', 'VED', 'VEF', 'VES', 'VND', 'VNN', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XEU', 'XFO', 'XFU', 'XOF', 'XPD', 'XPF', 'XPT', 'XRE', 'XSU', 'XTS', 'XUA', 'XXX', 'YDD', 'YER', 'YUD', 'YUM', 'YUN', 'YUR', 'ZAL', 'ZAR', 'ZMK', 'ZMW', 'ZRN', 'ZRZ', 'ZWD', 'ZWL', 'ZWN', 'ZWR'), definitions: tuple[str, ...] = tuple()) -> None"
+   "signature": "(*, currencies: tuple[str, ...] = tuple('ADP', 'AED', 'AFA', 'AFN', 'ALK', 'ALL', 'AMD', 'ANG', 'AOA', 'AOK', 'AON', 'AOR', 'ARA', 'ARL', 'ARM', 'ARP', 'ARS', 'ATS', 'AUD', 'AWG', 'AZM', 'AZN', 'BAD', 'BAM', 'BAN', 'BBD', 'BDT', 'BEC', 'BEF', 'BEL', 'BGL', 'BGM', 'BGN', 'BGO', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOL', 'BOP', 'BOV', 'BRB', 'BRC', 'BRE', 'BRL', 'BRN', 'BRR', 'BRZ', 'BSD', 'BTN', 'BUK', 'BWP', 'BYB', 'BYN', 'BYR', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLE', 'CLF', 'CLP', 'CNH', 'CNX', 'CNY', 'COP', 'COU', 'CRC', 'CSD', 'CSK', 'CUC', 'CUP', 'CVE', 'CYP', 'CZK', 'DDM', 'DEM', 'DJF', 'DKK', 'DOP', 'DZD', 'ECS', 'ECV', 'EEK', 'EGP', 'ERN', 'ESA', 'ESB', 'ESP', 'ETB', 'EUR', 'FIM', 'FJD', 'FKP', 'FRF', 'GBP', 'GEK', 'GEL', 'GHC', 'GHS', 'GIP', 'GMD', 'GNF', 'GNS', 'GQE', 'GRD', 'GTQ', 'GWE', 'GWP', 'GYD', 'HKD', 'HNL', 'HRD', 'HRK', 'HTG', 'HUF', 'IDR', 'IEP', 'ILP', 'ILR', 'ILS', 'IMP', 'INR', 'IQD', 'IRR', 'ISJ', 'ISK', 'ITL', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRH', 'KRO', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LTL', 'LTT', 'LUC', 'LUF', 'LUL', 'LVL', 'LVR', 'LYD', 'MAD', 'MAF', 'MCF', 'MDC', 'MDL', 'MGA', 'MGF', 'MKD', 'MKN', 'MLF', 'MMK', 'MNT', 'MOP', 'MRO', 'MRU', 'MTL', 'MTP', 'MUR', 'MVP', 'MVR', 'MWK', 'MXN', 'MXP', 'MXV', 'MYR', 'MZE', 'MZM', 'MZN', 'NAD', 'NGN', 'NIC', 'NIO', 'NLG', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEI', 'PEN', 'PES', 'PGK', 'PHP', 'PKR', 'PLN', 'PLZ', 'PTE', 'PYG', 'QAR', 'RHD', 'ROL', 'RON', 'RSD', 'RUB', 'RUR', 'RWF', 'SAR', 'SBD', 'SCR', 'SDD', 'SDG', 'SDP', 'SEK', 'SGD', 'SHP', 'SIT', 'SKK', 'SLE', 'SLL', 'SOS', 'SRD', 'SRG', 'SSP', 'STD', 'STN', 'SUR', 'SVC', 'SYP', 'SZL', 'THB', 'TJR', 'TJS', 'TMM', 'TMT', 'TND', 'TOP', 'TPE', 'TRL', 'TRY', 'TTD', 'TVD', 'TWD', 'TZS', 'UAH', 'UAK', 'UGS', 'UGX', 'USD', 'USN', 'USS', 'UYI', 'UYP', 'UYU', 'UYW', 'UZS', 'VEB', 'VED', 'VEF', 'VES', 'VND', 'VNN', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XEU', 'XFO', 'XFU', 'XOF', 'XPD', 'XPF', 'XPT', 'XRE', 'XSU', 'XTS', 'XUA', 'XXX', 'YDD', 'YER', 'YUD', 'YUM', 'YUN', 'YUR', 'ZAL', 'ZAR', 'ZMK', 'ZMW', 'ZRN', 'ZRZ', 'ZWD', 'ZWL', 'ZWN', 'ZWR'), definitions: tuple[str, ...] = tuple()) -> None"
   },
   "default_units": {
    "kind": "value",

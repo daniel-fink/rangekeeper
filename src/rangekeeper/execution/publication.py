@@ -15,7 +15,10 @@ from rangekeeper.schema.runtime import copy_json
 
 
 def make_candidate(
-    binding: Binding, unknowns: Mapping[UUID, float], *, run_id: UUID
+    *,
+    binding: Binding,
+    unknowns: Mapping[UUID, float],
+    run_id: UUID,
 ) -> Model:
     """Write solved values into a new candidate Model revision and round-trip it.
 

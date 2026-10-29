@@ -44,7 +44,7 @@ def _quantity(value: Quantity | str, name: str) -> Quantity:
 
 def _rate(rate: Quantity | str) -> float:
     """Return an effective rate per year, such as ``"7 % pa"``, as a number."""
-    value = default_units.convert(_quantity(rate, "rate"), to="pa").number
+    value = default_units.convert(quantity=_quantity(rate, "rate"), to="pa").number
     if not math.isfinite(value) or value <= -1:
         raise ContractError(
             "rate must be finite and greater than -100 % pa", values={"rate": value}

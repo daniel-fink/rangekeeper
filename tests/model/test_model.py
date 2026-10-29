@@ -398,10 +398,12 @@ def test_unit_dimensions(left, right, expected):
 
 def test_unit_conversion_and_configuration_are_immutable():
     original = Quantity(magnitude=1, units="foot")
-    assert default_units.convert(original, to="m").number == pytest.approx(0.3048)
+    assert default_units.convert(quantity=original, to="m").number == pytest.approx(
+        0.3048
+    )
     assert original.magnitude == 1 and original.units == "foot"
     with pytest.raises(UnitError):
-        default_units.convert(Quantity(magnitude=1, units="AUD"), to="USD")
+        default_units.convert(quantity=Quantity(magnitude=1, units="AUD"), to="USD")
     with pytest.raises(UnitError):
         default_units.compatible("unknown_unit_rk", "m")
     with pytest.raises(UnitError):

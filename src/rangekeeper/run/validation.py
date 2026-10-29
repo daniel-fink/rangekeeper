@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from rangekeeper.specification.composition import Composition
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Prerequisites:
     """Checks that a caller already ran on the same immutable revisions.
 
@@ -117,7 +117,7 @@ def validate_records(
                 else lambda actual, requested: (
                     actual
                     == units.convert(
-                        Quantity.from_data(requested), to=actual["units"]
+                        quantity=Quantity.from_data(requested), to=actual["units"]
                     ).to_data()
                 )
             ),

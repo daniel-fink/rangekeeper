@@ -26,7 +26,7 @@ class Termination(StrEnum):
     UNKNOWN = "unknown"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class BackendResult:
     """A backend's claim, its candidate and its raw evidence.
 

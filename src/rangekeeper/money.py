@@ -144,9 +144,9 @@ def _require(value: object, units: str, currency: bool) -> None:
 
 
 def round(  # noqa: A001 - the money rounding helper of ADR-023
+    *,
     amount: Decimal,
     currency: str,
-    *,
     places: int | None = None,
     mode: RoundingMode = RoundingMode.HALF_EVEN,
 ) -> Decimal:

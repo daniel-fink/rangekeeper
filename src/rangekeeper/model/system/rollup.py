@@ -538,7 +538,7 @@ class QuantityRollup(_Rollup):
                 available = (
                     result
                     if self.units is None
-                    else unit_system.convert(result, to=self.units)
+                    else unit_system.convert(quantity=result, to=self.units)
                 )
             entries[node] = RollupEntry(
                 available, Coverage(population, measured, missing, undecided[node])

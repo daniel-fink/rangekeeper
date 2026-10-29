@@ -188,7 +188,7 @@ def test_a_chained_specification_solves():
     back = front.fix({"project.total_cost": aud("60e6")}).free("land_cost")
     results = {}
     for name, specification in (("front", front), ("back", back)):
-        run = execute(specification, store).run
+        run = execute(specification=specification, store=store).run
         assert run.report.status.solution == SolutionStatus.FEASIBLE
         results[name] = store.load_model(run.record.outputs[0])
     project = model.entity(code="project").id

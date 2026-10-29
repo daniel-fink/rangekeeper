@@ -19,7 +19,7 @@ from rangekeeper.specification import Composition, Specification
 from rangekeeper.specification.composition import collect_specifications, compose
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Cases:
     """The resolved case graph of one root Specification.
 
@@ -78,12 +78,12 @@ def resolve_cases(specification: Specification, *, resolver: DocumentResolver) -
             raise IdentityConflictError("input resolver returned a different revision")
         models[identity] = model
     graph = Cases(
-        specification,
-        MappingProxyType(documents),
-        MappingProxyType(models),
-        MappingProxyType({}),
-        MappingProxyType({}),
-        resolver,
+        root=specification,
+        documents=MappingProxyType(documents),
+        models=MappingProxyType(models),
+        compositions=MappingProxyType({}),
+        failures=MappingProxyType({}),
+        resolver=resolver,
     )
     compositions: dict[UUID, Composition] = {}
     failures: dict[UUID, ValidationError] = {}
@@ -122,10 +122,10 @@ def resolve_cases(specification: Specification, *, resolver: DocumentResolver) -
 
     check_pins(specification)
     return Cases(
-        specification,
-        MappingProxyType(documents),
-        MappingProxyType(models),
-        MappingProxyType(compositions),
-        MappingProxyType(failures),
-        resolver,
+        root=specification,
+        documents=MappingProxyType(documents),
+        models=MappingProxyType(models),
+        compositions=MappingProxyType(compositions),
+        failures=MappingProxyType(failures),
+        resolver=resolver,
     )

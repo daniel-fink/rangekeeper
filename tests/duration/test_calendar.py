@@ -22,18 +22,20 @@ from rangekeeper.flow import Flow, Movement
 
 
 def test_month_rules_keep_the_original_anchor():
-    assert offset(date(2026, 4, 30), frequency=Frequency.MONTH) == date(2026, 5, 31)
+    assert offset(value=date(2026, 4, 30), frequency=Frequency.MONTH) == date(
+        2026, 5, 31
+    )
     assert offset(
-        date(2026, 4, 30), frequency=Frequency.MONTH, month_roll=MonthRoll.CLAMP
+        value=date(2026, 4, 30), frequency=Frequency.MONTH, month_roll=MonthRoll.CLAMP
     ) == date(2026, 5, 30)
     for day, march in ((30, 30), (31, 31)):
         periods = Periods(start=date(2026, 1, day), frequency=Frequency.MONTH, count=2)
         assert [p.end for p in periods] == [date(2026, 2, 28), date(2026, 3, march)]
         assert periods[0].first == date(2026, 1, day)
-    assert offset(date(2026, 1, 15), frequency=Frequency.MONTH, count=0) == date(
+    assert offset(value=date(2026, 1, 15), frequency=Frequency.MONTH, count=0) == date(
         2026, 1, 15
     )
-    assert offset(date(2026, 4, 30), frequency=Frequency.WEEK) == date(2026, 5, 7)
+    assert offset(value=date(2026, 4, 30), frequency=Frequency.WEEK) == date(2026, 5, 7)
 
 
 def test_a_period_resolves_its_last_day_for_a_month_end_anchor():
@@ -72,7 +74,7 @@ def test_complete_step_measurement_is_sign_symmetric():
     )
     # Clamping a signed offset is deliberately not always inverted by measurement.
     later = date(2026, 3, 30)
-    earlier = offset(later, frequency=Frequency.MONTH, count=-1)
+    earlier = offset(value=later, frequency=Frequency.MONTH, count=-1)
     assert earlier == date(2026, 2, 28)
     assert count_steps(later, earlier, frequency=Frequency.MONTH) == 0
 
@@ -92,7 +94,7 @@ def test_empty_requests_validate_configuration_eagerly():
     with pytest.raises(TypeError, match="integer"):
         Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=True)
     with pytest.raises(TypeError):
-        offset(datetime(2026, 1, 1), frequency=Frequency.MONTH)
+        offset(value=datetime(2026, 1, 1), frequency=Frequency.MONTH)
     with pytest.raises(ValueError, match="partial"):
         Span(start=date(2026, 1, 1), end=date(2026, 2, 2)).periods(
             frequency=Frequency.MONTH
@@ -146,22 +148,22 @@ def test_all_frequency_offsets_and_counts_have_independent_expected_dates(
     frequency, before, after
 ):
     anchor = date(2026, 1, 1)
-    assert offset(anchor, frequency=frequency, count=-1) == before
-    assert offset(anchor, frequency=frequency, count=0) == anchor
-    assert offset(anchor, frequency=frequency, count=1) == after
+    assert offset(value=anchor, frequency=frequency, count=-1) == before
+    assert offset(value=anchor, frequency=frequency, count=0) == anchor
+    assert offset(value=anchor, frequency=frequency, count=1) == after
     assert count_steps(before, after, frequency=frequency) == 2
     assert count_steps(after, before, frequency=frequency) == -2
 
 
 def test_date_range_boundaries_and_anchor_preserving_extension():
-    assert offset(date.min, frequency=Frequency.DAY, count=0) == date.min
-    assert offset(date.max, frequency=Frequency.MONTH, count=0) == date.max
+    assert offset(value=date.min, frequency=Frequency.DAY, count=0) == date.min
+    assert offset(value=date.max, frequency=Frequency.MONTH, count=0) == date.max
     assert len(Periods(start=date.max, frequency=Frequency.MONTH, count=0)) == 0
     for day, count in ((date.min, -1), (date.max, 1)):
         with pytest.raises(ContractError, match="outside the calendar"):
-            offset(day, frequency=Frequency.DAY, count=count)
+            offset(value=day, frequency=Frequency.DAY, count=count)
     with pytest.raises(ContractError) as error:
-        offset(date(9999, 12, 1), frequency=Frequency.MONTH)
+        offset(value=date(9999, 12, 1), frequency=Frequency.MONTH)
     assert error.value.values == {
         "date": "9999-12-01",
         "frequency": "month",

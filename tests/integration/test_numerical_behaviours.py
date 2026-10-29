@@ -61,7 +61,7 @@ def test_growth_compounding():
 
 def test_month_end_is_explicit_and_period_end_is_exclusive():
     assert offset(
-        date(2020, 2, 29),
+        value=date(2020, 2, 29),
         frequency=Frequency.MONTH,
         count=3,
         month_roll=MonthRoll.PRESERVE_END,

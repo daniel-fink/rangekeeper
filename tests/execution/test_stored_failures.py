@@ -49,7 +49,9 @@ def failed_run(model, specification, *, code, solution):
     store = MemoryStore()
     store.put(model)
     run = execute(
-        specification, store, config=ExecutionConfig(backend=UncalledBackend())
+        specification=specification,
+        store=store,
+        config=ExecutionConfig(backend=UncalledBackend()),
     ).run
     assert run.report.status.completion is CompletionStatus.FAILED
     assert run.report.status.solution is solution

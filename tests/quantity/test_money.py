@@ -168,7 +168,7 @@ def test_rate_times_area_is_an_amount():
     area = Quantity(magnitude=1200, units="m^2")
     units = default_units.multiply(rate.units, area.units)
     product = default_units.convert(
-        Quantity(magnitude=rate.number * area.number, units=units), to="AUD"
+        quantity=Quantity(magnitude=rate.number * area.number, units=units), to="AUD"
     )
     assert product.magnitude == Decimal("540600")
 
@@ -189,7 +189,7 @@ def test_rounding_uses_minor_units_and_rounds_only_on_request():
     with pytest.raises(UnitError, match="no minor unit"):
         Quantity(magnitude="1.23456", units="XAU").round()
     with pytest.raises(ContractError) as raised:
-        money.round(Decimal("1.5"), "AUD", mode="ROUND_SOMETIMES")
+        money.round(amount=Decimal("1.5"), currency="AUD", mode="ROUND_SOMETIMES")
     assert raised.value.values == {"mode": "ROUND_SOMETIMES"}
     assert Quantity(magnitude="1.23456", units="XAU").round(places=3).magnitude == (
         Decimal("1.235")

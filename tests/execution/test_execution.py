@@ -104,7 +104,7 @@ def spec(name="specification-forward", *, model=None, **changes):
 
 
 def execute(store, specification):
-    run = execute_specification(specification, store).run
+    run = execute_specification(specification=specification, store=store).run
     validate(run, resolver=store).raise_if_invalid()
     assert store.load_run(run.id).to_data() == run.to_data()
     return run
@@ -400,7 +400,9 @@ def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
     store.put(specification)
     with pytest.raises(UnknownExtensionError, match="pyomo-highs"):
         execute_specification(
-            specification, store, config=ExecutionConfig(backend="pyomo")
+            specification=specification,
+            store=store,
+            config=ExecutionConfig(backend="pyomo"),
         )
     registry: Registry[backends.Backend] = Registry("backends", backends.Backend)
     registry.register("wrong", WrongCandidate())
@@ -408,7 +410,9 @@ def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
     monkeypatch.setattr("rangekeeper.execution.pipeline.registry", registry)
     monkeypatch.setattr("rangekeeper.execution.attempt.registry", registry)
     run = execute_specification(
-        specification, store, config=ExecutionConfig(backend="wrong")
+        specification=specification,
+        store=store,
+        config=ExecutionConfig(backend="wrong"),
     ).run
     solvers = {
         item.name: item.version
@@ -419,7 +423,7 @@ def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
     other = spec()
     store.put(other)
     unregistered = execute_specification(
-        other, store, config=ExecutionConfig(backend=PyomoHighs())
+        specification=other, store=store, config=ExecutionConfig(backend=PyomoHighs())
     ).run
     assert any(
         item.name == "rangekeeper.execution.backends.pyomo:PyomoHighs"
@@ -432,7 +436,9 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     specification = spec()
     store.put(specification)
     run = execute_specification(
-        specification, store, config=ExecutionConfig(backend=WrongCandidate())
+        specification=specification,
+        store=store,
+        config=ExecutionConfig(backend=WrongCandidate()),
     ).run
     assert run.report.status.completion == CompletionStatus.FAILED
     assert run.report.status.solution == SolutionStatus.UNKNOWN
@@ -446,12 +452,14 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     binding = bind_roles(
         validate_composition(specification.compose(resolver=store), resolver=store)
     )
-    proposed = make_candidate(binding, {NOI: 550000, CAPITAL: 11000000}, run_id=uuid4())
+    proposed = make_candidate(
+        binding=binding, unknowns={NOI: 550000, CAPITAL: 11000000}, run_id=uuid4()
+    )
     changed = proposed.to_data()
     next(node for node in records(changed["system"]) if node.get("id") == str(RENT))[
         "quantity"
     ]["magnitude"] = 30001
-    assert not verify(binding, Model.from_data(changed)).passed
+    assert not verify(binding=binding, candidate=Model.from_data(changed)).passed
 
 
 def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
@@ -568,11 +576,11 @@ def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
 def test_backend_statuses_do_not_overclaim(termination):
     class Backend:
         def solve(self, problem, **kwargs):
-            return BackendResult(termination)
+            return BackendResult(termination=termination)
 
     store, _ = setup()
     run = execute_specification(
-        spec(), store, config=ExecutionConfig(backend=Backend())
+        specification=spec(), store=store, config=ExecutionConfig(backend=Backend())
     ).run
     assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
@@ -591,7 +599,7 @@ def test_missing_references_and_invalid_batch_graph_raise_before_execution():
     store, _ = setup()
     missing = spec(model=Model.from_data(fresh(data("model"))))
     with pytest.raises(MissingReferenceError):
-        execute_specification(missing, store)
+        execute_specification(specification=missing, store=store)
     id1, id2 = uuid4(), uuid4()
     for id, other in ((id1, id2), (id2, id1)):
         store.put(
@@ -603,7 +611,7 @@ def test_missing_references_and_invalid_batch_graph_raise_before_execution():
             )
         )
     with pytest.raises(ValidationError, match="cycle"):
-        execute_specification(store.load_specification(id1), store)
+        execute_specification(specification=store.load_specification(id1), store=store)
 
 
 @pytest.mark.parametrize(
@@ -670,7 +678,9 @@ def with_rent_free(*bounds):
     ]
     payload["unknowns"].append(dict(target=str(RENT)))
     payload["formulations"] = [formulation(bound) for bound in bounds]
-    return execute_specification(Specification.from_data(payload), store)
+    return execute_specification(
+        specification=Specification.from_data(payload), store=store
+    )
 
 
 @pytest.mark.parametrize(
@@ -859,12 +869,13 @@ def test_nonfinite_or_boolean_backend_candidates_are_never_published(magnitude):
     class Backend:
         def solve(self, problem, **kwargs):
             return BackendResult(
-                Termination.FEASIBLE, {NOI: 550000.0, CAPITAL: magnitude}
+                termination=Termination.FEASIBLE,
+                candidate={NOI: 550000.0, CAPITAL: magnitude},
             )
 
     store, _ = setup()
     run = execute_specification(
-        spec(), store, config=ExecutionConfig(backend=Backend())
+        specification=spec(), store=store, config=ExecutionConfig(backend=Backend())
     ).run
     assert run.report.status.completion == CompletionStatus.FAILED
     assert run.report.status.solution == SolutionStatus.UNKNOWN

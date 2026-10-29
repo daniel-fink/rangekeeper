@@ -13,7 +13,7 @@ from rangekeeper.quantity import UnitSystem
 BackendOption = str | int | float | bool
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ExecutionConfig:
     """The limits, tolerances, unit system and backend options of an execution.
 

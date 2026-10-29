@@ -512,9 +512,9 @@ def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
     conversions = []
 
     class TrackingUnits(UnitSystem):
-        def convert(self, quantity, *, to):
+        def convert(self, *, quantity, to):
             conversions.append((self, quantity.units, to))
-            return super().convert(quantity, to=to)
+            return super().convert(quantity=quantity, to=to)
 
     units = TrackingUnits(currencies=())
     measure, observed, control, decision, rule = (str(uuid4()) for _ in range(5))

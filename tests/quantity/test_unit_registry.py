@@ -115,7 +115,9 @@ def test_unit_text_round_trips(text):
     canonical = default_units.multiply(text, "dimensionless")
     assert default_units.multiply(canonical, "dimensionless") == canonical
     assert default_units.compatible(text, canonical)
-    converted = default_units.convert(Quantity(magnitude=1, units=text), to=canonical)
+    converted = default_units.convert(
+        quantity=Quantity(magnitude=1, units=text), to=canonical
+    )
     assert converted.number == pytest.approx(1)
 
 
@@ -146,14 +148,18 @@ def test_unit_text_round_trips(text):
     ],
 )
 def test_aliases(alias, canonical, factor):
-    converted = default_units.convert(Quantity(magnitude=1, units=alias), to=canonical)
+    converted = default_units.convert(
+        quantity=Quantity(magnitude=1, units=alias), to=canonical
+    )
     assert converted.number == pytest.approx(factor)
 
 
 def test_per_annum_is_per_year_not_picoyear():
     seven = default_units.parse_quantity("7 % pa")
     assert seven == Quantity(magnitude=7.0, units="% pa")
-    assert default_units.convert(seven, to="1/year").number == pytest.approx(0.07)
+    assert default_units.convert(quantity=seven, to="1/year").number == pytest.approx(
+        0.07
+    )
     assert default_units.compatible("AUD pa", "AUD/year")
     assert not default_units.compatible("AUD pa", "AUD")
 
@@ -302,26 +308,26 @@ def test_every_currency_has_a_minor_unit_or_none():
 
 
 def test_register_and_alias_return_new_systems():
-    extended = default_units.register("storey", aliases=("storeys_",)).alias(
-        "level", "storey"
+    extended = default_units.register(name="storey", aliases=("storeys_",)).alias(
+        alias="level", unit="storey"
     )
     assert extended.compatible("storey", "level")
     assert not extended.compatible("storey", "dwelling")
     assert extended.multiply("AUD", "level") == "AUD * storey"
-    land = default_units.register("rood", definition="1011.7141056 * sqm")
+    land = default_units.register(name="rood", definition="1011.7141056 * sqm")
     assert land.convert(
-        Quantity(magnitude=1, units="rood"), to="sqm"
+        quantity=Quantity(magnitude=1, units="rood"), to="sqm"
     ).number == pytest.approx(1011.7141056)
     with pytest.raises(UnitError):
         default_units.validate_units("storey")
     assert extended != default_units and default_units.definitions == ()
     for call in (
-        lambda: default_units.register("sqm"),
-        lambda: default_units.register("AUD"),
-        lambda: default_units.register("two words"),
-        lambda: default_units.alias("pa", "year"),
-        lambda: default_units.alias("level", "storey"),
-        lambda: default_units.register("bad", definition="1 * nothing"),
+        lambda: default_units.register(name="sqm"),
+        lambda: default_units.register(name="AUD"),
+        lambda: default_units.register(name="two words"),
+        lambda: default_units.alias(alias="pa", unit="year"),
+        lambda: default_units.alias(alias="level", unit="storey"),
+        lambda: default_units.register(name="bad", definition="1 * nothing"),
     ):
         with pytest.raises(UnitError):
             call()
@@ -348,7 +354,7 @@ def model_with(units: UnitSystem, *, unit: str = "storey") -> Model:
 
 
 def test_model_unit_system_is_public_and_kept_by_revisions():
-    storeys = default_units.register("storey").alias("level", "storey")
+    storeys = default_units.register(name="storey").alias(alias="level", unit="storey")
     model = model_with(storeys)
     assert model.unit_system is storeys
     revised = model.revise(
@@ -366,7 +372,7 @@ def test_model_unit_system_is_public_and_kept_by_revisions():
 
 
 def test_derived_operations_default_to_the_model_unit_system():
-    storeys = default_units.register("storey").alias("level", "storey")
+    storeys = default_units.register(name="storey").alias(alias="level", unit="storey")
     model = model_with(storeys)
     view = View(model)
     population = view.quantities("levels", units="level")

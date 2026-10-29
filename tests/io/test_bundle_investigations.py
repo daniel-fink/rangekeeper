@@ -38,7 +38,7 @@ def inputs():
 
 def test_real_run_closure_and_further_execution(tmp_path):
     store, model, common, spec = inputs()
-    run = execute(spec, store).run
+    run = execute(specification=spec, store=store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE
     output = store.load_model(run.record.outputs[0])
     first = write(tmp_path / "bundle", output, documents=[run], resolver=store)
@@ -71,7 +71,7 @@ def test_real_run_closure_and_further_execution(tmp_path):
     data["metadata"].update(id=str(uuid4()), previous=str(spec.id))
     data["includes"] = [str(revised_common.id)]
     revised = spec.revise(SpecificationRecord.from_data(data))
-    again = execute(revised, fresh).run
+    again = execute(specification=revised, store=fresh).run
     assert again.report.status.solution is SolutionStatus.FEASIBLE
     second = write(
         tmp_path / "second",
@@ -122,7 +122,7 @@ def test_batch_includes_actual_failed_attempt_and_outputs(tmp_path):
             cases=[str(spec.id), str(bad.id)],
         )
     )
-    run = execute(batch, store).run
+    run = execute(specification=batch, store=store).run
     assert len(run.record.spawns) == 2
     children = [store.load_run(i) for i in run.record.spawns]
     assert any(

@@ -204,7 +204,7 @@ def test_month_anchor_and_leap_year():
     periods = Periods(start=date(2020, 1, 31), frequency=Frequency.MONTH, count=2)
     assert periods[0].end == date(2020, 2, 29)
     assert periods[1].end == date(2020, 3, 31)
-    assert offset(date(2020, 3, 31), frequency=Frequency.MONTH, count=-1) == date(
+    assert offset(value=date(2020, 3, 31), frequency=Frequency.MONTH, count=-1) == date(
         2020, 2, 29
     )
     assert (
@@ -444,7 +444,7 @@ def test_weighted_rates_and_partial_period_helpers():
         .magnitude
         == 15
     )
-    assert cover(periods).end == periods[-1].end
+    assert cover(periods=periods).end == periods[-1].end
     with pytest.raises(ValueError, match="partial"):
         Span(start=date(2020, 1, 1), end=date(2020, 2, 2)).periods(
             frequency=Frequency.MONTH

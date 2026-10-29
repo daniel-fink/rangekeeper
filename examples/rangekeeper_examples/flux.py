@@ -152,7 +152,7 @@ def solve_example():
     model, ids = hierarchy_model()
     store = MemoryStore()
     store.put(model)
-    forward = execute(forward_specification(model, ids), store).run
+    forward = execute(specification=forward_specification(model, ids), store=store).run
     assert forward.report.status.solution is SolutionStatus.FEASIBLE, (
         forward.report.to_data()
     )
@@ -162,7 +162,7 @@ def solve_example():
         {ids["portfolio"]: Quantity(magnitude=2880, units="AUD")}
     )
     reverse = reverse.free(solved.value(ids["A_rent"]).flow.movements[-1].id)
-    inverse = execute(reverse, store).run
+    inverse = execute(specification=reverse, store=store).run
     assert inverse.report.status.solution is SolutionStatus.FEASIBLE, (
         inverse.report.to_data()
     )

@@ -58,6 +58,6 @@ def evaluate(node: Expression, quantities, *, units: UnitSystem):
         if not isinstance(left, Quantity) or not isinstance(right, Quantity):
             raise ValueError("numerical operands required")
         return _COMPARISONS[node.operator](
-            left.number, units.convert(right, to=left.units).number
+            left.number, units.convert(quantity=right, to=left.units).number
         )
     return numerical(node, quantities, units=units)
