@@ -370,15 +370,15 @@ import pyxirr
 from rangekeeper.finance.financial import calculate_pv, calculate_xnpv, calculate_irr
 
 from rangekeeper.duration import Periods, Frequency, PeriodTiming
-flow = Flow.from_events([date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units='AUD')
-assert abs(calculate_xnpv(flow, rate=.1, valuation_date=date(2026, 1, 1)).magnitude) < 1e-9
-result = calculate_irr(flow)
+flow = Flow.from_events(dates=[date(2026, 1, 1), date(2027, 1, 1)], magnitudes=[-100, 110], units='AUD')
+assert abs(calculate_xnpv(flow=flow, rate=.1, valuation_date=date(2026, 1, 1)).magnitude) < 1e-9
+result = calculate_irr(flow=flow)
 assert math.isclose(result.rate, .1) and result.method == 'pyxirr.xirr'
 assert abs(result.residual.magnitude) < 1e-9
-future = Flow.from_periods(Periods(start=date(2026, 1, 1), frequency=Frequency.YEAR, count=1), [110], units='AUD')
-assert math.isclose(calculate_pv(future, rate=.1).movements[0].magnitude, 100)
-assert math.isclose(calculate_xnpv(future, rate=.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.END).magnitude, 100)
-assert calculate_xnpv(Flow.from_events([], [], units='AUD'), rate=0.1, valuation_date=date(2026, 1, 1)).magnitude == 0
+future = Flow.from_periods(periods=Periods(start=date(2026, 1, 1), frequency=Frequency.YEAR, count=1), magnitudes=[110], units='AUD')
+assert math.isclose(calculate_pv(flow=future, rate=.1).movements[0].magnitude, 100)
+assert math.isclose(calculate_xnpv(flow=future, rate=.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.END).magnitude, 100)
+assert calculate_xnpv(flow=Flow.from_events(dates=[], magnitudes=[], units='AUD'), rate=0.1, valuation_date=date(2026, 1, 1)).magnitude == 0
 for prefix in ('scipy', 'pandas', 'polars', 'numpy', 'rangekeeper.flux', 'rangekeeper._legacy_duration'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: PyXIRR', pyxirr.__version__, 'PV/XNPV/IRR passed without SciPy, dataframes or legacy imports')
@@ -447,15 +447,15 @@ from rangekeeper.shared.table import Table
 from rangekeeper.io import polars
 assert importlib.util.find_spec('pandas') is None
 assert importlib.util.find_spec('rangekeeper.adapters') is None
-flow = Flow.from_events([date(2026, 1, 1)], [0], units='AUD')
+flow = Flow.from_events(dates=[date(2026, 1, 1)], magnitudes=[0], units='AUD')
 assert polars.from_frame(polars.to_frame(flow), units='AUD') == flow
 assert polars.dates(flow)['date'].to_list() == [date(2026, 1, 1)]
 assert '&lt;Cash&gt; [AUD]' in flow.display(name='<Cash>')._repr_html_()
 assert 'Flow [AUD]' in flow._repr_html_()
 from rangekeeper.flow import Stream
 from rangekeeper.flow import AlignmentJoin
-sparse = Flow.from_events([date(2026, 1, 1), date(2026, 1, 2)], [0, None], units='AUD')
-full = Flow.from_events([date(2026, 1, day) for day in range(1, 13)], [1234.567] * 12, units='AUD')
+sparse = Flow.from_events(dates=[date(2026, 1, 1), date(2026, 1, 2)], magnitudes=[0, None], units='AUD')
+full = Flow.from_events(dates=[date(2026, 1, day) for day in range(1, 13)], magnitudes=[1234.567] * 12, units='AUD')
 display_stream = Stream(flows={'Receipts': sparse, 'Balance': full}, join=AlignmentJoin.UNION)
 with pl.Config(tbl_rows=2, tbl_cols=1, float_precision=0):
     config = pl.Config.state()

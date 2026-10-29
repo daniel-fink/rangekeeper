@@ -40,7 +40,7 @@ def test_construction_and_decoding_return_the_owner():
     assert period.last == date(2026, 1, 31)
     decoded = records.Period.from_data(period.to_data())
     assert type(decoded) is rk.duration.Period and decoded == period
-    flow = rk.flow.Flow.from_periods([period], [1.0], units="USD")
+    flow = rk.flow.Flow.from_periods(periods=[period], magnitudes=[1.0], units="USD")
     assert type(flow.movements[0]) is rk.flow.Movement
     assert type(flow.movements[0].period) is rk.duration.Period
     value = records.Value(
@@ -112,7 +112,9 @@ def test_generated_slots_match_the_packaged_artifact_and_children_are_cached():
     periods = rk.duration.Periods(
         start=date(2026, 1, 1), frequency=rk.duration.Frequency.MONTH, count=3
     )
-    flow = rk.flow.Flow.from_periods(periods, [1.0, 2.0, 3.0], units="USD")
+    flow = rk.flow.Flow.from_periods(
+        periods=periods, magnitudes=[1.0, 2.0, 3.0], units="USD"
+    )
     assert flow.movements is flow.movements
     assert flow.movements[0].period is flow.movements[0].period
     assert flow.replace(units="AUD").movements == flow.movements

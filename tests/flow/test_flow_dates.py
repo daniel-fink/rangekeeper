@@ -68,7 +68,7 @@ def test_date_records_and_detached_wire_format():
 )
 def test_datetimes_are_not_flow_coordinates(value):
     for operation in (
-        lambda: Flow.from_events([value], [1], units="m"),
+        lambda: Flow.from_events(dates=[value], magnitudes=[1], units="m"),
         lambda: Period(start=value, end=date(2026, 2, 1)),
         lambda: offset(value=value, frequency=Frequency.DAY),
         lambda: Movement(id=uuid4(), key="event", date=value),
@@ -95,7 +95,7 @@ def test_sample_needs_date_or_period():
 
 
 def test_period_timing_is_explicit_and_does_not_change_content():
-    flow = Flow.from_periods([JANUARY], [100], units="AUD")
+    flow = Flow.from_periods(periods=[JANUARY], magnitudes=[100], units="AUD")
     original = flow.to_data()
     assert "date" not in original["movements"][0]
     for timing, expected in (
@@ -107,9 +107,9 @@ def test_period_timing_is_explicit_and_does_not_change_content():
     with pytest.raises(ValueError, match="explicit timing"):
         flow.movements[0].resolve()
     with pytest.raises(ValueError, match="explicit timing"):
-        financial.calculate_xnpv(flow, rate=0.1, valuation_date=date(2026, 1, 1))
+        financial.calculate_xnpv(flow=flow, rate=0.1, valuation_date=date(2026, 1, 1))
     assert financial.calculate_xnpv(
-        flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.END
+        flow=flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.END
     ).number == pytest.approx(100 / 1.1 ** (31 / 365))
     assert flow.to_data() == original
 
@@ -118,7 +118,7 @@ def test_payment_date_is_independent_of_coverage():
     flow = paid([JANUARY], [100], [date(2026, 2, 5)])
     assert flow.movements[0].resolve(timing=PeriodTiming.FIRST) == date(2026, 2, 5)
     assert financial.calculate_xnpv(
-        flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.LAST
+        flow=flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.LAST
     ).number == pytest.approx(100 / 1.1 ** (35 / 365))
     assert flow.trim(span=JANUARY) == flow
     assert flow.extent() == (JANUARY.start, JANUARY.end)
@@ -135,19 +135,19 @@ def test_payment_date_is_independent_of_coverage():
 
 def test_period_irr_requires_timing_and_resolves_payment_order():
     periods = Periods(start=date(2026, 1, 1), frequency=Frequency.YEAR, count=2)
-    flow = Flow.from_periods(periods, [-100, 110], units="AUD")
+    flow = Flow.from_periods(periods=periods, magnitudes=[-100, 110], units="AUD")
     with pytest.raises(ValueError, match="explicit timing"):
-        financial.calculate_irr(flow)
+        financial.calculate_irr(flow=flow)
     assert financial.calculate_irr(
-        flow, timing=PeriodTiming.FIRST
+        flow=flow, timing=PeriodTiming.FIRST
     ).rate == pytest.approx(0.1)
     # Coverage order can differ from payment order. IRR uses the actual dates.
     reversed_dates = paid(periods, [110, -100], [date(2027, 1, 1), date(2026, 1, 1)])
-    assert financial.calculate_irr(reversed_dates).rate == pytest.approx(0.1)
+    assert financial.calculate_irr(flow=reversed_dates).rate == pytest.approx(0.1)
 
 
 def test_collapse_requires_a_date_or_convention():
-    flow = Flow.from_periods([JANUARY], [100], units="AUD")
+    flow = Flow.from_periods(periods=[JANUARY], magnitudes=[100], units="AUD")
     with pytest.raises(ValueError, match="explicit timing"):
         flow.collapse()
     result = flow.collapse(on=date(2026, 2, 5))
@@ -159,7 +159,7 @@ def test_collapse_requires_a_date_or_convention():
 def test_polars_date_projection():
     from rangekeeper.io.polars import dates
 
-    flow = Flow.from_periods([JANUARY], [100], units="AUD")
+    flow = Flow.from_periods(periods=[JANUARY], magnitudes=[100], units="AUD")
     with pytest.raises(ValueError, match="explicit timing"):
         dates(flow)
     assert dates(flow, timing=PeriodTiming.LAST)["date"].to_list() == [

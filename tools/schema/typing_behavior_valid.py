@@ -14,7 +14,9 @@ from rangekeeper.flow import (
 from rangekeeper.model import Distribution, ValueKind
 from rangekeeper.schema.records import Assembly, Value
 
-flow: Flow = Flow.from_events([date(2026, 1, 1)], [1], units="m").check()
+flow: Flow = Flow.from_events(
+    dates=[date(2026, 1, 1)], magnitudes=[1], units="m"
+).check()
 movement: Movement = flow.movements[0].replace(magnitude=2, claims=())
 number: float = movement.number
 day: date = movement.resolve()

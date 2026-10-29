@@ -13,9 +13,9 @@ from rangekeeper.flow import Flow
 
 def test_flow_panels_preserve_dates_units_signs_and_inputs():
     dates = [date(2027, 12, 31), date(2028, 12, 31)]
-    income = Flow.from_events(dates, [120, 130], units="AUD")
-    cost = Flow.from_events(dates, [-40, -50], units="AUD")
-    area = Flow.from_events(dates, [1000, 1100], units="m^2")
+    income = Flow.from_events(dates=dates, magnitudes=[120, 130], units="AUD")
+    cost = Flow.from_events(dates=dates, magnitudes=[-40, -50], units="AUD")
+    area = Flow.from_events(dates=dates, magnitudes=[1000, 1100], units="m^2")
     flows = {"Income": income, "Area": area, "Cost": cost}
     before = {key: flow.to_data() for key, flow in flows.items()}
     default = pio.templates.default
@@ -35,12 +35,12 @@ def test_flow_panels_preserve_dates_units_signs_and_inputs():
 
 def test_period_flows_require_explicit_timing_and_resolved_values():
     periods = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=2)
-    flow = Flow.from_periods(periods, [10, 20], units="AUD")
+    flow = Flow.from_periods(periods=periods, magnitudes=[10, 20], units="AUD")
     with pytest.raises(ValueError):
         plot_flows({"Rent": flow})
     figure = plot_flows({"Rent": flow}, timing=PeriodTiming.LAST)
     assert tuple(figure.data[0].x) == (date(2027, 12, 31), date(2028, 12, 31))
-    unknown = Flow.from_periods(periods, [10, None], units="AUD")
+    unknown = Flow.from_periods(periods=periods, magnitudes=[10, None], units="AUD")
     with pytest.raises(ValueError, match="resolved"):
         plot_flows({"Rent": unknown}, timing=PeriodTiming.LAST)
     with pytest.raises(ValueError, match="requires Flows"):

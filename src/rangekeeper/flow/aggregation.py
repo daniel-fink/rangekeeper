@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 __all__ = ["FlowAggregate"]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class FlowAggregate:
     """A reduced Flow and the known fraction of its inputs at each coordinate."""
 

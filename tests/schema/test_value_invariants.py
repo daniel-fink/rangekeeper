@@ -67,7 +67,7 @@ def test_a_flow_is_ordered_with_unique_ids(movements, message):
 
 def test_overlapping_periods_are_rejected():
     periods = Periods(start=DAY, frequency=Frequency.MONTH, count=2)
-    flow = Flow.from_periods(periods, [1, 2], units="AUD")
+    flow = Flow.from_periods(periods=periods, magnitudes=[1, 2], units="AUD")
     with pytest.raises(ValidationError, match="overlap or are out of order"):
         flow.replace(movements=tuple(reversed(flow.movements)))
 

@@ -34,8 +34,8 @@ class Model:
         projected_ncf = lines((self.noi, self.capex)).aggregate().flow
         self.ncf = Flow(units=units, movements=projected_ncf.movements[:-1])
         self.disposition = Flow.from_periods(
-            periods[-2:-1],
-            (projected_ncf.movements[-1].number / params["cap_rate"],),
+            periods=periods[-2:-1],
+            magnitudes=(projected_ncf.movements[-1].number / params["cap_rate"],),
             units=units,
         )
         self.ncf_disposition = (
@@ -50,13 +50,15 @@ class Model:
         # All proceeds share one valuation origin; terminal proceeds are discounted
         # over the full holding period instead of restarting at their first sample.
         self.pv_sums = financial.calculate_pv(
-            self.ncf_disposition, rate=params["discount_rate"]
+            flow=self.ncf_disposition, rate=params["discount_rate"]
         )
         acquisition_period = Periods(
             start=params["start_date"], frequency=Frequency.YEAR, count=1
         )
         self.acquisition = Flow.from_periods(
-            acquisition_period, (-abs(params["acquisition_price"]),), units=units
+            periods=acquisition_period,
+            magnitudes=(-abs(params["acquisition_price"]),),
+            units=units,
         )
         self.investment_cashflows = (
             lines(
@@ -68,5 +70,5 @@ class Model:
             .flow
         )
         self.irr = financial.calculate_irr(
-            self.investment_cashflows, timing=PeriodTiming.LAST
+            flow=self.investment_cashflows, timing=PeriodTiming.LAST
         )

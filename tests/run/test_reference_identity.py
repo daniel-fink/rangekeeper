@@ -40,7 +40,8 @@ def example(flow=None):
         key="cash",
         kind=ValueKind.FLOW,
         measure=measure.id,
-        flow=flow or Flow.from_events([date(2027, 1, 1)], [30_000], units="AUD"),
+        flow=flow
+        or Flow.from_events(dates=[date(2027, 1, 1)], magnitudes=[30_000], units="AUD"),
     )
     owner = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
     model = Model.create(
@@ -160,8 +161,12 @@ def test_coordinate_index_preserves_unresolved_records_and_rejects_duplicates():
 
 def test_alignment_uses_coordinates_while_results_have_independent_ids():
     day = date(2027, 1, 1)
-    left = Flow.from_events([day, day], [1, 2], units="AUD", keys=["a", "b"])
-    right = Flow.from_events([day, day], [3, 4], units="AUD", keys=["a", "b"])
+    left = Flow.from_events(
+        dates=[day, day], magnitudes=[1, 2], units="AUD", keys=["a", "b"]
+    )
+    right = Flow.from_events(
+        dates=[day, day], magnitudes=[3, 4], units="AUD", keys=["a", "b"]
+    )
     original_ids = {m.id for f in (left, right) for m in f.movements}
     aligned = lines([left, right]).align()
     assert [f.to_data() for f in aligned.flows] == [left.to_data(), right.to_data()]
@@ -173,8 +178,10 @@ def test_alignment_uses_coordinates_while_results_have_independent_ids():
     ]
     for keys in (None, ["a", "a"], ["a", None]):
         with pytest.raises(ValueError, match="repeated event"):
-            Flow.from_events([day, day], [1, 2], units="AUD", keys=keys)
-    later = Flow.from_events([date(2027, 2, 1)], [3], units="AUD")
+            Flow.from_events(
+                dates=[day, day], magnitudes=[1, 2], units="AUD", keys=keys
+            )
+    later = Flow.from_events(dates=[date(2027, 2, 1)], magnitudes=[3], units="AUD")
     union = lines(
         [left, later], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
     ).align()

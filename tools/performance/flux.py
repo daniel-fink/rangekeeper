@@ -18,7 +18,9 @@ def run(count, months):
         start=date(2000, 1, 1), frequency=Frequency.YEAR, count=months // 12
     )
     flows = {
-        str(i): Flow.from_periods(periods, [float(i + 1)] * months, units="AUD")
+        str(i): Flow.from_periods(
+            periods=periods, magnitudes=[float(i + 1)] * months, units="AUD"
+        )
         for i in range(count)
     }
     construction = time.perf_counter() - start

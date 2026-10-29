@@ -31,8 +31,12 @@ def collection():
     monthly = extent.periods(frequency=Frequency.MONTH)
     stream = Stream(
         flows={
-            "Rent": Flow.from_periods(monthly, [100.0] * len(monthly), units="AUD"),
-            "Vacancy": Flow.from_periods(monthly, [-20.0] * len(monthly), units="AUD"),
+            "Rent": Flow.from_periods(
+                periods=monthly, magnitudes=[100.0] * len(monthly), units="AUD"
+            ),
+            "Vacancy": Flow.from_periods(
+                periods=monthly, magnitudes=[-20.0] * len(monthly), units="AUD"
+            ),
         }
     )
     annual = stream.resample(
@@ -58,7 +62,9 @@ def hierarchy_model():
             key=key,
             kind=ValueKind.FLOW,
             measure=money.id,
-            flow=Flow.from_periods(periods, [amount] * len(periods), units="AUD"),
+            flow=Flow.from_periods(
+                periods=periods, magnitudes=[amount] * len(periods), units="AUD"
+            ),
         )
         return item
 
@@ -96,7 +102,7 @@ def hierarchy_model():
                 model,
                 id=uuid4(),
                 summands=Stream.from_values(
-                    model, [ids[f"{name}_rent"], ids[f"{name}_expense"]]
+                    model=model, value_ids=[ids[f"{name}_rent"], ids[f"{name}_expense"]]
                 ),
                 total=ids[f"{name}_net"],
             )
@@ -171,8 +177,8 @@ if __name__ == "__main__":
     result, ids = solve_example()
     print(
         Stream.from_values(
-            result,
-            [ids["A_annual"], ids["B_annual"], ids["portfolio"]],
+            model=result,
+            value_ids=[ids["A_annual"], ids["B_annual"], ids["portfolio"]],
             names=["Building A", "Building B", "Portfolio"],
         ).display()
     )

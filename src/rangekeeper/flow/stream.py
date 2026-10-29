@@ -151,9 +151,9 @@ class Stream:
     @classmethod
     def from_values(
         cls,
+        *,
         model: Model,
         value_ids: Iterable[UUID],
-        *,
         names: Sequence[str] | None = None,
         missing: MissingValueHandling = MissingValueHandling.ERROR,
         join: AlignmentJoin | None = None,
@@ -541,7 +541,7 @@ class Stream:
 
     def display(self, *, transpose: bool = False, precision: int = 2) -> StreamTable:
         """Return an HTML/text table with line names, units and explicit missing states."""
-        return StreamTable(self, transpose=transpose, precision=precision)
+        return StreamTable(stream=self, transpose=transpose, precision=precision)
 
     def _repr_html_(self) -> str:
         return self.display()._repr_html_()

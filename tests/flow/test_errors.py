@@ -27,30 +27,38 @@ DAYS = [date(2026, 1, 1), date(2026, 1, 2)]
 
 
 def dated() -> Flow:
-    return Flow.from_events(DAYS, [1, 2], units="AUD")
+    return Flow.from_events(dates=DAYS, magnitudes=[1, 2], units="AUD")
 
 
 def yearly() -> Flow:
-    return Flow.from_periods(YEARS, [1, 2], units="AUD")
+    return Flow.from_periods(periods=YEARS, magnitudes=[1, 2], units="AUD")
 
 
 FAILURES: list[tuple[str, Callable[[], object], type[RangekeeperError], Code]] = [
     (
         "unresolved number",
-        lambda: Flow.from_events(DAYS[:1], [None], units="AUD").movements[0].number,
+        lambda: (
+            Flow.from_events(dates=DAYS[:1], magnitudes=[None], units="AUD")
+            .movements[0]
+            .number
+        ),
         NumericalError,
         Code.NUMERICAL_FAILURE,
     ),
     (
         "unresolved total",
-        lambda: Flow.from_events(DAYS[:1], [None], units="AUD").total(),
+        lambda: Flow.from_events(
+            dates=DAYS[:1], magnitudes=[None], units="AUD"
+        ).total(),
         NumericalError,
         Code.NUMERICAL_FAILURE,
     ),
     (
         "unresolved aggregate",
         lambda: Stream(
-            flows={"a": Flow.from_events(DAYS[:1], [None], units="AUD")}
+            flows={
+                "a": Flow.from_events(dates=DAYS[:1], magnitudes=[None], units="AUD")
+            }
         ).sum(),
         NumericalError,
         Code.NUMERICAL_FAILURE,
@@ -85,8 +93,8 @@ FAILURES: list[tuple[str, Callable[[], object], type[RangekeeperError], Code]] =
     (
         "gap",
         lambda: Flow.from_periods(
-            [YEARS[0], Period(start=date(2028, 1, 1), end=date(2029, 1, 1))],
-            [1, 2],
+            periods=[YEARS[0], Period(start=date(2028, 1, 1), end=date(2029, 1, 1))],
+            magnitudes=[1, 2],
             units="AUD",
         ).shift(by=1),
         AlignmentError,
@@ -111,9 +119,9 @@ FAILURES: list[tuple[str, Callable[[], object], type[RangekeeperError], Code]] =
     ),
     (
         "frequency does not fit",
-        lambda: Flow.from_periods(YEARS[:1], [1], units="AUD").resample(
-            frequency=Frequency.BIENNIUM, method=ResampleMethod.SUM
-        ),
+        lambda: Flow.from_periods(
+            periods=YEARS[:1], magnitudes=[1], units="AUD"
+        ).resample(frequency=Frequency.BIENNIUM, method=ResampleMethod.SUM),
         AlignmentError,
         Code.ALIGNMENT_PARTIAL,
     ),
@@ -131,7 +139,7 @@ FAILURES: list[tuple[str, Callable[[], object], type[RangekeeperError], Code]] =
     ),
     (
         "unequal lengths",
-        lambda: Flow.from_periods(YEARS, [1], units="AUD"),
+        lambda: Flow.from_periods(periods=YEARS, magnitudes=[1], units="AUD"),
         ContractError,
         Code.CONTRACT,
     ),

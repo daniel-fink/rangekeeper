@@ -41,17 +41,23 @@ def run(movements, repeat):
         start=date(2000, 1, 1), frequency=Frequency.MONTH, count=movements
     )
     magnitudes = [float(i) for i in range(movements)]
-    flow = Flow.from_periods(periods, magnitudes, units="AUD")
+    flow = Flow.from_periods(periods=periods, magnitudes=magnitudes, units="AUD")
     data = flow.to_data()
     model = yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
     loaded = Model.from_data(model)
     return dict(
         movements=movements,
         flow_construct=median(
-            lambda: Flow.from_periods(periods, magnitudes, units="AUD"), repeat
+            lambda: Flow.from_periods(
+                periods=periods, magnitudes=magnitudes, units="AUD"
+            ),
+            repeat,
         ),
         flow_construct_float=median(
-            lambda: Flow.from_periods(periods, magnitudes, units="m^2"), repeat
+            lambda: Flow.from_periods(
+                periods=periods, magnitudes=magnitudes, units="m^2"
+            ),
+            repeat,
         ),
         flow_from_data=median(lambda: Flow.from_data(data), repeat),
         flow_replace=median(lambda: flow.replace(units="USD"), repeat),

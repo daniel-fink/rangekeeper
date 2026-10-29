@@ -73,7 +73,7 @@ def test_month_end_is_explicit_and_period_end_is_exclusive():
 
 def test_flow_construction_detachment_and_negation():
     dates = (date(2000, 1, 2), date(2000, 2, 29), date(2000, 12, 31))
-    original = Flow.from_events(dates, (1, 2.3, 456), units="AUD")
+    original = Flow.from_events(dates=dates, magnitudes=(1, 2.3, 456), units="AUD")
     assert original.movements[1].date == dates[1]
     assert original.movements[1].magnitude == Decimal("2.3")
     detached = original.to_data()
@@ -102,8 +102,8 @@ def test_allocation_and_annual_resampling_preserve_total():
 @pytest.mark.parametrize("frequency", ["day", "month", "quarter", "year"])
 def test_resampling_uses_declared_calendar_bins(frequency):
     source = Flow.from_events(
-        (date(2020, 1, 31), date(2020, 2, 29), date(2020, 3, 31)),
-        (1, 2, 3),
+        dates=(date(2020, 1, 31), date(2020, 2, 29), date(2020, 3, 31)),
+        magnitudes=(1, 2, 3),
         units="meter",
     )
     count = {"day": 91, "month": 3, "quarter": 1, "year": 1}[frequency]
@@ -165,7 +165,7 @@ def test_stream_selection_and_mixed_frequency_totals():
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(owner,)),
     )
-    stream = Stream.from_values(model, tuple(v.id for v in values))
+    stream = Stream.from_values(model=model, value_ids=tuple(v.id for v in values))
     assert stream.merge(stream).values == stream.values
     assert stream.select_values((values[1].id,)).values == (values[1],)
     years = Periods(start=date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
@@ -177,8 +177,8 @@ def test_stream_selection_and_mixed_frequency_totals():
         )
     payments = tuple(
         Flow.from_events(
-            [m.resolve(timing=PeriodTiming.LAST) for m in value.flow.movements],
-            amounts(value.flow),
+            dates=[m.resolve(timing=PeriodTiming.LAST) for m in value.flow.movements],
+            magnitudes=amounts(value.flow),
             units=value.flow.units,
         )
         for value in stream.values
@@ -194,8 +194,10 @@ def test_stream_selection_and_mixed_frequency_totals():
 
 def test_product_preserves_units_and_explicit_exposure_removes_time():
     periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=1)
-    rate = Flow.from_periods(periods, (math.pi,), units="AUD/meter**2/month")
-    factor = Flow.from_periods(periods, (2,), units="dimensionless")
+    rate = Flow.from_periods(
+        periods=periods, magnitudes=(math.pi,), units="AUD/meter**2/month"
+    )
+    factor = Flow.from_periods(periods=periods, magnitudes=(2,), units="dimensionless")
     product = rate.multiply(factor)
     assert product.convert(units="AUD/meter**2/month").movements[
         0

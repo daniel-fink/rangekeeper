@@ -96,9 +96,9 @@ def test_a_float_movement_in_currency_data_fails():
 
 
 def test_flow_construction_converts_floats_in_currency_units():
-    flow = Flow.from_events(DAYS, (0.1, 2, "3.50"), units="AUD")
+    flow = Flow.from_events(dates=DAYS, magnitudes=(0.1, 2, "3.50"), units="AUD")
     assert [m.to_data()["magnitude"] for m in flow.movements] == ["0.1", "2", "3.5"]
-    other = Flow.from_events(DAYS, (0.1, 2, None), units="m^2")
+    other = Flow.from_events(dates=DAYS, magnitudes=(0.1, 2, None), units="m^2")
     assert [m.magnitude for m in other.movements] == [0.1, 2, None]
 
 
@@ -122,16 +122,20 @@ def test_to_amount_rounds_to_fifteen_digits_and_rejects_non_finite():
 
 
 def test_sums_use_float64_and_give_one_amount():
-    flow = Flow.from_events(DAYS, ("0.10", "0.10", "0.10"), units="AUD")
+    flow = Flow.from_events(
+        dates=DAYS, magnitudes=("0.10", "0.10", "0.10"), units="AUD"
+    )
     total = flow.total()
     assert total is not None and total.magnitude == Decimal("0.3")
-    split = Flow.from_events(DAYS, ("100",) * 3, units="AUD").scale(1 / 3)
+    split = Flow.from_events(dates=DAYS, magnitudes=("100",) * 3, units="AUD").scale(
+        1 / 3
+    )
     assert {m.magnitude for m in split.movements} == {Decimal("33.3333333333333")}
 
 
 def test_copies_keep_each_amount_exactly():
     flow = Flow.from_events(
-        DAYS, ("1250000.5", "-0.01", "33.3333333333333"), units="AUD"
+        dates=DAYS, magnitudes=("1250000.5", "-0.01", "33.3333333333333"), units="AUD"
     )
     for result in (
         flow.clone(),
@@ -220,8 +224,10 @@ def test_flow_and_stream_sums_give_the_same_amount():
     from rangekeeper.flow import Stream
 
     values = ("0.10", "0.20", "1250000.33")
-    first = Flow.from_events(DAYS, values, units="AUD")
-    second = Flow.from_events(DAYS, ("0.10", "0.10", "0.10"), units="AUD")
+    first = Flow.from_events(dates=DAYS, magnitudes=values, units="AUD")
+    second = Flow.from_events(
+        dates=DAYS, magnitudes=("0.10", "0.10", "0.10"), units="AUD"
+    )
     combined = Stream(flows={"a": first, "b": second}).sum()
     assert [m.magnitude for m in combined.movements] == [
         Decimal("0.2"),
@@ -233,15 +239,19 @@ def test_flow_and_stream_sums_give_the_same_amount():
 
 
 def test_flow_round_rounds_each_movement():
-    split = Flow.from_events(DAYS, ("100",) * 3, units="AUD").scale(1 / 3)
+    split = Flow.from_events(dates=DAYS, magnitudes=("100",) * 3, units="AUD").scale(
+        1 / 3
+    )
     rounded = split.round()
     assert [m.magnitude for m in rounded.movements] == [Decimal("33.33")] * 3
     assert rounded.total().magnitude == Decimal("99.99")
     assert Flow.from_events(
-        DAYS, ("100",) * 3, units="AUD"
+        dates=DAYS, magnitudes=("100",) * 3, units="AUD"
     ).total().round().magnitude == (Decimal("300"))
     assert {m.id for m in rounded.movements}.isdisjoint(m.id for m in split.movements)
-    gaps = Flow.from_events(DAYS, ("1.005", None, "2"), units="AUD").round()
+    gaps = Flow.from_events(
+        dates=DAYS, magnitudes=("1.005", None, "2"), units="AUD"
+    ).round()
     assert [m.magnitude for m in gaps.movements] == [Decimal("1"), None, Decimal("2")]
     with pytest.raises(UnitError):
-        Flow.from_events(DAYS, (1, 2, 3), units="m^2").round()
+        Flow.from_events(dates=DAYS, magnitudes=(1, 2, 3), units="m^2").round()

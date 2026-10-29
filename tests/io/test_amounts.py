@@ -52,8 +52,8 @@ def money_model() -> Model:
             "cash",
             "AUD",
             flow=Flow.from_events(
-                (date(2027, 1, 1), date(2028, 1, 1)),
-                ("-1250000.5", "0.000000000032"),
+                dates=(date(2027, 1, 1), date(2028, 1, 1)),
+                magnitudes=("-1250000.5", "0.000000000032"),
                 units="AUD",
             ),
         ),

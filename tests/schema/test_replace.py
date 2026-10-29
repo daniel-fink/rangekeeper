@@ -17,7 +17,9 @@ def flow():
     periods = rk.duration.Periods(
         start=date(2026, 1, 1), frequency=rk.duration.Frequency.MONTH, count=120
     )
-    return Flow.from_periods(periods, [float(i) for i in range(120)], units="AUD")
+    return Flow.from_periods(
+        periods=periods, magnitudes=[float(i) for i in range(120)], units="AUD"
+    )
 
 
 def test_replace_does_not_run_jsonschema(flow, monkeypatch):

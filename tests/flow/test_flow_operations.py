@@ -24,7 +24,7 @@ from tests.streams import lines
 
 @pytest.mark.parametrize("field", ["basis", "kind"])
 def test_flow_wire_contract_rejects_semantic_classification(field):
-    flow = Flow.from_events([date(2026, 1, 1)], [100], units="AUD")
+    flow = Flow.from_events(dates=[date(2026, 1, 1)], magnitudes=[100], units="AUD")
     payload = flow.to_data()
     assert set(payload) == {"units", "movements"}
     assert Flow.from_json(json.dumps(payload)) == flow
@@ -48,7 +48,7 @@ def test_old_samples_field_is_rejected_instead_of_losing_entries(include_movemen
 )
 def test_model_can_select_different_reductions_for_the_same_flow(reduction, expected):
     flow = Flow.from_events(
-        [date(2026, 1, 1), date(2026, 1, 31)], [10, 20], units="AUD"
+        dates=[date(2026, 1, 1), date(2026, 1, 31)], magnitudes=[10, 20], units="AUD"
     )
     before = flow.to_data()
     result = flow.resample(
@@ -61,7 +61,9 @@ def test_model_can_select_different_reductions_for_the_same_flow(reduction, expe
 
 def test_each_mean_is_its_own_method_and_units_do_not_choose_it():
     periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=2)
-    flow = Flow.from_periods(periods, [10, 20], units="dimensionless")
+    flow = Flow.from_periods(
+        periods=periods, magnitudes=[10, 20], units="dimensionless"
+    )
     target = [Period(start=periods[0].start, end=periods[-1].end)]
     observed = flow.resample(periods=target, method=ResampleMethod.MEAN)
     elapsed = flow.resample(periods=target, method=ResampleMethod.ELAPSED_MEAN)
@@ -71,8 +73,8 @@ def test_each_mean_is_its_own_method_and_units_do_not_choose_it():
 
 def test_products_preserve_time_dimensions_and_scaled_dimensionless_units():
     periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=1)
-    rates = Flow.from_periods(periods, [2], units="AUD/day")
-    factors = Flow.from_periods(periods, [50], units="percent")
+    rates = Flow.from_periods(periods=periods, magnitudes=[2], units="AUD/day")
+    factors = Flow.from_periods(periods=periods, magnitudes=[50], units="percent")
     squared = rates.multiply(rates, factors).convert(units="AUD**2/day**2")
     assert squared.movements[0].magnitude == 2
     dimensionless = factors.multiply(factors)
@@ -81,7 +83,7 @@ def test_products_preserve_time_dimensions_and_scaled_dimensionless_units():
 
 
 def test_exposure_is_an_explicit_operation_without_a_rate_classification():
-    length = Flow.from_events([date(2026, 1, 1)], [2], units="m")
+    length = Flow.from_events(dates=[date(2026, 1, 1)], magnitudes=[2], units="m")
     area = length.integrate(exposures=[Quantity(magnitude=3, units="m")], units="m**2")
     assert area.movements[0].magnitude == 6
     assert length.movements[0].magnitude == 2
@@ -94,7 +96,7 @@ def test_exposure_is_an_explicit_operation_without_a_rate_classification():
 @pytest.mark.parametrize("reduction", ["sum", "last", "mean"])
 def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
     periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
-    flow = Flow.from_periods(periods[:2], [10, None], units="AUD")
+    flow = Flow.from_periods(periods=periods[:2], magnitudes=[10, None], units="AUD")
     result = lines([flow], missing=MissingValueHandling.ZERO).resample(
         periods=periods, method=ResampleMethod(reduction)
     )
@@ -104,7 +106,7 @@ def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
 
 def test_flow_and_stream_trim_take_the_same_span():
     periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
-    flow = Flow.from_periods(periods, [1, 2, 3], units="AUD")
+    flow = Flow.from_periods(periods=periods, magnitudes=[1, 2, 3], units="AUD")
     span = Span(start=periods[1].start, end=periods[2].end, name="later")
     assert [m.number for m in flow.trim(span=span).movements] == [2, 3]
     assert flow.trim(span=span) == Stream(flows={"a": flow}).trim(span=span).flows[0]
@@ -114,8 +116,8 @@ def test_flow_and_stream_trim_take_the_same_span():
 
 def test_total_and_collapse_take_every_missing_policy():
     days = [date(2026, 1, 1), date(2026, 1, 2)]
-    partial = Flow.from_events(days, [5, None], units="AUD")
-    unknown = Flow.from_events(days, [None, None], units="AUD")
+    partial = Flow.from_events(dates=days, magnitudes=[5, None], units="AUD")
+    unknown = Flow.from_events(dates=days, magnitudes=[None, None], units="AUD")
     with pytest.raises(ValueError, match="unresolved"):
         partial.total()
     assert partial.total(missing=MissingValueHandling.PROPAGATE) is None
@@ -130,11 +132,11 @@ def test_total_and_collapse_take_every_missing_policy():
 def test_multiply_and_scale_follow_the_operator():
     days = [date(2026, 1, 1), date(2026, 1, 2)]
     claim = uuid4()
-    rates = Flow.from_events(days, [2, None], units="AUD/day")
+    rates = Flow.from_events(dates=days, magnitudes=[2, None], units="AUD/day")
     rates = rates.replace(
         movements=tuple(m.replace(claims=(claim,)) for m in rates.movements)
     )
-    factors = Flow.from_events(days, [50, 10], units="percent")
+    factors = Flow.from_events(dates=days, magnitudes=[50, 10], units="percent")
     product = rates.multiply(factors)
     assert product == rates * factors
     assert [m.magnitude for m in product.movements] == [1, None]
@@ -147,7 +149,7 @@ def test_multiply_and_scale_follow_the_operator():
 
 
 def test_rounding_mode_is_an_enum_of_the_decimal_constants():
-    flow = Flow.from_events([date(2026, 1, 1)], ["0.125"], units="AUD")
+    flow = Flow.from_events(dates=[date(2026, 1, 1)], magnitudes=["0.125"], units="AUD")
     assert flow.round().movements[0].magnitude == Decimal("0.12")
     rounded = flow.round(mode=RoundingMode.HALF_UP)
     assert rounded.movements[0].magnitude == Decimal("0.13")
@@ -155,7 +157,7 @@ def test_rounding_mode_is_an_enum_of_the_decimal_constants():
 
 
 def test_select_values_and_with_policy():
-    flow = Flow.from_events([date(2026, 1, 1)], [None], units="AUD")
+    flow = Flow.from_events(dates=[date(2026, 1, 1)], magnitudes=[None], units="AUD")
     stream = Stream(flows={"a": flow, "b": flow})
     with pytest.raises(MissingReferenceError) as missing:
         stream.select_values([uuid4()])

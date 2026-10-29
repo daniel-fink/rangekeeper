@@ -32,7 +32,7 @@ def test_typed_construction_does_not_run_jsonschema(counted):
     periods = rk.duration.Periods(
         start=date(2026, 1, 1), frequency=rk.duration.Frequency.MONTH, count=12
     )
-    flow = Flow.from_periods(periods, [1.0] * 12, units="AUD")
+    flow = Flow.from_periods(periods=periods, magnitudes=[1.0] * 12, units="AUD")
     Movement(id=uuid4(), key="a", date=date(2026, 1, 1))
     flow.replace(units="USD")
     assert counted == []

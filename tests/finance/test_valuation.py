@@ -50,7 +50,7 @@ def test_npv_is_the_total_of_pv_and_matches_the_textbook():
     assert npv(flow=Flow(units="USD", movements=()), rate="5 % pa", on=START) == (
         Quantity(text="0 USD")
     )
-    dated = Flow.from_events([date(2002, 1, 1)], [110], units="AUD")
+    dated = Flow.from_events(dates=[date(2002, 1, 1)], magnitudes=[110], units="AUD")
     assert npv(flow=dated, rate=Quantity(text="0.1 pa"), on=START) == Quantity(
         text="100 AUD"
     )
@@ -58,14 +58,16 @@ def test_npv_is_the_total_of_pv_and_matches_the_textbook():
 
 def test_irr_is_the_rate_of_zero_npv():
     flow = Flow.from_events(
-        [date(2001, 1, 1), date(2002, 1, 1)], [-100, 110], units="USD"
+        dates=[date(2001, 1, 1), date(2002, 1, 1)], magnitudes=[-100, 110], units="USD"
     )
     assert isclose(actual=irr(flow=flow), expected=Quantity(text="10 % pa"))
     assert irr(flow=flow).units == "% pa"
     # -1000, then 300, 400 and 500 a year later each; bisection of the NPV
     # polynomial gives 8.896339469335 %.
     uneven = Flow.from_events(
-        [date(2001 + i, 1, 1) for i in range(4)], [-1000, 300, 400, 500], units="AUD"
+        dates=[date(2001 + i, 1, 1) for i in range(4)],
+        magnitudes=[-1000, 300, 400, 500],
+        units="AUD",
     )
     rate = irr(flow=uneven)
     assert rate.magnitude == pytest.approx(8.896339469335, rel=1e-11)
@@ -87,7 +89,9 @@ def test_irr_needs_both_signs_and_two_dates():
         irr(flow=yearly([1, 2]))
     with pytest.raises(NumericalError, match="two dates"):
         irr(
-            flow=Flow.from_events([START, START], [-1, 2], units="USD", keys=["a", "b"])
+            flow=Flow.from_events(
+                dates=[START, START], magnitudes=[-1, 2], units="USD", keys=["a", "b"]
+            )
         )
 
 

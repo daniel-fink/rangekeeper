@@ -431,8 +431,8 @@ class Batch:
                 coverage.append(known)
             results.append(
                 FlowAggregate(
-                    Flow(units=unit, movements=tuple(movements)),
-                    tuple(coverage),
+                    flow=Flow(units=unit, movements=tuple(movements)),
+                    coverage=tuple(coverage),
                 )
             )
         return tuple(results)

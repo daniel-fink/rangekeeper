@@ -85,7 +85,7 @@ def _years(periods: Sequence[Period]) -> tuple[float, ...]:
     )
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Constant:
     """Growth profile: the initial amount in every Period."""
 
@@ -96,7 +96,7 @@ class Constant:
         return (1.0,) * len(periods)
 
 
-@dataclass(frozen=True, slots=True, init=False)
+@dataclass(frozen=True, slots=True, kw_only=True, init=False)
 class Linear:
     """Growth profile: the initial amount grows by ``rate`` of itself each year.
 
@@ -115,7 +115,7 @@ class Linear:
         return tuple(1 + self.rate * t for t in _years(periods))
 
 
-@dataclass(frozen=True, slots=True, init=False)
+@dataclass(frozen=True, slots=True, kw_only=True, init=False)
 class Compounding:
     """Growth profile: the initial amount compounds at ``rate`` per year.
 
@@ -135,7 +135,7 @@ class Compounding:
         return tuple((1 + self.rate) ** t for t in _years(periods))
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Uniform:
     """Distribution profile: an equal share of the total in each Period."""
 
@@ -148,7 +148,7 @@ class Uniform:
         return (1 / len(periods),) * len(periods)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class SCurve:
     """Distribution profile: shares that rise, then fall, along an S-shaped total.
 

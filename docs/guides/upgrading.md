@@ -40,6 +40,24 @@ new store or Bundle.
 refuses `exclusive: false`, `exclusive: null` and a Filter with `exclusive` but
 no `classification`. In code, omit `exclusive` instead of passing `False`.
 
+### Keyword-only arguments
+
+Public functions and records take their arguments by name (D14,
+[#410](https://github.com/daniel-fink/rangekeeper/issues/410)). A call that
+passes them by position raises `TypeError`. The exceptions are a function with
+one argument, a natural pair such as `start, end`, a list of any length, the
+store-protocol methods and the Python protocol methods. Name the arguments:
+
+| Layer | 1.0.0a2 | 1.0.0b1 |
+| --- | --- | --- |
+| `flow` | `Flow.from_periods(periods, magnitudes, units=)` | `Flow.from_periods(periods=, magnitudes=, units=)` |
+| `flow` | `Flow.from_events(dates, magnitudes, units=)` | `Flow.from_events(dates=, magnitudes=, units=)` |
+| `flow` | `Stream.from_values(model, value_ids)` | `Stream.from_values(model=, value_ids=)` |
+| `flow` | `FlowAggregate(flow, coverage)`, `StreamTable(stream)` | `FlowAggregate(flow=, coverage=)`, `StreamTable(stream=)` |
+| `profile` | `SCurve(distribution)` | `SCurve(distribution=)` |
+| `finance` | `financial.calculate_pv(flow, rate=)`, and the same for `calculate_xnpv` and `calculate_irr` | `financial.calculate_pv(flow=, rate=)`, `calculate_xnpv(flow=, ...)`, `calculate_irr(flow=)` |
+| `finance` | `IrrResult(rate, residual, guess)` | `IrrResult(rate=, residual=, guess=)` |
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names

@@ -78,7 +78,7 @@ def test_replacement_checks_types_and_copies_mutable_content():
 
 def test_decoded_records_keep_methods_and_schema_inheritance():
     period = Period(start=DAY, end=date(2026, 2, 1))
-    flow = Flow.from_periods([period], [2], units="m")
+    flow = Flow.from_periods(periods=[period], magnitudes=[2], units="m")
     value = r.Value(
         id=uuid4(), key="area", kind=ValueKind.FLOW, measure=uuid4(), flow=flow
     )
@@ -103,7 +103,9 @@ def test_decoded_records_keep_methods_and_schema_inheritance():
 
 
 def test_check_clean_and_number_have_distinct_roles():
-    flow = Flow.from_events([DAY, date(2026, 1, 2)], [None, 0], units="m")
+    flow = Flow.from_events(
+        dates=[DAY, date(2026, 1, 2)], magnitudes=[None, 0], units="m"
+    )
     before = flow.to_data()
     assert flow.check() is flow
     with pytest.raises(ValueError, match="unresolved"):
@@ -147,8 +149,8 @@ def test_reduction_shares_units_claims_and_coverage(reducer, expected):
 
 @pytest.mark.parametrize("reducer", ["sum", "min", "max"])
 def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
-    known = Flow.from_events([DAY], [2], units="m")
-    unknown = Flow.from_events([DAY], [None], units="m")
+    known = Flow.from_events(dates=[DAY], magnitudes=[2], units="m")
+    unknown = Flow.from_events(dates=[DAY], magnitudes=[None], units="m")
     empty = Flow(units="m", movements=())
     skipped = lines([known, unknown], missing=MissingValueHandling.SKIP).aggregate(
         method=AggregationMethod(reducer)
@@ -207,8 +209,8 @@ def test_generated_classes_properties_and_replacement_have_documentation():
 
 
 def test_zero_filling_converts_to_target_units():
-    first = Flow.from_events([DAY], [1], units="m")
-    second = Flow.from_events([date(2026, 1, 2)], [1], units="ft")
+    first = Flow.from_events(dates=[DAY], magnitudes=[1], units="m")
+    second = Flow.from_events(dates=[date(2026, 1, 2)], magnitudes=[1], units="ft")
     result = lines(
         [first, second], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
     ).aggregate()

@@ -154,7 +154,7 @@ def render(headers: Sequence[str], rows: Sequence[Sequence[str]], *, html: bool)
         return frame._repr_html_() if html else str(frame)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class StreamTable:
     """Rows by period or event date, one column per line item, with units.
 

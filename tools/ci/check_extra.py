@@ -69,7 +69,7 @@ def check_calculations() -> None:
             Movement(id=uuid4(), date=date(2022, 1, 1), magnitude=110.0),
         ),
     )
-    value = calculate_xnpv(flow, rate=0.1, valuation_date=date(2021, 1, 1))
+    value = calculate_xnpv(flow=flow, rate=0.1, valuation_date=date(2021, 1, 1))
     assert abs(value.magnitude) < 1e-6, value
     assert to_frame(flow).height == 2
 

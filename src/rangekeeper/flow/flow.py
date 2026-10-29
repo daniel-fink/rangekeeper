@@ -188,12 +188,16 @@ def _from_amounts(
     if len(periods) == len(keys):
         order = sorted(range(len(keys)), key=lambda i: periods[i].start)
         flow = Flow.from_periods(
-            [periods[i] for i in order], [magnitudes[i] for i in order], units=units
+            periods=[periods[i] for i in order],
+            magnitudes=[magnitudes[i] for i in order],
+            units=units,
         )
     elif len(dates) == len(keys):
         order = sorted(range(len(keys)), key=lambda i: dates[i])
         flow = Flow.from_events(
-            [dates[i] for i in order], [magnitudes[i] for i in order], units=units
+            dates=[dates[i] for i in order],
+            magnitudes=[magnitudes[i] for i in order],
+            units=units,
         )
     else:
         raise TypeError("key the amounts by Periods or by dates, not both")
@@ -371,9 +375,9 @@ class Flow(records.Flow):
     @classmethod
     def from_events(
         cls,
+        *,
         dates: Sequence[date],
         magnitudes: Sequence[Decimal | str | int | float | None],
-        *,
         units: str,
         keys: Sequence[str | None] | None = None,
     ) -> Flow:
@@ -423,9 +427,9 @@ class Flow(records.Flow):
     @classmethod
     def from_periods(
         cls,
+        *,
         periods: Sequence[Period],
         magnitudes: Sequence[Decimal | str | int | float | None],
-        *,
         units: str,
         keys: Sequence[str | None] | None = None,
     ) -> Flow:
@@ -505,7 +509,9 @@ class Flow(records.Flow):
             values[-1] = quantity.number - math.fsum(values[:-1])
         if any(not math.isfinite(value) for value in values):
             raise NumericalError("the profile produced a non-finite amount")
-        return cls.from_periods(periods, values, units=quantity.units)
+        return cls.from_periods(
+            periods=periods, magnitudes=values, units=quantity.units
+        )
 
     def clone(self) -> Flow:
         """Copy content with fresh Movement IDs for an independent owning Value.
