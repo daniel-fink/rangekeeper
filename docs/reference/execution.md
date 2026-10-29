@@ -133,7 +133,11 @@ cases_outcome.case(key="weak").stream("land", "works")
 
 `Evidence` holds the backend's `termination` (None when no backend ran), the
 backend's own `backend` evidence, `equality_rank` and `unknown_count` from the
-rank analysis of an underdetermined solve, and the Run's `implementations`.
+rank analysis of an underdetermined solve, and the Run's `implementations`. It
+reads stored and converted Runs too: `limit` and `error` from a Run before
+1.0.0b1 are `LIMITED` and `FAILED`. A missing word, as in a Run that
+`tools/upgrade` converted, or a backend word of a 1.0.0a1 Run is `UNKNOWN`, and
+`backend` keeps that word.
 
 ## Compare Outcomes
 

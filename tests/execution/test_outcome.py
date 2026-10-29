@@ -68,19 +68,30 @@ def with_termination(outcome, word):
     data = outcome.run.to_data()
     for item in data["report"]["diagnostics"]:
         if item["code"] == Code.SOLVER_TERMINATION.value:
-            item["values"]["termination"] = word
+            if word is None:
+                del item["values"]["termination"]
+            else:
+                item["values"]["termination"] = word
     return rk.execution.Outcome(run=rk.Run.from_data(data), outputs=outcome.outputs)
 
 
 @pytest.mark.parametrize(
-    "word,termination",
-    [("limit", Termination.LIMITED), ("error", Termination.FAILED)],
+    "word,termination,kept",
+    [
+        ("limit", Termination.LIMITED, False),
+        ("error", Termination.FAILED, False),
+        # A backend word of a 1.0.0a1 Run stays in the backend evidence (#381).
+        ("convergenceCriteriaSatisfied", Termination.UNKNOWN, True),
+        (None, Termination.UNKNOWN, False),
+    ],
 )
 def test_evidence_reads_the_termination_words_of_an_older_run(
-    back_outcome, word, termination
+    back_outcome, word, termination, kept
 ):
     older = with_termination(back_outcome, word)
-    assert older.evidence.termination is termination
+    evidence = older.evidence
+    assert evidence.termination is termination
+    assert ("termination" in evidence.backend) is kept
 
 
 def test_equations_that_leave_values_free_name_them():
