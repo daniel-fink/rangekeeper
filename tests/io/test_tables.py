@@ -171,3 +171,19 @@ def test_polars_dates_needs_another_magnitude_name():
     with pytest.raises(ContractError) as raised:
         polars.dates(_flow((1,)), name="date")
     assert raised.value.code is Code.CONTRACT
+
+
+def test_table_lookups_raise_missing_reference_errors():
+    from uuid import uuid4
+
+    from rangekeeper.errors import MissingReferenceError
+
+    table = table_module.Table(
+        columns=["name", "value"], rows=[{"name": "A", "value": 1}]
+    )
+    with pytest.raises(MissingReferenceError) as raised:
+        table.column("valu")
+    assert (raised.value.kind, raised.value.by) == ("column", "name")
+    assert raised.value.candidates == ("value",)
+    with pytest.raises(MissingReferenceError, match="row"):
+        table.row(uuid4())

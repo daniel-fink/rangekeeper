@@ -4,11 +4,16 @@ Full market realization, replay, paired financial models and declarative rules
 behaviour are covered by test_paths_and_rules and the integration tests.
 """
 
+import math
+
 import numpy as np
 import pytest
 
+from rangekeeper.errors import ContractError, NumericalError
 from rangekeeper.market.dynamics import (
+    accumulate_volatility,
     calculate_autoregression,
+    calculate_cycle,
     calculate_shock,
     calculate_trend,
 )
@@ -57,3 +62,30 @@ def test_shock_has_one_onset_and_dissipates_once():
     assert calculate_shock(
         (0.5, 0.8), likelihood=0.05, dissipation=0.3, impact=-0.25
     ) == (0, 0)
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda: calculate_cycle(count=-1, period=4, phase=0, amplitude=1),
+        lambda: calculate_cycle(count=2, period=math.inf, phase=0, amplitude=1),
+        lambda: calculate_autoregression([math.nan], parameter=0.5),
+        lambda: accumulate_volatility(
+            [1.0], [0.0, 0.1], growth_rate=0, mean_reversion=0
+        ),
+        lambda: calculate_shock([0.5], likelihood=2, dissipation=0.5),
+        lambda: calculate_shock([1.5], likelihood=0.5, dissipation=0.5),
+    ],
+)
+def test_kernel_values_raise_contract_errors(call):
+    with pytest.raises(ContractError):
+        call()
+
+
+def test_kernel_count_type_and_overflow():
+    with pytest.raises(TypeError, match="count"):
+        calculate_cycle(count=2.0, period=4, phase=0, amplitude=1)
+    with pytest.raises(NumericalError, match="overflowed"):
+        accumulate_volatility(
+            [1e308, 1e308], [0.0, 1e308], growth_rate=0, mean_reversion=0
+        )

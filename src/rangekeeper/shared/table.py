@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
+from difflib import get_close_matches
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper.shared.errors import TableError
+from rangekeeper.shared.errors import MissingReferenceError, TableError
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,15 +78,30 @@ class Table:
         object.__setattr__(self, "_rows_by_id", MappingProxyType(identities))
 
     def row(self, row_id: UUID) -> Row:
-        """Return an identified Row; unidentified rows do not match any key."""
+        """Return an identified Row; unidentified rows do not match any key.
+
+        An unknown UUID raises ``MissingReferenceError``.
+        """
         if not isinstance(row_id, UUID):
             raise TypeError("row_id must be UUID")
-        return self._rows_by_id[row_id]
+        try:
+            return self._rows_by_id[row_id]
+        except KeyError:
+            raise MissingReferenceError(row_id, kind="row", where="Table") from None
 
     def column(self, name: str) -> tuple[object, ...]:
-        """Return one column in row order."""
+        """Return one column in row order.
+
+        An unknown name raises ``MissingReferenceError`` with the nearest names.
+        """
         if name not in self.columns:
-            raise KeyError(name)
+            raise MissingReferenceError(
+                name,
+                kind="column",
+                by="name",
+                where="Table",
+                candidates=get_close_matches(str(name), self.columns, n=3),
+            )
         return tuple(row.values[name] for row in self.rows)
 
 

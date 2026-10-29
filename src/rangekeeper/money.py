@@ -160,11 +160,14 @@ def round(  # noqa: A001 - the money rounding helper of ADR-023
     if not is_currency(currency):
         raise UnitError(f"{currency!r} is not a currency; only amounts round")
     if mode not in MODES:
-        raise ValueError(f"unknown rounding mode {mode!r}")
+        raise ContractError(
+            f"unknown rounding mode {mode!r}; use a RoundingMode",
+            values={"mode": mode},
+        )
     if places is None:
         places = minor_unit(currency.strip())
         if places is None:
-            raise ValueError(f"{currency} has no minor unit; give places")
+            raise UnitError(f"{currency} has no minor unit; give places")
     if type(places) is not int:
         raise TypeError("places must be an int")
     exponent = Decimal(1).scaleb(-places)

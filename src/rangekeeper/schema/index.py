@@ -16,6 +16,7 @@ from rangekeeper.schema.validation import _slot_map
 from rangekeeper.shared import pointer
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import (
+    ContractError,
     IdentityConflictError,
     MissingReferenceError,
     ReferenceTypeError,
@@ -53,7 +54,9 @@ def record_at(root: Record, path: str) -> RecordLocation:
     if path == "":
         return RecordLocation(root, None, path)
     if not path.startswith("/") or re.search(r"~(?![01])", path):
-        raise ValueError("path must be a canonical JSON pointer")
+        raise ContractError(
+            "path must be a canonical JSON pointer", values={"path": path}
+        )
     tokens = path[1:].split("/")
     current = root
     owner: UUID | None = None
@@ -85,7 +88,10 @@ def record_at(root: Record, path: str) -> RecordLocation:
             token = tokens[offset]
             offset += 1
             if re.fullmatch(r"0|[1-9][0-9]*", token) is None:
-                raise ValueError("array indexes must be canonical nonnegative integers")
+                raise ContractError(
+                    "array indexes must be canonical nonnegative integers",
+                    values={"path": path, "index": token},
+                )
             if not isinstance(value, tuple):
                 raise missing()
             # Compare decimal lengths before int conversion, including very long
