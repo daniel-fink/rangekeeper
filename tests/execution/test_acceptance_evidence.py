@@ -251,8 +251,9 @@ def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancel
 @pytest.mark.parametrize("number", [False, complex(1, 2), float("inf"), float("nan")])
 def test_shared_numerical_quantity_rejects_nonfinite_boolean_and_complex(number):
     from rangekeeper.model.expression.evaluation import finite_quantity
+    from rangekeeper.shared.errors import NumericalError
 
-    with pytest.raises(ValueError):
+    with pytest.raises(NumericalError):
         finite_quantity(number, "dimensionless")
 
 

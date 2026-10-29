@@ -253,7 +253,8 @@ Empty populations remain unavailable rather than becoming zero.
 
 `Reducer.COUNT` counts the contributors that have a value. It returns a
 `Quantity` with `units="dimensionless"` and a whole-number magnitude. A count
-rollup takes no `units`; supplying them raises `TypeError`. Selected quantities
+rollup takes no `units`; supplying them raises `RollupError`, and another
+reducer without `units` raises `RollupError` too. Selected quantities
 are not converted, so contributors can record different units. Missing keys and
 unresolved quantities are missing contributors and are not counted; a recorded
 zero is counted. Under `require_complete=True` an incomplete population has no
@@ -379,7 +380,9 @@ RollupResults over `rows`. Unknown Classification UUIDs raise
 
 A `Pivot` exposes:
 
-- `columns`, `column(id)` and `children(id)`. `None` names the "All" column.
+- `columns`, `column(id)` and `children(id)`. `None` names the "All" column. A
+  Classification without a column raises `MissingReferenceError`
+  (`kind="PivotColumn"`).
 - `cell(row, column=None)`: the column's `RollupEntry` for that row.
 - `value`, `coverage` and `available_value`, as on `RollupResult`, for one column.
 - `partition(row, column=None)`: a `Partition(complete, overlap, uncovered,
@@ -396,7 +399,8 @@ A `Pivot` exposes:
   a Quantity, a Flow or None. Row IDs are Entity UUIDs.
 - `display(precision=2)`: a Polars table of scalar cells with rows indented by
   depth. "—" marks a cell with no contributor; "?" marks a cell with no value
-  under its coverage policy. It needs the `calculations` extra.
+  under its coverage policy. A Pivot of Flows raises `ContractError`. It needs
+  the `calculations` extra.
 
 ## Table projection
 
@@ -437,12 +441,12 @@ result.display()
 ```
 
 A `FlowRollup` takes `Reducer.SUM` (the default), `MIN` or `MAX`; `MEAN` and
-`COUNT` raise `ValueError`. It selects leaf contributors by default, as a
+`COUNT` raise `RollupError`. It selects leaf contributors by default, as a
 `QuantityRollup` does. `periods` and `resampling` go together: each Flow is
 resampled before the rollup with one `ResampleMethod`. `units` converts the
 results; without it the Flows keep their units. Contributors without a Flow appear
 as missing in owner coverage. `missing=MissingValueHandling.ZERO` raises
-`ValueError`: a rollup never reads a missing Movement or coordinate as zero. Use
+`RollupError`: a rollup never reads a missing Movement or coordinate as zero. Use
 `ERROR` (the default), `PROPAGATE` or `SKIP`.
 
 A Flow rollup selects owner-local Values once, prepares/resamples the collection
@@ -457,4 +461,7 @@ returns passive equations for `Reducer.SUM`. It supports `SUM`, `MEAN`,
 `ELAPSED_MEAN`, `FIRST` and `LAST` resampling over original Movement references. Every selected source needs a shape,
 but its amounts can be unknown. Aggregate Values must be owned by their named
 entities. Self-contributions, incomplete source selection, callable symbolic
-selection and unsupported methods fail explicitly. Results never mutate a Model.
+selection and unsupported methods fail explicitly: `RollupError` for another
+reducer or a callable selection, `ContractError` for the selection and the shapes,
+and `UnsupportedError` for `MIN` and `MAX` resampling. Results never mutate a
+Model.

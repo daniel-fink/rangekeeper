@@ -91,7 +91,7 @@ class _Names:
         owner = self.draft._owner(self.owner)
         if code in owner.keys:
             raise MissingReferenceError(
-                ".".join(path), kind="Value", by="path", where=f"Entity {owner.path}"
+                ".".join(path), kind="Value", by="path", where=owner.where
             )
         return self.draft._ref(self.draft.entity(code=code).id, key).id
 
@@ -125,6 +125,11 @@ class _Owner:
     def path(self) -> str:
         """The code of the record, or its UUID when it has no code."""
         return self.record.code or str(self.record.id)
+
+    @property
+    def where(self) -> str:
+        """Name the record in an error: its kind, and its code or UUID."""
+        return f"{type(self.record).__name__} {self.path}"
 
 
 class EntityHandle:
@@ -579,7 +584,10 @@ class ModelDraft:
     def _entity_id(self, item: "str | UUID | EntityHandle") -> UUID:
         if isinstance(item, EntityHandle):
             if item._draft is not self:
-                raise ValueError("the handle belongs to another draft")
+                raise ContractError(
+                    f"the handle of {item.code or item.id} belongs to another draft",
+                    targets=(item.id,),
+                )
             return item.id
         if isinstance(item, UUID):
             return self._owner(item).record.id
@@ -620,7 +628,7 @@ class ModelDraft:
             self._base.unit_system.validate_units(require_text(units, "units"))
         optional_text(description, "description")
         if key in owner.keys:
-            raise _duplicate("Value", "key", key, where=f"Entity {owner.path}")
+            raise _duplicate("Value", "key", key, where=owner.where)
         flow: Flow | Unset = UNSET
         if periods is not None:
             items = tuple(periods)
@@ -664,7 +672,7 @@ class ModelDraft:
                 key,
                 kind="Value",
                 by="key",
-                where=f"Entity {owner.path}",
+                where=owner.where,
                 candidates=get_close_matches(key, sorted(owner.keys), n=3),
             )
         value = owner.values[index]
@@ -689,9 +697,7 @@ class ModelDraft:
         for equation in records:
             for target in _targets(equation.to_data()):
                 if target not in self._known:
-                    raise MissingReferenceError(
-                        target, kind="Value", where=f"draft of Entity {owner.path}"
-                    )
+                    raise MissingReferenceError(target, kind="Value", where=owner.where)
         formulation = self._default_formulation(owner)
         pending = self._equations.setdefault(formulation, [])
         for equation in records:
@@ -831,9 +837,10 @@ def _equated(
 def _require_key(key: object) -> None:
     text = require_text(key, "key")
     if not text.isidentifier() or keyword.iskeyword(text) or text in RESERVED:
-        raise ValueError(
+        raise ContractError(
             f"key {text!r} must be a Python identifier that is not a keyword "
-            "or a reserved word (rx, rk, NEVER)"
+            "or a reserved word (rx, rk, NEVER)",
+            values={"key": text},
         )
 
 
@@ -889,7 +896,11 @@ def _equation(item: str | Expression, *, names: _Names) -> Expression:
     if not isinstance(item, Expression):
         raise TypeError("each equation must be equation text or an Expression record")
     if not _relation(item):
-        raise ValueError("an equation must be Boolean, such as an equality or a bound")
+        raise ContractError(
+            "an equation must be Boolean, such as an equality or a bound",
+            code=Code.PREDICATE,
+            targets=(item.id,),
+        )
     return item
 
 

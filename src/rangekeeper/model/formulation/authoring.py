@@ -5,6 +5,8 @@ from collections.abc import Sequence
 from uuid import UUID, uuid5
 
 from rangekeeper.schema.records import Binding, Constraint, Expression, Formulation
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError
 
 
 def identify(owner: UUID, *parts: str | UUID) -> UUID:
@@ -42,8 +44,14 @@ def declare(
 ) -> Formulation:
     """Own named equations with stable occurrence IDs and whole-Value bindings."""
     entries = tuple((str(key), expression) for key, expression in equations)
-    if len({key for key, _ in entries}) != len(entries):
-        raise ValueError("duplicate equation key")
+    keys = [key for key, _ in entries]
+    repeated = sorted({key for key in keys if keys.count(key) > 1})
+    if repeated:
+        raise ContractError(
+            f"equation key {repeated[0]!r} is given more than once",
+            code=Code.UNIQUE,
+            values={"keys": repeated},
+        )
     operation = name
     expressions = tuple(
         identify_tree(id, operation, key, expression) for key, expression in entries

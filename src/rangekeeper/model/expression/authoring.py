@@ -8,6 +8,7 @@ from rangekeeper.duration.dates import NEVER, DateValue, require_date_value
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import ExpressionKind, Operator
 from rangekeeper.schema.records import Expression, Reference
+from rangekeeper.shared.errors import ContractError
 
 
 def literal(
@@ -85,7 +86,7 @@ def equal(left: Expression, right: Expression, *, id: UUID | None = None) -> Exp
 def sum(summands: Sequence[Expression]) -> Expression:
     """Declare a left-associated sum in supplied order; reject an empty sequence."""
     if not summands:
-        raise ValueError("sum requires at least one expression")
+        raise ContractError("sum takes at least one expression")
     result = summands[0]
     for item in summands[1:]:
         result = add(result, item)

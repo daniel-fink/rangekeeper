@@ -15,7 +15,7 @@ from uuid import UUID, uuid4
 from rangekeeper.model.formulation.validation import check_formulation_names
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.index import RecordIndex
-from rangekeeper.schema.records import Metadata, Reference
+from rangekeeper.schema.records import Assignment, Metadata, Reference
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.runtime import UNSET
@@ -25,8 +25,15 @@ from rangekeeper.schema.validation import (
     supports_version,
 )
 from rangekeeper.shared.arguments import optional_text
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import ValidationReport
-from rangekeeper.shared.errors import UnitError, UnsupportedVersionError
+from rangekeeper.shared.errors import (
+    ContractError,
+    IdentityConflictError,
+    MissingReferenceError,
+    UnitError,
+    UnsupportedVersionError,
+)
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.shared.validation import bounded, require
 from rangekeeper.specification.composition import (
@@ -122,8 +129,13 @@ class Specification:
             if not isinstance(model, Model):
                 raise TypeError("model must be a Model")
             if record.model is not None and record.model != model.id:
-                raise ValueError(
-                    "model must be the Model revision that the record pins"
+                raise ContractError(
+                    f"model {model.id} is not the Model revision that the record "
+                    f"pins, {record.model}",
+                    code=Code.IDENTITY,
+                    document_id=record.metadata.id,
+                    targets=(record.model, model.id),
+                    values={"pinned": record.model, "model": model.id},
                 )
         _validate_local(record).raise_if_invalid()
         object.__setattr__(self, "_record", record)
@@ -200,13 +212,10 @@ class Specification:
         A Specification with includes needs its resolver; a batch has no roles.
         """
         model = self._require_model()
-        if self.record.cases:
-            raise ValueError("a batch has no roles; read the roles of one case")
+        self._require_concrete("roles", "read the roles of one case")
         record = self.record
         if record.includes:
-            if self._resolver is None:
-                raise ValueError("included Specifications require a resolver")
-            record = self.compose(resolver=self._resolver).requirements
+            record = self.compose(resolver=self._require_resolver("roles")).requirements
         return role_table(model, record)
 
     @property
@@ -280,17 +289,19 @@ class Specification:
 
         Each chained call makes its revision here: a new UUID, and ``previous``
         is this revision. ``model`` pins another Model revision and keeps it.
-        ``name`` is the Metadata name of the new revision. ``cases`` maps the
-        UUID of each case to its Specification: the new revision is a batch
-        that pins the same Model, lists those cases and keeps them.
+        ``name`` is the Metadata name of the new revision; None keeps the name.
+        ``cases`` maps the UUID of each case to its Specification: the new
+        revision is a batch that pins the same Model, lists those cases and
+        keeps them.
         """
         if model is None:
             model = self._model
         else:
             changes["model"] = model.id
         metadata = self.metadata.replace(id=uuid4(), previous=self.id)
-        if "name" in changes:
-            metadata = metadata.replace(name=str(changes.pop("name")))
+        name = changes.pop("name", None)
+        if name is not None:
+            metadata = metadata.replace(name=str(name))
         documents = changes.pop("cases", None)
         if isinstance(documents, Mapping):
             # A batch holds only its metadata, its Model and its cases.
@@ -341,7 +352,6 @@ class Specification:
     def _fix(self, items: Mapping, *, name: str | None = None) -> "Specification":
         """Fix each target of ``items`` to its value; ``name`` renames the revision."""
         from rangekeeper.model.targets import target_units
-        from rangekeeper.schema.records import Assignment
 
         model = self._require_model()
         refs: list[Reference] = []
@@ -390,14 +400,19 @@ class Specification:
         cases in mapping order. It keeps the case Specifications, so ``solve``
         resolves them; ``execute`` puts them in its store.
         """
-        if self.record.cases:
-            raise ValueError("cases takes a concrete Specification, not a batch")
+        self._require_concrete("cases", "make the cases from one case")
         if not isinstance(cases, Mapping) or not cases:
             raise TypeError("cases takes a mapping from case keys to values")
         made: dict[UUID, Specification] = {}
         for key, values in cases.items():
-            if not isinstance(key, str) or not key.strip():
-                raise TypeError("each case key must be non-empty text")
+            if not isinstance(key, str):
+                raise TypeError("each case key must be text")
+            if not key.strip():
+                raise ContractError(
+                    "each case key must be non-empty text",
+                    document_id=self.id,
+                    values={"key": key},
+                )
             if not isinstance(values, Mapping):
                 raise TypeError(f"the values of case {key} must be a mapping")
             case = self._fix(values, name=key) if values else self._derive(name=key)
@@ -411,27 +426,26 @@ class Specification:
         loads them with its resolver. No case with the key raises
         MissingReferenceError with the keys that exist.
         """
-        from rangekeeper.shared.errors import MissingReferenceError
-
         if not self.record.cases:
-            raise ValueError("case takes a batch; this Specification has no cases")
+            raise ContractError(
+                "case takes a batch; this Specification has no cases",
+                code=Code.BATCH_REQUIRED,
+                document_id=self.id,
+            )
         found = []
         for identity in self.record.cases:
             document = self._cases.get(identity)
             if document is None:
-                if self._resolver is None:
-                    raise ValueError(
-                        "this batch keeps no cases; give it a resolver to load them"
-                    )
-                document = self._resolver.load_specification(identity)
+                document = self._require_resolver("case").load_specification(identity)
             found.append(document)
             if document.metadata.name == key:
                 return document
         raise MissingReferenceError(
             key,
-            kind="case",
+            kind="Specification",
             by="key",
-            where=self.metadata.name or str(self.id),
+            where=self._where,
+            document_id=self.id,
             candidates=[str(d.metadata.name) for d in found if d.metadata.name],
         )
 
@@ -452,17 +466,17 @@ class Specification:
         """
         from rangekeeper.model import Model
         from rangekeeper.model.targets import target_units
-        from rangekeeper.shared.codes import Code
-        from rangekeeper.shared.errors import ContractError
 
         if not isinstance(model, Model):
             raise TypeError("model must be a Model")
-        if self.record.cases:
-            raise ValueError("move each case of a batch, not the batch")
+        self._require_concrete("on", "move each case")
         if self.record.includes:
-            raise ValueError(
+            raise ContractError(
                 "a Specification with includes cannot move to another Model; "
-                "move each included Specification"
+                "move each included Specification",
+                code=Code.CONTRACT,
+                document_id=self.id,
+                targets=self.record.includes,
             )
         if model.id == self.record.model:
             if self._model is not None:
@@ -510,13 +524,41 @@ class Specification:
 
         return target_key(self._model, identity)
 
+    @property
+    def _where(self) -> str:
+        """Name this Specification in an error: its Metadata name, or its UUID."""
+        return f"Specification {self.metadata.name or self.id}"
+
     def _require_model(self) -> "Model":
         if self._model is None:
-            raise ValueError(
+            raise ContractError(
                 "this Specification has no Model; make it with model.specify() "
-                "or pass model= to Specification(...)"
+                "or pass model= to Specification(...)",
+                code=Code.MODEL_MISSING,
+                document_id=self.id,
             )
         return self._model
+
+    def _require_resolver(self, call: str) -> SpecificationResolver:
+        """Return the resolver; ``call`` must load included or case Specifications."""
+        if self._resolver is None:
+            raise ContractError(
+                f"{call} must load other Specifications; give this Specification "
+                "a resolver",
+                code=Code.RESOLVER_MISSING,
+                document_id=self.id,
+                targets=(*(self.record.includes or ()), *(self.record.cases or ())),
+            )
+        return self._resolver
+
+    def _require_concrete(self, call: str, instead: str) -> None:
+        """Raise ContractError when this Specification is a batch."""
+        if self.record.cases:
+            raise ContractError(
+                f"{call} takes a concrete Specification, not a batch; {instead}",
+                code=Code.BATCH_UNSUPPORTED,
+                document_id=self.id,
+            )
 
     @staticmethod
     def _targets(model, target, *, ids=None) -> "tuple[Reference, ...]":
@@ -526,82 +568,49 @@ class Specification:
             target = model._value_at(target).id
         return expand_targets(model, target, ids=ids)
 
-    def _edit_roles(self, refs, assignments, *, name=None):
-        model = self._model
-        resolver = self._resolver
-        if self.record.cases:
-            raise ValueError("edit a concrete investigation, not a batch")
-        if self.record.includes and resolver is None:
-            raise ValueError(
-                "included Specifications require a resolver for role editing"
-            )
-        composition = self.compose(resolver=resolver)
-        if composition.model_id != model.id:
-            raise ValueError("role editing requires the exact pinned Model revision")
-        if resolver is not None:
-            pinned = resolver.load_model(model.id)
-            if pinned._record != model._record:
-                raise ValueError("Model content differs from the resolved revision")
+    def _edit_roles(
+        self,
+        refs: "list[Reference]",
+        assignments: "tuple[Assignment, ...] | None",
+        *,
+        name: str | None = None,
+    ) -> "Specification":
+        """Return the revision that fixes ``refs`` to ``assignments``, or frees them.
+
+        ``assignments`` is None for a free. A fix replaces the estimate of its
+        target; a free keeps it. When no role changes, return this Specification.
+        """
+        model = self._require_model()
+        composition = self._check_edit(model, refs)
         targets = {ref.target for ref in refs}
-        if len(targets) != len(refs):
-            raise ValueError("a target is selected more than once")
-        for contribution in composition.contributors:
-            record = contribution.record
-            if record.rules and targets & {ref.target for ref in record.rules.targets}:
-                raise ValueError(
-                    "rule-controlled targets must be revised through their rules"
-                )
-            if contribution.id != self.id:
-                inherited = {ref.target for ref in record.unknowns or ()}
-                inherited.update(
-                    item.target.target
-                    for field in ("assignments", "estimates")
-                    for item in getattr(record, field) or ()
-                )
-                if targets & inherited:
-                    raise ValueError(
-                        "inherited roles must be revised in the included Specification"
-                    )
+        record = self.record
         local_assignments = tuple(
-            a for a in self.record.assignments or () if a.target.target not in targets
-        )
-        local_assignments += assignments or ()
+            a for a in record.assignments or () if a.target.target not in targets
+        ) + (assignments or ())
         local_unknowns = tuple(
-            r for r in self.record.unknowns or () if r.target not in targets
+            r for r in record.unknowns or () if r.target not in targets
         )
         if assignments is None:
             local_unknowns += tuple(refs)
-        # A fix replaces the estimate of its target; a free keeps it.
         estimates = tuple(
             e
-            for e in self.record.estimates or ()
+            for e in record.estimates or ()
             if assignments is None or e.target.target not in targets
         )
         # A value that the equations use and that nothing controls is free.
         controlled = {a.target.target for a in local_assignments}
         controlled.update(r.target for r in local_unknowns)
-        for contribution in composition.contributors:
-            record = contribution.record
-            if record.rules:
-                controlled.update(ref.target for ref in record.rules.targets)
-            if contribution.id != self.id:
-                controlled.update(ref.target for ref in record.unknowns or ())
-                controlled.update(
-                    item.target.target
-                    for field in ("assignments", "estimates")
-                    for item in getattr(record, field) or ()
-                )
+        controlled.update(_controlled(composition, local=self.id))
         local_unknowns += tuple(
             Reference(target=identity)
-            for identity in equation_targets(model, self.record)
+            for identity in equation_targets(model, record)
             if identity not in controlled
         )
         unknowns = in_model_order(model, local_unknowns)
-        if (
-            name is None
-            and local_assignments == (self.record.assignments or ())
-            and unknowns == (self.record.unknowns or ())
-            and estimates == (self.record.estimates or ())
+        if name is None and (local_assignments, unknowns, estimates) == (
+            record.assignments or (),
+            record.unknowns or (),
+            record.estimates or (),
         ):
             # The roles do not change: a free of a free value, or the same fix.
             return self
@@ -609,10 +618,98 @@ class Specification:
             assignments=local_assignments,
             unknowns=unknowns,
             estimates=estimates,
-            **({} if name is None else {"name": name}),
+            name=name,
         )
-        revised.compose(resolver=resolver)
+        # A Specification without includes composes without a resolver.
+        revised.compose(resolver=self._resolver)  # type: ignore[arg-type]
         return revised
+
+    def _check_edit(self, model: "Model", refs: "list[Reference]") -> Composition:
+        """Check that ``fix`` or ``free`` can change the roles of ``refs`` here.
+
+        Return the Composition of this Specification. A batch, includes without
+        a resolver, another Model revision, a target given twice, a target that
+        a rule controls and a role that an included Specification gives raise
+        Rangekeeper errors.
+        """
+        self._require_concrete("fix and free", "edit one case")
+        resolver = self._resolver
+        if self.record.includes:
+            resolver = self._require_resolver("fix and free")
+        composition = self.compose(resolver=resolver)  # type: ignore[arg-type]
+        if composition.model_id != model.id:
+            raise ContractError(
+                f"the Composition uses Model {composition.model_id}, not the "
+                f"pinned Model {model.id}",
+                code=Code.IDENTITY,
+                document_id=self.id,
+                values={"pinned": model.id, "model": composition.model_id},
+            )
+        if resolver is not None and resolver.load_model(model.id)._record != (
+            model._record
+        ):
+            raise IdentityConflictError(
+                f"the resolver gives other content for Model {model.id}",
+                document_id=self.id,
+                targets=(model.id,),
+            )
+        targets = [ref.target for ref in refs]
+        repeated = tuple(dict.fromkeys(t for t in targets if targets.count(t) > 1))
+        if repeated:
+            raise ContractError(
+                "a target is selected more than once",
+                code=Code.UNIQUE,
+                document_id=self.id,
+                targets=repeated,
+            )
+        for contribution in composition.contributors:
+            _check_owned(contribution, set(targets), local=self.id)
+        return composition
+
+
+def _controlled(composition: Composition, *, local: UUID) -> set[UUID]:
+    """Return the targets that rules and included Specifications control."""
+    controlled: set[UUID] = set()
+    for contribution in composition.contributors:
+        record = contribution.record
+        if record.rules:
+            controlled.update(ref.target for ref in record.rules.targets)
+        if contribution.id != local:
+            controlled.update(_roles(record))
+    return controlled
+
+
+def _roles(record: SpecificationRecord) -> set[UUID]:
+    """Return the targets that a Specification fixes, frees or estimates."""
+    found = {ref.target for ref in record.unknowns or ()}
+    found.update(a.target.target for a in record.assignments or ())
+    found.update(e.target.target for e in record.estimates or ())
+    return found
+
+
+def _check_owned(
+    contribution: "Specification", targets: set[UUID], *, local: UUID
+) -> None:
+    """Raise ContractError when a rule or an included Specification owns a target."""
+    record = contribution.record
+    ruled = targets & {
+        ref.target for ref in (record.rules.targets if record.rules else ())
+    }
+    if ruled:
+        raise ContractError(
+            "a target that a rule controls changes only through its rule",
+            document_id=local,
+            targets=ruled,
+            values={"rules": contribution.id},
+        )
+    inherited = targets & _roles(record) if contribution.id != local else set()
+    if inherited:
+        raise ContractError(
+            f"change an inherited role in the included Specification {contribution.id}",
+            document_id=local,
+            targets=inherited,
+            values={"included": contribution.id},
+        )
 
 
 def _quantity(

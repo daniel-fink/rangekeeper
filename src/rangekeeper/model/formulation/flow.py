@@ -25,13 +25,17 @@ from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.targets import target_value
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.records import Formulation, Reference
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError, UnsupportedError
 
 
 def shape(model: Model, value: UUID) -> Flow:
     """Return the declared Flow shape of a Flow Value."""
     record = model.value(value)
     if record.kind is not ValueKind.FLOW or record.flow is None:
-        raise ValueError("builder requires a declared Flow shape")
+        raise ContractError(
+            f"Value {record.key} has no declared Flow shape", targets=(value,)
+        )
     return record.flow
 
 
@@ -62,23 +66,33 @@ def sum(
     """Declare an elementwise sum. All coordinates and units must be compatible.
 
     Summands are Flow Value IDs with compatible units; total is the related Flow.
-    Empty summands and mismatched coordinates raise ValueError. No Model is changed.
+    Empty summands and mismatched coordinates raise ContractError. No Model is
+    changed.
     """
     shapes = None
     if isinstance(summands, Stream):
         if not summands._symbolic or summands.model is None:
-            raise ValueError(
-                "declare intermediate Flow Values and relationships for transformed or detached Streams"
+            raise ContractError(
+                "declare intermediate Flow Values and relationships for "
+                "transformed or detached Streams"
             )
         if summands.model.id != model.id or summands.model._record != model._record:
-            raise ValueError("Stream must pin the exact Model revision and content")
+            raise ContractError(
+                "the Stream must pin the exact Model revision and content",
+                code=Code.IDENTITY,
+                targets=(model.id,),
+            )
         shapes = dict(zip(summands.value_ids, summands.flows, strict=True))
         summands = summands.value_ids
     summands = tuple(summands)
     if len(set(summands)) != len(summands):
-        raise ValueError("duplicate summand Value")
+        raise ContractError(
+            "a summand Value is given more than once",
+            code=Code.UNIQUE,
+            targets=summands,
+        )
     if not summands:
-        raise ValueError("sum requires summands")
+        raise ContractError("sum takes at least one summand")
     equations = [
         (
             str(m.id),
@@ -192,12 +206,14 @@ def _resampled_terms(sequence: Flow, periods, *, method, missing):
     if not isinstance(method, ResampleMethod):
         raise TypeError("method must be a ResampleMethod")
     if method in (ResampleMethod.MIN, ResampleMethod.MAX):
-        raise ValueError(
-            "MIN/MAX formulations require an unsupported piecewise solver capability"
+        raise UnsupportedError(
+            "MIN/MAX formulations need a piecewise solver capability"
         )
     if missing not in (MissingValueHandling.ERROR, MissingValueHandling.ZERO):
-        raise ValueError(
-            "passive resampling permits ERROR or explicit empty-group ZERO; unknown symbols cannot be skipped"
+        raise ContractError(
+            "passive resampling permits ERROR or explicit empty-group ZERO; "
+            "unknown symbols cannot be skipped",
+            values={"missing": missing},
         )
     coordinates = tuple(sequence.coordinate_index())
     groups: list[list[tuple[Movement, float]]] = [[] for _ in periods]
@@ -211,7 +227,9 @@ def _resampled_terms(sequence: Flow, periods, *, method, missing):
     for group in groups:
         if not group:
             if missing is MissingValueHandling.ERROR:
-                raise ValueError("empty target period requires explicit ZERO policy")
+                raise ContractError(
+                    "an empty target period needs the explicit ZERO policy"
+                )
             expressions.append(literal(0, sequence.units))
             continue
         if method is ResampleMethod.FIRST:
@@ -246,7 +264,9 @@ def resample(
     """
     source, grouped = shape(model, sequence), shape(model, resampled)
     if any(m.period is None for m in grouped.movements):
-        raise ValueError("resampled Flow requires bounded periods")
+        raise ContractError(
+            "a resampled Flow needs bounded periods", targets=(resampled,)
+        )
     terms = _resampled_terms(
         source,
         tuple(m.period for m in grouped.movements),

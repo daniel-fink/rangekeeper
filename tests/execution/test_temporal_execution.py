@@ -8,7 +8,12 @@ import pytest
 
 from rangekeeper.duration import Frequency
 from rangekeeper.duration.period import Periods
-from rangekeeper.errors import Code
+from rangekeeper.errors import (
+    Code,
+    ContractError,
+    MissingReferenceError,
+    UnsupportedError,
+)
 from rangekeeper.execution import ExecutionConfig, execute
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.io import MemoryStore
@@ -170,11 +175,15 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
         )[0].quantity.magnitude
         == 0
     )
-    with pytest.raises(ValueError, match="unresolved"):
+    with pytest.raises(ContractError, match="recorded amount"):
         assign_flow(model, ids["cash"])
-    for selected in ([uuid4()], [model.value(ids["cash"]).flow.movements[0].id] * 2):
-        with pytest.raises(ValueError):
-            unknown_flow(model, ids["cash"], ids=selected)
+    with pytest.raises(MissingReferenceError) as missing:
+        unknown_flow(model, ids["cash"], ids=[uuid4()])
+    assert (missing.value.kind, missing.value.by) == ("Movement", "id")
+    first = model.value(ids["cash"]).flow.movements[0].id
+    with pytest.raises(ContractError) as repeated:
+        unknown_flow(model, ids["cash"], ids=[first, first])
+    assert repeated.value.code is Code.UNIQUE
     specification = Specification(
         SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
@@ -513,7 +522,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
         assert [
             m.number for m in output.value(ids[name]).flow.movements
         ] == pytest.approx(expected)
-    with pytest.raises(ValueError, match="overdraft"):
+    with pytest.raises(UnsupportedError, match="overdraft"):
         financial.interest(
             model,
             id=uuid4(),
