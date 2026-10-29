@@ -39,8 +39,12 @@ class Model:
             units=units,
         )
         self.ncf_disposition = (
-            lines((self.ncf, self.disposition))
-            .aggregate(join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO)
+            lines(
+                (self.ncf, self.disposition),
+                join=AlignmentJoin.UNION,
+                missing=MissingValueHandling.ZERO,
+            )
+            .aggregate()
             .flow
         )
         # All proceeds share one valuation origin; terminal proceeds are discounted
@@ -55,8 +59,12 @@ class Model:
             acquisition_period, (-abs(params["acquisition_price"]),), units=units
         )
         self.investment_cashflows = (
-            lines((self.acquisition, self.ncf_disposition))
-            .aggregate(join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO)
+            lines(
+                (self.acquisition, self.ncf_disposition),
+                join=AlignmentJoin.UNION,
+                missing=MissingValueHandling.ZERO,
+            )
+            .aggregate()
             .flow
         )
         self.irr = financial.calculate_irr(

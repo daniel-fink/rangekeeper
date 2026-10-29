@@ -193,7 +193,7 @@ def test_stream_sum_adds_lines_with_different_coordinates():
     )
     with pytest.raises(ValueError, match="unresolved"):
         unresolved.sum()
-    assert unresolved.sum(missing=MissingValueHandling.SKIP) == flow
+    assert unresolved.with_policy(missing=MissingValueHandling.SKIP).sum() == flow
 
 
 def test_stream_sum_dates_period_amounts_when_lines_mix():
@@ -206,12 +206,17 @@ def test_stream_sum_dates_period_amounts_when_lines_mix():
         date(2003, 1, 1),
     ]
     assert investment.at(on=date(2011, 1, 1)) == flow.at(on=date(2010, 1, 1))
-    first = Stream(flows={"Purchase": purchase, "Cash flows": flow}).sum(
-        timing=PeriodTiming.FIRST
+    first = (
+        Stream(flows={"Purchase": purchase, "Cash flows": flow})
+        .dated(timing=PeriodTiming.FIRST)
+        .sum()
     )
     assert first.at(on=date(2001, 1, 1)) == Quantity(text="-900 USD")
-    with pytest.raises(ValueError, match="timing"):
-        Stream(flows={"a": flow}).sum(timing=PeriodTiming.END)
+    dated = Stream(flows={"a": flow}).dated()
+    assert dated["a"].movements[0].date == date(2002, 1, 1)
+    assert dated["a"].movements[0].period is None
+    with pytest.raises(TypeError, match="PeriodTiming"):
+        Stream(flows={"a": flow}).dated(timing="end")  # type: ignore[arg-type]
 
 
 def test_stream_resample_with_a_frequency():

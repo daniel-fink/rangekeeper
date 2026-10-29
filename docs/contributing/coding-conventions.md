@@ -142,6 +142,11 @@ Periods. Before [#405](https://github.com/daniel-fink/rangekeeper/issues/405),
 `ResampleMethod.SPLIT` made `resample` split, and `missing=` did not apply to
 it.
 
+Good: `Flow.clean()` removes unresolved movements and `Flow.drop_zeroes()`
+removes zeroes; `Flow.require_resolved()` is separate from `Flow.check()`.
+Before [#406](https://github.com/daniel-fink/rangekeeper/issues/406), the
+Boolean arguments `clean(remove_zeroes=)` and `check(resolved=)` chose the job.
+
 A result type has one mode too. When a method of a result raises because of
 how the result was made, make two result types.
 

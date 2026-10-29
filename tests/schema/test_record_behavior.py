@@ -107,12 +107,13 @@ def test_check_clean_and_number_have_distinct_roles():
     before = flow.to_data()
     assert flow.check() is flow
     with pytest.raises(ValueError, match="unresolved"):
-        flow.check(resolved=True)
+        flow.require_resolved()
     with pytest.raises(ValueError, match="unresolved"):
         _ = flow.movements[0].number
     assert flow.movements[1].number == 0.0
     assert flow.clean().movements == (flow.movements[1],)
-    assert flow.clean(remove_zeroes=True).movements == ()
+    assert flow.drop_zeroes().movements == (flow.movements[0],)
+    assert flow.clean().drop_zeroes().movements == ()
     assert flow.to_data() == before
 
 
@@ -149,30 +150,28 @@ def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
     known = Flow.from_events([DAY], [2], units="m")
     unknown = Flow.from_events([DAY], [None], units="m")
     empty = Flow(units="m", movements=())
-    skipped = lines([known, unknown]).aggregate(
-        method=AggregationMethod(reducer), missing=MissingValueHandling.SKIP
+    skipped = lines([known, unknown], missing=MissingValueHandling.SKIP).aggregate(
+        method=AggregationMethod(reducer)
     )
     assert skipped.flow.movements[0].number == 2
     assert skipped.coverage == (0.5,)
     assert (
-        lines([unknown, unknown])
-        .aggregate(method=AggregationMethod(reducer), missing=MissingValueHandling.SKIP)
+        lines([unknown, unknown], missing=MissingValueHandling.SKIP)
+        .aggregate(method=AggregationMethod(reducer))
         .flow.movements[0]
         .magnitude
         is None
     )
     assert (
-        lines([known, unknown])
-        .aggregate(method=AggregationMethod(reducer), missing=MissingValueHandling.ZERO)
+        lines([known, unknown], missing=MissingValueHandling.ZERO)
+        .aggregate(method=AggregationMethod(reducer))
         .flow.movements[0]
         .magnitude
         is None
     )
-    filled = lines([known, empty]).aggregate(
-        method=AggregationMethod(reducer),
-        missing=MissingValueHandling.ZERO,
-        join=AlignmentJoin.UNION,
-    )
+    filled = lines(
+        [known, empty], missing=MissingValueHandling.ZERO, join=AlignmentJoin.UNION
+    ).aggregate(method=AggregationMethod(reducer))
     assert filled.flow.movements[0].number == (0 if reducer == "min" else 2)
     assert filled.coverage == (0.5,)
     # Alignment must not add explicit null Claims to a present movement.
@@ -210,9 +209,9 @@ def test_generated_classes_properties_and_replacement_have_documentation():
 def test_zero_filling_converts_to_target_units():
     first = Flow.from_events([DAY], [1], units="m")
     second = Flow.from_events([date(2026, 1, 2)], [1], units="ft")
-    result = lines([first, second]).aggregate(
-        join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
-    )
+    result = lines(
+        [first, second], join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
+    ).aggregate()
     assert [m.number for m in result.flow.movements] == pytest.approx([1.0, 0.3048])
     assert result.coverage == (0.5, 0.5)
     independent = (
