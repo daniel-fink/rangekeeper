@@ -88,11 +88,11 @@ def evaluate_date(
     months, quarters or years; NEVER plus or minus a length is NEVER.
     """
     if node.kind is ExpressionKind.DATE:
+        if node.never is not None:
+            return NEVER
         if node.date is None:
-            raise ValueError("date expression requires a date")
+            raise ValueError("date expression requires a date or NEVER")
         return node.date
-    if node.kind is ExpressionKind.NEVER:
-        return NEVER
     if node.kind is ExpressionKind.REFERENCE:
         if node.target is None:
             raise ValueError("reference expression requires a target")
@@ -127,7 +127,7 @@ def compare_dates(relation: Operator, left: DateValue, right: DateValue) -> bool
 
 def _is_date(node: Expression, values: Mapping[UUID, object]) -> bool:
     """Whether an operand gives a date: a date literal or Value, or a shift of one."""
-    if node.kind in (ExpressionKind.DATE, ExpressionKind.NEVER):
+    if node.kind is ExpressionKind.DATE:
         return True
     if node.kind is ExpressionKind.REFERENCE and node.target is not None:
         value = values.get(node.target.target)

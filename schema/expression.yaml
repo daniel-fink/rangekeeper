@@ -38,8 +38,10 @@ classes:
       references.
     - Domains, units, scope, unique identities, function binding, finite numbers, and backend support require validation
       beyond record shape.
-    - Literal kinds are Quantities, Booleans, calendar dates and NEVER. String literals are deferred; result types
-      of references, selections, and calls are independent of the available literal kinds.
+    - Literal kinds are Quantities, Booleans and dates. String literals are deferred; result types of references,
+      selections, and calls are independent of the available literal kinds.
+    - A date literal has the shape of a date Value. It records a calendar date in date, or NEVER in never, and
+      not both. Unlike a Value, a literal is never unresolved, so it records one of them.
     - Date arithmetic adds or subtracts a whole number of days, weeks, months, quarters or years, such as
       1 year, and gives a date. A month step keeps the last day of a month. NEVER plus or minus a length is
       NEVER. Dates and NEVER compare with each other; NEVER equals NEVER and is later than every date. Other
@@ -68,10 +70,10 @@ classes:
         any_of:
         - range: boolean
       date:
-        description: Calendar date literal of a date Expression.
+        description: Calendar date of a date Expression; it excludes never.
         range: date
       never:
-        description: The NEVER literal of a never Expression; the event does not happen.
+        description: Records that the event of a date Expression does not happen; it excludes date.
         range: Never
       target:
         range: Reference
@@ -146,17 +148,13 @@ classes:
           kind:
             equals_string: date
       postconditions:
-        slot_conditions:
-          date:
-            required: true
-    - preconditions:
-        slot_conditions:
-          kind:
-            equals_string: never
-      postconditions:
-        slot_conditions:
-          never:
-            required: true
+        exactly_one_of:
+        - slot_conditions:
+            date:
+              required: true
+        - slot_conditions:
+            never:
+              required: true
     - preconditions:
         slot_conditions:
           kind:
@@ -233,7 +231,6 @@ classes:
             - quantity
             - boolean
             - date
-            - never
             - reference
             - call
             - selection
@@ -392,9 +389,7 @@ enums:
       boolean:
         description: A Boolean literal.
       date:
-        description: A calendar date literal.
-      never:
-        description: The NEVER literal; the event does not happen.
+        description: A date literal; a calendar date or NEVER.
       reference:
         description: A symbolic Value reference.
       unary:

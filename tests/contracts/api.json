@@ -2038,7 +2038,6 @@
     "QUANTITY",
     "BOOLEAN",
     "DATE",
-    "NEVER",
     "REFERENCE",
     "UNARY",
     "BINARY",

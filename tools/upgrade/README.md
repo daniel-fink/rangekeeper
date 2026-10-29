@@ -50,8 +50,8 @@ a Filter or Criterion that has it.
 
 ### What stays the same
 
-Date Values (`ValueKind.DATE`, with `date` or `never`) and the `date` and `never`
-Expression literals are new in 1.0.0
+Date Values (`ValueKind.DATE`, with `date` or `never`) and date Expression
+literals are new in 1.0.0
 ([#280](https://github.com/daniel-fink/rangekeeper/issues/280)). The 0.x formats
 have no date kind, so the tool adds nothing for them. A 0.x property Value with
 date content stays a property Value; declare a date Value to use it in equations.

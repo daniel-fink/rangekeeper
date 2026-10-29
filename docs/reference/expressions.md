@@ -31,8 +31,7 @@ does not pass.
 | --- | --- |
 | Numerical literal | `quantity`: embedded Quantity with magnitude and explicit units |
 | Boolean literal | `boolean`: true or false |
-| Date literal | `date`: an ISO calendar date, such as `2027-01-01` |
-| NEVER literal | `never`: `never`, the event does not happen |
+| Date literal | `date`, with `date`: an ISO calendar date, such as `2027-01-01`; or with `never`: `never`, the event does not happen |
 | Value reference | `reference`: target Reference (Value or Movement UUID) |
 | Unary operation | `unary`: operator and one `operand` |
 | Binary operation | `binary`: operator and two ordered `operands` |
@@ -168,9 +167,13 @@ for example a date compared with an amount. Dimensional checks of equations are
 
 ## Dates and NEVER
 
-A date literal, a NEVER literal, a reference to a date Value and a selected Span
-endpoint have the `date` domain. `authoring.date_literal(value)` declares a date
-or `rk.duration.NEVER`. `NEVER` means the event does not happen; it is not missing.
+A date literal, a reference to a date Value and a selected Span endpoint have
+the `date` domain. A date literal has the shape of a date Value: `kind: date` with
+`date: 2027-01-01`, or `kind: date` with `never: never`, never both
+([#387](https://github.com/daniel-fink/rangekeeper/issues/387)). Unlike a Value,
+a literal is never unresolved, so it has one of them.
+`authoring.date_literal(value)` declares a date or `rk.duration.NEVER`. `NEVER`
+means the event does not happen; it is not missing.
 A date Value with no recorded content is unresolved, not NEVER. In equation text
 NEVER is written `NEVER`; the word is reserved, so no Value key can be `NEVER`.
 

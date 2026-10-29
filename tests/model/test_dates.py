@@ -127,11 +127,25 @@ def test_date_content_belongs_only_to_a_date_value(value):
 def test_date_literals_and_never():
     assert date_literal(date(2027, 1, 1)).to_data()["date"] == "2027-01-01"
     never = date_literal(NEVER)
-    assert (never.kind, never.never) == (ExpressionKind.NEVER, NEVER)
+    assert (never.kind, never.never, never.date) == (ExpressionKind.DATE, NEVER, None)
     with pytest.raises(TypeError):
         date_literal(None)
     with pytest.raises(ValueError):
         Expression(id=uid("e"), kind=ExpressionKind.DATE)
+
+
+def test_a_never_literal_has_the_shape_of_a_never_value() -> None:
+    # One stored shape for NEVER: kind date with never, as a date Value (#387).
+    literal = date_literal(NEVER).to_data()
+    assert {k: v for k, v in literal.items() if k != "id"} == {
+        "kind": "date",
+        "never": "never",
+    }
+    assert "never" not in [kind.value for kind in ExpressionKind]
+    with pytest.raises(ValueError):
+        Expression(
+            id=uid("e"), kind=ExpressionKind.DATE, date=date(2027, 1, 1), never=NEVER
+        )
 
 
 DATES = [

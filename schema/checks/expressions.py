@@ -181,6 +181,13 @@ def quantity(name, magnitude, units="dimensionless"):
     return expression(name, "quantity", quantity=dict(magnitude=magnitude, units=units))
 
 
+# A date literal records a calendar date or NEVER, as a date Value does (#387).
+for name, content in (("date", {"date": "2026-09-30"}), ("never", {"never": "never"})):
+    node = expression(f"{name}-literal", "date", **content)
+    validators["Expression"].validate(node)
+    valid.append(("Expression", node))
+
+
 left = quantity("left", 10)
 right = quantity("right", 2)
 false = expression("false", "boolean", boolean=False)
@@ -410,7 +417,9 @@ for node in [
         measure=scalar["definitions"]["measures"][0]["id"],
     ),
     expression("bad-bool", "boolean", boolean=0),
-    expression("deferred-date", "date", date="2026-09-30"),
+    expression("never-kind", "never", never="never"),
+    expression("date-and-never", "date", date="2026-09-30", never="never"),
+    expression("empty-date", "date"),
     expression("deferred-string", "string", text=""),
     expression("bad-reference", "reference", target=dict(target="annual_rent")),
     dict(left, source_code="print(1)"),

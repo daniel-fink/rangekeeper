@@ -1333,31 +1333,23 @@
             ]
           },
           "then": {
-            "properties": {
-              "date": {}
-            },
-            "required": [
-              "date"
-            ]
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "kind": {
-                "const": "never"
+            "oneOf": [
+              {
+                "properties": {
+                  "date": {}
+                },
+                "required": [
+                  "date"
+                ]
+              },
+              {
+                "properties": {
+                  "never": {}
+                },
+                "required": [
+                  "never"
+                ]
               }
-            },
-            "required": [
-              "kind"
-            ]
-          },
-          "then": {
-            "properties": {
-              "never": {}
-            },
-            "required": [
-              "never"
             ]
           }
         },
@@ -1517,7 +1509,6 @@
                   "quantity",
                   "boolean",
                   "date",
-                  "never",
                   "reference",
                   "call",
                   "selection",
@@ -1649,7 +1640,7 @@
           "description": "Function call content of a call Expression."
         },
         "date": {
-          "description": "Calendar date literal of a date Expression.",
+          "description": "Calendar date of a date Expression; it excludes never.",
           "format": "date",
           "type": [
             "string",
@@ -1667,7 +1658,7 @@
         },
         "never": {
           "$ref": "#/$defs/Never",
-          "description": "The NEVER literal of a never Expression; the event does not happen."
+          "description": "Records that the event of a date Expression does not happen; it excludes date."
         },
         "operand": {
           "allOf": [
@@ -1739,7 +1730,6 @@
         "quantity",
         "boolean",
         "date",
-        "never",
         "reference",
         "unary",
         "binary",

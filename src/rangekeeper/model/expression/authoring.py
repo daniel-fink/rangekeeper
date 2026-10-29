@@ -22,9 +22,9 @@ def literal(
 
 
 def date_literal(value: DateValue, *, id: UUID | None = None) -> Expression:
-    """Declare a calendar date, or ``rk.duration.NEVER``, as a constant."""
+    """Declare a calendar date, or ``rk.duration.NEVER``, as a date constant."""
     if require_date_value(value) is NEVER:
-        return Expression(id=id or uuid4(), kind=ExpressionKind.NEVER, never=NEVER)
+        return Expression(id=id or uuid4(), kind=ExpressionKind.DATE, never=NEVER)
     assert isinstance(value, date)
     return Expression(id=id or uuid4(), kind=ExpressionKind.DATE, date=value)
 
