@@ -160,27 +160,24 @@ def test_a_rule_decides_its_target():
 
 @requires_execution
 def test_lesson_02_front_and_back_doors_solve():
-    from rangekeeper.io import MemoryStore
-    from rangekeeper.run import SolutionStatus
-
     model = lesson_02_model()
-    store = MemoryStore()
-    store.put(model)
-    project = model.entity(code="project").id
     front = front_door(model)
+    # Cells 11 and 13.
+    front_outcome = rk.execution.solve(specification=front)
+    front_outcome.raise_for_status()
+    factor = front_outcome["rent_factor"]
     back = front.fix(rent_factor=1).free("land_cost")
-    results = {}
-    for name, specification in (("front", front), ("back", back)):
-        outcome = rk.execution.solve(specification, store)
-        assert outcome.run.report.status.solution == SolutionStatus.FEASIBLE
-        results[name] = outcome.outputs[0]
-    factor = results["front"].value(owner=project, key="rent_factor").quantity
-    # Round trip (cell 16): the front door's factor gives back the land cost.
-    round_trip = back.fix(rent_factor=factor)
-    land = (
-        rk.execution.solve(round_trip, store)
-        .outputs[0]
-        .value(owner=project, key="land_cost")
-        .quantity
+    back_outcome = rk.execution.solve(specification=back)
+    assert back_outcome.status is rk.execution.Status.FEASIBLE
+    # Cell 16: the round trip gives back the land cost.
+    round_trip = back.fix(rent_factor=front_outcome["rent_factor"])
+    assert rk.quantity.isclose(
+        actual=rk.execution.solve(specification=round_trip)["land_cost"],
+        expected=rk.Quantity(text="20e6 AUD"),
     )
-    assert rk.quantity.isclose(actual=land, expected=rk.Quantity(text="20e6 AUD"))
+    # Cell 22.
+    assert rk.quantity.isclose(
+        actual=front_outcome["effective_income"],
+        expected=factor * front_outcome["reference_income"],
+    )
+    assert back.model_id == front.model_id == model.id
