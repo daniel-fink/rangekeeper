@@ -20,6 +20,7 @@ from decimal import (
     Context,
     Decimal,
 )
+from enum import StrEnum, unique
 
 from moneyed import list_all_currencies
 
@@ -69,18 +70,27 @@ _MINOR_UNITS: dict[str, int | None] = {
     for currency in list_all_currencies()
 }
 _CODES = frozenset(CURRENCIES)
-MODES = frozenset(
-    {
-        ROUND_05UP,
-        ROUND_CEILING,
-        ROUND_DOWN,
-        ROUND_FLOOR,
-        ROUND_HALF_DOWN,
-        ROUND_HALF_EVEN,
-        ROUND_HALF_UP,
-        ROUND_UP,
-    }
-)
+
+
+@unique
+class RoundingMode(StrEnum):
+    """Select how ``round`` treats the dropped digits of an amount.
+
+    Each member is the rounding constant of the ``decimal`` module with the
+    same name, so ``RoundingMode.HALF_UP == decimal.ROUND_HALF_UP``.
+    """
+
+    HALF_EVEN = ROUND_HALF_EVEN
+    HALF_UP = ROUND_HALF_UP
+    HALF_DOWN = ROUND_HALF_DOWN
+    UP = ROUND_UP
+    DOWN = ROUND_DOWN
+    CEILING = ROUND_CEILING
+    FLOOR = ROUND_FLOOR
+    ZERO_FIVE_UP = ROUND_05UP
+
+
+MODES = frozenset(RoundingMode)
 
 
 def is_currency(units: str) -> bool:
@@ -151,13 +161,12 @@ def round(  # noqa: A001 - the money rounding helper of ADR-023
     currency: str,
     *,
     places: int | None = None,
-    mode: str = ROUND_HALF_EVEN,
+    mode: RoundingMode = RoundingMode.HALF_EVEN,
 ) -> Decimal:
     """Round an amount to ``places`` decimal places, by default the minor unit.
 
     A code with no minor unit, such as ``XAU``, needs ``places``. A negative
-    ``places`` rounds to tens, hundreds and so on. ``mode`` is one of the eight
-    rounding constants of the ``decimal`` module.
+    ``places`` rounds to tens, hundreds and so on. ``mode`` is a ``RoundingMode``.
     """
     if type(amount) is not Decimal or not amount.is_finite():
         raise TypeError("amount must be a finite Decimal")
@@ -182,6 +191,7 @@ __all__ = [
     "CURRENCIES",
     "DIGITS",
     "MODES",
+    "RoundingMode",
     "is_currency",
     "minor_unit",
     "round",

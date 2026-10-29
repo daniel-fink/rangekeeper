@@ -14,6 +14,17 @@ from tests.streams import lines
 JANUARY = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
 
 
+def paid(periods, magnitudes, dates):
+    """Return a Flow over Periods with a recorded payment date for each Movement."""
+    return Flow(
+        units="AUD",
+        movements=tuple(
+            Movement(id=uuid4(), period=period, date=day, magnitude=magnitude)
+            for period, magnitude, day in zip(periods, magnitudes, dates, strict=True)
+        ),
+    )
+
+
 def test_schema_date_or_timestamp_union_retains_timestamp_support():
     from uuid import uuid4
 
@@ -104,7 +115,7 @@ def test_period_timing_is_explicit_and_does_not_change_content():
 
 
 def test_payment_date_is_independent_of_coverage():
-    flow = Flow.from_periods([JANUARY], [100], units="AUD", dates=[date(2026, 2, 5)])
+    flow = paid([JANUARY], [100], [date(2026, 2, 5)])
     assert flow.movements[0].resolve(timing=PeriodTiming.FIRST) == date(2026, 2, 5)
     assert financial.calculate_xnpv(
         flow, rate=0.1, valuation_date=date(2026, 1, 1), timing=PeriodTiming.LAST
@@ -117,9 +128,7 @@ def test_payment_date_is_independent_of_coverage():
     aggregated = flow.resample(periods=[JANUARY], method=ResampleMethod.SUM)
     assert aggregated.movements[0].magnitude == 100
     assert "date" not in aggregated.movements[0].field_names()
-    conflicting = Flow.from_periods(
-        [JANUARY], [100], units="AUD", dates=[date(2026, 2, 6)]
-    )
+    conflicting = paid([JANUARY], [100], [date(2026, 2, 6)])
     with pytest.raises(ValueError, match="coordinates differ"):
         lines([flow, conflicting], join=AlignmentJoin.EXACT).align()
 
@@ -133,9 +142,7 @@ def test_period_irr_requires_timing_and_resolves_payment_order():
         flow, timing=PeriodTiming.FIRST
     ).rate == pytest.approx(0.1)
     # Coverage order can differ from payment order. IRR uses the actual dates.
-    reversed_dates = Flow.from_periods(
-        periods, [110, -100], units="AUD", dates=[date(2027, 1, 1), date(2026, 1, 1)]
-    )
+    reversed_dates = paid(periods, [110, -100], [date(2027, 1, 1), date(2026, 1, 1)])
     assert financial.calculate_irr(reversed_dates).rate == pytest.approx(0.1)
 
 
@@ -146,7 +153,7 @@ def test_collapse_requires_a_date_or_convention():
     result = flow.collapse(on=date(2026, 2, 5))
     assert result.movements[0].date == date(2026, 2, 5)
     assert result.movements[0].period is None
-    assert flow.collapse(timing=PeriodTiming.END).movements[0].date == JANUARY.end
+    assert flow.collapse(on=PeriodTiming.END).movements[0].date == JANUARY.end
 
 
 def test_polars_date_projection():

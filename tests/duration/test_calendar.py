@@ -1,6 +1,7 @@
 """Independent calendar grids, anchor rules and current Period boundaries."""
 
 from datetime import date, datetime
+from uuid import uuid4
 
 import pytest
 
@@ -17,7 +18,7 @@ from rangekeeper.duration import (
     offset,
 )
 from rangekeeper.errors import ContractError
-from rangekeeper.flow import Flow
+from rangekeeper.flow import Flow, Movement
 
 
 def test_month_rules_keep_the_original_anchor():
@@ -115,7 +116,10 @@ def test_derived_period_dates_do_not_become_stored_fields():
             p.has_field(derived)
     assert Period.from_data(p.to_data()) == p
     assert Span(start=p.first, end=p.end, name="leap").last == p.last
-    flow = Flow.from_periods([p], [None], units="m", dates=[date(2024, 3, 5)])
+    flow = Flow(
+        units="m",
+        movements=(Movement(id=uuid4(), period=p, date=date(2024, 3, 5)),),
+    )
     assert flow.movements[0].resolve(timing=PeriodTiming.FIRST) == date(2024, 3, 5)
     with pytest.raises(TypeError):
         flow.movements[0].resolve(timing="first")

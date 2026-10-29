@@ -6,15 +6,16 @@ Stream coordinates several Flows.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from datetime import date
-from decimal import ROUND_HALF_EVEN, Decimal
+from decimal import Decimal
 from itertools import pairwise
 from typing import TYPE_CHECKING, cast
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from rangekeeper.flow._options import MissingValueHandling, ResampleMethod
 from rangekeeper.money import (
+    RoundingMode,
     _encoded,
     _require,
     is_currency,
@@ -122,12 +123,26 @@ class Movement(records.Movement):
         return movement.period.resolve(timing=timing)
 
 
+def _magnitude(value: Amount, units: str) -> Decimal | int | float | None:
+    """Return the magnitude of one amount in ``units``; a Quantity converts."""
+    from rangekeeper.quantity import default_units
+
+    if isinstance(value, str):
+        value = Quantity(text=value)
+    if isinstance(value, records.Quantity):
+        if value.units == units:
+            return value.magnitude
+        return default_units.convert(value, to=units).magnitude
+    if value is not None and not _is_number(value) and not isinstance(value, Decimal):
+        raise TypeError(f"amount {value!r} is not a number or a Quantity")
+    return value
+
+
 def _from_amounts(
     amounts: Mapping[Period | date, Amount], units: str | None
 ) -> tuple[str, tuple[Movement, ...]]:
     """Return the units and Movements of a mapping of Periods or dates to amounts."""
     from rangekeeper.duration import Period
-    from rangekeeper.quantity import default_units
 
     if not isinstance(amounts, Mapping):
         raise TypeError("amounts must map Periods or dates to amounts")
@@ -142,21 +157,8 @@ def _from_amounts(
         )
         if units is None:
             raise TypeError("give units, or give the amounts as Quantities")
-    keys, magnitudes = [], []
-    for key, value in amounts.items():
-        if isinstance(value, str):
-            value = Quantity(text=value)
-        if isinstance(value, records.Quantity):
-            value = (
-                value.magnitude
-                if value.units == units
-                else default_units.convert(value, to=units).magnitude
-            )
-        elif value is not None and not _is_number(value):
-            if not isinstance(value, Decimal):
-                raise TypeError(f"amount {value!r} is not a number or a Quantity")
-        keys.append(key)
-        magnitudes.append(value)
+    keys = list(amounts)
+    magnitudes = [_magnitude(value, units) for value in amounts.values()]
     periods = [key for key in keys if isinstance(key, Period)]
     dates = [key for key in keys if type(key) is date]
     if len(periods) == len(keys):
@@ -317,21 +319,28 @@ class Flow(records.Flow):
         for movement in self.movements:
             _require(movement._data.get("magnitude"), self.units, currency)
 
-    def check(self, *, resolved: bool = False, units: UnitSystem | None = None) -> Flow:
-        """Check the units against a unit system; resolved=True also requires numbers.
+    def check(self, *, units: UnitSystem | None = None) -> Flow:
+        """Check the units against a unit system and return this Flow.
 
         A Flow keeps its own order and identity rules at construction. This
-        check adds what depends on context: the unit system, and with
-        resolved=True a finite number for every Movement. It returns this Flow
-        and does not repair content or assign missing magnitudes.
+        check adds what depends on context: the unit system, by default
+        ``default_units``. It does not repair content or assign missing
+        magnitudes. ``require_resolved`` checks the amounts.
         """
         from rangekeeper.quantity import default_units
 
         units = default_units if units is None else units
         units.compatible(self.units, self.units)
-        if resolved:
-            for movement in self.movements:
-                _ = movement.number  # Raises for a Movement without a resolved number.
+        return self
+
+    def require_resolved(self) -> Flow:
+        """Require a finite number for every Movement and return this Flow.
+
+        Use it before arithmetic that cannot carry an unresolved amount, such as
+        a valuation. It does not repair content.
+        """
+        for movement in self.movements:
+            _ = movement.number  # Raises for a Movement without a resolved number.
         return self
 
     @classmethod
@@ -342,9 +351,12 @@ class Flow(records.Flow):
         *,
         units: str,
         keys: Sequence[str | None] | None = None,
-        ids: Sequence[UUID] | None = None,
     ) -> Flow:
-        """Construct dated entries with supplied or fresh IDs; repeated dates need distinct keys."""
+        """Make dated Movements with fresh IDs; repeated dates need distinct keys.
+
+        To give IDs, or other fields, make the ``Movement`` records and pass
+        them as ``Flow(units=, movements=)``.
+        """
         factory = cls
         from rangekeeper.duration.calendar import require_date
 
@@ -352,10 +364,8 @@ class Flow(records.Flow):
             len(dates) != len(magnitudes)
             or keys is not None
             and len(keys) != len(dates)
-            or ids is not None
-            and len(ids) != len(dates)
         ):
-            raise ValueError("dates, magnitudes, keys and IDs must have equal lengths")
+            raise ValueError("dates, magnitudes and keys must have equal lengths")
         for value in dates:
             require_date(value)
         selected_keys = tuple(keys) if keys is not None else (None,) * len(dates)
@@ -377,7 +387,7 @@ class Flow(records.Flow):
                     dates,
                     selected_keys,
                     magnitudes,
-                    tuple(ids) if ids is not None else tuple(uuid4() for _ in dates),
+                    tuple(uuid4() for _ in dates),
                     strict=True,
                 )
             ),
@@ -391,50 +401,39 @@ class Flow(records.Flow):
         magnitudes: Sequence[Decimal | str | int | float | None],
         *,
         units: str,
-        dates: Sequence[date | None] | None = None,
-        ids: Sequence[UUID] | None = None,
         keys: Sequence[str | None] | None = None,
     ) -> Flow:
-        """Construct quantities over periods without inventing payment dates.
+        """Make Movements over Periods with fresh IDs and no payment dates.
 
-        Supply dates only for independently known payment/observation dates. Omitted
-        dates remain absent; valuation and presentation can resolve a convention later.
-        Omitted IDs are generated. Omitted matching keys remain absent.
+        The Movements record coverage only; valuation and presentation resolve
+        a date convention later. To record a known payment date, or to give
+        IDs, make the ``Movement`` records and pass them as
+        ``Flow(units=, movements=)``. Omitted matching keys remain absent.
         """
-        factory = cls
-        from rangekeeper.duration.calendar import require_date
-
         if (
             len(periods) != len(magnitudes)
-            or dates is not None
-            and len(dates) != len(periods)
-            or ids is not None
-            and len(ids) != len(periods)
             or keys is not None
             and len(keys) != len(periods)
         ):
-            raise ValueError(
-                "periods, magnitudes, dates, keys and IDs must have equal lengths"
-            )
+            raise ValueError("periods, magnitudes and keys must have equal lengths")
         if is_currency(units):
             # Convert once here, so the Flow need not rebuild its Movements.
             magnitudes = [
                 None if v is None else cast(str, _encoded(v)) for v in magnitudes
             ]
-        movements = []
-        for i, (period, magnitude) in enumerate(zip(periods, magnitudes, strict=True)):
-            day = dates[i] if dates is not None else None
-            movements.append(
-                Movement(
-                    id=ids[i] if ids is not None else uuid4(),
-                    key=keys[i] if keys is not None and keys[i] is not None else UNSET,
-                    period=period,
-                    magnitude=magnitude,
-                    date=UNSET if day is None else require_date(day),
-                )
+        selected_keys = tuple(keys) if keys is not None else (None,) * len(periods)
+        movements = tuple(
+            Movement(
+                id=uuid4(),
+                key=UNSET if key is None else key,
+                period=period,
+                magnitude=magnitude,
             )
-        result = factory(units=units, movements=tuple(movements))
-        return result
+            for period, magnitude, key in zip(
+                periods, magnitudes, selected_keys, strict=True
+            )
+        )
+        return cls(units=units, movements=movements)
 
     @classmethod
     def from_profile(
@@ -515,21 +514,18 @@ class Flow(records.Flow):
         )
 
     def scale(self, factor: float) -> Flow:
-        """Create independent scaled movements with fresh IDs, retaining missing amounts."""
-        flow = self
-        if type(factor) not in (int, float) or not math.isfinite(factor):
-            raise ValueError("factor must be finite")
-        return flow.replace(
-            movements=tuple(
-                s.replace(
-                    id=uuid4(),
-                    magnitude=(None if s.magnitude is None else s.number * factor),
-                )
-                for s in flow.movements
-            )
-        )
+        """Return ``factor * self``: each known amount times a number, with fresh IDs.
 
-    def round(self, *, places: int | None = None, mode: str = ROUND_HALF_EVEN) -> Flow:
+        It follows the rule of ``*``: unresolved amounts stay unresolved, and a
+        non-finite result raises ``UnitError``.
+        """
+        if not _is_number(factor):
+            raise TypeError("factor must be a number")
+        return self._combine(factor, divide=False, reverse=True)
+
+    def round(
+        self, *, places: int | None = None, mode: RoundingMode = RoundingMode.HALF_EVEN
+    ) -> Flow:
         """Round each amount to ``places``, by default the minor unit (ADR-023).
 
         Only currency amounts round; see ``rangekeeper.money.round``. The
@@ -580,27 +576,19 @@ class Flow(records.Flow):
     ) -> Quantity | None:
         """Sum entries over time, retaining their units.
 
-        This is a numerical sum. The model determines whether summation expresses
-        the intended quantity; no balance, rate or other interpretation is inferred.
+        ``missing`` treats unresolved amounts: ``ERROR`` raises, ``PROPAGATE``
+        gives None, ``SKIP`` adds the known amounts (None when no amount is
+        known) and ``ZERO`` adds the known amounts (zero when no amount is
+        known). This is a numerical sum. The model determines whether summation
+        expresses the intended quantity; no balance, rate or other
+        interpretation is inferred.
         """
-        flow = self
-        from rangekeeper.quantity import Quantity
-
         if not isinstance(missing, MissingValueHandling):
             raise TypeError("missing must be a MissingValueHandling")
-        if missing not in (
-            MissingValueHandling.ERROR,
-            MissingValueHandling.PROPAGATE,
-            MissingValueHandling.SKIP,
-        ):
-            raise ValueError("total missing must be error, propagate or skip")
-        values = [s.number for s in flow.movements if s.magnitude is not None]
-        if len(values) != len(flow.movements):
-            if missing == MissingValueHandling.ERROR:
-                raise ValueError("cannot total unresolved movements")
-            if missing == MissingValueHandling.PROPAGATE or not values:
-                return None
-        return Quantity(magnitude=math.fsum(values), units=flow.units)
+        values = [s.number for s in self.movements if s.magnitude is not None]
+        if len(values) != len(self.movements) and not _total_known(missing, values):
+            return None
+        return Quantity(magnitude=math.fsum(values), units=self.units)
 
     def at(self, *, on: date) -> Quantity:
         """Return the amount of the Period that contains a date, or of the event on it.
@@ -761,11 +749,18 @@ class Flow(records.Flow):
                     if movement.magnitude is None or match.magnitude is None
                     else product.apply(movement.number, match.number, divide)
                 )
-                movements.append(movement.replace(id=uuid4(), magnitude=value))
+                claims = tuple(
+                    dict.fromkeys((*(movement.claims or ()), *(match.claims or ())))
+                )
+                movements.append(
+                    movement.replace(
+                        id=uuid4(), magnitude=value, claims=claims if claims else OMIT
+                    )
+                )
             return self._checked(movements, product.units)
         return NotImplemented
 
-    def _each(self, operation, units: str) -> Flow:
+    def _each(self, operation: Callable[[float], float], units: str) -> Flow:
         movements = [
             m.replace(
                 id=uuid4(),
@@ -851,41 +846,46 @@ class Flow(records.Flow):
             self, _target(self.movements, periods=periods, frequency=frequency)
         )
 
+    def integrate_time(self, *, day_count: DayCount, units: str | None = None) -> Flow:
+        """Multiply each amount by the year fraction of its Period.
+
+        ``day_count`` gives the year fraction of each Period, as a quantity in
+        years. ``units`` converts the products, as for ``integrate``.
+        """
+        from rangekeeper.duration.calendar import DayCount, year_fraction
+
+        if not isinstance(day_count, DayCount):
+            raise TypeError("day_count must be a DayCount")
+        if any(s.period is None for s in self.movements):
+            raise ValueError("day-count integration requires bounded periods")
+        exposures = [
+            Quantity(
+                magnitude=year_fraction(
+                    s.period.start, s.period.end, convention=day_count
+                ),
+                units="year",
+            )
+            for s in self.movements
+            if s.period is not None
+        ]
+        return self.integrate(exposures=exposures, units=units)
+
     def integrate(
         self,
         *,
-        exposures: Sequence[Quantity] | None = None,
-        day_count: DayCount | None = None,
+        exposures: Sequence[Quantity],
         units: str | None = None,
     ) -> Flow:
-        """Multiply entries by supplied exposures or declared period year fractions.
+        """Multiply each amount by its exposure, one exposure for each Movement.
 
-        Explicit exposures support calendar-month conventions and non-time exposures.
-        A day-count convention uses period boundaries and a quantity measured in years.
-        Calling this operation supplies the integration rule; the Flow has no rate kind.
+        Explicit exposures support calendar-month conventions and non-time
+        exposures. ``units`` converts the products; an empty Flow needs it.
+        ``integrate_time`` uses the year fraction of each Period. Calling this
+        operation supplies the integration rule; the Flow has no rate kind.
         """
         flow = self
-        from rangekeeper.duration.calendar import DayCount, year_fraction
-        from rangekeeper.quantity import Quantity, default_units
+        from rangekeeper.quantity import default_units
 
-        if day_count is not None and not isinstance(day_count, DayCount):
-            raise TypeError("day_count must be a DayCount")
-        if (exposures is None) == (day_count is None):
-            raise ValueError("supply exactly one of exposures or day_count")
-        if exposures is None:
-            assert day_count is not None
-            if any(s.period is None for s in flow.movements):
-                raise ValueError("day-count integration requires bounded periods")
-            exposures = tuple(
-                Quantity(
-                    magnitude=year_fraction(
-                        s.period.start, s.period.end, convention=day_count
-                    ),
-                    units="year",
-                )
-                for s in flow.movements
-                if s.period is not None
-            )
         if len(exposures) != len(flow.movements):
             raise ValueError("exposure count differs from movement count")
         output_units = units or (
@@ -913,48 +913,31 @@ class Flow(records.Flow):
         return flow.replace(movements=tuple(movements), units=output_units)
 
     def multiply(self, *others: Flow) -> Flow:
-        """Multiply known movements at exact common coordinates, with their units.
+        """Return ``self * others[0] * ...``: the products at exact common coordinates.
 
-        Dimensionless scales such as percent become ratios first. Physical dimensions,
-        including time, remain in the result. The calling model determines the
-        meaning of the product; no semantic classification is inferred.
+        It follows the rule of ``*``: dimensionless scales such as percent
+        become ratios, physical dimensions remain in the result, and an
+        unresolved amount gives an unresolved product. The calling model
+        determines the meaning of the product.
         """
-        from rangekeeper.flow._batch import align
-        from rangekeeper.flow._options import AlignmentJoin
-        from rangekeeper.quantity import default_units
+        product = self
+        for other in others:
+            if not isinstance(other, Flow):
+                raise TypeError("multiply takes Flows")
+            product = product * other
+        return product
 
-        flows = tuple(
-            (
-                flow.convert(units="dimensionless")
-                if default_units.compatible(flow.units, "dimensionless")
-                else flow
-            )
-            for flow in (self, *others)
+    def clean(self) -> Flow:
+        """Remove the unresolved movements; do not impute data."""
+        return self.replace(
+            movements=tuple(s for s in self.movements if s.magnitude is not None)
         )
-        aligned, _ = align(
-            flows, join=AlignmentJoin.EXACT, missing=MissingValueHandling.ERROR
-        )
-        unit = "dimensionless"
-        for flow in flows:
-            unit = default_units.multiply(unit, flow.units)
-        movements = [
-            group[0].replace(
-                id=uuid4(),
-                magnitude=math.prod(s.number for s in group),
-                claims=tuple(dict.fromkeys(c for s in group for c in s.claims or ())),
-            )
-            for group in zip(*(flow.movements for flow in aligned), strict=True)
-        ]
-        return flows[0].replace(movements=tuple(movements), units=unit)
 
-    def clean(self, *, remove_zeroes: bool = False) -> Flow:
-        """Explicitly remove unresolved movements, and optionally zeroes; do not impute data."""
-        flow = self
-        return flow.replace(
+    def drop_zeroes(self) -> Flow:
+        """Remove the movements whose amount is zero; keep the unresolved movements."""
+        return self.replace(
             movements=tuple(
-                s
-                for s in flow.movements
-                if s.magnitude is not None and (not remove_zeroes or s.magnitude != 0)
+                s for s in self.movements if s.magnitude is None or s.magnitude != 0
             )
         )
 
@@ -980,34 +963,29 @@ class Flow(records.Flow):
     def collapse(
         self,
         *,
-        on: date | None = None,
-        timing: PeriodTiming | None = None,
+        on: date | PeriodTiming | None = None,
         missing: MissingValueHandling = MissingValueHandling.ERROR,
     ) -> Flow:
-        """Place one total on a selected date and retain input Claims.
+        """Place one total on one date and retain input Claims.
 
-        For period content, supply on or a timing convention unless the final movement
-        already records a date. This explicit loss of temporal detail does not mutate
-        the source Flow. Empty input is returned unchanged.
+        ``on`` is the date, or a ``PeriodTiming`` that dates the last movement
+        by its Period. Without it, the last movement must record a date.
+        ``missing`` treats unresolved amounts as ``total`` does. This explicit
+        loss of temporal detail does not mutate the source Flow. Empty input
+        is returned unchanged.
         """
         flow = self
         from rangekeeper.duration.calendar import PeriodTiming, require_date
 
-        if timing is not None and not isinstance(timing, PeriodTiming):
-            raise TypeError("timing must be a PeriodTiming")
         if not isinstance(missing, MissingValueHandling):
             raise TypeError("missing must be a MissingValueHandling")
-        if missing is MissingValueHandling.ZERO:
-            raise ValueError("total missing must be error, propagate or skip")
-        if on is not None and timing is not None:
-            raise ValueError("supply on or timing, not both")
         if not flow.movements:
             return flow
         quantity = flow.total(missing=missing)
         day = (
-            require_date(on)
-            if on is not None
-            else flow.movements[-1].resolve(timing=timing)
+            flow.movements[-1].resolve(timing=on)
+            if on is None or isinstance(on, PeriodTiming)
+            else require_date(on)
         )
         claims = tuple(
             dict.fromkeys(c for s in flow.movements for c in (s.claims or ()))
@@ -1021,17 +999,15 @@ class Flow(records.Flow):
         )
         return flow.replace(movements=tuple([movement]))
 
-    def extent(self, *, include_zeroes: bool = False) -> tuple[date, date] | None:
-        """Return selected period coverage [start,end), or first/last dated events.
+    def extent(self) -> tuple[date, date] | None:
+        """Return the coverage [start, end) of the nonzero amounts, or their first and last dates.
 
-        Unresolved movements and, by default, zeroes are excluded. Period boundaries
-        describe coverage even when independent payment dates are recorded.
+        Unresolved movements and zeroes are excluded. Period boundaries describe
+        coverage even when independent payment dates are recorded.
         """
         flow = self
         selected = [
-            s
-            for s in flow.movements
-            if s.magnitude is not None and (include_zeroes or s.magnitude != 0)
+            s for s in flow.movements if s.magnitude is not None and s.magnitude != 0
         ]
         if not selected:
             return None
@@ -1053,6 +1029,19 @@ class Flow(records.Flow):
                 flow.movements[selected[0] : selected[-1] + 1] if selected else ()
             )
         )
+
+
+def _total_known(missing: MissingValueHandling, values: list[float]) -> bool:
+    """Return whether the known values give the total of a Flow with unresolved amounts.
+
+    ``ERROR`` raises. ``PROPAGATE`` gives no total; ``SKIP`` totals the known
+    values when there is one; ``ZERO`` always totals them.
+    """
+    if missing is MissingValueHandling.ERROR:
+        raise ValueError("cannot total unresolved movements")
+    return missing is MissingValueHandling.ZERO or (
+        missing is MissingValueHandling.SKIP and bool(values)
+    )
 
 
 def _target(

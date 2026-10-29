@@ -51,7 +51,7 @@ def calculate_pv(flow: Flow, *, rate: float, first_period: int = 1) -> Flow:
     with requires("calculations"):
         import pyxirr
 
-    flow.check(resolved=True)
+    flow.require_resolved()
     if not math.isfinite(rate) or rate <= -1 or type(first_period) is not int:
         raise ValueError("rate must exceed -1 and first_period must be an integer")
     return flow.replace(
@@ -85,7 +85,7 @@ def calculate_xnpv(
     with requires("calculations"):
         import pyxirr
 
-    flow.check(resolved=True)
+    flow.require_resolved()
     if timing is not None and not isinstance(timing, PeriodTiming):
         raise TypeError("timing must be a PeriodTiming")
     require_date(valuation_date)
@@ -134,7 +134,7 @@ def calculate_irr(
     with requires("calculations"):
         import pyxirr
 
-    flow.check(resolved=True)
+    flow.require_resolved()
     if timing is not None and not isinstance(timing, PeriodTiming):
         raise TypeError("timing must be a PeriodTiming")
     if guess is not None and (not math.isfinite(guess) or guess <= -1):

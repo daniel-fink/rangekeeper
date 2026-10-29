@@ -22,7 +22,7 @@ value: Value = Value(
     id=uuid4(), key="area", kind=ValueKind.FLOW, measure=uuid4(), flow=flow
 )
 if value.flow is not None:
-    copied: Flow = value.flow.replace(movements=(movement,)).check(resolved=True)
+    copied: Flow = value.flow.replace(movements=(movement,)).require_resolved()
 result: FlowAggregate = (
     Stream(flows={"a": flow, "b": flow}).align().aggregate(method=AggregationMethod.MAX)
 )

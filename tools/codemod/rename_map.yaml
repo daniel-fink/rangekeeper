@@ -841,7 +841,7 @@ removed:
     status: agreed
     source: ADR-010
   - name: rangekeeper.calculations.series.integrate
-    replacement: Flow.integrate(exposures=, day_count=, units=)
+    replacement: Flow.integrate(exposures=, units=) and Flow.integrate_time(day_count=, units=)
     status: agreed
     source: ADR-010
   - name: rangekeeper.calculations.series.resample
@@ -965,6 +965,23 @@ notes:
       weighting of a mean is part of the method: `MEAN` or `ELAPSED_MEAN`.
       `split(periods=)` or `split(frequency=)` divides amounts over shorter
       Periods and takes no `method=` or `missing=`.
+  - topic: Flow and Stream options
+    status: agreed
+    source: "#399, #406"
+    note: >-
+      Each argument chooses one thing. `flow.check(resolved=True)` is
+      `flow.require_resolved()`. `clean(remove_zeroes=True)` is
+      `clean().drop_zeroes()`; `extent()` takes no flag. `round(mode=)` takes a
+      `rangekeeper.money.RoundingMode`. `collapse(on=)` takes a date or a
+      `PeriodTiming` (was `timing=`). `integrate(day_count=)` is
+      `integrate_time(day_count=)`. `from_periods` and `from_events` take no
+      `dates=` or `ids=`: make the `Movement` records. `multiply` and `scale`
+      follow `*`, so an unresolved amount gives an unresolved product.
+      `Stream.select(value_ids=)` is `Stream.select_values(ids)`. The `missing`
+      and `join` policies live on the Stream: `Stream(..., missing=, join=)` or
+      `stream.with_policy(missing=, join=)`; `aggregate`, `sum`, `min`, `max`
+      and `resample` take no `missing=` or `join=`. `sum(timing=)` is
+      `stream.dated(timing=).sum()`.
   - topic: Keyword-only arguments
     status: agreed
     source: "#255 D14"

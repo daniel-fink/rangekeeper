@@ -41,8 +41,8 @@ identities. Changing a label or coordinate does not break a UUID reference.
 | Alignment | Preserve existing IDs; create IDs for missing placeholders |
 | Scenario generation | Deterministic IDs from the owning Value UUID and period |
 
-`Flow.from_events` and `Flow.from_periods` accept `ids=` for explicit identity.
-Otherwise they generate UUIDs. Decoding never generates missing IDs. Reusing one
+`Flow.from_events` and `Flow.from_periods` generate UUIDs. For explicit
+identity, make the `Movement` records and pass them as `Flow(units=, movements=)`. Decoding never generates missing IDs. Reusing one
 Flow under a second Value would duplicate its Movement identities; call `clone()`
 to make that independent copy.
 

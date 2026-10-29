@@ -156,12 +156,11 @@ def author(
     for name in (*_FULL, *_HORIZON):
         ps = periods if name in _FULL else periods[:-1]
         control = name in ("holding", "sale")
-        flow = Flow.from_periods(
+        flow = _paid_at_last_day(
             ps,
             (None,) * len(ps),
             units="dimensionless" if control else p["units"],
-            keys=tuple(f"p{i + 1}" for i in range(len(ps))),
-            dates=tuple(period.resolve(timing=PeriodTiming.LAST) for period in ps),
+            prefix="p",
         )
         records.append(
             Value(
@@ -183,14 +182,8 @@ def author(
                 key="space_market_price_factors",
                 kind=ValueKind.FLOW,
                 measure=ratio,
-                flow=Flow.from_periods(
-                    periods,
-                    (1,) * len(periods),
-                    units="dimensionless",
-                    keys=tuple(f"p{i + 1}" for i in range(len(periods))),
-                    dates=tuple(
-                        period.resolve(timing=PeriodTiming.LAST) for period in periods
-                    ),
+                flow=_paid_at_last_day(
+                    periods, (1,) * len(periods), units="dimensionless", prefix="p"
                 ),
             )
         )
@@ -625,3 +618,22 @@ def horizon_returns(model: Model) -> Flow:
             Movement(id=uuid4(), key=sale.key, date=sale.date, magnitude=100 * irr.rate)
         )
     return Flow(units="percent", movements=tuple(result))
+
+
+def _paid_at_last_day(periods, magnitudes, *, units, prefix):
+    """Return a Flow over Periods, each Movement paid on the last day of its Period."""
+    return Flow(
+        units=units,
+        movements=tuple(
+            Movement(
+                id=uuid4(),
+                key=f"{prefix}{i + 1}",
+                period=period,
+                date=period.resolve(timing=PeriodTiming.LAST),
+                magnitude=magnitude,
+            )
+            for i, (period, magnitude) in enumerate(
+                zip(periods, magnitudes, strict=True)
+            )
+        ),
+    )

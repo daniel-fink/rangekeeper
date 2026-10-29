@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
+from rangekeeper.duration.calendar import PeriodTiming
 from rangekeeper.flow._flow import Flow, Movement, _target
 from rangekeeper.flow._options import (
     AggregationMethod,
@@ -18,12 +19,12 @@ from rangekeeper.flow._options import (
 )
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.records import Value
+from rangekeeper.schema.runtime import OMIT
 
 if TYPE_CHECKING:
     from polars import DataFrame
 
     from rangekeeper.duration import Frequency, Period
-    from rangekeeper.duration.calendar import PeriodTiming
     from rangekeeper.flow._batch import Batch
     from rangekeeper.model.model import Model
 
@@ -228,12 +229,42 @@ class Stream:
         lines.update(flows)
         return Stream(flows=lines, missing=self.missing, join=self.join)
 
-    def select(self, *names: str, value_ids: Iterable[UUID] | None = None) -> Stream:
-        """Select lines in requested order by names or original Value IDs."""
-        if bool(names) == (value_ids is not None):
-            raise ValueError("supply names or value_ids")
-        requested = tuple(names if names else (value_ids or ()))
-        available = self.names if names else self.value_ids
+    def select(self, *names: str) -> Stream:
+        """Select lines by name, in the requested order."""
+        return self._select(self.names, names)
+
+    def select_values(self, ids: Iterable[UUID]) -> Stream:
+        """Select lines by their original Model Value IDs, in the requested order."""
+        return self._select(self.value_ids, tuple(ids))
+
+    def with_policy(
+        self,
+        *,
+        missing: MissingValueHandling | None = None,
+        join: AlignmentJoin | None = None,
+    ) -> Stream:
+        """Return this Stream with another missing-value or join policy.
+
+        The policies apply to ``align``, ``resample`` and ``aggregate``. A
+        policy that is None stays as it is.
+        """
+        result = object.__new__(type(self))
+        result._initialize(
+            self.names,
+            self._flows,
+            self.model,
+            self.value_ids,
+            self.missing if missing is None else missing,
+            self.join if join is None else join,
+            self._batch,
+            self._symbolic,
+        )
+        return result
+
+    def _select(self, available: tuple, requested: tuple) -> Stream:
+        """Select the lines whose names or Value IDs are ``requested``."""
+        if not requested:
+            raise ValueError("select at least one line")
         if len(set(requested)) != len(requested):
             raise ValueError("duplicate selection")
         if any(i not in available for i in requested):
@@ -313,20 +344,20 @@ class Stream:
         periods: Sequence[Period] | None = None,
         frequency: Frequency | None = None,
         method: ResampleMethod | Mapping[str, ResampleMethod],
-        missing: MissingValueHandling | None = None,
     ) -> Stream:
         """Reduce each line onto explicit ``periods``, or onto Periods of a ``frequency``.
 
         A frequency makes the Periods from the earliest start to the latest end
         of the lines. ``method`` is one ResampleMethod for every line, or a
-        mapping from each name to its method. ``missing`` defaults to the
-        Stream's policy. ``split`` divides amounts over shorter Periods.
+        mapping from each name to its method. The Stream's ``missing`` policy
+        treats empty and unresolved Periods. ``split`` divides amounts over
+        shorter Periods.
         """
         methods = self._line_methods(method)
         batch = self._prepared().resample(
             self._target(periods=periods, frequency=frequency),
             methods=methods,
-            missing=self.missing if missing is None else missing,
+            missing=self.missing,
         )
         return self._derive(batch=batch, symbolic=False)
 
@@ -389,83 +420,47 @@ class Stream:
     def aggregate(
         self,
         *,
-        method: AggregationMethod | None = None,
+        method: AggregationMethod = AggregationMethod.SUM,
         units: str | None = None,
-        missing: MissingValueHandling | None = None,
-        join: AlignmentJoin | None = None,
-        timing: PeriodTiming | None = None,
     ) -> FlowAggregate:
         """Combine compatible line items at matching coordinates and report known coverage.
 
         A coordinate that a line does not have adds nothing; an unresolved
-        amount follows ``missing``. When the lines mix dated and period Flows,
-        each period amount is dated at its recorded date, or else by ``timing``:
-        by default the end of its Period, as in ``rangekeeper.finance``.
+        amount follows the Stream's ``missing`` policy, and ``join`` selects
+        the coordinates. When the lines mix dated and period Flows, each period
+        amount is dated at its recorded date, or else at the end of its Period,
+        as in ``rangekeeper.finance``. ``dated`` chooses another date.
         """
         batch = self._prepared()
         if len({coordinate[0] for coordinate in batch.coordinates}) > 1:
-            from rangekeeper.flow._batch import Batch
-
-            batch = Batch.prepare(tuple(_dated(f, timing) for f in self.flows))
-        elif timing is not None:
-            raise ValueError("timing applies only to lines that mix dates and Periods")
+            batch = self.dated()._prepared()
         return batch.aggregate(
-            method=AggregationMethod.SUM if method is None else method,
-            units=units,
-            missing=self.missing if missing is None else missing,
-            join=self.join if join is None else join,
+            method=method, units=units, missing=self.missing, join=self.join
         )
 
-    def sum(
-        self,
-        *,
-        units: str | None = None,
-        missing: MissingValueHandling | None = None,
-        join: AlignmentJoin | None = None,
-        timing: PeriodTiming | None = None,
-    ) -> Flow:
+    def dated(self, *, timing: PeriodTiming = PeriodTiming.END) -> Stream:
+        """Return a Stream whose period amounts are dated events.
+
+        Each period amount keeps its recorded date, or gets the date that
+        ``timing`` gives in its Period. Dated amounts do not change.
+        """
+        if not isinstance(timing, PeriodTiming):
+            raise TypeError("timing must be a PeriodTiming")
+        return self._derive(
+            flows=tuple(_dated(flow, timing) for flow in self.flows), symbolic=False
+        )
+
+    def sum(self, *, units: str | None = None) -> Flow:
         """Return the elementwise sum; use aggregate for coverage details."""
-        return self.aggregate(
-            method=AggregationMethod.SUM,
-            units=units,
-            missing=missing,
-            join=join,
-            timing=timing,
-        ).flow
+        return self.aggregate(method=AggregationMethod.SUM, units=units).flow
 
-    def min(
-        self,
-        *,
-        units: str | None = None,
-        missing: MissingValueHandling | None = None,
-        join: AlignmentJoin | None = None,
-        timing: PeriodTiming | None = None,
-    ) -> Flow:
+    def min(self, *, units: str | None = None) -> Flow:
         """Return the elementwise minimum; use aggregate for coverage details."""
-        return self.aggregate(
-            method=AggregationMethod.MIN,
-            units=units,
-            missing=missing,
-            join=join,
-            timing=timing,
-        ).flow
+        return self.aggregate(method=AggregationMethod.MIN, units=units).flow
 
-    def max(
-        self,
-        *,
-        units: str | None = None,
-        missing: MissingValueHandling | None = None,
-        join: AlignmentJoin | None = None,
-        timing: PeriodTiming | None = None,
-    ) -> Flow:
+    def max(self, *, units: str | None = None) -> Flow:
         """Return the elementwise maximum; use aggregate for coverage details."""
-        return self.aggregate(
-            method=AggregationMethod.MAX,
-            units=units,
-            missing=missing,
-            join=join,
-            timing=timing,
-        ).flow
+        return self.aggregate(method=AggregationMethod.MAX, units=units).flow
 
     def to_frame(self) -> DataFrame:
         """Return a detached numeric projection; canonical interchange is Flow-specific."""
@@ -486,12 +481,8 @@ class Stream:
         return f"Stream(names={self.names!r})"
 
 
-def _dated(flow: Flow, timing: PeriodTiming | None) -> Flow:
+def _dated(flow: Flow, timing: PeriodTiming) -> Flow:
     """Return a Flow whose period amounts are dated events."""
-    from rangekeeper.duration.calendar import PeriodTiming
-    from rangekeeper.schema.runtime import OMIT
-
-    timing = PeriodTiming.END if timing is None else timing
     return flow.replace(
         movements=tuple(
             m

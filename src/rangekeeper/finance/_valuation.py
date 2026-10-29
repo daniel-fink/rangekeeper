@@ -55,7 +55,7 @@ def _dates(flow: Flow, timing: PeriodTiming) -> list[date]:
         raise TypeError("flow must be a Flow")
     if not isinstance(timing, PeriodTiming):
         raise TypeError("timing must be a PeriodTiming")
-    flow.check(resolved=True)
+    flow.require_resolved()
     return [movement.resolve(timing=timing) for movement in flow.movements]
 
 

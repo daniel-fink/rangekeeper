@@ -15,7 +15,7 @@ Nonfinite numbers are invalid. Omission and explicit null survive canonical code
 `movement.number` returns a finite float or raises for unresolved content.
 `movement.coordinate` supplies the alignment coordinate; it does not use the UUID. `movement.resolve(timing=)`
 uses the recorded date or an explicit convention for period-only content.
-`flow.check(resolved=True)` checks arithmetic readiness and returns the same Flow.
+`flow.require_resolved()` checks arithmetic readiness and returns the same Flow.
 `flow.clean()` removes unresolved movements explicitly; it does not fill them with
 zero. These operations have different purposes and never repair content silently.
 
@@ -24,7 +24,7 @@ from datetime import date
 from rangekeeper.flow import Flow
 
 flow = Flow.from_events([date(2026, 1, 1)], [100], units="AUD")
-assert flow.check(resolved=True).movements[0].number == 100.0
+assert flow.require_resolved().movements[0].number == 100.0
 assert flow.scale(2).total().magnitude == 200
 ```
 
@@ -127,7 +127,9 @@ with `rangekeeper.quantity.isclose`, which also takes two Flows
 `AlignmentJoin.UNION`. Model-backed selections use
 `Stream.from_values(model, value_ids, names=None)`. Duplicate source IDs and
 ambiguous names are errors. `stream[name]` returns one Flow.
-`select("a", "b")` or `select(value_ids=...)` retains selection order.
+`select("a", "b")` and `select_values(ids)` keep the selection order.
+`with_policy(missing=, join=)` returns the Stream with another policy; the
+policies live on the Stream, and `align`, `resample` and `aggregate` read them.
 `with_flows(flows=)` returns a Stream with more named Flows; a name that is
 already there gets the new Flow in its place. `merge` requires compatible
 policies and exact Model revisions.
@@ -152,12 +154,14 @@ annual.display()
 assert annual.sum().movements[0].number == 960
 ```
 
-`sum`, `min` and `max` return Flow records. `aggregate(method=..., units=...,
-missing=..., join=..., timing=None)` also returns coverage. A coordinate that a
-line does not have adds nothing; only an unresolved amount follows `missing`.
-When the lines mix dated and period Flows, each period amount is dated at its
-recorded date, or else by `timing`: by default the end of its Period, the
-convention of `rk.finance`. `trim(span=)` keeps whole periods.
+`sum`, `min` and `max` return Flow records. `aggregate(method=..., units=...)`
+also returns coverage. A coordinate that a line does not have adds
+nothing; only an unresolved amount follows the Stream's `missing` policy. When
+the lines mix dated and period Flows, each period amount is dated at its
+recorded date, or else at the end of its Period, the convention of `rk.finance`.
+`dated(timing=)` dates the period amounts by another `PeriodTiming` first, for
+example `stream.dated(timing=PeriodTiming.FIRST).sum()`. `trim(span=)` keeps
+whole periods.
 `resample` accepts one method for every line, or a mapping from each name to its
 method. `split` divides the amounts of every line. `stream.coverage` describes
 the last resampling step; aggregation
@@ -408,17 +412,20 @@ Closed Python API choices require enum members. Wire codecs continue to use text
 
 ## Timing, integration and valuation
 
-`Flow.from_periods` stores coverage only unless `dates=` supplies independent
-payment or observation dates. `collapse` requires `on=` or a timing convention
-unless the final movement records a date. Trimming keeps whole covered periods
+`Flow.from_periods` stores coverage only. To record independent payment or
+observation dates, make the `Movement` records with a `period` and a `date`.
+`collapse(on=)` takes a date or a `PeriodTiming`; without it, the final movement
+must record a date. `total` and `collapse` take every `MissingValueHandling`:
+`ZERO` adds the known amounts and gives zero when no amount is known. Trimming keeps whole covered periods
 and rejects partial overlap. Resampling groups coverage into a complete target
 Period grid and produces period aggregates without payment dates. Keep the
 original Flow when individual payment facts are required.
 
 Rate-to-amount conversion needs an exposure. Multiplying `AUD/year` by a
 dimensionless factor leaves `AUD/year`; multiplying two rates retains both time
-dimensions. `Flow.integrate` accepts explicit exposure Quantities or a `DayCount`
-member for bounded periods:
+dimensions. `Flow.integrate(exposures=)` takes one exposure Quantity for each
+Movement, and `Flow.integrate_time(day_count=)` uses the year fraction of each
+bounded Period:
 
 ```python
 from datetime import date
@@ -427,12 +434,12 @@ from rangekeeper.flow import Flow
 
 periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
 rates = Flow.from_periods(periods, (120, 120, 120), units="AUD/year")
-amounts = rates.integrate(day_count=DayCount.ACTUAL_365, units="AUD")
+amounts = rates.integrate_time(day_count=DayCount.ACTUAL_365, units="AUD")
 assert abs(amounts.total().magnitude - 120 * 90 / 365) < 1e-9
 ```
 
-The caller selects last for a closing balance, sum for receipts, or mean with
-explicit weighting. The library does not infer this from a Flow kind. Bounded
+The caller selects last for a closing balance, sum for receipts, or a mean
+with its weighting (`MEAN` or `ELAPSED_MEAN`). The library does not infer this from a Flow kind. Bounded
 movements crossing target periods must be allocated first. Resampling coverage
 counts known observations, not continuous time coverage. Zero filling does not
 resolve an explicitly unknown observation.

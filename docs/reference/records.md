@@ -63,7 +63,7 @@ assert not movement.has_field("magnitude")
 resolved = movement.replace(magnitude=10, claims=())
 assert resolved.number == 10.0
 assert movement.magnitude is None
-flow = Flow(units="m", movements=(resolved,)).check(resolved=True)
+flow = Flow(units="m", movements=(resolved,)).require_resolved()
 assert flow.total().magnitude == 10
 ```
 
@@ -151,13 +151,13 @@ Movement
 Flow
   clone() -> Flow                         independent Movement UUIDs
   from_events(dates, magnitudes, *, units, keys=None)
-  from_periods(periods, magnitudes, *, units, dates=None)
-  check(*, resolved=False, units=None) -> Flow
+  from_periods(periods, magnitudes, *, units, keys=None)
+  check(*, units=None) -> Flow / require_resolved() -> Flow
   convert(*, units, unit_system=None) / scale(factor) / negate()
   total(*, missing=MissingValueHandling.ERROR) -> Quantity | None
-  trim(*, start, end) / clean(*, remove_zeroes=False)
-  difference(*, initial=None) / collapse(*, on=None, timing=None, missing=MissingValueHandling.ERROR)
-  extent(*, include_zeroes=False) / trim_empty()
+  trim(*, span) / clean() / drop_zeroes()
+  difference(*, initial=None) / collapse(*, on=None, missing=MissingValueHandling.ERROR)
+  extent() / trim_empty()
   display(*, name=None, transpose=False, precision=2) -> StreamTable
 
 Period (also inherited by Span)
@@ -187,11 +187,11 @@ Construction, `replace` and `from_data` (for each value type in the tree) raise
 | Distribution | Finite parameters; `lower <= upper`; a nonnegative weighting; a mode inside the bounds when the family needs one |
 
 A Flow has one `units` field. `Flow.check(units=None)` checks those units against
-a unit system, and `Flow.check(resolved=True)` also requires a finite number for
+a unit system, and `Flow.require_resolved()` requires a finite number for
 every Movement. `Distribution.check()` checks its units against the default unit
 system. Both return the same object and do not repair data. `Movement.number` provides a nonoptional float for arithmetic.
-`Flow.clean` is a transformation: it removes unresolved movements and, when
-requested, zeroes. It is not a validation step.
+`Flow.clean()` and `Flow.drop_zeroes()` are transformations: they remove the
+unresolved movements and the zero movements. They are not validation steps.
 
 Periods use `[start, end)`: `start` is included and `end` is excluded. Movement dates can record independent payment or
 observation dates outside their coverage period. Recorded dates take precedence;
