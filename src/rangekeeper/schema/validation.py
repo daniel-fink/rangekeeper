@@ -16,6 +16,7 @@ from rangekeeper.schema.runtime import Record
 from rangekeeper.shared import pointer
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
+from rangekeeper.shared.errors import ValidationError
 from rangekeeper.shared.validation import _document_id, require, require_new
 
 
@@ -166,14 +167,28 @@ def _validator(kind: str):
     )
 
 
-def validate(kind: str, data: object) -> ValidationReport:
-    """Validate a detached JSON-compatible value without mutating it."""
+def detached(data: object) -> object:
+    """Return a detached copy of JSON data.
+
+    Data that is not JSON raises ``ValidationError`` with one
+    ``Code.STRUCTURE_JSON`` Issue: a value of another type, a key that is not
+    a string, a non-finite number or a cycle.
+    """
     from rangekeeper.schema.runtime import copy_json
 
     try:
-        data = copy_json(data)
+        return copy_json(data)
     except (TypeError, ValueError) as error:
-        return ValidationReport((Issue(Code.STRUCTURE_JSON, str(error)),))
+        issue = Issue(Code.STRUCTURE_JSON, str(error))
+        raise ValidationError(ValidationReport((issue,))) from error
+
+
+def validate(kind: str, data: object) -> ValidationReport:
+    """Validate a detached JSON-compatible value without mutating it."""
+    try:
+        data = detached(data)
+    except ValidationError as error:
+        return error.report
     return _validate_json(kind, data)
 
 

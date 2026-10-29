@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 
+from rangekeeper.errors import ContractError
 from rangekeeper.shared import arguments
 
 
@@ -32,7 +33,7 @@ def test_require_text_rejects_non_strings_and_empty_text():
     assert arguments.require_text("Apartment", "Classification.name") == "Apartment"
     with pytest.raises(TypeError, match="Classification.name must be a string"):
         arguments.require_text(None, "Classification.name")
-    with pytest.raises(ValueError, match="Classification.name must not be empty"):
+    with pytest.raises(ContractError, match="Classification.name must not be empty"):
         arguments.require_text("  ", "Classification.name")
 
 
@@ -42,5 +43,5 @@ def test_optional_text_supports_none_and_an_explicit_empty_policy():
     assert arguments.optional_text("Notes", "definition") == "Notes"
     with pytest.raises(TypeError, match="definition must be a string or None"):
         arguments.optional_text(42, "definition")
-    with pytest.raises(ValueError, match="Method.version must not be empty"):
+    with pytest.raises(ContractError, match="Method.version must not be empty"):
         arguments.optional_text(" ", "Method.version", empty=False)

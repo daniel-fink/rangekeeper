@@ -109,7 +109,10 @@ untrusted and gets the structural tier. Generated signatures
 let type checkers reject unknown fields, wrong record types and invalid enum
 values. Typed constructors and `replace` require canonical Enum members; raw wire
 strings belong at `from_data`/`from_json`. Runtime checks reject nonfinite numbers, cyclic data and invalid field
-shapes. Python `bool` is a subtype of `int`, but runtime numerical fields still
+shapes. `from_data` raises `ValidationError` with `structure.json` for data that
+is not JSON, such as a `date` value or a non-finite number; `validate()` reports
+the same Issue. `has_field(name)` raises `MissingReferenceError` for a name that
+is not a field of the record's kind. Python `bool` is a subtype of `int`, but runtime numerical fields still
 reject it.
 
 `replace` returns a new record. It uses the same field encoders as construction.

@@ -24,7 +24,11 @@ from pathlib import Path
 from threading import RLock
 from typing import Any
 
-from rangekeeper.shared.errors import ExtensionConflictError, UnknownExtensionError
+from rangekeeper.shared.errors import (
+    ContractError,
+    ExtensionConflictError,
+    UnknownExtensionError,
+)
 from rangekeeper.shared.fingerprints import (
     import_closure,
     manifest_digest,
@@ -85,7 +89,9 @@ class Registry[T]:
         fingerprint: Callable[[Any], str] | None = None,
     ) -> None:
         if not isinstance(point, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", point):
-            raise ValueError(f"invalid extension point name {point!r}")
+            raise ContractError(
+                f"invalid extension point name {point!r}", values={"point": point}
+            )
         if getattr(protocol, "_is_protocol", False) and not getattr(
             protocol, "_is_runtime_protocol", False
         ):
@@ -124,9 +130,10 @@ class Registry[T]:
         ``ExtensionConflictError`` unless ``replace`` is true.
         """
         if not isinstance(name, str) or not _NAME.fullmatch(name):
-            raise ValueError(
+            raise ContractError(
                 f"invalid {self.point} name {name!r}: use lowercase letters and "
-                "digits, separated by '-', '_' or '.'"
+                "digits, separated by '-', '_' or '.'",
+                values={"point": self.point, "name": name},
             )
         self._require(implementation)
         with self._lock:

@@ -12,7 +12,7 @@ import re
 from decimal import ROUND_HALF_EVEN, Context, Decimal, InvalidOperation
 from typing import cast
 
-from rangekeeper.shared.errors import NumericalError
+from rangekeeper.shared.errors import DecodeError, NumericalError
 
 # float64 decimal precision (DBL_DIG): every valid amount converts to float64
 # and back without change.
@@ -26,7 +26,7 @@ _CONTEXT = Context(prec=DIGITS, rounding=ROUND_HALF_EVEN)
 def text(value: Decimal) -> str:
     """Return the canonical text of a finite Decimal, with any number of digits."""
     if not value.is_finite():
-        raise ValueError(f"currency amount is not finite: {value}")
+        raise NumericalError(f"currency amount is not finite: {value}")
     result = format(value, "f")
     if "." in result:
         result = result.rstrip("0").rstrip(".")
@@ -42,7 +42,7 @@ def digits(value: Decimal) -> int:
 def parse(source: str) -> Decimal:
     """Read a decimal numeral exactly, never through float."""
     if not isinstance(source, str) or not _NUMERAL.fullmatch(source):
-        raise ValueError(f"not a decimal numeral: {source!r}")
+        raise DecodeError(f"not a decimal numeral: {source!r}")
     return Decimal(source)
 
 

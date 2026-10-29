@@ -17,7 +17,7 @@ from rangekeeper.duration import (
     count_steps,
     offset,
 )
-from rangekeeper.errors import ContractError
+from rangekeeper.errors import ContractError, MissingReferenceError
 from rangekeeper.flow import Flow, Movement
 
 
@@ -112,7 +112,7 @@ def test_derived_period_dates_do_not_become_stored_fields():
     assert p.end == date(2024, 3, 1)
     assert set(p.to_data()) == {"start", "end"}
     for derived in ("first", "last"):
-        with pytest.raises(KeyError):
+        with pytest.raises(MissingReferenceError):
             p.has_field(derived)
     assert Period.from_data(p.to_data()) == p
     assert Span(start=p.first, end=p.end, name="leap").last == p.last
