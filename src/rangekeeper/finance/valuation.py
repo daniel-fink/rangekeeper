@@ -62,13 +62,18 @@ def _dates(flow: Flow, timing: PeriodTiming) -> list[date]:
 
 
 def _discounted(
-    flow: Flow, rate: float, on: date, day_count: DayCount, timing: PeriodTiming
+    flow: Flow,
+    *,
+    rate: float,
+    on: date,
+    day_count: DayCount,
+    timing: PeriodTiming,
 ) -> list[float]:
     """Return each amount discounted to ``on``: amount / (1 + rate) ** years."""
     with requires("calculations"):
-        import pyxirr
+        import pyxirr  # noqa: PLC0415 - optional dependency
 
-    from rangekeeper.finance.financial import resolve_day_count
+    from rangekeeper.finance.financial import resolve_day_count  # noqa: PLC0415 - the package loads financial on first use
 
     convention = resolve_day_count(day_count)
     require_date(on)
@@ -94,7 +99,9 @@ def pv(
     Each amount is divided by ``(1 + rate) ** t``, where ``t`` is the years from
     ``on`` to its date. An amount before ``on`` grows instead.
     """
-    values = _discounted(flow, _rate(rate), on, day_count, timing)
+    values = _discounted(
+        flow, rate=_rate(rate), on=on, day_count=day_count, timing=timing
+    )
     return flow.replace(
         movements=tuple(
             movement.replace(id=uuid4(), magnitude=value)
@@ -135,9 +142,9 @@ def irr(
     gross amounts.
     """
     with requires("calculations"):
-        import pyxirr
+        import pyxirr  # noqa: PLC0415 - optional dependency
 
-    from rangekeeper.finance.financial import resolve_day_count
+    from rangekeeper.finance.financial import resolve_day_count  # noqa: PLC0415 - the package loads financial on first use
 
     dates = _dates(flow, timing)
     amounts = [movement.number for movement in flow.movements]
@@ -151,7 +158,9 @@ def irr(
     )
     if root is None or not math.isfinite(root) or root <= -1:
         raise NumericalError("IRR did not produce a finite rate above -100 % pa")
-    residual = math.fsum(_discounted(flow, root, min(dates), day_count, timing))
+    residual = math.fsum(
+        _discounted(flow, rate=root, on=min(dates), day_count=day_count, timing=timing)
+    )
     if abs(residual) > 1e-8 * max(1.0, math.fsum(abs(a) for a in amounts)):
         raise NumericalError("IRR residual exceeds the acceptance tolerance")
     return Quantity(magnitude=100 * root, units="% pa")

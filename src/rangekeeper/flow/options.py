@@ -1,13 +1,13 @@
-"""Options for Flow and Stream operations, and the aggregate result with coverage."""
+"""Options for Flow and Stream operations."""
 
-from __future__ import annotations
-
-from dataclasses import dataclass
 from enum import StrEnum, unique
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from rangekeeper.flow._flow import Flow
+__all__ = [
+    "AggregationMethod",
+    "AlignmentJoin",
+    "MissingValueHandling",
+    "ResampleMethod",
+]
 
 
 @unique
@@ -54,11 +54,3 @@ class ResampleMethod(StrEnum):
     ELAPSED_MEAN = "elapsed_mean"
     MIN = "min"
     MAX = "max"
-
-
-@dataclass(frozen=True, slots=True)
-class FlowAggregate:
-    """A reduced Flow and the known fraction of its inputs at each coordinate."""
-
-    flow: Flow
-    coverage: tuple[float, ...]

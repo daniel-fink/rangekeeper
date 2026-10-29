@@ -291,15 +291,18 @@ A package `__init__.py` has a docstring, imports and `__all__`. Public types
 live in modules without a leading underscore. An underscore module holds
 private helpers only.
 
-Bad: `flow/__init__.py` defines the 450-line `Stream` class. `Flow` lives in
-`flow/_flow.py`, so the API reference shows `rangekeeper.flow._flow.Flow`.
+Bad: `execution/backends/__init__.py` makes the backend `registry` and
+registers `PyomoHighs`
+([#413](https://github.com/daniel-fink/rangekeeper/issues/413)).
 
 Each public module has an `__all__`, so that its imported helpers do not
 look public.
 
 Good: `duration/__init__.py` imports `Frequency`, `Period`, `Span` and the
 calendar functions from `calendar.py`, `dates.py` and `period.py`, and lists
-them in `__all__`.
+them in `__all__`. `flow/__init__.py` imports `Flow` from `flow.py`, `Stream`
+from `stream.py` and the options from `options.py`; `_batch.py` and
+`_mapping.py` hold the private calculations.
 
 ### One home and one name for each idea
 

@@ -21,13 +21,13 @@
     "key_of": "method (self, id: uuid.UUID) -> str",
     "label": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
     "metadata": "property",
-    "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.Movement",
+    "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
     "provenance": "property",
     "record_at": "method (self, path: str) -> rangekeeper.schema.index.RecordLocation",
     "record_by_id": "method (self, id: uuid.UUID) -> rangekeeper.schema.index.RecordLocation",
     "relationship": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Relationship",
-    "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.flow.Movement",
+    "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.flow.flow.Movement",
     "revise": "method (self, update: rangekeeper.model.update.Update) -> Model",
     "source": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Source",
     "specify": "method (self, *, name: str | None = None, description: str | None = None) -> Specification",
@@ -718,7 +718,7 @@
     "quantity": "method (self, reference: rangekeeper.schema.records.Reference | uuid.UUID) -> rangekeeper.quantity.Quantity",
     "raise_for_status": "method (self) -> Self",
     "status": "property",
-    "stream": "method (self, *keys: str) -> rangekeeper.flow.Stream",
+    "stream": "method (self, *keys: str) -> rangekeeper.flow.stream.Stream",
     "table": "method (self, *keys: str) -> rangekeeper.shared.table.Table",
     "walk": "method (self) -> collections.abc.Iterator['Outcome']"
    },
@@ -971,22 +971,22 @@
   },
   "irr": {
    "kind": "function",
-   "module": "rangekeeper.finance._valuation",
+   "module": "rangekeeper.finance.valuation",
    "signature": "(*, flow: Flow, guess: Quantity | str | None = None, day_count: DayCount = DayCount.ACTUAL_ACTUAL, timing: PeriodTiming = PeriodTiming.END) -> Quantity"
   },
   "npv": {
    "kind": "function",
-   "module": "rangekeeper.finance._valuation",
+   "module": "rangekeeper.finance.valuation",
    "signature": "(*, flow: Flow, rate: Quantity | str, on: date, day_count: DayCount = DayCount.ACTUAL_ACTUAL, timing: PeriodTiming = PeriodTiming.END) -> Quantity"
   },
   "payment": {
    "kind": "function",
-   "module": "rangekeeper.finance._valuation",
+   "module": "rangekeeper.finance.valuation",
    "signature": "(*, principal: Quantity | str, rate: Quantity | str, term: Quantity | str, frequency: Frequency) -> Quantity"
   },
   "pv": {
    "kind": "function",
-   "module": "rangekeeper.finance._valuation",
+   "module": "rangekeeper.finance.valuation",
    "signature": "(*, flow: Flow, rate: Quantity | str, on: date, day_count: DayCount = DayCount.ACTUAL_ACTUAL, timing: PeriodTiming = PeriodTiming.END) -> Flow"
   }
  },
@@ -1028,7 +1028,7 @@
     "MIN",
     "MAX"
    ],
-   "module": "rangekeeper.flow._options"
+   "module": "rangekeeper.flow.options"
   },
   "AlignmentJoin": {
    "kind": "enum",
@@ -1037,7 +1037,7 @@
     "UNION",
     "INTERSECTION"
    ],
-   "module": "rangekeeper.flow._options"
+   "module": "rangekeeper.flow.options"
   },
   "Flow": {
    "kind": "class",
@@ -1074,7 +1074,7 @@
     "trim_empty": "method (self) -> Flow",
     "units": "property"
    },
-   "module": "rangekeeper.flow._flow",
+   "module": "rangekeeper.flow.flow",
    "signature": "(*, units: str | None = None, movements: Sequence[Movement] | None = None, amounts: Mapping[Period | date, Amount] | None = None) -> None"
   },
   "FlowAggregate": {
@@ -1082,7 +1082,7 @@
    "members": {
     "__init__": "method (self, flow: Flow, coverage: tuple[float, ...]) -> None"
    },
-   "module": "rangekeeper.flow._options",
+   "module": "rangekeeper.flow.aggregation",
    "signature": "(flow: Flow, coverage: tuple[float, ...]) -> None"
   },
   "MissingValueHandling": {
@@ -1093,7 +1093,7 @@
     "SKIP",
     "ZERO"
    ],
-   "module": "rangekeeper.flow._options"
+   "module": "rangekeeper.flow.options"
   },
   "Movement": {
    "kind": "class",
@@ -1110,7 +1110,7 @@
     "replace": "method (self, *, id: UUID | Unset = <Unset>, key: str | None | Unset | Omit = <Unset>, date: Date | None | Unset | Omit = <Unset>, period: Period | None | Unset | Omit = <Unset>, magnitude: Decimal | str | int | float | None | Unset | Omit = <Unset>, claims: tuple[UUID, ...] | None | Unset | Omit = <Unset>) -> Self",
     "resolve": "method (self, *, timing: PeriodTiming | None = None) -> date"
    },
-   "module": "rangekeeper.flow._flow",
+   "module": "rangekeeper.flow.flow",
    "signature": "(*, id: UUID, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: Decimal | str | int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> None"
   },
   "ResampleMethod": {
@@ -1124,17 +1124,17 @@
     "MIN",
     "MAX"
    ],
-   "module": "rangekeeper.flow._options"
+   "module": "rangekeeper.flow.options"
   },
   "Stream": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, flows: Mapping[str, Flow], missing: MissingValueHandling = MissingValueHandling.ERROR, join: AlignmentJoin | None = None)",
+    "__init__": "method (self, *, flows: Mapping[str, Flow], missing: MissingValueHandling = MissingValueHandling.ERROR, join: AlignmentJoin | None = None) -> None",
     "aggregate": "method (self, *, method: AggregationMethod = AggregationMethod.SUM, units: str | None = None) -> FlowAggregate",
     "align": "method (self) -> Stream",
     "coverage": "property",
     "dated": "method (self, *, timing: PeriodTiming = PeriodTiming.END) -> Stream",
-    "display": "method (self, *, transpose: bool = False, precision: int = 2)",
+    "display": "method (self, *, transpose: bool = False, precision: int = 2) -> StreamTable",
     "flows": "property",
     "from_values": "classmethod (cls, model: Model, value_ids: Iterable[UUID], *, names: Sequence[str] | None = None, missing: MissingValueHandling = MissingValueHandling.ERROR, join: AlignmentJoin | None = None) -> Stream",
     "max": "method (self, *, units: str | None = None) -> Flow",
@@ -1152,8 +1152,16 @@
     "with_flows": "method (self, *, flows: Mapping[str, Flow]) -> Stream",
     "with_policy": "method (self, *, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> Stream"
    },
-   "module": "rangekeeper.flow",
-   "signature": "(*, flows: Mapping[str, Flow], missing: MissingValueHandling = MissingValueHandling.ERROR, join: AlignmentJoin | None = None)"
+   "module": "rangekeeper.flow.stream",
+   "signature": "(*, flows: Mapping[str, Flow], missing: MissingValueHandling = MissingValueHandling.ERROR, join: AlignmentJoin | None = None) -> None"
+  },
+  "StreamTable": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, stream: Stream, transpose: bool = False, precision: int = 2) -> None"
+   },
+   "module": "rangekeeper.flow.table",
+   "signature": "(stream: Stream, transpose: bool = False, precision: int = 2) -> None"
   }
  },
  "rangekeeper.io": {
@@ -1921,13 +1929,13 @@
     "key_of": "method (self, id: uuid.UUID) -> str",
     "label": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
     "metadata": "property",
-    "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.Movement",
+    "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
     "provenance": "property",
     "record_at": "method (self, path: str) -> rangekeeper.schema.index.RecordLocation",
     "record_by_id": "method (self, id: uuid.UUID) -> rangekeeper.schema.index.RecordLocation",
     "relationship": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Relationship",
-    "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.flow.Movement",
+    "resolve": "method (self, reference: rangekeeper.schema.records.Reference) -> rangekeeper.schema.records.Value | rangekeeper.flow.flow.Movement",
     "revise": "method (self, update: rangekeeper.model.update.Update) -> Model",
     "source": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Source",
     "specify": "method (self, *, name: str | None = None, description: str | None = None) -> Specification",
@@ -2444,7 +2452,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], *, label: str | None = None) -> None",
-    "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None",
+    "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None",
     "cell": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.rollup.RollupEntry",
     "children": "method (self, column: UUID | PivotColumn | None = None) -> tuple[rangekeeper.model.system.pivot.PivotColumn, ...]",
     "column": "method (self, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.PivotColumn",
@@ -2452,7 +2460,7 @@
     "display": "method (self, *, precision: int = 2) -> PivotTable",
     "partition": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.Partition",
     "to_table": "method (self) -> Table",
-    "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None"
+    "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.pivot",
    "signature": "(rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], *, label: str | None = None) -> None"
@@ -2505,10 +2513,10 @@
   "RollupEntry": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, available: rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None, coverage: rangekeeper.model.system.rollup.Coverage, period_coverage: tuple[float, ...] = tuple()) -> None"
+    "__init__": "method (self, available: rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None, coverage: rangekeeper.model.system.rollup.Coverage, period_coverage: tuple[float, ...] = tuple()) -> None"
    },
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(available: rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None, coverage: rangekeeper.model.system.rollup.Coverage, period_coverage: tuple[float, ...] = tuple()) -> None"
+   "signature": "(available: rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None, coverage: rangekeeper.model.system.rollup.Coverage, period_coverage: tuple[float, ...] = tuple()) -> None"
   },
   "RollupError": {
    "kind": "class",
@@ -2522,11 +2530,11 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.rollup.RollupEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None",
-    "available_value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None",
+    "available_value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None",
     "coverage": "method (self, id: uuid.UUID) -> rangekeeper.model.system.rollup.Coverage",
     "display": "method (self, *, transpose: bool = False, precision: int = 2) -> StreamTable",
     "root_value": "property",
-    "value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None"
+    "value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.rollup",
    "signature": "(hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.rollup.RollupEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None"

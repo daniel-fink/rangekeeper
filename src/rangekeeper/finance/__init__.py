@@ -6,7 +6,7 @@ and Distribution operations are record methods. Calculations return detached
 results and never publish Runs.
 """
 
-from rangekeeper.finance._valuation import irr, npv, payment, pv
+from rangekeeper.finance.valuation import irr, npv, payment, pv
 from rangekeeper.shared.exports import lazy as _lazy
 
 _MODULES = {"financial"}

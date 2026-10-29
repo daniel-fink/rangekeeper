@@ -13,8 +13,17 @@ from itertools import pairwise
 from typing import TYPE_CHECKING, cast
 from uuid import uuid4
 
+from rangekeeper.duration import Period, Periods
+from rangekeeper.duration.calendar import (
+    DayCount,
+    PeriodTiming,
+    count_steps,
+    offset,
+    require_date,
+    year_fraction,
+)
 from rangekeeper.duration.errors import AlignmentError
-from rangekeeper.flow._options import MissingValueHandling, ResampleMethod
+from rangekeeper.flow.options import MissingValueHandling, ResampleMethod
 from rangekeeper.money import (
     RoundingMode,
     _encoded,
@@ -23,7 +32,15 @@ from rangekeeper.money import (
     to_number,
 )
 from rangekeeper.money import round as _round
-from rangekeeper.quantity import Quantity, _is_number, _product, _sum_scale
+from rangekeeper.profile import Profile
+from rangekeeper.quantity import (
+    Quantity,
+    UnitSystem,
+    _is_number,
+    _product,
+    _sum_scale,
+    default_units,
+)
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
 from rangekeeper.schema.runtime import OMIT, UNSET
@@ -37,12 +54,8 @@ from rangekeeper.shared.errors import (
 )
 
 if TYPE_CHECKING:
-    from rangekeeper.duration import Frequency, Period
-    from rangekeeper.duration.calendar import DayCount
-    from rangekeeper.duration.period import PeriodTiming
-    from rangekeeper.flow._table import StreamTable
-    from rangekeeper.profile import Profile
-    from rangekeeper.quantity import UnitSystem
+    from rangekeeper.duration import Frequency
+    from rangekeeper.flow.table import StreamTable
 
 # A number, a currency amount or None in a Flow constructor.
 type Amount = Quantity | str | Decimal | int | float | None
@@ -120,8 +133,6 @@ class Movement(records.Movement):
         changed, and payment outside its coverage period is permitted.
         """
         movement = self
-        from rangekeeper.duration.calendar import PeriodTiming, require_date
-
         if timing is not None and not isinstance(timing, PeriodTiming):
             raise TypeError("timing must be a PeriodTiming")
         if movement.date is not None:
@@ -142,8 +153,6 @@ class Movement(records.Movement):
 
 def _magnitude(value: Amount, units: str) -> Decimal | int | float | None:
     """Return the magnitude of one amount in ``units``; a Quantity converts."""
-    from rangekeeper.quantity import default_units
-
     if isinstance(value, str):
         value = Quantity(text=value)
     if isinstance(value, records.Quantity):
@@ -159,8 +168,6 @@ def _from_amounts(
     amounts: Mapping[Period | date, Amount], units: str | None
 ) -> tuple[str, tuple[Movement, ...]]:
     """Return the units and Movements of a mapping of Periods or dates to amounts."""
-    from rangekeeper.duration import Period
-
     if not isinstance(amounts, Mapping):
         raise TypeError("amounts must map Periods or dates to amounts")
     if units is None:
@@ -233,7 +240,7 @@ class Flow(records.Flow):
         The name is a display label only. Rendering preserves the Flow's units,
         coordinates, unresolved amounts and canonical content.
         """
-        from rangekeeper.flow import Stream
+        from rangekeeper.flow.stream import Stream  # noqa: PLC0415 - stream imports this module
 
         return Stream(flows={"Flow" if name is None else name: self}).display(
             transpose=transpose,
@@ -347,8 +354,6 @@ class Flow(records.Flow):
         ``default_units``. It does not repair content or assign missing
         magnitudes. ``require_resolved`` checks the amounts.
         """
-        from rangekeeper.quantity import default_units
-
         units = default_units if units is None else units
         units.compatible(self.units, self.units)
         return self
@@ -378,8 +383,6 @@ class Flow(records.Flow):
         them as ``Flow(units=, movements=)``.
         """
         factory = cls
-        from rangekeeper.duration.calendar import require_date
-
         if (
             len(dates) != len(magnitudes)
             or keys is not None
@@ -478,8 +481,6 @@ class Flow(records.Flow):
         Period takes the remainder, so the amounts add up to the total. The
         amount is a Quantity or its text, and gives the Flow its units.
         """
-        from rangekeeper.profile import Profile
-
         if not isinstance(profile, Profile):
             raise TypeError("profile must be a rangekeeper.profile Profile")
         given = {"initial": initial, "total": total}
@@ -520,8 +521,6 @@ class Flow(records.Flow):
     def convert(self, *, units: str, unit_system: UnitSystem | None = None) -> Flow:
         """Convert all known movements together; retain unresolved movements and evidence."""
         flow = self
-        from rangekeeper.quantity import Quantity, default_units
-
         unit_system = default_units if unit_system is None else unit_system
         if not unit_system.compatible(flow.units, units):
             raise UnitError(f"cannot convert a Flow in {flow.units!r} to {units!r}")
@@ -626,8 +625,6 @@ class Flow(records.Flow):
         one date raise AmbiguousReferenceError; an unresolved amount raises
         NumericalError.
         """
-        from rangekeeper.duration.calendar import require_date
-
         require_date(on)
         found = [
             m
@@ -778,7 +775,7 @@ class Flow(records.Flow):
                 product.units,
             )
         if isinstance(other, Flow):
-            from rangekeeper.flow._mapping import alignment
+            from rangekeeper.flow._mapping import alignment  # noqa: PLC0415 - _mapping imports this module
 
             product = _product(self.units, other.units, divide)
             movements = []
@@ -824,8 +821,6 @@ class Flow(records.Flow):
         a period quantity or substitute an assumed payment date for its coverage.
         """
         flow = self
-        from rangekeeper.duration import Period
-
         if not isinstance(span, Period):
             raise TypeError("span must be a Period or Span")
         start, end = span.start, span.end
@@ -899,8 +894,6 @@ class Flow(records.Flow):
         ``day_count`` gives the year fraction of each Period, as a quantity in
         years. ``units`` converts the products, as for ``integrate``.
         """
-        from rangekeeper.duration.calendar import DayCount, year_fraction
-
         if not isinstance(day_count, DayCount):
             raise TypeError("day_count must be a DayCount")
         if any(s.period is None for s in self.movements):
@@ -931,8 +924,6 @@ class Flow(records.Flow):
         operation supplies the integration rule; the Flow has no rate kind.
         """
         flow = self
-        from rangekeeper.quantity import default_units
-
         if len(exposures) != len(flow.movements):
             raise ContractError(
                 "exposure count differs from movement count",
@@ -1025,8 +1016,6 @@ class Flow(records.Flow):
         is returned unchanged.
         """
         flow = self
-        from rangekeeper.duration.calendar import PeriodTiming, require_date
-
         if not isinstance(missing, MissingValueHandling):
             raise TypeError("missing must be a MissingValueHandling")
         if not flow.movements:
@@ -1105,9 +1094,6 @@ def _target(
         raise TypeError("give periods or frequency, not both")
     if periods is not None:
         return periods
-    from rangekeeper.duration import Periods
-    from rangekeeper.duration.calendar import count_steps, offset
-
     assert frequency is not None
     covered = [m.period for m in movements if m.period is not None]
     if len(covered) != len(movements):

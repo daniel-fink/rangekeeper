@@ -5,15 +5,31 @@
 ``calculations`` extra (Polars) and no chart or graph dependency.
 """
 
+from __future__ import annotations
+
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
+from typing import TYPE_CHECKING
 
-from rangekeeper.flow._batch import polars
+from rangekeeper.flow._batch import Batch, polars
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError
 
+if TYPE_CHECKING:
+    from polars import DataFrame
 
-def stream_projection(stream):
+    from rangekeeper.flow.stream import Stream
+
+__all__ = ["StreamTable"]
+
+# The amount of each line at each coordinate, by (line, coordinate) index.
+type _Amounts = dict[tuple[int, int], float | None]
+
+
+def stream_projection(
+    stream: Stream,
+) -> tuple[Batch, tuple[int, ...], _Amounts, set[tuple[int, int]]]:
     """One projection for numeric export and both presentation forms."""
     batch = stream._prepared()
     try:
@@ -24,8 +40,8 @@ def stream_projection(stream):
             code=error.code,
             values={**error.values, "lines": list(stream.names)},
         ) from error
-    amounts = {}
-    present = set()
+    amounts: _Amounts = {}
+    present: set[tuple[int, int]] = set()
     for line, coordinate, magnitude in batch.frame.select(
         "line", "coordinate", "magnitude"
     ).iter_rows():
@@ -34,7 +50,7 @@ def stream_projection(stream):
     return batch, grid, amounts, present
 
 
-def stream_frame(stream):
+def stream_frame(stream: Stream) -> DataFrame:
     """Export numeric line columns and explicit coordinates, without mutable shared state.
 
     Line columns are Float64 numerical projections, not lossless records.
@@ -92,7 +108,8 @@ def stream_frame(stream):
     ).clone()
 
 
-def _coordinate_label(coordinate):
+def _coordinate_label(coordinate: tuple) -> str:
+    """Return the row or column label of one coordinate."""
     if coordinate[0] == "event":
         return coordinate[1] + (f" [{coordinate[2]}]" if coordinate[2] else "")
     start, end = date.fromisoformat(coordinate[1]), date.fromisoformat(coordinate[2])
@@ -113,7 +130,7 @@ def _coordinate_label(coordinate):
     return label
 
 
-def render(headers, rows, *, html: bool):
+def render(headers: Sequence[str], rows: Sequence[Sequence[str]], *, html: bool) -> str:
     """Render prepared string cells as a native Polars table, in HTML or text."""
     pl = polars()
     frame = pl.DataFrame(
@@ -145,11 +162,11 @@ class StreamTable:
     ``transpose`` puts the line items in rows.
     """
 
-    stream: object
+    stream: Stream
     transpose: bool = False
     precision: int = 2
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if type(self.transpose) is not bool:
             raise TypeError("transpose must be bool")
         if type(self.precision) is not int:
@@ -160,7 +177,8 @@ class StreamTable:
                 values={"precision": self.precision},
             )
 
-    def _cells(self):
+    def _cells(self) -> tuple[list[str], list[list[str]]]:
+        """Return the headers and the rows of display strings."""
         batch, grid, amounts, present = stream_projection(self.stream)
         periods = [_coordinate_label(batch.coordinates[c]) for c in grid]
         lines = [
@@ -192,14 +210,14 @@ class StreamTable:
             for i, period in enumerate(periods)
         ]
 
-    def _render(self, *, html: bool):
+    def _render(self, *, html: bool) -> str:
         return render(*self._cells(), html=html)
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         return self._render(html=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._render(html=False)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
