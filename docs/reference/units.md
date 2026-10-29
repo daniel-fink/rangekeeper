@@ -207,7 +207,7 @@ implementation: `rangekeeper.unit_systems:<name>` with its fingerprint, or
 
 ## The Model's unit system
 
-`Model(record, *, units=default_units)`, `Model.from_data` and `Model.create`
+`Model.from_data(data=, units=default_units)` and `Model.create(..., units=)`
 validate recorded units with the supplied system. `Model.unit_system` returns it.
 A revision keeps the unit system of its predecessor.
 

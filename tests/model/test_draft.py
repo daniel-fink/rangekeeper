@@ -108,7 +108,7 @@ def test_a_later_draft_finds_entities_and_values_and_adds_equations():
     draft = revision.edit()
     project = draft.entity(code="project")
     assert draft.entity(code="project") is project
-    assert draft.entity(project.id) is project
+    assert draft.entity(id=project.id) is project
     total = project.ref(key="total_cost")
     assert isinstance(total, ValueHandle)
     assert (total.id, total.key, total.kind, total.owner, total.units) == (
@@ -163,8 +163,8 @@ def test_classification_codes_are_found_or_declared():
         ("project", root.id),
         ("floor", root.id),
     ]
-    assert model.entity(project.id).classification == children[0].id
-    assert model.entity(floor.id).classification == children[1].id
+    assert model.entity(id=project.id).classification == children[0].id
+    assert model.entity(id=floor.id).classification == children[1].id
     assert use.parent == uses.classifications[0].id
 
     draft = model.edit()
@@ -205,7 +205,7 @@ def test_values_share_a_measure_for_their_units():
     nla = project.value(key="nla", units="sqm")
     rent = project.value(key="rent", units="AUD per sqm pa")
     model = draft.commit()
-    assert model.value(gfa.id).measure == model.value(nla.id).measure == area.id
+    assert model.value(id=gfa.id).measure == model.value(id=nla.id).measure == area.id
     assert [item.code for item in model.definitions.measures] == [
         "area",
         "AUD per sqm pa",
@@ -221,12 +221,12 @@ def test_flows_have_movements_only_when_declared_with_periods():
     with pytest.raises(TypeError, match="Periods"):
         project.flow(key="other", units="AUD", periods=[date(2027, 1, 1)])
     model = draft.commit()
-    declared = model.value(index.id)
+    declared = model.value(id=index.id)
     assert declared.kind == ValueKind.FLOW
     assert declared.flow.units == "ratio"
     assert [m.period for m in declared.flow.movements] == list(YEARS)
     assert all(m.magnitude is None for m in declared.flow.movements)
-    assert model.value(rent.id).flow is None
+    assert model.value(id=rent.id).flow is None
 
 
 def test_equations_are_checked_when_added():
@@ -384,7 +384,7 @@ def test_a_namespace_derives_the_identities_that_a_draft_makes():
     )
     again = second_revision.edit()
     again.entity(code="project").value(key="fees", units="AUD")
-    assert again.commit().value(fees.id).key == "fees"
+    assert again.commit().value(id=fees.id).key == "fees"
 
 
 def test_lesson_02_cell_4_runs_as_written():
@@ -445,7 +445,7 @@ def test_a_committed_model_solves():
     run = execute(specification=specification, store=store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE
     solved = store.load_model(run.record.outputs[0])
-    assert solved.value(total).quantity == rk.Quantity(text="50e6 AUD")
+    assert solved.value(id=total).quantity == rk.Quantity(text="50e6 AUD")
 
 
 def test_dates_have_no_units_and_no_recorded_content():
@@ -455,7 +455,7 @@ def test_dates_have_no_units_and_no_recorded_content():
     assert (start.key, start.owner, start.units) == ("start_date", project.id, None)
     assert project.ref(key="start_date") == start
     model = draft.commit()
-    value = model.value(start.id)
+    value = model.value(id=start.id)
     assert (value.kind, value.measure, value.date, value.never) == (
         ValueKind.DATE,
         None,

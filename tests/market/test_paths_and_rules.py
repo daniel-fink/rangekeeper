@@ -172,7 +172,7 @@ def test_resale_dates_strict_threshold_and_holding(factors, minimum, sale):
     assert holding == [int(i < sale) for i in range(len(factors))]
     assert result.evidence[-1].at == date(2026 + sale, 12, 31)
     assert result.evidence[-1].terminated
-    assert model.value(v["sale"].id).flow.movements[0].magnitude is None
+    assert model.value(id=v["sale"].id).flow.movements[0].magnitude is None
 
 
 def test_future_changes_cannot_change_earlier_decision_and_missing_is_not_zero():

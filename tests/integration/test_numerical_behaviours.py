@@ -241,14 +241,15 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
         system=System(entities=children, assemblies=(parent,)),
     )
     assert (
-        decode(model.value(children[-1].characteristics.values[0].id).content)[1] == 100
+        decode(model.value(id=children[-1].characteristics.values[0].id).content)[1]
+        == 100
     )
     assert tuple(decode(c.characteristics.values[1].content) for c in children) == (
         1,
         2,
         2,
     )
-    assert model.entity(parent.id).entities == tuple(c.id for c in children)
+    assert model.entity(id=parent.id).entities == tuple(c.id for c in children)
 
 
 def test_type_ancestry_uses_canonical_classification_references():

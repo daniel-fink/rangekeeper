@@ -158,21 +158,25 @@ def revise(model, edit):
 
 def test_model_selection_modes_and_stable_order():
     model, root, a, b, c, edges, _ = fixture(overlap=True)
-    view = View(model, assembly=root.id)
+    view = View(model=model, assembly=root.id)
     assert tuple(item.id for item in view.entities) == (a.id, b.id, c.id, root.id)
-    assert view.entity(root.id) is model.entity(root.id)
+    assert view.entity(id=root.id) is model.entity(id=root.id)
     assert root.id not in {item.id for item in model.system.entities}
     assert view.relationships == edges
-    assert View(model, entities=(b.id, root.id, a.id)).relationships == edges[:2]
-    assert View(model, relationships=(edges[1].id,)).entities == (
-        model.entity(b.id),
-        model.entity(root.id),
+    assert View(model=model, entities=(b.id, root.id, a.id)).relationships == edges[:2]
+    assert View(model=model, relationships=(edges[1].id,)).entities == (
+        model.entity(id=b.id),
+        model.entity(id=root.id),
     )
-    assert View(model, entities=()).entities == ()
-    assert View(model, relationships=()).relationships == ()
-    assert len(View(model).entities) == 5
-    assert view.roots == (model.entity(root.id),)
-    assert view.leaves == (model.entity(a.id), model.entity(b.id), model.entity(c.id))
+    assert View(model=model, entities=()).entities == ()
+    assert View(model=model, relationships=()).relationships == ()
+    assert len(View(model=model).entities) == 5
+    assert view.roots == (model.entity(id=root.id),)
+    assert view.leaves == (
+        model.entity(id=a.id),
+        model.entity(id=b.id),
+        model.entity(id=c.id),
+    )
     assert view.successors(root.id) == view.leaves
     assert view.predecessors(b.id) == view.roots
     assert view.is_arborescence
@@ -183,7 +187,7 @@ def test_model_selection_modes_and_stable_order():
 @pytest.mark.parametrize("kind", ["entity", "relationship"])
 def test_lookup_scope_and_strict_uuid_errors(kind):
     model, root, a, b, c, edges, _ = fixture()
-    view = View(model, entities=(a.id,))
+    view = View(model=model, entities=(a.id,))
     method = getattr(view, kind)
     id = b.id if kind == "entity" else edges[0].id
     wrong = edges[0].id if kind == "entity" else a.id
@@ -200,17 +204,17 @@ def test_lookup_scope_and_strict_uuid_errors(kind):
 def test_explicit_endpoint_and_assembly_validation():
     model, root, a, b, c, edges, _ = fixture()
     with pytest.raises(SelectionError, match="endpoint"):
-        View(model, entities=(a.id,), relationships=(edges[0].id,))
+        View(model=model, entities=(a.id,), relationships=(edges[0].id,))
     with pytest.raises(SelectionError, match="mutually exclusive"):
-        View(model, entities=(), assembly=root.id)
+        View(model=model, entities=(), assembly=root.id)
     with pytest.raises(ReferenceTypeError):
-        View(model, assembly=a.id)
+        View(model=model, assembly=a.id)
     with pytest.raises(TypeError):
-        View(model, entities=("a",))
+        View(model=model, entities=("a",))
     with pytest.raises(TypeError):
-        View(object())
+        View(model=object())
     with pytest.raises(TypeError):
-        View(model).rollup(definition=object())
+        View(model=model).rollup(definition=object())
 
 
 @pytest.mark.parametrize("argument", ["entities", "relationships"])
@@ -218,16 +222,16 @@ def test_explicit_endpoint_and_assembly_validation():
 def test_empty_wrong_type_selectors_are_not_empty_selections(argument, invalid):
     model, *_ = fixture()
     with pytest.raises(TypeError):
-        View(model, **{argument: invalid})
+        View(model=model, **{argument: invalid})
 
 
 def test_filter_keeps_selection_and_removes_incident_edges():
     model, root, a, b, c, edges, _ = fixture()
-    view = View(model, assembly=root.id).filter(
+    view = View(model=model, assembly=root.id).filter(
         predicate=lambda entity: entity.id != b.id
     )
     assert view.relationships == (edges[0], edges[2])
-    assert view.successors(root.id) == (model.entity(a.id), model.entity(c.id))
+    assert view.successors(root.id) == (model.entity(id=a.id), model.entity(id=c.id))
     with pytest.raises(TypeError):
         view.filter(predicate=lambda entity: 1)
     with pytest.raises(MissingReferenceError):
@@ -237,18 +241,20 @@ def test_filter_keeps_selection_and_removes_incident_edges():
 def test_membership_and_relationship_direction_are_distinct():
     model, root, a, b, c, edges, _ = fixture(overlap=True)
     assert entities_in(model=model, assembly=root.id) == (
-        model.entity(a.id),
-        model.entity(b.id),
-        model.entity(c.id),
+        model.entity(id=a.id),
+        model.entity(id=b.id),
+        model.entity(id=c.id),
     )
     assert relationships_in(model=model, assembly=root.id) == edges
     assert tuple(x.code for x in containing_assemblies(model=model, entity=b.id)) == (
         "root",
         "other",
     )
-    empty_edges = View(model, entities=(root.id, a.id, b.id, c.id), relationships=())
+    empty_edges = View(
+        model=model, entities=(root.id, a.id, b.id, c.id), relationships=()
+    )
     assert empty_edges.successors(root.id) == ()
-    hierarchy = Hierarchy.from_membership(empty_edges, root=root.id)
+    hierarchy = Hierarchy.from_membership(view=empty_edges, root=root.id)
     assert hierarchy.children(root.id) == (a.id, b.id, c.id)
     assert hierarchy.kind is HierarchyKind.MEMBERSHIP
     assert not empty_edges.is_arborescence
@@ -269,17 +275,19 @@ def test_nested_membership_deduplicates_but_hierarchy_rejects_shared_child():
     assert tuple(
         x.code for x in containing_assemblies(model=model, entity=b.id, recursive=True)
     ) == ("root", "other", "outer")
-    view = View(model, entities=(outer.id, *(x.id for x in members)), relationships=())
+    view = View(
+        model=model, entities=(outer.id, *(x.id for x in members)), relationships=()
+    )
     with pytest.raises(HierarchyError) as error:
-        Hierarchy.from_membership(view, root=outer.id)
+        Hierarchy.from_membership(view=view, root=outer.id)
     assert (
         error.value.code is Code.HIERARCHY_MULTIPLE_PARENTS
         and error.value.targets == (b.id,)
     )
     selected = View(
-        model, entities=(outer.id, root.id, a.id, b.id, c.id), relationships=()
+        model=model, entities=(outer.id, root.id, a.id, b.id, c.id), relationships=()
     )
-    tree = Hierarchy.from_membership(selected, root=outer.id)
+    tree = Hierarchy.from_membership(view=selected, root=outer.id)
     assert tree.preorder() == (outer.id, root.id, a.id, b.id, c.id)
     assert tree.postorder() == (a.id, b.id, c.id, root.id, outer.id)
     assert tree.parent(outer.id) is None and tree.parent(b.id) == root.id
@@ -298,9 +306,9 @@ def test_nested_membership_deduplicates_but_hierarchy_rejects_shared_child():
 def test_hierarchy_rejects_ambiguous_topology(case, code):
     model, root, a, b, c, edges, _ = fixture()
     if case == "empty":
-        view = View(model, entities=())
+        view = View(model=model, entities=())
     elif case == "disconnected":
-        view = View(model, entities=(a.id, b.id), relationships=())
+        view = View(model=model, entities=(a.id, b.id), relationships=())
     else:
         extra = {
             "id": str(uuid4()),
@@ -309,7 +317,7 @@ def test_hierarchy_rejects_ambiguous_topology(case, code):
             "classification": str(edges[0].classification),
         }
         model = revise(model, lambda data: data["relationships"].append(extra))
-        view = View(model)
+        view = View(model=model)
     with pytest.raises(HierarchyError) as error:
         Hierarchy.from_relationships(view)
     assert error.value.code is code
@@ -318,7 +326,7 @@ def test_hierarchy_rejects_ambiguous_topology(case, code):
 
 def test_singleton_is_tree_and_hierarchy_is_immutable():
     model, root, a, b, c, edges, _ = fixture()
-    tree = Hierarchy.from_relationships(View(model, entities=(a.id,)))
+    tree = Hierarchy.from_relationships(View(model=model, entities=(a.id,)))
     assert tree.root == a.id and tree.children(a.id) == ()
     assert tree.preorder() == tree.postorder() == (a.id,)
     with pytest.raises((FrozenInstanceError, AttributeError)):
@@ -332,7 +340,7 @@ def test_singleton_is_tree_and_hierarchy_is_immutable():
 def test_reduction_selects_value_key_not_measure_and_preserves_model():
     model, root, a, b, c, edges, measure = fixture()
     before = model.to_data()
-    view = View(model, assembly=root.id)
+    view = View(model=model, assembly=root.id)
     result = view.rollup(definition=reduction(key="net", measure=measure.id))
     assert result.root_value.magnitude == 30
     assert result[c.id].magnitude == 0
@@ -350,7 +358,7 @@ def test_reduction_selects_value_key_not_measure_and_preserves_model():
 
 def test_missing_values_and_known_subtotal_do_not_become_zero():
     model, root, a, b, c, edges, _ = fixture(missing=True)
-    view = View(model, assembly=root.id)
+    view = View(model=model, assembly=root.id)
     strict = view.rollup(definition=reduction())
     assert strict.root_value is None and strict.available_value(root.id).magnitude == 10
     assert strict.coverage(root.id).missing == (b.id,)
@@ -384,7 +392,7 @@ def test_mean_reduces_raw_contributors_not_subtree_means():
         data["relationships"][1]["source"] = str(a.id)
 
     model = revise(model, edit)
-    view = View(model)
+    view = View(model=model)
     mean = view.rollup(definition=reduction(reducer=Reducer.MEAN))
     assert mean.root_value.magnitude == 40 and mean.value(a.id).magnitude == 15
     assert (
@@ -400,10 +408,10 @@ def test_mean_reduces_raw_contributors_not_subtree_means():
 
 def test_unit_conversion_and_incompatible_results():
     model, root, a, b, c, edges, _ = fixture()
-    result = View(model).rollup(definition=reduction(units="centimeter ** 2"))
+    result = View(model=model).rollup(definition=reduction(units="centimeter ** 2"))
     assert result.root_value.number == pytest.approx(300000)
     with pytest.raises(UnitError):
-        View(model).rollup(definition=reduction(units="second"))
+        View(model=model).rollup(definition=reduction(units="second"))
 
 
 def test_revision_pinning_and_stale_selector_rejection():
@@ -414,11 +422,11 @@ def test_revision_pinning_and_stale_selector_rejection():
             "quantity"
         ].update(magnitude=50),
     )
-    assert View(model).rollup(definition=reduction()).root_value.magnitude == 30
-    assert View(changed).rollup(definition=reduction()).root_value.magnitude == 70
-    assert select_value("net")(changed, a).quantity.magnitude == 50
+    assert View(model=model).rollup(definition=reduction()).root_value.magnitude == 30
+    assert View(model=changed).rollup(definition=reduction()).root_value.magnitude == 70
+    assert select_value(key="net")(changed, a).quantity.magnitude == 50
     assert (
-        View(codec.loads(text=codec.dumps(changed), kind=Model))
+        View(model=codec.loads(text=codec.dumps(changed), kind=Model))
         .rollup(definition=reduction())
         .root_value.magnitude
         == 70
@@ -436,16 +444,16 @@ def test_a_measure_asserts_the_selected_value():
         )
     )
     with pytest.raises(SelectionError):
-        View(model).rollup(definition=reduction(measure=other.id))
+        View(model=model).rollup(definition=reduction(measure=other.id))
     # A supplied Measure must exist even when no owner has the key.
     with pytest.raises(MissingReferenceError):
-        View(model).rollup(definition=reduction(key="absent", measure=uuid4()))
+        View(model=model).rollup(definition=reduction(key="absent", measure=uuid4()))
 
 
 def test_invalid_arguments_and_callback_results_are_not_silently_used():
     model, *_ = fixture()
     with pytest.raises(TypeError):
-        View(model).rollup(definition=reduction(contributors=lambda e: 1))
+        View(model=model).rollup(definition=reduction(contributors=lambda e: 1))
     with pytest.raises(TypeError):
         reduction(reducer="sum")
     with pytest.raises(TypeError):
@@ -473,7 +481,7 @@ def count(**kw):
 
 def test_count_reducer_counts_measured_contributors_without_units():
     model, root, a, b, c, edges, _ = fixture()
-    result = View(model).rollup(definition=count())
+    result = View(model=model).rollup(definition=count())
     assert result.root_value == Quantity(magnitude=3, units="dimensionless")
     assert result.coverage(root.id).status is CoverageStatus.COMPLETE
     # A recorded zero is a value, so it is counted.
@@ -482,7 +490,7 @@ def test_count_reducer_counts_measured_contributors_without_units():
 
 def test_count_reducer_skips_missing_values():
     model, root, a, b, c, edges, _ = fixture(missing=True)
-    result = View(model).rollup(definition=count())
+    result = View(model=model).rollup(definition=count())
     assert result.root_value is None
     assert result.available_value(root.id) == Quantity(
         magnitude=2, units="dimensionless"
@@ -490,14 +498,16 @@ def test_count_reducer_skips_missing_values():
     assert result.coverage(root.id).status is CoverageStatus.INCOMPLETE
     assert result.coverage(root.id).missing == (b.id,)
     assert result.available_value(b.id) is None
-    assert View(model).rollup(
+    assert View(model=model).rollup(
         definition=count(require_complete=False)
     ).root_value == Quantity(magnitude=2, units="dimensionless")
 
 
 def test_count_reducer_over_empty_coverage_is_unavailable():
     model, root, a, b, c, edges, _ = fixture()
-    result = View(model).rollup(definition=count(contributors=lambda entity: False))
+    result = View(model=model).rollup(
+        definition=count(contributors=lambda entity: False)
+    )
     assert result.root_value is None and result.available_value(root.id) is None
     assert result.coverage(root.id).status is CoverageStatus.EMPTY
     with pytest.raises(RollupError):
@@ -526,15 +536,15 @@ from rangekeeper import Model
 from rangekeeper.model import Metadata
 from uuid import uuid4
 model=Model.create(metadata=Metadata(id=uuid4(),schema_version='1.0.0'))
-assert graph.View(model).entities==()
+assert graph.View(model=model).entities==()
 """
     subprocess.run([sys.executable, "-c", script], check=True)
 
 
 def test_classification_filters_include_sub_types_unless_exclusive():
     model, root, a, b, c, edges, _ = fixture()
-    view = View(model)
-    rooms = (model.entity(a.id), model.entity(b.id), model.entity(c.id))
+    view = View(model=model)
+    rooms = (model.entity(id=a.id), model.entity(id=b.id), model.entity(id=c.id))
     assert view.filter(entity_classification=a.classification).entities == rooms
     assert view.filter(entity_classification=a.classification).relationships == ()
     parent = model.definitions.taxonomies[0].classifications[0]
@@ -556,24 +566,24 @@ def test_classification_filters_include_sub_types_unless_exclusive():
 
 def test_membership_root_must_be_an_explicit_selected_uuid():
     model, root, a, b, c, edges, _ = fixture()
-    view = View(model, assembly=root.id)
+    view = View(model=model, assembly=root.id)
     with pytest.raises(TypeError):
-        Hierarchy.from_membership(view, root=None)
+        Hierarchy.from_membership(view=view, root=None)
     with pytest.raises(HierarchyError) as error:
-        Hierarchy.from_membership(view, root=a.id)
+        Hierarchy.from_membership(view=view, root=a.id)
     assert error.value.code is Code.HIERARCHY_ROOT_MISMATCH
 
 
 def test_rollups_default_to_leaf_contributors():
     model, root, a, b, c, edges, _ = fixture()
     # The default selects leaves, so the unmeasured root does not contribute.
-    result = View(model).rollup(
+    result = View(model=model).rollup(
         definition=QuantityRollup(key="net", units="meter ** 2")
     )
     assert result.coverage(root.id).selected == (a.id, b.id, c.id)
     assert result.root_value.magnitude == 30
     # All nodes include the unmeasured root, so the result is not complete.
-    every = View(model).rollup(
+    every = View(model=model).rollup(
         definition=QuantityRollup(
             key="net", units="meter ** 2", contributors=Contributor.ALL
         )
@@ -585,6 +595,6 @@ def test_rollups_default_to_leaf_contributors():
 def test_selector_validates_measure_even_when_local_key_is_absent():
     model, root, a, b, c, edges, _ = fixture()
     with pytest.raises(MissingReferenceError):
-        select_value("absent", measure=uuid4())(model, a)
+        select_value(key="absent", measure=uuid4())(model, a)
     with pytest.raises(ReferenceTypeError):
-        select_value("absent", measure=model.definitions.taxonomies[0].id)(model, a)
+        select_value(key="absent", measure=model.definitions.taxonomies[0].id)(model, a)

@@ -160,11 +160,11 @@ def build():
 
 
 MODEL = build()
-VIEW = View(MODEL, entities=[item.id for item in ENTITIES if item.code != "p1"])
+VIEW = View(model=MODEL, entities=[item.id for item in ENTITIES if item.code != "p1"])
 
 
 def codes(ids):
-    return tuple(MODEL.entity(id).code for id in ids)
+    return tuple(MODEL.entity(id=id).code for id in ids)
 
 
 def value_test(relation, quantity=None, *, minimum=None, maximum=None, key="gfa"):
@@ -279,7 +279,7 @@ def test_presence_tests_decide_every_entity():
     assert present.passed == missing.failed
     assert present.complete and missing.complete
     # Presence also tests property content.
-    view = View(MODEL)
+    view = View(model=MODEL)
     assert "p1" in codes(
         view.match(condition=Filter(tests=(value_test(ValueRelation.PRESENT),))).passed
     )
@@ -320,7 +320,7 @@ def test_where_keeps_passing_entities_and_their_edges():
 
 def test_comparisons_need_a_measurement_value():
     with pytest.raises(SelectionError, match="measurement"):
-        View(MODEL).match(
+        View(model=MODEL).match(
             condition=Filter(tests=(value_test(ValueRelation.EQUAL, "1 m^2"),))
         )
 

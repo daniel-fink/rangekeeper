@@ -81,21 +81,21 @@ def oracle():
     )
     equations = (
         growth.compound(
-            model,
+            model=model,
             id=uuid4(),
             initial=Reference(target=ids["initial"]),
             rate=Reference(target=ids["rate"]),
             series=ids["cash"],
         ),
         financial.discount(
-            model,
+            model=model,
             id=uuid4(),
             series=ids["cash"],
             rate=Reference(target=ids["rate"]),
             discounted=ids["discounted"],
         ),
         financial.pv(
-            model,
+            model=model,
             id=uuid4(),
             sequence=ids["discounted"],
             value=Reference(target=ids["pv"]),
@@ -142,9 +142,9 @@ def test_forward_then_inverse_temporal_oracle():
     validate(run=run, resolver=store).raise_if_invalid()
     result = store.load_model(run.record.outputs[0])
     assert [
-        m.magnitude for m in result.value(ids["cash"]).flow.movements
+        m.magnitude for m in result.value(id=ids["cash"]).flow.movements
     ] == pytest.approx([100, 110, 121])
-    assert result.value(ids["pv"]).quantity.number == pytest.approx(3000 / 11)
+    assert result.value(id=ids["pv"]).quantity.number == pytest.approx(3000 / 11)
     inverse = execute(
         specification=investigate(result, ids, inverse=True), store=store
     ).run
@@ -152,9 +152,9 @@ def test_forward_then_inverse_temporal_oracle():
         inverse.report.to_data()
     )
     output = store.load_model(inverse.record.outputs[0])
-    assert output.value(ids["initial"]).quantity.number == pytest.approx(110)
+    assert output.value(id=ids["initial"]).quantity.number == pytest.approx(110)
     assert output.metadata.previous == result.id
-    assert all(m.magnitude is None for m in model.value(ids["cash"]).flow.movements)
+    assert all(m.magnitude is None for m in model.value(id=ids["cash"]).flow.movements)
 
 
 def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
@@ -173,7 +173,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
     model = model.revise(Update(system=System.from_data(data)))
     assert (
         assign_flow(
-            model, ids["cash"], ids=[model.value(ids["cash"]).flow.movements[0].id]
+            model, ids["cash"], ids=[model.value(id=ids["cash"]).flow.movements[0].id]
         )[0].quantity.magnitude
         == 0
     )
@@ -182,7 +182,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
     with pytest.raises(MissingReferenceError) as missing:
         unknown_flow(model, ids["cash"], ids=[uuid4()])
     assert (missing.value.kind, missing.value.by) == ("Movement", "id")
-    first = model.value(ids["cash"]).flow.movements[0].id
+    first = model.value(id=ids["cash"]).flow.movements[0].id
     with pytest.raises(ContractError) as repeated:
         unknown_flow(model, ids["cash"], ids=[first, first])
     assert repeated.value.code is Code.UNIQUE
@@ -195,7 +195,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
                     target=Reference(
                         target=next(
                             m.id
-                            for m in model.value(ids["cash"]).flow.movements
+                            for m in model.value(id=ids["cash"]).flow.movements
                             if m.key == "y1"
                         )
                     ),
@@ -206,7 +206,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
                 Reference(
                     target=next(
                         m.id
-                        for m in model.value(ids["cash"]).flow.movements
+                        for m in model.value(id=ids["cash"]).flow.movements
                         if m.key == "y2"
                     )
                 ),
@@ -218,17 +218,18 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
     run = execute(specification=specification, store=store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report.to_data()
     result = store.load_model(run.record.outputs[0])
-    movements = result.value(ids["cash"]).flow.movements
+    movements = result.value(id=ids["cash"]).flow.movements
     assert [m.magnitude for m in movements] == [25, 0, 99]
     assert (
-        movements[2].to_data() == model.value(ids["cash"]).flow.movements[2].to_data()
+        movements[2].to_data()
+        == model.value(id=ids["cash"]).flow.movements[2].to_data()
     )
-    assert model.value(ids["cash"]).flow.movements[0].magnitude == 0
+    assert model.value(id=ids["cash"]).flow.movements[0].magnitude == 0
     detached = result.to_data()
     detached["system"]["entities"][0]["characteristics"]["values"][-2]["flow"][
         "movements"
     ][0]["magnitude"] = 1
-    assert result.value(ids["cash"]).flow.movements[0].magnitude == 25
+    assert result.value(id=ids["cash"]).flow.movements[0].magnitude == 25
     with pytest.raises(AttributeError):
         movements[0].magnitude = 1
 
@@ -239,14 +240,14 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
     model, ids = oracle()
     builder = uuid4()
     first = growth.compound(
-        model,
+        model=model,
         id=builder,
         initial=Reference(target=ids["initial"]),
         rate=Reference(target=ids["rate"]),
         series=ids["cash"],
     )
     assert first == growth.compound(
-        model,
+        model=model,
         id=builder,
         initial=Reference(target=ids["initial"]),
         rate=Reference(target=ids["rate"]),
@@ -271,17 +272,17 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
 
     reference = Reference(
         target=next(
-            m.id for m in model.value(ids["cash"]).flow.movements if m.key == "y2"
+            m.id for m in model.value(id=ids["cash"]).flow.movements if m.key == "y2"
         )
     )
-    assert reference.target == model.value(ids["cash"]).flow.movements[1].id
+    assert reference.target == model.value(id=ids["cash"]).flow.movements[1].id
     assert (
         target_units(
             changed,
             Reference(
                 target=next(
                     m.id
-                    for m in model.value(ids["cash"]).flow.movements
+                    for m in model.value(id=ids["cash"]).flow.movements
                     if m.key == "y2"
                 )
             ),
@@ -289,7 +290,9 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
         == "AUD"
     )
     with pytest.raises(ValueError, match="coordinates"):
-        flow.sum(changed, id=uuid4(), summands=[ids["cash"]], total=ids["discounted"])
+        flow.sum(
+            model=changed, id=uuid4(), summands=[ids["cash"]], total=ids["discounted"]
+        )
 
 
 def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
@@ -303,7 +306,7 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
     original["unknowns"] = [
         r
         for r in original["unknowns"]
-        if r["target"] != str(model.value(ids["cash"]).flow.movements[1].id)
+        if r["target"] != str(model.value(id=ids["cash"]).flow.movements[1].id)
     ]
     failed = execute(specification=Specification.from_data(original), store=store).run
     assert failed.report.status.solution == SolutionStatus.NOT_ASSESSED
@@ -317,7 +320,7 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
                     target=Reference(
                         target=next(
                             m.id
-                            for m in model.value(ids["cash"]).flow.movements
+                            for m in model.value(id=ids["cash"]).flow.movements
                             if m.key == "y1"
                         )
                     ).to_data(),
@@ -349,7 +352,7 @@ def test_movement_candidate_rejection_and_expansion_limits():
         def solve(self, *args, **kwargs):
             result = PyomoHighs().solve(*args, **kwargs)
             candidate = dict(result.candidate)
-            candidate[model.value(ids["cash"]).flow.movements[1].id] += 1
+            candidate[model.value(id=ids["cash"]).flow.movements[1].id] += 1
             return replace(result, candidate=candidate)
 
     run = execute(
@@ -412,21 +415,21 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
                 id=ids[name],
                 key=name,
                 kind=ValueKind.FLOW,
-                measure=model.value(ids["cash"]).measure,
+                measure=model.value(id=ids["cash"]).measure,
                 flow=Flow.from_data(template["flow"]).clone(),
             ).to_data()
         )
     model = model.revise(Update(system=System.from_data(data)))
     equations = [
         flow.accumulate(
-            model,
+            model=model,
             id=uuid4(),
             increments=ids["cash"],
             initial=Reference(target=ids["initial"]),
             accumulation=ids["discounted"],
         ),
         financial.interest(
-            model,
+            model=model,
             id=uuid4(),
             principal=ids["discounted"],
             rate=Reference(target=ids["rate"]),
@@ -434,14 +437,14 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
             nonnegative_principal=True,
         ),
         flow.scale(
-            model,
+            model=model,
             id=uuid4(),
             multiplicand=ids["interest"],
             multiplier=Reference(target=ids["rate"]),
             product=ids["scaled"],
         ),
         flow.sum(
-            model,
+            model=model,
             id=uuid4(),
             summands=[ids["interest"], ids["scaled"]],
             total=ids["sum"],
@@ -459,7 +462,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
                         divide(
                             reference(
                                 Reference(
-                                    target=model.value(ids["discounted"])
+                                    target=model.value(id=ids["discounted"])
                                     .flow.movements[(i + 1) % 3]
                                     .id
                                 )
@@ -468,7 +471,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
                         ),
                     ),
                 )
-                for i, out in enumerate(model.value(ids["reversion"]).flow.movements)
+                for i, out in enumerate(model.value(id=ids["reversion"]).flow.movements)
             ],
             values=(ids["discounted"], ids["rate"], ids["reversion"]),
         ),
@@ -491,7 +494,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
             target=Reference(
                 target=next(
                     m.id
-                    for m in model.value(ids["cash"]).flow.movements
+                    for m in model.value(id=ids["cash"]).flow.movements
                     if m.key == f"y{i + 1}"
                 )
             ),
@@ -524,11 +527,11 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
         "reversion": [900, 950, 1100],
     }.items():
         assert [
-            m.number for m in output.value(ids[name]).flow.movements
+            m.number for m in output.value(id=ids[name]).flow.movements
         ] == pytest.approx(expected)
     with pytest.raises(UnsupportedError, match="overdraft"):
         financial.interest(
-            model,
+            model=model,
             id=uuid4(),
             principal=ids["discounted"],
             rate=Reference(target=ids["rate"]),

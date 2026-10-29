@@ -102,7 +102,11 @@ def project(units: UnitSystem = default_units):
         units=units,
     )
     ids["b"] = building.id
-    return model, Hierarchy.from_membership(View(model), root=building.id), ids
+    return (
+        model,
+        Hierarchy.from_membership(view=View(model=model), root=building.id),
+        ids,
+    )
 
 
 def large(minimum="1200 m^2"):
@@ -219,7 +223,7 @@ def test_a_filter_with_only_decided_contributors_is_complete():
 
 def test_a_pivot_keeps_undecided_contributors_in_every_column():
     model, rows, ids = project()
-    pivot = nla(contributors=large()).pivot(rows, by=KIND["space"].id)
+    pivot = nla(contributors=large()).pivot(hierarchy=rows, by=KIND["space"].id)
     for column in (None, FLOOR.id):
         assert pivot.coverage(row=ids["b"], column=column).undecided == (
             ids["f3"],

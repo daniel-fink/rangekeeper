@@ -100,18 +100,18 @@ def test_probabilistic_and_flexible_use_identical_captured_paths():
     for name in ("space_market_price_factors", "historical_value"):
         value = scenario.value(name)
         assert (
-            fixed.model.value(value.id).flow
-            == chosen.model.value(value.id).flow
+            fixed.model.value(id=value.id).flow
+            == chosen.model.value(id=value.id).flow
             == value.flow
             or name == "space_market_price_factors"
         )
         # Assigned observations may gain evidence; their magnitudes and coordinates stay identical.
         assert [
             (m.key, m.date, m.magnitude)
-            for m in fixed.model.value(value.id).flow.movements
+            for m in fixed.model.value(id=value.id).flow.movements
         ] == [
             (m.key, m.date, m.magnitude)
-            for m in chosen.model.value(value.id).flow.movements
+            for m in chosen.model.value(id=value.id).flow.movements
         ]
     output = flexible.values(chosen.model)
     assert output["total"].flow.movements[-1].magnitude == 0

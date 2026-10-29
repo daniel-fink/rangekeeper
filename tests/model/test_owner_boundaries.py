@@ -13,8 +13,8 @@ from .test_graph import fixture
 
 def test_quantity_population_preserves_zero_missing_and_scope():
     model, root, a, b, c, *_ = fixture(missing=True)
-    population = View(model, entities=(a.id, b.id, c.id)).quantities(
-        "net", units="meter ** 2"
+    population = View(model=model, entities=(a.id, b.id, c.id)).quantities(
+        key="net", units="meter ** 2"
     )
     assert any(q.magnitude == 0 for q in population.quantities)
     assert population.coverage.missing

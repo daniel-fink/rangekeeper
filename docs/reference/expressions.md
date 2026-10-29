@@ -383,7 +383,9 @@ graph query languages, and general-purpose code execution are outside this draft
 ## Passive Flow and hierarchy builders
 
 Builders use mathematical roles, not permanent calculation direction. A
-Specification can fix a total and solve a summand. The signatures use:
+Specification can fix a total and solve a summand. Each builder takes every
+argument by name, also the Model: `flow.sum(model=, id=, summands=, total=)`
+(D14). The signatures use:
 
 | Builder | Quantity parameters |
 | --- | --- |
@@ -447,7 +449,7 @@ nonzero-rate domain, a product equation can permit solving the rate when the val
 is fixed. Do not rewrite saved quotient equations; an unknown divisor is outside
 the current executor's supported slice.
 
-`FlowRollup(...).formulate(hierarchy, id=..., aggregates=...)` declares SUM
+`FlowRollup(...).formulate(hierarchy=..., id=..., aggregates=...)` declares SUM
 relationships from the same original contributors used by the numerical rollup.
 Aggregate Flow Values must already exist on their named entities. Use explicit
 intermediate Flow equations when those intermediate quantities need individual

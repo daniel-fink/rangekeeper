@@ -48,7 +48,7 @@ class Hierarchy:
     _preorder: tuple[UUID, ...]
     _postorder: tuple[UUID, ...]
 
-    def __init__(self, view: View, *, membership_root: UUID | None = None) -> None:
+    def __init__(self, *, view: View, membership_root: UUID | None = None) -> None:
         if not isinstance(view, View):
             raise TypeError("view must be a Model-backed View")
         ids = tuple(entity.id for entity in view.entities)
@@ -148,10 +148,10 @@ class Hierarchy:
     @classmethod
     def from_relationships(cls, view: View) -> "Hierarchy":
         """Require one parent-to-child tree using the selected Relationships."""
-        return cls(view)
+        return cls(view=view)
 
     @classmethod
-    def from_membership(cls, view: View, *, root: UUID) -> "Hierarchy":
+    def from_membership(cls, *, view: View, root: UUID) -> "Hierarchy":
         """Require one tree using selected Assembly membership; ignore Relationships.
 
         Include transitive members explicitly in the View when nesting is wanted.
@@ -159,7 +159,7 @@ class Hierarchy:
         within this hierarchy. This operation never invents Relationship records.
         """
         require_uuid(root, "root")
-        return cls(view, membership_root=root)
+        return cls(view=view, membership_root=root)
 
     def children(self, id: UUID) -> tuple[UUID, ...]:
         """Return selected child IDs in View order, validating lookup scope."""

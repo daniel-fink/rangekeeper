@@ -46,7 +46,7 @@ def replay(model: Model, *, realization: UUID | None = None) -> Market:
     if {o.name for o in record.outputs} != set(paths):
         raise ValueError("captured output inventory mismatch")
     for output in record.outputs:
-        flow = model.value(output.value).flow
+        flow = model.value(id=output.value).flow
         if flow is None:
             raise ValueError("stored output is not a Flow")
         actual = cast(dict[str, Any], flow.to_data())

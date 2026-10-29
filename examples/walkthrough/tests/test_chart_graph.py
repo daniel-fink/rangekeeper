@@ -45,7 +45,7 @@ def visualization_fixture():
         ),
         system=System(entities=(root, child), relationships=(edge,)),
     )
-    view = View(model)
+    view = View(model=model)
     table = table_module.Table(
         columns=("entity_id", "parent_id", "name", "total"),
         rows=(

@@ -251,7 +251,7 @@ def test_a_flow_value_reads_as_a_flow():
     project = draft.add_entity(code="project", classification="project")
     rent = project.flow(key="rent", units="AUD", periods=years)
     model = draft.commit()
-    movements = model.value(rent.id).flow.movements
+    movements = model.value(id=rent.id).flow.movements
     draft = model.edit()
     draft.entity(code="project").equations(
         *(

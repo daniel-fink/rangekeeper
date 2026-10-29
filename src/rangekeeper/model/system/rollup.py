@@ -200,7 +200,7 @@ class RollupResult:
         selected = set(entries[self.hierarchy.root].coverage.selected)
         for owner, value_id in value_ids.items():
             self.hierarchy.view.entity(owner)
-            self.hierarchy.view.model.value(value_id)
+            self.hierarchy.view.model.value(id=value_id)
             if (
                 owner not in selected
                 or self.hierarchy.view.model.owner_of(value_id) != owner
@@ -400,8 +400,8 @@ class _Rollup:
 
     def pivot(
         self,
-        hierarchy: Hierarchy,
         *,
+        hierarchy: Hierarchy,
         by: UUID | None = None,
         depth: int = 1,
         only: UUID | None = None,
@@ -710,8 +710,8 @@ class FlowRollup(_Rollup):
 
     def formulate(
         self,
-        hierarchy: Hierarchy,
         *,
+        hierarchy: Hierarchy,
         id: UUID,
         aggregates: Mapping[UUID, UUID],
     ) -> "Formulation":
@@ -727,7 +727,7 @@ class FlowRollup(_Rollup):
             )
         selected, populations, _ = self._population(hierarchy)
         return formulate(
-            hierarchy,
+            hierarchy=hierarchy,
             id=id,
             aggregates=aggregates,
             selected=selected,

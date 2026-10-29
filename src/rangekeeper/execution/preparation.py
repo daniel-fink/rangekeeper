@@ -78,7 +78,7 @@ class Binding:
 
     def text(self, expression: Expression) -> str:
         """Return the text of ``expression``, with each reference named by its key."""
-        return render(expression, name=self.key)
+        return render(expression=expression, name=self.key)
 
 
 def validate(

@@ -95,10 +95,10 @@ def main() -> None:
     rent = UUID("e3fb1434-5371-5bcb-b0b8-e3af2bf65022")
     noi = UUID("9324f928-cfc8-50bb-ba99-fe8c02a6dbd2")
     quantities = {
-        "forward_capital_value": first.value(capital).quantity.to_data(),
-        "forward_noi": first.value(noi).quantity.to_data(),
-        "inverse_rent": second.value(rent).quantity.to_data(),
-        "inverse_noi": second.value(noi).quantity.to_data(),
+        "forward_capital_value": first.value(id=capital).quantity.to_data(),
+        "forward_noi": first.value(id=noi).quantity.to_data(),
+        "inverse_rent": second.value(id=rent).quantity.to_data(),
+        "inverse_noi": second.value(id=noi).quantity.to_data(),
     }
     for key, expected in (
         ("forward_capital_value", 11000000),

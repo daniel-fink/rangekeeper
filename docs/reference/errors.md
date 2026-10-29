@@ -95,7 +95,7 @@ still catches a `ValidationError`.
 
 ```python
 try:
-    model = rk.Model.from_data(data)
+    model = rk.Model.from_data(data=data)
 except rk.errors.ValidationError as error:
     print(error.code, [issue.code for issue in error.report.issues])
 ```

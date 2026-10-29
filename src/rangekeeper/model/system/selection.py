@@ -38,7 +38,7 @@ def _recorded_quantity(selected, units, unit_system):
     return unit_system.convert(quantity=selected.quantity, to=units)
 
 
-def select_value(key: str, *, measure: UUID | None = None) -> ValueSelector:
+def select_value(*, key: str, measure: UUID | None = None) -> ValueSelector:
     """Build a selector for one local key, optionally asserting its Measure UUID.
 
     Selection resolves the Entity against the supplied Model, never reading stale
@@ -53,7 +53,7 @@ def select_value(key: str, *, measure: UUID | None = None) -> ValueSelector:
     def select(model: Model, entity: Entity) -> Value | None:
         if not isinstance(model, Model) or not isinstance(entity, Entity):
             raise TypeError("selector requires a Model and schema Entity")
-        canonical = model.entity(entity.id)
+        canonical = model.entity(id=entity.id)
         if measure is not None:
             model._index.get(measure, Measure)
         return _local_value(model, canonical, key=key, measure=measure)

@@ -129,7 +129,7 @@ def test_missing_wrong_kind_wrong_identity_and_cycles():
     missing = spec(includes=(uuid4(),))
     with pytest.raises(MissingReferenceError):
         missing.compose(resolver=Resolver())
-    model = Model.from_data(load("model"))
+    model = Model.from_data(data=load("model"))
     with pytest.raises(ReferenceTypeError):
         spec(includes=(model.id,)).compose(resolver=Resolver(model))
     left_id, right_id = uuid4(), uuid4()
@@ -158,7 +158,7 @@ def test_missing_wrong_kind_wrong_identity_and_cycles():
     "name", ["specification-composed-forward", "specification-composed-inverse"]
 )
 def test_complete_composed_investigations_pin_the_model(name):
-    model = Model.from_data(load("model"))
+    model = Model.from_data(data=load("model"))
     common = Specification.from_data(load("specification-common"))
     root = Specification.from_data(load(name))
     resolver = Resolver(model, common)
@@ -177,7 +177,7 @@ def test_complete_composed_investigations_pin_the_model(name):
 
 
 def test_partial_roles_do_not_become_complete_from_recorded_values():
-    model = Model.from_data(load("model"))
+    model = Model.from_data(data=load("model"))
     common = Specification.from_data(load("specification-common"))
     resolver = Resolver(model)
     report = common.compose(resolver=resolver).validate(resolver=resolver)
@@ -239,7 +239,7 @@ def test_duplicate_local_references_and_identity_reuse_are_rejected():
 
 
 def test_specification_local_recorded_quantity_units_are_checked_after_composition():
-    model = Model.from_data(load("model"))
+    model = Model.from_data(data=load("model"))
     data = load("specification-forward")
     measure = model.definitions.measures[0]
     value = Value(
@@ -258,12 +258,12 @@ def test_specification_local_recorded_quantity_units_are_checked_after_compositi
 
 
 def test_model_resolver_must_return_the_requested_revision():
-    model = Model.from_data(load("model"))
+    model = Model.from_data(data=load("model"))
     root = Specification.from_data(load("specification-forward"))
     composition = root.compose(resolver=Resolver())
     data = model.to_data()
     data["metadata"]["id"] = str(uuid4())
-    other = Model.from_data(data)
+    other = Model.from_data(data=data)
 
     class WrongRevision(Resolver):
         def load_model(self, id):

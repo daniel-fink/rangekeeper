@@ -37,7 +37,7 @@ class Precedence(IntEnum):
     ATOM = 9
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Spelling:
     """How equation text writes one operator, and how tightly it binds."""
 
@@ -50,27 +50,45 @@ class Spelling:
 INFIX: dict[str, Spelling] = {
     spelling.symbol: spelling
     for spelling in (
-        Spelling("or", Operator.LOGICAL_OR, Precedence.OR),
-        Spelling("and", Operator.LOGICAL_AND, Precedence.AND),
-        Spelling("=", Operator.EQUAL, Precedence.COMPARISON),
-        Spelling("!=", Operator.NOT_EQUAL, Precedence.COMPARISON),
-        Spelling("<", Operator.LESS_THAN, Precedence.COMPARISON),
-        Spelling("<=", Operator.LESS_THAN_OR_EQUAL, Precedence.COMPARISON),
-        Spelling(">", Operator.GREATER_THAN, Precedence.COMPARISON),
-        Spelling(">=", Operator.GREATER_THAN_OR_EQUAL, Precedence.COMPARISON),
-        Spelling("+", Operator.ADD, Precedence.SUM),
-        Spelling("-", Operator.SUBTRACT, Precedence.SUM),
-        Spelling("*", Operator.MULTIPLY, Precedence.PRODUCT),
-        Spelling("/", Operator.DIVIDE, Precedence.PRODUCT),
-        Spelling("**", Operator.POWER, Precedence.POWER),
+        Spelling(symbol="or", operator=Operator.LOGICAL_OR, precedence=Precedence.OR),
+        Spelling(
+            symbol="and", operator=Operator.LOGICAL_AND, precedence=Precedence.AND
+        ),
+        Spelling(symbol="=", operator=Operator.EQUAL, precedence=Precedence.COMPARISON),
+        Spelling(
+            symbol="!=", operator=Operator.NOT_EQUAL, precedence=Precedence.COMPARISON
+        ),
+        Spelling(
+            symbol="<", operator=Operator.LESS_THAN, precedence=Precedence.COMPARISON
+        ),
+        Spelling(
+            symbol="<=",
+            operator=Operator.LESS_THAN_OR_EQUAL,
+            precedence=Precedence.COMPARISON,
+        ),
+        Spelling(
+            symbol=">", operator=Operator.GREATER_THAN, precedence=Precedence.COMPARISON
+        ),
+        Spelling(
+            symbol=">=",
+            operator=Operator.GREATER_THAN_OR_EQUAL,
+            precedence=Precedence.COMPARISON,
+        ),
+        Spelling(symbol="+", operator=Operator.ADD, precedence=Precedence.SUM),
+        Spelling(symbol="-", operator=Operator.SUBTRACT, precedence=Precedence.SUM),
+        Spelling(symbol="*", operator=Operator.MULTIPLY, precedence=Precedence.PRODUCT),
+        Spelling(symbol="/", operator=Operator.DIVIDE, precedence=Precedence.PRODUCT),
+        Spelling(symbol="**", operator=Operator.POWER, precedence=Precedence.POWER),
     )
 }
 # The operators before one operand.
 PREFIX: dict[str, Spelling] = {
     spelling.symbol: spelling
     for spelling in (
-        Spelling("not", Operator.LOGICAL_NOT, Precedence.NOT),
-        Spelling("-", Operator.NEGATE, Precedence.NEGATION),
+        Spelling(
+            symbol="not", operator=Operator.LOGICAL_NOT, precedence=Precedence.NOT
+        ),
+        Spelling(symbol="-", operator=Operator.NEGATE, precedence=Precedence.NEGATION),
     )
 }
 # The spelling of each operator, for writing records as text.

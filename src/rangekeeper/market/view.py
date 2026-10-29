@@ -40,7 +40,7 @@ class Market:
         matches = [v for v in bindings if v.name == name]
         if len(matches) != 1:
             raise KeyError(name)
-        return self.model.value(matches[0].value)
+        return self.model.value(id=matches[0].value)
 
     def value(self, name: str) -> Value:
         """Resolve one declared name; ambiguous or absent names fail with KeyError."""

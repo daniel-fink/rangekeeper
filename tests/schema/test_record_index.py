@@ -39,7 +39,7 @@ def inspected():
         "entities": [{"id": str(UUID(int=10002))}]
     }
     # Construct the exhaustive oracle independently through the public record API.
-    model = Model.from_data(data)
+    model = Model.from_data(data=data)
     oracle = tuple(walk(ModelRecord.from_data(data)))
     return model, oracle
 
@@ -191,7 +191,7 @@ def test_opaque_identity_is_not_a_declaration(inspected):
 @pytest.mark.parametrize("system", [{}, {"entities": None}, {"entities": []}])
 def test_null_and_empty_record_containers_remain_distinct(system):
     data = dict(metadata=dict(id=str(uuid4()), schema_version="1.0.0"), system=system)
-    model = Model.from_data(data)
+    model = Model.from_data(data=data)
     root = model.record_at("").record
     assert root.has_field("system")
     assert root.to_data()["system"] == system
@@ -202,7 +202,7 @@ def test_null_and_empty_record_containers_remain_distinct(system):
 
 def test_null_record_field_is_not_synthesized():
     model = Model.from_data(
-        dict(
+        data=dict(
             metadata=dict(id=str(uuid4()), schema_version="1.0.0"),
             geometry=None,
         )
@@ -215,7 +215,7 @@ def test_null_record_field_is_not_synthesized():
 
 def test_omitted_record_is_not_synthesized():
     model = Model.from_data(
-        dict(metadata=dict(id=str(uuid4()), schema_version="1.0.0"))
+        data=dict(metadata=dict(id=str(uuid4()), schema_version="1.0.0"))
     )
     assert not model.record_at("").record.has_field("system")
     with pytest.raises(MissingReferenceError):
@@ -322,7 +322,7 @@ def test_lookup_guard_restores_generated_constructors(inspected, monkeypatch):
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(entities=(entity,)),
     )
-    assert after.entity(entity.id) == entity
+    assert after.entity(id=entity.id) == entity
 
 
 def test_lookup_creates_only_selected_chain_wrappers(inspected, monkeypatch):
@@ -392,7 +392,7 @@ def test_late_value_and_claim_do_not_require_visiting_twenty_thousand_records(
             ]
         ),
     )
-    model = Model.from_data(data)
+    model = Model.from_data(data=data)
     oracle = tuple(walk(ModelRecord.from_data(data)))
     selected = [
         (position, record, owner, path)

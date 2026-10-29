@@ -30,7 +30,7 @@ def store():
         ("specification*.yaml", rk.Specification),
     ):
         for path in sorted(EXAMPLES.glob(pattern)):
-            found.put(kind.from_data(yaml.safe_load(path.read_text())))
+            found.put(kind.from_data(data=yaml.safe_load(path.read_text())))
     return found
 
 
@@ -58,7 +58,7 @@ def test_every_document_has_the_same_verbs(kind):
 @pytest.mark.parametrize(
     "document",
     [
-        lambda: rk.Model.from_data(load("model")),
+        lambda: rk.Model.from_data(data=load("model")),
         lambda: rk.Specification.from_data(load("specification-forward")),
         lambda: Run.from_data(load("run-forward")),
     ],
@@ -73,7 +73,7 @@ def test_constructed_documents_are_valid_with_and_without_resolver(document):
 
 
 def test_model_units_check_recorded_values_against_another_unit_system():
-    model = rk.Model.from_data(load("model"))
+    model = rk.Model.from_data(data=load("model"))
     assert model.validate(units=model.unit_system).valid
     assert model.validate(resolver=MemoryStore()).valid
     report = model.validate(units=UnitSystem(currencies=("USD",)))
@@ -107,7 +107,7 @@ def test_batch_pin_must_match_each_case_model():
     other = deepcopy(load("model"))
     other["metadata"].update(id=str(uuid4()), previous=None)
     other["metadata"] = {k: v for k, v in other["metadata"].items() if v is not None}
-    resolver.put(rk.Model.from_data(other))
+    resolver.put(rk.Model.from_data(data=other))
     data = revision("specification-batch", model=None)
     data["metadata"].pop("model", None)
     data["model"] = other["metadata"]["id"]

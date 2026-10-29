@@ -15,7 +15,7 @@ from rangekeeper.quantity import Quantity
 
 
 def inspect(model: Model, id: UUID) -> Quantity | None:
-    view = View(model, entities=(id,))
+    view = View(model=model, entities=(id,))
     entity: Entity = view.entity(id)
     hierarchy = Hierarchy.from_relationships(view)
     rollup = QuantityRollup(key="net", reducer=Reducer.SUM, units="m ** 2")

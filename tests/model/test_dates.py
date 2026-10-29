@@ -71,7 +71,7 @@ def ref(key):
 
 def test_a_date_value_records_a_date_never_or_nothing():
     plan = rk.Model.from_data(
-        model_data(
+        data=model_data(
             [
                 date_value("start_date", date="2027-01-01"),
                 date_value("b_start", never="never"),
@@ -121,7 +121,7 @@ def test_a_date_value_record_takes_a_date_or_never():
 )
 def test_date_content_belongs_only_to_a_date_value(value):
     with pytest.raises(ValidationError, match="Value"):
-        rk.Model.from_data(model_data([value]))
+        rk.Model.from_data(data=model_data([value]))
 
 
 def test_date_literals_and_never():
@@ -169,7 +169,7 @@ def test_date_equations_validate_in_a_model():
             add(literal(2, "years"), date_literal(date(2030, 1, 1))),
         ),
     ]
-    model = rk.Model.from_data(model_data(DATES, equations))
+    model = rk.Model.from_data(data=model_data(DATES, equations))
     assert len(model.system.formulations[0].expressions) == 3
 
 
@@ -217,7 +217,7 @@ COMPARISON = "a date compares only with a date or NEVER"
 )
 def test_other_date_operations_are_rejected(equation, message):
     with pytest.raises(ValidationError, match=message):
-        rk.Model.from_data(model_data(DATES, [equation]))
+        rk.Model.from_data(data=model_data(DATES, [equation]))
 
 
 def test_evaluate_a_date_expression():
@@ -260,6 +260,6 @@ def test_date_content_survives_a_bundle(tmp_path):
         date_value("b_start", never="never"),
         date_value("sale_date"),
     ]
-    plan = rk.Model.from_data(model_data(values, equations))
+    plan = rk.Model.from_data(data=model_data(values, equations))
     write(root=tmp_path / "bundle", model=plan)
     assert Reader(root=tmp_path / "bundle").model().to_data() == plan.to_data()

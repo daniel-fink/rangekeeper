@@ -5,6 +5,6 @@ from rangekeeper.model.system.table import ValueColumn, to_table
 
 
 def invalid(model: Model, specification: Specification) -> None:
-    to_table(model)
+    to_table(source=model)
     ValueColumn(name="Area", key="net", units=42)
-    model.entity("not-a-uuid")
+    model.entity(id="not-a-uuid")

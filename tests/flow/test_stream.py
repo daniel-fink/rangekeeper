@@ -336,14 +336,16 @@ def test_model_selections_cannot_hide_numerical_transformations():
     selected = Stream.from_values(
         model=model, value_ids=[ids["A_rent"], ids["A_expense"]]
     )
-    declaration = flow.sum(model, id=uuid4(), summands=selected, total=ids["A_net"])
+    declaration = flow.sum(
+        model=model, id=uuid4(), summands=selected, total=ids["A_net"]
+    )
     assert declaration.bindings[0].value == ids["A_rent"]
     detached = selected.resample(
         periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1),
         method=R.SUM,
     )
     with pytest.raises(ValueError, match="intermediate"):
-        flow.sum(model, id=uuid4(), summands=detached, total=ids["A_annual"])
+        flow.sum(model=model, id=uuid4(), summands=detached, total=ids["A_annual"])
     with pytest.raises(ValueError, match="canonical"):
         _ = detached.values
     assert detached.source_values == selected.values
@@ -355,7 +357,7 @@ def test_model_selections_cannot_hide_numerical_transformations():
         )
     )
     with pytest.raises(ValueError, match="revision"):
-        flow.sum(revised, id=uuid4(), summands=selected, total=ids["A_net"])
+        flow.sum(model=revised, id=uuid4(), summands=selected, total=ids["A_net"])
     assert selected.merge(selected.select("rent")).value_ids == selected.value_ids
     with pytest.raises(ValueError, match="twice"):
         Stream.from_values(model=model, value_ids=[ids["A_rent"]] * 2)
@@ -363,7 +365,7 @@ def test_model_selections_cannot_hide_numerical_transformations():
 
 def test_forward_reverse_hierarchy_and_numeric_parity():
     solved, ids = solve_example()
-    hierarchy = Hierarchy(View(solved), membership_root=ids["root"])
+    hierarchy = Hierarchy(view=View(model=solved), membership_root=ids["root"])
     results = FlowRollup(key="annual").execute(hierarchy)
     assert results.root_value.movements[0].number == 2880
     assert results.value(ids["A"]).movements[0].number == 1080
@@ -374,9 +376,9 @@ def test_forward_reverse_hierarchy_and_numeric_parity():
 
 def test_flow_reductions_pivot_with_the_same_cells_as_execute():
     solved, ids = solve_example()
-    hierarchy = Hierarchy(View(solved), membership_root=ids["root"])
+    hierarchy = Hierarchy(view=View(model=solved), membership_root=ids["root"])
     rollup = FlowRollup(key="annual")
-    pivot = rollup.pivot(hierarchy)
+    pivot = rollup.pivot(hierarchy=hierarchy)
     expected = rollup.execute(hierarchy)
     for node in hierarchy.preorder():
         assert pivot.coverage(row=node) == expected.coverage(node)
@@ -393,13 +395,13 @@ def test_underdetermined_and_inconsistent_reverse_cases():
     base = forward_specification(model, ids)
     reverse = base.fix({ids["portfolio"]: Quantity(magnitude=2880, units="AUD")})
     under = reverse.free(
-        *[m.id for m in model.value(ids["A_rent"]).flow.movements[-2:]]
+        *[m.id for m in model.value(id=ids["A_rent"]).flow.movements[-2:]]
     )
     run = execute(specification=under, store=store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE
     result = store.load_model(run.record.outputs[0])
     assert sum(
-        m.number for m in result.value(ids["A_rent"]).flow.movements[-2:]
+        m.number for m in result.value(id=ids["A_rent"]).flow.movements[-2:]
     ) == pytest.approx(320)
     assert any(d.code == "underdetermined" for d in run.report.diagnostics)
     failed = execute(specification=reverse, store=store).run
@@ -413,11 +415,11 @@ def test_role_editing_is_explicit_atomic_and_revision_pinned():
     with pytest.raises(TypeError, match="Quantity"):
         base.fix({ids["A_rent"]: None})
     unlocked = base.free(ids["A_rent"])
-    targets = {m.id for m in model.value(ids["A_rent"]).flow.movements}
+    targets = {m.id for m in model.value(id=ids["A_rent"]).flow.movements}
     assert targets <= {r.target for r in unlocked.record.unknowns}
     assert not targets & {a.target.target for a in unlocked.record.assignments}
     assert unlocked.metadata.previous == base.id
-    flow = model.value(ids["A_rent"]).flow
+    flow = model.value(id=ids["A_rent"]).flow
     relocked = unlocked.fix(
         {
             ids["A_rent"]: {
@@ -449,7 +451,7 @@ def test_role_editing_is_explicit_atomic_and_revision_pinned():
 def test_symbolic_resampling_keeps_unknowns_and_fixed_membership(method):
     model, ids = hierarchy_model()
     relation = flow.resample(
-        model,
+        model=model,
         id=uuid4(),
         sequence=ids["A_net"],
         resampled=ids["A_annual"],
@@ -459,7 +461,7 @@ def test_symbolic_resampling_keeps_unknowns_and_fixed_membership(method):
     assert relation.expressions
     with pytest.raises(ValueError, match="unknown symbols"):
         flow.resample(
-            model,
+            model=model,
             id=uuid4(),
             sequence=ids["A_net"],
             resampled=ids["A_annual"],
@@ -468,7 +470,7 @@ def test_symbolic_resampling_keeps_unknowns_and_fixed_membership(method):
         )
     with pytest.raises(UnsupportedError, match="piecewise"):
         flow.resample(
-            model,
+            model=model,
             id=uuid4(),
             sequence=ids["A_net"],
             resampled=ids["A_annual"],
@@ -509,7 +511,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
     from rangekeeper.specification.targets import assign_flow, unknown_flow
 
     model, ids = hierarchy_model()
-    net = model.value(ids["A_net"])
+    net = model.value(id=ids["A_net"])
     periods = net.flow.movements
     magnitudes = list(range(1, 13))
     data = model.system.to_data()
@@ -521,7 +523,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
                     m["magnitude"] = str(v)
     model = model.revise(Update(system=System.from_data(data)))
     relation = flow.resample(
-        model,
+        model=model,
         id=uuid4(),
         sequence=net.id,
         resampled=ids["A_annual"],
@@ -542,7 +544,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
     assert run.report.status.solution is SolutionStatus.FEASIBLE, run.report.to_data()
     result = (
         store.load_model(run.record.outputs[0])
-        .value(ids["A_annual"])
+        .value(id=ids["A_annual"])
         .flow.movements[0]
         .number
     )

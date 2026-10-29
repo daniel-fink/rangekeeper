@@ -82,7 +82,7 @@ def simple():
 )
 def test_fixture_factories_detach_and_preserve(name):
     data = load(name)
-    model = Model.from_data(data)
+    model = Model.from_data(data=data)
     assert model.to_data() == data
     assert validate(model).valid
     data["metadata"]["name"] = "changed"
@@ -102,7 +102,7 @@ def test_owner_local_values_share_a_measure_without_collapsing():
     net = model.value(owner=entity.id, key="net")
     assert gross.measure == net.measure
     assert gross.quantity.magnitude == 0 and net.quantity is None
-    assert model.value(gross.id) == gross and model.owner_of(gross.id) == entity.id
+    assert model.value(id=gross.id) == gross and model.owner_of(gross.id) == entity.id
     with pytest.raises(MissingReferenceError) as caught:
         model.value(owner=entity.id, key="Gross")
     error = caught.value
@@ -114,7 +114,7 @@ def test_owner_local_values_share_a_measure_without_collapsing():
     assert model.formulation(child.id) == child
     assert model.owner_of(child.id) == model.system.formulations[0].id
     assert model.owner_of(child.values[0].id) == child.id
-    assert model.value(child.values[0].id).key == gross.key
+    assert model.value(id=child.values[0].id).key == gross.key
 
 
 def test_labels_by_owner_and_key():
@@ -128,14 +128,14 @@ def test_labels_by_owner_and_key():
     revised = model.revise(Update(system=model.system.replace(entities=(tagged,))))
     label = tagged.characteristics.labels[0]
     assert revised.label(owner=entity.id, key="use") == label
-    assert revised.label(label.id) == label
+    assert revised.label(id=label.id) == label
     with pytest.raises(MissingReferenceError) as caught:
         revised.label(owner=entity.id, key="gross")
     assert (caught.value.kind, caught.value.by) == ("Label", "key")
     with pytest.raises(MissingReferenceError):
         revised.label(owner=uuid4(), key="use")
     with pytest.raises(ReferenceTypeError):
-        revised.label(entity.characteristics.values[0].id)
+        revised.label(id=entity.characteristics.values[0].id)
     for selectors in ({}, {"owner": entity.id}, {"id": label.id, "key": "use"}):
         with pytest.raises(TypeError):
             revised.label(**selectors)
@@ -146,7 +146,7 @@ def test_labels_by_owner_and_key():
 def test_canonical_assembly_search_and_lookup_errors():
     model = simple()
     assembly = model.system.assemblies[0]
-    assert isinstance(model.entity(assembly.id), Assembly)
+    assert isinstance(model.entity(id=assembly.id), Assembly)
     assert assembly.id not in {entity.id for entity in model.system.entities}
     assert tuple(e.id for e in model.find_entities()) == (
         model.system.entities[0].id,
@@ -156,11 +156,11 @@ def test_canonical_assembly_search_and_lookup_errors():
     assert model.find_entities(code="A", name="not A") == ()
     assert model.owner_of(assembly.id) is None
     with pytest.raises(TypeError):
-        model.entity(str(assembly.id))
+        model.entity(id=str(assembly.id))
     with pytest.raises(MissingReferenceError):
-        model.entity(uuid4())
+        model.entity(id=uuid4())
     with pytest.raises(ReferenceTypeError):
-        model.value(assembly.id)
+        model.value(id=assembly.id)
     with pytest.raises(ReferenceTypeError):
         model.relationship(assembly.id)
     with pytest.raises(MissingReferenceError):
@@ -171,7 +171,7 @@ def test_lookup_errors_name_what_was_requested_and_where():
     model = simple()
     missing = uuid4()
     with pytest.raises(MissingReferenceError) as caught:
-        model.entity(missing)
+        model.entity(id=missing)
     error = caught.value
     assert (error.code, error.requested, error.kind, error.by) == (
         Code.REFERENCE_MISSING,
@@ -185,7 +185,7 @@ def test_lookup_errors_name_what_was_requested_and_where():
     assert (caught.value.requested, caught.value.by) == ("/system/entities/9", "path")
     assert caught.value.where == f"Model {model.id}"
     with pytest.raises(MissingReferenceError) as caught:
-        definitions.measure(None, missing)
+        definitions.measure(items=None, id=missing)
     assert (caught.value.kind, caught.value.where) == ("Measure", "Definitions")
 
 
@@ -244,27 +244,27 @@ def test_reference_errors_keep_their_fields_through_pickle():
 def test_definition_identity_is_separate_from_code_lookup():
     model = simple()
     measure = model.definitions.measures[0]
-    assert definitions.measure(model.definitions, measure.id) == measure
-    assert definitions.find_measures(model.definitions, code="area") == (measure,)
-    assert definitions.find_measures(model.definitions, code="AREA") == ()
+    assert definitions.measure(items=model.definitions, id=measure.id) == measure
+    assert definitions.find_measures(items=model.definitions, code="area") == (measure,)
+    assert definitions.find_measures(items=model.definitions, code="AREA") == ()
     with pytest.raises(TypeError):
-        definitions.measure(model.definitions, measure.code)
+        definitions.measure(items=model.definitions, id=measure.code)
     with pytest.raises(MissingReferenceError):
-        definitions.measure(None, measure.id)
+        definitions.measure(items=None, id=measure.id)
     with pytest.raises(ReferenceTypeError):
-        definitions.taxonomy(model.definitions, measure.id)
+        definitions.taxonomy(items=model.definitions, id=measure.id)
 
 
 def test_revisions_preserve_old_lookup_and_provenance_atomically():
-    before = Model.from_data(load())
+    before = Model.from_data(data=load())
     system = before.system.to_data()
     identity = UUID(system["entities"][0]["id"])
-    old_name = before.entity(identity).name
+    old_name = before.entity(id=identity).name
     system["entities"][0]["name"] = "new revision"
     after = before.revise(Update(system=System.from_data(system)))
     assert after.id != before.id and after.metadata.previous == before.id
-    assert after.entity(identity).name == "new revision"
-    assert before.entity(identity).name == old_name
+    assert after.entity(id=identity).name == "new revision"
+    assert before.entity(id=identity).name == old_name
     assert after.provenance.to_data() == before.provenance.to_data()
     assert after.definitions.to_data() == before.definitions.to_data()
     assert identity in between(before, after).modified
@@ -289,7 +289,7 @@ def test_revision_noop_lineage_version_and_empty_sections():
     after = before.revise(Update(system=System()))
     assert after.system.to_data() == {} and before.find_entities()
     with pytest.raises(MissingReferenceError):
-        after.entity(before.find_entities()[0].id)
+        after.entity(id=before.find_entities()[0].id)
     minimal = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     # Explicit empty and omitted sections remain distinct revision content.
     assert minimal.revise(Update(system=System())).to_data()["system"] == {}
@@ -336,47 +336,47 @@ def test_duplicate_ownership_and_opaque_identity():
     data = model.to_data()
     data["system"]["entities"].append(data["system"]["entities"][0])
     with pytest.raises(IdentityConflictError):
-        Model.from_data(data)
+        Model.from_data(data=data)
     data = load()
     opaque = data["provenance"]["claims"][0]["content"]
     opaque["id"] = str(uuid4())
-    restored = Model.from_data(data)
+    restored = Model.from_data(data=data)
     with pytest.raises(MissingReferenceError):
         restored.owner_of(UUID(opaque["id"]))
 
 
 def test_provenance_traversal_is_scoped_and_does_not_read_files():
-    model = Model.from_data(load())
+    model = Model.from_data(data=load())
     fact = model.provenance.facts[0]
-    assert provenance.fact_for(model, fact.target) == fact
-    assert provenance.locations(model, fact.claims[0])
-    assert provenance.fact_for(model, model.id) is None
+    assert provenance.fact_for(model=model, target=fact.target) == fact
+    assert provenance.locations(model=model, claim_id=fact.claims[0])
+    assert provenance.fact_for(model=model, target=model.id) is None
     with pytest.raises(MissingReferenceError):
-        provenance.locations(model, uuid4())
+        provenance.locations(model=model, claim_id=uuid4())
     with pytest.raises(ReferenceTypeError):
-        provenance.locations(model, model.id)
+        provenance.locations(model=model, claim_id=model.id)
 
 
 def test_diff_preserves_presence_and_opaque_types_and_order():
     data = load()
-    before = Model.from_data(data)
+    before = Model.from_data(data=data)
     data["provenance"]["claims"][0]["content"] = {"items": [False, 0]}
-    first = Model.from_data(data)
+    first = Model.from_data(data=data)
     data["provenance"]["claims"][0]["content"] = {"items": [0, False]}
-    second = Model.from_data(data)
+    second = Model.from_data(data=data)
     assert between(first, second).modified
     assert any(
         "content/items" in change.path for change in between(first, second).changes
     )
     data = before.to_data()
     data["system"]["entities"].reverse()
-    assert not between(before, Model.from_data(data)).changes
+    assert not between(before, Model.from_data(data=data)).changes
     model = simple()
     data = model.to_data()
     data["system"]["entities"][0]["name"] = None
     change = next(
         change
-        for change in between(model, Model.from_data(data)).changes
+        for change in between(model, Model.from_data(data=data)).changes
         if change.path.endswith("/name")
     )
     assert change.before is not None and change.after is None
@@ -422,13 +422,13 @@ def test_model_validates_recorded_units_but_not_opaque_content():
         "units": "AUD",
     }
     with pytest.raises(ValidationError) as error:
-        Model.from_data(data)
+        Model.from_data(data=data)
     assert error.value.report.issues[0].code == "semantic.units"
     assert "/values/0" in error.value.report.issues[0].path
     data = model.to_data()
     data["metadata"]["schema_version"] = "9.0"
     with pytest.raises(UnsupportedVersionError):
-        Model.from_data(data)
+        Model.from_data(data=data)
 
 
 def test_ordered_mathematics_is_not_sorted_for_revision_comparison():

@@ -31,7 +31,7 @@ def require_kind(kind: object) -> None:
 def restore(data: object, kind: type[D]) -> D:
     """Construct through the facade, retaining structural/semantic/version errors."""
     require_kind(kind)
-    return cast(D, kind.from_data(cast(Mapping[str, object], data)))
+    return cast(D, kind.from_data(data=cast(Mapping[str, object], data)))
 
 
 def trusted(document: Document) -> Document:

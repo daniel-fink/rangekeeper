@@ -22,7 +22,7 @@ def documents(paths: list[Path], output: Path, *, release: str) -> None:
         is_yaml = path.suffix in (".yaml", ".yml")
         data = yaml.safe_load(text) if is_yaml else json.loads(text)
         kind = kind_of(data)
-        document = KINDS[kind].from_data(convert(data, kind, release=release))
+        document = KINDS[kind].from_data(data=convert(data, kind, release=release))
         codec = yaml_codec if is_yaml else json_codec
         codec.write(document=document, path=output / path.name)
         print(f"{path} -> {output / path.name} ({kind} {document.id})")

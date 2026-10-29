@@ -99,7 +99,7 @@ def hierarchy_model():
     for name in ("A", "B"):
         equations.append(
             flow.sum(
-                model,
+                model=model,
                 id=uuid4(),
                 summands=Stream.from_values(
                     model=model, value_ids=[ids[f"{name}_rent"], ids[f"{name}_expense"]]
@@ -109,17 +109,17 @@ def hierarchy_model():
         )
         equations.append(
             flow.resample(
-                model,
+                model=model,
                 id=uuid4(),
                 sequence=ids[f"{name}_net"],
                 resampled=ids[f"{name}_annual"],
                 method=ResampleMethod.SUM,
             )
         )
-    hierarchy = Hierarchy(View(model), membership_root=root.id)
+    hierarchy = Hierarchy(view=View(model=model), membership_root=root.id)
     equations.append(
         FlowRollup(key="annual").formulate(
-            hierarchy, id=uuid4(), aggregates={root.id: total.id}
+            hierarchy=hierarchy, id=uuid4(), aggregates={root.id: total.id}
         )
     )
     model = model.revise(Update(system=model.system.replace(formulations=equations)))
@@ -157,18 +157,18 @@ def solve_example():
         forward.report.to_data()
     )
     solved = store.load_model(forward.record.outputs[0])
-    assert solved.value(ids["portfolio"]).flow.movements[0].number == 2760
+    assert solved.value(id=ids["portfolio"]).flow.movements[0].number == 2760
     reverse = forward_specification(solved, ids).fix(
         {ids["portfolio"]: Quantity(magnitude=2880, units="AUD")}
     )
-    reverse = reverse.free(solved.value(ids["A_rent"]).flow.movements[-1].id)
+    reverse = reverse.free(solved.value(id=ids["A_rent"]).flow.movements[-1].id)
     inverse = execute(specification=reverse, store=store).run
     assert inverse.report.status.solution is SolutionStatus.FEASIBLE, (
         inverse.report.to_data()
     )
     result = store.load_model(inverse.record.outputs[0])
-    assert result.value(ids["A_rent"]).flow.movements[-1].number == 220
-    assert result.value(ids["A_annual"]).flow.movements[0].number == 1080
+    assert result.value(id=ids["A_rent"]).flow.movements[-1].number == 220
+    assert result.value(id=ids["A_annual"]).flow.movements[0].number == 1080
     return result, ids
 
 

@@ -870,7 +870,7 @@ class _DocumentReader:
                     data[name] = item(physical)
             return data
 
-        model = self.kind.from_data(visit("", self.kind.__name__))
+        model = self.kind.from_data(data=visit("", self.kind.__name__))
         if visited != set(rows):
             raise ValueError("Orphan embedded records")
         if index is IndexCheck.SCHEMA:

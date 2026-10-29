@@ -91,7 +91,7 @@ def records(expression: Expression) -> object:
 
 
 def text(expression: Expression) -> str:
-    return render(expression, name=NAMES.key)
+    return render(expression=expression, name=NAMES.key)
 
 
 def negate(operand: Expression) -> Expression:
@@ -111,17 +111,19 @@ def logical_not(operand: Expression) -> Expression:
 
 def failure(source: str) -> EquationError:
     with pytest.raises(EquationError) as caught:
-        parse(source, names=NAMES)
+        parse(text=source, names=NAMES)
     assert caught.value.text == source
     return caught.value
 
 
 def test_text_makes_the_same_records_as_the_record_constructors():
-    parsed = parse("value = noi / cap_rate", names=NAMES)
+    parsed = parse(text="value = noi / cap_rate", names=NAMES)
     assert records(parsed) == records(
         equal(ref("value"), divide(ref("noi"), ref("cap_rate")))
     )
-    parsed = parse("total_cost = land_cost + works_cost * (1 - cap_rate)", names=NAMES)
+    parsed = parse(
+        text="total_cost = land_cost + works_cost * (1 - cap_rate)", names=NAMES
+    )
     expected = equal(
         ref("total_cost"),
         add(
@@ -133,8 +135,8 @@ def test_text_makes_the_same_records_as_the_record_constructors():
 
 
 def test_each_node_has_a_new_uuid():
-    first = parse("value = noi / cap_rate", names=NAMES)
-    second = parse("value = noi / cap_rate", names=NAMES)
+    first = parse(text="value = noi / cap_rate", names=NAMES)
+    second = parse(text="value = noi / cap_rate", names=NAMES)
     assert first.id != second.id
     assert first.operands[1].id != second.operands[1].id
 
@@ -146,14 +148,14 @@ def test_each_node_has_a_new_uuid():
 def test_a_literal_is_the_quantity_of_the_same_text(quantity):
     number, _, units = quantity.partition(" ")
     source = f"value = {number}" if units == "dimensionless" else f"value = {quantity}"
-    parsed = parse(source, names=NAMES).operands[1]
+    parsed = parse(text=source, names=NAMES).operands[1]
     assert parsed.kind is ExpressionKind.QUANTITY
     assert parsed.quantity == rk.Quantity(text=quantity)
     assert type(parsed.quantity.magnitude) is type(rk.Quantity(text=quantity).magnitude)
 
 
 def test_constants_are_boolean_and_never_literals():
-    parsed = parse("b_start = NEVER or True != False", names=NAMES)
+    parsed = parse(text="b_start = NEVER or True != False", names=NAMES)
     never = parsed.operands[0].operands[1]
     assert records(never) == records(date_literal(rk.duration.NEVER))
     # NEVER is a date literal with never, as a date Value records it (#387).
@@ -164,7 +166,7 @@ def test_constants_are_boolean_and_never_literals():
 
 
 def test_a_dotted_path_names_a_value_of_another_entity():
-    parsed = parse("value = building_a.income", names=NAMES)
+    parsed = parse(text="value = building_a.income", names=NAMES)
     assert parsed.operands[1].target.target == NAMES.others["building_a"]["income"]
 
 
@@ -269,9 +271,9 @@ def test_canonical_text_reads_back_to_the_same_text(source):
             and word not in ("and", "or", "not", "NEVER", "year", "AUD", "pa")
         }
     )
-    parsed = parse(source, names=names)
+    parsed = parse(text=source, names=names)
     keys = {identity: key for key, identity in names.keys.items()}
-    assert render(parsed, name=lambda target: keys[target.target]) == source
+    assert render(expression=parsed, name=lambda target: keys[target.target]) == source
 
 
 def random_expression(generator: random.Random, depth: int) -> Expression:
@@ -302,7 +304,7 @@ def test_rendered_records_read_back_to_the_same_records():
     generator = random.Random(145)
     for _ in range(500):
         expression = random_expression(generator, depth=4)
-        assert records(parse(text(expression), names=NAMES)) == records(expression)
+        assert records(parse(text=text(expression), names=NAMES)) == records(expression)
 
 
 def test_an_unknown_key_names_its_position_and_the_nearest_keys():

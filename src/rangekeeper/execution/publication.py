@@ -106,7 +106,7 @@ def make_candidate(
     # only what a stored revision can hold. Then build and check it once.
     text = json.dumps(data, ensure_ascii=False, allow_nan=False)
     candidate = Model.from_data(
-        copy_json(json.loads(text)), units=binding.model.unit_system
+        data=copy_json(json.loads(text)), units=binding.model.unit_system
     )
     check_revision(binding.model._record, candidate._record)
     return candidate

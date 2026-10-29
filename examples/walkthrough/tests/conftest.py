@@ -59,5 +59,5 @@ def tree():
             ),
         ),
     )
-    view = View(model)
-    return Hierarchy(view), root, child
+    view = View(model=model)
+    return Hierarchy(view=view), root, child

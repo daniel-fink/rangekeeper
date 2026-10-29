@@ -76,7 +76,7 @@ def test_the_model_cells_declare_the_equations_in_text():
     (formulation,) = model.system.formulations
     assert formulation.code == "project"
     texts = [
-        render(expression, name=lambda target: keys[target.target])
+        render(expression=expression, name=lambda target: keys[target.target])
         for expression in formulation.expressions
     ]
     assert texts == [

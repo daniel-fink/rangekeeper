@@ -17,7 +17,9 @@ def test_design_financial_components_and_provenance():
         classification=design.classification_id(source, "property")
     )[0].id
     selected = design.select_contributors(source, root=root)
-    utilities = {uid: "cores" for uid in selected if source.entity(uid).name == "cores"}
+    utilities = {
+        uid: "cores" for uid in selected if source.entity(id=uid).name == "cores"
+    }
     authored = design.author(
         source, root=root, utility_kinds=utilities, contributors=(*selected, *selected)
     )
@@ -83,7 +85,7 @@ def test_shared_spatial_paths_do_not_duplicate_contributors():
         classification=design.classification_id(model, "property")
     )[0].id
     selected = design.select_contributors(model, root=root)
-    floor = next(uid for uid in selected if model.entity(uid).name == "floor")
+    floor = next(uid for uid in selected if model.entity(id=uid).name == "floor")
     data = model.system.to_data()
     data["relationships"].append(
         {

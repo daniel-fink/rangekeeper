@@ -79,7 +79,7 @@ def model() -> Model:
         },
     ]
     return Model.from_data(
-        {
+        data={
             "metadata": {
                 "id": uid("model"),
                 "schema_version": "1.0.0",

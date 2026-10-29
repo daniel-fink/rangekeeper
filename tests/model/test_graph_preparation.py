@@ -39,20 +39,21 @@ def test_projection_prepares_columns_before_cells_and_uses_hierarchy_order(monke
     from rangekeeper.model.system import table as projection
 
     model, root, *_ = fixture()
-    hierarchy = Hierarchy(View(model))
+    hierarchy = Hierarchy(view=View(model=model))
     column = ValueColumn(name="net", key="net", units="meter ** 2")
 
     def factory_must_not_run(*args, **kwargs):
         pytest.fail("projection constructed a selector for a cell")
 
     monkeypatch.setattr(projection, "select_value", factory_must_not_run)
-    tree = to_table(hierarchy, columns=iter((column,)))
+    tree = to_table(source=hierarchy, columns=iter((column,)))
     assert tuple(row.id for row in tree.rows) == hierarchy.preorder()
     assert tree.row(root.id).values["parent_id"] is None
-    assert to_table(hierarchy.view, columns=(column,)).columns == ("net",)
+    assert to_table(source=hierarchy.view, columns=(column,)).columns == ("net",)
     with pytest.raises(TableError, match="reserved"):
         to_table(
-            hierarchy, columns=(FieldColumn(name="parent_id", field=EntityField.NAME),)
+            source=hierarchy,
+            columns=(FieldColumn(name="parent_id", field=EntityField.NAME),),
         )
     with pytest.raises(TypeError, match="EntityField"):
         FieldColumn(name="name", field="name")
@@ -60,7 +61,7 @@ def test_projection_prepares_columns_before_cells_and_uses_hierarchy_order(monke
 
 def test_aggregate_entries_enforce_structure_without_reducing_again():
     model, root, a, *_ = fixture(missing=True)
-    hierarchy = Hierarchy(View(model))
+    hierarchy = Hierarchy(view=View(model=model))
     result = reduction().execute(hierarchy)
     assert result.root_value is None
     assert result.available_value(root.id).magnitude == 10
@@ -105,7 +106,7 @@ def test_rollup_asks_each_contributor_rule_once_in_postorder():
         events.append(entity.code)
         return entity.code != "root"
 
-    result = View(model).rollup(definition=reduction(contributors=eligible))
+    result = View(model=model).rollup(definition=reduction(contributors=eligible))
     assert events == ["a", "b", "c", "root"]
     assert result.root_value.magnitude == 30
 
@@ -114,13 +115,15 @@ def test_shared_population_keeps_flat_and_hierarchy_policies_distinct():
 
     model, *_ = fixture(amounts=(1e16, 1, -1e16))
     rooms = tuple(e.id for e in model.system.entities if e.classification)
-    population = View(model, entities=rooms).quantities("net", units="meter ** 2")
+    population = View(model=model, entities=rooms).quantities(
+        key="net", units="meter ** 2"
+    )
     # Python 3.12+ sum compensates floating-point error; model a naive fold explicitly.
     from functools import reduce
     from operator import add
 
     assert reduce(add, (q.magnitude for q in population.quantities), 0.0) == 0
-    assert View(model).rollup(definition=reduction()).root_value.magnitude == 1
+    assert View(model=model).rollup(definition=reduction()).root_value.magnitude == 1
 
 
 def test_projection_preflights_each_measure_once_and_reserved_name_first(monkeypatch):
@@ -141,13 +144,13 @@ def test_projection_preflights_each_measure_once_and_reserved_name_first(monkeyp
         return original(index, uid, kind)
 
     monkeypatch.setattr(RecordIndex, "get", counted)
-    to_table(View(model), columns=columns)
+    to_table(source=View(model=model), columns=columns)
     assert calls == [measure.id, measure.id]
-    to_table(View(model, entities=()), columns=columns)
+    to_table(source=View(model=model, entities=()), columns=columns)
     assert calls == [measure.id] * 4
     with pytest.raises(TableError, match="reserved"):
         to_table(
-            Hierarchy(View(model)),
+            source=Hierarchy(view=View(model=model)),
             columns=(
                 FieldColumn(name="parent_id", field=EntityField.NAME),
                 ValueColumn(name="invalid", key="net", units="not_a_real_unit"),
@@ -157,7 +160,7 @@ def test_projection_preflights_each_measure_once_and_reserved_name_first(monkeyp
 
 def test_aggregate_mapping_copy_and_subtree_ownership():
     model, root, a, b, *_ = fixture()
-    result = reduction().execute(Hierarchy(View(model)))
+    result = reduction().execute(Hierarchy(view=View(model=model)))
     entries = dict(result.entries)
     copied = replace(result, entries=entries)
     entries.clear()
@@ -188,14 +191,15 @@ def test_canonical_classification_lookups_reuse_the_model_index(monkeypatch):
     from rangekeeper.schema.index import RecordIndex
 
     model, *_ = fixture()
-    view = View(model)
+    view = View(model=model)
 
     def rebuilding_is_an_error(*args, **kwargs):
         pytest.fail("canonical Model lookup rebuilt its record index")
 
     monkeypatch.setattr(RecordIndex, "build", rebuilding_is_an_error)
     assert to_table(
-        view, columns=(FieldColumn(name="kind", field=EntityField.CLASSIFICATION_CODE),)
+        source=view,
+        columns=(FieldColumn(name="kind", field=EntityField.CLASSIFICATION_CODE),),
     ).column("kind") == ("room", "room", "room", None)
     assert all(
         model.classification(e.classification).code == "room"

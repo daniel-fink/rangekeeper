@@ -248,7 +248,10 @@ def _equations(model):
         for constraint in formulation.constraints:
             predicate = expressions[constraint.predicate]
             equations.append(
-                (render(predicate, name=key), list(dict.fromkeys(keys(predicate))))
+                (
+                    render(expression=predicate, name=key),
+                    list(dict.fromkeys(keys(predicate))),
+                )
             )
     return equations
 

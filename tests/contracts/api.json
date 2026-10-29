@@ -12,14 +12,14 @@
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
     "edit": "method (self, *, name: str | None = None, description: str | None = None) -> ModelDraft",
-    "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
+    "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
-    "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object], *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
+    "from_data": "classmethod (cls, *, data: collections.abc.Mapping[str, object], units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "geometry": "property",
     "id": "property",
     "key_of": "method (self, id: uuid.UUID) -> str",
-    "label": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
+    "label": "method (self, *, id: uuid.UUID | None = None, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
     "metadata": "property",
     "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
@@ -35,7 +35,7 @@
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
     "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport",
-    "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
+    "value": "method (self, *, id: uuid.UUID | None = None, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
    "signature": "(*, name: str, namespace: uuid.UUID | None = None, description: str | None = None) -> None"
@@ -1496,12 +1496,12 @@
   "accumulate_volatility": {
    "kind": "function",
    "module": "rangekeeper.market.dynamics",
-   "signature": "(trend: collections.abc.Sequence[float], returns: collections.abc.Sequence[float], *, growth_rate: float, mean_reversion: float) -> tuple[float, ...]"
+   "signature": "(*, trend: collections.abc.Sequence[float], returns: collections.abc.Sequence[float], growth_rate: float, mean_reversion: float) -> tuple[float, ...]"
   },
   "calculate_autoregression": {
    "kind": "function",
    "module": "rangekeeper.market.dynamics",
-   "signature": "(innovations: collections.abc.Sequence[float], *, parameter: float) -> tuple[float, ...]"
+   "signature": "(*, innovations: collections.abc.Sequence[float], parameter: float) -> tuple[float, ...]"
   },
   "calculate_cycle": {
    "kind": "function",
@@ -1511,7 +1511,7 @@
   "calculate_shock": {
    "kind": "function",
    "module": "rangekeeper.market.dynamics",
-   "signature": "(events: collections.abc.Sequence[float], *, likelihood: float, dissipation: float, impact: float = 1) -> tuple[float, ...]"
+   "signature": "(*, events: collections.abc.Sequence[float], likelihood: float, dissipation: float, impact: float = 1) -> tuple[float, ...]"
   },
   "calculate_trend": {
    "kind": "function",
@@ -1918,14 +1918,14 @@
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
     "edit": "method (self, *, name: str | None = None, description: str | None = None) -> ModelDraft",
-    "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
+    "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
-    "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object], *, units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
+    "from_data": "classmethod (cls, *, data: collections.abc.Mapping[str, object], units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
     "geometry": "property",
     "id": "property",
     "key_of": "method (self, id: uuid.UUID) -> str",
-    "label": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
+    "label": "method (self, *, id: uuid.UUID | None = None, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Label",
     "metadata": "property",
     "movement": "method (self, id: uuid.UUID) -> rangekeeper.flow.flow.Movement",
     "owner_of": "method (self, id: uuid.UUID) -> uuid.UUID | None",
@@ -1941,7 +1941,7 @@
     "to_data": "method (self) -> dict[str, object]",
     "unit_system": "property",
     "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport",
-    "value": "method (self, id: uuid.UUID | None = None, *, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
+    "value": "method (self, *, id: uuid.UUID | None = None, owner: uuid.UUID | None = None, key: str | None = None) -> rangekeeper.schema.records.Value"
    },
    "module": "rangekeeper.model.model",
    "signature": "(*, name: str, namespace: uuid.UUID | None = None, description: str | None = None) -> None"
@@ -1956,7 +1956,7 @@
     "add_measure": "method (self, *, code: str, name: str, units: str, definition: str | None = None) -> rangekeeper.schema.records.Measure",
     "add_relationship": "method (self, *, source: str | UUID | EntityHandle, target: str | UUID | EntityHandle, classification: str | uuid.UUID) -> rangekeeper.schema.records.Relationship",
     "commit": "method (self) -> Model",
-    "entity": "method (self, id: uuid.UUID | None = None, *, code: str | None = None, name: str | None = None) -> rangekeeper.model.draft.EntityHandle",
+    "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.model.draft.EntityHandle",
     "model": "property"
    },
    "module": "rangekeeper.model.draft",
@@ -2393,8 +2393,8 @@
    "members": {
     "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.rollup.RollupResult",
-    "formulate": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, id: uuid.UUID, aggregates: collections.abc.Mapping[uuid.UUID, uuid.UUID]) -> Formulation",
-    "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
+    "formulate": "method (self, *, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, id: uuid.UUID, aggregates: collections.abc.Mapping[uuid.UUID, uuid.UUID]) -> Formulation",
+    "pivot": "method (self, *, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
    },
    "module": "rangekeeper.model.system.rollup",
    "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None"
@@ -2402,16 +2402,16 @@
   "Hierarchy": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, view: rangekeeper.model.system.view.View, *, membership_root: uuid.UUID | None = None) -> None",
+    "__init__": "method (self, *, view: rangekeeper.model.system.view.View, membership_root: uuid.UUID | None = None) -> None",
     "children": "method (self, id: uuid.UUID) -> tuple[uuid.UUID, ...]",
-    "from_membership": "classmethod (cls, view: rangekeeper.model.system.view.View, *, root: uuid.UUID) -> Hierarchy",
+    "from_membership": "classmethod (cls, *, view: rangekeeper.model.system.view.View, root: uuid.UUID) -> Hierarchy",
     "from_relationships": "classmethod (cls, view: rangekeeper.model.system.view.View) -> Hierarchy",
     "parent": "method (self, id: uuid.UUID) -> uuid.UUID | None",
     "postorder": "method (self) -> tuple[uuid.UUID, ...]",
     "preorder": "method (self) -> tuple[uuid.UUID, ...]"
    },
    "module": "rangekeeper.model.system.hierarchy",
-   "signature": "(view: rangekeeper.model.system.view.View, *, membership_root: uuid.UUID | None = None) -> None"
+   "signature": "(*, view: rangekeeper.model.system.view.View, membership_root: uuid.UUID | None = None) -> None"
   },
   "HierarchyError": {
    "kind": "class",
@@ -2492,7 +2492,7 @@
    "members": {
     "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.rollup.RollupResult",
-    "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
+    "pivot": "method (self, *, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
    },
    "module": "rangekeeper.model.system.rollup",
    "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None) -> None"
@@ -2548,7 +2548,7 @@
   "View": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, model: rangekeeper.model.model.Model, *, entities: collections.abc.Iterable[uuid.UUID] | None = None, relationships: collections.abc.Iterable[uuid.UUID] | None = None, assembly: uuid.UUID | None = None) -> None",
+    "__init__": "method (self, *, model: rangekeeper.model.model.Model, entities: collections.abc.Iterable[uuid.UUID] | None = None, relationships: collections.abc.Iterable[uuid.UUID] | None = None, assembly: uuid.UUID | None = None) -> None",
     "entities": "property",
     "entity": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Entity",
     "filter": "method (self, *, entity_classification: uuid.UUID | None = None, relationship_classification: uuid.UUID | None = None, predicate: collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] | None = None, exclusive: bool = False) -> View",
@@ -2556,7 +2556,7 @@
     "leaves": "property",
     "match": "method (self, *, condition: Filter) -> Match",
     "predecessors": "method (self, id: uuid.UUID) -> tuple[rangekeeper.schema.records.Entity, ...]",
-    "quantities": "method (self, key: str, *, units: str, measure: uuid.UUID | None = None) -> QuantityPopulation",
+    "quantities": "method (self, *, key: str, units: str, measure: uuid.UUID | None = None) -> QuantityPopulation",
     "relationship": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Relationship",
     "relationships": "property",
     "rollup": "method (self, *, definition: QuantityRollup | FlowRollup) -> RollupResult",
@@ -2565,7 +2565,7 @@
     "where": "method (self, *, condition: Filter) -> View"
    },
    "module": "rangekeeper.model.system.view",
-   "signature": "(model: rangekeeper.model.model.Model, *, entities: collections.abc.Iterable[uuid.UUID] | None = None, relationships: collections.abc.Iterable[uuid.UUID] | None = None, assembly: uuid.UUID | None = None) -> None"
+   "signature": "(*, model: rangekeeper.model.model.Model, entities: collections.abc.Iterable[uuid.UUID] | None = None, relationships: collections.abc.Iterable[uuid.UUID] | None = None, assembly: uuid.UUID | None = None) -> None"
   },
   "classified": {
    "kind": "function",

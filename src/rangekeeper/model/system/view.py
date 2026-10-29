@@ -38,8 +38,8 @@ class View:
 
     def __init__(
         self,
-        model: Model,
         *,
+        model: Model,
         entities: Iterable[UUID] | None = None,
         relationships: Iterable[UUID] | None = None,
         assembly: UUID | None = None,
@@ -64,7 +64,8 @@ class View:
             edges = {item.id for item in all_edges}
         elif relationships is None:
             nodes = {
-                model.entity(id).id for id in (entities if entities is not None else ())
+                model.entity(id=id).id
+                for id in (entities if entities is not None else ())
             }
             edges = {
                 item.id
@@ -74,7 +75,7 @@ class View:
         else:
             edges = {model.relationship(id).id for id in relationships}
             nodes = (
-                {model.entity(id).id for id in entities}
+                {model.entity(id=id).id for id in entities}
                 if entities is not None
                 else {
                     endpoint
@@ -115,7 +116,7 @@ class View:
 
     def entity(self, id: UUID) -> Entity:
         """Resolve a selected Entity; known but unselected IDs raise SelectionError."""
-        entity = self.model.entity(id)
+        entity = self.model.entity(id=id)
         if id not in self._entity_ids:
             raise SelectionError(f"Entity {id} is outside this View of {self.model.id}")
         return entity
@@ -192,7 +193,7 @@ class View:
             if matches:
                 nodes.add(entity.id)
         return View(
-            self.model,
+            model=self.model,
             entities=nodes,
             relationships=(
                 edge.id
@@ -216,7 +217,7 @@ class View:
         """
         from rangekeeper.model.system.matching import match
 
-        return match(self.model, self.entities, condition)
+        return match(model=self.model, entities=self.entities, condition=condition)
 
     def where(self, *, condition: "Filter") -> "View":
         """Keep the Entities that pass a Filter, and the edges between them.
@@ -226,7 +227,7 @@ class View:
         """
         nodes = set(self.match(condition=condition).passed)
         return View(
-            self.model,
+            model=self.model,
             entities=nodes,
             relationships=(
                 edge.id
@@ -237,8 +238,8 @@ class View:
 
     def quantities(
         self,
-        key: str,
         *,
+        key: str,
         units: str,
         measure: UUID | None = None,
     ) -> "QuantityPopulation":
@@ -251,7 +252,7 @@ class View:
         from rangekeeper.model.system.rollup import _collect_quantities
         from rangekeeper.model.system.selection import select_value
 
-        select = select_value(key, measure=measure)
+        select = select_value(key=key, measure=measure)
         return _collect_quantities(
             ((entity, select(self.model, entity)) for entity in self.entities),
             units,

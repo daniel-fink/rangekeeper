@@ -109,7 +109,7 @@ def test_unexecuted_composition_history_and_repacking(tmp_path):
         reader.load_run(spec.id)
     data = model.to_data()
     data["metadata"]["previous"] = str(uuid4())
-    historic = Model.from_data(data)
+    historic = Model.from_data(data=data)
     write(root=tmp_path / "history", model=historic)
     assert len(Reader(root=tmp_path / "history").documents()) == 1
 
@@ -156,7 +156,7 @@ def test_missing_wrong_resolver_and_conflicting_records_fail_before_export(tmp_p
         write(
             root=tmp_path / "conflict",
             model=model,
-            documents=[Model.from_data(changed)],
+            documents=[Model.from_data(data=changed)],
         )
 
 
@@ -166,7 +166,7 @@ def test_copy_conflict_preflight_preserves_destination(tmp_path):
     other = MemoryStore()
     data = model.to_data()
     data["metadata"]["name"] = "Conflict"
-    other.put(Model.from_data(data))
+    other.put(Model.from_data(data=data))
     with pytest.raises(RevisionConflictError):
         Reader(root=tmp_path / "bundle").copy_to(other)
     with pytest.raises(MissingReferenceError):

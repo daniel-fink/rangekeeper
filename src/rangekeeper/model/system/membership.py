@@ -9,7 +9,7 @@ from rangekeeper.shared.errors import ReferenceTypeError
 def _assembly(model: Model, id: UUID) -> Assembly:
     if not isinstance(model, Model):
         raise TypeError("model must be a Model")
-    entity = model.entity(id)
+    entity = model.entity(id=id)
     if not isinstance(entity, Assembly):
         raise ReferenceTypeError(f"{id} is not an Assembly")
     return entity
@@ -32,7 +32,7 @@ def entities_in(
     found = set(root.entities or ())
     pending = list(found) if recursive else []
     while pending:
-        member = model.entity(pending.pop())
+        member = model.entity(id=pending.pop())
         if isinstance(member, Assembly):
             unseen = set(member.entities or ()) - found
             found.update(unseen)
@@ -60,7 +60,7 @@ def containing_assemblies(
     """Return direct containers or all ancestors once, in Assembly declaration order."""
     if not isinstance(model, Model):
         raise TypeError("model must be a Model")
-    model.entity(entity)
+    model.entity(id=entity)
     if not isinstance(recursive, bool):
         raise TypeError("recursive must be a bool")
     assemblies = (model.system.assemblies or ()) if model.system else ()

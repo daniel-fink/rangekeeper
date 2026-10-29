@@ -33,7 +33,7 @@ def test_trend_preserves_explicit_initial_value_and_default_price_factor():
 
 def test_autoregression_from_fixed_innovations():
     assert calculate_autoregression(
-        (0.1, -0.2, 0, 0.3), parameter=0.2
+        innovations=(0.1, -0.2, 0, 0.3), parameter=0.2
     ) == pytest.approx((0.1, -0.18, -0.036, 0.2928))
 
 
@@ -57,10 +57,10 @@ def test_noise_uses_caller_generator_without_global_state():
 
 def test_shock_has_one_onset_and_dissipates_once():
     assert calculate_shock(
-        (0.5, 0.04, 0.01, 0.03), likelihood=0.05, dissipation=0.3, impact=-0.25
+        events=(0.5, 0.04, 0.01, 0.03), likelihood=0.05, dissipation=0.3, impact=-0.25
     ) == pytest.approx((0, -0.25, -0.175, -0.1225))
     assert calculate_shock(
-        (0.5, 0.8), likelihood=0.05, dissipation=0.3, impact=-0.25
+        events=(0.5, 0.8), likelihood=0.05, dissipation=0.3, impact=-0.25
     ) == (0, 0)
 
 
@@ -69,12 +69,12 @@ def test_shock_has_one_onset_and_dissipates_once():
     [
         lambda: calculate_cycle(count=-1, period=4, phase=0, amplitude=1),
         lambda: calculate_cycle(count=2, period=math.inf, phase=0, amplitude=1),
-        lambda: calculate_autoregression([math.nan], parameter=0.5),
+        lambda: calculate_autoregression(innovations=[math.nan], parameter=0.5),
         lambda: accumulate_volatility(
-            [1.0], [0.0, 0.1], growth_rate=0, mean_reversion=0
+            trend=[1.0], returns=[0.0, 0.1], growth_rate=0, mean_reversion=0
         ),
-        lambda: calculate_shock([0.5], likelihood=2, dissipation=0.5),
-        lambda: calculate_shock([1.5], likelihood=0.5, dissipation=0.5),
+        lambda: calculate_shock(events=[0.5], likelihood=2, dissipation=0.5),
+        lambda: calculate_shock(events=[1.5], likelihood=0.5, dissipation=0.5),
     ],
 )
 def test_kernel_values_raise_contract_errors(call):
@@ -87,5 +87,5 @@ def test_kernel_count_type_and_overflow():
         calculate_cycle(count=2.0, period=4, phase=0, amplitude=1)
     with pytest.raises(NumericalError, match="overflowed"):
         accumulate_volatility(
-            [1e308, 1e308], [0.0, 1e308], growth_rate=0, mean_reversion=0
+            trend=[1e308, 1e308], returns=[0.0, 1e308], growth_rate=0, mean_reversion=0
         )

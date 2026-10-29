@@ -193,7 +193,7 @@ def test_model_builds_one_index_and_reuses_it_for_validation(monkeypatch):
     assert len(calls) == 1
     validate(model).raise_if_invalid()
     assert len(calls) == 1
-    Model.from_data(model.to_data())
+    Model.from_data(data=model.to_data())
     assert len(calls) == 2
 
 

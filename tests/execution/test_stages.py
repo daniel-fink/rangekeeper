@@ -146,7 +146,7 @@ def test_resolve_cases_composes_each_leaf_and_resolves_its_revisions():
 
 def test_resolve_cases_raises_for_a_contradicted_batch_pin():
     store, model = setup()
-    other = Model.from_data(fresh(model.to_data()))
+    other = Model.from_data(data=fresh(model.to_data()))
     store.put(other)
     leaf = spec()
     store.put(leaf)
@@ -241,7 +241,7 @@ def test_make_candidate_writes_solved_values_into_a_new_revision():
     _, binding = bound()
     candidate = make_candidate(binding=binding, unknowns=SOLUTION, run_id=uuid4())
     assert candidate.id != binding.model.id
-    assert candidate.value(CAPITAL).quantity.number == pytest.approx(11000000)
+    assert candidate.value(id=CAPITAL).quantity.number == pytest.approx(11000000)
     with pytest.raises(NumericalError, match="unknown symbols"):
         make_candidate(binding=binding, unknowns={NOI: 550000.0}, run_id=uuid4())
 
@@ -325,7 +325,7 @@ def test_an_attempt_runs_every_stage_with_a_backend_that_starts_no_process():
     (output,) = outcome.outputs
     assert outcome.run.report.status.solution == SolutionStatus.FEASIBLE
     assert outcome.run.record.outputs == (output.id,)
-    assert output.value(NOI).quantity.number == pytest.approx(550000)
+    assert output.value(id=NOI).quantity.number == pytest.approx(550000)
 
 
 def test_solve_runs_every_stage_and_writes_nothing():
@@ -338,4 +338,4 @@ def test_solve_runs_every_stage_and_writes_nothing():
         config=ExecutionConfig(backend=Exact()),
     )
     assert outcome.run.report.status.solution == SolutionStatus.FEASIBLE
-    assert outcome.outputs[0].value(CAPITAL).quantity.number == pytest.approx(11e6)
+    assert outcome.outputs[0].value(id=CAPITAL).quantity.number == pytest.approx(11e6)

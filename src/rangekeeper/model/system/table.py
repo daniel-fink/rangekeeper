@@ -58,7 +58,7 @@ class ValueColumn:
     def __post_init__(self):
         require_text(self.name, "column name")
         require_text(self.units, "units")
-        select_value(self.key, measure=self.measure)
+        select_value(key=self.key, measure=self.measure)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -98,8 +98,8 @@ DEFAULT_COLUMNS = (
 
 
 def to_table(
-    source: View | Hierarchy,
     *,
+    source: View | Hierarchy,
     columns: Iterable[Column] = DEFAULT_COLUMNS,
     units: UnitSystem | None = None,
 ) -> Table:

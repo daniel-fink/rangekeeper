@@ -162,21 +162,21 @@ def test_model_flow_content_store_and_stream():
 
     restored_yaml = yaml.loads(text=yaml.dumps(model), kind=Model)
     assert restored_yaml.to_data() == model.to_data()
-    assert type(restored_yaml.value(a.id).flow.movements[0].period.start) is date
+    assert type(restored_yaml.value(id=a.id).flow.movements[0].period.start) is date
     data = restored.to_data()
     data["system"]["entities"][0]["characteristics"]["values"][0]["flow"]["movements"][
         0
     ]["magnitude"] = 10
-    assert model.value(a.id).flow.movements[0].magnitude == 0
+    assert model.value(id=a.id).flow.movements[0].magnitude == 0
     with pytest.raises(AttributeError):
-        model.value(a.id).flow.movements[0].magnitude = 10
+        model.value(id=a.id).flow.movements[0].magnitude = 10
     # Model validation must follow the renamed collection when resolving evidence.
     invalid = model.to_data()
     invalid["system"]["entities"][0]["characteristics"]["values"][0]["flow"][
         "movements"
     ][0]["claims"] = [str(uuid4())]
     with pytest.raises(ValueError, match="unknown movement Claim"):
-        Model.from_data(invalid)
+        Model.from_data(data=invalid)
 
 
 @pytest.mark.parametrize(
@@ -421,12 +421,16 @@ def test_dynamics_fixed_inputs():
     assert calculate_cycle(count=4, period=4, phase=0, amplitude=2) == pytest.approx(
         [0, 2, 0, -2]
     )
-    assert calculate_autoregression([1, 0, 0], parameter=0.5) == (1, 0.5, 0.25)
+    assert calculate_autoregression(innovations=[1, 0, 0], parameter=0.5) == (
+        1,
+        0.5,
+        0.25,
+    )
     assert accumulate_volatility(
-        [100, 110, 121], [0, 0.1, 0], growth_rate=0.1, mean_reversion=0.5
+        trend=[100, 110, 121], returns=[0, 0.1, 0], growth_rate=0.1, mean_reversion=0.5
     ) == pytest.approx([100, 120, 127])
     assert calculate_shock(
-        [0.8, 0.1, 0.05, 0.2], likelihood=0.2, dissipation=0.5, impact=-0.4
+        events=[0.8, 0.1, 0.05, 0.2], likelihood=0.2, dissipation=0.5, impact=-0.4
     ) == (0, -0.4, -0.2, -0.1)
 
 
@@ -479,7 +483,7 @@ def test_distinct_property_and_flow_roles_reject_malformed_content():
     value = base["system"]["entities"][0]["characteristics"]["values"][0]
     value["content"] = encode("invalid extra content").to_data()
     with pytest.raises(ValidationError):
-        Model.from_data(base)
+        Model.from_data(data=base)
 
 
 def test_polars_preserves_explicit_null_and_omission():

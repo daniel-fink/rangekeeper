@@ -56,7 +56,7 @@ def test_untrusted_input_runs_jsonschema(counted, tmp_path):
     codec.loads(text=text, kind=rk.Model)
     assert counted[:1] == ["Model"]
     counted.clear()
-    rk.Model.from_data(model.to_data())
+    rk.Model.from_data(data=model.to_data())
     assert counted[:1] == ["Model"]
     store = DirectoryStore(tmp_path / "records")
     store.put(model)
