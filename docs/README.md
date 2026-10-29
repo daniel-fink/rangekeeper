@@ -53,6 +53,7 @@ developers apply [documentation upkeep](contributing/documentation.md) in the
 same change, including plan status, archiving and navigation.
 
 - [Make a change](contributing/change.md): the steps from a branch to a merged pull request.
+- [Coding conventions](contributing/coding-conventions.md): the shape of functions, arguments, errors, types, classes, modules and tests.
 - [Verification](contributing/verification.md): test, build and evidence boundaries.
 - [Releasing](contributing/releasing.md): release lines, tags, the release workflow and its setup.
 - [Walkthrough branch](contributing/walkthrough-branch.md): draft work, library updates and publication.

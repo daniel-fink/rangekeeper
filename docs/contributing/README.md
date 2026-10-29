@@ -83,8 +83,9 @@ dotnet build -p:Version=$(python tools/version.py --dotnet)
 ## Python formatting and linting
 
 Use ruff from the development environment. It formats and lints; it replaces
-Black. Settings belong in [`pyproject.toml`](../../pyproject.toml). From the
-repository root:
+Black. Settings belong in [`pyproject.toml`](../../pyproject.toml). The
+[coding conventions](coding-conventions.md) give the rules for the shape of the
+code; ruff and mypy check some of them. From the repository root:
 
 ```sh
 uv run --locked ruff format .
@@ -275,7 +276,9 @@ change that removes the import also removes the entry.
 ## Naming and ownership
 
 Use one clear noun for a type and one clear verb for an operation. Qualify a name
-when one word would lose domain meaning. Put a record's invariant on its owner;
+when one word would lose domain meaning. The
+[coding conventions](coding-conventions.md#one-home-and-one-name-for-each-idea)
+give one home and one name to each idea. Put a record's invariant on its owner;
 keep cross-record validation, execution and IO at their explicit boundaries.
 Owner subclasses of generated records declare no persistent fields.
 
