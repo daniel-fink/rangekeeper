@@ -25,6 +25,14 @@ The Rangekeeper code is licensed separately, under MPL-2.0.
   `assumptions.json` and `development.json`: a legacy notebook cell, a book
   method or the author's choice.
 
+- `totals_2032.json` gives the property's totals in the stabilised year 2032
+  for walkthrough lesson 02, each with its origin.
+  [`../derive_totals.py`](../derive_totals.py) derives it from `inventory.csv`,
+  `assumptions.json` and `development.json`, and documents each total. Run
+  `python examples/data/derive_totals.py` from the repository root to recreate
+  it, then update its manifest entry; `--check` compares the file with a new
+  derivation.
+
 Do not edit the source capture or the derived files by hand. A change to a file
 in this folder needs a matching change to its manifest entry. The test
 `tests/walkthrough/test_example_data.py` checks the manifest and the origins.
