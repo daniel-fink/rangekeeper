@@ -572,6 +572,12 @@ symbols:
     status: agreed
     source: "ADR-017, #121"
     note: "`rangekeeper.model` exports the query Filter with its Criterion and ValueTest records."
+  - module: rangekeeper.model.expression
+    name: Direction
+    new_module: rangekeeper.model
+    status: agreed
+    source: "ADR-017, #307 (D26)"
+    note: A fixed word that rangekeeper defines is an enum with one public path.
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it

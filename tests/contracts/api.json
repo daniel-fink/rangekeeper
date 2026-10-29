@@ -594,6 +594,16 @@
    "module": "rangekeeper.execution.comparison",
    "signature": "(outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: tuple[str, ...], baseline: str | None = None, members: collections.abc.Mapping[str, tuple[tuple[int | None, rangekeeper.execution.outcome.Outcome], ...]] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
   },
+  "DecisionResult": {
+   "kind": "enum",
+   "members": [
+    "DECIDED",
+    "NOT_MET",
+    "SKIPPED",
+    "OTHERWISE"
+   ],
+   "module": "rangekeeper.execution.rule.result"
+  },
   "Evidence": {
    "kind": "class",
    "members": {
@@ -1373,6 +1383,14 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, taxonomies: tuple[Taxonomy, ...] | None | Unset = <Unset>, measures: tuple[Measure, ...] | None | Unset = <Unset>, functions: tuple[Function, ...] | None | Unset = <Unset>) -> None"
   },
+  "Direction": {
+   "kind": "enum",
+   "members": [
+    "OUTGOING",
+    "INCOMING"
+   ],
+   "module": "rangekeeper.schema.enums"
+  },
   "Distribution": {
    "kind": "class",
    "members": {
@@ -1901,14 +1919,6 @@
    "members": [
     "DIRECT",
     "TRANSITIVE"
-   ],
-   "module": "rangekeeper.schema.enums"
-  },
-  "Direction": {
-   "kind": "enum",
-   "members": [
-    "OUTGOING",
-    "INCOMING"
    ],
    "module": "rangekeeper.schema.enums"
   },

@@ -142,6 +142,7 @@ __all__ = [
 
 from rangekeeper.schema.enums import (
     ClaimKind,
+    Direction,
     DistributionFamily,
     ReconciliationStatus,
     ValueKind,
@@ -154,4 +155,5 @@ __all__ += [
     "ReconciliationStatus",
     "DistributionFamily",
     "ValueRelation",
+    "Direction",
 ]

@@ -280,6 +280,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.quantity.minor_unit` | `rangekeeper.money.minor_unit` | agreed | The money module owns the ISO 4217 catalogue, boundaries and rounding. |
 | `rangekeeper.flow.ResamplingMethod` | `ResampleMethod` | agreed | The enum also gains SPLIT, which divides each amount over shorter Periods. |
 | `rangekeeper.model.expression.Criterion` | `rangekeeper.model.Criterion` | agreed | `rangekeeper.model` exports the query Filter with its Criterion and ValueTest records. |
+| `rangekeeper.model.expression.Direction` | `rangekeeper.model.Direction` | agreed | A fixed word that rangekeeper defines is an enum with one public path. |
 | `rangekeeper.execution.compiler.Compiled.prepared` | `binding` | agreed |  |
 | `rangekeeper.model.system.view.View.aggregate` | `rollup` | agreed | Each use needs review. `view.aggregate(reduction)` becomes `view.rollup(definition=rollup)`. |
 | `rangekeeper.model.system.pivot.PivotColumn.aggregation` | `result` | agreed | Each use needs review. |

@@ -1,7 +1,8 @@
 """Schema-derived expression records; fields and constructors are generated from LinkML.
 
 `rangekeeper.model` exports Expression, Reference, Function, Domain and Constraint,
-and the query Filter with its Criterion and ValueTest records.
+the query Filter with its Criterion and ValueTest records, and the traversal
+``Direction``.
 """
 
 from rangekeeper.schema.records import (
@@ -36,7 +37,6 @@ from rangekeeper.schema.enums import (
     Cardinality,
     CollectionKind,
     Depth,
-    Direction,
     DomainKind,
     DuplicateHandling,
     EmptyHandling,
@@ -53,7 +53,6 @@ __all__ += [
     "Cardinality",
     "CollectionKind",
     "Depth",
-    "Direction",
     "DomainKind",
     "DuplicateHandling",
     "EmptyHandling",

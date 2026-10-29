@@ -22,7 +22,8 @@ side or paired with a baseline.
 ``solve`` runs the stages for each case and writes nothing. ``execute`` solves,
 then publishes the outputs and the Runs to a store.
 ``ExecutionConfig`` holds the backend, unit system, limits, tolerances and
-backend options, with one source of defaults.
+backend options, with one source of defaults. ``DecisionResult`` names the
+result of one check of a decision rule.
 """
 
 from rangekeeper.execution.acceptance import Tolerances, Verification, verify
@@ -43,6 +44,7 @@ from rangekeeper.execution.preparation import (
     validate,
 )
 from rangekeeper.execution.publication import make_candidate
+from rangekeeper.execution.rule.result import DecisionResult
 from rangekeeper.execution.settings import Limits
 
 __all__ = [
@@ -52,6 +54,7 @@ __all__ = [
     "Binding",
     "Cases",
     "Comparison",
+    "DecisionResult",
     "Evidence",
     "ExecutionConfig",
     "Limits",
