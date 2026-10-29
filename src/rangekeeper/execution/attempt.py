@@ -16,7 +16,6 @@ from rangekeeper.execution import (
     settings,
     statuses,
 )
-from rangekeeper.execution.analysis import Analysis
 from rangekeeper.execution.backends import Backend, registry
 from rangekeeper.execution.backends.base import BackendResult
 from rangekeeper.execution.config import ExecutionConfig
@@ -275,7 +274,7 @@ class Attempt:
                 )
                 analysis = problem.analysis
                 if analysis.underdetermined:
-                    free = [self.binding.references[id] for id in self.free(analysis)]
+                    free = [self.binding.references[id] for id in analysis.undetermined]
                     self.diagnose(
                         (
                             Code.UNIQUENESS_NOT_ASSESSED
@@ -305,21 +304,6 @@ class Attempt:
                     "Serialized candidate failed independent acceptance; no output was published.",
                     severity=Severity.ERROR,
                 )
-
-    def free(self, analysis: Analysis) -> tuple[UUID, ...]:
-        """Return the undetermined unknowns to name, in unknown order.
-
-        These are the undetermined unknowns that the Specification frees by
-        name. When it names none of them, they are all the undetermined
-        unknowns. An unknown that no row constrains is always named.
-        """
-        assert self.binding is not None
-        named = {
-            ref.target for ref in self.binding.composition.requirements.unknowns or ()
-        }
-        named.update(analysis.free)
-        chosen = tuple(id for id in analysis.undetermined if id in named)
-        return chosen or analysis.undetermined
 
     def finish(self) -> Outcome:
         """Assemble the Outcome; validate its Run unless a later commit point will."""

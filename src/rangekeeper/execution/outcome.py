@@ -217,11 +217,12 @@ class Outcome:
     def free_unknowns(self) -> tuple[str, ...]:
         """Return the keys of the free values that the equations do not determine.
 
-        These are the undetermined unknowns that the Specification frees by
-        name, or all the undetermined unknowns when it names none of them. A
-        dotted path names a value whose key is not unique in the Model. The
-        tuple is empty when the equations determine every unknown. When bounds
-        exist, they can still restrict these values.
+        These are every undetermined unknown, in unknown order: each value
+        that can change while every equality still holds (D7). Fixing as many
+        of them as the equations lack makes the solve determined. A dotted
+        path names a value whose key is not unique in the Model. The tuple is
+        empty when the equations determine every unknown. When bounds exist,
+        they can still restrict these values.
         """
         self._require_leaf("free_unknowns")
         if not self.outputs:

@@ -98,10 +98,11 @@ Each error carries the code of the diagnostic that gives the reason.
 `OutcomeError` also has `status`. In an underdetermined Outcome, `outcome["key"]`
 still reads every value; a free unknown holds one candidate value.
 
-`free_unknowns` names the undetermined unknowns that the Specification frees by
-name. When it names none of them, it names every undetermined unknown. An
+`free_unknowns` names every undetermined unknown, in unknown order (D7). An
 unknown is undetermined when its value can change while every equality row still
-holds. Bounds can still restrict these values (`uniqueness_not_assessed`).
+holds. In lesson 02's loose back door, freeing both the land cost and the rent
+factor leaves one degree of freedom along a line through all seven chained
+values, so all seven are named; fixing any one of them determines the rest. Bounds can still restrict these values (`uniqueness_not_assessed`).
 
 `Evidence` holds the backend's `termination` (None when no backend ran), the
 backend's own `backend` evidence, `equality_rank` and `unknown_count` from the
