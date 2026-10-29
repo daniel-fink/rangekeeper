@@ -12,14 +12,13 @@ import difflib
 import math
 import re
 from dataclasses import dataclass, replace
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal
 from functools import lru_cache
 from importlib.metadata import version
 from typing import TYPE_CHECKING, ClassVar, cast
 
 from rangekeeper.money import (
     CURRENCIES,
-    ROUND_HALF_EVEN,
     _encoded,
     _require,
     is_currency,

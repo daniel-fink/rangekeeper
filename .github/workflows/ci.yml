@@ -23,11 +23,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # check_baseline.py reads pyproject.toml at the merge base.
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           python-version: "3.13"
       - run: uv run --locked --only-group lint ruff check --output-format github .
       - run: uv run --locked --only-group lint ruff format --check .
+      - name: Check that the structure baseline and the mypy override do not grow
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.base_ref }}
+        run: uv run --locked --only-group lint python tools/ci/check_baseline.py --base "origin/$BASE"
 
   layers:
     name: layers

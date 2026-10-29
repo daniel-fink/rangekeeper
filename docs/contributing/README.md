@@ -92,10 +92,20 @@ uv run --locked ruff check --fix .
 ```
 
 The lint rules are Pyflakes (`F`), import order (`I`), bugbear (`B`), pyupgrade
-(`UP`) and pydocstyle (`D`). Docstring rules apply to `src/rangekeeper` only:
-each public module, class, method and function needs a docstring. Write the first
-line of a function or method docstring in the imperative mood. Ruff skips the
-generated schema modules and the captured evidence under `docs/`.
+(`UP`), pydocstyle (`D`), and the structure and annotation rules of
+[#399](https://github.com/daniel-fink/rangekeeper/issues/399). Docstring,
+structure and annotation rules apply to `src/rangekeeper` only. Each public
+module, class, method and function needs a docstring. Write the first line of a
+function or method docstring in the imperative mood. Ruff skips the generated
+schema modules and the captured evidence under `docs/`.
+
+The structure rules limit each function to complexity 10 (`C901`), 6 return
+statements (`PLR0911`), 12 branches (`PLR0912`), 6 arguments (`PLR0913`), 50
+statements (`PLR0915`) and 3 positional arguments (`PLR0917`). Imports go at the
+top of the module (`PLC0415`,
+[#331](https://github.com/daniel-fink/rangekeeper/issues/331)). The annotation
+rules (`ANN001` to `ANN206`) require a type for each argument and each return;
+`__init__` needs no `-> None` when one argument has a type.
 
 Import order can change module load order. If a sorted import causes a circular
 import, import the name from the module that defines it, not from its package.
@@ -123,6 +133,36 @@ the check alone does not enforce this convention.
 Keep a `# noqa` or a per-file ignore only with a comment that gives the reason.
 Update generators instead of editing generated outputs by hand.
 
+### Structure baseline
+
+Older code does not pass the structure and annotation rules yet.
+`[tool.ruff.lint.per-file-ignores]` in `pyproject.toml` has a baseline: the
+codes that each file failed when the rules were added
+([#400](https://github.com/daniel-fink/rangekeeper/issues/400)). The baseline
+only shrinks:
+
+- Do not add a file or a code to the baseline. Fix the finding. If one line
+  must keep a finding, put `# noqa: <code>` on that line with the reason.
+- When you fix the last finding of a code in a file, remove the code from the
+  baseline. Ruff does not report a code that a file no longer needs. To see the
+  findings of a file without the baseline, from the repository root:
+
+  ```sh
+  uv run --locked ruff check --config "lint.per-file-ignores = {}" <file>
+  ```
+
+- A file that you rename with `git mv` keeps its codes under the new path.
+
+`tools/ci/check_baseline.py` compares `pyproject.toml` with the merge base of
+`origin/develop`. It fails when a change adds a code to the baseline, ignores
+a structure or annotation rule for all files, stops selecting one, raises its
+limit, or relaxes strict mypy for another module ([mypy](#local-hooks-and-changelog)).
+Run it before you push:
+
+```sh
+uv run --locked python tools/ci/check_baseline.py
+```
+
 ## Local hooks and changelog
 
 pre-commit runs ruff, mypy, nbstripout and the layer contract before each
@@ -132,10 +172,14 @@ commit, and the changelog check before each push. Install the hooks once:
 uv run --locked pre-commit install
 ```
 
-mypy uses the settings in `pyproject.toml`. It checks `src/rangekeeper` with a
-baseline that passes; strict mode follows when the public API is typed. Run it
-directly with `uv run --locked mypy`. nbstripout removes notebook outputs from
-committed notebooks.
+mypy uses the settings in `pyproject.toml`. It checks `src/rangekeeper` in
+strict mode ([ADR-018](../decisions/018-release-and-engineering.md#tooling-and-ci)),
+except for the packages that are not yet strict. One `[[tool.mypy.overrides]]`
+section lists them and turns off the strict checks for them. The pull request
+that makes a package pass strict mypy removes it from the list, and removes the
+package's `ANN` codes from the [structure baseline](#structure-baseline). Do not
+add a package to the list. Run mypy directly with `uv run --locked mypy`.
+nbstripout removes notebook outputs from committed notebooks.
 
 Each pull request adds a changelog fragment in
 [`changelog.d/`](../../changelog.d/README.md), which gives the names and types.
@@ -151,7 +195,7 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 
 | Job | Checks |
 | --- | --- |
-| `lint` | `ruff check` and `ruff format --check` |
+| `lint` | `ruff check` and `ruff format --check`. On pull requests, `tools/ci/check_baseline.py`: no addition to the [structure baseline](#structure-baseline) or to the packages that are not yet strict for mypy, since the merge base |
 | `layers` | `lint-imports`: the layer contract of [ADR-010](../decisions/010-layers-and-packages.md) |
 | `types` | mypy, with all extras for their types |
 | `changelog` | A fragment in `changelog.d/` and a draft changelog build, in the separate [Changelog workflow](../../.github/workflows/changelog.yml) on pull requests. The `no-changelog` label skips the fragment check; adding or removing a label reruns only this check |

@@ -147,7 +147,29 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["F", "I", "B", "UP", "D"]
+select = [
+    "F",
+    "I",
+    "B",
+    "UP",
+    "D",
+    # Structure guardrails (#399). See docs/contributing/coding-conventions.md.
+    "C901",  # function complexity
+    "PLR0911",  # too many return statements
+    "PLR0912",  # too many branches
+    "PLR0913",  # too many arguments
+    "PLR0915",  # too many statements
+    "PLR0917",  # too many positional arguments
+    "PLC0415",  # import outside the top level (#331)
+    "ANN001",  # missing argument type
+    "ANN002",  # missing *args type
+    "ANN003",  # missing **kwargs type
+    "ANN201",  # missing return type, public function
+    "ANN202",  # missing return type, private function
+    "ANN204",  # missing return type, special method
+    "ANN205",  # missing return type, staticmethod
+    "ANN206",  # missing return type, classmethod
+]
 ignore = [
     # Magic methods and __init__ inherit their meaning from the class docstring.
     "D105",
@@ -157,6 +179,20 @@ ignore = [
     "UP040",
     "UP047",
 ]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 6
+max-positional-args = 3
+max-branches = 12
+max-returns = 6
+max-statements = 50
+
+[tool.ruff.lint.flake8-annotations]
+# `__init__` needs no `-> None` when one argument has a type, as in mypy.
+mypy-init-return = true
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
@@ -172,15 +208,99 @@ extend-immutable-calls = [
 known-first-party = ["rangekeeper", "rangekeeper_examples"]
 
 [tool.ruff.lint.per-file-ignores]
-# Docstring rules apply to the public package only.
-"!src/rangekeeper/**" = ["D"]
-# Nested helpers run only inside the loop iteration that defines them (B023).
-"src/rangekeeper/io/bundle.py" = ["B023"]
-"src/rangekeeper/schema/runtime.py" = ["B023"]
-"schema/checks/specification_composition_cases.py" = ["B023"]
+# Docstring, structure and annotation rules apply to the public package only.
+"!src/rangekeeper/**" = ["D", "C901", "PLR09", "PLC0415", "ANN"]
 # Typing fixtures bind values only so that mypy checks their types.
 "tools/schema/typing_*.py" = ["F841"]
-
+"schema/checks/specification_composition_cases.py" = ["B023"]
+# Structure baseline (#399): the findings in the code when the guardrails
+# landed (#400). Do not add entries; CI fails when a pull request adds one
+# (tools/ci/check_baseline.py). When you fix a hotspot, remove its codes here.
+# B023: nested helpers run only inside the loop iteration that defines them.
+"src/rangekeeper/duration/period.py" = ["C901", "PLR0912", "ANN001", "ANN204"]
+"src/rangekeeper/execution/acceptance.py" = ["ANN001", "ANN202"]
+"src/rangekeeper/execution/analysis.py" = ["PLR0917"]
+"src/rangekeeper/execution/assembly.py" = ["PLR0913"]
+"src/rangekeeper/execution/attempt.py" = ["PLR0913", "PLR0917"]
+"src/rangekeeper/execution/backends/_worker.py" = ["PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/execution/backends/pyomo.py" = ["ANN001"]
+"src/rangekeeper/execution/comparison.py" = ["PLR0917", "PLC0415"]
+"src/rangekeeper/execution/compiler.py" = ["C901", "PLR0911", "PLR0912"]
+"src/rangekeeper/execution/outcome.py" = ["C901", "PLR0911"]
+"src/rangekeeper/execution/pipeline.py" = ["PLR0917"]
+"src/rangekeeper/execution/planning.py" = ["C901"]
+"src/rangekeeper/execution/preparation.py" = ["C901", "PLC0415"]
+"src/rangekeeper/execution/publication.py" = ["C901", "PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/execution/rule/evaluation.py" = ["ANN001", "ANN202"]
+"src/rangekeeper/execution/rule/observation.py" = ["ANN001", "ANN202"]
+"src/rangekeeper/execution/rule/result.py" = ["ANN204"]
+"src/rangekeeper/finance/_valuation.py" = ["PLR0917", "PLC0415"]
+"src/rangekeeper/finance/financial.py" = ["PLC0415", "ANN201"]
+"src/rangekeeper/flow/__init__.py" = ["C901", "PLR0913", "PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202", "ANN204"]
+"src/rangekeeper/flow/_batch.py" = ["C901", "PLR0912", "PLR0915", "PLC0415", "ANN001", "ANN202", "ANN206"]
+"src/rangekeeper/flow/_flow.py" = ["C901", "PLC0415", "ANN001"]
+"src/rangekeeper/flow/_table.py" = ["ANN001", "ANN202", "ANN204"]
+"src/rangekeeper/io/_amounts.py" = ["C901", "PLR0917", "ANN001", "ANN002", "ANN202"]
+"src/rangekeeper/io/bundle.py" = ["B023", "C901", "PLR0912", "PLR0913", "PLR0915", "PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202", "ANN204"]
+"src/rangekeeper/io/polars.py" = ["PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/io/yaml.py" = ["PLC0415", "ANN202"]
+"src/rangekeeper/market/_paths.py" = ["ANN001", "ANN202"]
+"src/rangekeeper/market/components.py" = ["PLR0913"]
+"src/rangekeeper/market/contracts.py" = ["PLC0415", "ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/market/generation.py" = ["PLR0913", "PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/market/implementation.py" = ["ANN001"]
+"src/rangekeeper/market/random.py" = ["PLC0415", "ANN201"]
+"src/rangekeeper/market/view.py" = ["ANN001", "ANN202"]
+"src/rangekeeper/model/_scope.py" = ["C901", "PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/model/content.py" = ["C901", "PLR0911", "PLR0912", "PLR0915", "ANN001", "ANN202"]
+"src/rangekeeper/model/definitions.py" = ["PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/model/diff.py" = ["ANN001", "ANN202"]
+"src/rangekeeper/model/display.py" = ["PLC0415", "ANN202", "ANN204"]
+"src/rangekeeper/model/draft.py" = ["ANN001", "ANN003", "ANN202"]
+"src/rangekeeper/model/expression/domains.py" = ["C901", "PLR0911", "ANN001", "ANN201"]
+"src/rangekeeper/model/expression/evaluation.py" = ["C901", "PLR0911"]
+"src/rangekeeper/model/expression/text.py" = ["PLR0911"]
+"src/rangekeeper/model/expression/validation.py" = ["C901", "PLR0911", "PLC0415", "ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/model/formulation/authoring.py" = ["PLR0917", "ANN001", "ANN202"]
+"src/rangekeeper/model/formulation/flow.py" = ["C901", "PLR0912", "PLR0913", "PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/model/formulation/hierarchy.py" = ["C901", "PLR0912", "ANN001", "ANN201"]
+"src/rangekeeper/model/formulation/preparation.py" = ["ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/model/formulation/validation.py" = ["ANN001"]
+"src/rangekeeper/model/geometry.py" = ["ANN001", "ANN201"]
+"src/rangekeeper/model/model.py" = ["PLR0917", "PLC0415", "ANN001"]
+"src/rangekeeper/model/provenance.py" = ["PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/model/system/hierarchy.py" = ["C901", "PLR0912"]
+"src/rangekeeper/model/system/matching.py" = ["ANN001"]
+"src/rangekeeper/model/system/pivot.py" = ["C901", "PLR0913", "PLC0415", "ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/model/system/rollup.py" = ["C901", "PLC0415", "ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/model/system/selection.py" = ["PLR0917", "ANN001", "ANN202"]
+"src/rangekeeper/model/system/table.py" = ["C901", "PLR0912", "ANN204"]
+"src/rangekeeper/model/system/validation.py" = ["ANN001", "ANN202"]
+"src/rangekeeper/model/system/view.py" = ["PLC0415", "ANN201"]
+"src/rangekeeper/model/validation.py" = ["PLC0415", "ANN001", "ANN201"]
+"src/rangekeeper/profile.py" = ["PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/quantity.py" = ["C901", "PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/run/_rule/evidence.py" = ["ANN001", "ANN202"]
+"src/rangekeeper/run/_rule/predicate.py" = ["C901", "PLR0911", "PLR0912", "ANN001", "ANN202"]
+"src/rangekeeper/run/outputs.py" = ["C901", "PLR0913", "PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/run/report.py" = ["C901", "PLR0912", "PLR0915", "PLC0415", "ANN001", "ANN201"]
+"src/rangekeeper/run/run.py" = ["PLC0415"]
+"src/rangekeeper/run/validation.py" = ["C901", "PLR0912", "PLR0913", "PLR0915", "PLR0917", "PLC0415", "ANN001", "ANN202", "ANN204"]
+"src/rangekeeper/schema/index.py" = ["C901", "PLR0912", "PLC0415", "ANN201"]
+"src/rangekeeper/schema/kinds.py" = ["PLC0415"]
+"src/rangekeeper/schema/runtime.py" = ["B023", "C901", "PLR0911", "PLC0415", "ANN001", "ANN002", "ANN003", "ANN201", "ANN202", "ANN204"]
+"src/rangekeeper/schema/validation.py" = ["C901", "PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202"]
+"src/rangekeeper/shared/encoding.py" = ["C901", "PLR0911", "PLR0912", "ANN001", "ANN202"]
+"src/rangekeeper/shared/errors.py" = ["PLR0913", "ANN001", "ANN202", "ANN204"]
+"src/rangekeeper/shared/fingerprints.py" = ["ANN001", "ANN202", "ANN205"]
+"src/rangekeeper/shared/validation.py" = ["PLR0913", "ANN001"]
+"src/rangekeeper/shared/yaml.py" = ["C901", "PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/specification/composition.py" = ["C901", "PLR0912", "PLR0915", "PLC0415", "ANN001", "ANN201", "ANN202", "ANN204"]
+"src/rangekeeper/specification/roles.py" = ["C901", "ANN001"]
+"src/rangekeeper/specification/rule/validation.py" = ["ANN001", "ANN201"]
+"src/rangekeeper/specification/specification.py" = ["C901", "PLR0912", "PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/specification/targets.py" = ["PLC0415", "ANN202"]
+"src/rangekeeper/specification/validation.py" = ["C901", "PLR0913", "PLR0915", "PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202"]
 [tool.towncrier]
 name = "Rangekeeper"
 directory = "changelog.d"
@@ -232,14 +352,41 @@ name = "Engineering"
 showcontent = true
 
 [tool.mypy]
-# A passing baseline; strict mode for rangekeeper.* follows the typed public
-# API (ADR-018).
+# Strict for the whole package (ADR-018). The override below lists the
+# packages that are not yet strict.
 python_version = "3.12"
 files = ["src/rangekeeper"]
+strict = true
 warn_unused_configs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-strict_equality = true
+
+[[tool.mypy.overrides]]
+# Strict typing ratchet (#399). These packages are not yet strict. The PR that
+# makes a package pass removes it from this list. Do not add a package.
+module = [
+    "rangekeeper.duration.*",
+    "rangekeeper.finance.*",
+    "rangekeeper.profile",
+    "rangekeeper.quantity",
+    "rangekeeper.shared.*",
+    "rangekeeper.schema.*",
+    "rangekeeper.execution.*",
+    "rangekeeper.run.*",
+    "rangekeeper.specification.*",
+    "rangekeeper.flow.*",
+    "rangekeeper.io.*",
+    "rangekeeper.model.*",
+    "rangekeeper.market.*",
+]
+disallow_any_generics = false
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+disallow_untyped_decorators = false
+warn_return_any = false
+implicit_reexport = true
+extra_checks = false
 
 [[tool.mypy.overrides]]
 # Dependencies without type information.

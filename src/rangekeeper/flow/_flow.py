@@ -8,14 +8,13 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from datetime import date
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal
 from itertools import pairwise
 from typing import TYPE_CHECKING, cast
 from uuid import UUID, uuid4
 
 from rangekeeper.flow._options import MissingValueHandling, ResampleMethod
 from rangekeeper.money import (
-    ROUND_HALF_EVEN,
     _encoded,
     _require,
     is_currency,
