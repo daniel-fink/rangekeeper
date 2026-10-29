@@ -25,7 +25,7 @@ from rangekeeper.execution import (
 )
 from rangekeeper.execution import execute as execute_specification
 from rangekeeper.execution import validate as validate_composition
-from rangekeeper.execution.backends import PyomoHighs, Result
+from rangekeeper.execution.backends import BackendResult, PyomoHighs, Termination
 from rangekeeper.io import DirectoryStore, MemoryStore, yaml
 from rangekeeper.quantity import default_units
 from rangekeeper.run import (
@@ -526,12 +526,12 @@ def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
 
 
 @pytest.mark.parametrize(
-    "termination", ["error", "infeasibleOrUnbounded", "unknown", "iterationLimit"]
+    "termination", [Termination.ERROR, Termination.UNKNOWN, Termination.LIMIT]
 )
 def test_backend_statuses_do_not_overclaim(termination):
     class Backend:
         def solve(self, problem, **kwargs):
-            return Result(termination)
+            return BackendResult(termination)
 
     store, _ = setup()
     run = execute_specification(
@@ -541,10 +541,10 @@ def test_backend_statuses_do_not_overclaim(termination):
     assert not run.record.outputs
     assert run.report.status.completion == (
         CompletionStatus.FAILED
-        if termination == "error"
+        if termination is Termination.ERROR
         else (
             CompletionStatus.LIMITED
-            if termination == "iterationLimit"
+            if termination is Termination.LIMIT
             else CompletionStatus.COMPLETED
         )
     )
@@ -719,7 +719,8 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
     evidence = next(
         d.values for d in run.report.diagnostics if d.code == Code.SOLVER_TERMINATION
     )
-    assert evidence["termination"] == "iterationLimit"
+    assert evidence["termination"] == "limit"
+    assert evidence["termination_condition"] == "iterationLimit"
     assert evidence["simplex_iterations"] == 1
 
 
@@ -782,8 +783,8 @@ def test_supported_arithmetic_and_conjunction(operation):
 def test_nonfinite_or_boolean_backend_candidates_are_never_published(magnitude):
     class Backend:
         def solve(self, problem, **kwargs):
-            return Result(
-                "convergenceCriteriaSatisfied", {NOI: 550000.0, CAPITAL: magnitude}
+            return BackendResult(
+                Termination.FEASIBLE, {NOI: 550000.0, CAPITAL: magnitude}
             )
 
     store, _ = setup()

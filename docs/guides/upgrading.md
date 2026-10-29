@@ -262,6 +262,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.expression.evaluation.UnsupportedExpression` | `UnsupportedError` | agreed | One error for unsupported expressions and problems. |
 | `rangekeeper.execution.errors.BackendUnavailable` | `BackendUnavailableError` | agreed |  |
 | `rangekeeper.execution.errors.AttemptDeadline` | `AttemptDeadlineError` | agreed |  |
+| `rangekeeper.execution.backends.base.Result` | `rangekeeper.execution.backends.BackendResult` | agreed | `termination` is a `Termination`, not a backend word; the backend's own condition moves into `evidence`. A backend also returns its `limits` and `diagnostics`. |
 | `rangekeeper.execution.compiler.Compiled` | `rangekeeper.execution.AffineProblem` | agreed | The typed result of the build-problem stage. |
 | `rangekeeper.execution.compiler.compile` | `rangekeeper.execution.build_problem` | agreed | `build_problem(binding, limits=)` also checks the symbol and constraint limits; `constraint_limit=` is replaced by `limits=`. |
 | `rangekeeper.execution.preparation.Prepared` | `rangekeeper.execution.Binding` | agreed | The typed result of the bind-roles stage. |
@@ -313,6 +314,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scenario.market.realize` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.market.generate` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.view.Market` | The MarketPaths document | agreed (needs refactor) |
+| `rangekeeper.execution.compiler.Row.scale` | Rows are unscaled. `PyomoHighs.scale(row)` gives the divisor of the `pyomo-highs` backend | agreed |
 | `rangekeeper.execution.executor.Executor` | `rangekeeper.execution.execute(specification, store, config=)`, which returns an `Outcome`; read the Run as `outcome.run`. Use `rangekeeper.execution.solve(specification, resolver, config=)` to write nothing | agreed |
 | `rangekeeper.execution.publication.CandidateResolver` | `rangekeeper.execution.assembly.Overlay(resolver, models=, runs=)` | agreed |
 | `rangekeeper.execution.planning.Plan` | `rangekeeper.execution.resolve_cases(specification, resolver=)`. It returns `Cases`, which is also a resolver | agreed |

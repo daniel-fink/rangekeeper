@@ -6,7 +6,7 @@ installed distribution can add a backend in the entry point group
 ``rangekeeper.backends``.
 """
 
-from rangekeeper.execution.backends.base import Backend, Result
+from rangekeeper.execution.backends.base import Backend, BackendResult, Termination
 from rangekeeper.execution.backends.pyomo import PyomoHighs
 from rangekeeper.shared.registry import Registry
 
@@ -18,4 +18,4 @@ registry.register(
     modules=("rangekeeper.execution.backends._worker",),
 )
 
-__all__ = ["Backend", "Result", "PyomoHighs", "registry"]
+__all__ = ["Backend", "BackendResult", "PyomoHighs", "Termination", "registry"]

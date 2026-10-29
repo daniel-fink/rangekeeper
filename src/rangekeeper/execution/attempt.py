@@ -16,7 +16,7 @@ from rangekeeper.execution import (
     settings,
 )
 from rangekeeper.execution.backends import Backend, registry
-from rangekeeper.execution.backends.base import Result
+from rangekeeper.execution.backends.base import BackendResult, Termination
 from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.errors import (
     AttemptDeadlineError,
@@ -99,7 +99,7 @@ class Attempt:
         ]
         self.limits: settings.Limits | None = None
         self.binding: preparation.Binding | None = None
-        self.result: Result | None = None
+        self.result: BackendResult | None = None
         self.output: Model | None = None
         self.completion: CompletionStatus = CompletionStatus.FAILED
         self.solution: SolutionStatus = SolutionStatus.NOT_ASSESSED
@@ -143,7 +143,7 @@ class Attempt:
         try:
             problem = self.prepare()
             result = self.solve(problem)
-            self.accept(result)
+            self.accept(problem, result)
         except AttemptDeadlineError as error:
             self.completion, self.solution = (
                 CompletionStatus.LIMITED,
@@ -244,24 +244,10 @@ class Attempt:
                 Code.ESTIMATES_UNUSED,
                 "Simplex feasibility uses no initial primal estimate; estimates are not assignments.",
             )
-        self.diagnose(
-            Code.SOLVER_SCALING,
-            f"Scaled {len(problem.rows)} affine constraints; values.rows gives each divisor and residual unit.",
-            values={
-                "rows": [
-                    {
-                        "constraint": str(row.assertion.constraint.id),
-                        "divisor": row.scale,
-                        "residual_units": row.residual.units,
-                    }
-                    for row in problem.rows
-                ]
-            },
-        )
         self.checkpoint()
         return problem
 
-    def solve(self, problem: compiler.AffineProblem) -> Result:
+    def solve(self, problem: compiler.AffineProblem) -> BackendResult:
         """Retain backend evidence without treating its candidate as accepted."""
         assert self.limits is not None
         self.result = self.backend.solve(
@@ -271,12 +257,13 @@ class Attempt:
             options=self.config.backend_options,
         )
         self.implementations.extend(self.result.implementations)
+        self.findings.extend(self.result.diagnostics)
         self.diagnose(
             Code.SOLVER_TERMINATION,
-            f"Backend returned {self.result.termination}; values gives the solver evidence.",
+            f"Backend returned {self.result.termination.value}; values gives the solver evidence.",
             # Backends return finite JSON evidence; the record checks it again.
             values={
-                "termination": self.result.termination,
+                "termination": self.result.termination.value,
                 **cast(Mapping[str, JSONValue], self.result.evidence),
             },
         )
@@ -284,27 +271,23 @@ class Attempt:
             Step(
                 kind=StepKind.SOLVE,
                 at=_now(),
-                message=f"Backend returned {self.result.termination}; independent acceptance follows when a candidate exists.",
+                message=f"Backend returned {self.result.termination.value}; independent acceptance follows when a candidate exists.",
             )
         )
         return self.result
 
-    def accept(self, result: Result) -> None:
+    def accept(self, problem: compiler.AffineProblem, result: BackendResult) -> None:
         """Check a serialized candidate against the original expressions."""
         assert self.binding is not None
-        limited = result.termination in {
-            "worker_deadline",
-            "maxTimeLimit",
-            "iterationLimit",
-            "objectiveLimit",
-        }
         self.completion = (
-            CompletionStatus.LIMITED if limited else CompletionStatus.COMPLETED
+            CompletionStatus.LIMITED
+            if result.termination is Termination.LIMIT
+            else CompletionStatus.COMPLETED
         )
         self.solution = SolutionStatus.UNKNOWN
-        if result.termination == "provenInfeasible":
+        if result.termination is Termination.INFEASIBLE:
             self.solution = SolutionStatus.INFEASIBLE
-        elif result.termination in {"error", "interrupted"}:
+        elif result.termination is Termination.ERROR:
             self.completion = CompletionStatus.FAILED
         elif result.candidate is not None:
             candidate = publication.make_candidate(
@@ -335,30 +318,19 @@ class Attempt:
                     Code.FEASIBLE_CANDIDATE,
                     "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made.",
                 )
-                rank, count = (
-                    result.evidence.get("equality_rank"),
-                    result.evidence.get("unknown_count"),
-                )
-                if isinstance(rank, int) and isinstance(count, int) and rank < count:
-                    # Unknowns that no row constrains were set to zero; name them.
-                    unconstrained = result.evidence.get(
-                        "unconstrained_values_initialized_to_zero"
-                    )
-                    free = [
-                        self.binding.references[UUID(id)]
-                        for id in (
-                            unconstrained if isinstance(unconstrained, list) else ()
-                        )
-                    ]
+                analysis = problem.analysis
+                if analysis.underdetermined:
+                    # Name the unknowns that no row constrains.
+                    free = [self.binding.references[id] for id in analysis.free]
                     self.diagnose(
                         (
-                            Code.UNDERDETERMINED
-                            if not result.evidence.get("has_bounds")
-                            else Code.UNIQUENESS_NOT_ASSESSED
+                            Code.UNIQUENESS_NOT_ASSESSED
+                            if analysis.has_bounds
+                            else Code.UNDERDETERMINED
                         ),
-                        f"Numerical equality rank {rank} for {count} unknowns (NumPy SVD default threshold). Bounds may restrict freedom; this is one accepted candidate, not a uniqueness proof."
+                        f"Numerical equality rank {analysis.rank} for {analysis.unknown_count} unknowns. Bounds may restrict freedom; this is one accepted candidate, not a uniqueness proof."
                         + (
-                            " Unconstrained unknowns initialized to zero: "
+                            " No row constrains these unknowns; the candidate holds the backend's value for each: "
                             + ", ".join(str(ref.target) for ref in free)
                             + "."
                             if free
@@ -367,6 +339,10 @@ class Attempt:
                         severity=Severity.WARNING,
                         document=self.binding.model.id if free else UNSET,
                         references=tuple(free) if free else UNSET,
+                        values={
+                            "equality_rank": analysis.rank,
+                            "unknown_count": analysis.unknown_count,
+                        },
                     )
             else:
                 self.completion = CompletionStatus.FAILED
@@ -381,10 +357,8 @@ class Attempt:
         # No returned worker evidence means no claim that its iteration setting or
         # solver implementation actually ran. The parent deadline still applies.
         effective = (
-            self.limits.record()
-            if self.limits
-            and self.result
-            and self.result.termination != "worker_deadline"
+            self.result.limits.record()
+            if self.result is not None and self.result.limits is not None
             else (
                 Settings(
                     time_limit=self.limits.time_limit,
@@ -395,7 +369,7 @@ class Attempt:
                 else Settings()
             )
         )
-        if self.result is None or self.result.termination == "worker_deadline":
+        if self.result is None or self.result.limits is None:
             self.diagnose(
                 Code.SETTINGS_ADJUSTED,
                 "relative_tolerance and iteration_limit were not applied by a completed solver invocation; time_limit applies to the parent attempt budget when preparation established it. No infeasibility follows.",

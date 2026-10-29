@@ -7,7 +7,8 @@ to no store:
 2. ``validate`` validates one composition against its input Model.
 3. ``bind_roles`` gives each value its role.
 4. ``build_problem`` makes the ``AffineProblem``.
-5. A ``Backend`` solves the problem.
+5. A ``Backend`` solves the problem and returns a ``backends.BackendResult``,
+   whose ``backends.Termination`` is the only status that generic code reads.
 6. ``make_candidate`` writes the solved values into a candidate Model.
 7. ``verify`` checks the candidate against the original mathematics.
 8. ``assemble`` makes the ``Outcome`` of a leaf, and ``assemble_batch`` the
@@ -20,8 +21,9 @@ backend options, with one source of defaults.
 """
 
 from rangekeeper.execution.acceptance import Tolerances, Verification, verify
+from rangekeeper.execution.analysis import Analysis
 from rangekeeper.execution.assembly import assemble, assemble_batch
-from rangekeeper.execution.compiler import AffineProblem, build_problem
+from rangekeeper.execution.compiler import AffineProblem, Relation, Row, build_problem
 from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.execution.pipeline import execute, solve
@@ -38,12 +40,15 @@ from rangekeeper.execution.settings import Limits
 
 __all__ = [
     "AffineProblem",
+    "Analysis",
     "Assertion",
     "Binding",
     "Cases",
     "ExecutionConfig",
     "Limits",
     "Outcome",
+    "Relation",
+    "Row",
     "Tolerances",
     "Validation",
     "Verification",

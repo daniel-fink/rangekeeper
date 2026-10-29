@@ -7,7 +7,7 @@ import pytest
 
 from rangekeeper import Specification
 from rangekeeper.execution import ExecutionConfig, Outcome, execute, solve
-from rangekeeper.execution.backends import Result
+from rangekeeper.execution.backends import BackendResult, Termination
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import Model
 from rangekeeper.run import Run, SolutionStatus
@@ -20,7 +20,7 @@ class Exact:
     """A backend that returns the known solution, in this process."""
 
     def solve(self, problem, **kwargs):
-        return Result("optimal", {NOI: 550000.0, CAPITAL: 11000000.0})
+        return BackendResult(Termination.FEASIBLE, {NOI: 550000.0, CAPITAL: 11000000.0})
 
 
 CONFIG = ExecutionConfig(backend=Exact())

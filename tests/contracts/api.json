@@ -513,10 +513,21 @@
   "AffineProblem": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, binding: rangekeeper.execution.preparation.Binding, rows: tuple[rangekeeper.execution.compiler.Row, ...]) -> None"
+    "__init__": "method (self, binding: rangekeeper.execution.preparation.Binding, variables: tuple[uuid.UUID, ...], rows: tuple[rangekeeper.execution.compiler.Row, ...], analysis: rangekeeper.execution.analysis.Analysis) -> None",
+    "bounds": "property",
+    "equalities": "property"
    },
    "module": "rangekeeper.execution.compiler",
-   "signature": "(binding: rangekeeper.execution.preparation.Binding, rows: tuple[rangekeeper.execution.compiler.Row, ...]) -> None"
+   "signature": "(binding: rangekeeper.execution.preparation.Binding, variables: tuple[uuid.UUID, ...], rows: tuple[rangekeeper.execution.compiler.Row, ...], analysis: rangekeeper.execution.analysis.Analysis) -> None"
+  },
+  "Analysis": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], has_bounds: bool) -> None",
+    "underdetermined": "property"
+   },
+   "module": "rangekeeper.execution.analysis",
+   "signature": "(rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], has_bounds: bool) -> None"
   },
   "Assertion": {
    "kind": "class",
@@ -570,6 +581,23 @@
    },
    "module": "rangekeeper.execution.outcome",
    "signature": "(run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple()) -> None"
+  },
+  "Relation": {
+   "kind": "enum",
+   "members": [
+    "EQUAL",
+    "LESS_THAN_OR_EQUAL",
+    "GREATER_THAN_OR_EQUAL"
+   ],
+   "module": "rangekeeper.execution.compiler"
+  },
+  "Row": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, assertion: rangekeeper.execution.preparation.Assertion, relation: rangekeeper.execution.compiler.Relation, residual: rangekeeper.execution.compiler.Affine) -> None"
+   },
+   "module": "rangekeeper.execution.compiler",
+   "signature": "(assertion: rangekeeper.execution.preparation.Assertion, relation: rangekeeper.execution.compiler.Relation, residual: rangekeeper.execution.compiler.Affine) -> None"
   },
   "Tolerances": {
    "kind": "class",
@@ -651,26 +679,38 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *args, **kwargs)",
-    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object]) -> rangekeeper.execution.backends.base.Result"
+    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object]) -> rangekeeper.execution.backends.base.BackendResult"
    },
    "module": "rangekeeper.execution.backends.base",
    "signature": "(*args, **kwargs)"
   },
+  "BackendResult": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, termination: rangekeeper.execution.backends.base.Termination, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...] = tuple(), limits: rangekeeper.execution.settings.Limits | None = None) -> None"
+   },
+   "module": "rangekeeper.execution.backends.base",
+   "signature": "(termination: rangekeeper.execution.backends.base.Termination, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...] = tuple(), limits: rangekeeper.execution.settings.Limits | None = None) -> None"
+  },
   "PyomoHighs": {
    "kind": "class",
    "members": {
-    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object] = <mappingproxy>) -> rangekeeper.execution.backends.base.Result"
+    "scale": "staticmethod (row) -> float",
+    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object] = <mappingproxy>) -> rangekeeper.execution.backends.base.BackendResult"
    },
    "module": "rangekeeper.execution.backends.pyomo",
    "signature": "()"
   },
-  "Result": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, termination: str, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
-   },
-   "module": "rangekeeper.execution.backends.base",
-   "signature": "(termination: str, candidate: collections.abc.Mapping[uuid.UUID, float] | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple(), evidence: collections.abc.Mapping[str, object] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+  "Termination": {
+   "kind": "enum",
+   "members": [
+    "FEASIBLE",
+    "INFEASIBLE",
+    "LIMIT",
+    "ERROR",
+    "UNKNOWN"
+   ],
+   "module": "rangekeeper.execution.backends.base"
   },
   "registry": {
    "kind": "value",

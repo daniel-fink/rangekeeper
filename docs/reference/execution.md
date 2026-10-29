@@ -78,8 +78,8 @@ and only the backend starts a process. `solve` calls the stages for each case;
 | 1 | `resolve_cases(specification, *, resolver)` | The root Specification | `Cases`: the documents, the pinned Models and one composition for each leaf. `Cases` is also a resolver | Missing or wrong-kind revisions, cycles, a contradicted batch Model pin. A leaf whose composition fails keeps its `ValidationError` |
 | 2 | `validate(composition, *, resolver, units=None)` | One composition | `Validation`: the report, the input Model and the unit system | Nothing for a content problem; it is an issue in the report |
 | 3 | `bind_roles(validation, *, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
-| 4 | `build_problem(binding, *, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: affine rows that keep the original Constraint identity | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`; `NumericalError` |
-| 5 | `Backend.solve(problem, *, limits, remaining, options)` | An `AffineProblem` | `Result`: termination, candidate values and evidence | `BackendUnavailableError`, `NumericalError` |
+| 4 | `build_problem(binding, *, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis` (equality rank, free variables, whether bounds exist) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`; `NumericalError` |
+| 5 | `Backend.solve(problem, *, limits, remaining, options)` | An `AffineProblem` | `backends.BackendResult`: a `Termination`, the candidate values, the applied limits, the backend's diagnostics and its raw evidence | `BackendUnavailableError`, `NumericalError`, `UnsupportedError` for a refused option or row |
 | 6 | `make_candidate(binding, values, *, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
 | 7 | `verify(binding, candidate, *, tolerances=Tolerances())` | The candidate | `Verification`: accepted or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
 | 8 | `assemble(specification, report, *, id, output, resolver, units=None, validate=True)`; `assemble_batch(specification, cases, *, resolver, validate=True)` | The report of one leaf; the Outcomes of a batch's cases | An `Outcome` with the finalized Run. With `validate`, the Run is validated once with the unstored outputs and Runs laid over the resolver | `ValidationError` |
@@ -93,7 +93,8 @@ time limit has passed. The stages call it between steps.
 | --- | --- |
 | `execution/planning.py` | Stage 1: the case graph, the pinned Models and one composition for each leaf. |
 | `execution/preparation.py` | Stages 2 and 3: validate the composition against its exact Model, keep the contributor scope, collect imposed predicates and normalize assignments to Measure units. |
-| `execution/compiler.py` | Stage 4: derive affine coefficients after assignments; check arithmetic capability, dimensions and the symbol and constraint limits; keep the original Constraint identity and row scaling. No Pyomo dependency. |
+| `execution/compiler.py` | Stage 4: derive affine coefficients after assignments; check arithmetic capability, dimensions and the symbol and constraint limits; keep the original Constraint identity. No backend dependency. |
+| `execution/analysis.py` | Rank and free-variable analysis of the rows, in pure Python. |
 | `execution/backends/base.py` | Stage 5: the narrow problem and result protocol; a backend candidate is a claim that waits for verification. |
 | `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
@@ -143,8 +144,9 @@ valuation formulas.
   these defaults; a Specification's `settings` replace them for its cases. An attempt that exceeds the symbol or
   constraint limit fails with a `symbol_limit` or `constraint_limit` diagnostic.
   Requested `iteration_limit` maps to HiGHS simplex iterations; presolve reductions
-  are separate. Requests exceeding HiGHS's integer maximum are clamped with a
-  `settings_adjusted` diagnostic.
+  are separate. The `pyomo-highs` backend clamps a request above HiGHS's integer
+  maximum, 2147483647, with a `settings_adjusted` diagnostic, and records the
+  clamped value in the effective Runtime Settings.
 - `time_limit` supplies the scalar-attempt preparation/solver budget. The child
   receives the remaining time after preparation; the parent kills and reaps a worker
   that exceeds it, including worker startup/imports. Reference preflight, document
@@ -157,9 +159,12 @@ valuation formulas.
   never silently treated as an absolute tolerance or an acceptance guarantee.
 - HiGHS uses deterministic, single-thread simplex with presolve, random seed 0,
   and absolute primal/dual feasibility tolerances of `1e-7` on compiled rows.
-  Each row is divided by `max(1, largest absolute coefficient)`. Rows with scaled
-  nonzero coefficients at/below `1e-12`, or constant magnitude at/above `1e19`,
-  are rejected rather than silently dropped or interpreted as infinite bounds.
+  These are HiGHS limits, so they live in the `pyomo-highs` backend, not in
+  `build_problem`. The backend divides each row by `max(1, largest absolute
+  coefficient)`. It refuses a row with scaled nonzero coefficients at/below
+  `1e-12`, or constant magnitude at/above `1e19`, with an `unsupported_capability`
+  diagnostic for its Constraint, rather than silently dropping it or reading it
+  as an infinite bound.
 - Every attempt records its termination, actual available implementation versions,
   effective settings, timing, solver option mapping, observed iteration count,
   row scaling and ordered trace. The `values` of the `solver_termination` and
@@ -170,12 +175,26 @@ valuation formulas.
   invocation.
 
 Only an independently accepted candidate produces `solution: feasible` and outputs.
-HiGHS's `provenInfeasible` becomes a completed/infeasible conclusion for the compiled
-affine problem. Limits, ambiguous termination and solver failure do not prove
-infeasibility. A zero-objective feasibility solve establishes no preference optimum.
-Equality-rank deficiency is reported using NumPy's numerical SVD threshold; bounds
-may constrain otherwise free directions, so rank alone is not a uniqueness proof.
-Completely unconstrained Values use an explicitly reported zero initialization.
+Generic code reads only the backend's `Termination`:
+
+| `Termination` | Completion | Solution | `pyomo-highs` conditions |
+| --- | --- | --- | --- |
+| `FEASIBLE` | completed | `feasible` when verification accepts the candidate | `convergenceCriteriaSatisfied` |
+| `INFEASIBLE` | completed | `infeasible`, for the compiled affine problem | `provenInfeasible` |
+| `LIMIT` | limited | `feasible` only for an accepted candidate, else `unknown` | `maxTimeLimit`, `iterationLimit`, `objectiveLimit`, a killed worker |
+| `ERROR` | failed | `unknown` | `error`, `interrupted` |
+| `UNKNOWN` | completed | `feasible` only for an accepted candidate, else `unknown` | any other condition |
+
+The `solver_termination` evidence keeps the backend's own condition as
+`termination_condition`. Limits, ambiguous termination and solver failure do not
+prove infeasibility. A zero-objective feasibility solve establishes no preference
+optimum. `build_problem` computes the equality rank and the free variables in
+pure Python, for every backend: Gaussian elimination on rows divided by their
+largest coefficient, where an entry at or below `max(rows, unknowns)` times the
+machine epsilon counts as zero. Bounds may constrain otherwise free directions,
+so rank alone is not a uniqueness proof. The `underdetermined` or
+`uniqueness_not_assessed` diagnostic names the unknowns that no row constrains;
+`pyomo-highs` gives each of them the value zero.
 
 ## Independent acceptance and immutable publication
 
