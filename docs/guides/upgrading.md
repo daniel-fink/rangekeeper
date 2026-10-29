@@ -229,6 +229,10 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.duration` | `rangekeeper.duration` | agreed |  |
 | `rangekeeper.model.flux` | `rangekeeper.flow` | draft | Stream and the Flow re-exports become the `flow` package module. |
 | `rangekeeper.model._flow_mapping` | `rangekeeper.flow._mapping` | draft |  |
+| `rangekeeper.flow._flow` | `rangekeeper.flow.flow` | agreed | Import `Flow` and `Movement` from `rangekeeper.flow`. |
+| `rangekeeper.flow._options` | `rangekeeper.flow.options` | agreed | Import the options from `rangekeeper.flow`. `FlowAggregate` moves to `rangekeeper.flow.aggregation`. |
+| `rangekeeper.flow._table` | `rangekeeper.flow.table` | agreed | `rangekeeper.flow` exports `StreamTable`, the type that `display()` returns. |
+| `rangekeeper.finance._valuation` | `rangekeeper.finance.valuation` | agreed | Import `pv`, `npv`, `irr` and `payment` from `rangekeeper.finance`. |
 | `rangekeeper.calculations._batch` | `rangekeeper.flow._batch` | draft | The private calculation engine. |
 | `rangekeeper.calculations.series` | `rangekeeper.flow` | agreed | The module is removed (#103). Its options and FlowAggregate are in `rangekeeper.flow`; Flow and Stream methods replace its functions (see the removed names). |
 | `rangekeeper.schema.behaviors.flow` | `rangekeeper.flow` | agreed | The behaviour modules are removed; generated records contain data only. Flow, Movement and MissingValueHandling are in `rangekeeper.flow`. Period and Span are in `rangekeeper.duration`; Distribution stays in `rangekeeper.model`. |

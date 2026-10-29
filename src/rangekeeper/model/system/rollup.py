@@ -26,13 +26,13 @@ from rangekeeper.shared.arguments import require_text, require_uuid
 
 if TYPE_CHECKING:
     from rangekeeper.duration import Period
-    from rangekeeper.flow import MissingValueHandling
-    from rangekeeper.flow._options import (
+    from rangekeeper.flow import (
         AggregationMethod,
         AlignmentJoin,
+        MissingValueHandling,
         ResampleMethod,
+        StreamTable,
     )
-    from rangekeeper.flow._table import StreamTable  # public with #413
     from rangekeeper.model.system.pivot import Pivot
     from rangekeeper.schema.records import Formulation
 
@@ -585,10 +585,10 @@ class FlowRollup(_Rollup):
     _kind = ValueKind.FLOW
 
     def __post_init__(self) -> None:
-        from rangekeeper.flow import MissingValueHandling
-        from rangekeeper.flow._options import (
+        from rangekeeper.flow import (
             AggregationMethod,
             AlignmentJoin,
+            MissingValueHandling,
             ResampleMethod,
         )
 

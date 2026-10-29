@@ -8,7 +8,7 @@ dependency. ``Pivot.display()`` returns a ``PivotTable``. Stream tables are in
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from rangekeeper.flow._table import render
+from rangekeeper.flow.table import render
 from rangekeeper.shared.errors import ContractError
 
 if TYPE_CHECKING:

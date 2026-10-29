@@ -12,10 +12,11 @@ from uuid import uuid4
 
 from rangekeeper.duration import Period
 from rangekeeper.duration.errors import AlignmentError
-from rangekeeper.flow._flow import Flow, Movement, _number
 from rangekeeper.flow._mapping import MEANS, period_indices, weights
-from rangekeeper.flow._options import MissingValueHandling as Missing
-from rangekeeper.flow._options import ResampleMethod
+from rangekeeper.flow.aggregation import FlowAggregate
+from rangekeeper.flow.flow import Flow, Movement, _number
+from rangekeeper.flow.options import AggregationMethod, AlignmentJoin, ResampleMethod
+from rangekeeper.flow.options import MissingValueHandling as Missing
 from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError, NumericalError
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
 
 def polars():
     with requires("calculations"):
-        import polars as pl
+        import polars as pl  # noqa: PLC0415 - optional dependency
     return pl
 
 
@@ -246,8 +247,6 @@ class Batch:
         )
 
     def grid(self, join):
-        from rangekeeper.flow._options import AlignmentJoin
-
         if not isinstance(join, AlignmentJoin):
             raise TypeError("join must be an AlignmentJoin")
         modes = {self.coordinates[c][0] for c in self.frame["coordinate"].unique()}
@@ -302,12 +301,6 @@ class Batch:
 
     def aggregate_groups(self, groups, *, method, units, missing, join):
         """Convert inputs once and reduce all selected contributor groups in one batch."""
-        from rangekeeper.flow._options import (
-            AggregationMethod,
-            AlignmentJoin,
-            FlowAggregate,
-        )
-
         if not isinstance(method, AggregationMethod):
             raise TypeError("method must be an AggregationMethod")
         if not isinstance(missing, Missing) or not isinstance(join, AlignmentJoin):
@@ -682,8 +675,6 @@ def align(flows, *, join, missing):
 
     Return the aligned Flows and, for each Flow, the coordinates with a known value.
     """
-    from rangekeeper.flow._options import AlignmentJoin
-
     if not isinstance(missing, Missing) or not isinstance(join, AlignmentJoin):
         raise TypeError("missing and join require their enum types")
     batch = Batch.prepare(flows)

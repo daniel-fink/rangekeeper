@@ -12,8 +12,8 @@ from datetime import date
 
 from rangekeeper.duration import Period
 from rangekeeper.duration.errors import AlignmentError
-from rangekeeper.flow._flow import Flow, Movement
-from rangekeeper.flow._options import ResampleMethod
+from rangekeeper.flow.flow import Flow, Movement
+from rangekeeper.flow.options import ResampleMethod
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError
 

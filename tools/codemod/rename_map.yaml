@@ -59,6 +59,26 @@ modules:
     new: rangekeeper.flow._mapping
     status: draft
     source: ADR-010
+  - old: rangekeeper.flow._flow
+    new: rangekeeper.flow.flow
+    status: agreed
+    source: "#413"
+    note: Import `Flow` and `Movement` from `rangekeeper.flow`.
+  - old: rangekeeper.flow._options
+    new: rangekeeper.flow.options
+    status: agreed
+    source: "#413"
+    note: Import the options from `rangekeeper.flow`. `FlowAggregate` moves to `rangekeeper.flow.aggregation`.
+  - old: rangekeeper.flow._table
+    new: rangekeeper.flow.table
+    status: agreed
+    source: "#413"
+    note: "`rangekeeper.flow` exports `StreamTable`, the type that `display()` returns."
+  - old: rangekeeper.finance._valuation
+    new: rangekeeper.finance.valuation
+    status: agreed
+    source: "#413"
+    note: Import `pv`, `npv`, `irr` and `payment` from `rangekeeper.finance`.
   - old: rangekeeper.calculations._batch
     new: rangekeeper.flow._batch
     status: draft

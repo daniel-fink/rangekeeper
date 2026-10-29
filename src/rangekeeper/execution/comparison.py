@@ -11,7 +11,7 @@ from types import MappingProxyType
 from typing import Any, Self, overload
 
 from rangekeeper.execution.outcome import Outcome
-from rangekeeper.flow._table import render
+from rangekeeper.flow.table import render
 from rangekeeper.quantity import Quantity, isclose
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError, MissingReferenceError
