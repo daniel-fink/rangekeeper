@@ -13,7 +13,6 @@ from rangekeeper.duration import Frequency, Periods, Span
 from rangekeeper.execution import execute
 from rangekeeper.flow import AlignmentJoin as Join
 from rangekeeper.flow import Flow, Stream
-from rangekeeper.flow import MeanWeighting as Weight
 from rangekeeper.flow import MissingValueHandling as Missing
 from rangekeeper.flow import ResampleMethod as R
 from rangekeeper.io import MemoryStore
@@ -232,7 +231,15 @@ def test_span_anchor_partial_and_decoded_behavior():
 
 @pytest.mark.parametrize(
     "method,expected",
-    [(R.SUM, 6), (R.MIN, 1), (R.MAX, 3), (R.FIRST, 1), (R.LAST, 3), (R.MEAN, 2)],
+    [
+        (R.SUM, 6),
+        (R.MIN, 1),
+        (R.MAX, 3),
+        (R.FIRST, 1),
+        (R.LAST, 3),
+        (R.MEAN, 2),
+        (R.ELAPSED_MEAN, (31 * 1 + 28 * 2 + 31 * 3) / 90),
+    ],
 )
 def test_resampling_independent_oracle_and_claims(method, expected):
     periods = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
@@ -245,9 +252,8 @@ def test_resampling_independent_oracle_and_claims(method, expected):
     result = stream.resample(
         periods=Periods(start=date(2027, 1, 1), frequency=Frequency.QUARTER, count=1),
         method=method,
-        weighting=Weight.OBSERVATIONS if method is R.MEAN else None,
     )
-    assert result.flows[0].movements[0].number == expected
+    assert result.flows[0].movements[0].number == pytest.approx(expected)
     assert result.flows[0].movements[0].claims == (claim,)
     assert result.coverage["Receipts"] == (1.0,)
     assert source.movements[0].id != result.flows[0].movements[0].id
@@ -277,8 +283,8 @@ def test_methods_mapping_missing_zero_and_html_escape():
     )
     with pytest.raises(ValueError, match="every label"):
         stream.resample(periods=periods, method={"Balance": R.LAST})
-    with pytest.raises(ValueError, match="weighting"):
-        stream.resample(periods=periods, method=R.MEAN)
+    with pytest.raises(TypeError, match="ResampleMethod"):
+        stream.resample(periods=periods, method="mean")  # type: ignore[arg-type]
     sparse = Stream(
         flows={
             "Receipt": receipts,
@@ -430,7 +436,7 @@ def test_role_editing_is_explicit_atomic_and_revision_pinned():
         included.free(ids["A_rent"])
 
 
-@pytest.mark.parametrize("method", [R.MEAN, R.FIRST, R.LAST])
+@pytest.mark.parametrize("method", [R.MEAN, R.ELAPSED_MEAN, R.FIRST, R.LAST])
 def test_symbolic_resampling_keeps_unknowns_and_fixed_membership(method):
     model, ids = hierarchy_model()
     relation = flow.resample(
@@ -439,7 +445,6 @@ def test_symbolic_resampling_keeps_unknowns_and_fixed_membership(method):
         sequence=ids["A_net"],
         resampled=ids["A_annual"],
         method=method,
-        weighting=Weight.ELAPSED if method is R.MEAN else None,
     )
     assert relation.bindings[0].value == ids["A_net"]
     assert relation.expressions
@@ -485,7 +490,7 @@ def test_selection_releases_unselected_coordinates_before_trim():
     )
 
 
-@pytest.mark.parametrize("method", [R.MEAN, R.FIRST, R.LAST])
+@pytest.mark.parametrize("method", [R.MEAN, R.ELAPSED_MEAN, R.FIRST, R.LAST])
 def test_passive_weighted_and_selected_resampling_executes(method):
     from rangekeeper.model import Metadata
     from rangekeeper.schema.records import System
@@ -510,7 +515,6 @@ def test_passive_weighted_and_selected_resampling_executes(method):
         sequence=net.id,
         resampled=ids["A_annual"],
         method=method,
-        weighting=Weight.ELAPSED if method is R.MEAN else None,
     )
     model = model.revise(Update(system=model.system.replace(formulations=(relation,))))
     spec = Specification(
@@ -531,19 +535,16 @@ def test_passive_weighted_and_selected_resampling_executes(method):
         .flow.movements[0]
         .number
     )
-    expected = (
-        1
-        if method is R.FIRST
-        else (
-            12
-            if method is R.LAST
-            else math.fsum(
-                v * (m.period.end - m.period.start).days
-                for v, m in zip(magnitudes, periods, strict=True)
-            )
-            / 365
+    expected = {
+        R.FIRST: 1,
+        R.LAST: 12,
+        R.MEAN: math.fsum(magnitudes) / 12,
+        R.ELAPSED_MEAN: math.fsum(
+            v * (m.period.end - m.period.start).days
+            for v, m in zip(magnitudes, periods, strict=True)
         )
-    )
+        / 365,
+    }[method]
     assert result == pytest.approx(expected)
 
 

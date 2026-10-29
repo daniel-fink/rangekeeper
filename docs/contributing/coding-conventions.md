@@ -20,10 +20,27 @@ example changes it to the next example on this page, or deletes it.
 A function does one job. Its body reads as a short list of named steps. When a
 body needs comments to separate its parts, make each part a function.
 
-Bad: `Batch.resample` in `flow/_batch.py` is 120 lines. It checks its
-arguments, groups the coordinates, weights the means, reduces the other
-methods, builds the output grid, applies the missing-value policy and merges
-the claims.
+Good: `Batch.resample` in `flow/_batch.py` reads as its steps: check the
+options, assign each value to a target Period, reduce each method's lines, fill
+the grid, apply the missing-value rule and merge the Claims.
+
+```python
+_check_resample(methods, missing=missing, lines=len(self.units))
+targets = tuple(periods)
+assigned = self._assign(targets)
+reduced = _concat(
+    [
+        self._reduce(assigned, method=method, lines=lines)
+        for method, lines in _plan(methods).items()
+    ]
+)
+grid = _fill_grid(reduced, lines=len(self.units), periods=len(targets))
+return self._period_batch(
+    _apply_missing(grid, missing),
+    targets,
+    cells=_claims_by_cell(assigned, self.metadata),
+)
+```
 
 Good: `Attempt.execute` in `execution/attempt.py`:
 
@@ -119,11 +136,11 @@ An argument does not switch the function between jobs, and it does not apply
 only to some values of another argument. Use a separate function, an enum, an
 options object or a small type, so that an invalid combination cannot be built.
 
-An enum member must not change the job either. Bad: `ResampleMethod.SPLIT`
-makes `resample` split amounts where the other members reduce them, so
-`missing=` does not apply to it.
-[#405](https://github.com/daniel-fink/rangekeeper/issues/405) moves it to
-`Flow.split` and `Stream.split`.
+An enum member must not change the job either. Good: `Flow.split` divides
+amounts over shorter Periods, and `Flow.resample` reduces them onto longer
+Periods. Before [#405](https://github.com/daniel-fink/rangekeeper/issues/405),
+`ResampleMethod.SPLIT` made `resample` split, and `missing=` did not apply to
+it.
 
 A result type has one mode too. When a method of a result raises because of
 how the result was made, make two result types.
@@ -153,11 +170,10 @@ outcome = rk.execution.solve(
 Do not pass two lists that match by position, or two mappings that match by
 key. Pass one list of items, or one mapping from a key to one item.
 
-Bad: `Batch.resample(periods, *, methods, weightings, missing)` in
-`flow/_batch.py` reads `weightings[line]` for `methods[line]`.
-`Stream.resample` takes a `method` mapping and a `weighting` mapping by Flow
-name. [#405](https://github.com/daniel-fink/rangekeeper/issues/405) replaces
-them with one options value for each line.
+Good: `Stream.resample(method=)` takes one `ResampleMethod` for every line, or
+one mapping from each name to its method. The weighting of a mean is part of
+the method (`MEAN` or `ELAPSED_MEAN`), so it cannot travel in a second list
+([#405](https://github.com/daniel-fink/rangekeeper/issues/405)).
 
 Good: `Specification.cases(*, cases=)` takes one mapping from each case key to
 the values of that case.
@@ -195,9 +211,6 @@ return ContractError(
 
 Every function and method has full type hints: each argument and the return.
 Public signatures are part of the API reference, so make them exact.
-
-Bad: `Batch.resample(self, periods, *, methods, weightings, missing)` has no
-types.
 
 Good: `offset` in `duration/calendar.py`:
 
@@ -238,10 +251,6 @@ Put imports at the top of the module. A function-level import keeps
 optional dependency
 ([#331](https://github.com/daniel-fink/rangekeeper/issues/331)). An optional
 dependency loads inside `requires`, which names the extra that installs it.
-
-Bad: `Batch.resample` imports `MeanWeighting` and `ResampleMethod` from
-`flow/_options.py` in its body, although the module imports
-`MissingValueHandling` from the same module at the top.
 
 Good: the optional SciPy import of `profile.py`, with the comment that new
 code adds:

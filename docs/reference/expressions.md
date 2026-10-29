@@ -406,7 +406,7 @@ intermediate Flow Values and relationships. `flow.aligned` uses the reference
 Flow's order without reading its amounts.
 
 `flow.resample` uses the resampled Flow's bounded periods. It supports SUM, MEAN
-with fixed observation/day weights, and FIRST/LAST. All declared symbols participate,
+(fixed equal weights), ELAPSED_MEAN (fixed day weights), FIRST and LAST. All declared symbols participate,
 including unknown amounts. SKIP and PROPAGATE policies are rejected for passive
 authoring. Explicit ZERO permits an empty target group; it never replaces an unknown
 symbol. MIN/MAX require solver capabilities outside the current affine slice.

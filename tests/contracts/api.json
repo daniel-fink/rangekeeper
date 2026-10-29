@@ -1054,10 +1054,11 @@
     "multiply": "method (self, *others: Flow) -> Flow",
     "negate": "method (self) -> Flow",
     "replace": "method (self, *, units: str | Unset = <Unset>, movements: tuple[Movement, ...] | Unset = <Unset>) -> Self",
-    "resample": "method (self, *, periods: Sequence[Period] | None = None, frequency: Frequency | None = None, method: ResampleMethod, weighting: MeanWeighting | None = None, missing: MissingValueHandling = MissingValueHandling.ERROR) -> Flow",
+    "resample": "method (self, *, periods: Sequence[Period] | None = None, frequency: Frequency | None = None, method: ResampleMethod, missing: MissingValueHandling = MissingValueHandling.ERROR) -> Flow",
     "round": "method (self, *, places: int | None = None, mode: str = 'ROUND_HALF_EVEN') -> Flow",
     "scale": "method (self, factor: float) -> Flow",
     "shift": "method (self, *, by: int) -> Flow",
+    "split": "method (self, *, periods: Sequence[Period] | None = None, frequency: Frequency | None = None) -> Flow",
     "total": "method (self, *, missing: MissingValueHandling = MissingValueHandling.ERROR) -> Quantity | None",
     "trim": "method (self, *, span: Period) -> Flow",
     "trim_empty": "method (self) -> Flow",
@@ -1073,14 +1074,6 @@
    },
    "module": "rangekeeper.flow._options",
    "signature": "(flow: Flow, coverage: tuple[float, ...]) -> None"
-  },
-  "MeanWeighting": {
-   "kind": "enum",
-   "members": [
-    "OBSERVATIONS",
-    "ELAPSED"
-   ],
-   "module": "rangekeeper.flow._options"
   },
   "MissingValueHandling": {
    "kind": "enum",
@@ -1113,11 +1106,11 @@
   "ResampleMethod": {
    "kind": "enum",
    "members": [
-    "SPLIT",
     "SUM",
     "FIRST",
     "LAST",
     "MEAN",
+    "ELAPSED_MEAN",
     "MIN",
     "MAX"
    ],
@@ -1136,9 +1129,10 @@
     "max": "method (self, *, units: str | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None, timing: PeriodTiming | None = None) -> Flow",
     "merge": "method (self, other: Stream) -> Stream",
     "min": "method (self, *, units: str | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None, timing: PeriodTiming | None = None) -> Flow",
-    "resample": "method (self, *, periods: Sequence[Period] | None = None, frequency: Frequency | None = None, method: ResampleMethod | Mapping[str, ResampleMethod], weighting: MeanWeighting | Mapping[str, MeanWeighting] | None = None, missing: MissingValueHandling | None = None) -> Stream",
+    "resample": "method (self, *, periods: Sequence[Period] | None = None, frequency: Frequency | None = None, method: ResampleMethod | Mapping[str, ResampleMethod], missing: MissingValueHandling | None = None) -> Stream",
     "select": "method (self, *names: str, value_ids: Iterable[UUID] | None = None) -> Stream",
     "source_values": "property",
+    "split": "method (self, *, periods: Sequence[Period] | None = None, frequency: Frequency | None = None) -> Stream",
     "sum": "method (self, *, units: str | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None, timing: PeriodTiming | None = None) -> Flow",
     "to_frame": "method (self) -> DataFrame",
     "trim": "method (self, *, span: Period) -> Stream",
@@ -2377,13 +2371,13 @@
   "FlowRollup": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, weighting: MeanWeighting | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None",
+    "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.rollup.RollupResult",
     "formulate": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, id: uuid.UUID, aggregates: collections.abc.Mapping[uuid.UUID, uuid.UUID])",
     "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
    },
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, weighting: MeanWeighting | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None"
+   "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None"
   },
   "Hierarchy": {
    "kind": "class",

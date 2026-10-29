@@ -40,27 +40,20 @@ class AggregationMethod(StrEnum):
 
 @unique
 class ResampleMethod(StrEnum):
-    """Select how movements in one period reduce to one value, or split into shorter ones.
+    """Select how the movements inside one target Period reduce to one amount.
 
-    ``SPLIT`` divides each amount equally over the shorter Periods inside its
-    Period; the others reduce the movements inside each longer Period.
+    ``MEAN`` gives each movement the same weight. ``ELAPSED_MEAN`` weights each
+    movement by the days that its Period covers, so it needs period movements.
+    To divide amounts over shorter Periods, use ``Flow.split``.
     """
 
-    SPLIT = "split"
     SUM = "sum"
     FIRST = "first"
     LAST = "last"
     MEAN = "mean"
+    ELAPSED_MEAN = "elapsed_mean"
     MIN = "min"
     MAX = "max"
-
-
-@unique
-class MeanWeighting(StrEnum):
-    """Select the weight of each movement in a resampled mean."""
-
-    OBSERVATIONS = "observations"
-    ELAPSED = "elapsed"
 
 
 @dataclass(frozen=True, slots=True)

@@ -9,7 +9,6 @@ import pytest
 from rangekeeper.duration import Frequency, Period, Periods, Span
 from rangekeeper.flow import (
     Flow,
-    MeanWeighting,
     MissingValueHandling,
     Movement,
     ResampleMethod,
@@ -52,24 +51,17 @@ def test_model_can_select_different_reductions_for_the_same_flow(reduction, expe
     result = flow.resample(
         periods=[Period(start=date(2026, 1, 1), end=date(2026, 2, 1))],
         method=ResampleMethod(reduction),
-        weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
     )
     assert result.movements[0].magnitude == expected
     assert result.units == "AUD" and flow.to_data() == before
 
 
-def test_means_require_a_choice_and_do_not_infer_weighting_from_units():
+def test_each_mean_is_its_own_method_and_units_do_not_choose_it():
     periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=2)
     flow = Flow.from_periods(periods, [10, 20], units="dimensionless")
     target = [Period(start=periods[0].start, end=periods[-1].end)]
-    with pytest.raises(ValueError, match="weighting"):
-        flow.resample(periods=target, method=ResampleMethod.MEAN)
-    observed = flow.resample(
-        periods=target, method=ResampleMethod.MEAN, weighting=MeanWeighting.OBSERVATIONS
-    )
-    elapsed = flow.resample(
-        periods=target, method=ResampleMethod.MEAN, weighting=MeanWeighting.ELAPSED
-    )
+    observed = flow.resample(periods=target, method=ResampleMethod.MEAN)
+    elapsed = flow.resample(periods=target, method=ResampleMethod.ELAPSED_MEAN)
     assert observed.movements[0].magnitude == 15
     assert elapsed.movements[0].number == pytest.approx((31 * 10 + 28 * 20) / 59)
 
@@ -101,7 +93,6 @@ def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
     result = lines([flow]).resample(
         periods=periods,
         method=ResampleMethod(reduction),
-        weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
         missing=MissingValueHandling.ZERO,
     )
     assert [s.magnitude for s in result.flows[0].movements] == [10, None, 0]

@@ -65,7 +65,6 @@ def formulate(hierarchy, *, id, aggregates, selected, populations, rule):
                         source,
                         rule.periods,
                         method=rule.resampling,
-                        weighting=rule.weighting,
                         missing=rule.missing,
                     )
                 )
