@@ -13,6 +13,7 @@ from itertools import pairwise
 from typing import TYPE_CHECKING, cast
 from uuid import uuid4
 
+from rangekeeper.duration.errors import AlignmentError
 from rangekeeper.flow._options import MissingValueHandling, ResampleMethod
 from rangekeeper.money import (
     RoundingMode,
@@ -26,8 +27,10 @@ from rangekeeper.quantity import Quantity, _is_number, _product, _sum_scale
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
 from rangekeeper.schema.runtime import OMIT, UNSET
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
+    ContractError,
     MissingReferenceError,
     NumericalError,
     UnitError,
@@ -85,7 +88,10 @@ class Movement(records.Movement):
         movement = self
         value = _number(movement.magnitude)
         if value is None or not math.isfinite(value):
-            raise ValueError(f"unresolved/nonfinite movement: {movement.key}")
+            raise NumericalError(
+                f"unresolved/nonfinite movement: {movement.key}",
+                targets=(movement.id,),
+            )
         return float(value)
 
     @property
@@ -100,7 +106,11 @@ class Movement(records.Movement):
                 None if movement.date is None else movement.date.isoformat(),
             )
         if movement.date is None:
-            raise ValueError("movement requires a date or period")
+            raise ContractError(
+                "movement requires a date or period",
+                code=Code.INVARIANT_MOVEMENT,
+                targets=(movement.id,),
+            )
         return ("event", movement.date.isoformat(), movement.key)
 
     def resolve(self, *, timing: PeriodTiming | None = None) -> date:
@@ -117,9 +127,16 @@ class Movement(records.Movement):
         if movement.date is not None:
             return require_date(movement.date)
         if movement.period is None:
-            raise ValueError("movement requires a date or period")
+            raise ContractError(
+                "movement requires a date or period",
+                code=Code.INVARIANT_MOVEMENT,
+                targets=(movement.id,),
+            )
         if timing is None:
-            raise ValueError("undated period movement requires explicit timing")
+            raise ContractError(
+                "undated period movement requires explicit timing",
+                targets=(movement.id,),
+            )
         return movement.period.resolve(timing=timing)
 
 
@@ -247,12 +264,15 @@ class Flow(records.Flow):
         The caller selects any alignment, ordering, or missing-value policy.
         """
         flow = self
-        result = {}
+        result: dict[tuple, Movement] = {}
         for movement in flow.movements:
             coordinate = movement.coordinate
             if coordinate in result:
-                raise ValueError(
-                    "duplicate coordinates make alignment ambiguous; use explicit key equations"
+                raise AlignmentError(
+                    "duplicate coordinates make alignment ambiguous; use explicit key equations",
+                    code=Code.ALIGNMENT_DUPLICATE,
+                    values={"coordinate": list(coordinate)},
+                    targets=(result[coordinate].id, movement.id),
                 )
             result[coordinate] = movement
         return result
@@ -365,7 +385,10 @@ class Flow(records.Flow):
             or keys is not None
             and len(keys) != len(dates)
         ):
-            raise ValueError("dates, magnitudes and keys must have equal lengths")
+            raise ContractError(
+                "dates, magnitudes and keys must have equal lengths",
+                values={"dates": len(dates), "magnitudes": len(magnitudes)},
+            )
         for value in dates:
             require_date(value)
         selected_keys = tuple(keys) if keys is not None else (None,) * len(dates)
@@ -415,7 +438,10 @@ class Flow(records.Flow):
             or keys is not None
             and len(keys) != len(periods)
         ):
-            raise ValueError("periods, magnitudes and keys must have equal lengths")
+            raise ContractError(
+                "periods, magnitudes and keys must have equal lengths",
+                values={"periods": len(periods), "magnitudes": len(magnitudes)},
+            )
         if is_currency(units):
             # Convert once here, so the Flow need not rebuild its Movements.
             magnitudes = [
@@ -469,7 +495,10 @@ class Flow(records.Flow):
             raise TypeError(f"{profile.takes} must be a Quantity or its text")
         factors = profile.factors(periods=periods)
         if len(factors) != len(periods):
-            raise ValueError("the profile must give one factor for each Period")
+            raise ContractError(
+                "the profile must give one factor for each Period",
+                values={"factors": len(factors), "periods": len(periods)},
+            )
         values = [quantity.number * factor for factor in factors]
         if profile.takes == "total":
             values[-1] = quantity.number - math.fsum(values[:-1])
@@ -495,7 +524,7 @@ class Flow(records.Flow):
 
         unit_system = default_units if unit_system is None else unit_system
         if not unit_system.compatible(flow.units, units):
-            raise ValueError("incompatible Flow units")
+            raise UnitError(f"cannot convert a Flow in {flow.units!r} to {units!r}")
         return flow.replace(
             movements=tuple(
                 s.replace(
@@ -633,12 +662,21 @@ class Flow(records.Flow):
             raise TypeError("by must be a whole number of Periods")
         movements = self.movements
         if any(m.period is None for m in movements):
-            raise ValueError("only a Flow over Periods can shift by Periods")
-        if any(
-            a.period.end != b.period.start  # type: ignore[union-attr]
+            raise ContractError("only a Flow over Periods can shift by Periods")
+        gaps = [
+            (a, b)
             for a, b in pairwise(movements)
-        ):
-            raise ValueError("shift needs gap-free Periods")
+            if a.period.end != b.period.start  # type: ignore[union-attr]
+        ]
+        if gaps:
+            raise AlignmentError(
+                "shift needs gap-free Periods",
+                code=Code.ALIGNMENT_GAP,
+                values={
+                    "end": gaps[0][0].period.end.isoformat(),  # type: ignore[union-attr]
+                    "start": gaps[0][1].period.start.isoformat(),  # type: ignore[union-attr]
+                },
+            )
         shifted = []
         for i, movement in enumerate(movements):
             j = i - by
@@ -686,9 +724,10 @@ class Flow(records.Flow):
         scale = _sum_scale(self.units, other.units)
         left, right = self.coordinate_index(), other.coordinate_index()
         if len({key[0] for key in (*left, *right)}) > 1:
-            raise ValueError(
+            raise AlignmentError(
                 "cannot add dated and period amounts; use Stream.sum, which dates "
-                "each period amount"
+                "each period amount",
+                code=Code.ALIGNMENT_MIXED,
             )
         sign = -1.0 if subtract else 1.0
         movements = []
@@ -781,7 +820,7 @@ class Flow(records.Flow):
     def trim(self, *, span: Period) -> Flow:
         """Select dates in [start, end) of a Period or Span, or whole periods inside it.
 
-        Partial period overlap raises ValueError; trimming must not silently allocate
+        Partial period overlap raises AlignmentError; trimming must not silently allocate
         a period quantity or substitute an assumed payment date for its coverage.
         """
         flow = self
@@ -800,8 +839,16 @@ class Flow(records.Flow):
                 if period.end <= start or period.start >= end:
                     continue
                 if period.start < start or period.end > end:
-                    raise ValueError(
-                        "trim crosses a movement period; allocate explicitly"
+                    raise AlignmentError(
+                        "trim crosses a movement period; allocate explicitly",
+                        code=Code.ALIGNMENT_CROSSES,
+                        values={
+                            "span": f"{start.isoformat()}/{end.isoformat()}",
+                            "period": (
+                                f"{period.start.isoformat()}/{period.end.isoformat()}"
+                            ),
+                        },
+                        targets=(movement.id,),
                     )
                 selected.append(movement)
         return flow.replace(movements=tuple(selected))
@@ -857,7 +904,7 @@ class Flow(records.Flow):
         if not isinstance(day_count, DayCount):
             raise TypeError("day_count must be a DayCount")
         if any(s.period is None for s in self.movements):
-            raise ValueError("day-count integration requires bounded periods")
+            raise ContractError("day-count integration requires bounded periods")
         exposures = [
             Quantity(
                 magnitude=year_fraction(
@@ -887,14 +934,17 @@ class Flow(records.Flow):
         from rangekeeper.quantity import default_units
 
         if len(exposures) != len(flow.movements):
-            raise ValueError("exposure count differs from movement count")
+            raise ContractError(
+                "exposure count differs from movement count",
+                values={"exposures": len(exposures), "movements": len(flow.movements)},
+            )
         output_units = units or (
             default_units.multiply(flow.units, exposures[0].units)
             if exposures
             else None
         )
         if output_units is None:
-            raise ValueError("empty integration requires explicit output units")
+            raise UnitError("empty integration requires explicit output units")
         movements = []
         for movement, exposure in zip(flow.movements, exposures, strict=True):
             product_unit = default_units.multiply(flow.units, exposure.units)
@@ -1038,7 +1088,7 @@ def _total_known(missing: MissingValueHandling, values: list[float]) -> bool:
     values when there is one; ``ZERO`` always totals them.
     """
     if missing is MissingValueHandling.ERROR:
-        raise ValueError("cannot total unresolved movements")
+        raise NumericalError("cannot total unresolved movements")
     return missing is MissingValueHandling.ZERO or (
         missing is MissingValueHandling.SKIP and bool(values)
     )
@@ -1061,17 +1111,38 @@ def _target(
     assert frequency is not None
     covered = [m.period for m in movements if m.period is not None]
     if len(covered) != len(movements):
-        raise ValueError("give periods= to resample dated movements")
+        raise ContractError("give periods= to resample dated movements")
     if not covered:
-        raise ValueError("an empty Flow needs periods= to resample")
+        raise ContractError("an empty Flow needs periods= to resample")
     start = min(period.start for period in covered)
     end = max(period.end for period in covered)
     count = count_steps(start, end, frequency=frequency)
     if offset(start, frequency=frequency, count=count) != end:
-        raise ValueError(
-            f"{frequency.value} Periods from {start} do not end at {end}; give periods="
+        raise AlignmentError(
+            f"{frequency.value} Periods from {start} do not end at {end}; give periods=",
+            code=Code.ALIGNMENT_PARTIAL,
+            values={
+                "span": f"{start.isoformat()}/{end.isoformat()}",
+                "frequency": frequency.value,
+            },
         )
     return Periods(start=start, frequency=frequency, count=count)
+
+
+def _unpartitioned(movement: Movement, part: Period | None) -> AlignmentError:
+    """Return the error for target Periods that do not partition a movement's Period.
+
+    A target Period that ends after the movement's Period crosses it; otherwise
+    the target Periods leave a gap in it.
+    """
+    period = cast("Period", movement.period)
+    crosses = part is not None and part.end > period.end
+    return AlignmentError(
+        "the target Periods must partition each Period",
+        code=Code.ALIGNMENT_CROSSES if crosses else Code.ALIGNMENT_GAP,
+        values={"period": f"{period.start.isoformat()}/{period.end.isoformat()}"},
+        targets=(movement.id,),
+    )
 
 
 def _split(flow: Flow, periods: Sequence[Period]) -> Flow:
@@ -1085,7 +1156,7 @@ def _split(flow: Flow, periods: Sequence[Period]) -> Flow:
     position = 0
     for movement in flow.movements:
         if movement.period is None:
-            raise ValueError("split needs period movements")
+            raise ContractError("split needs period movements")
         while (
             position < len(targets) and targets[position].end <= movement.period.start
         ):
@@ -1095,12 +1166,12 @@ def _split(flow: Flow, periods: Sequence[Period]) -> Flow:
         while position < len(targets) and targets[position].start < movement.period.end:
             part = targets[position]
             if part.start != cursor or part.end > movement.period.end:
-                raise ValueError("the target Periods must partition each Period")
+                raise _unpartitioned(movement, part)
             parts.append(part)
             cursor = part.end
             position += 1
         if cursor != movement.period.end:
-            raise ValueError("the target Periods must partition each Period")
+            raise _unpartitioned(movement, None)
         if movement.magnitude is None:
             values: list[float | None] = [None] * len(parts)
         else:
