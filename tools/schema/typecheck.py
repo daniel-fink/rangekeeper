@@ -11,6 +11,13 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
         sys.executable,
         "-m",
         "mypy",
+        # Do not read pyproject.toml: its strict ratchet (#400) is for mypy in
+        # the project environment. These flags are the settings of this check.
+        "--config-file=",
+        "--python-version=3.12",
+        "--warn-redundant-casts",
+        "--warn-unused-ignores",
+        "--strict-equality",
         "--follow-imports=silent",
         "--ignore-missing-imports",
         "--cache-dir=" + cache,

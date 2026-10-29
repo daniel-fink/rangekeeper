@@ -85,7 +85,8 @@ one slot, enum collections, and classes or slots without a description.
 The native round trip and typing checks also need `mypy==1.18.2`,
 `py-moneyed` and `pint` in that environment. `verify_native.py` generates the
 stock LinkML module in a temporary folder; the package does not contain it.
-`typecheck.py` uses `mypy==1.18.2`. Valid selected sources must pass, and deliberate
+`typecheck.py` uses `mypy==1.18.2` with its own flags, not the strict settings in
+`pyproject.toml`. Valid selected sources must pass, and deliberate
 invalid fixtures must produce their expected errors. Run all
 [seven conformance suites](schema.md#conformance) for schema, migration or record
 boundary changes. Native round-trip checks test the stock loader separately from

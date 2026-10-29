@@ -1,6 +1,6 @@
 # ADR-018: Release lines, versioning and engineering practice
 
-Status: accepted for 1.0; release lines, pre-releases, versions, changelog and CI implemented (1.0.0a1, 1.0.0a2); docs site build implemented (#191), publication pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; release lines, pre-releases, versions, changelog and CI implemented (1.0.0a1, 1.0.0a2); docs site build implemented (#191), publication pending; structure guardrails and the strict typing ratchet implemented (#400). Recorded: 2026-10-26.
 
 ## Problem
 
@@ -50,6 +50,25 @@ Status: accepted for 1.0; release lines, pre-releases, versions, changelog and C
 - **Tools.** ruff lints and formats; it replaces Black. mypy runs in strict
   mode for `rangekeeper.*`. pre-commit runs ruff, mypy, nbstripout and the
   towncrier check.
+- **Strict typing ratchet.** mypy is strict for the whole package. One
+  override lists the packages that are not yet strict; the end state is strict
+  mode with no override. Each step removes packages from the override, and
+  their annotation codes from the ruff structure baseline. The order is:
+  1. the root module, `errors` and `money`
+     ([#400](https://github.com/daniel-fink/rangekeeper/issues/400));
+  2. `duration`, `finance`, `profile` and `quantity`;
+  3. `execution`, `run` and `specification`, after the execution fixes of
+     [#377](https://github.com/daniel-fink/rangekeeper/issues/377);
+  4. `flow`, `model` and `io`, each with its split in
+     [#399](https://github.com/daniel-fink/rangekeeper/issues/399);
+  5. `shared` and `schema`, after the record runtime helpers are typed;
+  6. `market`, after its 1.0 API
+     ([#298](https://github.com/daniel-fink/rangekeeper/issues/298),
+     [#299](https://github.com/daniel-fink/rangekeeper/issues/299)).
+- **Structure baseline.** ruff checks function size, arguments, imports and
+  annotations in `src/rangekeeper`. Per-file ignores list the findings of the
+  older code. CI fails when a pull request adds to the per-file ignores or to
+  the mypy override, so both only shrink.
 - **CI jobs:**
   - lint and types;
   - generated-file checks (schema, C# example and manifest hashes);
