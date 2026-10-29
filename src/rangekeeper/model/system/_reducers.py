@@ -4,7 +4,7 @@ import builtins
 import math
 from collections.abc import Callable
 
-from rangekeeper.model.system.errors import AggregationError
+from rangekeeper.model.system.errors import RollupError
 from rangekeeper.quantity import Quantity
 
 
@@ -13,22 +13,22 @@ def _reduce(
     operation: Callable[[tuple[float, ...]], float],
 ) -> Quantity:
     if not values:
-        raise AggregationError("cannot reduce an empty population")
+        raise RollupError("cannot reduce an empty population")
     if any(not isinstance(value, Quantity) for value in values):
         raise TypeError("reducers require schema Quantities")
     if any(value.units != values[0].units for value in values):
-        raise AggregationError(
+        raise RollupError(
             "normalize quantities to identical unit spellings before reduction"
         )
     numbers = tuple(value.number for value in values)
     if not all(math.isfinite(value) for value in numbers):
-        raise AggregationError("reducer inputs must be finite")
+        raise RollupError("reducer inputs must be finite")
     try:
         result = operation(numbers)
     except ArithmeticError as error:
-        raise AggregationError("quantity reduction overflowed") from error
+        raise RollupError("quantity reduction overflowed") from error
     if not math.isfinite(result):
-        raise AggregationError("quantity reduction produced a non-finite result")
+        raise RollupError("quantity reduction produced a non-finite result")
     return Quantity(magnitude=result, units=values[0].units)
 
 
@@ -61,7 +61,7 @@ def count(values: tuple[Quantity, ...]) -> Quantity:
     Empty input is an error, as for the other reducers.
     """
     if not values:
-        raise AggregationError("cannot reduce an empty population")
+        raise RollupError("cannot reduce an empty population")
     if any(not isinstance(value, Quantity) for value in values):
         raise TypeError("reducers require schema Quantities")
     return Quantity(magnitude=len(values), units="dimensionless")

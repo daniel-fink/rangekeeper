@@ -185,7 +185,7 @@ A rollup selects one Value for each contributor by its owner-local `key`.
 Optional `measure=` asserts its Measure UUID; it never chooses the first Value
 sharing that Measure, and a different Measure raises `SelectionError`. A supplied
 Measure must exist even when no owner has the key. A Value of the wrong kind (a
-Flow for a `QuantityRollup`) raises `AggregationError`.
+Flow for a `QuantityRollup`) raises `RollupError`.
 
 `QuantityRollup` and `FlowRollup` share their fields and their contributor rules,
 and both return a `RollupResult`:
@@ -248,7 +248,7 @@ the rollup is created; otherwise `execute` checks them.
 Results are immutable schema Quantities.
 
 The reducers operate on the raw contributors of each subtree. A mean is never a
-mean of sub-tree means. Overflow and non-finite results raise `AggregationError`.
+mean of sub-tree means. Overflow and non-finite results raise `RollupError`.
 Empty populations remain unavailable rather than becoming zero.
 
 `Reducer.COUNT` counts the contributors that have a value. It returns a
@@ -365,7 +365,7 @@ by_use.partition(building_a_id)  # overlap, uncovered, outside
   Label is in no column: `partition` reports it in `uncovered`.
 - Without `by`, the columns start at the root of the one Taxonomy whose
   Classifications the rows' Labels with that key use. Labels that use several
-  Taxonomies raise `AggregationError`; pass `by` to choose. When no row has the
+  Taxonomies raise `RollupError`; pass `by` to choose. When no row has the
   Label, the pivot has the "All" column alone.
 - `only` still tests the Entity's Classification. `Pivot.label` records the key;
   it is None for Classification columns.
@@ -375,7 +375,7 @@ The "All" column has depth 0 and no parent. A `parent` of None on a depth-1 colu
 means "All". `Pivot(rows, columns)` keeps column order and requires one "All"
 column, unique Classifications, a parent column one level up for each column, and
 RollupResults over `rows`. Unknown Classification UUIDs raise
-`MissingReferenceError`; a malformed column set raises `AggregationError`.
+`MissingReferenceError`; a malformed column set raises `RollupError`.
 
 A `Pivot` exposes:
 

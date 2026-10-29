@@ -16,7 +16,7 @@ from uuid import UUID
 from rangekeeper.flow import Flow
 from rangekeeper.model import Entity, Measure, Model, Value, ValueKind
 from rangekeeper.model.system import _reducers
-from rangekeeper.model.system.errors import AggregationError
+from rangekeeper.model.system.errors import RollupError
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.matching import _prepare
 from rangekeeper.model.system.selection import _local_value, _recorded_quantity
@@ -100,16 +100,16 @@ class Coverage:
             if any(not isinstance(id, UUID) for id in items) or len(set(items)) != len(
                 items
             ):
-                raise AggregationError("coverage must contain unique UUIDs")
+                raise RollupError("coverage must contain unique UUIDs")
             object.__setattr__(self, name, items)
         if set(self.measured) & set(self.missing) or set(self.selected) != set(
             self.measured
         ) | set(self.missing):
-            raise AggregationError(
+            raise RollupError(
                 "measured and missing must partition selected contributors"
             )
         if set(self.undecided) & set(self.selected):
-            raise AggregationError("an undecided contributor cannot be selected")
+            raise RollupError("an undecided contributor cannot be selected")
 
     @property
     def complete(self) -> bool:
@@ -145,17 +145,15 @@ class RollupEntry:
             raise TypeError("available must be a schema Quantity, Flow or None")
         periods = tuple(self.period_coverage)
         if any(type(v) not in (int, float) or not 0 <= v <= 1 for v in periods):
-            raise AggregationError(
-                "period coverage must contain fractions from zero to one"
-            )
+            raise RollupError("period coverage must contain fractions from zero to one")
         if periods and (
             not isinstance(self.available, Flow)
             or len(periods) != len(self.available.movements)
         ):
-            raise AggregationError("period coverage must match the available Flow")
+            raise RollupError("period coverage must match the available Flow")
         object.__setattr__(self, "period_coverage", periods)
         if bool(self.coverage.measured) != (self.available is not None):
-            raise AggregationError("measured coverage and available result must agree")
+            raise RollupError("measured coverage and available result must agree")
 
 
 @dataclass(frozen=True)
@@ -178,7 +176,7 @@ class RollupResult:
         order = self.hierarchy.preorder()
         entries, value_ids = dict(self.entries), dict(self.value_ids)
         if set(entries) != set(order):
-            raise AggregationError("rollup entries must exactly match the hierarchy")
+            raise RollupError("rollup entries must exactly match the hierarchy")
         # Each subtree is a contiguous preorder interval; no repeated subtree walks.
         positions = {uid: position for position, uid in enumerate(order)}
         ends: dict[UUID, int] = {}
@@ -193,11 +191,9 @@ class RollupResult:
                 or not positions[uid] <= positions[owner] < ends[uid]
                 for owner in (*entry.coverage.selected, *entry.coverage.undecided)
             ):
-                raise AggregationError(
-                    "coverage must belong to its corresponding subtree"
-                )
+                raise RollupError("coverage must belong to its corresponding subtree")
             if any(owner not in value_ids for owner in entry.coverage.measured):
-                raise AggregationError(
+                raise RollupError(
                     "measured contributors require selected Value identities"
                 )
         selected = set(entries[self.hierarchy.root].coverage.selected)
@@ -208,9 +204,7 @@ class RollupResult:
                 owner not in selected
                 or self.hierarchy.view.model.owner_of(value_id) != owner
             ):
-                raise AggregationError(
-                    "value_ids must record selected owners' local Values"
-                )
+                raise RollupError("value_ids must record selected owners' local Values")
         object.__setattr__(self, "entries", MappingProxyType(entries))
         object.__setattr__(self, "value_ids", MappingProxyType(value_ids))
 
@@ -443,7 +437,7 @@ class _Rollup:
     def _selection(self, model: Model, entity: Entity) -> Value | None:
         selected = _local_value(model, entity, self.key, self.measure)
         if selected is not None and selected.kind is not self._kind:
-            raise AggregationError(f"expected {self._kind.value} Values")
+            raise RollupError(f"expected {self._kind.value} Values")
         return selected
 
     def _population(self, hierarchy: Hierarchy):

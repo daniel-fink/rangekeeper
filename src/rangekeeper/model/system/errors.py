@@ -1,4 +1,4 @@
-"""Errors raised by Model selection, hierarchy building and value reduction."""
+"""Errors raised by Model selection, hierarchy building and rollups."""
 
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import RangekeeperError
@@ -18,10 +18,14 @@ class HierarchyError(RangekeeperError, ValueError):
     """
 
 
-class AggregationError(RangekeeperError, ValueError):
-    """A recorded-quantity reduction cannot produce a meaningful finite result."""
+class RollupError(RangekeeperError, ValueError):
+    """A rollup or pivot cannot produce a meaningful finite result.
 
-    code = Code.AGGREGATION
+    ``rollup`` is the word for totals over a hierarchy; ``aggregate`` is the
+    word for combining Flows (D38).
+    """
+
+    code = Code.ROLLUP
 
 
-__all__ = ["SelectionError", "HierarchyError", "AggregationError"]
+__all__ = ["SelectionError", "HierarchyError", "RollupError"]

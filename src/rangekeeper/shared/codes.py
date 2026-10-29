@@ -104,7 +104,6 @@ class Code(StrEnum):
     UNSUPPORTED_CAPABILITY = "unsupported_capability"
 
     # Errors outside validation and execution.
-    AGGREGATION = "aggregation"
     DECODE = "decode"
     ENCODING = "encoding"
     EXTENSION_CONFLICT = "extension.conflict"
@@ -112,6 +111,7 @@ class Code(StrEnum):
     PUBLISHED_FILE = "published_file"
     REPLAY_UNAVAILABLE = "replay_unavailable"
     REVISION_CONFLICT = "revision_conflict"
+    ROLLUP = "rollup"
     RULE_CAPABILITY = "rule_capability"
     SELECTION = "selection"
     TABLE = "table"

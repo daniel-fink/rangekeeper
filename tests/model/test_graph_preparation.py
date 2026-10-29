@@ -7,7 +7,7 @@ import pytest
 
 from rangekeeper.model.system import Coverage, Hierarchy, View
 from rangekeeper.model.system import _reducers as reducers
-from rangekeeper.model.system.errors import AggregationError
+from rangekeeper.model.system.errors import RollupError
 from rangekeeper.model.system.rollup import RollupEntry, RollupResult
 from rangekeeper.model.system.table import (
     EntityField,
@@ -64,9 +64,9 @@ def test_aggregate_entries_enforce_structure_without_reducing_again():
     assert result.available_value(root.id).magnitude == 10
     copied = replace(result, entries=dict(result.entries))
     assert copied == result
-    with pytest.raises(AggregationError, match="available"):
+    with pytest.raises(RollupError, match="available"):
         RollupEntry(None, Coverage((a.id,), (a.id,), ()))
-    with pytest.raises(AggregationError, match="exactly"):
+    with pytest.raises(RollupError, match="exactly"):
         RollupResult(hierarchy, {}, result.value_ids, True)
 
 
@@ -156,7 +156,7 @@ def test_aggregate_mapping_copy_and_subtree_ownership():
     wrong[a.id] = RollupEntry(
         result.available_value(b.id), Coverage((b.id,), (b.id,), ())
     )
-    with pytest.raises(AggregationError, match="subtree"):
+    with pytest.raises(RollupError, match="subtree"):
         replace(result, entries=wrong)
 
 
@@ -169,7 +169,7 @@ def test_reducers_have_independent_finite_results_and_empty_errors(reduce):
     values = tuple(Quantity(magnitude=n, units="m") for n in (1, 3, 8))
     expected = {reducers.sum: 12, reducers.mean: 4, reducers.min: 1, reducers.max: 8}
     assert reduce(values) == Quantity(magnitude=float(expected[reduce]), units="m")
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         reduce(())
 
 
