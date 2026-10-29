@@ -138,8 +138,8 @@ show the target API in use.
   revision; `fix(key=value)` and `free("key")` each return a new
   Specification. `fix` takes a Quantity, Quantity text or a number for a ratio.
   A value that is not fixed is free, and `roles` lists the role of each value.
-  `on(model=)` moves the Specification to another Model revision. Records add
-  bounds and rules. `rangekeeper.execution.solve(specification=)`
+  `on(model=)` moves the Specification to another Model revision, and
+  `cases(cases=)` makes a batch of named cases. Records add bounds and rules. `rangekeeper.execution.solve(specification=)`
   runs the typed stages: it resolves the cases, validates each composition, binds
   roles, builds the affine problem, solves it in a separate process, makes a
   candidate, verifies it independently and assembles an `Outcome`, and writes
@@ -147,8 +147,9 @@ show the target API in use.
   then the Runs. Each stage is a public function that writes to no store. Read
   a solved value by key, `outcome["land_cost"]`, and the result from
   `outcome.status`; `outcome.raise_for_status()` raises when the solve found no
-  determined result. See the
-  [execution reference](../reference/execution.md#stages).
+  determined result. A batch Outcome gives each case with `case(key=)` and one
+  row for each case with `table(*keys)`; `stream(*keys)` gives a case's Flows.
+  See the [execution reference](../reference/execution.md#stages).
 - 1.0 target:
   1. Write a Specification that pins one Model revision. Fix and free values,
      and add bounds or rules.
@@ -159,8 +160,7 @@ show the target API in use.
   6. `execute` also publishes the Run and the output Model to a store.
   7. Read solved values from the `Outcome`.
 
-  Gap issues: [#292](https://github.com/daniel-fink/rangekeeper/issues/292),
-  [#296](https://github.com/daniel-fink/rangekeeper/issues/296),
+  Gap issues: [#296](https://github.com/daniel-fink/rangekeeper/issues/296),
   [#297](https://github.com/daniel-fink/rangekeeper/issues/297).
 
 **Work with market paths** ([ADR-014](../decisions/014-market-paths.md))

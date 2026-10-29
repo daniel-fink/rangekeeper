@@ -216,10 +216,39 @@ draft of the earlier revision kept, or that a Model with the same namespace
 derives. A batch, or a Specification with includes, raises `ValueError`. When
 the Model is the pinned revision, `on` returns the same Specification.
 
+## Cases
+
+`cases(cases=)` returns a batch Specification with one named case for each key.
+Each case is a new revision of the Specification that it is called on: its
+Metadata name is the case key, `previous` is that Specification, and it fixes the
+values that its mapping gives, as `fix` does. A value that a case gives replaces
+the fix of the base; an empty mapping keeps the base values. The batch keeps the
+base's name, pins the same Model and lists the cases in mapping order. It holds
+only `metadata`, `model` and `cases`.
+
+```python
+cases = {
+    "weak": {"rent_growth": "1 % pa", "exit_cap_rate": "6 %"},
+    "reference": {},
+    "strong": {"rent_growth": "5 % pa", "exit_cap_rate": "4.5 %"},
+}
+batch = base.cases(cases=cases)
+batch.case(key="weak")  # the case Specification
+```
+
+The batch keeps its case Specifications, so `solve` resolves them without a store,
+and `execute` puts them in its store before the batch. `case(key=)` returns the
+case with that Metadata name; a batch read from data loads its cases with its
+resolver. No case with the key raises `MissingReferenceError` with the keys that
+exist. `cases` of a batch, and `case` of a concrete Specification, raise
+`ValueError`. Each case Outcome has the case key as its `key`; see
+[reading an Outcome](execution.md#read-an-outcome).
+
 ## Model and resolver
 
 Key lookup needs the pinned Model. A Specification from `model.specify()` keeps
-it, and so does each Specification that a chained call returns. For a record,
+it, and so does each Specification that a chained call returns. The `model` and
+`resolver` properties return them, or None. For a record,
 pass it: `Specification(record, model=model)`; a record that pins another revision
 raises `ValueError`. A Specification with includes also needs
 `Specification(record, model=model, resolver=store)`. The Model and resolver are

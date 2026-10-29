@@ -19,7 +19,7 @@ that it found.
 | Function | Writes | Returns |
 | --- | --- | --- |
 | `solve(specification, resolver=None, *, config=None)` | Nothing | An `Outcome` |
-| `execute(specification, store, *, config=None)` | The Specification, then for each case its outputs and then its Run, cases before their batch | The same `Outcome` |
+| `execute(specification, store, *, config=None)` | The case Specifications of a batch, then the Specification, then for each case its outputs and then its Run, cases before their batch | The same `Outcome` |
 
 Without `resolver`, `solve` resolves the documents that made the Specification:
 the Model revision that `model.specify()` pinned, the Specification itself, and
@@ -87,6 +87,10 @@ outcome["project.land_cost"]  # the same value, by its dotted path
 | `free_unknowns` | The keys of the free values that the equations do not determine | `TypeError` |
 | `diagnostics` | The Run's diagnostics, in report order | The batch Run's diagnostics |
 | `evidence` | The typed solver `Evidence` | `TypeError` |
+| `key` | The name of the solved Specification: for a case, its case key. None when it has no name | The same |
+| `case(key=)` | `TypeError` | The Outcome of the direct case with that key. No such case raises `MissingReferenceError` with the keys that exist |
+| `table(*keys)` | One row | One row for each leaf case, in `walk()` order |
+| `stream(*keys)` | A `Stream` of the solved Flows, named by key. A scalar value raises `TypeError` | `TypeError`: read a case |
 
 `rk.execution.Status` has one member for each result:
 
@@ -109,6 +113,18 @@ unknown is undetermined when its value can change while every equality row still
 holds. In lesson 02's loose back door, freeing both the land cost and the rent
 factor leaves one degree of freedom along a line through all seven chained
 values, so all seven are named; fixing any one of them determines the rest. Bounds can still restrict these values (`uniqueness_not_assessed`).
+
+`table(*keys)` returns a [Table](tables.md) with the columns `case`, `status`
+and one column for each key: the Quantity of a scalar value, or the Flow of a
+Flow value. `case` is the case key, with the keys of nested batches joined by
+`/`; a leaf gives its own key. A case without an output has None for each value,
+and its `status` says why.
+
+```python
+cases_outcome = rk.execution.solve(specification=base.cases(cases=cases))
+cases_outcome.table("unlevered_npv")  # one row for each case
+cases_outcome.case(key="weak").stream("land", "works")
+```
 
 `Evidence` holds the backend's `termination` (None when no backend ran), the
 backend's own `backend` evidence, `equality_rank` and `unknown_count` from the

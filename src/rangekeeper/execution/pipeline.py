@@ -1,5 +1,6 @@
 """Run the stages for each case: pure ``solve`` and publishing ``execute``."""
 
+from dataclasses import replace
 from uuid import UUID
 
 from rangekeeper.execution import assembly
@@ -44,7 +45,7 @@ def solve(
     """
     if resolver is None:
         resolver = Pinned(specification)
-    return _run(specification, resolver, config, store=None)
+    return _run(specification, resolver, config, store=None)[0]
 
 
 class Pinned:
@@ -61,8 +62,8 @@ class Pinned:
             raise TypeError("specification must be a Specification")
         self.specification = specification
         # The facade keeps these for chained calls; they are not saved.
-        self.model = specification._model
-        self.resolver = specification._resolver
+        self.model = specification.model
+        self.resolver = specification.resolver
 
     def load_model(self, id: UUID) -> Model:
         """Return the pinned Model, else load it from the Specification's resolver."""
@@ -104,14 +105,18 @@ def execute(
 ) -> Outcome:
     """Solve ``specification`` with ``store`` as resolver, then publish the result.
 
-    Publication puts the Specification, then for each case its outputs and then
-    its Run, cases before their batch. Each Run is validated once, against
+    Publication puts each case Specification that ``store`` does not hold,
+    then the Specification, then for each case its outputs and then its Run, cases
+    before their batch. Each Run is validated once, against
     ``store``, before anything is put; ``store.put`` does not repeat that
     validation. Nothing is put when solving or validation raises. There is no
     multi-document transaction: a storage error can leave accepted outputs or
     completed case Runs. Caller-owned input records never change.
     """
-    outcome = _run(specification, store, config, store=store)
+    outcome, cases = _run(specification, store, config, store=store)
+    for case in _case_documents(specification, cases):
+        if not _stored(store, case.id):
+            store.put(case)
     store.put(specification)
     for item in outcome.walk():
         if not item.cases:
@@ -127,7 +132,7 @@ def _run(
     config: ExecutionConfig | None,
     *,
     store: RecordStore | None,
-) -> Outcome:
+) -> tuple[Outcome, Cases]:
     if not isinstance(specification, Specification):
         raise TypeError("specification must be a Specification")
     config = ExecutionConfig() if config is None else config
@@ -162,13 +167,33 @@ def _run(
     ).raise_if_invalid()
     if store is not None:
         for item in tree:
-            mark_validated(item.run, store, _unstored(item, specification))
-    return outcome
+            mark_validated(item.run, store, _unstored(item, cases))
+    return outcome, cases
 
 
-def _unstored(outcome: Outcome, root: Specification) -> set[UUID]:
+def _case_documents(specification: Specification, cases: Cases) -> list[Specification]:
+    """Return the case Specifications of a batch, each case before its batch."""
+    found = []
+    for identity in specification.record.cases or ():
+        case = cases.documents[identity]
+        found.extend(_case_documents(case, cases))
+        found.append(case)
+    return found
+
+
+def _stored(store: RecordStore, id: UUID) -> bool:
+    """Return whether ``store`` already holds the Specification ``id``."""
+    try:
+        store.load_specification(id)
+    except MissingReferenceError:
+        return False
+    return True
+
+
+def _unstored(outcome: Outcome, cases: Cases) -> set[UUID]:
     """Return the revisions that validating ``outcome.run`` read from no store."""
-    documents = {root.id}
+    documents = {cases.root.id}
+    documents.update(case.id for case in _case_documents(cases.root, cases))
     for item in outcome.walk():
         documents.update(model.id for model in item.outputs)
         if item is not outcome:
@@ -177,6 +202,19 @@ def _unstored(outcome: Outcome, root: Specification) -> set[UUID]:
 
 
 def _case(
+    specification: Specification,
+    cases: Cases,
+    config: ExecutionConfig,
+    backend: Backend,
+    scopes: dict[UUID, object],
+) -> Outcome:
+    # A case's key is the name of its Specification.
+    key = specification.metadata.name
+    outcome = _attempt(specification, cases, config, backend, scopes)
+    return outcome if key is None else replace(outcome, key=key)
+
+
+def _attempt(
     specification: Specification,
     cases: Cases,
     config: ExecutionConfig,
