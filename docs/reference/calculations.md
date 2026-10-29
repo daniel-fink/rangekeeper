@@ -13,7 +13,8 @@ and need not coincide. Magnitude `None` is unresolved; zero is an observed amoun
 Nonfinite numbers are invalid. Omission and explicit null survive canonical codecs.
 
 `movement.number` returns a finite float or raises for unresolved content.
-`movement.coordinate` supplies the alignment coordinate; it does not use the UUID. `movement.resolve(timing=)`
+Alignment matches Movements by their coordinate: the Period and the date, or the
+event date and key. It does not use the UUID. `movement.resolve(timing=)`
 uses the recorded date or an explicit convention for period-only content.
 `flow.require_resolved()` checks arithmetic readiness and returns the same Flow.
 `flow.clean()` removes unresolved movements explicitly; it does not fill them with
@@ -211,8 +212,8 @@ Dates are calendar values, never implicit timestamps. Periods are half-open:
 need `PeriodTiming.FIRST`, `PeriodTiming.END` or `PeriodTiming.LAST`. Frequency and elapsed time are
 explicit. Currency and time units are not stripped from quantities.
 
-`Distribution.sample(size=..., generator=...)` requires an explicit random
-generator. Scenario plans own seed-based stream construction. Distribution algorithms load SciPy only when needed. Financial valuation
+`Distribution.sample(size=..., generator=...)` requires an explicit
+`numpy.random.Generator`. Scenario plans own seed-based stream construction. Distribution algorithms load SciPy only when needed. Financial valuation
 uses the `calculations` extra; the valuation operation itself does not import
 a dataframe library or SciPy.
 

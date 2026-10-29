@@ -45,7 +45,7 @@ class Relation(StrEnum):
     GREATER_THAN_OR_EQUAL = "greater_than_or_equal"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Row:
     """An affine residual constrained to equal, be below, or be above zero.
 
@@ -57,7 +57,7 @@ class Row:
     residual: Affine
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AffineProblem:
     """The backend-neutral feasibility problem of one case.
 
@@ -249,12 +249,16 @@ class Compiler:
                 row
                 for child in node.operands
                 for row in self.assertion(
-                    Assertion(item.document, item.constraint, child)
+                    Assertion(
+                        document=item.document,
+                        constraint=item.constraint,
+                        predicate=child,
+                    )
                 )
             )
         if node.kind == ExpressionKind.BOOLEAN:
             residual = _affine(0 if node.boolean else 1, {}, "dimensionless")
-            return (Row(item, Relation.EQUAL, residual),)
+            return (Row(assertion=item, relation=Relation.EQUAL, residual=residual),)
         if node.kind is ExpressionKind.BINARY and node.operator in (
             Operator.LESS_THAN,
             Operator.GREATER_THAN,
@@ -308,7 +312,13 @@ class Compiler:
         residual = self.add(
             self.expression(node.operands[0]), self.expression(node.operands[1]), -1
         )
-        return (Row(item, Relation(node.operator.value), residual),)
+        return (
+            Row(
+                assertion=item,
+                relation=Relation(node.operator.value),
+                residual=residual,
+            ),
+        )
 
 
 def build_problem(
@@ -370,4 +380,6 @@ def build_problem(
         undetermined=loose,
         bounded=tuple(id for id in loose if id in bounds),
     )
-    return AffineProblem(binding, variables, tuple(rows), analysis)
+    return AffineProblem(
+        binding=binding, variables=variables, rows=tuple(rows), analysis=analysis
+    )

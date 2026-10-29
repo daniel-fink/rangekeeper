@@ -15,7 +15,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum, unique
 from itertools import pairwise
-from typing import ClassVar, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, runtime_checkable
 
 from rangekeeper.duration import Period
 from rangekeeper.quantity import Quantity, default_units
@@ -24,6 +24,9 @@ from rangekeeper.schema.enums import DistributionFamily
 from rangekeeper.schema.kinds import register
 from rangekeeper.shared.optional import requires
 from rangekeeper.shared.registry import Registry
+
+if TYPE_CHECKING:
+    import numpy
 
 # Distribution is public as rangekeeper.model.Distribution (one public path).
 __all__ = [
@@ -216,8 +219,6 @@ class Distribution(records.Distribution):
 
         The parameter rules hold from construction.
         """
-        from rangekeeper.quantity import default_units
-
         default_units.validate_units(self.units)
         return self
 
@@ -307,10 +308,11 @@ class Distribution(records.Distribution):
             )
         raise ValueError("unsupported distribution")
 
-    def _implementation(self):
+    def _implementation(self) -> Any:
+        """Return the frozen SciPy distribution, or None for a point mass."""
         distribution = self
         with requires("calculations"):
-            from scipy import stats
+            from scipy import stats  # noqa: PLC0415 - optional dependency
 
         scale = distribution.upper - distribution.lower
         if scale == 0:
@@ -329,7 +331,9 @@ class Distribution(records.Distribution):
             scale=scale,
         )
 
-    def sample(self, *, size: int, generator) -> tuple[float, ...]:
+    def sample(
+        self, *, size: int, generator: numpy.random.Generator
+    ) -> tuple[float, ...]:
         """Draw exactly size magnitudes using an explicit NumPy Generator.
 
         A point mass returns the requested shape without consuming random numbers.
@@ -338,7 +342,7 @@ class Distribution(records.Distribution):
         """
         distribution = self
         with requires("calculations"):
-            import numpy as np
+            import numpy as np  # noqa: PLC0415 - optional dependency
 
         if (
             type(size) is not int
@@ -452,16 +456,16 @@ def pad(
     if any(type(n) is not int or n < 0 for n in (before, after)):
         raise ValueError("padding lengths must be nonnegative integers")
 
-    def fill(mode, count, endpoint):
-        if count and mode == PaddingMode.EXTEND and endpoint is None:
-            raise ValueError("cannot extend an empty path")
-        return (
-            {
-                PaddingMode.NIL: 0.0,
-                PaddingMode.UNITIZE: 1.0,
-                PaddingMode.EXTEND: endpoint,
-            }[mode],
-        ) * count
+    def fill(
+        mode: PaddingMode, count: int, endpoint: float | None
+    ) -> tuple[float, ...]:
+        if not count:
+            return ()
+        if mode is PaddingMode.EXTEND:
+            if endpoint is None:
+                raise ValueError("cannot extend an empty path")
+            return (endpoint,) * count
+        return ({PaddingMode.NIL: 0.0, PaddingMode.UNITIZE: 1.0}[mode],) * count
 
     return (
         fill(left, before, values[0] if values else None)

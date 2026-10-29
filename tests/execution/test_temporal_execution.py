@@ -137,7 +137,7 @@ def test_forward_then_inverse_temporal_oracle():
     model, ids = oracle()
     store = MemoryStore()
     store.put(model)
-    run = execute(investigate(model, ids), store).run
+    run = execute(specification=investigate(model, ids), store=store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report.to_data()
     validate(run, resolver=store).raise_if_invalid()
     result = store.load_model(run.record.outputs[0])
@@ -145,7 +145,9 @@ def test_forward_then_inverse_temporal_oracle():
         m.magnitude for m in result.value(ids["cash"]).flow.movements
     ] == pytest.approx([100, 110, 121])
     assert result.value(ids["pv"]).quantity.number == pytest.approx(3000 / 11)
-    inverse = execute(investigate(result, ids, inverse=True), store).run
+    inverse = execute(
+        specification=investigate(result, ids, inverse=True), store=store
+    ).run
     assert inverse.report.status.solution == SolutionStatus.FEASIBLE, (
         inverse.report.to_data()
     )
@@ -213,7 +215,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
     )
     store = MemoryStore()
     store.put(model)
-    run = execute(specification, store).run
+    run = execute(specification=specification, store=store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report.to_data()
     result = store.load_model(run.record.outputs[0])
     movements = result.value(ids["cash"]).flow.movements
@@ -303,7 +305,7 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
         for r in original["unknowns"]
         if r["target"] != str(model.value(ids["cash"]).flow.movements[1].id)
     ]
-    failed = execute(Specification.from_data(original), store).run
+    failed = execute(specification=Specification.from_data(original), store=store).run
     assert failed.report.status.solution == SolutionStatus.NOT_ASSESSED
     for modify in ("duplicate", "overlap", "missing", "units"):
         data = investigate(model, ids).to_data()
@@ -331,7 +333,7 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
         except ValidationError:
             assert modify in ("duplicate", "overlap")
         else:
-            run = execute(spec, store).run
+            run = execute(specification=spec, store=store).run
             assert run.report.status.solution == SolutionStatus.NOT_ASSESSED
 
 
@@ -351,13 +353,15 @@ def test_movement_candidate_rejection_and_expansion_limits():
             return replace(result, candidate=candidate)
 
     run = execute(
-        investigate(model, ids), store, config=ExecutionConfig(backend=WrongCandidate())
+        specification=investigate(model, ids),
+        store=store,
+        config=ExecutionConfig(backend=WrongCandidate()),
     ).run
     assert not run.record.outputs
     assert store.load_model(model.id).to_data() == before
     data = investigate(model, ids).to_data()
     data["settings"] = dict(symbol_limit=2, constraint_limit=2)
-    run = execute(Specification.from_data(data), store).run
+    run = execute(specification=Specification.from_data(data), store=store).run
     assert not run.record.outputs
     assert any(d.code == Code.SYMBOL_LIMIT for d in run.report.diagnostics)
 
@@ -375,8 +379,8 @@ def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypa
     spec = investigate(model, ids).to_data()
     spec["settings"] = dict(constraint_limit=1)
     run = execute(
-        Specification.from_data(spec),
-        store,
+        specification=Specification.from_data(spec),
+        store=store,
         config=ExecutionConfig(backend=ForbiddenBackend()),
     ).run
     assert not run.record.outputs
@@ -384,8 +388,8 @@ def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypa
     spec["metadata"]["id"] = str(uuid4())
     spec["settings"] = dict(time_limit=0.001)
     run = execute(
-        Specification.from_data(spec),
-        store,
+        specification=Specification.from_data(spec),
+        store=store,
         config=ExecutionConfig(backend=ForbiddenBackend()),
     ).run
     assert run.report.status.completion == CompletionStatus.LIMITED
@@ -509,7 +513,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
     )
     store = MemoryStore()
     store.put(model)
-    run = execute(spec, store).run
+    run = execute(specification=spec, store=store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report
     output = store.load_model(run.record.outputs[0])
     for name, expected in {

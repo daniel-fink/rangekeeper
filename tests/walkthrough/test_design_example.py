@@ -24,7 +24,7 @@ def test_design_financial_components_and_provenance():
     model = design.formulate(authored)
     store = MemoryStore()
     store.put(model)
-    run = execute(design.specify(model), store).run
+    run = execute(specification=design.specify(model), store=store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report
     output = store.load_model(run.record.outputs[0])
     v = design.values(output)

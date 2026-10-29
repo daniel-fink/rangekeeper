@@ -41,9 +41,9 @@ Each stage is a public, typed, pure function:
    equations, assignments and bounds.
 8. **Assemble** an `Outcome`.
 
-`solve(specification, resolver=None, *, config=None) -> Outcome` is pure. It does
+`solve(*, specification, resolver=None, config=None) -> Outcome` is pure. It does
 not write to a store. Without a resolver, it resolves the documents that made the
-Specification (#293). `execute(specification, store, *, config=None) -> Outcome` runs
+Specification (#293). `execute(*, specification, store, config=None) -> Outcome` runs
 `solve` and then publishes: it puts the outputs, then the Run. The Run is
 validated once.
 

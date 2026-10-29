@@ -40,7 +40,7 @@ def main() -> None:
         store.put(specification)
         specifications[name] = specification
     forward_spec = specifications["specification-composed-forward"]
-    forward = execute(forward_spec, store).run
+    forward = execute(specification=forward_spec, store=store).run
     if forward.report.status.solution != SolutionStatus.FEASIBLE:
         raise RuntimeError(forward.report)
     first = store.load_model(forward.record.outputs[0])
@@ -64,7 +64,7 @@ def main() -> None:
     )
     data["includes"] = [str(revised_common.id)]
     revised_inverse = inverse_spec.revise(SpecificationRecord.from_data(data))
-    inverse = execute(revised_inverse, store).run
+    inverse = execute(specification=revised_inverse, store=store).run
     if inverse.report.status.solution != SolutionStatus.FEASIBLE:
         raise RuntimeError(inverse.report)
     second = store.load_model(inverse.record.outputs[0])
@@ -78,7 +78,7 @@ def main() -> None:
             "cases": [str(forward_spec.id), str(revised_inverse.id)],
         }
     )
-    batch = execute(batch_spec, store).run
+    batch = execute(specification=batch_spec, store=store).run
     for name, document in (
         ("run-forward", forward),
         ("model-forward", first),

@@ -215,7 +215,7 @@ def _resampled_terms(sequence: Flow, periods, *, method, missing):
             "unknown symbols cannot be skipped",
             values={"missing": missing},
         )
-    coordinates = tuple(sequence.coordinate_index())
+    coordinates = tuple(sequence._coordinate_index())
     groups: list[list[tuple[Movement, float]]] = [[] for _ in periods]
     indices = period_indices(coordinates, periods)
     fixed = weights(coordinates, method=method)

@@ -18,7 +18,9 @@ from tests.execution.test_execution import CAPITAL, NOI, setup, spec
 
 class Exact:
     def solve(self, problem, **kwargs):
-        return BackendResult(Termination.FEASIBLE, {NOI: 550000.0, CAPITAL: 11e6})
+        return BackendResult(
+            termination=Termination.FEASIBLE, candidate={NOI: 550000.0, CAPITAL: 11e6}
+        )
 
 
 CONFIG = ExecutionConfig(backend=Exact())
@@ -58,7 +60,15 @@ def batch(count, store):
     )
 
 
-@pytest.mark.parametrize("verb", [solve, execute])
+def solve_with(specification, store, *, config):
+    return solve(specification=specification, resolver=store, config=config)
+
+
+def execute_with(specification, store, *, config):
+    return execute(specification=specification, store=store, config=config)
+
+
+@pytest.mark.parametrize("verb", [solve_with, execute_with])
 @pytest.mark.parametrize("leaves", [1, 3])
 def test_each_leaf_is_composed_and_checked_once(counts, verb, leaves):
     store = MemoryStore()
@@ -74,7 +84,7 @@ def test_each_leaf_is_composed_and_checked_once(counts, verb, leaves):
 def test_a_store_trusts_only_its_own_validation():
     store = MemoryStore()
     root = batch(2, store)
-    outcome = solve(root, store, config=CONFIG)
+    outcome = solve(specification=root, resolver=store, config=CONFIG)
     leaf = outcome.cases[0]
     # solve marks nothing: a store validates what solve returns.
     assert not validated_in(leaf.run, store, lambda id: True)
@@ -89,7 +99,7 @@ def test_a_store_trusts_only_its_own_validation():
 def test_execute_marks_each_run_against_its_store(tmp_path):
     store = DirectoryStore(tmp_path)
     root = batch(2, store)
-    outcome = execute(root, store, config=CONFIG)
+    outcome = execute(specification=root, store=store, config=CONFIG)
     for item in outcome.walk():
         assert validated_in(
             item.run, store, lambda id: (tmp_path / f"{id}.json").exists()

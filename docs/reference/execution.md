@@ -18,8 +18,8 @@ that it found.
 
 | Function | Writes | Returns |
 | --- | --- | --- |
-| `solve(specification, resolver=None, *, config=None)` | Nothing | An `Outcome` |
-| `execute(specification, store, *, config=None)` | The case Specifications of a batch, then the Specification, then for each case its outputs and then its Run, cases before their batch | The same `Outcome` |
+| `solve(*, specification, resolver=None, config=None)` | Nothing | An `Outcome` |
+| `execute(*, specification, store, config=None)` | The case Specifications of a batch, then the Specification, then for each case its outputs and then its Run, cases before their batch | The same `Outcome` |
 
 Without `resolver`, `solve` resolves the documents that made the Specification:
 the Model revision that `model.specify()` pinned, the Specification itself, and
@@ -72,7 +72,7 @@ each key that `Model.value(key=)` takes. A scalar value gives a
 `Quantity`; a Flow value gives its `Flow`:
 
 ```python
-outcome = rk.execution.solve(back, store)
+outcome = rk.execution.solve(specification=back, resolver=store)
 outcome.raise_for_status()
 outcome["land_cost"]  # a Quantity in AUD
 outcome["project.land_cost"]  # the same value, by its dotted key
@@ -224,9 +224,9 @@ and only the backend starts a process. `solve` calls the stages for each case;
 | 3 | `bind_roles(validation, *, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
 | 4 | `build_problem(binding, *, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis`: `equality_rank`, `unknown_count`, the `undetermined` unknowns and those of them that a bound reads (`bounded`) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`, or for a row that is not affine; `NumericalError` |
 | 5 | `Backend.solve(problem, *, limits, remaining, options)` | An `AffineProblem` | `backends.BackendResult`: a `Termination`, the candidate values, the applied limits, the backend's diagnostics and its raw evidence | `BackendUnavailableError`, `NumericalError`, `UnsupportedError` for a refused option or row |
-| 6 | `make_candidate(binding, values, *, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
-| 7 | `verify(binding, candidate, *, tolerances=Tolerances())` | The candidate | `Verification`: `passed` or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
-| 8 | `assemble(specification, report, *, id, output)`; `assemble_batch(specification, cases)` | The report of one leaf; the Outcomes of a batch's cases | An `Outcome` with the finalized Run. Nothing is resolved or validated | `ValidationError` for a Run that is not locally consistent |
+| 6 | `make_candidate(*, binding, unknowns, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
+| 7 | `verify(*, binding, candidate, tolerances=Tolerances())` | The candidate | `Verification`: `passed` or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
+| 8 | `assemble(*, specification, report, id, output)`; `assemble_batch(*, specification, cases)` | The report of one leaf; the Outcomes of a batch's cases | An `Outcome` with the finalized Run. Nothing is resolved or validated | `ValidationError` for a Run that is not locally consistent |
 
 Run validation is its own step after stage 8: `rk.run.validate(outcome.run,
 resolver=rk.execution.Overlay(resolver, models=..., runs=...))`. The `Overlay`

@@ -1,7 +1,7 @@
 """Stage 7: verify a serialized candidate independently against the original mathematics."""
 
 import math
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping, Set
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -25,7 +25,7 @@ from rangekeeper.schema.records import (
 from rangekeeper.shared.codes import Code
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Tolerances:
     """Acceptance policy, distinct from Specification convergence/solver settings.
 
@@ -48,7 +48,7 @@ class Tolerances:
             raise ValueError("relative acceptance tolerance must be less than one")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Verification:
     """Whether a candidate passed verification, with the residual diagnostics.
 
@@ -61,7 +61,10 @@ class Verification:
 
 
 def verify(
-    binding: Binding, candidate: Model, *, tolerances: Tolerances = Tolerances()
+    *,
+    binding: Binding,
+    candidate: Model,
+    tolerances: Tolerances = Tolerances(),
 ) -> Verification:
     """Check exact assignments and every original equality/bound on candidate values.
 
@@ -149,7 +152,7 @@ def verify(
                     tolerance=Quantity(magnitude=tolerance, units=left.units),
                 )
             )
-    return Verification(passed, tuple(diagnostics))
+    return Verification(passed=passed, diagnostics=tuple(diagnostics))
 
 
 def _comparisons(
@@ -157,8 +160,8 @@ def _comparisons(
     values: Mapping[UUID, Quantity],
     *,
     units: UnitSystem,
-    fixed=frozenset(),
-):
+    fixed: Set[UUID] = frozenset(),
+) -> Iterator[tuple[str, Quantity, Quantity, bool]]:
     """Retain conjunction order; fixed strict predicates use exact comparison."""
     try:
         if node.kind is ExpressionKind.BOOLEAN:

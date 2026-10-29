@@ -92,13 +92,17 @@ class Exact:
 
     def solve(self, problem, *, limits, remaining, options):
         assert isinstance(problem, AffineProblem)
-        return BackendResult(Termination.FEASIBLE, SOLUTION)
+        return BackendResult(termination=Termination.FEASIBLE, candidate=SOLUTION)
 
 
 def attempt(cases, composition, specification=None):
     specification = cases.root if specification is None else specification
     return Attempt(
-        ExecutionConfig(), Exact(), specification, composition, resolver=cases
+        specification,
+        composition,
+        config=ExecutionConfig(),
+        backend=Exact(),
+        resolver=cases,
     ).execute()
 
 
@@ -233,22 +237,25 @@ def test_build_problem_names_the_declaration_outside_the_affine_slice():
 
 def test_make_candidate_writes_solved_values_into_a_new_revision():
     _, binding = bound()
-    candidate = make_candidate(binding, SOLUTION, run_id=uuid4())
+    candidate = make_candidate(binding=binding, unknowns=SOLUTION, run_id=uuid4())
     assert candidate.id != binding.model.id
     assert candidate.value(CAPITAL).quantity.number == pytest.approx(11000000)
     with pytest.raises(NumericalError, match="unknown symbols"):
-        make_candidate(binding, {NOI: 550000.0}, run_id=uuid4())
+        make_candidate(binding=binding, unknowns={NOI: 550000.0}, run_id=uuid4())
 
 
 def test_verify_accepts_the_solution_and_rejects_another():
     _, binding = bound()
-    accepted = verify(binding, make_candidate(binding, SOLUTION, run_id=uuid4()))
+    accepted = verify(
+        binding=binding,
+        candidate=make_candidate(binding=binding, unknowns=SOLUTION, run_id=uuid4()),
+    )
     assert isinstance(accepted, Verification)
     assert accepted.passed
     wrong = {**SOLUTION, CAPITAL: 12000000.0}
     rejected = verify(
-        binding,
-        make_candidate(binding, wrong, run_id=uuid4()),
+        binding=binding,
+        candidate=make_candidate(binding=binding, unknowns=wrong, run_id=uuid4()),
         tolerances=Tolerances(),
     )
     assert not rejected.passed
@@ -260,7 +267,10 @@ def test_assemble_makes_the_outcome_and_validation_is_its_own_step():
     attempted = attempt(cases, composition)
     (output,) = attempted.outputs
     outcome = assemble(
-        cases.root, attempted.run.report, id=attempted.run.id, output=output
+        specification=cases.root,
+        report=attempted.run.report,
+        id=attempted.run.id,
+        output=output,
     )
     assert isinstance(outcome, Outcome)
     assert outcome.run.to_data() == attempted.run.to_data()
@@ -270,7 +280,12 @@ def test_assemble_makes_the_outcome_and_validation_is_its_own_step():
     assert rk.run.validate(outcome.run, resolver=overlay).valid
     # A feasible report without its output is not a Run.
     with pytest.raises(ValidationError):
-        assemble(cases.root, attempted.run.report, id=uuid4(), output=None)
+        assemble(
+            specification=cases.root,
+            report=attempted.run.report,
+            id=uuid4(),
+            output=None,
+        )
     # Without the overlay, the unstored output does not resolve.
     assert not rk.run.validate(outcome.run, resolver=cases).valid
 
@@ -291,7 +306,7 @@ def test_assemble_batch_spawns_each_case_and_unites_their_outputs():
     outcomes = [
         attempt(cases, cases.compositions[leaf.id], leaf) for leaf in (first, second)
     ]
-    outcome = assemble_batch(batch, outcomes)
+    outcome = assemble_batch(specification=batch, cases=outcomes)
     assert outcome.cases == tuple(outcomes)
     assert outcome.run.record.spawns == tuple(item.run.id for item in outcomes)
     assert outcome.outputs == tuple(item.outputs[0] for item in outcomes)
@@ -316,8 +331,8 @@ def test_solve_runs_every_stage_and_writes_nothing():
     specification = spec()
     store.put(specification)
     outcome = solve(
-        specification,
-        Unchanged(store),
+        specification=specification,
+        resolver=Unchanged(store),
         config=ExecutionConfig(backend=Exact()),
     )
     assert outcome.run.report.status.solution == SolutionStatus.FEASIBLE

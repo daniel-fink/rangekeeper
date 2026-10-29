@@ -21,5 +21,5 @@ def consume_market(market: "Market", distribution: "Distribution") -> "Value":
     distribution.check()
     value: Value = market.space_market_price_factors
     rates: Value = market.implied_reversion_cap_rates
-    result: RuleResult = RuleResult(())
+    result: RuleResult = RuleResult(evidence=())
     return value

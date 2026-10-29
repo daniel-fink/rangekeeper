@@ -62,15 +62,15 @@ def formulate(hierarchy, *, id, aggregates, selected, populations, rule):
             source = prepared[owner]
             bindings.append(selected[owner].id)
             if rule.periods is None:
-                source_map = source.coordinate_index()
-                if set(source_map) != set(total.coordinate_index()):
+                source_map = source._coordinate_index()
+                if set(source_map) != set(total._coordinate_index()):
                     raise ContractError(
                         "Flow coordinates differ; declare explicit resampling",
                         targets=(selected[owner].id, value_id),
                     )
                 terms.append(
                     [
-                        reference(Reference(target=source_map[m.coordinate].id))
+                        reference(Reference(target=source_map[m._coordinate].id))
                         for m in total.movements
                     ]
                 )

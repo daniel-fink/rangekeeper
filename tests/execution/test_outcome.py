@@ -34,7 +34,7 @@ A, B, C, D = (uuid4() for _ in range(4))
 
 @pytest.fixture(scope="module")
 def back_outcome():
-    return solve(back(), store())
+    return solve(specification=back(), resolver=store())
 
 
 def test_a_value_is_read_by_key_or_dotted_path(back_outcome):
@@ -97,7 +97,7 @@ def test_evidence_reads_the_termination_words_of_an_older_run(
 
 def test_equations_that_leave_values_free_name_them():
     loose = back().free("works_cost")
-    outcome = solve(loose, store())
+    outcome = solve(specification=loose, resolver=store())
     assert outcome.status is Status.UNDERDETERMINED
     assert set(outcome.free_unknowns) == {"land_cost", "works_cost"}
     assert outcome.evidence.equality_rank == outcome.evidence.unknown_count - 1
@@ -111,7 +111,7 @@ def test_equations_that_leave_values_free_name_them():
 
 def test_fixed_values_that_disagree_are_infeasible():
     tight = back().fix(land_cost=q("20e6 AUD"))
-    outcome = solve(tight, store())
+    outcome = solve(specification=tight, resolver=store())
     assert outcome.status is Status.INFEASIBLE
     assert outcome.evidence.termination is Termination.INFEASIBLE
     with pytest.raises(OutcomeError) as raised:
@@ -123,7 +123,7 @@ def test_fixed_values_that_disagree_are_infeasible():
 
 def test_a_product_of_two_unknowns_is_unsupported():
     both_free = back().fix(land_cost=q("20e6 AUD")).free("leverage", "coverage")
-    outcome = solve(both_free, store())
+    outcome = solve(specification=both_free, resolver=store())
     assert outcome.status is Status.UNSUPPORTED
     assert outcome.evidence.termination is None
     with pytest.raises(UnsupportedError) as raised:
@@ -141,7 +141,7 @@ def test_an_invalid_specification_raises_a_validation_error():
     fixed = MODEL.specify().fix(land_cost=q("20e6 AUD"))
     # A record that frees no value lacks the roles of the other values.
     missing = Specification(fixed.record.replace(unknowns=()), model=MODEL)
-    outcome = solve(missing, store())
+    outcome = solve(specification=missing, resolver=store())
     assert outcome.status is Status.INVALID
     (decisive,) = (
         item for item in outcome.diagnostics if item.code == Code.SPECIFICATION_INVALID
@@ -157,7 +157,7 @@ def test_an_invalid_specification_raises_a_validation_error():
 
 def test_a_deadline_raises_the_attempt_deadline_error():
     tiny = ExecutionConfig(limits=Limits(time_limit=1e-7))
-    outcome = solve(back(), store(), config=tiny)
+    outcome = solve(specification=back(), resolver=store(), config=tiny)
     assert outcome.status is Status.LIMITED
     with pytest.raises(AttemptDeadlineError) as raised:
         outcome.raise_for_status()
@@ -171,7 +171,7 @@ class Ends:
         self.termination = termination
 
     def solve(self, problem, **kwargs):
-        return BackendResult(self.termination)
+        return BackendResult(termination=self.termination)
 
 
 class Breaks:
@@ -189,7 +189,9 @@ class Breaks:
     ],
 )
 def test_limits_and_failures_have_their_status_and_error(backend, status, error):
-    outcome = solve(back(), store(), config=ExecutionConfig(backend=backend))
+    outcome = solve(
+        specification=back(), resolver=store(), config=ExecutionConfig(backend=backend)
+    )
     assert outcome.status is status
     with pytest.raises(error) as raised:
         outcome.raise_for_status()
@@ -212,7 +214,9 @@ def test_a_batch_takes_the_status_of_its_first_case_that_is_not_feasible():
     feasible, later = back(), back()
     unsupported = back().fix(land_cost=q("20e6 AUD")).free("leverage", "coverage")
     batch = batch_of(feasible, unsupported, later)
-    outcome = solve(batch, store(feasible, unsupported, later, batch))
+    outcome = solve(
+        specification=batch, resolver=store(feasible, unsupported, later, batch)
+    )
     assert [case.status for case in outcome.cases] == [
         Status.FEASIBLE,
         Status.UNSUPPORTED,
@@ -228,7 +232,10 @@ def test_a_batch_takes_the_status_of_its_first_case_that_is_not_feasible():
     with pytest.raises(ContractError, match="batch"):
         outcome["land_cost"]
     whole = batch_of(feasible, later)
-    assert solve(whole, store(feasible, later, whole)).status is Status.FEASIBLE
+    assert (
+        solve(specification=whole, resolver=store(feasible, later, whole)).status
+        is Status.FEASIBLE
+    )
 
 
 def test_a_flow_value_reads_as_a_flow():
@@ -255,7 +262,7 @@ def test_a_flow_value_reads_as_a_flow():
     model = draft.commit()
     found = rk.io.MemoryStore()
     found.put(model)
-    outcome = solve(model.specify().free("rent"), found)
+    outcome = solve(specification=model.specify().free("rent"), resolver=found)
     outcome.raise_for_status()
     assert isinstance(outcome["rent"], Flow)
     assert outcome.quantity(movements[0].id) == q("100 AUD")

@@ -143,7 +143,7 @@ show the target API in use.
   runs the typed stages: it resolves the cases, validates each composition, binds
   roles, builds the affine problem, solves it in a separate process, makes a
   candidate, verifies it independently and assembles an `Outcome`, and writes
-  nothing. `execute(specification, store)` also publishes the output Models and
+  nothing. `execute(specification=, store=)` also publishes the output Models and
   then the Runs. Each stage is a public function that writes to no store. Read
   a solved value by key, `outcome["land_cost"]`, and the result from
   `outcome.status`; `outcome.raise_for_status()` raises when the solve found no
