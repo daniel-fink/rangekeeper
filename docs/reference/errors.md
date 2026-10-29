@@ -133,7 +133,7 @@ all of its fields through `pickle`.
 | `TableError` | `ValueError` | `TABLE` |
 | `UnknownExtensionError` | `LookupError` | `EXTENSION_UNKNOWN`. `suggestions` gives registered names to try ([extension points](extensions.md)) |
 | `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
-| `model.system`: `SelectionError`, `AggregationError` | `ValueError` | `SELECTION`, `AGGREGATION` |
+| `model.system`: `SelectionError`, `RollupError` | `ValueError` | `SELECTION`, `ROLLUP` |
 | `market`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
 | `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
 | `NumericalError` | `ValueError` | `NUMERICAL_FAILURE`, or `NUMERICAL_REJECTION` when verification rejected a candidate |

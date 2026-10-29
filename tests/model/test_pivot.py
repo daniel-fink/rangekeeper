@@ -21,7 +21,6 @@ from rangekeeper.model import (
     ValueKind,
 )
 from rangekeeper.model.system import (
-    AggregationError,
     Contributor,
     CoverageStatus,
     Hierarchy,
@@ -29,6 +28,7 @@ from rangekeeper.model.system import (
     PivotColumn,
     QuantityRollup,
     Reducer,
+    RollupError,
     View,
     classified,
 )
@@ -358,11 +358,11 @@ def test_pivot_validates_its_arguments_and_columns():
     with pytest.raises(TypeError):
         reduction.pivot(View(model))
     whole = reduction.execute(rows)
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         Pivot(rows, ())
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         PivotColumn(kinds["2B"], None, 0, whole)
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         Pivot(
             rows,
             (
@@ -374,7 +374,7 @@ def test_pivot_validates_its_arguments_and_columns():
         View(model, entities=(ids["L1"], *records(ids, "u1", "u2", "u3", "u4", "u5"))),
         root=ids["L1"],
     )
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         Pivot(rows, (PivotColumn(None, None, 0, reduction.execute(other)),))
     pivot = reduction.pivot(rows, by=kinds["apartment"])
     with pytest.raises(KeyError):

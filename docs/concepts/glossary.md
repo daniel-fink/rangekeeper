@@ -107,6 +107,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Rollup | Totals of values over a Hierarchy: `QuantityRollup` and `FlowRollup`, with one `Reducer` enum | `model` | — |
 | Rollup definition | `rk.model.Rollup(of=, over=, roots=, contributors=)`: what a rollup adds up, over which relationship, from which roots and contributors. `value(..., rollup=)` declares a value with it | `model` | None (planned, #285) |
 | Rollup result | The value and coverage of a rollup | `model` | — |
+| Rollup error | A rollup or pivot that cannot give a meaningful result: `RollupError`, code `rollup` | `model` | — |
 | Flow aggregate | The result of aggregating Flows, with coverage | `flow` | — |
 | Coverage | Which contributors had a value, and which did not | `model`, `flow` | Four different types |
 | Pivot | A cross-tab of rollup results by rows and columns | `model` | — |

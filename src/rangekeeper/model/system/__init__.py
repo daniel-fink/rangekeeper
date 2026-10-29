@@ -6,10 +6,10 @@ from rangekeeper.shared.exports import lazy as _lazy
 
 if TYPE_CHECKING:
     from .errors import (
-        AggregationError as AggregationError,
+        HierarchyError as HierarchyError,
     )
     from .errors import (
-        HierarchyError as HierarchyError,
+        RollupError as RollupError,
     )
     from .errors import (
         SelectionError as SelectionError,
@@ -56,7 +56,7 @@ _EXPORTS = {
     "Partition": "pivot",
     "SelectionError": "errors",
     "HierarchyError": "errors",
-    "AggregationError": "errors",
+    "RollupError": "errors",
 }
 _MODULES = {
     "matching",

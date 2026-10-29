@@ -259,6 +259,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.system.reduction.Aggregation` | `RollupResult` | draft |  |
 | `rangekeeper.model.system.reduction.Reduction` | `rangekeeper.model.system.rollup.QuantityRollup` | agreed (needs refactor) | The scalar and Flow modes split. `Reduction(select=select_value(key), reducer=reducers.sum, units=)` becomes `QuantityRollup(key=, units=, reducer=Reducer.SUM)`; `Reduction.flows(key=, aggregation=, ...)` becomes `FlowRollup(key=, reducer=, ...)`. Both default to `Contributor.LEAVES`; the scalar default was every node. Custom selectors and reducers are removed. |
 | `rangekeeper.model.system.reduction.AggregateEntry` | `rangekeeper.model.system.rollup.RollupEntry` | agreed | `aggregate` is the word for combining Flows (D38). |
+| `rangekeeper.model.system.errors.AggregationError` | `RollupError` | agreed | `aggregate` is the word for combining Flows (D38). Its code is `Code.ROLLUP`, with the text `rollup`. |
 | `rangekeeper.model.duration.calendar.measure` | `count_steps` | draft |  |
 | `rangekeeper.model.duration.period.align` | `containing_period` | draft |  |
 | `rangekeeper.model.measure.Quantity` | `rangekeeper.quantity.Quantity` | agreed | `rangekeeper.Quantity` at the root also gives the record. |
@@ -322,6 +323,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.execution.compiler.Compiled.prepared` | `binding` | agreed |  |
 | `rangekeeper.model.system.view.View.aggregate` | `rollup` | agreed | Each use needs review. `view.aggregate(reduction)` becomes `view.rollup(definition=rollup)`. |
 | `rangekeeper.model.system.pivot.PivotColumn.aggregation` | `result` | agreed | Each use needs review. |
+| `rangekeeper.shared.codes.Code.AGGREGATION` | `ROLLUP` | agreed | `rk.errors.Code.AGGREGATION` (`aggregation`) becomes `Code.ROLLUP` (`rollup`). Stored diagnostics keep the text they recorded. |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |

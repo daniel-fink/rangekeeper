@@ -23,7 +23,6 @@ from rangekeeper.model import (
     ValueTest,
 )
 from rangekeeper.model.system import (
-    AggregationError,
     Contributor,
     Coverage,
     CoverageStatus,
@@ -31,9 +30,11 @@ from rangekeeper.model.system import (
     Hierarchy,
     QuantityRollup,
     Reducer,
+    RollupError,
     View,
 )
 from rangekeeper.quantity import Quantity, UnitSystem, default_units
+from rangekeeper.shared.codes import Code
 
 KIND = {
     code: Classification(id=uuid4(), code=code, name=code, parent=None)
@@ -224,6 +225,16 @@ def test_a_pivot_keeps_undecided_contributors_in_every_column():
         assert pivot.value(ids["b"], column) is None
 
 
+def test_rollup_errors_have_the_rollup_code() -> None:
+    # Rollup is the word for totals over a hierarchy (D38, #388).
+    model, rows, ids = project()
+    with pytest.raises(RollupError) as raised:
+        Coverage((ids["f1"],), (), ())  # measured and missing must cover selected
+    assert raised.value.code is Code.ROLLUP
+    assert Code.ROLLUP == "rollup"
+    assert not hasattr(Code, "AGGREGATION")
+
+
 def test_flow_rollups_refuse_to_read_missing_movements_as_zero():
     with pytest.raises(ValueError, match="zero"):
         FlowRollup(key="cash", missing=MissingValueHandling.ZERO)
@@ -244,9 +255,9 @@ def test_coverage_keeps_undecided_owners_apart_from_selected_ones():
     assert Coverage((a,), (a,), (), (b,)).status is CoverageStatus.INCOMPLETE
     assert Coverage((), (), (), (b,)).status is CoverageStatus.INCOMPLETE
     assert Coverage((), (), ()).status is CoverageStatus.EMPTY
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         Coverage((a,), (a,), (), (a,))
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         Coverage((), (), (), (b, b))
 
 

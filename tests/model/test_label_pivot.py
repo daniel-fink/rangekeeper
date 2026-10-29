@@ -20,10 +20,10 @@ from rangekeeper.model import (
     ValueKind,
 )
 from rangekeeper.model.system import (
-    AggregationError,
     CoverageStatus,
     Hierarchy,
     QuantityRollup,
+    RollupError,
     View,
 )
 from rangekeeper.quantity import Quantity
@@ -231,7 +231,7 @@ def test_without_by_the_columns_come_from_the_labels_taxonomy():
 def test_without_by_the_labels_need_one_taxonomy():
     model, rows, ids = project()
     # b3's use label names a Classification of another Taxonomy.
-    with pytest.raises(AggregationError, match="by="):
+    with pytest.raises(RollupError, match="by="):
         GFA.pivot(rows, label="use")
 
 

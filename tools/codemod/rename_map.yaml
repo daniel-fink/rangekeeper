@@ -224,6 +224,12 @@ symbols:
     status: agreed
     source: "ADR-012, #158, #255 D38"
     note: "`aggregate` is the word for combining Flows (D38)."
+  - module: rangekeeper.model.system.errors
+    name: AggregationError
+    new_name: RollupError
+    status: agreed
+    source: "#388, #255 D38"
+    note: "`aggregate` is the word for combining Flows (D38). Its code is `Code.ROLLUP`, with the text `rollup`."
   - module: rangekeeper.model.duration.calendar
     name: measure
     new_name: count_steps
@@ -618,6 +624,13 @@ attributes:
     apply: review
     status: agreed
     source: "#158, #255 D38"
+  - owner: rangekeeper.shared.codes.Code
+    name: AGGREGATION
+    new_name: ROLLUP
+    apply: all
+    status: agreed
+    source: "#388, #255 D38"
+    note: "`rk.errors.Code.AGGREGATION` (`aggregation`) becomes `Code.ROLLUP` (`rollup`). Stored diagnostics keep the text they recorded."
   - owner: rangekeeper.specification.specification.Specification
     name: lock
     new_name: fix

@@ -27,7 +27,6 @@ from rangekeeper.model import (
     ValueKind,
 )
 from rangekeeper.model.system import (
-    AggregationError,
     Contributor,
     CoverageStatus,
     Hierarchy,
@@ -35,6 +34,7 @@ from rangekeeper.model.system import (
     HierarchyKind,
     QuantityRollup,
     Reducer,
+    RollupError,
     SelectionError,
     View,
 )
@@ -455,13 +455,13 @@ def test_invalid_arguments_and_callback_results_are_not_silently_used():
 
 
 def test_reducers_reject_empty_mixed_and_overflow_quantities():
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         reducers.sum(())
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         reducers.sum(
             (Quantity(magnitude=1, units="m"), Quantity(magnitude=1, units="cm"))
         )
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         reducers.sum(
             (Quantity(magnitude=1e308, units="m"), Quantity(magnitude=1e308, units="m"))
         )
@@ -500,7 +500,7 @@ def test_count_reducer_over_empty_coverage_is_unavailable():
     result = View(model).rollup(definition=count(contributors=lambda entity: False))
     assert result.root_value is None and result.available_value(root.id) is None
     assert result.coverage(root.id).status is CoverageStatus.EMPTY
-    with pytest.raises(AggregationError):
+    with pytest.raises(RollupError):
         reducers.count(())
 
 

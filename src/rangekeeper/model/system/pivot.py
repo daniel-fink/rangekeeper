@@ -16,7 +16,7 @@ from uuid import UUID
 from rangekeeper.flow import Flow
 from rangekeeper.model import Entity, Label
 from rangekeeper.model.definitions import _classes
-from rangekeeper.model.system.errors import AggregationError
+from rangekeeper.model.system.errors import RollupError
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.rollup import (
     Contributor,
@@ -56,11 +56,11 @@ class PivotColumn:
         if not isinstance(self.result, RollupResult):
             raise TypeError("result must be a RollupResult")
         if (self.classification is None) != (self.depth == 0):
-            raise AggregationError("only the All column has depth 0")
+            raise RollupError("only the All column has depth 0")
         if self.classification is None and self.parent is not None:
-            raise AggregationError("the All column has no parent")
+            raise RollupError("the All column has no parent")
         if self.parent is not None and self.parent == self.classification:
-            raise AggregationError("a column cannot be its own parent")
+            raise RollupError("a column cannot be its own parent")
 
 
 @dataclass(frozen=True)
@@ -115,21 +115,21 @@ class Pivot:
         index = {}
         for item in columns:
             if item.classification in index:
-                raise AggregationError("pivot columns must be unique")
+                raise RollupError("pivot columns must be unique")
             index[item.classification] = item
         if None not in index:
-            raise AggregationError("a pivot requires one All column")
+            raise RollupError("a pivot requires one All column")
         model = rows.view.model
         children: dict[UUID | None, list[PivotColumn]] = {}
         for item in columns:
             if item.result.hierarchy != rows:
-                raise AggregationError("every column must roll up the rows")
+                raise RollupError("every column must roll up the rows")
             if item.classification is None:
                 continue
             model.classification(item.classification)
             parent = index.get(item.parent)
             if parent is None or item.depth != parent.depth + 1:
-                raise AggregationError(
+                raise RollupError(
                     f"column {item.classification} needs a parent column one level up"
                 )
             children.setdefault(item.parent, []).append(item)
@@ -310,7 +310,7 @@ def _label_root(model, rows: Hierarchy, label: str) -> UUID | None:
             taxonomy = owners[item]
             found[taxonomy.id] = taxonomy
     if len(found) > 1:
-        raise AggregationError(
+        raise RollupError(
             f"Labels {label!r} use Classifications of several Taxonomies; "
             "pass by= to choose the column parent"
         )
