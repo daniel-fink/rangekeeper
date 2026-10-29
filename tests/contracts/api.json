@@ -689,7 +689,7 @@
     "LIMITED",
     "FAILED"
    ],
-   "module": "rangekeeper.execution.outcome"
+   "module": "rangekeeper.execution.statuses"
   },
   "Tolerances": {
    "kind": "class",

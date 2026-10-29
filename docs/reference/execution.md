@@ -98,7 +98,7 @@ outcome["project.land_cost"]  # the same value, by its dotted path
 | `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError` |
 | `INVALID` | Failed, with `specification_invalid` | `ValidationError` |
 | `FAILED` | Failed, with `numerical_failure`, `numerical_rejection` or `backend_unavailable`, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
-| `UNSUPPORTED` | Failed, with any other error diagnostic: the code of an `UnsupportedError`, such as `unsupported_capability` or `symbol_limit` | `UnsupportedError` with that code, `document` and `target` |
+| `UNSUPPORTED` | Failed, with any other error diagnostic: the code of an `UnsupportedError`, such as `nonaffine_unknowns`, `unsupported_capability` or `symbol_limit` | `UnsupportedError` with that code, `document`, `target`, `equation` and `unknowns` |
 
 Each error carries the code of the diagnostic that gives the reason.
 `OutcomeError` also has `status`. In an underdetermined Outcome, `outcome["key"]`
@@ -204,11 +204,11 @@ time limit has passed. The stages call it between steps.
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
 | `execution/comparison.py` | `compare` and `Comparison`: values side by side, or paired differences from a baseline, with `summary`, `select` and `where`. |
-| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `Status`, `raise_for_status()`, `free_unknowns` and `Evidence`. |
+| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns` and `Evidence`. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and one `except` arm for the expected failures. It stores nothing. |
-| `execution/statuses.py` | `FAILURES`: one row for each expected error, with its completion, solution and diagnostic code. `TERMINATIONS`: one row for each `Termination`. |
+| `execution/statuses.py` | `Status`. `FAILURES`: one row for each expected error, with its completion, solution, `Status` and diagnostic code. `TERMINATIONS`: one row for each `Termination`. |
 | `execution/pipeline.py` | `solve`: the stages for each case of a batch, in order. `execute`: `solve`, then output-before-Run publication. |
 | `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
 
@@ -325,15 +325,18 @@ evidence keeps the backend's own condition as `termination_condition`.
 An expected error ends an attempt with a failed Run, not an exception.
 `execution.statuses.FAILURES` maps each one; any other error raises to the caller.
 "Bound" means that `bind_roles` returned; "solved" means that the backend returned.
+The `Status` and the diagnostic code of a failure change together in this one
+table: `Outcome.status` reads the `Status` of a failed attempt's decisive code
+from it.
 
-| Error | Completion | Solution | Diagnostic code |
-| --- | --- | --- | --- |
-| `AttemptDeadlineError` | limited | `not_assessed` | `attempt_deadline` (warning) |
-| `ValidationError` | failed | `not_assessed`; `unknown` once bound | `specification_invalid`; `numerical_rejection` once bound |
-| `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | The error's own code, for example `nonaffine_unknowns` or `symbol_limit` |
-| `UnitError` | failed | `not_assessed`; `unknown` once solved | `unsupported_capability` |
-| `BackendUnavailableError` | failed | `not_assessed` | `backend_unavailable` |
-| `NumericalError`, `ArithmeticError` | failed | `unknown` | `numerical_failure` |
+| Error | Completion | Solution | `Status` | Diagnostic code |
+| --- | --- | --- | --- | --- |
+| `AttemptDeadlineError` | limited | `not_assessed` | `LIMITED` | `attempt_deadline` (warning) |
+| `ValidationError` | failed | `not_assessed`; `unknown` once bound | `INVALID`; `FAILED` once bound | `specification_invalid`; `numerical_rejection` once bound |
+| `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | The error's own code, for example `nonaffine_unknowns` or `symbol_limit` |
+| `UnitError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | `unsupported_capability` |
+| `BackendUnavailableError` | failed | `not_assessed` | `FAILED` | `backend_unavailable` |
+| `NumericalError`, `ArithmeticError` | failed | `unknown` | `FAILED` | `numerical_failure` |
 
 `Attempt.fail` builds the diagnostic of each expected failure. It copies the
 error's structured fields into the diagnostic's `values`: the `equation` and

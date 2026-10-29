@@ -154,9 +154,9 @@ class Attempt:
 
     def fail(self, error: BaseException) -> None:
         """Set the status and diagnostic of an expected failure from its table."""
-        status = statuses.failure(error, self.reached)
-        self.completion, self.solution = status.completion, status.solution
-        code = status.code
+        conclusion = statuses.failure(error, self.reached)
+        self.completion, self.solution = conclusion.completion, conclusion.solution
+        code = conclusion.code
         if code is None:
             # A row without a code is for an error that carries its own.
             assert isinstance(error, RangekeeperError)
@@ -172,7 +172,7 @@ class Attempt:
         self.diagnose(
             code,
             str(error),
-            severity=status.severity,
+            severity=conclusion.severity,
             document=getattr(error, "document", None) or UNSET,
             target=getattr(error, "target", None) or UNSET,
             values=values or UNSET,
