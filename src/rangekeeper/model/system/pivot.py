@@ -24,7 +24,6 @@ from rangekeeper.model.system.rollup import (
     RollupEntry,
     RollupResult,
     _Decision,
-    _decision,
 )
 from rangekeeper.quantity import Quantity
 from rangekeeper.shared.arguments import require_text
@@ -256,7 +255,7 @@ def _base_rule(
     rollup: "_Rollup",
     rows: Hierarchy,
 ) -> Callable[[Entity], bool | None]:
-    rule = _decision(rollup.contributors, rows.view.model)
+    rule = rollup._contributor_rule(rows.view.model)
     if rule is Contributor.ALL:
         return lambda entity: True
     if rule is Contributor.LEAVES:

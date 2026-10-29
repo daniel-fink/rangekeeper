@@ -241,8 +241,10 @@ of their rows; a node outside a column is not undecided in that column.
 
 All selected quantities convert explicitly to `units` before the reducer combines
 them. The `unit_system` field defaults to `None`: `execute` then uses
-`Model.unit_system` of the hierarchy's Model ([units](units.md)). A supplied unit
-system checks `units` when the rollup is created; otherwise `execute` checks them.
+`Model.unit_system` of the hierarchy's Model ([units](units.md)). The same unit
+system converts the Value tests of a `Filter` contributor rule, so the Filter and
+the reducer read a unit in one way. A supplied unit system checks `units` when
+the rollup is created; otherwise `execute` checks them.
 Results are immutable schema Quantities.
 
 The reducers operate on the raw contributors of each subtree. A mean is never a
