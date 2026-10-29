@@ -841,7 +841,7 @@ removed:
     status: agreed
     source: ADR-010
   - name: rangekeeper.calculations.series.integrate
-    replacement: Flow.integrate(exposures=, day_count=, units=)
+    replacement: Flow.integrate(exposures=, units=) and Flow.integrate_time(day_count=, units=)
     status: agreed
     source: ADR-010
   - name: rangekeeper.calculations.series.resample
@@ -941,6 +941,12 @@ removed:
     replacement: rangekeeper.errors.EncodingError
     status: agreed
     source: ADR-016
+  - name: rangekeeper.io.atomic
+    replacement: >-
+      `rangekeeper.io.json.write` and `rangekeeper.io.yaml.write`, which
+      publish a new file atomically
+    status: agreed
+    source: "#411"
 
 # Decisions of #255 that change API shapes, not names. They are listed in the
 # upgrade guide. The codemod does not apply them.
@@ -965,6 +971,23 @@ notes:
       weighting of a mean is part of the method: `MEAN` or `ELAPSED_MEAN`.
       `split(periods=)` or `split(frequency=)` divides amounts over shorter
       Periods and takes no `method=` or `missing=`.
+  - topic: Flow and Stream options
+    status: agreed
+    source: "#399, #406"
+    note: >-
+      Each argument chooses one thing. `flow.check(resolved=True)` is
+      `flow.require_resolved()`. `clean(remove_zeroes=True)` is
+      `clean().drop_zeroes()`; `extent()` takes no flag. `round(mode=)` takes a
+      `rangekeeper.money.RoundingMode`. `collapse(on=)` takes a date or a
+      `PeriodTiming` (was `timing=`). `integrate(day_count=)` is
+      `integrate_time(day_count=)`. `from_periods` and `from_events` take no
+      `dates=` or `ids=`: make the `Movement` records. `multiply` and `scale`
+      follow `*`, so an unresolved amount gives an unresolved product.
+      `Stream.select(value_ids=)` is `Stream.select_values(ids)`. The `missing`
+      and `join` policies live on the Stream: `Stream(..., missing=, join=)` or
+      `stream.with_policy(missing=, join=)`; `aggregate`, `sum`, `min`, `max`
+      and `resample` take no `missing=` or `join=`. `sum(timing=)` is
+      `stream.dated(timing=).sum()`.
   - topic: Keyword-only arguments
     status: agreed
     source: "#255 D14"
@@ -1005,6 +1028,10 @@ notes:
     status: agreed
     source: "#399, #403"
     note: "`containing_period(value, *, frequency=, week_start=, year_start_month=, origin=)` is now `containing_period(*, on=, grid=)`. The grid is `DayGrid()`, `WeekGrid(starts=calendar.Day.MONDAY)`, `MonthGrid(frequency=, year_starts=calendar.Month.JANUARY)` for months, quarters, half-years and years, or `MultiYearGrid(frequency=, origin=)` for bienniums, quinquenniums and decades. A grid takes only the choices that apply to it; a week grid takes no origin."
+  - topic: Bundle options
+    status: agreed
+    source: "#411, #422"
+    note: "`rk.io.bundle.write(root, model, *, documents=, resolver=, geometry=, parquet=)` and `Reader(root, *, providers=, limits=, index=)`. `geometry=GeometrySources(directories={model_id: path}, providers={(provider, format, format_version): adapter})` replaces `geometry=`, `geometries=`, `provider=` and `providers=` of `write`; a pin with no provider uses `rk.io.geometry_providers`. `parquet=ParquetOptions(compression=, row_group_size=)` replaces `compression=` and `row_group_size=`. `limits=ReadLimits(documents=, bytes=, rows=)` replaces `max_documents=`, `max_bytes=` and `max_rows=`; `index=IndexCheck.SCHEMA` replaces `check_index=False`. `Reader` has no `provider=`."
   - topic: Rules
     status: agreed
     source: "ADR-021, #255 D41, D42"

@@ -192,6 +192,11 @@ def directive(module: ModuleType, *, heading: bool = False) -> str:
     return "\n\n".join(block.rstrip("\n") for block in blocks) + "\n"
 
 
+# Public modules that their package does not import, because each needs an
+# optional dependency. Their blocks follow the package's own blocks.
+OPTIONAL_MODULES = {"io": ("rangekeeper.io.bundle", "rangekeeper.io.polars")}
+
+
 def api(output: Path) -> None:
     """Write one API reference page for each public module."""
     import rangekeeper
@@ -209,8 +214,12 @@ def api(output: Path) -> None:
     )
     for name in modules:
         module = import_module(f"rangekeeper.{name}")
+        blocks = [directive(module)] + [
+            directive(import_module(optional), heading=True)
+            for optional in OPTIONAL_MODULES.get(name, ())
+        ]
         (output / f"{name}.md").write_text(
-            f"# rangekeeper.{name}\n\n{directive(module)}"
+            f"# rangekeeper.{name}\n\n" + "\n".join(blocks)
         )
 
 

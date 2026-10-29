@@ -151,7 +151,7 @@ def upgrade(source: Path, destination: Path, *, release: str) -> dict[str, Any]:
         model,
         documents=selected,
         resolver=store,
-        geometries=geometries,
+        geometry=current.GeometrySources(directories=geometries),
     )
 
 

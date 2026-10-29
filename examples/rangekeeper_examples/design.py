@@ -13,7 +13,7 @@ from uuid import UUID, uuid4, uuid5
 
 from rangekeeper.duration import Frequency, Periods, PeriodTiming
 from rangekeeper.errors import MissingReferenceError
-from rangekeeper.flow import Flow
+from rangekeeper.flow import Flow, Movement
 from rangekeeper.model import (
     Definitions,
     Formulation,
@@ -233,14 +233,8 @@ def author(
             key=key,
             kind=ValueKind.FLOW,
             measure=measures["AUD"].id,
-            flow=Flow.from_periods(
-                periods[:count],
-                (None,) * count,
-                units="AUD",
-                keys=tuple(f"y{i + 1}" for i in range(count)),
-                dates=tuple(
-                    p.resolve(timing=PeriodTiming.LAST) for p in periods[:count]
-                ),
+            flow=_paid_at_last_day(
+                periods[:count], (None,) * count, units="AUD", prefix="y"
             ),
         )
 
@@ -551,3 +545,22 @@ def _contributors(model: Model) -> tuple[UUID, ...]:
     ):
         raise ValueError("contributors must be an ordered UUID tuple")
     return result
+
+
+def _paid_at_last_day(periods, magnitudes, *, units, prefix):
+    """Return a Flow over Periods, each Movement paid on the last day of its Period."""
+    return Flow(
+        units=units,
+        movements=tuple(
+            Movement(
+                id=uuid4(),
+                key=f"{prefix}{i + 1}",
+                period=period,
+                date=period.resolve(timing=PeriodTiming.LAST),
+                magnitude=magnitude,
+            )
+            for i, (period, magnitude) in enumerate(
+                zip(periods, magnitudes, strict=True)
+            )
+        ),
+    )

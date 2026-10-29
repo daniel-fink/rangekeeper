@@ -12,13 +12,14 @@ import difflib
 import math
 import re
 from dataclasses import dataclass, replace
-from decimal import ROUND_HALF_EVEN, Decimal
+from decimal import Decimal
 from functools import lru_cache
 from importlib.metadata import version
 from typing import TYPE_CHECKING, ClassVar, cast
 
 from rangekeeper.money import (
     CURRENCIES,
+    RoundingMode,
     _encoded,
     _require,
     is_currency,
@@ -438,7 +439,7 @@ class Quantity(records.Quantity):
         )
 
     def round(
-        self, *, places: int | None = None, mode: str = ROUND_HALF_EVEN
+        self, *, places: int | None = None, mode: RoundingMode = RoundingMode.HALF_EVEN
     ) -> "Quantity":
         """Return the amount rounded to ``places``, by default the minor unit.
 

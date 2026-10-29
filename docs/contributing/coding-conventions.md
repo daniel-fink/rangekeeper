@@ -142,6 +142,11 @@ Periods. Before [#405](https://github.com/daniel-fink/rangekeeper/issues/405),
 `ResampleMethod.SPLIT` made `resample` split, and `missing=` did not apply to
 it.
 
+Good: `Flow.clean()` removes unresolved movements and `Flow.drop_zeroes()`
+removes zeroes; `Flow.require_resolved()` is separate from `Flow.check()`.
+Before [#406](https://github.com/daniel-fink/rangekeeper/issues/406), the
+Boolean arguments `clean(remove_zeroes=)` and `check(resolved=)` chose the job.
+
 A result type has one mode too. When a method of a result raises because of
 how the result was made, make two result types.
 
@@ -235,8 +240,9 @@ that the ratchet has reached; see [checks](#checks).
 read files, traverse documents or build other records. A classmethod (`create`,
 `from_data`, `from_values`) or a separate function does that work.
 
-Bad: `Reader.__init__` in `io/bundle.py` (complexity 32, 85 statements) opens
-the manifest, checks the limits, reads each document and rebuilds the records.
+Bad: `Reader.__init__` in `io/bundle.py` opens the manifest, checks the
+limits, reads each document and rebuilds the records
+([#422](https://github.com/daniel-fink/rangekeeper/issues/422)).
 
 Good: `Model.__init__` makes an empty Model from a name. `Model.create` and
 `Model.from_data` build a Model from complete records.

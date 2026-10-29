@@ -641,16 +641,14 @@ class FlowRollup(_Rollup):
         }
         results = {}
         if owners:
-            stream = Stream(
-                flows={str(i): available[owner].flow for i, owner in enumerate(owners)}
-            )
             rule = self._rule
+            stream = Stream(
+                flows={str(i): available[owner].flow for i, owner in enumerate(owners)},
+                missing=rule.missing,
+                join=rule.join,
+            )
             if rule.periods is not None and rule.resampling is not None:
-                stream = stream.resample(
-                    periods=rule.periods,
-                    method=rule.resampling,
-                    missing=rule.missing,
-                )
+                stream = stream.resample(periods=rule.periods, method=rule.resampling)
             nodes = tuple(node for node, group in groups.items() if group)
             results = dict(
                 zip(

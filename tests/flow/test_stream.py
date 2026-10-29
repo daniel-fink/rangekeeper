@@ -267,11 +267,10 @@ def test_methods_mapping_missing_zero_and_html_escape():
     stream = Stream(
         flows={"<Receipts>": receipts, "Balance": balance}, missing=Missing.PROPAGATE
     )
-    result = stream.resample(
-        periods=periods,
-        method={"<Receipts>": R.SUM, "Balance": R.LAST},
-        missing=Missing.ZERO,
+    result = stream.with_policy(missing=Missing.ZERO).resample(
+        periods=periods, method={"<Receipts>": R.SUM, "Balance": R.LAST}
     )
+    assert stream.missing is Missing.PROPAGATE
     assert [m.magnitude for m in result.flows[0].movements] == [0, None, 0]
     assert result.coverage["<Receipts>"] == (1, 0, 0)
     html = result.display(transpose=True)._repr_html_()

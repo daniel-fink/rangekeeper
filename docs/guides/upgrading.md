@@ -188,7 +188,7 @@ This table lists the public names that 1.x consumers use, with their state in
 | `model.system.System`, `Entity`, `Assembly`, `Relationship` | `rangekeeper.model` only (the codemod moves them). `model.system` keeps the views, rollups and pivots | — |
 | `model.characteristics.value`, `label` | Removed. `Model.value(owner=, key=)` and `Model.label(owner=, key=)` raise `MissingReferenceError` for a missing key | — |
 | `rangekeeper.Model`, `model.Definitions` | Unchanged; the Model format is 1.0.0 | Builder names ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D6, D16) |
-| `io.bundle.Reader`, `write`, `Reader(..., check_index=False)` | Unchanged API. A Bundle with 0.x documents does not open | Identifiers `rangekeeper.bundle/1` and `rangekeeper.parquet/1`; the format freezes at 1.0.0b1 (ADR-017) |
+| `io.bundle.Reader`, `write`, `Reader(..., check_index=False)` | `io.bundle.Reader` and `write`, with option values: `Reader(..., index=IndexCheck.SCHEMA)`, `limits=ReadLimits(...)`; `write(..., geometry=GeometrySources(...), parquet=ParquetOptions(...))` (Bundle options, below; [#411](https://github.com/daniel-fink/rangekeeper/issues/411)). A Bundle with 0.x documents does not open | Identifiers `rangekeeper.bundle/1` and `rangekeeper.parquet/1`; the format freezes at 1.0.0b1 (ADR-017) |
 
 Three routes help a 1.x consumer:
 
@@ -360,7 +360,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.formulation.authoring.declare` | `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)`, `date(...)` and `equations(...)` (#255 D6, D16) | agreed (needs refactor) |
 | `rangekeeper.calculations.series.align` | Stream(flows, join=, missing=).align() | agreed |
 | `rangekeeper.calculations.series.multiply` | Flow.multiply(*others) | agreed |
-| `rangekeeper.calculations.series.integrate` | Flow.integrate(exposures=, day_count=, units=) | agreed |
+| `rangekeeper.calculations.series.integrate` | Flow.integrate(exposures=, units=) and Flow.integrate_time(day_count=, units=) | agreed |
 | `rangekeeper.calculations.series.resample` | Flow.resample(periods, method=) and Stream.resample(periods, method=) | agreed |
 | `rangekeeper.calculations.series.aggregate` | Stream.aggregate(method=), Stream.sum(), Stream.min() and Stream.max() | agreed |
 | `rangekeeper.calculations.series.Alignment` | The Stream that Stream.align() returns; Stream.aggregate() replaces Alignment.reduce() | agreed |
@@ -380,6 +380,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.execution.preparation.prepare` | `rangekeeper.execution.validate(composition, resolver=, units=)`, then `rangekeeper.execution.bind_roles(validation)` | agreed |
 | `rangekeeper.shared.errors.BoundaryError` | rangekeeper.errors.RangekeeperError | agreed |
 | `rangekeeper.shared.errors.ValueEncodingError` | rangekeeper.errors.EncodingError | agreed |
+| `rangekeeper.io.atomic` | `rangekeeper.io.json.write` and `rangekeeper.io.yaml.write`, which publish a new file atomically | agreed |
 
 ### Changes of API shape
 
@@ -391,6 +392,7 @@ them; the issues that the table names make the changes.
 | Quantity text in API arguments | Arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year. | #255 D13, D16, D17 |
 | Execution configuration | `Executor(store, backend=, units=, tolerances=)` becomes `execute(specification, store, config=ExecutionConfig(backend=, units=, tolerances=))`. `ExecutionConfig` also holds the default `limits` and the `backend_options`. | ADR-013, #128 |
 | Resample options | `resample(method=)` takes one `ResampleMethod` for each line, and the weighting of a mean is part of the method: `MEAN` or `ELAPSED_MEAN`. `split(periods=)` or `split(frequency=)` divides amounts over shorter Periods and takes no `method=` or `missing=`. | #399, #405 |
+| Flow and Stream options | Each argument chooses one thing. `flow.check(resolved=True)` is `flow.require_resolved()`. `clean(remove_zeroes=True)` is `clean().drop_zeroes()`; `extent()` takes no flag. `round(mode=)` takes a `rangekeeper.money.RoundingMode`. `collapse(on=)` takes a date or a `PeriodTiming` (was `timing=`). `integrate(day_count=)` is `integrate_time(day_count=)`. `from_periods` and `from_events` take no `dates=` or `ids=`: make the `Movement` records. `multiply` and `scale` follow `*`, so an unresolved amount gives an unresolved product. `Stream.select(value_ids=)` is `Stream.select_values(ids)`. The `missing` and `join` policies live on the Stream: `Stream(..., missing=, join=)` or `stream.with_policy(missing=, join=)`; `aggregate`, `sum`, `min`, `max` and `resample` take no `missing=` or `join=`. `sum(timing=)` is `stream.dated(timing=).sum()`. | #399, #406 |
 | Keyword-only arguments | Every Rangekeeper call names its arguments. | #255 D14 |
 | Model authoring and builder names | `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles. `Model(record, units=)` is removed: `rk.Model(name=)` makes an empty Model, and `Model.create(...)` or `Model.from_data(...)` take complete records (#141, #281). | #255 D6, D16, D18 |
 | Specification calls | `fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. `model.specify(name=)` makes one. `fix(target, quantity, id=, model=, ids=, recorded=)` is now `fix(key=quantity)`, or `fix({target: quantity})` for a dotted path, a UUID or a mapping of Movement UUIDs; `free(target, id=, model=, ids=)` is now `free(*targets)`. The Specification keeps its Model: pass `Specification(record, model=, resolver=)` for a record. `recorded=True` is removed: fix the recorded Quantities explicitly (#144). `fix` also takes Quantity text and a number for a ratio; a number for a value with other units raises `UnitError`, not `TypeError`. `specify` and each call record as unknowns the values that the equations use and that nothing fixes, so `free` is needed only to release a fixed value. `roles` lists the role of each value as an `rk.specification.Role` (#290). | #255 D7, D8 |
@@ -401,6 +403,7 @@ them; the issues that the table names make the changes.
 | Fixed words are enums | Diagnostic codes are `rk.errors.Code` (#154); "the event does not happen" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings. | #255 D26 |
 | Date shift | `rk.duration.shift(value, by=)` is now `shift(on=, by=)`. `rk.duration.DateValue` (a date or `NEVER`) names its type. `shift` moves a date value by a length; `offset(value, frequency=, count=, month_roll=)` moves a date by whole steps of a Frequency. | #255 D14, D25, #389 |
 | Calendar grids | `containing_period(value, *, frequency=, week_start=, year_start_month=, origin=)` is now `containing_period(*, on=, grid=)`. The grid is `DayGrid()`, `WeekGrid(starts=calendar.Day.MONDAY)`, `MonthGrid(frequency=, year_starts=calendar.Month.JANUARY)` for months, quarters, half-years and years, or `MultiYearGrid(frequency=, origin=)` for bienniums, quinquenniums and decades. A grid takes only the choices that apply to it; a week grid takes no origin. | #399, #403 |
+| Bundle options | `rk.io.bundle.write(root, model, *, documents=, resolver=, geometry=, parquet=)` and `Reader(root, *, providers=, limits=, index=)`. `geometry=GeometrySources(directories={model_id: path}, providers={(provider, format, format_version): adapter})` replaces `geometry=`, `geometries=`, `provider=` and `providers=` of `write`; a pin with no provider uses `rk.io.geometry_providers`. `parquet=ParquetOptions(compression=, row_group_size=)` replaces `compression=` and `row_group_size=`. `limits=ReadLimits(documents=, bytes=, rows=)` replaces `max_documents=`, `max_bytes=` and `max_rows=`; `index=IndexCheck.SCHEMA` replaces `check_index=False`. `Reader` has no `provider=`. | #411, #422 |
 | Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215). | ADR-021, #255 D41, D42 |
 
 <!-- rename-map:end -->

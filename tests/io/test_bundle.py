@@ -1,6 +1,7 @@
 """Standalone schema/Parquet conformance without a source service."""
 
 from copy import deepcopy
+from hashlib import sha256
 from pathlib import Path
 from uuid import UUID
 
@@ -9,7 +10,16 @@ import yaml
 
 pytest.importorskip("pyarrow")
 from rangekeeper import Model
-from rangekeeper.io.bundle import Reader, model_digest, write
+from rangekeeper.errors import ContractError
+from rangekeeper.io.bundle import (
+    GeometrySources,
+    IndexCheck,
+    ParquetOptions,
+    Reader,
+    ReadLimits,
+    model_digest,
+    write,
+)
 from rangekeeper.schema.runtime import exact_equal
 
 ROOT = Path(__file__).parents[2]
@@ -31,7 +41,7 @@ def test_record_query_filters_in_parquet_without_arrow_materialization(
             ),
         )
     )
-    write(tmp_path / "bundle", model, row_group_size=64)
+    write(tmp_path / "bundle", model, parquet=ParquetOptions(row_group_size=64))
     reader = Reader(tmp_path / "bundle")
 
     def forbidden(*args, **kwargs):
@@ -131,12 +141,12 @@ def test_index_check_rejects_a_rehashed_index_unless_it_is_skipped(tmp_path):
     with pytest.raises(ValueError, match="Derived reference index"):
         Reader(root)
     # Skipping trusts an index verified earlier; the files still match their hashes.
-    reader = Reader(root, check_index=False)
+    reader = Reader(root, index=IndexCheck.SCHEMA)
     assert exact_equal(reader.model().to_data(), model.to_data())
     damaged = index.read_bytes()
     index.write_bytes(damaged[:-1] + bytes([damaged[-1] ^ 1]))
     with pytest.raises(ValueError):
-        Reader(root, check_index=False)
+        Reader(root, index=IndexCheck.SCHEMA)
 
 
 @pytest.mark.parametrize(
@@ -156,7 +166,7 @@ def test_presence_scalar_types_and_collection_order(tmp_path):
     data = yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
     model = Model.from_data(data)
     before = model.to_data()
-    write(tmp_path / "bundle", model, row_group_size=1)
+    write(tmp_path / "bundle", model, parquet=ParquetOptions(row_group_size=1))
     assert exact_equal(Reader(tmp_path / "bundle").model().to_data(), before)
     reordered = deepcopy(before)
     for name in ("entities", "relationships", "assemblies"):
@@ -185,4 +195,111 @@ def test_unknown_format_unsafe_inventory_and_limits(tmp_path):
             Reader(tmp_path / "bundle")
     path.write_text(json.dumps(original))
     with pytest.raises(ValueError):
-        Reader(tmp_path / "bundle", max_rows=1)
+        Reader(tmp_path / "bundle", limits=ReadLimits(rows=1))
+
+
+@pytest.mark.parametrize(
+    ("make", "error"),
+    [
+        (lambda: ParquetOptions(compression="zip"), ContractError),
+        (lambda: ParquetOptions(row_group_size=0), ContractError),
+        (lambda: ParquetOptions(row_group_size="1"), TypeError),
+        (lambda: ReadLimits(rows=0), ContractError),
+        (lambda: ReadLimits(documents=True), TypeError),
+        (lambda: GeometrySources(directories={"model": Path(".")}), TypeError),
+        (lambda: GeometrySources(providers={("a", "b", "1"): object()}), TypeError),
+    ],
+)
+def test_options_reject_a_wrong_type_or_value(make, error):
+    with pytest.raises(error):
+        make()
+
+
+def test_the_index_check_is_an_index_check(tmp_path):
+    model = Model.from_data(
+        dict(metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"))
+    )
+    write(tmp_path / "bundle", model)
+    with pytest.raises(TypeError, match="IndexCheck"):
+        Reader(tmp_path / "bundle", index=False)
+
+
+class _Provider:
+    """A Geometry provider that requires each pinned file and records each check."""
+
+    def __init__(self):
+        self.checked = []
+
+    def validate(self, path, geometry):
+        for entry in geometry.pin.files:
+            assert (path / entry.path).read_bytes()
+        self.checked.append(path)
+
+
+def _spatial_model(source):
+    from rangekeeper.model.geometry import inventory_digest
+
+    (source / "parts").mkdir(parents=True)
+    (source / "parts/a.dat").write_bytes(b"native geometry")
+    content = (source / "parts/a.dat").read_bytes()
+    files = [
+        dict(path="parts/a.dat", sha256=sha256(content).hexdigest(), size=len(content))
+    ]
+    pin = dict(
+        provider="synthetic",
+        format="test-format",
+        format_version="1",
+        specification="urn:synthetic:test:1",
+        specification_digest="1" * 64,
+        content_digest=inventory_digest(files),
+        files=files,
+    )
+    return Model.from_data(
+        dict(
+            metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"),
+            geometry=dict(pin=pin),
+        )
+    )
+
+
+def test_geometry_files_are_copied_and_checked_by_their_provider(tmp_path):
+    model = _spatial_model(tmp_path / "source")
+    provider = _Provider()
+    key = ("synthetic", "test-format", "1")
+    sources = GeometrySources(
+        directories={model.id: tmp_path / "source"}, providers={key: provider}
+    )
+    manifest = write(tmp_path / "bundle", model, geometry=sources)
+    assert manifest["geometry_paths"] == {str(model.id): "geometry"}
+    # The source, the copy, and the copy again when write reads the Bundle back.
+    assert len(provider.checked) == 3
+    reader = Reader(tmp_path / "bundle", providers={key: provider})
+    assert reader.geometry_path() == reader.root / "geometry"
+    reader.verify_geometry()
+    assert provider.checked[-1] == reader.root / "geometry"
+    with pytest.raises(ValueError, match="explicit provider"):
+        Reader(tmp_path / "bundle").verify_geometry()
+
+
+def test_geometry_needs_its_files_and_a_provider(tmp_path):
+    model = _spatial_model(tmp_path / "source")
+    key = ("synthetic", "test-format", "1")
+    with pytest.raises(ValueError, match="native files"):
+        write(
+            tmp_path / "none",
+            model,
+            geometry=GeometrySources(providers={key: _Provider()}),
+        )
+    with pytest.raises(ValueError, match="explicit provider"):
+        write(
+            tmp_path / "unchecked",
+            model,
+            geometry=GeometrySources(directories={model.id: tmp_path / "source"}),
+        )
+    other = UUID(int=2)
+    with pytest.raises(ValueError, match="no declared Model pin"):
+        write(
+            tmp_path / "unknown",
+            model,
+            geometry=GeometrySources(directories={other: tmp_path / "source"}),
+        )

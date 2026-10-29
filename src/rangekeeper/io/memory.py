@@ -18,6 +18,8 @@ from rangekeeper.run.validation import validated_in
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import MissingReferenceError
 
+__all__ = ["MemoryStore"]
+
 
 class MemoryStore:
     """An in-memory revision store of immutable, validated documents."""
