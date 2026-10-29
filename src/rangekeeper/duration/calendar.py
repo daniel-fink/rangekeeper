@@ -6,6 +6,8 @@ import calendar
 from datetime import date, timedelta
 from enum import Enum, unique
 
+from rangekeeper.shared.errors import ContractError
+
 
 @unique
 class Frequency(Enum):
@@ -101,6 +103,24 @@ def offset(
     require_month_roll(month_roll)
     if type(count) is not int:
         raise TypeError("count must be an integer")
+    try:
+        return _moved(value, frequency=frequency, count=count, month_roll=month_roll)
+    except (OverflowError, ValueError) as error:
+        raise ContractError(
+            f"{value.isoformat()} moved by {count} {frequency.value} steps is "
+            "outside the calendar, years 1 to 9999",
+            values={
+                "date": value.isoformat(),
+                "frequency": frequency.value,
+                "count": count,
+            },
+        ) from error
+
+
+def _moved(
+    value: date, *, frequency: Frequency, count: int, month_roll: MonthRoll
+) -> date:
+    """Return the date ``count`` steps from ``value``; the date module raises out of range."""
     days, months = frequency.step
     if days:
         return value + timedelta(days=count * days)
