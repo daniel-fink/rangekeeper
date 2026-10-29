@@ -932,9 +932,9 @@ removed:
     source: "ADR-013, #129"
   - name: rangekeeper.execution.executor.Executor
     replacement: >-
-      `rangekeeper.execution.execute(specification, store, config=)`, which
+      `rangekeeper.execution.execute(specification=, store=, config=)`, which
       returns an `Outcome`; read the Run as `outcome.run`. Use
-      `rangekeeper.execution.solve(specification, config=)` to write nothing
+      `rangekeeper.execution.solve(specification=, config=)` to write nothing
     status: agreed
     source: "ADR-013, #126"
   - name: rangekeeper.execution.publication.CandidateResolver
@@ -980,9 +980,20 @@ notes:
     source: "ADR-013, #128"
     note: >-
       `Executor(store, backend=, units=, tolerances=)` becomes
-      `execute(specification, store, config=ExecutionConfig(backend=, units=,
+      `execute(specification=, store=, config=ExecutionConfig(backend=, units=,
       tolerances=))`. `ExecutionConfig` also holds the default `limits` and
       the `backend_options`.
+  - topic: Execution calls
+    status: agreed
+    source: "#255 D14, #410"
+    note: >-
+      The arguments of `rk.execution.solve`, `execute`, `assemble`,
+      `assemble_batch`, `make_candidate` and `verify` are keyword-only:
+      `solve(specification, store)` is now `solve(specification=,
+      resolver=)`. The records of `rk.execution`, `rk.execution.backends`
+      and `rk.execution.rule` take keyword arguments only, for example
+      `Limits(time_limit=)`, `Tolerances(absolute=, relative=)` and
+      `BackendResult(termination=, candidate=)`.
   - topic: Resample options
     status: agreed
     source: "#399, #405"

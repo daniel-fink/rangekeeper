@@ -278,13 +278,13 @@ def test_rule_result_normalizes_and_checks_outcomes():
         terminated=False,
     )
     supplied = [outcome]
-    result = RuleResult(supplied)
+    result = RuleResult(evidence=supplied)
     supplied.clear()
     assert result.evidence == (outcome,) and result.assignments == (assignment,)
     with pytest.raises(FrozenInstanceError):
         result.evidence = ()
     with pytest.raises(TypeError):
-        RuleResult([assignment])
+        RuleResult(evidence=[assignment])
 
 
 def test_execution_manifest_tracks_actual_currency_catalogue(monkeypatch):

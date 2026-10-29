@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Analysis:
     """What the rows of an affine problem fix, independent of any backend.
 
@@ -79,7 +79,7 @@ def undetermined(
         for column, pivot in pivots.items():
             factor = row.get(column)
             if factor:
-                row = _eliminate(row, pivot, factor, tolerance)
+                row = _eliminate(row, pivot, factor=factor, tolerance=tolerance)
         if not row:
             continue
         column = max(row, key=lambda key: abs(row[key]))
@@ -88,7 +88,9 @@ def undetermined(
         for other, pivot in pivots.items():
             factor = pivot.get(column)
             if factor:
-                pivots[other] = _eliminate(pivot, row, factor, tolerance)
+                pivots[other] = _eliminate(
+                    pivot, row, factor=factor, tolerance=tolerance
+                )
         pivots[column] = row
     found = set()
     for column, row in pivots.items():
@@ -100,6 +102,7 @@ def undetermined(
 def _eliminate(
     row: Mapping[UUID, float],
     pivot: Mapping[UUID, float],
+    *,
     factor: float,
     tolerance: float,
 ) -> dict[UUID, float]:

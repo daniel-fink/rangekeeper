@@ -63,11 +63,11 @@ class Attempt:
 
     def __init__(
         self,
-        config: ExecutionConfig,
-        backend: Backend,
         specification: Specification,
         view: Composition | ValidationError,
         *,
+        config: ExecutionConfig,
+        backend: Backend,
         resolver: DocumentResolver,
     ) -> None:
         self.config, self.backend = config, backend
@@ -299,12 +299,14 @@ class Attempt:
         self.completion, self.solution = ending.completion, ending.solution
         if ending.verify and result.candidate is not None and staged.ended is None:
             candidate = publication.make_candidate(
-                self.binding,
-                {**result.candidate, **staged.determined},
+                binding=self.binding,
+                unknowns={**result.candidate, **staged.determined},
                 run_id=self.run_id,
             )
             checked = acceptance.verify(
-                self.binding, candidate, tolerances=self.config.tolerances
+                binding=self.binding,
+                candidate=candidate,
+                tolerances=self.config.tolerances,
             )
             units = unit_systems.describe(self.binding.units)
             self.implementations.extend(
@@ -422,8 +424,8 @@ class Attempt:
             rule_evidence=() if self.binding is None else self.binding.rule_evidence,
         )
         return assembly.assemble(
-            self.specification,
-            report,
+            specification=self.specification,
+            report=report,
             id=self.run_id,
             output=self.output,
         )

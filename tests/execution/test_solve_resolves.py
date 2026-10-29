@@ -16,7 +16,7 @@ from tests.execution.lesson02 import MODEL, back, q, store
 def test_solve_needs_no_resolver_for_a_specification_of_a_model():
     back_outcome = solve(specification=back())
     back_outcome.raise_for_status()
-    with_store = solve(back(), store())
+    with_store = solve(specification=back(), resolver=store())
     assert isclose(actual=back_outcome["land_cost"], expected=with_store["land_cost"])
 
 
@@ -48,4 +48,4 @@ def test_a_specification_read_from_data_needs_a_resolver():
     detached = Specification.from_data(back().to_data())
     with pytest.raises(MissingReferenceError, match="pass resolver="):
         solve(specification=detached)
-    assert solve(detached, store()).status is Status.FEASIBLE
+    assert solve(specification=detached, resolver=store()).status is Status.FEASIBLE

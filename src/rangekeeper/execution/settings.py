@@ -8,7 +8,7 @@ from rangekeeper.schema.records import Diagnostic, Settings
 from rangekeeper.shared.codes import Code
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Limits:
     """The budget of one leaf attempt.
 
@@ -86,14 +86,14 @@ def resolve(
             )
         )
     return Limits(
-        time,
-        iterations,
-        (
+        time_limit=time,
+        iteration_limit=iterations,
+        symbol_limit=(
             requested.symbol_limit
             if requested and requested.symbol_limit is not None
             else defaults.symbol_limit
         ),
-        (
+        constraint_limit=(
             requested.constraint_limit
             if requested and requested.constraint_limit is not None
             else defaults.constraint_limit

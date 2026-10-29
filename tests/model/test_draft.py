@@ -442,7 +442,7 @@ def test_a_committed_model_solves():
     )
     store = MemoryStore()
     store.put(model)
-    run = execute(specification, store).run
+    run = execute(specification=specification, store=store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE
     solved = store.load_model(run.record.outputs[0])
     assert solved.value(total).quantity == rk.Quantity(text="50e6 AUD")

@@ -178,7 +178,7 @@ def test_cases_that_share_a_key_do_not_pair():
     # Two hand-made cases of one Specification have its name as their key.
     leaves = [back(), back()]
     two = batch_of(*leaves)
-    outcome = solve(two, store(*leaves, two))
+    outcome = solve(specification=two, resolver=store(*leaves, two))
     assert [case.key for case in outcome.cases] == [leaves[0].metadata.name] * 2
     with pytest.raises(ContractError, match="unique key") as raised:
         compare(

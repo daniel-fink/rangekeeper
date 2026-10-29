@@ -56,9 +56,9 @@ class Overlay:
 
 
 def assemble(
+    *,
     specification: Specification,
     report: Report,
-    *,
     id: UUID,
     output: Model | None,
 ) -> Outcome:
@@ -76,10 +76,14 @@ def assemble(
             report=report,
         )
     )
-    return Outcome(run, () if output is None else (output,))
+    return Outcome(run=run, outputs=() if output is None else (output,))
 
 
-def assemble_batch(specification: Specification, cases: Sequence[Outcome]) -> Outcome:
+def assemble_batch(
+    *,
+    specification: Specification,
+    cases: Sequence[Outcome],
+) -> Outcome:
     """Make the Outcome of a batch from the Outcomes of its direct cases.
 
     The batch Run spawns each case Run. Its outputs are the unique union of
@@ -117,4 +121,4 @@ def assemble_batch(specification: Specification, cases: Sequence[Outcome]) -> Ou
             ),
         )
     )
-    return Outcome(run, tuple(outputs.values()), tuple(cases))
+    return Outcome(run=run, outputs=tuple(outputs.values()), cases=tuple(cases))

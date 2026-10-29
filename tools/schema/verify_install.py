@@ -326,7 +326,7 @@ for store in (MemoryStore(), DirectoryStore(Path('revisions'))):
     spec = yaml.read(examples / 'specification-composed-forward.yaml', kind=rk.Specification)
     assert spec.compose(resolver=store).validate(resolver=store).valid
     from rangekeeper.execution import execute
-    unavailable = execute(spec, store).run
+    unavailable = execute(specification=spec, store=store).run
     assert unavailable.report.status.completion is CompletionStatus.FAILED
     assert unavailable.report.status.solution is SolutionStatus.NOT_ASSESSED
     assert any(d.code == 'backend_unavailable' for d in unavailable.report.diagnostics)
@@ -409,14 +409,14 @@ model = yaml.read(Path('examples/model.yaml'), kind=rk.Model)
 store.put(model)
 for name in ('specification-common', 'specification-composed-forward', 'specification-composed-inverse'):
     store.put(yaml.read(Path('examples') / (name + '.yaml'), kind=rk.Specification))
-forward = execute(yaml.read(Path('examples/specification-composed-forward.yaml'), kind=rk.Specification), store).run
+forward = execute(specification=yaml.read(Path('examples/specification-composed-forward.yaml'), kind=rk.Specification), store=store).run
 assert forward.report.status.solution is SolutionStatus.FEASIBLE, forward.report
 first = store.load_model(forward.record.outputs[0])
 assert abs(first.value(UUID('a947d40b-d9b0-54cb-a2a4-f8f598405ac2')).quantity.magnitude - 11000000) < 1e-6
 data = yaml.read(Path('examples/specification-inverse.yaml'), kind=rk.Specification).to_data()
 data['metadata']['id'] = str(uuid4())
 data['model'] = str(first.id)
-inverse = execute(rk.Specification.from_data(data), store).run
+inverse = execute(specification=rk.Specification.from_data(data), store=store).run
 second = store.load_model(inverse.record.outputs[0])
 assert abs(second.value(UUID('e3fb1434-5371-5bcb-b0b8-e3af2bf65022')).quantity.magnitude - 27500) < 1e-6
 assert second.metadata.previous == first.id
