@@ -13,15 +13,17 @@ from rangekeeper.shared.errors import (
 )
 
 
-class OutcomeError(RangekeeperError, RuntimeError):
+class OutcomeError(RangekeeperError, ValueError):
     """An Outcome's status has no more specific error.
 
     ``Outcome.raise_for_status()`` raises it for an underdetermined or
     infeasible solve, and for a limit or failure that no other error names.
     ``status`` is the Outcome's ``Status``; ``code`` is the code of the
-    diagnostic that gives the reason. ``document`` and ``target`` locate it
-    when they are known.
+    diagnostic that gives the reason, by default ``solver_termination``.
+    ``document`` and ``target`` locate it when they are known.
     """
+
+    code = Code.SOLVER_TERMINATION
 
     def __init__(
         self,
@@ -34,7 +36,8 @@ class OutcomeError(RangekeeperError, RuntimeError):
     ) -> None:
         super().__init__(message)
         self.status = status
-        self.code = Code.SOLVER_TERMINATION if code is None else Code(code)
+        if code is not None:
+            self.code = Code(code)
         self.document = document
         self.target = target
 
