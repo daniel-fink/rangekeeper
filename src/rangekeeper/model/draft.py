@@ -15,8 +15,11 @@ from uuid import UUID, uuid4
 
 from rangekeeper.duration import Period
 from rangekeeper.flow import Flow, Movement
+from rangekeeper.model.expression import text as equation_text
+from rangekeeper.model.expression.text import RESERVED
 from rangekeeper.model.formulation.authoring import identify
 from rangekeeper.model.update import Update
+from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.enums import ExpressionKind, Operator, ValueKind
 from rangekeeper.schema.records import (
     Assembly,
@@ -39,6 +42,7 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
     ContractError,
+    EquationError,
     MissingReferenceError,
     RevisionConflictError,
 )
@@ -46,8 +50,6 @@ from rangekeeper.shared.errors import (
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model
 
-# Words that equation text reserves; a value key cannot be one of them.
-RESERVED = frozenset({"rx", "rk", "NEVER"})
 # The Taxonomy that holds a classification given by code for an Entity or a
 # Relationship, when no Taxonomy has that code yet.
 ENTITY_TAXONOMY = "entity"
@@ -67,6 +69,31 @@ _RELATIONS = frozenset(
         Operator.LOGICAL_OR,
     }
 )
+
+
+@dataclass(frozen=True, slots=True)
+class _Names:
+    """The names that equation text on one entity of a draft can use."""
+
+    draft: "ModelDraft"
+    owner: UUID
+
+    @property
+    def units(self) -> UnitSystem:
+        """The unit system of the draft's Model."""
+        return self.draft._base.unit_system
+
+    def value(self, path: tuple[str, ...]) -> UUID:
+        """Return the UUID of the Value of a key, or of an entity code and a key."""
+        if len(path) == 1:
+            return self.draft._ref(self.owner, path[0]).id
+        code, key = path
+        owner = self.draft._owner(self.owner)
+        if code in owner.keys:
+            raise MissingReferenceError(
+                ".".join(path), kind="Value", by="path", where=f"Entity {owner.path}"
+            )
+        return self.draft._ref(self.draft.entity(code=code).id, key).id
 
 
 @dataclass(frozen=True, slots=True)
@@ -200,13 +227,17 @@ class EntityHandle:
         """
         return self._draft._ref(self._id, require_text(key, "key"))
 
-    def equations(self, *equations: Expression) -> None:
+    def equations(self, *equations: str | Expression) -> None:
         """Add one equation or several to the entity's default Formulation.
 
-        Each equation is a Boolean Expression record, such as an equality or a
-        bound. Every Value that it references must be declared in the draft or
-        in its Model. The default Formulation is the root Formulation whose code
-        is the entity's code; the draft makes it when it is absent.
+        An equation is equation text, such as ``"noi = coverage * debt_service"``,
+        or a Boolean Expression record. It is an equality or a bound. Text names
+        the keys of this entity, and ``code.key`` names a key of another entity;
+        each name must be declared in the draft or in its Model. Text that does
+        not make an equation raises EquationError with the position of the part
+        that fails, and no equation of the call is added. The default
+        Formulation is the root Formulation whose code is the entity's code; the
+        draft makes it when it is absent.
         """
         self._draft._add_equations(self._id, equations)
 
@@ -644,22 +675,18 @@ class ModelDraft:
             )
         return ValueHandle(value.id, key, owner_id, units)
 
-    def _add_equations(self, owner_id: UUID, equations: Sequence[Expression]) -> None:
+    def _add_equations(
+        self,
+        owner_id: UUID,
+        equations: Sequence[str | Expression],
+    ) -> None:
         self._require_open()
         owner = self._owner(owner_id)
         if not equations:
             raise TypeError("equations takes at least one equation")
-        for equation in equations:
-            if isinstance(equation, str):
-                raise TypeError(
-                    "equation text is not supported yet; pass an Expression record"
-                )
-            if not isinstance(equation, Expression):
-                raise TypeError("each equation must be an Expression record")
-            if not _relation(equation):
-                raise ValueError(
-                    "an equation must be Boolean, such as an equality or a bound"
-                )
+        names = _Names(self, owner_id)
+        records = [_equation(item, names=names) for item in equations]
+        for equation in records:
             for target in _targets(equation.to_data()):
                 if target not in self._known:
                     raise MissingReferenceError(
@@ -667,7 +694,7 @@ class ModelDraft:
                     )
         formulation = self._default_formulation(owner)
         pending = self._equations.setdefault(formulation, [])
-        for equation in equations:
+        for equation in records:
             pending.append(
                 (
                     equation,
@@ -844,6 +871,26 @@ def _find(records, selector, *, kind: str, where: str, by: str = "code"):
         where=where,
         candidates=get_close_matches(selector, names, n=3),
     )
+
+
+def _equation(item: str | Expression, *, names: _Names) -> Expression:
+    """Return the record of one equation: its text parsed, or the record given."""
+    if isinstance(item, str):
+        record = equation_text.parse(item, names=names)
+        if not _relation(record):
+            raise EquationError(
+                "an equation must be Boolean, such as an equality or a bound",
+                code=Code.PREDICATE,
+                text=item,
+                start=0,
+                end=len(item),
+            )
+        return record
+    if not isinstance(item, Expression):
+        raise TypeError("each equation must be equation text or an Expression record")
+    if not _relation(item):
+        raise ValueError("an equation must be Boolean, such as an equality or a bound")
+    return item
 
 
 def _relation(expression: Expression) -> bool:

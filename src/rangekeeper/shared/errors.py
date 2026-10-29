@@ -410,3 +410,52 @@ class ExtensionConflictError(RangekeeperError, ValueError):
     """Two implementations claim one name at one extension point."""
 
     code = Code.EXTENSION_CONFLICT
+
+
+class EquationError(RangekeeperError, ValueError):
+    """Equation text that does not make an equation, with the part that fails.
+
+    ``text`` is the equation text, and ``text[start:end]`` is the part that
+    fails; the message marks it. ``code`` says why: ``EQUATION_SYNTAX`` for
+    text that does not parse, ``REFERENCE_MISSING`` or ``REFERENCE_AMBIGUOUS``
+    for a name that matches no value or several, ``UNITS`` for the units of a
+    literal, ``EQUATION_FUNCTION`` for a function, method or member that
+    equation text cannot use, and ``PREDICATE`` for text that is not Boolean,
+    such as an expression with no comparison. ``suggestions`` gives text to try
+    instead, when any is close.
+    """
+
+    code = Code.EQUATION_SYNTAX
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        text: str,
+        start: int,
+        end: int,
+        suggestions: Iterable[str] = (),
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        super().__init__(message, **fields)
+        self.text = text
+        self.start = start
+        self.end = end
+        self.suggestions = tuple(suggestions)
+
+    def __str__(self) -> str:
+        marker = " " * self.start + "^" * max(self.end - self.start, 1)
+        return f"{self.args[0]}\n  {self.text}\n  {marker}"
+
+    def _arguments(self) -> tuple[Any, ...]:
+        # The message without the text and the marker that ``__str__`` adds.
+        return (self.args[0],)
+
+    def _fields(self) -> dict[str, Any]:
+        return {
+            **super()._fields(),
+            "text": self.text,
+            "start": self.start,
+            "end": self.end,
+            "suggestions": self.suggestions,
+        }

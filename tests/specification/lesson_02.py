@@ -1,21 +1,12 @@
-"""Lesson 02's Model, with its equations as Expression records.
+"""Lesson 02's Model, with the equations of cell 5 as equation text.
 
-Equation text is not supported yet (#145), so the equations of cell 5 are
-written with ``rangekeeper.model.expression.authoring``. The solve does not yet
-evaluate a product of fixed values before the affine stage (G09), so the
-reference income of cell 6b is a fixed total here.
+The solve does not yet evaluate a product of fixed values before the affine
+stage (G09), so the reference income of cell 6b is a fixed total here.
 """
 
 from uuid import UUID
 
 import rangekeeper as rk
-from rangekeeper.model.expression.authoring import (
-    add,
-    equal,
-    multiply,
-    reference,
-)
-from rangekeeper.schema.records import Reference
 
 UNITS = {
     "land_cost": "AUD",
@@ -55,27 +46,17 @@ def lesson_02_model(
     model = rk.Model(name=name, namespace=namespace)
     draft = model.edit()
     project = draft.add_entity(code="project", classification="project")
-    handles = {
-        key: project.value(key=key, units=units)
-        for key, units in UNITS.items()
-        if operating_cost or key != "operating_cost"
-    }
-
-    def ref(key):
-        return reference(Reference(target=handles[key].id))
-
+    for key, units in UNITS.items():
+        if operating_cost or key != "operating_cost":
+            project.value(key=key, units=units)
     project.equations(
-        equal(ref("total_cost"), add(ref("land_cost"), ref("works_cost"))),
-        equal(ref("mortgage"), multiply(ref("leverage"), ref("total_cost"))),
-        equal(ref("debt_service"), multiply(ref("mortgage_constant"), ref("mortgage"))),
-        equal(ref("noi"), multiply(ref("coverage"), ref("debt_service"))),
-        equal(
-            ref("effective_income"),
-            add(ref("noi"), ref("operating_cost")) if operating_cost else ref("noi"),
-        ),
-        equal(
-            ref("effective_income"),
-            multiply(ref("rent_factor"), ref("reference_income")),
-        ),
+        "total_cost = land_cost + works_cost",
+        "mortgage = leverage * total_cost",
+        "debt_service = mortgage_constant * mortgage",
+        "noi = coverage * debt_service",
+        "effective_income = noi + operating_cost"
+        if operating_cost
+        else "effective_income = noi",
+        "effective_income = rent_factor * reference_income",
     )
     return draft.commit()

@@ -182,6 +182,26 @@ def test_unsupported_error_keeps_its_fields_through_pickle():
     )
 
 
+def test_equation_error_marks_the_part_that_fails_and_keeps_it_through_pickle():
+    error = errors.EquationError(
+        "unexpected 'c'",
+        text="a = b c",
+        start=6,
+        end=7,
+        suggestions=["*"],
+    )
+    assert error.code is Code.EQUATION_SYNTAX
+    assert str(error) == "unexpected 'c'\n  a = b c\n        ^"
+    copy = pickle.loads(pickle.dumps(error))
+    assert (str(copy), copy.code, copy.start, copy.end, copy.suggestions) == (
+        str(error),
+        Code.EQUATION_SYNTAX,
+        6,
+        7,
+        ("*",),
+    )
+
+
 def test_error_names_do_not_clash_with_dependency_errors():
     modules = ["jsonschema", "jsonschema.exceptions", "pint", "pint.errors", "moneyed"]
     modules += ["polars", "polars.exceptions", "pyarrow", "duckdb", "numpy"]

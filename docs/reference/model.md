@@ -54,17 +54,14 @@ replace those of the new revision; by default it keeps them.
 
 ```python
 import rangekeeper as rk
-from rangekeeper.model.expression.authoring import add, equal, reference
-from rangekeeper.schema.records import Reference
 
 model = rk.Model(name="Feasibility")
 draft = model.edit()
 project = draft.add_entity(code="project", classification="project")
-land = project.value(key="land_cost", units="AUD")
-works = project.value(key="works_cost", units="AUD")
+project.value(key="land_cost", units="AUD")
+project.value(key="works_cost", units="AUD")
 total = project.value(key="total_cost", units="AUD")
-ref = lambda handle: reference(Reference(target=handle.id))
-project.equations(equal(ref(total), add(ref(land), ref(works))))
+project.equations("total_cost = land_cost + works_cost")
 model = draft.commit()
 
 draft = model.edit()
@@ -90,7 +87,7 @@ model = draft.commit()
 | `flow(key=, units=, periods=None, description=None)` | A Flow Value. With `periods`, it has one unresolved Movement in each Period; without, its Periods come from its equations |
 | `date(key=, description=None)` | A date Value with no units and no recorded date; returns its `ValueHandle` ([value kinds](#value-kinds)) |
 | `ref(key=)` | The handle of a Value of the entity, declared now or in an earlier revision |
-| `equations(*equations)` | Adds Boolean Expression records to the entity's default Formulation |
+| `equations(*equations)` | Adds equations to the entity's default Formulation: [equation text](expressions.md#equation-text), such as `"total_cost = land_cost + works_cost"`, or Boolean Expression records |
 
 A `ValueHandle` has the Value's `id`, `key`, `owner` (the UUID of its entity) and
 declared `units`, or `None` for a date.
@@ -108,10 +105,13 @@ declared `units`, or `None` for a date.
   Taxonomy has is declared under the root of the `entity` Taxonomy, or of the
   `relationship` Taxonomy for a Relationship; a code that several Taxonomies
   have raises `AmbiguousReferenceError`.
-- An equation is an Expression record whose root is Boolean: an equality, a
-  comparison, a logical operation, a Boolean literal or a call. Every Value or
-  Movement that it references must be in the Model or the draft. Equation text
-  is not supported yet.
+- An equation is equation text or an Expression record whose root is Boolean:
+  an equality, a comparison, a logical operation, a Boolean literal or a call.
+  Text names the keys of its entity, and `code.key` names a key of another
+  entity. Every Value or Movement that it references must be in the Model or
+  the draft. Text that does not make an equation raises `EquationError` with
+  the position of the part that fails, and the call adds no equation
+  ([equation text](expressions.md#equation-text)).
 - The default Formulation of an entity is the root Formulation whose code is the
   entity's code (or its UUID when it has no code). The draft makes it when the
   entity's first equation is added.
