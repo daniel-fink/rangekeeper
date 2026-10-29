@@ -10,13 +10,22 @@ principle 10).
 
 | Module | Contents |
 | --- | --- |
-| `plot` | Notebook display: `show_plot`, `show_flows`, `show_graph`, `show_sunburst`, `show_timeline`, `show_relations` and `show_geometry` |
+| `data` | `load_property(year=)`: the totals of the mixed-use property in a stabilised year, each with its origin, from the [data package](../../data/mixed_use_property/README.md) |
+| `plot` | Notebook display: `show_plot`, `show_flows`, `show_graph`, `show_sunburst`, `show_timeline`, `show_equations`, `show_relations` and `show_geometry` |
 | `theme`, `theme.js` | The shared Plotly style and the light/dark bridge |
 | `chart` | Plotly charts of Flows, hierarchies and distributions |
 | `graph` | PyVis graph display of a View |
 | `local` | `LocalDisplay`, a read-only loopback file server for notebook iframes |
 | `speckle`, `speckle_contract.json` | The canonical design envelope, below |
 | `geometry`, `assets/geometry/` | The local geometry viewer and its verified assets, with `SPECKLE-LICENSE`; the [viewer build](../viewer/README.md) makes the assets |
+
+The lessons import `load_property`, `show_equations` and `show_geometry` from
+`helpers` directly. `load_property` reads the derived totals file of the data
+package and does no arithmetic;
+[`derive_totals.py`](../../data/derive_totals.py) derives the file and documents
+each total. The works cost includes the plan's soft costs, contingency and
+construction finance allowance. `show_equations(of=)` draws a Model's equations,
+or a Specification's fixed and free values, with no calculation direction.
 
 The [walkthrough guide](../../../docs/guides/walkthroughs.md#shared-chart-style)
 describes the chart style and the local display. The helper tests are in

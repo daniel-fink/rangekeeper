@@ -1,0 +1,66 @@
+{
+  "description": "Totals of the mixed-use property in the stabilised year 2032. Derived by examples/data/derive_totals.py; recreate the file, do not edit it by hand.",
+  "year": 2032,
+  "from": [
+    "inventory.csv",
+    "assumptions.json",
+    "development.json"
+  ],
+  "totals": {
+    "works_cost": {
+      "magnitude": 113776328.13642778,
+      "units": "AUD",
+      "origin": "GFA × construction rate by use, + 10% soft costs + 10% contingency, + 4 million AUD finance allowance"
+    },
+    "operating_cost": {
+      "magnitude": 7444605.018645148,
+      "units": "AUD pa",
+      "origin": "Floor and facade OPEX of all uses, grown 3.5% pa for 5 years"
+    },
+    "hotel_area": {
+      "magnitude": 9373.35204312769,
+      "units": "sqm",
+      "origin": "inventory.csv GFA × efficiency 0.8"
+    },
+    "hotel_rent": {
+      "magnitude": 890.7647292351559,
+      "units": "AUD per sqm pa",
+      "origin": "750 AUD per sqm pa, grown 3.5% pa for 5 years"
+    },
+    "hotel_vacancy": {
+      "magnitude": 2.5,
+      "units": "%",
+      "origin": "assumptions.json"
+    },
+    "residential_area": {
+      "magnitude": 10313.294244529236,
+      "units": "sqm",
+      "origin": "inventory.csv GFA × efficiency 0.75"
+    },
+    "residential_rent": {
+      "magnitude": 784.1760038456248,
+      "units": "AUD per sqm pa",
+      "origin": "600 AUD per sqm pa, grown 5.5% pa for 5 years"
+    },
+    "residential_vacancy": {
+      "magnitude": 1.5,
+      "units": "%",
+      "origin": "assumptions.json"
+    },
+    "retail_area": {
+      "magnitude": 1571.2745638994745,
+      "units": "sqm",
+      "origin": "inventory.csv GFA × efficiency 0.675"
+    },
+    "retail_rent": {
+      "magnitude": 1435.6293261718747,
+      "units": "AUD per sqm pa",
+      "origin": "1000 AUD per sqm pa, grown 7.5% pa for 5 years"
+    },
+    "retail_vacancy": {
+      "magnitude": 7.5,
+      "units": "%",
+      "origin": "assumptions.json"
+    }
+  }
+}

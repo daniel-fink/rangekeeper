@@ -11,7 +11,7 @@ check the lessons.
 | --- | --- |
 | `NN_slug.ipynb` | The lessons, in reading order. Lessons have no outputs in git |
 | [`proposed/`](proposed/README.md) | The proposed cells for each lesson and the design decisions D1–D44. The cells target the 1.0 API and do not run yet |
-| [`helpers/`](helpers) | Presentation helpers: chart style and charts (`theme`, `chart`, `plot`), graph display (`graph`), local display (`local`), the canonical Speckle envelope (`speckle`) and the geometry viewer (`geometry` and its assets) |
+| [`helpers/`](helpers) | Presentation helpers: the property totals (`data`), chart style and charts (`theme`, `chart`, `plot`), graph display (`graph`), local display (`local`), the canonical Speckle envelope (`speckle`) and the geometry viewer (`geometry` and its assets) |
 | [`viewer/`](viewer/README.md) | The source and build of the geometry viewer |
 | [`resources/`](resources/README.md) | Images that the lessons show, with their rights |
 | [`tests/`](tests) | Helper tests, lesson checks and the fresh-kernel run of each lesson |
@@ -28,8 +28,9 @@ check the lessons.
 | [06](06_project_structure.ipynb) | Project structure | [#208](https://github.com/daniel-fink/rangekeeper/issues/208) |
 | [07](07_policies_and_graph.ipynb) | Rules and design options | [#244](https://github.com/daniel-fink/rangekeeper/issues/244) |
 
-Lesson 01 runs the [proposed cells](proposed/01_basic_dcf.md). The other lessons
-are skeletons until their issues are done.
+Lessons 01 and 02 run their proposed cells ([01](proposed/01_basic_dcf.md),
+[02](proposed/02_front_door_back_door.md)). The other lessons are skeletons until
+their issues are done.
 
 ## Run the lessons
 

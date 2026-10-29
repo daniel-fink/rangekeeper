@@ -12,14 +12,18 @@ cannot support a cell is a gap, filed under
 These files are not notebooks and do not run. The lessons
 ([#203](https://github.com/daniel-fink/rangekeeper/issues/203)–[#208](https://github.com/daniel-fink/rangekeeper/issues/208),
 [#244](https://github.com/daniel-fink/rangekeeper/issues/244)) are authored from them
-when the library work lands. Lesson 01 is authored: its notebook runs the cells of
-[01_basic_dcf.md](01_basic_dcf.md), which lists where they differ from the first
-proposal.
+when the library work lands. Lessons 01 and 02 are authored: their notebooks run
+the cells of [01_basic_dcf.md](01_basic_dcf.md) and
+[02_front_door_back_door.md](02_front_door_back_door.md). Each file lists where its
+cells differ from the first proposal. In lesson 02, the `rx` aside waits on
+[#309](https://github.com/daniel-fink/rangekeeper/issues/309) and is prose in the
+notebook, and no infeasible diagnostic names the equations that disagree yet (cell
+19).
 
 | Lesson | File | Core cells |
 | --- | --- | --- |
 | 01 Basic discounted cash flow | [01_basic_dcf.md](01_basic_dcf.md) | 20 |
-| 02 Front door, back door | [02_front_door_back_door.md](02_front_door_back_door.md) | 21 + 4 optional |
+| 02 Front door, back door | [02_front_door_back_door.md](02_front_door_back_door.md) | 22 + 4 optional |
 | 03 Cases, debt and equity | [03_cases_debt_equity.md](03_cases_debt_equity.md) | 24 + 3 optional |
 | 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 17 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 18 + 2 optional |
@@ -458,7 +462,14 @@ Not filed as gaps:
   Quantity by key, such as `plan["a_cost"]`), `load_fragment`, `data_path`,
   `show_equations`, `show_timeline`, `show_geometry`, `show_graph`,
   `show_decisions`, `plot_paths`, `plot_cash_flows`, `plot_flows`,
-  `plot_target_curve` and `plot_decisions`. Notes for that work:
+  `plot_target_curve` and `plot_decisions`. Lesson 02 added `load_property`,
+  `show_equations(of=)` and `show_geometry(name=)` to the
+  [walkthrough helpers](../helpers/README.md). `load_property` only loads: the
+  data package holds the totals as a derived file, `totals_2032.json`, with a
+  manifest entry, and
+  [`derive_totals.py`](../../data/derive_totals.py) derives it from the inventory
+  and the teaching assumptions. A test checks that the file is that derivation.
+  Notes for that work:
   - **Drawing stack.** Plotly (plotly.js, with a local bundle and the shared light
     and dark theme) draws the charts, the timeline and the equation network.
     vis-network (through PyVis, which leaves the library under ADR-010) draws the

@@ -64,6 +64,13 @@
       "origin": "derived",
       "sha256": "73142b6dc1e89b054046befd38426682fac19068bea0c6589522360b26aa042a"
     },
+    "totals_2032.json": {
+      "bytes": 1935,
+      "description": "Totals of the property in the stabilised year 2032 for walkthrough lesson 02: lettable area, rent and vacancy by use, operating cost and works cost, each with its origin. examples/data/derive_totals.py derives it from inventory.csv, assumptions.json and development.json.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
+      "sha256": "a322537d558236026846a0ea7c14133683490a1a228ef73b864cae2cd1bb7832"
+    },
     "transport.json.gz": {
       "bytes": 2380678,
       "description": "The complete original transport records of Speckle project c0f66c35e3, model 119ad04487, object e7acaac21ae7e9369339900a4aaeb827, with the property and its context geometry. Received with specklepy 3.0.7; JSON is gzip-compressed.",
@@ -85,7 +92,7 @@
   "normalisation": "Resolve all references; remove only __closure indexes for conversion; preserve original content IDs.",
   "origin_vocabulary": {
     "author": "Written by the Rangekeeper author.",
-    "derived": "Made from the source capture by the conversion. Recreate it; do not edit it by hand.",
+    "derived": "Made from other files in this folder: from the source capture by the conversion, or by a script that its description names. Recreate it; do not edit it by hand.",
     "source": "Captured from the pinned source without change, except compression.",
     "teaching-assumptions": "Teaching inputs. They are not market estimates or measurements of the source."
   },

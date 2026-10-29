@@ -4,6 +4,30 @@ Issue: [#204](https://github.com/daniel-fink/rangekeeper/issues/204). Plan:
 [ADR-020 §02](../../../docs/decisions/020-walkthrough-plan-v2.md#02-front-door-back-door).
 API conventions and the gap list: [README](README.md).
 
+The lesson notebook [`02_front_door_back_door.ipynb`](../02_front_door_back_door.ipynb)
+runs these cells ([#204](https://github.com/daniel-fink/rangekeeper/issues/204)).
+These places differ from the first proposal, and this file now shows the notebook's
+form:
+
+- Cell 1 imports `helpers` before `rangekeeper`, which is the order of the
+  project's import sorting, and does not import `date`, which no cell uses.
+- Cell 3 converts the works cost with `float()`. A Quantity's `magnitude` is a
+  `Decimal`, and Python does not multiply a `Decimal` by a float such as `0.0860`.
+  The narrative says why.
+- Cell 9 is two cells, 9 and 9b. A notebook shows only the last expression of a
+  cell, so `payment` in the middle of cell 9 showed nothing.
+- The "Under the hood" aside about `rx` is prose in the notebook, with no code.
+  `rangekeeper.expressions` and `project.ref(key=)` wait on
+  [#309](https://github.com/daniel-fink/rangekeeper/issues/309); the aside below
+  keeps the proposed code.
+- Section 8 has a short narrative that explains the result of cell 17: with less
+  leverage, the supportable land price rises.
+- Cell 18: `free_unknowns` gives every undetermined unknown in Model order (D7),
+  so the comment lists all seven.
+- Cell 19: the infeasible outcome's diagnostics give the solver's evidence
+  (`solver_scaling`, `solver_termination`). No diagnostic names the equations that
+  disagree yet, so the comment and the section narrative do not say that one does.
+
 ## Goals box
 
 > **Question.** What rent must the property earn to support its cost? What land price
@@ -37,10 +61,9 @@ data package records the origin of each number.
 
 ```python
 # cell 1
-from datetime import date
+import helpers
 
 import rangekeeper as rk
-import helpers
 ```
 
 ```python
@@ -60,13 +83,14 @@ helpers.show_geometry(name="mixed_use_property")
 ## 2. A calculation has a direction
 
 Narrative: a spreadsheet calculates in one direction. Start from the cost and
-calculate the income that a lender needs. Do it once in plain Python. Then ask the
+calculate the income that a lender needs. Do it once in plain Python. A Quantity's
+`magnitude` is a `Decimal`, so `float()` makes it a plain number. Then ask the
 reverse question: what land price does a given income support? The spreadsheet needs
 new formulas. The equations did not change; only the question did.
 
 ```python
 # cell 3
-total_cost = 20e6 + data["works_cost"].magnitude
+total_cost = 20e6 + float(data["works_cost"].magnitude)
 debt_service = 0.0860 * 0.65 * total_cost
 required_noi = 1.25 * debt_service
 required_noi  # AUD per year, calculated from cost to income
@@ -154,7 +178,9 @@ model = draft.commit()
 helpers.show_equations(of=model)  # a diagram with no input or output arrows
 ```
 
-> **Under the hood: the same equation in Python.** `rangekeeper.expressions`, imported
+> **Under the hood: the same equation in Python.** This aside waits on
+> [#309](https://github.com/daniel-fink/rangekeeper/issues/309). Until then, the
+> notebook gives it as prose, without the code. `rangekeeper.expressions`, imported
 > as `rx`, writes equations with Python operators. A declaration returns a handle, and
 > `project.ref(key=)` finds the handle of a value declared earlier. Text and Python make
 > the same records, and `.text` prints the text form. Both forms use the same
@@ -192,6 +218,10 @@ payment = rk.finance.payment(
     principal="1 AUD", rate="6 % pa", term="20 years", frequency=monthly
 )
 payment  # the monthly payment on each dollar of loan
+```
+
+```python
+# cell 9b
 constant = (payment / rk.Quantity(text="1 AUD")).to(units="% pa")
 constant  # 8.60 % pa
 ```
@@ -310,10 +340,14 @@ lower_leverage_outcome = rk.execution.solve(specification=lower_leverage)
 lower_leverage_outcome["land_cost"] - back_outcome["land_cost"]
 ```
 
+Narrative: it rises. The income fixes the debt service, so it fixes the loan. With
+less leverage, the same loan is a smaller share of a larger total cost. SFFA asks for
+no return on the equity that pays the rest, so the supportable cost rises.
+
 ## 9. Optional: when the question is not well posed
 
 Narrative: a solve can fail in three different ways. Each failure has its own status
-and a diagnostic that names the values or equations by key.
+and diagnostics.
 
 **Too few fixed values.** Free both the land cost and the rent factor. Many pairs fit,
 and each pair changes every value between them.
@@ -325,7 +359,8 @@ loose_outcome = rk.execution.solve(specification=loose)
 (
     loose_outcome.status,
     loose_outcome.free_unknowns,
-)  # UNDERDETERMINED, ('land_cost', 'total_cost', ..., 'rent_factor')
+)  # UNDERDETERMINED, ('land_cost', 'total_cost', 'mortgage', 'debt_service', 'noi',
+# 'effective_income', 'rent_factor')
 ```
 
 **Too many fixed values that disagree.** Fix both the land cost and the rent factor.
@@ -337,7 +372,7 @@ tight_outcome = rk.execution.solve(specification=tight)
 (
     tight_outcome.status,
     tight_outcome.diagnostics,
-)  # INFEASIBLE; the diagnostic names the equations
+)  # INFEASIBLE; the diagnostics give the solver's evidence
 ```
 
 **A product of two unknowns.** Ask for leverage and coverage together.
@@ -422,7 +457,7 @@ adds debt, equity and funding.
 
 ## Cell budget
 
-21 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest cell
+22 core code cells, 4 optional cells and 1 check cell (budget 20–25). The longest cell
 has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 
 ## Rule check
@@ -430,14 +465,14 @@ has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 1 | 1, 10 | Walkthrough helpers package ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
-| 2 | 10 | G07: helpers load totals with origins; they do not calculate |
-| 2b | 10 | G07: the helper draws the design's geometry. It shows no graph and no values |
+| 2 | 10 | G07: `helpers.load_property` loads each total with its origin from the derived file `totals_2032.json` of the data package. It does no arithmetic; [`derive_totals.py`](../../data/derive_totals.py) makes the file |
+| 2b | 10 | G07: `helpers.show_geometry(name=)` draws the design's geometry. It shows no graph and no values |
 | 3 | 6 | By hand once; replaced in cells 9–11 |
 | 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `value(key=, units=)` and `equations` (D6, D16) |
 | 6, 11 | 6 | G09: staged solve. `reference_income` is a product of fixed values, then `rent_factor * reference_income` is affine |
-| 7, 14 | 10 | Helper draws the equations and their values, with role markers for a Specification ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
+| 7, 14 | 10 | `helpers.show_equations(of=)` draws the equations and their values, with role markers for a Specification ([#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
 | aside | 3 | G78: `rangekeeper.expressions` (`rx`), `project.ref(key=)` and operators on handles ([#143](https://github.com/daniel-fink/rangekeeper/issues/143)); G10: `Equation.text` gives canonical text |
-| 9 | 6 | `rk.finance.payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)); the constant is derived from it (D19) |
+| 9, 9b | 6 | `rk.finance.payment` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)); the constant is derived from it (D19) |
 | 10, 13 | 2, 4 | `specify`, `fix`, `free` ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G11: unfixed values are free by default; `fix` takes strings, numbers and Quantities; `roles` table |
 | 11, 13 | 8 | `solve` and `Outcome` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126), [#127](https://github.com/daniel-fink/rangekeeper/issues/127)). G12: `solve` resolves the Model that made the Specification, with no resolver argument |
 | 15 | 8 | G66: `rk.execution.compare(outcomes=, keys=)` shows named Outcomes side by side; the same call takes `baseline=` in later lessons |
