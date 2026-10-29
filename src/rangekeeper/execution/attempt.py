@@ -274,8 +274,7 @@ class Attempt:
                 )
                 analysis = problem.analysis
                 if analysis.underdetermined:
-                    # Name the unknowns that no row constrains.
-                    free = [self.binding.references[id] for id in analysis.free]
+                    free = [self.binding.references[id] for id in analysis.undetermined]
                     self.diagnose(
                         (
                             Code.UNIQUENESS_NOT_ASSESSED
@@ -284,7 +283,7 @@ class Attempt:
                         ),
                         f"Numerical equality rank {analysis.rank} for {analysis.unknown_count} unknowns. Bounds may restrict freedom; this is one accepted candidate, not a uniqueness proof."
                         + (
-                            " No row constrains these unknowns; the candidate holds the backend's value for each: "
+                            " The equations do not determine these free unknowns; the candidate holds one value for each: "
                             + ", ".join(str(ref.target) for ref in free)
                             + "."
                             if free

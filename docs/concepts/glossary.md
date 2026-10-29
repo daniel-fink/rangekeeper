@@ -86,7 +86,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Backend | A registered solver implementation | `execution` | — |
 | Termination | How a backend finished: feasible candidate, proven infeasible, limit, error or unknown | `execution` | `execution.backends.Termination`, in a `BackendResult` |
 | Verification | Independent check of a candidate against the original equations | `execution` | `execution.verify`, which returns a `Verification` |
-| Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | `Outcome` with `run`, `outputs` and `cases`; reading values and status planned (#127) |
+| Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | `Outcome`: `outcome["key"]`, `status`, `raise_for_status()`, `free_unknowns`, `evidence`, `run`, `outputs` and `cases` |
 | Underdetermined | A result with free unknowns that the equations do not fix | `execution` | Feasible with a warning |
 | Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | — |
 | Diagnostic | One coded finding with structured fields | `shared` | Also `findings` and `issues` |

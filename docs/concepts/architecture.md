@@ -141,7 +141,9 @@ show the target API in use.
   candidate, verifies it independently and assembles an `Outcome`, and writes
   nothing. `execute(specification, store)` also publishes the output Models and
   then the Runs. Each stage is a public function that writes to no store. Read
-  the results from `outcome.run` and `outcome.outputs`. See the
+  a solved value by key, `outcome["land_cost"]`, and the result from
+  `outcome.status`; `outcome.raise_for_status()` raises when the solve found no
+  determined result. See the
   [execution reference](../reference/execution.md#stages).
 - 1.0 target:
   1. Write a Specification that pins one Model revision. Fix and free values,
@@ -153,8 +155,7 @@ show the target API in use.
   6. `execute` also publishes the Run and the output Model to a store.
   7. Read solved values from the `Outcome`.
 
-  Gap issues: [#127](https://github.com/daniel-fink/rangekeeper/issues/127),
-  [#290](https://github.com/daniel-fink/rangekeeper/issues/290),
+  Gap issues: [#290](https://github.com/daniel-fink/rangekeeper/issues/290),
   [#292](https://github.com/daniel-fink/rangekeeper/issues/292),
   [#293](https://github.com/daniel-fink/rangekeeper/issues/293),
   [#296](https://github.com/daniel-fink/rangekeeper/issues/296),

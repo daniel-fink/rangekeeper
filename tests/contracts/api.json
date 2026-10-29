@@ -523,11 +523,11 @@
   "Analysis": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], has_bounds: bool) -> None",
+    "__init__": "method (self, rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], has_bounds: bool, undetermined: tuple[uuid.UUID, ...] = tuple()) -> None",
     "underdetermined": "property"
    },
    "module": "rangekeeper.execution.analysis",
-   "signature": "(rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], has_bounds: bool) -> None"
+   "signature": "(rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], has_bounds: bool, undetermined: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "Assertion": {
    "kind": "class",
@@ -556,6 +556,14 @@
    "module": "rangekeeper.execution.planning",
    "signature": "(root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition | rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
   },
+  "Evidence": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, termination: rangekeeper.execution.backends.base.Termination | None = None, backend: collections.abc.Mapping[str, None | bool | int | float | str | collections.abc.Mapping[str, 'FrozenJSONValue'] | tuple['FrozenJSONValue', ...]] = <_HAS_DEFAULT_FACTORY_CLASS>, equality_rank: int | None = None, unknown_count: int | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple()) -> None"
+   },
+   "module": "rangekeeper.execution.outcome",
+   "signature": "(termination: rangekeeper.execution.backends.base.Termination | None = None, backend: collections.abc.Mapping[str, None | bool | int | float | str | collections.abc.Mapping[str, 'FrozenJSONValue'] | tuple['FrozenJSONValue', ...]] = <_HAS_DEFAULT_FACTORY_CLASS>, equality_rank: int | None = None, unknown_count: int | None = None, implementations: tuple[rangekeeper.schema.records.Implementation, ...] = tuple()) -> None"
+  },
   "ExecutionConfig": {
    "kind": "class",
    "members": {
@@ -577,10 +585,25 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple()) -> None",
+    "diagnostics": "property",
+    "evidence": "property",
+    "free_unknowns": "property",
+    "model": "property",
+    "quantity": "method (self, reference: rangekeeper.schema.records.Reference | uuid.UUID) -> rangekeeper.quantity.Quantity",
+    "raise_for_status": "method (self) -> Self",
+    "status": "property",
     "walk": "method (self) -> collections.abc.Iterator['Outcome']"
    },
    "module": "rangekeeper.execution.outcome",
    "signature": "(run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple()) -> None"
+  },
+  "OutcomeError": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, message: str, *, status: enum.StrEnum, code: rangekeeper.shared.codes.Code | None = None, document: uuid.UUID | None = None, target: uuid.UUID | None = None) -> None"
+   },
+   "module": "rangekeeper.execution.errors",
+   "signature": "(message: str, *, status: enum.StrEnum, code: rangekeeper.shared.codes.Code | None = None, document: uuid.UUID | None = None, target: uuid.UUID | None = None) -> None"
   },
   "Relation": {
    "kind": "enum",
@@ -598,6 +621,19 @@
    },
    "module": "rangekeeper.execution.compiler",
    "signature": "(assertion: rangekeeper.execution.preparation.Assertion, relation: rangekeeper.execution.compiler.Relation, residual: rangekeeper.execution.compiler.Affine) -> None"
+  },
+  "Status": {
+   "kind": "enum",
+   "members": [
+    "FEASIBLE",
+    "UNDERDETERMINED",
+    "INFEASIBLE",
+    "UNSUPPORTED",
+    "INVALID",
+    "LIMITED",
+    "FAILED"
+   ],
+   "module": "rangekeeper.execution.outcome"
   },
   "Tolerances": {
    "kind": "class",
