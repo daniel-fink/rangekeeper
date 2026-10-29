@@ -8,12 +8,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
-from rangekeeper.flow._flow import Flow, Movement
+from rangekeeper.flow._flow import Flow, Movement, _target
 from rangekeeper.flow._options import (
     AggregationMethod,
     AlignmentJoin,
     FlowAggregate,
-    MeanWeighting,
     MissingValueHandling,
     ResampleMethod,
 )
@@ -36,7 +35,6 @@ __all__ = [
     "AlignmentJoin",
     "AggregationMethod",
     "ResampleMethod",
-    "MeanWeighting",
     "MissingValueHandling",
 ]
 
@@ -315,70 +313,64 @@ class Stream:
         periods: Sequence[Period] | None = None,
         frequency: Frequency | None = None,
         method: ResampleMethod | Mapping[str, ResampleMethod],
-        weighting: MeanWeighting | Mapping[str, MeanWeighting] | None = None,
         missing: MissingValueHandling | None = None,
     ) -> Stream:
-        """Put each line on explicit ``periods``, or on Periods of a ``frequency``.
+        """Reduce each line onto explicit ``periods``, or onto Periods of a ``frequency``.
 
         A frequency makes the Periods from the earliest start to the latest end
-        of the lines. Declare all line-specific methods. ``SPLIT`` applies to
-        every line or to none.
+        of the lines. ``method`` is one ResampleMethod for every line, or a
+        mapping from each name to its method. ``missing`` defaults to the
+        Stream's policy. ``split`` divides amounts over shorter Periods.
         """
-        if isinstance(method, Mapping):
-            if set(method) != set(self.names):
-                raise ValueError("method mapping must cover every label exactly")
-            methods = tuple(method[label] for label in self.names)
-        else:
-            methods = (method,) * len(self.names)
-        if frequency is not None or periods is None:
-            from rangekeeper.flow._flow import _target
-
-            periods = _target(
-                sorted(
-                    (m for f in self.flows for m in f.movements),
-                    key=lambda m: cast(Movement, m).coordinate[1:],
-                ),
-                periods=periods,
-                frequency=frequency,
-            )
-        if ResampleMethod.SPLIT in methods:
-            if set(methods) != {ResampleMethod.SPLIT} or weighting is not None:
-                raise ValueError("SPLIT applies to every line, without weighting")
-            return self._derive(
-                flows=tuple(
-                    f.resample(periods=periods, method=ResampleMethod.SPLIT)
-                    for f in self.flows
-                ),
-                symbolic=False,
-            )
-        if isinstance(weighting, Mapping):
-            mean_labels = {
-                label
-                for label, m in zip(self.names, methods, strict=True)
-                if m is ResampleMethod.MEAN
-            }
-            if set(weighting) != mean_labels:
-                raise ValueError(
-                    "weighting mapping must cover exactly the lines with a mean method"
-                )
-            weightings = tuple(weighting.get(label) for label in self.names)
-        else:
-            weightings = tuple(
-                weighting if m is ResampleMethod.MEAN else None for m in methods
-            )
-        if (
-            not isinstance(weighting, Mapping)
-            and weighting is not None
-            and all(m is not ResampleMethod.MEAN for m in methods)
-        ):
-            raise ValueError("weighting applies only to means")
+        methods = self._line_methods(method)
         batch = self._prepared().resample(
-            periods=periods,
+            self._target(periods=periods, frequency=frequency),
             methods=methods,
-            weightings=weightings,
             missing=self.missing if missing is None else missing,
         )
         return self._derive(batch=batch, symbolic=False)
+
+    def split(
+        self,
+        *,
+        periods: Sequence[Period] | None = None,
+        frequency: Frequency | None = None,
+    ) -> Stream:
+        """Divide each amount of each line equally over shorter Periods.
+
+        ``Flow.split`` gives the rule. A frequency makes the Periods from the
+        earliest start to the latest end of the lines.
+        """
+        targets = self._target(periods=periods, frequency=frequency)
+        return self._derive(
+            flows=tuple(flow.split(periods=targets) for flow in self.flows),
+            symbolic=False,
+        )
+
+    def _line_methods(
+        self, method: ResampleMethod | Mapping[str, ResampleMethod]
+    ) -> tuple[ResampleMethod, ...]:
+        """Return the method of each line; a mapping must name every line once."""
+        if not isinstance(method, Mapping):
+            return (method,) * len(self.names)
+        if set(method) != set(self.names):
+            raise ValueError("method mapping must cover every label exactly")
+        return tuple(method[name] for name in self.names)
+
+    def _target(
+        self, *, periods: Sequence[Period] | None, frequency: Frequency | None
+    ) -> Sequence[Period]:
+        """Return the given Periods, or the Periods of a frequency over all lines."""
+        # Read the lines only for a frequency: given Periods need no materialized Flows.
+        movements = (
+            ()
+            if frequency is None
+            else sorted(
+                (m for f in self.flows for m in f.movements),
+                key=lambda m: m.coordinate[1:],
+            )
+        )
+        return _target(movements, periods=periods, frequency=frequency)
 
     @property
     def coverage(self) -> Mapping[str, tuple[float, ...]]:

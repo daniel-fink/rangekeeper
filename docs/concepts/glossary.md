@@ -66,6 +66,8 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Movement | One dated or period-based amount | `flow` | — |
 | Flow | An ordered series of Movements in one unit | `flow` | — |
 | Stream | A set of named Flows that operations treat together | `flow` | — |
+| Resample | Reduce the Movements inside each longer Period to one amount with a `ResampleMethod`: `SUM`, `FIRST`, `LAST`, `MIN`, `MAX`, `MEAN` (equal weights) or `ELAPSED_MEAN` (weights by the days of each Period). `flow.resample(periods=, method=)` | `flow` | — |
+| Split | Divide each amount equally over shorter Periods that partition its Period. `flow.split(periods=)`. A split is not a resample | `flow` | — |
 
 ## Investigation and evidence
 

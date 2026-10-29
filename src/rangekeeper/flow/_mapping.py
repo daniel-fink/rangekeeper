@@ -12,6 +12,10 @@ from datetime import date
 
 from rangekeeper.duration import Period
 from rangekeeper.flow._flow import Flow, Movement
+from rangekeeper.flow._options import ResampleMethod
+
+# The resample methods that weight each value.
+MEANS = frozenset({ResampleMethod.MEAN, ResampleMethod.ELAPSED_MEAN})
 
 
 def alignment(
@@ -54,15 +58,19 @@ def period_indices(
     return tuple(groups)
 
 
-def weights(coordinates: Sequence[tuple], *, elapsed: bool) -> tuple[float, ...]:
-    """Return fixed observation or coverage-day weights, independent of knownness."""
-    if elapsed and any(c[0] != "period" for c in coordinates):
-        raise ValueError("elapsed weighting requires bounded movements")
+def weights(
+    coordinates: Sequence[tuple], *, method: ResampleMethod
+) -> tuple[float, ...]:
+    """Return the fixed weight of each coordinate, independent of knownness.
+
+    ``ELAPSED_MEAN`` weights each Period by the days that it covers; every other
+    method gives each value the weight 1.
+    """
+    if method is not ResampleMethod.ELAPSED_MEAN:
+        return (1.0,) * len(coordinates)
+    if any(c[0] != "period" for c in coordinates):
+        raise ValueError("an elapsed mean requires bounded movements")
     return tuple(
-        (
-            float((date.fromisoformat(c[2]) - date.fromisoformat(c[1])).days)
-            if elapsed
-            else 1.0
-        )
+        float((date.fromisoformat(c[2]) - date.fromisoformat(c[1])).days)
         for c in coordinates
     )

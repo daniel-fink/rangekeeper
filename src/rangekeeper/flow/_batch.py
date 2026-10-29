@@ -7,14 +7,19 @@ import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from rangekeeper.duration import Period
 from rangekeeper.flow._flow import Flow, Movement, _number
-from rangekeeper.flow._mapping import period_indices, weights
+from rangekeeper.flow._mapping import MEANS, period_indices, weights
 from rangekeeper.flow._options import MissingValueHandling as Missing
+from rangekeeper.flow._options import ResampleMethod
 from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.shared.optional import requires
+
+if TYPE_CHECKING:
+    from polars import DataFrame
 
 
 def polars():
@@ -108,7 +113,7 @@ def stable_reduce(frame, keys, method):
 
 @dataclass(frozen=True)
 class Batch:
-    frame: object
+    frame: DataFrame
     units: tuple[str, ...]
     coordinates: tuple[tuple, ...]
     metadata: tuple[Movement | Derived, ...]
@@ -437,132 +442,103 @@ class Batch:
             )
         return tuple(results)
 
-    def resample(self, periods, *, methods, weightings, missing):
-        from rangekeeper.flow._options import MeanWeighting, ResampleMethod
+    def resample(
+        self,
+        periods: Sequence[Period],
+        *,
+        methods: Sequence[ResampleMethod],
+        missing: Missing,
+    ) -> Batch:
+        """Reduce each line onto the target Periods with its own method.
 
-        if not isinstance(missing, Missing):
-            raise TypeError("missing must be a MissingValueHandling")
-        periods = tuple(periods)
+        ``methods`` has one method for each line of this batch.
+        """
+        _check_resample(methods, missing=missing, lines=len(self.units))
+        targets = tuple(periods)
+        assigned = self._assign(targets)
+        reduced = _concat(
+            [
+                self._reduce(assigned, method=method, lines=lines)
+                for method, lines in _plan(methods).items()
+            ]
+        )
+        grid = _fill_grid(reduced, lines=len(self.units), periods=len(targets))
+        return self._period_batch(
+            _apply_missing(grid, missing),
+            targets,
+            cells=_claims_by_cell(assigned, self.metadata),
+        )
+
+    def _assign(self, periods: tuple[Period, ...]) -> DataFrame:
+        """Add the index of the target Period that holds each value."""
         pl = polars()
         # Only coordinates present in this selection participate in bounds validation.
         active = self.frame["coordinate"].unique().to_list()
-        coordinates = tuple(self.coordinates[i] for i in active)
-        groups = period_indices(coordinates, periods)
+        groups = period_indices(tuple(self.coordinates[i] for i in active), periods)
         mapping = pl.DataFrame(
             {"coordinate": active, "group": groups},
             schema={"coordinate": pl.Int64, "group": pl.Int64},
         )
-        frame = self.frame.join(mapping, on="coordinate", how="left").sort(
+        return self.frame.join(mapping, on="coordinate", how="left").sort(
             "line", "order"
         )
-        all_results = []
-        for method in dict.fromkeys(methods):
-            if not isinstance(method, ResampleMethod):
-                raise TypeError("method must be a ResampleMethod")
-            lines = [i for i, m in enumerate(methods) if m is method]
-            for line in lines:
-                w = weightings[line]
-                if w is not None and not isinstance(w, MeanWeighting):
-                    raise TypeError("weighting must be a MeanWeighting")
-                if method is ResampleMethod.MEAN and w is None:
-                    raise ValueError("means require explicit weighting")
-                if method is not ResampleMethod.MEAN and w is not None:
-                    raise ValueError("weighting applies only to means")
-            part = frame.filter(pl.col("line").is_in(lines))
-            if method is ResampleMethod.MEAN:
-                weighted = []
-                for weighting in dict.fromkeys(weightings[i] for i in lines):
-                    selected = [i for i in lines if weightings[i] is weighting]
-                    subset = part.filter(pl.col("line").is_in(selected))
-                    active_coords = subset["coordinate"].unique().to_list()
-                    fixed = weights(
-                        tuple(self.coordinates[c] for c in active_coords),
-                        elapsed=weighting is MeanWeighting.ELAPSED,
-                    )
-                    wf = pl.DataFrame(
-                        {"coordinate": active_coords, "weight": fixed},
-                        schema={"coordinate": pl.Int64, "weight": pl.Float64},
-                    )
-                    subset = subset.join(wf, on="coordinate", how="left")
-                    numerator = stable_reduce(
-                        subset.with_columns(
-                            (pl.col("magnitude") * pl.col("weight")).alias("magnitude")
-                        ),
-                        ["line", "group"],
-                        "sum",
-                    )
-                    denominator = subset.group_by("line", "group").agg(
-                        pl.col("weight")
-                        .filter(pl.col("magnitude").is_not_null())
-                        .sum()
-                        .alias("denominator")
-                    )
-                    weighted.append(
-                        numerator.join(denominator, on=["line", "group"])
-                        .with_columns(
-                            (pl.col("result") / pl.col("denominator")).alias("result")
-                        )
-                        .drop("denominator")
-                    )
-                reduced = pl.concat(weighted)
-            else:
-                reduced = stable_reduce(part, ["line", "group"], method.value)
-            all_results.append(reduced)
-        reduced = (
-            pl.concat(all_results)
-            if all_results
-            else pl.DataFrame(
-                schema={
-                    "line": pl.Int64,
-                    "group": pl.Int64,
-                    "result": pl.Float64,
-                    "count": pl.UInt32,
-                    "size": pl.UInt32,
-                    "known": pl.UInt32,
-                    "absolute": pl.Float64,
-                }
-            )
+
+    def _reduce(
+        self, frame: DataFrame, *, method: ResampleMethod, lines: tuple[int, ...]
+    ) -> DataFrame:
+        """Reduce the values of some lines in each target Period with one method."""
+        pl = polars()
+        part = frame.filter(pl.col("line").is_in(lines))
+        if method in MEANS:
+            return self._mean(part, method=method)
+        return stable_reduce(part, ["line", "group"], _REDUCTIONS[method])
+
+    def _mean(self, frame: DataFrame, *, method: ResampleMethod) -> DataFrame:
+        """Return the weighted mean of the known values in each target Period."""
+        pl = polars()
+        active = frame["coordinate"].unique().to_list()
+        fixed = weights(tuple(self.coordinates[c] for c in active), method=method)
+        weighted = frame.join(
+            pl.DataFrame(
+                {"coordinate": active, "weight": fixed},
+                schema={"coordinate": pl.Int64, "weight": pl.Float64},
+            ),
+            on="coordinate",
+            how="left",
         )
-        grid = pl.DataFrame(
-            {
-                "line": [i for i in range(len(self.units)) for _ in periods],
-                "group": list(range(len(periods))) * len(self.units),
-            },
-            schema={"line": pl.Int64, "group": pl.Int64},
+        numerator = stable_reduce(
+            weighted.with_columns(
+                (pl.col("magnitude") * pl.col("weight")).alias("magnitude")
+            ),
+            ["line", "group"],
+            "sum",
         )
-        output = grid.join(
-            reduced, on=["line", "group"], how="left", maintain_order="left"
-        ).with_columns(pl.col("size", "count", "known").fill_null(0))
-        complete = (pl.col("size") > 0) & (pl.col("count") == pl.col("size"))
-        if missing is Missing.ERROR and output.filter(~complete).height:
-            raise ValueError("empty/unresolved target period")
-        usable = complete | (
-            (pl.col("count") > 0) if missing is Missing.SKIP else pl.lit(False)
+        denominator = weighted.group_by("line", "group").agg(
+            pl.col("weight")
+            .filter(pl.col("magnitude").is_not_null())
+            .sum()
+            .alias("denominator")
         )
-        magnitude = (
-            pl.when(usable)
-            .then(pl.col("result"))
-            .otherwise(pl.lit(None, dtype=pl.Float64))
+        return (
+            numerator.join(denominator, on=["line", "group"])
+            .with_columns((pl.col("result") / pl.col("denominator")).alias("result"))
+            .drop("denominator")
         )
-        if missing is Missing.ZERO:
-            magnitude = pl.when(pl.col("size") == 0).then(0.0).otherwise(magnitude)
-        output = output.with_columns(
-            magnitude.alias("magnitude"),
-            pl.when(pl.col("size") > 0)
-            .then(pl.col("known") / pl.col("size"))
-            .otherwise(0.0)
-            .alias("coverage"),
-        )
-        metadata_groups = {}
-        for line, group, row in frame.select("line", "group", "row").iter_rows():
-            source = self.metadata[row]
-            if source.claims:
-                metadata_groups.setdefault((line, group), []).append(source)
+
+    def _period_batch(
+        self,
+        output: DataFrame,
+        periods: tuple[Period, ...],
+        *,
+        cells: dict[tuple[int, int], list[Movement | Derived]],
+    ) -> Batch:
+        """Return the resampled lines as a batch on the target Periods."""
+        pl = polars()
         metadata = tuple(
-            Derived(periods[g], claims(metadata_groups.get((line, g), ())), uuid4())
-            for line, g in grid.iter_rows()
+            Derived(periods[group], claims(cells.get((line, group), ())), uuid4())
+            for line, group in output.select("line", "group").iter_rows()
         )
-        output = output.select(
+        frame = output.select(
             "line",
             pl.col("group").alias("coordinate"),
             pl.col("group").alias("order"),
@@ -573,20 +549,112 @@ class Batch:
             pl.col("magnitude").is_not_null().alias("known"),
             pl.lit(True).alias("present"),
         )
-        return Batch(
-            output,
-            self.units,
-            tuple(
-                (
-                    "period",
-                    p.start.isoformat(),
-                    p.end.isoformat(),
-                    None,
-                )
-                for p in periods
-            ),
-            metadata,
+        coordinates = tuple(
+            ("period", p.start.isoformat(), p.end.isoformat(), None) for p in periods
         )
+        return Batch(frame, self.units, coordinates, metadata)
+
+
+# The Polars reduction of each resample method that is not a mean.
+_REDUCTIONS: dict[ResampleMethod, str] = {
+    ResampleMethod.SUM: "sum",
+    ResampleMethod.FIRST: "first",
+    ResampleMethod.LAST: "last",
+    ResampleMethod.MIN: "min",
+    ResampleMethod.MAX: "max",
+}
+
+
+def _check_resample(
+    methods: Sequence[ResampleMethod], *, missing: Missing, lines: int
+) -> None:
+    """Require one ResampleMethod for each line and a MissingValueHandling."""
+    if not isinstance(missing, Missing):
+        raise TypeError("missing must be a MissingValueHandling")
+    if any(not isinstance(method, ResampleMethod) for method in methods):
+        raise TypeError("method must be a ResampleMethod")
+    if len(methods) != lines:
+        raise ValueError("resample needs one method for each line")
+
+
+def _plan(methods: Sequence[ResampleMethod]) -> dict[ResampleMethod, tuple[int, ...]]:
+    """Return the lines of each method, in the order of first use."""
+    plan: dict[ResampleMethod, list[int]] = {}
+    for line, method in enumerate(methods):
+        plan.setdefault(method, []).append(line)
+    return {method: tuple(lines) for method, lines in plan.items()}
+
+
+def _concat(reduced: list[DataFrame]) -> DataFrame:
+    """Join the reductions of each method, or return an empty reduction."""
+    pl = polars()
+    if reduced:
+        return pl.concat(reduced)
+    return pl.DataFrame(
+        schema={
+            "line": pl.Int64,
+            "group": pl.Int64,
+            "result": pl.Float64,
+            "count": pl.UInt32,
+            "size": pl.UInt32,
+            "known": pl.UInt32,
+            "absolute": pl.Float64,
+        }
+    )
+
+
+def _fill_grid(reduced: DataFrame, *, lines: int, periods: int) -> DataFrame:
+    """Return one row for each line and target Period; a Period with no value has size 0."""
+    pl = polars()
+    grid = pl.DataFrame(
+        {
+            "line": [line for line in range(lines) for _ in range(periods)],
+            "group": list(range(periods)) * lines,
+        },
+        schema={"line": pl.Int64, "group": pl.Int64},
+    )
+    return grid.join(
+        reduced, on=["line", "group"], how="left", maintain_order="left"
+    ).with_columns(pl.col("size", "count", "known").fill_null(0))
+
+
+def _apply_missing(grid: DataFrame, missing: Missing) -> DataFrame:
+    """Set the amount and the coverage of each cell by the missing-value rule.
+
+    ``ERROR`` raises for an empty or unresolved Period. ``SKIP`` keeps the
+    reduction of the known values. ``ZERO`` gives zero for an empty Period.
+    """
+    pl = polars()
+    complete = (pl.col("size") > 0) & (pl.col("count") == pl.col("size"))
+    if missing is Missing.ERROR and grid.filter(~complete).height:
+        raise ValueError("empty/unresolved target period")
+    usable = complete | (
+        (pl.col("count") > 0) if missing is Missing.SKIP else pl.lit(False)
+    )
+    magnitude = (
+        pl.when(usable).then(pl.col("result")).otherwise(pl.lit(None, dtype=pl.Float64))
+    )
+    if missing is Missing.ZERO:
+        magnitude = pl.when(pl.col("size") == 0).then(0.0).otherwise(magnitude)
+    return grid.with_columns(
+        magnitude.alias("magnitude"),
+        pl.when(pl.col("size") > 0)
+        .then(pl.col("known") / pl.col("size"))
+        .otherwise(0.0)
+        .alias("coverage"),
+    )
+
+
+def _claims_by_cell(
+    frame: DataFrame, metadata: tuple[Movement | Derived, ...]
+) -> dict[tuple[int, int], list[Movement | Derived]]:
+    """Return the sources with Claims of each line and target Period."""
+    cells: dict[tuple[int, int], list[Movement | Derived]] = {}
+    for line, group, row in frame.select("line", "group", "row").iter_rows():
+        source = metadata[row]
+        if source.claims:
+            cells.setdefault((line, group), []).append(source)
+    return cells
 
 
 def align(flows, *, join, missing):

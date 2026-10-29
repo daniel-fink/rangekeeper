@@ -141,7 +141,7 @@ def test_trim_takes_a_period_or_a_span():
 
 def test_split_and_sum_round_trip():
     flow = growing()
-    quarters = flow.resample(frequency=Frequency.QUARTER, method=ResampleMethod.SPLIT)
+    quarters = flow.split(frequency=Frequency.QUARTER)
     assert len(quarters.movements) == 44
     assert quarters.at(on=date(2001, 2, 1)) == Quantity(text="25 USD")
     assert (
@@ -149,11 +149,10 @@ def test_split_and_sum_round_trip():
     )
     assert quarters.trim(span=YEARS[3]).total() == flow.at(on=date(2004, 1, 1))
     with pytest.raises(ValueError, match="partition"):
-        flow.resample(
+        flow.split(
             periods=Span(start=date(2001, 1, 1), length="1 year").periods(
                 frequency=Frequency.QUARTER
             )[1:],
-            method=ResampleMethod.SPLIT,
         )
     with pytest.raises(ValueError, match="do not end"):
         flow.trim(span=YEARS[0]).resample(
@@ -161,6 +160,10 @@ def test_split_and_sum_round_trip():
         )
     with pytest.raises(TypeError):
         flow.resample(method=ResampleMethod.SUM)
+    with pytest.raises(TypeError):
+        flow.split()
+    with pytest.raises(ValueError, match="period movements"):
+        Flow.from_events([date(2001, 1, 1)], [1], units="USD").split(periods=YEARS[:1])
 
 
 def test_stream_construction_lookup_and_with_flows():
@@ -214,17 +217,16 @@ def test_stream_sum_dates_period_amounts_when_lines_mix():
 def test_stream_resample_with_a_frequency():
     flow = growing()
     stream = Stream(flows={"a": flow, "b": 2 * flow})
-    quarters = stream.resample(frequency=Frequency.QUARTER, method=ResampleMethod.SPLIT)
+    quarters = stream.split(frequency=Frequency.QUARTER)
     assert quarters["b"].at(on=date(2001, 1, 1)) == Quantity(text="50 USD")
     years = quarters.resample(frequency=Frequency.YEAR, method=ResampleMethod.SUM)
     assert years["a"] == flow
-    with pytest.raises(ValueError, match="SPLIT"):
-        stream.resample(
-            frequency=Frequency.QUARTER,
-            method={"a": ResampleMethod.SPLIT, "b": ResampleMethod.SUM},
-        )
+    with pytest.raises(ValueError, match="cover every label"):
+        stream.resample(frequency=Frequency.YEAR, method={"a": ResampleMethod.SUM})
 
 
 def test_root_names():
     assert rk.flow.ResampleMethod is ResampleMethod
     assert not hasattr(rk.flow, "ResamplingMethod")
+    assert not hasattr(rk.flow, "MeanWeighting")
+    assert "split" not in {member.value for member in ResampleMethod}

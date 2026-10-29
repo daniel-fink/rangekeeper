@@ -224,9 +224,7 @@ quarters back into years. The round trip gives the same Flow.
 
 ```python
 # cell 15
-by_quarter = pgi.resample(
-    frequency=rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT
-)
+by_quarter = pgi.split(frequency=rk.duration.Frequency.QUARTER)
 assert by_quarter.resample(frequency=yearly, method=rk.flow.ResampleMethod.SUM) == pgi
 ```
 
@@ -374,6 +372,6 @@ cell has 10 lines (cell 8). Cells follow `ruff format` (D15).
 | 7, 10, 12, 16 | 8 | G03: `Flow.at(date)` returns one Quantity |
 | 8–9, 13–14 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `with_flows(mapping)`, `select`, `sum()` |
 | 11–12, 20 | 6 | G05: `Flow.shift(by=)` and `Flow.trim(span=)`, where a Period counts as a one-step Span; no domain helper for the terminal value |
-| 15 | 6 | `resample` with `ResampleMethod` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
+| 15 | 6 | `split` to shorter Periods, then `resample` with `ResampleMethod.SUM` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103); `split` from [#405](https://github.com/daniel-fink/rangekeeper/issues/405)) |
 | 17–19 | 6 | `pv`, `npv`, `irr` on dates ([#167](https://github.com/daniel-fink/rangekeeper/issues/167), [#164](https://github.com/daniel-fink/rangekeeper/issues/164)) |
 | 12, 15, 21 | 5, 8 | G06: Flow value equality and `rk.quantity.isclose` |
