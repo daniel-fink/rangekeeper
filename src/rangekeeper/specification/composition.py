@@ -333,7 +333,10 @@ def collect_specifications(
     *,
     resolver: SpecificationResolver,
 ):
-    """Resolve and export each reachable revision once, then check its graph."""
+    """Resolve and export each reachable revision once, then check its graph.
+
+    A batch's own case Specifications come first; ``resolver`` loads the others.
+    """
     from rangekeeper.specification.specification import Specification
 
     if not isinstance(root, Specification):
@@ -348,7 +351,10 @@ def collect_specifications(
         ):
             if identity in documents:
                 continue
-            found = resolver.load_specification(identity)
+            # A batch that Specification.cases made keeps its cases.
+            found = current._cases.get(identity)
+            if found is None:
+                found = resolver.load_specification(identity)
             if not isinstance(found, Specification):
                 raise ReferenceTypeError(
                     f"{identity} did not resolve to a Specification"

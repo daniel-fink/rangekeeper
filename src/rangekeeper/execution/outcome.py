@@ -10,7 +10,7 @@ from rangekeeper.execution import statuses
 from rangekeeper.execution.backends.base import Termination
 from rangekeeper.execution.errors import OutcomeError
 from rangekeeper.execution.statuses import Status
-from rangekeeper.flow import Flow
+from rangekeeper.flow import Flow, Stream
 from rangekeeper.model import Model
 from rangekeeper.model.targets import recorded_scalar, target_value
 from rangekeeper.quantity import Quantity
@@ -32,11 +32,13 @@ from rangekeeper.shared.errors import (
     AttemptDeadlineError,
     BackendUnavailableError,
     ContractError,
+    MissingReferenceError,
     NumericalError,
     RangekeeperError,
     UnsupportedError,
     ValidationError,
 )
+from rangekeeper.shared.table import Table
 
 _FREE = (Code.UNDERDETERMINED.value, Code.UNIQUENESS_NOT_ASSESSED.value)
 
@@ -96,8 +98,10 @@ class Outcome:
 
     ``outputs`` are the accepted output Models, in the order of
     ``run.record.outputs``. A batch has one Outcome in ``cases`` for each of
-    its direct cases, in Specification order; a leaf has none. An Outcome is
-    immutable and holds no store.
+    its direct cases, in Specification order; a leaf has none. ``key`` is the
+    name of the Specification that the Outcome solved: for a case of a batch
+    that ``Specification.cases`` made, its case key. An Outcome is immutable
+    and holds no store.
 
     Read a solved value by its key, ``outcome["land_cost"]``: a Quantity for a
     scalar value, a Flow for a Flow value. ``status`` says what the solve
@@ -108,6 +112,7 @@ class Outcome:
     run: Run
     outputs: tuple[Model, ...] = ()
     cases: tuple["Outcome", ...] = ()
+    key: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.run, Run):
@@ -228,6 +233,73 @@ class Outcome:
         if value.quantity is None:
             raise ContractError(f"{key} has no quantity in the output Model")
         return value.quantity
+
+    def case(self, *, key: str) -> "Outcome":
+        """Return the Outcome of the direct case with the key ``key``.
+
+        No case with the key raises MissingReferenceError with the keys that
+        exist. A leaf Outcome has no cases (TypeError).
+        """
+        if not self.cases:
+            raise TypeError("a leaf Outcome has no cases")
+        for case in self.cases:
+            if case.key == key:
+                return case
+        raise MissingReferenceError(
+            key,
+            kind="case",
+            by="key",
+            where=self.key,
+            candidates=[case.key for case in self.cases if case.key is not None],
+        )
+
+    def table(self, *keys: str) -> Table:
+        """Return a Table of solved values: one row for each leaf case.
+
+        The columns are ``case``, ``status`` and one column for each key: the
+        Quantity of a scalar value, or the Flow of a Flow value. ``case`` is the
+        case key, with the keys of nested batches joined by ``/``; a leaf
+        Outcome gives one row with its own key. A case without an output has
+        None for each value; ``status`` says why.
+        """
+        if not keys:
+            raise TypeError("table takes at least one key")
+        rows = []
+        for path, leaf in self._keyed_leaves(()):
+            row: dict[str, object] = {
+                "case": "/".join(path) if path else self.key,
+                "status": leaf.status,
+            }
+            for key in keys:
+                row[key] = leaf[key] if leaf.outputs else None
+            rows.append(row)
+        return Table(("case", "status", *keys), rows)
+
+    def stream(self, *keys: str) -> Stream:
+        """Return a Stream of the solved Flows at these keys, named by key.
+
+        A batch has no single Stream: read it from one case,
+        ``outcome.case(key=...).stream(...)``.
+        """
+        self._require_leaf("stream")
+        if not keys:
+            raise TypeError("stream takes at least one key")
+        flows = {}
+        for key in keys:
+            value = self[key]
+            if not isinstance(value, Flow):
+                raise TypeError(f"{key} is not a Flow value")
+            flows[key] = value
+        return Stream(flows=flows)
+
+    def _keyed_leaves(
+        self, path: tuple[str, ...]
+    ) -> Iterator[tuple[tuple[str, ...], "Outcome"]]:
+        if not self.cases:
+            yield path, self
+            return
+        for position, case in enumerate(self.cases):
+            yield from case._keyed_leaves(path + (case.key or str(position),))
 
     def quantity(self, reference: Reference | UUID) -> Quantity:
         """Return the solved Quantity of a scalar Value or a Movement."""

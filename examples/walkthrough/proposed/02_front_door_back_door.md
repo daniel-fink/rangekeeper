@@ -315,7 +315,8 @@ lower_leverage_outcome["land_cost"] - back_outcome["land_cost"]
 Narrative: a solve can fail in three different ways. Each failure has its own status
 and a diagnostic that names the values or equations by key.
 
-**Too few fixed values.** Free both the land cost and the rent factor. Many pairs fit.
+**Too few fixed values.** Free both the land cost and the rent factor. Many pairs fit,
+and each pair changes every value between them.
 
 ```python
 # cell 18
@@ -324,7 +325,7 @@ loose_outcome = rk.execution.solve(specification=loose)
 (
     loose_outcome.status,
     loose_outcome.free_unknowns,
-)  # UNDERDETERMINED, ('land_cost', 'rent_factor')
+)  # UNDERDETERMINED, ('land_cost', 'total_cost', ..., 'rent_factor')
 ```
 
 **Too many fixed values that disagree.** Fix both the land cost and the rent factor.

@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from rangekeeper.model import Model
     from rangekeeper.shared.table import Table
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Self
 from uuid import UUID, uuid4
 
@@ -93,10 +94,12 @@ class Specification:
     no fix or rule controls.
     """
 
-    __slots__ = ("_record", "_model", "_resolver")
+    __slots__ = ("_record", "_model", "_resolver", "_cases")
     _record: SpecificationRecord
     _model: "Model | None"
     _resolver: SpecificationResolver | None
+    # The case Specifications that ``cases`` made, by UUID; not saved.
+    _cases: "Mapping[UUID, Specification]"
 
     def __init__(
         self,
@@ -126,6 +129,7 @@ class Specification:
         object.__setattr__(self, "_record", record)
         object.__setattr__(self, "_model", model)
         object.__setattr__(self, "_resolver", resolver)
+        object.__setattr__(self, "_cases", MappingProxyType({}))
 
     @classmethod
     def _start(
@@ -171,6 +175,20 @@ class Specification:
     def model_id(self) -> UUID | None:
         """UUID of the Model revision that this Specification pins, or None."""
         return self._record.model
+
+    @property
+    def model(self) -> "Model | None":
+        """The pinned Model revision that this facade keeps, or None.
+
+        ``model.specify()`` and each chained call keep it. It is not saved with
+        the document: a Specification read from data has none.
+        """
+        return self._model
+
+    @property
+    def resolver(self) -> SpecificationResolver | None:
+        """The resolver that this facade keeps for its includes, or None; not saved."""
+        return self._resolver
 
     @property
     def roles(self) -> "Table":
@@ -262,17 +280,35 @@ class Specification:
 
         Each chained call makes its revision here: a new UUID, and ``previous``
         is this revision. ``model`` pins another Model revision and keeps it.
+        ``name`` is the Metadata name of the new revision. ``cases`` maps the
+        UUID of each case to its Specification: the new revision is a batch
+        that pins the same Model, lists those cases and keeps them.
         """
         if model is None:
             model = self._model
         else:
             changes["model"] = model.id
-        replacement = self._record.replace(
-            metadata=self.metadata.replace(id=uuid4(), previous=self.id),
-            **changes,  # type: ignore[arg-type]
-        )
+        metadata = self.metadata.replace(id=uuid4(), previous=self.id)
+        if "name" in changes:
+            metadata = metadata.replace(name=str(changes.pop("name")))
+        documents = changes.pop("cases", None)
+        if isinstance(documents, Mapping):
+            # A batch holds only its metadata, its Model and its cases.
+            replacement = SpecificationRecord(
+                metadata=metadata,
+                model=UNSET if self._record.model is None else self._record.model,
+                cases=tuple(documents),
+            )
+        else:
+            replacement = self._record.replace(
+                metadata=metadata,
+                **changes,  # type: ignore[arg-type]
+            )
         check_revision(self._record, replacement)
-        return type(self)(replacement, model=model, resolver=self._resolver)
+        revised = type(self)(replacement, model=model, resolver=self._resolver)
+        if isinstance(documents, Mapping):
+            object.__setattr__(revised, "_cases", MappingProxyType(dict(documents)))
+        return revised
 
     def fix(
         self,
@@ -293,9 +329,6 @@ class Specification:
         free of the same target. When no role changes, ``fix`` returns this
         Specification.
         """
-        from rangekeeper.model.targets import target_units
-        from rangekeeper.schema.records import Assignment
-
         items = dict(targets or {})
         for key, quantity in values.items():
             if key in items:
@@ -303,6 +336,13 @@ class Specification:
             items[key] = quantity
         if not items:
             raise TypeError("fix takes at least one value")
+        return self._fix(items)
+
+    def _fix(self, items: Mapping, *, name: str | None = None) -> "Specification":
+        """Fix each target of ``items`` to its value; ``name`` renames the revision."""
+        from rangekeeper.model.targets import target_units
+        from rangekeeper.schema.records import Assignment
+
         model = self._require_model()
         refs: list[Reference] = []
         assignments = []
@@ -318,7 +358,7 @@ class Specification:
                 )
                 assignments.append(Assignment(target=ref, quantity=q))
             refs.extend(selected)
-        return self._edit_roles(refs, tuple(assignments))
+        return self._edit_roles(refs, tuple(assignments), name=name)
 
     def free(self, *targets: "str | UUID | Reference") -> "Specification":
         """Return a new Specification that frees values: the solve finds them.
@@ -334,6 +374,66 @@ class Specification:
         model = self._require_model()
         refs = [ref for target in targets for ref in self._targets(model, target)]
         return self._edit_roles(refs, None)
+
+    def cases(
+        self,
+        *,
+        cases: "Mapping[str, Mapping[str | UUID | Reference, object]]",
+    ) -> "Specification":
+        """Return a batch Specification with one named case for each key.
+
+        Each case is a new revision of this Specification: its Metadata name is
+        the case key, and it fixes the values that its mapping gives, by key,
+        as ``fix`` does. A value that a case gives replaces the fix of this
+        Specification; an empty mapping keeps this Specification's values. The
+        batch keeps this Specification's name, pins its Model and lists the
+        cases in mapping order. It keeps the case Specifications, so ``solve``
+        resolves them; ``execute`` puts them in its store.
+        """
+        if self.record.cases:
+            raise ValueError("cases takes a concrete Specification, not a batch")
+        if not isinstance(cases, Mapping) or not cases:
+            raise TypeError("cases takes a mapping from case keys to values")
+        made: dict[UUID, Specification] = {}
+        for key, values in cases.items():
+            if not isinstance(key, str) or not key.strip():
+                raise TypeError("each case key must be non-empty text")
+            if not isinstance(values, Mapping):
+                raise TypeError(f"the values of case {key} must be a mapping")
+            case = self._fix(values, name=key) if values else self._derive(name=key)
+            made[case.id] = case
+        return self._derive(cases=made)
+
+    def case(self, *, key: str) -> "Specification":
+        """Return the case of this batch with the key ``key``: its Metadata name.
+
+        A batch that ``cases`` made keeps its cases; a batch read from data
+        loads them with its resolver. No case with the key raises
+        MissingReferenceError with the keys that exist.
+        """
+        from rangekeeper.shared.errors import MissingReferenceError
+
+        if not self.record.cases:
+            raise ValueError("case takes a batch; this Specification has no cases")
+        found = []
+        for identity in self.record.cases:
+            document = self._cases.get(identity)
+            if document is None:
+                if self._resolver is None:
+                    raise ValueError(
+                        "this batch keeps no cases; give it a resolver to load them"
+                    )
+                document = self._resolver.load_specification(identity)
+            found.append(document)
+            if document.metadata.name == key:
+                return document
+        raise MissingReferenceError(
+            key,
+            kind="case",
+            by="key",
+            where=self.metadata.name or str(self.id),
+            candidates=[str(d.metadata.name) for d in found if d.metadata.name],
+        )
 
     def on(self, *, model: "Model") -> "Specification":
         """Return a new Specification of another Model revision, with the same roles.
@@ -430,7 +530,7 @@ class Specification:
             target = model._value_at(target).id
         return expand_targets(model, target, ids=ids)
 
-    def _edit_roles(self, refs, assignments):
+    def _edit_roles(self, refs, assignments, *, name=None):
         model = self._model
         resolver = self._resolver
         if self.record.cases:
@@ -499,7 +599,8 @@ class Specification:
         )
         unknowns = in_model_order(model, local_unknowns)
         if (
-            local_assignments == (self.record.assignments or ())
+            name is None
+            and local_assignments == (self.record.assignments or ())
             and unknowns == (self.record.unknowns or ())
             and estimates == (self.record.estimates or ())
         ):
@@ -509,6 +610,7 @@ class Specification:
             assignments=local_assignments,
             unknowns=unknowns,
             estimates=estimates,
+            **({} if name is None else {"name": name}),
         )
         revised.compose(resolver=resolver)
         return revised
