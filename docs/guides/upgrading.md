@@ -188,7 +188,7 @@ This table lists the public names that 1.x consumers use, with their state in
 | `model.system.System`, `Entity`, `Assembly`, `Relationship` | `rangekeeper.model` only (the codemod moves them). `model.system` keeps the views, rollups and pivots | — |
 | `model.characteristics.value`, `label` | Removed. `Model.value(owner=, key=)` and `Model.label(owner=, key=)` raise `MissingReferenceError` for a missing key | — |
 | `rangekeeper.Model`, `model.Definitions` | Unchanged; the Model format is 1.0.0 | Builder names ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D6, D16) |
-| `io.bundle.Reader`, `write`, `Reader(..., check_index=False)` | Unchanged API. A Bundle with 0.x documents does not open | Identifiers `rangekeeper.bundle/1` and `rangekeeper.parquet/1`; the format freezes at 1.0.0b1 (ADR-017) |
+| `io.bundle.Reader`, `write`, `Reader(..., check_index=False)` | `io.bundle.Reader` and `write`, with option values: `Reader(..., index=IndexCheck.SCHEMA)`, `limits=ReadLimits(...)`; `write(..., geometry=GeometrySources(...), parquet=ParquetOptions(...))` (Bundle options, below; [#411](https://github.com/daniel-fink/rangekeeper/issues/411)). A Bundle with 0.x documents does not open | Identifiers `rangekeeper.bundle/1` and `rangekeeper.parquet/1`; the format freezes at 1.0.0b1 (ADR-017) |
 
 Three routes help a 1.x consumer:
 
@@ -380,6 +380,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.execution.preparation.prepare` | `rangekeeper.execution.validate(composition, resolver=, units=)`, then `rangekeeper.execution.bind_roles(validation)` | agreed |
 | `rangekeeper.shared.errors.BoundaryError` | rangekeeper.errors.RangekeeperError | agreed |
 | `rangekeeper.shared.errors.ValueEncodingError` | rangekeeper.errors.EncodingError | agreed |
+| `rangekeeper.io.atomic` | `rangekeeper.io.json.write` and `rangekeeper.io.yaml.write`, which publish a new file atomically | agreed |
 
 ### Changes of API shape
 
@@ -401,6 +402,7 @@ them; the issues that the table names make the changes.
 | Fixed words are enums | Diagnostic codes are `rk.errors.Code` (#154); "the event does not happen" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings. | #255 D26 |
 | Date shift | `rk.duration.shift(value, by=)` is now `shift(on=, by=)`. `rk.duration.DateValue` (a date or `NEVER`) names its type. `shift` moves a date value by a length; `offset(value, frequency=, count=, month_roll=)` moves a date by whole steps of a Frequency. | #255 D14, D25, #389 |
 | Calendar grids | `containing_period(value, *, frequency=, week_start=, year_start_month=, origin=)` is now `containing_period(*, on=, grid=)`. The grid is `DayGrid()`, `WeekGrid(starts=calendar.Day.MONDAY)`, `MonthGrid(frequency=, year_starts=calendar.Month.JANUARY)` for months, quarters, half-years and years, or `MultiYearGrid(frequency=, origin=)` for bienniums, quinquenniums and decades. A grid takes only the choices that apply to it; a week grid takes no origin. | #399, #403 |
+| Bundle options | `rk.io.bundle.write(root, model, *, documents=, resolver=, geometry=, parquet=)` and `Reader(root, *, providers=, limits=, index=)`. `geometry=GeometrySources(directories={model_id: path}, providers={(provider, format, format_version): adapter})` replaces `geometry=`, `geometries=`, `provider=` and `providers=` of `write`; a pin with no provider uses `rk.io.geometry_providers`. `parquet=ParquetOptions(compression=, row_group_size=)` replaces `compression=` and `row_group_size=`. `limits=ReadLimits(documents=, bytes=, rows=)` replaces `max_documents=`, `max_bytes=` and `max_rows=`; `index=IndexCheck.SCHEMA` replaces `check_index=False`. `Reader` has no `provider=`. | #411, #422 |
 | Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215). | ADR-021, #255 D41, D42 |
 
 <!-- rename-map:end -->

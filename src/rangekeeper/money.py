@@ -25,8 +25,7 @@ from moneyed import list_all_currencies
 
 from rangekeeper.shared.amounts import (
     DIGITS,
-    canonical,
-    float_text,
+    encoded,
     text,
     text_digits,
     to_amount,
@@ -98,20 +97,8 @@ def minor_unit(code: str) -> int | None:
     return _MINOR_UNITS[code]
 
 
-def _encoded(value: object) -> object:
-    """Return the canonical text of a magnitude in currency units.
-
-    Construction converts an ``int`` exactly, a ``float`` through ``to_amount``
-    and decimal text exactly. Another value is returned unchanged, and the
-    record check rejects it.
-    """
-    if type(value) is str:
-        return canonical(value) or value
-    if type(value) is int:
-        return text(Decimal(value))
-    if type(value) is float and math.isfinite(value):
-        return float_text(value)
-    return value
+# The encoding of a currency magnitude; quantity and flow read it here.
+_encoded = encoded
 
 
 def _require(value: object, units: str, currency: bool) -> None:

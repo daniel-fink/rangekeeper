@@ -13,7 +13,7 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 | `shared/store.py` | `RecordStore` protocol: three typed reads plus `put(document) -> UUID`. `execution` depends on this protocol, not on `io`. Import it from `rangekeeper.io`. |
 | `io/json.py`, `io/yaml.py` | Explicit-kind `loads`, `dumps`, `read`, and atomic create-only `write`. YAML is imported only when used. |
 | `io/memory.py`, `io/directory.py` | `MemoryStore()` and `DirectoryStore(root)` implement immutable revision storage. |
-| `io/_document.py`, `io/atomic.py` | The `Document` union, small kind/envelope dispatch and filesystem publication helpers; no handwritten field schema. |
+| `io/_document.py`, `io/_atomic.py` | The `Document` union, small kind/envelope dispatch and filesystem publication helpers; no handwritten field schema. |
 
 Methods and helpers have docstrings documenting validation, error, mutation, and IO
 boundaries. Generated records remain the only field authority. Root imports expose

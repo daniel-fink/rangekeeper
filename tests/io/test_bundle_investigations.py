@@ -11,7 +11,7 @@ pytest.importorskip("pyarrow")
 from rangekeeper import Model, Run, Specification
 from rangekeeper.execution import execute
 from rangekeeper.io import MemoryStore, yaml
-from rangekeeper.io.bundle import Reader, identity, write
+from rangekeeper.io.bundle import ParquetOptions, Reader, ReadLimits, identity, write
 from rangekeeper.run import SolutionStatus
 from rangekeeper.schema.runtime import exact_equal
 from rangekeeper.shared.errors import (
@@ -94,8 +94,7 @@ def test_unexecuted_composition_history_and_repacking(tmp_path):
         model,
         documents=[spec],
         resolver=store,
-        compression="snappy",
-        row_group_size=1,
+        parquet=ParquetOptions(compression="snappy", row_group_size=1),
     )
     assert first["id"] == second["id"] != identity(model)
     reader = Reader(tmp_path / "one")
@@ -196,7 +195,7 @@ def test_document_budget_and_corrupt_supporting_payload(tmp_path):
     store, model, common, spec = inputs()
     manifest = write(tmp_path / "bundle", model, documents=[spec], resolver=store)
     with pytest.raises(ValueError, match="document limit"):
-        Reader(tmp_path / "bundle", max_documents=2)
+        Reader(tmp_path / "bundle", limits=ReadLimits(documents=2))
     path = tmp_path / "bundle" / manifest["documents"][0]["tables"][0]["path"]
     data = bytearray(path.read_bytes())
     data[-1] ^= 1

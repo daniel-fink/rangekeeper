@@ -154,3 +154,20 @@ def test_polars_flow_columns_use_slot_types():
             "_present": pl.List(pl.String),
         }
     )
+
+
+def test_polars_to_frame_takes_a_flow_a_stream_or_a_table():
+    from rangekeeper.flow import Stream
+
+    stream = Stream(flows={"area": _flow((1, 2))})
+    assert polars.to_frame(stream).equals(stream.to_frame())
+    with pytest.raises(TypeError, match="Flow, a Stream or a Table"):
+        polars.to_frame([1, 2])
+
+
+def test_polars_dates_needs_another_magnitude_name():
+    from rangekeeper.errors import Code, ContractError
+
+    with pytest.raises(ContractError) as raised:
+        polars.dates(_flow((1,)), name="date")
+    assert raised.value.code is Code.CONTRACT
