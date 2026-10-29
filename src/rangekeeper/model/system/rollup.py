@@ -355,6 +355,7 @@ class _Rollup:
         depth: int = 1,
         only: UUID | None = None,
         exclusive: bool = False,
+        label: str | None = None,
     ) -> "Pivot":
         """Roll up over ``hierarchy`` once per column of a Taxonomy below ``by``.
 
@@ -363,11 +364,23 @@ class _Rollup:
         the Classifications up to ``depth`` levels below ``by``, in Taxonomy order.
         Classifications include their sub-types unless ``exclusive``. Each cell is
         a ``RollupEntry`` from ``execute``, so means stay correctly weighted.
+
+        With ``label``, a column tests the Entity's Label with that key instead
+        of its Classification: an Entity is in every column that one of its
+        Label's Classifications matches. Without ``by``, the columns start at the
+        root of the one Taxonomy that the rows' Labels use. ``only`` still tests
+        the Entity's Classification.
         """
         from rangekeeper.model.system.pivot import pivot
 
         return pivot(
-            self, hierarchy, by=by, depth=depth, only=only, exclusive=exclusive
+            self,
+            hierarchy,
+            by=by,
+            depth=depth,
+            only=only,
+            exclusive=exclusive,
+            label=label,
         )
 
     def _eligible(self, entity: Entity, *, leaf: bool) -> bool:

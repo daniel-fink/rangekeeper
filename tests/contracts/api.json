@@ -2045,7 +2045,7 @@
     "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, weighting: MeanWeighting | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.rollup.RollupResult",
     "formulate": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, id: uuid.UUID, aggregates: collections.abc.Mapping[uuid.UUID, uuid.UUID])",
-    "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False) -> Pivot"
+    "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
    },
    "module": "rangekeeper.model.system.rollup",
    "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, weighting: MeanWeighting | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None"
@@ -2100,7 +2100,7 @@
   "Pivot": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn]) -> None",
+    "__init__": "method (self, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], *, label: str | None = None) -> None",
     "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None",
     "cell": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.rollup.RollupEntry",
     "children": "method (self, column: UUID | PivotColumn | None = None)",
@@ -2112,7 +2112,7 @@
     "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.pivot",
-   "signature": "(rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn]) -> None"
+   "signature": "(rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], *, label: str | None = None) -> None"
   },
   "PivotColumn": {
    "kind": "class",
@@ -2127,7 +2127,7 @@
    "members": {
     "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.rollup.RollupResult",
-    "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False) -> Pivot"
+    "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
    },
    "module": "rangekeeper.model.system.rollup",
    "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None) -> None"

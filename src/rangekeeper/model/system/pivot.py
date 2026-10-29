@@ -1,5 +1,8 @@
 """One recorded Value pivoted over a rows tree and a Taxonomy's columns.
 
+The columns test each Entity's Classification or, with a label key, the
+Classifications of its Label with that key.
+
 Every cell is a ``RollupEntry`` from a rollup's ``execute``. A Pivot adds no
 arithmetic; it only chooses each column's contributors and compares populations.
 """
@@ -11,7 +14,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from rangekeeper.flow import Flow
-from rangekeeper.model import Entity
+from rangekeeper.model import Entity, Label
 from rangekeeper.model.definitions import _classes
 from rangekeeper.model.system.errors import AggregationError
 from rangekeeper.model.system.hierarchy import Hierarchy
@@ -22,6 +25,7 @@ from rangekeeper.model.system.rollup import (
     RollupResult,
 )
 from rangekeeper.quantity import Quantity
+from rangekeeper.shared.arguments import require_text
 
 if TYPE_CHECKING:
     from rangekeeper.model.system.rollup import _Rollup
@@ -80,19 +84,30 @@ class Pivot:
 
     Columns keep their given order. Exactly one column is "All"
     (``classification=None``). Each column's parent is another column one level
-    up. Every RollupResult must use ``rows``.
+    up. Every RollupResult must use ``rows``. ``label`` names the Label key whose
+    Classifications chose the columns, or is None when the columns test each
+    Entity's own Classification.
     """
 
-    __slots__ = ("rows", "columns", "_columns", "_children", "_positions")
+    __slots__ = ("rows", "columns", "label", "_columns", "_children", "_positions")
     rows: Hierarchy
     columns: tuple[PivotColumn, ...]
+    label: str | None
     _columns: Mapping[UUID | None, PivotColumn]
     _children: Mapping[UUID | None, tuple[PivotColumn, ...]]
     _positions: Mapping[UUID, int]
 
-    def __init__(self, rows: Hierarchy, columns: Iterable[PivotColumn]) -> None:
+    def __init__(
+        self,
+        rows: Hierarchy,
+        columns: Iterable[PivotColumn],
+        *,
+        label: str | None = None,
+    ) -> None:
         if not isinstance(rows, Hierarchy):
             raise TypeError("rows must be a Hierarchy")
+        if label is not None:
+            require_text(label, "label")
         columns = tuple(columns)
         if any(not isinstance(item, PivotColumn) for item in columns):
             raise TypeError("columns must contain PivotColumn objects")
@@ -119,6 +134,7 @@ class Pivot:
             children.setdefault(item.parent, []).append(item)
         object.__setattr__(self, "rows", rows)
         object.__setattr__(self, "columns", columns)
+        object.__setattr__(self, "label", label)
         object.__setattr__(self, "_columns", MappingProxyType(index))
         object.__setattr__(
             self,
@@ -253,12 +269,47 @@ def _base_rule(
     return checked
 
 
-def _rule(base, classes):
-    if not classes:
+def _member(model, label, classes):
+    """Test an Entity's Classification, or its Label with key ``label``."""
+    if label is None:
+        return lambda entity: entity.classification in classes
+
+    def labelled(entity: Entity) -> bool:
+        found = model._local(Label, entity.id, label)
+        return found is not None and any(
+            item in classes for item in found.classifications or ()
+        )
+
+    return labelled
+
+
+def _rule(base, tests):
+    if not tests:
         return base
-    return lambda entity: (
-        base(entity) and all(entity.classification in group for group in classes)
-    )
+    return lambda entity: base(entity) and all(test(entity) for test in tests)
+
+
+def _label_root(model, rows: Hierarchy, label: str) -> UUID | None:
+    """Return the root of the one Taxonomy of the rows' ``label`` Labels."""
+    owners = {}
+    for taxonomy in (model.definitions.taxonomies if model.definitions else None) or ():
+        for item in taxonomy.classifications:
+            owners[item.id] = taxonomy
+    found = {}
+    for id in rows.preorder():
+        record = model._local(Label, id, label)
+        for item in (record.classifications if record else None) or ():
+            taxonomy = owners[item]
+            found[taxonomy.id] = taxonomy
+    if len(found) > 1:
+        raise AggregationError(
+            f"Labels {label!r} use Classifications of several Taxonomies; "
+            "pass by= to choose the column parent"
+        )
+    if not found:
+        return None
+    (taxonomy,) = found.values()
+    return next(item.id for item in taxonomy.classifications if item.parent is None)
 
 
 def _column_classes(definitions, by, depth):
@@ -292,6 +343,7 @@ def pivot(
     depth: int = 1,
     only: UUID | None = None,
     exclusive: bool = False,
+    label: str | None = None,
 ) -> Pivot:
     """Run one rollup per column; see ``QuantityRollup.pivot``."""
     if not isinstance(hierarchy, Hierarchy):
@@ -300,10 +352,18 @@ def pivot(
         raise ValueError("depth must be a positive int")
     if type(exclusive) is not bool:
         raise TypeError("exclusive must be bool")
+    if label is not None:
+        require_text(label, "label")
     model = hierarchy.view.model
     definitions = model.definitions
+    if by is None and label is not None:
+        by = _label_root(model, hierarchy, label)
     base = _base_rule(rollup, hierarchy)
-    scope = () if only is None else (_classes(definitions, only, exclusive=exclusive),)
+    scope = (
+        ()
+        if only is None
+        else (_member(model, None, _classes(definitions, only, exclusive=exclusive)),)
+    )
     everything = (
         rollup.execute(hierarchy)
         if only is None
@@ -313,7 +373,8 @@ def pivot(
     if by is not None:
         model.classification(by)
         for id, parent, level in _column_classes(definitions, by, depth):
-            rule = _rule(base, (*scope, _classes(definitions, id, exclusive=exclusive)))
+            classes = _classes(definitions, id, exclusive=exclusive)
+            rule = _rule(base, (*scope, _member(model, label, classes)))
             columns.append(
                 PivotColumn(
                     id,
@@ -322,7 +383,7 @@ def pivot(
                     replace(rollup, contributors=rule).execute(hierarchy),
                 )
             )
-    return Pivot(hierarchy, columns)
+    return Pivot(hierarchy, columns, label=label)
 
 
 __all__ = ["Pivot", "PivotColumn", "Partition"]

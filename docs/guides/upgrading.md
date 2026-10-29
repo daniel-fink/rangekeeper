@@ -144,7 +144,7 @@ This table lists the public names that 1.x consumers use, with their state in
 | `model.system.reduction.Aggregation` | `RollupResult` (the codemod renames it) | — |
 | `calculations.series.Aggregation` | `rangekeeper.flow.FlowAggregate` (the codemod renames it) | — |
 | `model.system.reduction.AggregateEntry`, `Coverage`, `CoverageStatus` | Unchanged | `rangekeeper.model.system.rollup.RollupEntry`, `Coverage`, `CoverageStatus` ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)); missing values never count as zero ([#157](https://github.com/daniel-fink/rangekeeper/issues/157)) |
-| `model.system.Pivot`, `PivotColumn`, `Partition` | Unchanged | A Pivot can use a label key for its columns (ADR-017) |
+| `model.system.Pivot`, `PivotColumn`, `Partition` | Unchanged | `pivot(..., label=)` splits the columns by a label key; `PivotColumn.aggregation` becomes `result` ([#158](https://github.com/daniel-fink/rangekeeper/issues/158), [#159](https://github.com/daniel-fink/rangekeeper/issues/159)) |
 | `model.system.classified`, `Model.descendants` | Unchanged | — |
 | `model.system.reducers` | Unchanged | Removed: the `Reducer` enum replaces it ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)) |
 | `shared.units.UnitSystem`, `default_units` | `rangekeeper.quantity.UnitSystem`, `default_units` (the codemod moves them). `Model.unit_system` is unchanged | — |
