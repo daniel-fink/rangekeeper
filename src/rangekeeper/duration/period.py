@@ -32,26 +32,48 @@ _LENGTH_UNITS = (
 )
 
 
-def steps(length: Quantity | str) -> tuple[Frequency, int]:
-    """Return the Frequency and count of a whole length, such as ``"10 years"``.
+def length_frequency(units: str) -> Frequency | None:
+    """Return the Frequency of calendar length units, such as ``"years"``, or None."""
+    parsed = default_units._parse(units)
+    for name, frequency in _LENGTH_UNITS:
+        if parsed == default_units._parse(name):
+            return frequency
+    return None
+
+
+def signed_steps(length: Quantity | str) -> tuple[Frequency, int]:
+    """Return the Frequency and signed count of a whole length, such as ``"-1 year"``.
 
     A length is a whole number of days, weeks, months, quarters or years, as
-    a Quantity or its text.
+    a Quantity or its text. Zero and negative counts are permitted.
     """
     quantity = Quantity(text=length) if isinstance(length, str) else length
     if not isinstance(quantity, records.Quantity):
         raise TypeError("length must be a Quantity or its text")
-    units = default_units._parse(quantity.units)
-    for name, frequency in _LENGTH_UNITS:
-        if units == default_units._parse(name):
-            number = float(quantity.magnitude)
-            if number.is_integer() and number > 0:
-                return frequency, int(number)
-            break
-    raise UnitError(
-        f"length {quantity.magnitude} {quantity.units} is not a positive whole "
-        "number of days, weeks, months, quarters or years"
-    )
+    frequency = length_frequency(quantity.units)
+    number = float(quantity.magnitude)
+    if frequency is None or not number.is_integer():
+        raise UnitError(
+            f"length {quantity.magnitude} {quantity.units} is not a whole "
+            "number of days, weeks, months, quarters or years"
+        )
+    return frequency, int(number)
+
+
+def steps(length: Quantity | str) -> tuple[Frequency, int]:
+    """Return the Frequency and count of a whole length, such as ``"10 years"``.
+
+    A length is a positive whole number of days, weeks, months, quarters or
+    years, as a Quantity or its text.
+    """
+    frequency, count = signed_steps(length)
+    if count <= 0:
+        quantity = Quantity(text=length) if isinstance(length, str) else length
+        raise UnitError(
+            f"length {quantity.magnitude} {quantity.units} is not a positive whole "
+            "number of days, weeks, months, quarters or years"
+        )
+    return frequency, count
 
 
 @register

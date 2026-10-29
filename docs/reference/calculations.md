@@ -329,6 +329,29 @@ anchor, so `extend` keeps a month-end anchor. Only a Span partition with
 `include_partial=True` ends with a partial Period, and it cannot extend.
 `containing(on=)` raises `MissingReferenceError` for a date outside.
 
+## Dates and NEVER
+
+A date value is a calendar date or `rk.duration.NEVER`. NEVER means the event
+does not happen; `None` means missing. NEVER is the one member of the
+`rk.duration.Never` enum. `rk.duration.shift(on, by=)` returns the date a whole
+length later, or earlier for a negative length:
+
+```python
+from datetime import date
+
+import rangekeeper as rk
+
+rk.duration.shift(date(2027, 1, 1), by="1 year")  # date(2028, 1, 1)
+rk.duration.shift(date(2027, 1, 31), by="1 month")  # date(2027, 2, 28)
+rk.duration.shift(date(2027, 1, 1), by="-3 months")  # date(2026, 10, 1)
+rk.duration.shift(rk.duration.NEVER, by="1 year")  # rk.duration.NEVER
+```
+
+A length is a whole number of days, weeks, months, quarters or years; other units
+or a fraction raise `UnitError`. Month steps use `MonthRoll.PRESERVE_END`. NEVER
+equals NEVER and is later than every date. Date Values and date Expressions use
+the same rules ([expressions](expressions.md#dates-and-never)).
+
 ## Calendar choices
 
 `Frequency` owns the ten supported steps. `duration.offset`, `measure`, `align`,

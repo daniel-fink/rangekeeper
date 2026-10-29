@@ -20,6 +20,10 @@ on this page. Unknown and ambiguous text fails with suggestions.
 
 Names accept a plural `s`, for example `meters` and `dwellings`. Symbols do not.
 A year is 365.25 days, and a month is one twelfth of a year.
+A date plus a length is a calendar step, not a number of days: `1 year` after
+1 March 2027 is 1 March 2028, and `1 month` after 31 January is 28 February
+([dates and NEVER](calculations.md#dates-and-never)). A date length is a whole
+number of days, weeks, months, quarters or years.
 
 Unit text can use `*`, `/`, `**` or `^`, and spaces for multiplication. `per` is
 division, and a leading `per` means `1 /`:

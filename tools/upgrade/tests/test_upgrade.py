@@ -175,3 +175,20 @@ def test_filters_keep_their_exact_match():
     assert "exclusive" not in query["filter"]
     # A Filter without a classification gets no exclusive field.
     assert _fields("Filter", {"labels": []}) == {"labels": []}
+
+
+def test_a_property_date_stays_a_property_value():
+    from tools.upgrade.convert import _fields
+
+    # The 0.x formats have no date kind (#280): a date in property content stays
+    # property content, and the converted Value has no date or never field.
+    value = {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "key": "start_date",
+        "kind": "property",
+        "content": {"kind": "date", "text": "2027-01-01"},
+    }
+    result = _fields("Value", value)
+    assert result == value
+    assert not {"date", "never"} & set(result)
+    assert all("never" not in keys(load(name)) for name in ("model.json", "run.json"))

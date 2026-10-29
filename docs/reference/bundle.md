@@ -78,6 +78,8 @@ integers, floating representations, collection order and opaque schema content.
 A currency amount is the `Amount` option of the magnitude union: a `string`
 field with its canonical text ([currency amounts](units.md#currency-amounts)).
 A reader casts it to `DECIMAL(38, s)` or `DOUBLE` for analysis.
+A calendar date, such as a Period boundary, a date Value's `date` or a date
+literal, is its ISO text; a `never` field is the text `never`.
 Record/reference indexes are checked against reconstruction. No canonical root is
 stored as an opaque JSON fallback.
 

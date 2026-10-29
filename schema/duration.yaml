@@ -28,3 +28,10 @@ classes:
       name:
         description: Optional name of the extent.
         range: string
+enums:
+  Never:
+    description: The one word for an event that does not happen. NEVER is a date-valued result, not a
+      missing value; an absent date is unresolved.
+    permissible_values:
+      never:
+        description: The event does not happen. NEVER is later than every calendar date.

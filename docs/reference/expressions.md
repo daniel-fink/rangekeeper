@@ -26,6 +26,8 @@ does not pass.
 | --- | --- |
 | Numerical literal | `quantity`: embedded Quantity with magnitude and explicit units |
 | Boolean literal | `boolean`: true or false |
+| Date literal | `date`: an ISO calendar date, such as `2027-01-01` |
+| NEVER literal | `never`: `never`, the event does not happen |
 | Value reference | `reference`: target Reference (Value or Movement UUID) |
 | Unary operation | `unary`: operator and one `operand` |
 | Binary operation | `binary`: operator and two ordered `operands` |
@@ -46,13 +48,34 @@ Zero and false are meaningful content. Missing or
 null literal content is invalid. A reference to an unresolved Value is valid.
 Optional list fields may be absent, null, or empty to denote no entries; canonical codecs preserve those distinctions. Required operation content cannot be null or empty.
 
-Date and string literal nodes are deferred until a concrete operation requires
-them. Rule guards or action arguments may provide such requirements; their
-comparison, typing, and execution semantics will need to be specified together.
-This does not remove date or string result domains: a reference, selection, or call
-can return such content under its declared contract. For example, selecting a
-Span endpoint can return a date without a date literal node. Selector names and
+String literal nodes are deferred until a concrete operation requires them.
+This does not remove string result domains: a reference, selection, or call can
+return such content under its declared contract. Selector names and
 characteristic keys are schema fields, not string literal expressions.
+
+## Dates and NEVER
+
+A date literal, a NEVER literal, a reference to a date Value and a selected Span
+endpoint have the `date` domain. `authoring.date_literal(value)` declares a date
+or `rk.duration.NEVER`. `NEVER` means the event does not happen; it is not missing.
+A date Value with no recorded content is unresolved, not NEVER. In equation text
+NEVER is written `NEVER`; the word is reserved, so no Value key can be `NEVER`.
+
+| Operation | Result |
+| --- | --- |
+| date + length, length + date, date − length | A date. A length is a whole number of days, weeks, months, quarters or years, such as `1 year` |
+| NEVER + length, NEVER − length | NEVER |
+| `==`, `!=`, `<`, `<=`, `>`, `>=` on two dates | Boolean. NEVER equals NEVER and is later than every date |
+
+A month, quarter or year step keeps the last day of a month: 31 January plus one
+month is 28 February, and 28 February plus one month is 31 March
+([calendar rules](calculations.md)). Validation rejects every other operation on a
+date: the difference of two dates, a date and a number or an amount, negation,
+multiplication and a comparison of a date with a Quantity.
+`rk.duration.shift(on, by=)` applies the same arithmetic in Python, and
+`rangekeeper.model.expression.evaluation.evaluate_date` and `compare_dates`
+evaluate date Expressions from supplied values. The executor does not solve
+date equations yet.
 
 Comparisons produce Boolean expressions. A Constraint asserts that one must
 hold. Equality is not assignment. Boolean operators require Booleans, without
@@ -199,7 +222,8 @@ The schemas and checks establish:
 - Variant structure, operator form, typed UUID syntax, and nested operand order.
 - Function signatures, collection domains, traversal and projection options.
 - Generated Python round trips, including false, zero, and date-valued selections.
-- Rejection of deferred date and string literal nodes.
+- Date and NEVER literal nodes, date arithmetic and date comparisons; rejection of
+  deferred string literal nodes.
 - Bounded reference, argument-binding, coarse domain, and identity checks.
 - Constraint predicate references and Boolean result domains, including nested
   and reused predicates, Boolean calls, and literal false predicates.

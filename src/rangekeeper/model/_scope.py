@@ -176,9 +176,9 @@ def check_value_content(scope):
                 "unknown Value Measure",
             )
             forbidden = (
-                ("flow", "content")
+                ("flow", "content", "date", "never")
                 if kind == "measurement"
-                else ("quantity", "content")
+                else ("quantity", "content", "date", "never")
             )
             require(
                 all(value.get(field) is None for field in forbidden),
@@ -189,14 +189,26 @@ def check_value_content(scope):
                     Flow.from_data(value["flow"]).check()
                 except (ValueError, TypeError) as error:
                     require(False, str(error))
+        elif kind == "date":
+            require(
+                all(
+                    value.get(field) is None
+                    for field in ("measure", "quantity", "flow", "content")
+                ),
+                "date Value carries only a date or NEVER",
+            )
+            require(
+                value.get("date") is None or value.get("never") is None,
+                "date Value cannot record both a date and NEVER",
+            )
         else:
             require(kind == "property", "unsupported Value kind")
             require(
                 all(
                     value.get(field) is None
-                    for field in ("measure", "quantity", "flow")
+                    for field in ("measure", "quantity", "flow", "date", "never")
                 ),
-                "property Value cannot carry measurement content",
+                "property Value cannot carry measurement or date content",
             )
             if value.get("content") is not None:
                 try:

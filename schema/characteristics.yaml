@@ -66,8 +66,10 @@ classes:
     - A Value has one canonical owner in a Model revision. Formulations may reference
       existing domain Values or own local Values; referencing does not copy content
       or change ownership.
-    - Measurement, Flow and structured property content have distinct fields. A Flow
-      is owned by its Value; Streams group references to Values.
+    - Measurement, Flow, date and structured property content have distinct fields.
+      A Flow is owned by its Value; Streams group references to Values.
+    - A date Value has no Measure. It records a calendar date, or NEVER when its event
+      does not happen. An absent date and an absent never are unresolved, not NEVER.
     - An absent or null Quantity is unresolved, not zero. A present Quantity has explicit
       units compatible with the Measure's canonical units. Facts and Claims explain
       recorded content. Fixed and unknown roles belong to Specifications; recorded
@@ -102,6 +104,13 @@ classes:
         description: Inert typed content of a property Value.
         range: PropertyContent
         inlined: true
+      date:
+        description: Recorded calendar date of a date Value; absent when the date is unresolved
+          or NEVER.
+        range: date
+      never:
+        description: Records that the event of a date Value does not happen; it excludes date.
+        range: Never
     slot_usage:
       measure:
         required: false
@@ -132,3 +141,5 @@ enums:
         description: Temporal quantities with a Measure and optional Flow.
       property:
         description: Inert typed property content with no Measure.
+      date:
+        description: A calendar date or NEVER, with no Measure.

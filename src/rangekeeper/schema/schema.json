@@ -1307,6 +1307,46 @@
           "if": {
             "properties": {
               "kind": {
+                "const": "date"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "date": {}
+            },
+            "required": [
+              "date"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "never"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "never": {}
+            },
+            "required": [
+              "never"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
                 "const": "reference"
               }
             },
@@ -1458,6 +1498,8 @@
                 "enum": [
                   "quantity",
                   "boolean",
+                  "date",
+                  "never",
                   "reference",
                   "call",
                   "selection",
@@ -1497,6 +1539,22 @@
           },
           "required": [
             "boolean"
+          ]
+        },
+        {
+          "properties": {
+            "date": {}
+          },
+          "required": [
+            "date"
+          ]
+        },
+        {
+          "properties": {
+            "never": {}
+          },
+          "required": [
+            "never"
           ]
         },
         {
@@ -1572,6 +1630,14 @@
           ],
           "description": "Function call content of a call Expression."
         },
+        "date": {
+          "description": "Calendar date literal of a date Expression.",
+          "format": "date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "id": {
           "description": "Stable identity of this Expression across Model revisions.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
@@ -1580,6 +1646,10 @@
         "kind": {
           "$ref": "#/$defs/ExpressionKind",
           "description": "Form of the Expression; it determines which content field is present."
+        },
+        "never": {
+          "$ref": "#/$defs/Never",
+          "description": "The NEVER literal of a never Expression; the event does not happen."
         },
         "operand": {
           "allOf": [
@@ -1650,6 +1720,8 @@
       "enum": [
         "quantity",
         "boolean",
+        "date",
+        "never",
         "reference",
         "unary",
         "binary",
@@ -2537,6 +2609,14 @@
       ],
       "title": "Movement",
       "type": "object"
+    },
+    "Never": {
+      "description": "The one word for an event that does not happen. NEVER is a date-valued result, not a missing value; an absent date is unresolved.",
+      "enum": [
+        "never"
+      ],
+      "title": "Never",
+      "type": "string"
     },
     "Objective": {
       "additionalProperties": false,
@@ -4483,6 +4563,14 @@
           ],
           "description": "Inert typed content of a property Value."
         },
+        "date": {
+          "description": "Recorded calendar date of a date Value; absent when the date is unresolved or NEVER.",
+          "format": "date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "description": {
           "description": "Explanation of the meaning of this Value within its owner.",
           "type": [
@@ -4523,6 +4611,10 @@
             "null"
           ]
         },
+        "never": {
+          "$ref": "#/$defs/Never",
+          "description": "Records that the event of a date Value does not happen; it excludes date."
+        },
         "quantity": {
           "anyOf": [
             {
@@ -4548,7 +4640,8 @@
       "enum": [
         "measurement",
         "flow",
-        "property"
+        "property",
+        "date"
       ],
       "title": "ValueKind",
       "type": "string"
