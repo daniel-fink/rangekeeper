@@ -819,8 +819,7 @@ removed:
     replacement: >-
       `rangekeeper.execution.execute(specification, store, config=)`, which
       returns an `Outcome`; read the Run as `outcome.run`. Use
-      `rangekeeper.execution.solve(specification, resolver, config=)` to write
-      nothing
+      `rangekeeper.execution.solve(specification, config=)` to write nothing
     status: agreed
     source: "ADR-013, #126"
   - name: rangekeeper.execution.publication.CandidateResolver

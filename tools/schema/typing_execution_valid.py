@@ -28,4 +28,4 @@ def answer(specification: Specification, store: MemoryStore) -> Outcome:
     outcome = solve(specification, store)
     run: Run = outcome.run
     assert run.id == outcome.run.id
-    return outcome
+    return solve(specification=specification)

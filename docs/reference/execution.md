@@ -18,11 +18,17 @@ that it found.
 
 | Function | Writes | Returns |
 | --- | --- | --- |
-| `solve(specification, resolver, *, config=None)` | Nothing | An `Outcome` |
+| `solve(specification, resolver=None, *, config=None)` | Nothing | An `Outcome` |
 | `execute(specification, store, *, config=None)` | The Specification, then for each case its outputs and then its Run, cases before their batch | The same `Outcome` |
 
-`resolver` is any `DocumentResolver`, for example a `MemoryStore`; it must
-supply the Models, includes and cases that the Specification names. `store` is a
+Without `resolver`, `solve` resolves the documents that made the Specification:
+the Model revision that `model.specify()` pinned, the Specification itself, and
+what the Specification's own resolver supplies, such as its includes. Each
+chained call (`fix`, `free`) keeps them, so `solve(specification=back)` needs no
+store. A Specification read from data keeps none of them; pass `resolver` for
+it, or a missing revision raises `MissingReferenceError`. `resolver` is any
+`DocumentResolver`, for example a `MemoryStore`; it must supply the Models,
+includes and cases that the Specification names. `store` is a
 `MemoryStore`, `DirectoryStore` or a compatible `RecordStore`. `config` is an
 [`ExecutionConfig`](#configuration); without it, the defaults apply. Each Run
 records the backend as a `solver` implementation, with its registered name and
