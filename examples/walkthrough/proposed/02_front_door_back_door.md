@@ -465,7 +465,7 @@ has 13 lines (cell 10b). Cells follow `ruff format` (D15).
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 1 | 1, 10 | Walkthrough helpers package ([#87](https://github.com/daniel-fink/rangekeeper/issues/87), [#88](https://github.com/daniel-fink/rangekeeper/issues/88)) |
-| 2 | 10 | G07: `helpers.load_property` gives each total with its origin. It sums the floors of the data package by use and grows the rates to the year; it declares none of the lesson's equations |
+| 2 | 10 | G07: `helpers.load_property` loads each total with its origin from the derived file `totals_2032.json` of the data package. It does no arithmetic; [`derive_totals.py`](../../data/derive_totals.py) makes the file |
 | 2b | 10 | G07: `helpers.show_geometry(name=)` draws the design's geometry. It shows no graph and no values |
 | 3 | 6 | By hand once; replaced in cells 9–11 |
 | 4–6 | 2, 3, 5 | `rk.Model`, `edit`, `commit` ([#141](https://github.com/daniel-fink/rangekeeper/issues/141), [#145](https://github.com/daniel-fink/rangekeeper/issues/145), [#151](https://github.com/daniel-fink/rangekeeper/issues/151)). G08: `rk.Model(name=)`, `ModelDraft.add_entity` and `entity`, entity handles with `value(key=, units=)` and `equations` (D6, D16) |

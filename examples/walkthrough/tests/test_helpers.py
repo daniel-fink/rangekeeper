@@ -110,7 +110,7 @@ def test_load_property_gives_each_total_with_units_and_origin():
     assert data["operating_cost"].magnitude > 0
     assert "finance allowance" in data.origin("works_cost")
     assert "hotel_vacancy" in data._repr_html_()
-    with pytest.raises(ValueError, match="stabilised year"):
+    with pytest.raises(ValueError, match="No totals for 2031"):
         load_property(year=2031)
 
 

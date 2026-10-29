@@ -1,26 +1,21 @@
 """Load the totals of the mixed-use property from its data package.
 
-``load_property(year=)`` reads the floor inventory and the teaching assumptions
-of ``examples/data/mixed_use_property`` and returns one total for each key, with
-its origin. Each total is a sum over the 33 floor objects at the rates of the
-floor's use, on the plan's growth calendar. The lesson declares every financial
-equation between the totals (ADR-020, principle 10). Lesson 06 shows the floors
-behind each total.
+``load_property(year=)`` reads ``totals_<year>.json`` from
+``examples/data/mixed_use_property`` and returns one Quantity for each key, with
+its origin. It does no arithmetic. ``examples/data/derive_totals.py`` derives the
+file from the floor inventory and the teaching assumptions, and documents how.
+The lesson declares every financial equation between the totals (ADR-020,
+principle 10). Lesson 06 shows the floors behind each total.
 """
 
-import csv
 import json
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from html import escape
-from math import fsum
 
 import rangekeeper as rk
 
 from .plot import DATA
-
-USES = ("hotel", "residential", "retail", "parking")
-RENTED = USES[:-1]  # Parking earns no rent.
 
 
 def _shown(quantity: rk.Quantity) -> str:
@@ -78,84 +73,24 @@ class Totals(Mapping[str, rk.Quantity]):
         return "\n".join(lines)
 
 
-def _floors():
-    with (DATA / "inventory.csv").open(newline="", encoding="utf-8") as file:
-        rows = [row for row in csv.DictReader(file) if row["classification"] == "floor"]
-    if len(rows) != 33 or any(row["effective_use"] not in USES for row in rows):
-        raise ValueError("The inventory must have 33 floors, each with a known use")
-    return rows
-
-
-def _income(totals, *, uses, growth_years):
-    for use in RENTED:
-        rates = uses[use]
-        rent = rates["initial_rent_AUD_per_m2_per_year"]
-        growth = rates["annual_income_growth"]
-        totals[f"{use}_area"] = Total(
-            rk.Quantity(magnitude=_gfa(use) * rates["efficiency"], units="sqm"),
-            f"inventory.csv GFA × efficiency {rates['efficiency']:g}",
-        )
-        totals[f"{use}_rent"] = Total(
-            rk.Quantity(
-                magnitude=rent * (1 + growth) ** growth_years, units="AUD per sqm pa"
-            ),
-            f"{rent:g} AUD per sqm pa, grown {growth:.1%} pa for {growth_years} years",
-        )
-        totals[f"{use}_vacancy"] = Total(
-            rk.Quantity(magnitude=rates["vacancy"] * 100, units="%"),
-            "assumptions.json",
-        )
-
-
-def _gfa(use):
-    return fsum(
-        float(row["gfa_m2"]) for row in _floors() if row["effective_use"] == use
-    )
-
-
 def load_property(*, year: int) -> Totals:
     """Return the totals of the completed property in one stabilised ``year``.
 
-    Lettable area is floor GFA times the use's efficiency. Rents and operating
-    costs grow from the plan's base year on one calendar (``development.json``).
-    The operating cost is a positive amount: floor and facade OPEX of every use,
-    parking included. The works cost is the plan's construction budget with soft
-    costs and contingency, and its construction finance allowance.
+    The data package has a totals file for 2032 only. The works cost includes
+    the plan's soft costs, contingency and construction finance allowance; the
+    operating cost is a positive amount. Parking earns no rent, so it has no
+    area, rent or vacancy key.
     """
-    assumptions = json.loads((DATA / "assumptions.json").read_text(encoding="utf-8"))
-    plan = json.loads((DATA / "development.json").read_text(encoding="utf-8"))
-    base = int(plan["base_date"][:4])
-    end = int(plan["horizon_end_exclusive"][:4])
-    if type(year) is not int or not plan["stabilised_year"] <= year < end:
-        raise ValueError(
-            f"year must be a stabilised year, {plan['stabilised_year']} to {end - 1}"
+    path = DATA / f"totals_{year}.json"
+    if not path.is_file():
+        available = sorted(item.stem[-4:] for item in DATA.glob("totals_*.json"))
+        raise ValueError(f"No totals for {year}; the data package has {available}")
+    content = json.loads(path.read_text(encoding="utf-8"))
+    totals = {
+        key: Total(
+            rk.Quantity(magnitude=item["magnitude"], units=item["units"]),
+            item["origin"],
         )
-    uses = assumptions["use_assumptions"]
-    totals = {}
-    opex = fsum(
-        float(row["gfa_m2"])
-        * -uses[row["effective_use"]]["floor_opex_AUD_per_m2_per_year"]
-        + float(row["perimeter_m"])
-        * float(row["ftf_m"])
-        * -uses[row["effective_use"]]["facade_opex_AUD_per_m2_per_year"]
-        for row in _floors()
-    )
-    growth = assumptions["annual_opex_growth"]
-    rates = plan["construction_AUD_per_m2"]
-    soft = plan["soft_cost_fraction_of_hard_cost"]
-    contingency = plan["contingency_fraction_of_hard_cost"]
-    finance = plan["construction_finance_allowance_AUD"]
-    works = fsum(_gfa(use) * rates[use] for use in USES) * (1 + soft + contingency)
-    totals["works_cost"] = Total(
-        rk.Quantity(magnitude=works + finance, units="AUD"),
-        f"GFA × construction rate by use, + {soft:.0%} soft costs "
-        f"+ {contingency:.0%} contingency, + {finance / 1e6:g} million AUD "
-        "finance allowance",
-    )
-    totals["operating_cost"] = Total(
-        rk.Quantity(magnitude=opex * (1 + growth) ** (year - base), units="AUD pa"),
-        f"Floor and facade OPEX of all uses, grown {growth:.1%} pa "
-        f"for {year - base} years",
-    )
-    _income(totals, uses=uses, growth_years=year - base)
+        for key, item in content["totals"].items()
+    }
     return Totals(totals, title=f"Mixed-use property, stabilised year {year}")

@@ -464,7 +464,12 @@ Not filed as gaps:
   `show_decisions`, `plot_paths`, `plot_cash_flows`, `plot_flows`,
   `plot_target_curve` and `plot_decisions`. Lesson 02 added `load_property`,
   `show_equations(of=)` and `show_geometry(name=)` to the
-  [walkthrough helpers](../helpers/README.md). Notes for that work:
+  [walkthrough helpers](../helpers/README.md). `load_property` only loads: the
+  data package holds the totals as a derived file, `totals_2032.json`, with a
+  manifest entry, and
+  [`derive_totals.py`](../../data/derive_totals.py) derives it from the inventory
+  and the teaching assumptions. A test checks that the file is that derivation.
+  Notes for that work:
   - **Drawing stack.** Plotly (plotly.js, with a local bundle and the shared light
     and dark theme) draws the charts, the timeline and the equation network.
     vis-network (through PyVis, which leaves the library under ADR-010) draws the

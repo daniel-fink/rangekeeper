@@ -1,6 +1,7 @@
 """The mixed-use property data package records its licence and provenance."""
 
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 
@@ -69,3 +70,18 @@ def test_each_teaching_assumption_names_its_origin(name):
             assert origin["from"], pattern
         else:
             assert origin["note"], pattern
+
+
+def test_the_totals_file_is_the_derivation_of_the_package():
+    # examples/data/derive_totals.py writes the file; it must not be edited by hand.
+    path = DATA.parent / "derive_totals.py"
+    spec = importlib.util.spec_from_file_location("derive_totals", path)
+    assert spec is not None and spec.loader is not None
+    derive_totals = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(derive_totals)
+    text = (DATA / "totals_2032.json").read_text(encoding="utf-8")
+    assert text == derive_totals.text()
+    items = ("area", "rent", "vacancy")
+    keys = {f"{use}_{item}" for use in derive_totals.RENTED for item in items}
+    totals = load("totals_2032.json")["totals"]
+    assert set(totals) == {"works_cost", "operating_cost", *keys}
