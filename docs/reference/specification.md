@@ -157,9 +157,10 @@ back.roles  # each value: fixed with its Quantity, free or decided
 
 `fix(**values)` fixes each named value, and `free(*targets)` releases a value
 that was fixed before. A fix or free replaces an earlier fix or free of the same
-target in this Specification, and `fix` also removes its estimates. Both retain
-the equations and unrelated Specification content. When no role changes, such as
-a free of a free value, the call returns the same Specification.
+target in this Specification. `fix` also removes the estimate of its target;
+`free` keeps it. Both retain the equations and unrelated Specification content.
+When no role changes, such as a free of a free value, the call returns the same
+Specification, with its estimates.
 
 | Target | Meaning |
 | --- | --- |
@@ -196,8 +197,8 @@ its resolver. A batch has no roles (`ValueError`).
 ## Move to another Model revision
 
 `on(model=)` returns a new Specification of another Model revision, with the
-same fixes, rules and estimates; the Specification that it is called on does not
-change. Its Metadata has a new UUID and `previous=specification.id`. The free
+same fixes, rules and estimates of free values; the Specification that it is
+called on does not change. Its Metadata has a new UUID and `previous=specification.id`. The free
 values are those that the equations of the new revision use and that nothing
 fixes or decides, so a value that the revision adds is free.
 
@@ -209,9 +210,11 @@ lean = front.free("operating_cost").on(model=without_operating_cost)
 Each fixed or decided target must be a Value or Movement that the new revision
 declares. Otherwise `on` raises `ContractError` with the code
 `REFERENCE_MISSING`, the target UUIDs in `targets` and their keys in
-`values["keys"]`: free the value first, then call `on`. Each fixed Quantity and
-estimate must convert to the units of its target in the new revision
-(`UnitError`). `on` keeps a target by its UUID, so it follows a Value that a
+`values["keys"]`: free the value first, then call `on`. Each fixed Quantity must
+convert to the units of its target in the new revision (`UnitError`). An
+estimate stays only when its target is free in the new revision, and then its
+Quantity must convert too; `on` drops the estimate of a value that the revision
+does not declare or that a fix or rule controls. `on` keeps a target by its UUID, so it follows a Value that a
 draft of the earlier revision kept, or that a Model with the same namespace
 derives. A batch, or a Specification with includes, raises `ValueError`. When
 the Model is the pinned revision, `on` returns the same Specification.
