@@ -1,6 +1,6 @@
 """The role of each value in a Specification: fixed, free or decided by a rule."""
 
-from enum import Enum, unique
+from enum import StrEnum, unique
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -20,16 +20,15 @@ if TYPE_CHECKING:
 
 
 @unique
-class Role(Enum):
-    """The role of a value in a Specification.
-
-    A fixed value has a Quantity. The solve finds a free value. A rule decides
-    a decided value.
-    """
+class Role(StrEnum):
+    """The role of a value in a Specification."""
 
     FIXED = "fixed"
+    """The Specification gives the value a Quantity."""
     FREE = "free"
+    """The solve finds the value. A value that is not fixed is free."""
     DECIDED = "decided"
+    """A rule fixes the value on its decision date."""
 
 
 ROLE_COLUMNS = ("key", "movement", "role", "quantity")
