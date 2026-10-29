@@ -19,11 +19,13 @@ from rangekeeper.duration.calendar import (
     require_month_roll,
 )
 from rangekeeper.duration.calendar import PeriodTiming as PeriodTiming
+from rangekeeper.duration.errors import AlignmentError
 from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
 from rangekeeper.schema.runtime import UNSET, Unset
-from rangekeeper.shared.errors import MissingReferenceError, UnitError
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError, MissingReferenceError, UnitError
 
 # The calendar unit of each whole-step length, such as "10 years".
 _LENGTH_UNITS = (
@@ -172,7 +174,16 @@ class Span(records.Span, Period):
         if rest == self.end:
             return Periods._of(whole, steps=steps, first=0)
         if not include_partial:
-            raise ValueError("span contains a partial final period")
+            raise AlignmentError(
+                f"{_interval(self)} ends with a partial {frequency.value}; "
+                "pass include_partial=True to keep it",
+                code=Code.ALIGNMENT_PARTIAL,
+                values={
+                    "span": _interval(self),
+                    "frequency": frequency.value,
+                    "partial": _interval(Period(start=rest, end=self.end)),
+                },
+            )
         return Periods._of(
             (*whole, Period(start=rest, end=self.end)), steps=steps, first=0
         )
@@ -231,8 +242,7 @@ class Periods(Sequence[Period]):
         month_roll: MonthRoll = MonthRoll.PRESERVE_END,
     ) -> None:
         steps = _Steps(anchor=start, frequency=frequency, month_roll=month_roll)
-        if type(count) is not int or count < 0:
-            raise ValueError("period count must be a nonnegative integer")
+        _require_count(count)
         self._assign(steps.periods(0, count), steps=steps, first=0)
 
     @classmethod
@@ -288,7 +298,9 @@ class Periods(Sequence[Period]):
         if isinstance(index, slice):
             start, stop, step = index.indices(len(self))
             if step != 1:
-                raise ValueError("a slice of Periods takes every Period")
+                raise ContractError(
+                    "a slice of Periods takes every Period", values={"step": step}
+                )
             return self._slice(start, max(start, stop))
         return self._periods[index]
 
@@ -323,17 +335,31 @@ class Periods(Sequence[Period]):
         ]
         for i in inside:
             if self._periods[i].start < span.start or self._periods[i].end > span.end:
-                raise ValueError("trim crosses a Period; choose whole Periods")
+                raise AlignmentError(
+                    f"{_interval(span)} crosses the Period "
+                    f"{_interval(self._periods[i])}; choose whole Periods",
+                    code=Code.ALIGNMENT_CROSSES,
+                    values={
+                        "span": _interval(span),
+                        "period": _interval(self._periods[i]),
+                    },
+                )
         if not inside:
             return self._slice(0, 0)
         return self._slice(inside[0], inside[-1] + 1)
 
     def extend(self, *, count: int) -> Periods:
         """Return these Periods with ``count`` more steps at the end."""
-        if type(count) is not int or count < 0:
-            raise ValueError("count must be a nonnegative integer")
+        _require_count(count)
         if self._periods and self._periods[-1].end != self._boundary(len(self)):
-            raise ValueError("cannot extend Periods that end with a partial Period")
+            raise AlignmentError(
+                f"{self!r} ends with a partial Period and cannot extend",
+                code=Code.ALIGNMENT_PARTIAL,
+                values={
+                    "frequency": self.frequency.value,
+                    "partial": _interval(self._periods[-1]),
+                },
+            )
         stop = self._first + len(self) + count
         return Periods._of(
             self._steps.periods(self._first, stop), steps=self._steps, first=self._first
@@ -353,9 +379,25 @@ class Periods(Sequence[Period]):
 def cover(periods: Sequence[Period], *, name: str | None = None) -> Span:
     """Return a Span covering all intervals, including gaps between them."""
     if not periods:
-        raise ValueError("cover requires at least one interval")
+        raise ContractError("cover takes at least one Period", values={"count": 0})
     return Span(
         start=min(p.start for p in periods),
         end=max(p.end for p in periods),
         name=name,
     )
+
+
+def _require_count(count: int) -> None:
+    """Require a whole, nonnegative number of Periods."""
+    if type(count) is not int:
+        raise TypeError("count must be an integer")
+    if count < 0:
+        raise ContractError(
+            f"count {count} is negative; give zero or more Periods",
+            values={"count": count},
+        )
+
+
+def _interval(period: Period) -> str:
+    """Return a Period as an ISO 8601 interval, such as ``2026-01-01/2026-02-01``."""
+    return f"{period.start.isoformat()}/{period.end.isoformat()}"
