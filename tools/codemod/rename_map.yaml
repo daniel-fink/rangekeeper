@@ -941,6 +941,12 @@ removed:
     replacement: rangekeeper.errors.EncodingError
     status: agreed
     source: ADR-016
+  - name: rangekeeper.io.atomic
+    replacement: >-
+      `rangekeeper.io.json.write` and `rangekeeper.io.yaml.write`, which
+      publish a new file atomically
+    status: agreed
+    source: "#411"
 
 # Decisions of #255 that change API shapes, not names. They are listed in the
 # upgrade guide. The codemod does not apply them.
@@ -1022,6 +1028,10 @@ notes:
     status: agreed
     source: "#399, #403"
     note: "`containing_period(value, *, frequency=, week_start=, year_start_month=, origin=)` is now `containing_period(*, on=, grid=)`. The grid is `DayGrid()`, `WeekGrid(starts=calendar.Day.MONDAY)`, `MonthGrid(frequency=, year_starts=calendar.Month.JANUARY)` for months, quarters, half-years and years, or `MultiYearGrid(frequency=, origin=)` for bienniums, quinquenniums and decades. A grid takes only the choices that apply to it; a week grid takes no origin."
+  - topic: Bundle options
+    status: agreed
+    source: "#411, #422"
+    note: "`rk.io.bundle.write(root, model, *, documents=, resolver=, geometry=, parquet=)` and `Reader(root, *, providers=, limits=, index=)`. `geometry=GeometrySources(directories={model_id: path}, providers={(provider, format, format_version): adapter})` replaces `geometry=`, `geometries=`, `provider=` and `providers=` of `write`; a pin with no provider uses `rk.io.geometry_providers`. `parquet=ParquetOptions(compression=, row_group_size=)` replaces `compression=` and `row_group_size=`. `limits=ReadLimits(documents=, bytes=, rows=)` replaces `max_documents=`, `max_bytes=` and `max_rows=`; `index=IndexCheck.SCHEMA` replaces `check_index=False`. `Reader` has no `provider=`."
   - topic: Rules
     status: agreed
     source: "ADR-021, #255 D41, D42"

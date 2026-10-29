@@ -1,41 +1,202 @@
-"""Review candidate: schema-derived RK records and exact native Geometry pins.
+"""Write and read a Bundle: Model, Specification and Run records in Parquet tables.
 
-The manifest is the publication marker. No JSON Model is retained or consulted.
-Import this optional IO module explicitly; domain imports need no Arrow or DuckDB.
+A Bundle is a directory with one main Model, the documents that a caller
+selects, their exact dependencies and the native Geometry files that the
+Models pin. The manifest is the publication marker. No JSON Model is retained
+or consulted. Import this optional IO module explicitly; domain imports need no
+Arrow or DuckDB.
+
+``write`` publishes a Bundle and ``Reader`` opens and checks one.
+``GeometrySources`` gives ``write`` the native files and their providers, and
+``ParquetOptions`` sets how it writes the tables. ``ReadLimits`` and
+``IndexCheck`` set how much ``Reader`` reads and checks.
 """
 
 import json
 import os
 import shutil
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, field
+from enum import StrEnum, unique
 from hashlib import sha256
 from importlib.resources import files
 from pathlib import Path
+from types import MappingProxyType
+from typing import Any, TypeAlias
 from uuid import UUID
 
 from rangekeeper import Model, Run, Specification
-from rangekeeper.io._document import require_revision, require_same, trusted
-from rangekeeper.io.atomic import write_new
+from rangekeeper.io._atomic import write_new
+from rangekeeper.io._document import (
+    Document,
+    require_revision,
+    require_same,
+    trusted,
+)
+from rangekeeper.io.geometry import GeometryProvider
 from rangekeeper.io.geometry import find as find_provider
 from rangekeeper.model.geometry import safe_path
 from rangekeeper.run.validation import validate as validate_run
-from rangekeeper.schema.runtime import comparison_data
+from rangekeeper.schema.records import Geometry
+from rangekeeper.schema.runtime import comparison_data, exact_equal
 from rangekeeper.schema.validation import slots_for
 from rangekeeper.shared import pointer
 from rangekeeper.shared.arguments import require_uuid
-from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
+from rangekeeper.shared.errors import (
+    ContractError,
+    MissingReferenceError,
+    ReferenceTypeError,
+)
 from rangekeeper.shared.optional import requires
+from rangekeeper.shared.references import DocumentResolver
+from rangekeeper.shared.store import RecordStore
 from rangekeeper.shared.validation import require_acyclic
 
 with requires("bundle"):
     import pyarrow as pa
     import pyarrow.parquet as pq
 
+__all__ = [
+    "GeometrySources",
+    "IndexCheck",
+    "ParquetOptions",
+    "ReadLimits",
+    "Reader",
+    "write",
+]
+
 FORMAT = "rangekeeper.bundle/2-proposal"
 MAPPING = "rangekeeper.parquet/1-proposal"
 SCHEMA_BYTES = files("rangekeeper.schema").joinpath("slots.json").read_bytes()
 SLOTS = json.loads(SCHEMA_BYTES)
 SCHEMA_DIGEST = sha256(SCHEMA_BYTES).hexdigest()
+
+# A Geometry pin's (provider, format, format_version).
+ProviderKey: TypeAlias = tuple[str, str, str]
+_NO_PROVIDERS: Mapping[ProviderKey, GeometryProvider] = MappingProxyType({})
+_COMPRESSIONS = frozenset({"none", "snappy", "gzip", "brotli", "lz4", "zstd"})
+# The fixed limits of one Bundle; ReadLimits holds the limits a caller sets.
+_MANIFEST_BYTES = 4 * 1024**2
+_FILES = 10_000
+_CANONICAL_BYTES = 256 * 1024**2
+_EXPANDED_BYTES = 512 * 1024**2
+_MANIFEST_KEYS = frozenset(
+    {
+        "format",
+        "id",
+        "mapping",
+        "schema_digest",
+        "model",
+        "tables",
+        "files",
+        "geometry",
+        "documents",
+        "roots",
+        "geometry_paths",
+    }
+)
+_DESCRIPTOR_KEYS = frozenset(
+    {"kind", "id", "schema_version", "digest", "tables", "geometry"}
+)
+
+
+def _require_count(value: object, name: str) -> None:
+    """Require a positive int: TypeError for another type, ContractError below 1."""
+    if type(value) is not int:
+        raise TypeError(f"{name} must be an int")
+    if value < 1:
+        raise ContractError(
+            f"{name} must be at least 1, not {value}", values={name: value}
+        )
+
+
+@dataclass(frozen=True, kw_only=True)
+class GeometrySources:
+    """The native Geometry files of the Models in a Bundle, and their providers.
+
+    ``directories`` maps a Model UUID to the directory of its native files. A
+    directory for one Model also serves another Model with the same complete
+    pin. ``providers`` maps a pin's ``(provider, format, format_version)`` to
+    the provider that checks its files. A pin with no entry uses the provider
+    registered under its provider name in ``rangekeeper.io.geometry_providers``.
+    """
+
+    directories: Mapping[UUID, Path] = field(default_factory=dict)
+    providers: Mapping[ProviderKey, GeometryProvider] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        for key in self.directories:
+            require_uuid(key, "directories key")
+        if not all(isinstance(p, GeometryProvider) for p in self.providers.values()):
+            raise TypeError("each provider must be a GeometryProvider")
+        directories = {key: Path(value) for key, value in self.directories.items()}
+        object.__setattr__(self, "directories", MappingProxyType(directories))
+        object.__setattr__(self, "providers", MappingProxyType(dict(self.providers)))
+
+
+@dataclass(frozen=True, kw_only=True)
+class ParquetOptions:
+    """How ``write`` writes the Parquet tables.
+
+    ``compression`` is a Parquet codec: ``none``, ``snappy``, ``gzip``,
+    ``brotli``, ``lz4`` or ``zstd``. ``row_group_size`` is the most rows in one
+    row group. Neither option changes the Bundle identity.
+    """
+
+    compression: str = "zstd"
+    row_group_size: int = 8192
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.compression, str):
+            raise TypeError("compression must be a string")
+        if self.compression not in _COMPRESSIONS:
+            raise ContractError(
+                f"unknown Parquet compression {self.compression!r}",
+                values={"compression": self.compression},
+            )
+        _require_count(self.row_group_size, "row_group_size")
+
+
+@dataclass(frozen=True, kw_only=True)
+class ReadLimits:
+    """The most that ``Reader`` reads from one Bundle.
+
+    ``documents`` counts the main Model and each other document. ``bytes`` is
+    the total size of the files in the manifest. ``rows`` counts the physical
+    rows of the canonical tables and their indexes. The reader also limits a
+    Bundle to 10,000 files, 256 MiB of compressed canonical tables and 512 MiB
+    of declared expanded table bytes. These are proof bounds, not tested
+    production capacity.
+    """
+
+    documents: int = 1000
+    bytes: int = 4 * 1024**3
+    rows: int = 1_000_000
+
+    def __post_init__(self) -> None:
+        for name in ("documents", "bytes", "rows"):
+            _require_count(getattr(self, name), name)
+
+
+@unique
+class IndexCheck(StrEnum):
+    """How ``Reader`` checks the derived record and reference index of a document.
+
+    ``FULL`` makes the index again from the rebuilt document and compares the
+    two. ``SCHEMA`` checks only the schemas of the index tables; the manifest
+    hashes still check each file. Use ``SCHEMA`` only for a Bundle that a
+    ``FULL`` open checked before and whose files have not changed since.
+    """
+
+    FULL = "full"
+    SCHEMA = "schema"
+
+
+# The defaults of write and Reader; each is frozen.
+_NO_GEOMETRY = GeometrySources()
+_PARQUET = ParquetOptions()
+_LIMITS = ReadLimits()
 
 
 def encoded(value):
@@ -110,9 +271,9 @@ def _dependencies(document):
 
 
 class _Documents:
-    def __init__(self, documents):
+    def __init__(self, documents: Iterable[Document]) -> None:
         """Hold immutable, validated documents by UUID."""
-        self._documents = {}
+        self._documents: dict[UUID, Document] = {}
         for value in documents:
             document = trusted(value)
             if document.id in self._documents:
@@ -130,16 +291,19 @@ class _Documents:
             ) from None
         return require_revision(document, identifier, kind)
 
-    def load_model(self, id):
+    def load_model(self, id: UUID) -> Model:
+        """Return the retained Model with this UUID."""
         return self._load(id, Model)
 
-    def load_specification(self, id):
+    def load_specification(self, id: UUID) -> Specification:
+        """Return the retained Specification with this UUID."""
         return self._load(id, Specification)
 
-    def load_run(self, id):
+    def load_run(self, id: UUID) -> Run:
+        """Return the retained Run with this UUID."""
         return self._load(id, Run)
 
-    def documents(self):
+    def documents(self) -> tuple[Document, ...]:
         """Exact immutable roots, ordered by UUID; no execution or mutable state."""
         return tuple(
             d for _, d in sorted(self._documents.items(), key=lambda p: str(p[0]))
@@ -380,33 +544,45 @@ def _prefix(identifier, primary):
     return "model" if identifier == primary else "documents/" + str(identifier)
 
 
-def _write_document(root, document, prefix, compression, row_group_size):
+def _write_document(
+    root: Path,
+    document: Document,
+    *,
+    prefix: str,
+    parquet: ParquetOptions,
+) -> list[dict[str, Any]]:
     tables, records, references = _shred(document)
     (root / prefix).mkdir(parents=True)
     declarations = []
     for kind, rows in sorted(tables.items()):
         name = f"{prefix}/{kind}.parquet"
-        pq.write_table(
-            pa.Table.from_pylist(rows, schema=table_schema(kind)),
-            root / name,
-            compression=compression,
-            row_group_size=row_group_size,
-        )
+        _write_table(root / name, rows, schema=table_schema(kind), parquet=parquet)
         declarations.append(dict(kind=kind, path=name, rows=len(rows)))
     for name, rows, schema in (
         ("records", records, RECORD_SCHEMA),
         ("references", references, REF_SCHEMA),
     ):
-        pq.write_table(
-            pa.Table.from_pylist(rows, schema=schema),
-            root / f"{prefix}/{name}.parquet",
-            compression=compression,
-            row_group_size=row_group_size,
-        )
+        path = root / f"{prefix}/{name}.parquet"
+        _write_table(path, rows, schema=schema, parquet=parquet)
     return declarations
 
 
-def _pin(document):
+def _write_table(
+    path: Path,
+    rows: list[dict[str, Any]],
+    *,
+    schema: "pa.Schema",
+    parquet: ParquetOptions,
+) -> None:
+    pq.write_table(
+        pa.Table.from_pylist(rows, schema=schema),
+        path,
+        compression=parquet.compression,
+        row_group_size=parquet.row_group_size,
+    )
+
+
+def _pin(document: Document) -> dict[str, Any] | None:
     return (
         document.geometry.pin.to_data()
         if isinstance(document, Model) and document.geometry
@@ -414,7 +590,7 @@ def _pin(document):
     )
 
 
-def _descriptor(document):
+def _descriptor(document: Document) -> dict[str, Any]:
     return dict(
         **reference(document),
         schema_version=document.metadata.schema_version,
@@ -422,70 +598,115 @@ def _descriptor(document):
     )
 
 
-def write(
-    root,
-    model,
-    *,
-    documents=(),
-    resolver=None,
-    geometry=None,
-    provider=None,
-    geometries=None,
-    providers=None,
-    compression="zstd",
-    row_group_size=8192,
-):
-    """Retain selected investigations and all interpretation dependencies.
+def _provider(
+    pin: Mapping[str, Any],
+    providers: Mapping[ProviderKey, GeometryProvider],
+) -> GeometryProvider:
+    """Return the provider of a pin: the explicit one, else the registered one."""
+    key = (pin["provider"], pin["format"], pin["format_version"])
+    provider = providers.get(key) or find_provider(pin["provider"])
+    if provider is None:
+        raise ValueError("Geometry needs an explicit provider")
+    return provider
 
-    ``model`` is the main Model. ``documents`` selects additional roots; the
-    resolver supplies exact dependencies. Geometry directories are keyed by Model
-    UUID; providers by (provider, format, version). No workspace state is exported.
-    The manifest is published last. Failed writes never replace a destination.
+
+def _roots(model: Model, documents: tuple[Document, ...]) -> list[dict[str, str]]:
+    """Return the selected roots beyond the main Model, sorted by kind and UUID."""
+    selected = {(type(d).__name__, str(d.id)) for d in documents if d.id != model.id}
+    return [dict(kind=kind, id=identifier) for kind, identifier in sorted(selected)]
+
+
+def _plan_geometry(
+    found: _Documents,
+    model: Model,
+    sources: GeometrySources,
+) -> tuple[dict[str, str], dict[str, tuple[str, Path, Geometry]]]:
+    """Return the Geometry path of each spatial Model and each distinct dataset.
+
+    Each dataset is its path in the Bundle, its source directory and the
+    Geometry whose pin it satisfies. The provider checks each source here.
+    """
+    models = {d.id: d for d in found.documents() if isinstance(d, Model)}
+    if any(k not in models or models[k].geometry is None for k in sources.directories):
+        raise ValueError("Geometry source has no declared Model pin")
+    paths, datasets = {}, {}
+    for document in models.values():
+        geometry = document.geometry
+        if geometry is None:
+            continue
+        pin = geometry.pin.to_data()
+        provider = _provider(pin, sources.providers)
+        # Equal complete pins share bytes. A dependency can reuse a supplied pin.
+        source = sources.directories.get(document.id) or next(
+            (v for k, v in sources.directories.items() if _pin(models[k]) == pin),
+            None,
+        )
+        if source is None:
+            raise ValueError("Geometry needs its exact native files")
+        provider.validate(source, geometry)
+        path = "geometry" if _pin(model) == pin else "assets/" + digest(pin)
+        paths[str(document.id)] = path
+        datasets[digest(pin)] = (path, source, geometry)
+    return paths, datasets
+
+
+def _copy_geometry(
+    root: Path,
+    datasets: Mapping[str, tuple[str, Path, Geometry]],
+    providers: Mapping[ProviderKey, GeometryProvider],
+) -> None:
+    """Copy each dataset's pinned files into the Bundle and check the copies."""
+    for path, source, geometry in datasets.values():
+        for entry in geometry.pin.files:
+            destination = root / path / entry.path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source / entry.path, destination)
+        _provider(geometry.pin.to_data(), providers).validate(root / path, geometry)
+
+
+def _flush(root: Path) -> list[str]:
+    """Flush each file under root to disk; return their paths, relative to root."""
+    payloads = [p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()]
+    for name in payloads:
+        # Windows flushes only a handle that has write access.
+        with (root / name).open("r+b") as stream:
+            os.fsync(stream.fileno())
+    return payloads
+
+
+def write(
+    root: Path,
+    model: Model,
+    *,
+    documents: Iterable[Document] = (),
+    resolver: DocumentResolver | None = None,
+    geometry: GeometrySources = _NO_GEOMETRY,
+    parquet: ParquetOptions = _PARQUET,
+) -> dict[str, Any]:
+    """Write a new Bundle with a main Model, selected documents and their dependencies.
+
+    ``model`` is the main Model. ``documents`` selects other root Models,
+    Specifications and Runs; ``resolver`` supplies the exact documents that they
+    depend on. ``geometry`` gives the native files of each Model with a
+    Geometry pin, and the providers that check them. No workspace state is
+    exported. The writer reads the Bundle back and compares it with the
+    documents before it publishes the manifest, last. A failed write never
+    replaces a destination, but it can leave a directory with no manifest.
+    Return the manifest.
     """
     if not isinstance(model, Model):
         raise TypeError("Supply a primary Model")
-    documents = tuple(documents)
-    roots = sorted(
-        {(type(d).__name__, str(d.id)) for d in documents if d.id != model.id}
-    )
-    roots = [dict(kind=k, id=i) for k, i in roots]
-    found = _collect(model, documents, resolver)
+    selected = tuple(documents)
+    roots = _roots(model, selected)
+    found = _collect(model, selected, resolver)
     model = found.load_model(model.id)
-    sources = {str(k): Path(v) for k, v in (geometries or {}).items()}
-    if geometry is not None:
-        sources[str(model.id)] = Path(geometry)
-    known_models = {str(d.id): d for d in found.documents() if isinstance(d, Model)}
-    if any(k not in known_models or known_models[k].geometry is None for k in sources):
-        raise ValueError("Geometry source has no declared Model pin")
-    provider_map = dict(providers or {})
-    geometry_paths, datasets = {}, {}
-    for document in found.documents():
-        pin = _pin(document)
-        if pin is None:
-            continue
-        key = (pin["provider"], pin["format"], pin["format_version"])
-        adapter = provider_map.get(key, provider) or find_provider(pin["provider"])
-        if adapter is None:
-            raise ValueError("Geometry needs an explicit provider")
-        # Equal complete pins share bytes. A dependency can reuse a supplied pin.
-        pin_id = digest(pin)
-        source = sources.get(str(document.id))
-        if source is None:
-            source = next(
-                (v for k, v in sources.items() if _pin(known_models[k]) == pin), None
-            )
-        if source is None:
-            raise ValueError("Geometry needs its exact native files")
-        adapter.validate(source, document.geometry)
-        path = "geometry" if _pin(model) == pin else "assets/" + pin_id
-        geometry_paths[str(document.id)] = path
-        datasets[pin_id] = (path, source, document.geometry, adapter)
+    geometry_paths, datasets = _plan_geometry(found, model, geometry)
     root = Path(root)
     root.mkdir(parents=True, exist_ok=False)
     primary_tables, others = None, []
     for document in found.documents():
         tables = _write_document(
-            root, document, _prefix(document.id, model.id), compression, row_group_size
+            root, document, prefix=_prefix(document.id, model.id), parquet=parquet
         )
         if document.id == model.id:
             primary_tables = tables
@@ -493,17 +714,7 @@ def write(
             others.append(
                 dict(**_descriptor(document), tables=tables, geometry=_pin(document))
             )
-    for path, source, spatial, adapter in datasets.values():
-        for entry in spatial.pin.files:
-            destination = root / path / entry.path
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source / entry.path, destination)
-        adapter.validate(root / path, spatial)
-    payloads = [p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()]
-    for name in payloads:
-        # Windows flushes only a handle that has write access.
-        with (root / name).open("r+b") as stream:
-            os.fsync(stream.fileno())
+    _copy_geometry(root, datasets, geometry.providers)
     manifest = dict(
         format=FORMAT,
         id=identity(model, documents=found.documents(), roots=roots),
@@ -511,25 +722,32 @@ def write(
         schema_digest=SCHEMA_DIGEST,
         model={k: v for k, v in _descriptor(model).items() if k != "kind"},
         tables=primary_tables,
-        files=inventory(root, payloads),
+        files=inventory(root, _flush(root)),
         geometry=_pin(model),
         documents=others,
         roots=roots,
         geometry_paths=geometry_paths,
     )
-    restored = Reader(
-        root, provider=provider, providers=provider_map, _manifest=manifest
-    )
-    from rangekeeper.schema.runtime import exact_equal
+    _check_written(root, manifest, found=found, providers=geometry.providers)
+    write_new(root / "manifest.json", encoded(manifest) + "\n")
+    return manifest
 
+
+def _check_written(
+    root: Path,
+    manifest: dict[str, Any],
+    *,
+    found: _Documents,
+    providers: Mapping[ProviderKey, GeometryProvider],
+) -> None:
+    """Read a written Bundle before its manifest exists; compare each document."""
+    restored = Reader._unpublished(root, manifest, providers=providers)
     for document in found.documents():
         if not exact_equal(
             restored._documents[document.id].to_data(), document.to_data()
         ):
             raise ValueError("Bundle reconstruction differs from supplied records")
     restored.verify_geometry()
-    write_new(root / "manifest.json", encoded(manifest) + "\n")
-    return manifest
 
 
 class _DocumentReader:
@@ -564,7 +782,7 @@ class _DocumentReader:
         if {n for n in names if n.startswith(prefix + "/")} != expected:
             raise ValueError("Unexpected canonical files")
 
-    def _reconstruct(self, check_index=True):
+    def _reconstruct(self, index: IndexCheck) -> Document:
         rows, slots = {}, {}
         for kind, path in self.tables.items():
             for row in pq.read_table(path).to_pylist():
@@ -653,7 +871,7 @@ class _DocumentReader:
         model = self.kind.from_data(visit("", self.kind.__name__))
         if visited != set(rows):
             raise ValueError("Orphan embedded records")
-        if not check_index:
+        if index is IndexCheck.SCHEMA:
             for name, schema in (
                 ("records", RECORD_SCHEMA),
                 ("references", REF_SCHEMA),
@@ -677,118 +895,187 @@ class _DocumentReader:
         return model
 
 
+def _unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    """Return the JSON object of the pairs; reject a duplicate key."""
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Duplicate manifest key")
+        result[key] = value
+    return result
+
+
+def _read_manifest(root: Path) -> dict[str, Any]:
+    """Read the manifest of a published Bundle, with no duplicate keys."""
+    marker = root / "manifest.json"
+    if marker.is_symlink() or marker.stat().st_size > _MANIFEST_BYTES:
+        raise ValueError("Invalid or oversized Bundle manifest")
+    return json.loads(marker.read_text(encoding="utf-8"), object_pairs_hook=_unique)
+
+
+def _check_format(manifest: Mapping[str, Any], limits: ReadLimits) -> None:
+    """Require the manifest keys, the format pins and the document limit."""
+    if set(manifest) != _MANIFEST_KEYS or (
+        manifest["format"],
+        manifest["mapping"],
+        manifest["schema_digest"],
+    ) != (FORMAT, MAPPING, SCHEMA_DIGEST):
+        raise ValueError("Unsupported Bundle format, mapping or schema pin")
+    if len(manifest["documents"]) + 1 > limits.documents:
+        raise ValueError("Bundle document limit exceeded")
+
+
+def _check_inventory(
+    root: Path,
+    entries: list[dict[str, Any]],
+    *,
+    limits: ReadLimits,
+    published: bool,
+) -> list[str]:
+    """Require that the files under root are the manifest's files; return their paths.
+
+    A Bundle that ``write`` has not published yet has no manifest file.
+    """
+    if (
+        len(entries) > _FILES
+        or any(
+            set(e) != {"path", "size", "sha256"}
+            or type(e["size"]) is not int
+            or e["size"] < 0
+            for e in entries
+        )
+        or sum(e["size"] for e in entries) > limits.bytes
+    ):
+        raise ValueError("Bundle size limit exceeded")
+    names = [e["path"] for e in entries]
+    if len(set(names)) != len(names) or any(not safe_path(n) for n in names):
+        raise ValueError("Invalid or duplicate inventory paths")
+    if any(p.is_symlink() for p in root.rglob("*")):
+        raise ValueError("Symlinks are not Bundle content")
+    actual = {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()}
+    if actual != set(names) | ({"manifest.json"} if published else set()):
+        raise ValueError("Bundle file closure differs from its manifest")
+    for entry in entries:
+        path = root / entry["path"]
+        if not path.is_file() or path.stat().st_size != entry["size"]:
+            raise ValueError("Bundle file missing or changed size")
+    return names
+
+
+def _check_canonical(
+    root: Path,
+    entries: list[dict[str, Any]],
+    limits: ReadLimits,
+) -> None:
+    """Require the hashes of the canonical tables, and their size and row limits."""
+    canonical = [e for e in entries if e["path"].startswith(("model/", "documents/"))]
+    if inventory(root, [e["path"] for e in canonical]) != sorted(
+        canonical, key=lambda e: e["path"]
+    ):
+        raise ValueError("Canonical file integrity mismatch")
+    if sum(e["size"] for e in canonical) > _CANONICAL_BYTES:
+        raise ValueError("Canonical compressed size limit exceeded")
+    expanded, rows = 0, 0
+    for entry in canonical:
+        physical = pq.ParquetFile(root / entry["path"])
+        expanded += sum(
+            physical.metadata.row_group(i).total_byte_size
+            for i in range(physical.metadata.num_row_groups)
+        )
+        rows += physical.metadata.num_rows
+        if rows > limits.rows or expanded > _EXPANDED_BYTES:
+            raise ValueError("Canonical expanded work limit exceeded")
+
+
+def _check_roots(roots: object) -> list[dict[str, str]]:
+    """Require typed, sorted and distinct selected roots; return them."""
+    if (
+        type(roots) is not list
+        or any(
+            type(r) is not dict or set(r) != {"kind", "id"} or r["kind"] not in KINDS
+            for r in roots
+        )
+        or roots != sorted(roots, key=lambda r: (r["kind"], r["id"]))
+        or len({r["id"] for r in roots}) != len(roots)
+    ):
+        raise ValueError("Invalid selected roots")
+    return roots
+
+
 class Reader(_Documents):
-    """Verified immutable documents, public resolver reads and bounded projections.
+    """The checked, immutable documents of a Bundle, with resolver reads and queries.
 
-    Opening validates canonical records and their required references. It never
-    executes Specifications. Native Geometry verification is explicit.
+    Opening checks the manifest, the file hashes and the limits, rebuilds each
+    document from its canonical tables and checks its required references. It
+    never executes a Specification. Native Geometry checks are explicit; see
+    ``verify_geometry``.
 
-    ``check_index=False`` skips comparing the derived record and reference index
-    with the reconstructed documents; their schemas and file hashes are still
-    checked. Use it only for a Bundle whose index a full open already verified
-    and whose files are unchanged since.
+    ``providers`` maps a Geometry pin's ``(provider, format, format_version)``
+    to the provider that checks its files. ``limits`` bounds what the reader
+    reads, and ``index`` sets how it checks the derived record and reference
+    index.
     """
 
     def __init__(
         self,
-        root,
+        root: Path,
         *,
-        provider=None,
-        providers=None,
-        max_bytes=4 * 1024**3,
-        max_rows=1_000_000,
-        max_documents=1000,
-        check_index=True,
-        _manifest=None,
-    ):
-        self.root = Path(root).resolve(strict=True)
-        marker = self.root / "manifest.json"
-        if _manifest is None:
-            if marker.is_symlink() or marker.stat().st_size > 4 * 1024**2:
-                raise ValueError("Invalid or oversized Bundle manifest")
+        providers: Mapping[ProviderKey, GeometryProvider] = _NO_PROVIDERS,
+        limits: ReadLimits = _LIMITS,
+        index: IndexCheck = IndexCheck.FULL,
+    ) -> None:
+        folder = Path(root).resolve(strict=True)
+        self._open(
+            folder, _read_manifest(folder), limits=limits, index=index, published=True
+        )
+        self.providers = dict(providers)
 
-            def unique(pairs):
-                result = {}
-                for key, value in pairs:
-                    if key in result:
-                        raise ValueError("Duplicate manifest key")
-                    result[key] = value
-                return result
+    @classmethod
+    def _unpublished(
+        cls,
+        root: Path,
+        manifest: dict[str, Any],
+        *,
+        providers: Mapping[ProviderKey, GeometryProvider],
+    ) -> "Reader":
+        """Open a Bundle that ``write`` has written but not yet published."""
+        reader = cls.__new__(cls)
+        reader._open(
+            root.resolve(strict=True),
+            manifest,
+            limits=_LIMITS,
+            index=IndexCheck.FULL,
+            published=False,
+        )
+        reader.providers = dict(providers)
+        return reader
 
-            self.manifest = json.loads(
-                marker.read_text(encoding="utf-8"), object_pairs_hook=unique
-            )
-        else:
-            self.manifest = _manifest
+    def _open(
+        self,
+        root: Path,
+        manifest: dict[str, Any],
+        *,
+        limits: ReadLimits,
+        index: IndexCheck,
+        published: bool,
+    ) -> None:
+        """Check the manifest and the files, then rebuild and check each document."""
+        if not isinstance(index, IndexCheck):
+            raise TypeError("index must be an IndexCheck")
+        self.root, self.manifest = root, manifest
+        _check_format(manifest, limits)
+        names = _check_inventory(
+            root, manifest["files"], limits=limits, published=published
+        )
+        _check_canonical(root, manifest["files"], limits)
+        self._primary = UUID(manifest["model"]["id"])
+        # Each document is validated once, when it is rebuilt.
+        super().__init__(self._rebuild(names, index))
+        self._check_closure(limits)
+
+    def _rebuild(self, names: list[str], index: IndexCheck) -> list[Document]:
+        """Rebuild each document and require the exact files and Geometry paths."""
         m = self.manifest
-        if set(m) != {
-            "format",
-            "id",
-            "mapping",
-            "schema_digest",
-            "model",
-            "tables",
-            "files",
-            "geometry",
-            "documents",
-            "roots",
-            "geometry_paths",
-        } or (m["format"], m["mapping"], m["schema_digest"]) != (
-            FORMAT,
-            MAPPING,
-            SCHEMA_DIGEST,
-        ):
-            raise ValueError("Unsupported Bundle format, mapping or schema pin")
-        if len(m["documents"]) + 1 > max_documents:
-            raise ValueError("Bundle document limit exceeded")
-        entries = m["files"]
-        if (
-            len(entries) > 10000
-            or any(
-                set(e) != {"path", "size", "sha256"}
-                or type(e["size"]) is not int
-                or e["size"] < 0
-                for e in entries
-            )
-            or sum(e["size"] for e in entries) > max_bytes
-        ):
-            raise ValueError("Bundle size limit exceeded")
-        names = [e["path"] for e in entries]
-        if len(set(names)) != len(names) or any(not safe_path(n) for n in names):
-            raise ValueError("Invalid or duplicate inventory paths")
-        if any(p.is_symlink() for p in self.root.rglob("*")):
-            raise ValueError("Symlinks are not Bundle content")
-        actual = {
-            p.relative_to(self.root).as_posix()
-            for p in self.root.rglob("*")
-            if p.is_file()
-        }
-        if actual != set(names) | ({"manifest.json"} if _manifest is None else set()):
-            raise ValueError("Bundle file closure differs from its manifest")
-        for entry in entries:
-            path = self.root / entry["path"]
-            if not path.is_file() or path.stat().st_size != entry["size"]:
-                raise ValueError("Bundle file missing or changed size")
-        canonical = [
-            e for e in entries if e["path"].startswith(("model/", "documents/"))
-        ]
-        if inventory(self.root, [e["path"] for e in canonical]) != sorted(
-            canonical, key=lambda e: e["path"]
-        ):
-            raise ValueError("Canonical file integrity mismatch")
-        if sum(e["size"] for e in canonical) > 256 * 1024**2:
-            raise ValueError("Canonical compressed size limit exceeded")
-        expanded, rows = 0, 0
-        for entry in canonical:
-            physical = pq.ParquetFile(self.root / entry["path"])
-            expanded += sum(
-                physical.metadata.row_group(i).total_byte_size
-                for i in range(physical.metadata.num_row_groups)
-            )
-            rows += physical.metadata.num_rows
-            if rows > max_rows or expanded > 512 * 1024**2:
-                raise ValueError("Canonical expanded work limit exceeded")
-        self._primary = UUID(m["model"]["id"])
         descriptors = [
             dict(
                 **m["model"], kind="Model", tables=m["tables"], geometry=m["geometry"]
@@ -799,102 +1086,107 @@ class Reader(_Documents):
             raise ValueError("Duplicate document identity")
         documents, expected_files, expected_geometry = [], set(), {}
         for descriptor in descriptors:
-            if (
-                set(descriptor)
-                != {"kind", "id", "schema_version", "digest", "tables", "geometry"}
-                or descriptor["kind"] not in KINDS
-            ):
-                raise ValueError("Invalid document descriptor")
-            identifier = UUID(descriptor["id"])
-            if str(identifier) != descriptor["id"]:
-                raise ValueError("Noncanonical document identity")
-            prefix = self._prefix(identifier)
-            document = _DocumentReader(
-                self.root, descriptor, prefix, names
-            )._reconstruct(check_index)
-            if _descriptor(document) != {
-                k: v for k, v in descriptor.items() if k not in ("tables", "geometry")
-            }:
-                raise ValueError("Canonical document identity mismatch")
+            document, files = self._rebuild_document(descriptor, names, index)
             documents.append(document)
-            expected_files.update(t["path"] for t in descriptor["tables"])
-            expected_files.update(
-                (f"{prefix}/records.parquet", f"{prefix}/references.parquet")
-            )
+            expected_files.update(files)
             pin = _pin(document)
-            if pin != descriptor["geometry"]:
-                raise ValueError("Manifest Geometry pin differs from its Model")
             if pin:
                 path = "geometry" if m["geometry"] == pin else "assets/" + digest(pin)
-                expected_geometry[str(identifier)] = path
-                for entry in pin["files"]:
-                    declared = dict(entry, path=path + "/" + entry["path"])
-                    if declared not in entries:
-                        raise ValueError("Geometry inventory differs from its Model")
-                    expected_files.add(declared["path"])
+                expected_geometry[str(document.id)] = path
+                expected_files.update(self._geometry_files(pin, path))
         if set(names) != expected_files or m["geometry_paths"] != expected_geometry:
             raise ValueError("Unexpected Bundle files or Geometry paths")
-        # Each document was validated once by _reconstruct.
-        super().__init__(documents)
-        roots = m["roots"]
-        if (
-            type(roots) is not list
-            or any(
-                type(r) is not dict
-                or set(r) != {"kind", "id"}
-                or r["kind"] not in KINDS
-                for r in roots
-            )
-            or roots != sorted(roots, key=lambda r: (r["kind"], r["id"]))
-            or len({r["id"] for r in roots}) != len(roots)
-        ):
-            raise ValueError("Invalid selected roots")
+        return documents
+
+    def _rebuild_document(
+        self,
+        descriptor: dict[str, Any],
+        names: list[str],
+        index: IndexCheck,
+    ) -> tuple[Document, set[str]]:
+        """Rebuild one document from its tables; return it and its table files."""
+        if set(descriptor) != _DESCRIPTOR_KEYS or descriptor["kind"] not in KINDS:
+            raise ValueError("Invalid document descriptor")
+        identifier = UUID(descriptor["id"])
+        if str(identifier) != descriptor["id"]:
+            raise ValueError("Noncanonical document identity")
+        prefix = self._prefix(identifier)
+        document = _DocumentReader(self.root, descriptor, prefix, names)._reconstruct(
+            index
+        )
+        if _descriptor(document) != {
+            k: v for k, v in descriptor.items() if k not in ("tables", "geometry")
+        }:
+            raise ValueError("Canonical document identity mismatch")
+        if _pin(document) != descriptor["geometry"]:
+            raise ValueError("Manifest Geometry pin differs from its Model")
+        files = {t["path"] for t in descriptor["tables"]}
+        files.update((f"{prefix}/records.parquet", f"{prefix}/references.parquet"))
+        return document, files
+
+    def _geometry_files(self, pin: Mapping[str, Any], path: str) -> list[str]:
+        """Require that the manifest lists each file of a pin under path."""
+        declared = [
+            dict(entry, path=path + "/" + entry["path"]) for entry in pin["files"]
+        ]
+        if any(entry not in self.manifest["files"] for entry in declared):
+            raise ValueError("Geometry inventory differs from its Model")
+        return [entry["path"] for entry in declared]
+
+    def _check_closure(self, limits: ReadLimits) -> None:
+        """Require that the documents are the closure of the roots, and the identity."""
+        roots = _check_roots(self.manifest["roots"])
         selected = [self._load(UUID(r["id"]), KINDS[r["kind"]]) for r in roots]
         if any(d.id == self._primary for d in selected):
             raise ValueError("Primary Model is already selected")
-        closed = _collect(self.model(), selected, self, max_documents)
+        closed = _collect(self.model(), selected, self, limits.documents)
         if set(closed._documents) != set(self._documents):
             raise ValueError("Unselected document outside dependency closure")
-        if identity(self.model(), documents=self.documents(), roots=roots) != m["id"]:
+        found = identity(self.model(), documents=self.documents(), roots=roots)
+        if found != self.manifest["id"]:
             raise ValueError("Canonical Bundle identity mismatch")
-        self.provider, self.providers = provider, dict(providers or {})
 
-    def _prefix(self, identifier):
+    def _prefix(self, identifier: UUID) -> str:
         return _prefix(identifier, self._primary)
 
-    def model(self, id=None):
-        """Return the primary Model, or the Model with the given ID."""
+    def model(self, id: UUID | None = None) -> Model:
+        """Return the main Model, or the retained Model with the given UUID."""
         return self.load_model(self._primary if id is None else id)
 
-    def geometry_path(self, id=None):
-        """Return the local Geometry file path of a Model, or None if it has no Geometry."""
+    def geometry_path(self, id: UUID | None = None) -> Path | None:
+        """Return the Geometry directory of a Model, or None if it has no Geometry.
+
+        Without ``id``, return the directory of the main Model.
+        """
         model = self.model(id)
         if model.geometry is None:
             return None
         return self.root / self.manifest["geometry_paths"][str(model.id)]
 
-    def verify_geometry(self):
-        """Validate each distinct Geometry pin with its explicit provider."""
+    def verify_geometry(self) -> None:
+        """Check the files of each distinct Geometry pin with its provider.
+
+        The provider is the one in ``providers`` for the pin, else the one
+        registered under the pin's provider name.
+        """
         checked = set()
         for document in self.documents():
-            pin = _pin(document)
-            if pin is None or digest(pin) in checked:
+            if not isinstance(document, Model) or document.geometry is None:
                 continue
-            key = (pin["provider"], pin["format"], pin["format_version"])
-            provider = self.providers.get(key, self.provider) or find_provider(
-                pin["provider"]
-            )
-            if provider is None:
-                raise ValueError("Unsupported Geometry: supply its explicit provider")
-            provider.validate(self.geometry_path(document.id), document.geometry)
+            pin = document.geometry.pin.to_data()
+            if digest(pin) in checked:
+                continue
+            path = self.root / self.manifest["geometry_paths"][str(document.id)]
+            _provider(pin, self.providers).validate(path, document.geometry)
             checked.add(digest(pin))
 
-    def copy_to(self, store):
+    def copy_to(self, store: RecordStore) -> tuple[dict[str, str], ...]:
         """Copy into an append-only store; retain IDs and reject conflicts first.
 
         Runs are published after their dependencies. This is idempotent, not a
         multi-document transaction: an IO failure can leave complete records.
-        No workspace acceptance or investigation execution is implied.
+        No workspace acceptance or investigation execution is implied. Return
+        the kind and UUID of each document.
         """
         documents = self.documents()
         for document in documents:
@@ -927,14 +1219,20 @@ class Reader(_Documents):
     def records(
         self,
         *,
-        document=None,
-        kind=None,
-        canonical_id=None,
-        path=None,
-        offset=0,
-        limit=100,
-    ):
-        """Return a bounded public projection. Accept no caller-supplied SQL or filesystem path."""
+        document: UUID | None = None,
+        kind: str | None = None,
+        canonical_id: str | None = None,
+        path: str | None = None,
+        offset: int = 0,
+        limit: int = 100,
+    ) -> dict[str, Any]:
+        """Return one page of the record index of a document, in record path order.
+
+        Without ``document``, read the main Model. ``kind``, ``canonical_id`` and
+        ``path`` filter the rows; ``path`` is a canonical record path, not a
+        filesystem path. The result has the ``items`` of the page and the
+        ``next_offset``, or None after the last page. No caller SQL is run.
+        """
         if (
             type(offset) is not int
             or offset < 0

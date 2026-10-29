@@ -38,7 +38,10 @@ Its folders mirror the packages:
 
 `tests/contracts/api.json` is the snapshot of the public API
 ([ADR-017](../decisions/017-api-and-formats.md)): each public name of each public
-package, with its kind, defining module and signature. The snapshot test fails
+package and public module, with its kind, defining module and signature. The
+modules include the codecs `io.json` and `io.yaml` and the optional
+`io.bundle` and `io.polars`, so the snapshot needs all extras. A public module
+has an `__all__`; `PACKAGES` in `tests/contracts/api.py` lists it. The snapshot test fails
 when the public API changes. Review the difference, then write the snapshot again
 and commit it with the change:
 

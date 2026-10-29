@@ -11,6 +11,8 @@ from typing import Protocol, runtime_checkable
 from rangekeeper.schema.records import Geometry
 from rangekeeper.shared.registry import Registry
 
+__all__ = ["GeometryProvider", "geometry_providers"]
+
 
 @runtime_checkable
 class GeometryProvider(Protocol):

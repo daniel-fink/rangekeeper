@@ -83,6 +83,22 @@ def number(value: object) -> float:
     return cast(float, value)
 
 
+def encoded(value: object) -> object:
+    """Return the canonical text of a magnitude in currency units.
+
+    Construction converts an ``int`` exactly, a ``float`` through ``to_amount``
+    and decimal text exactly. Another value is returned unchanged, and the
+    record check rejects it.
+    """
+    if type(value) is str:
+        return canonical(value) or value
+    if type(value) is int:
+        return text(Decimal(value))
+    if type(value) is float and math.isfinite(value):
+        return float_text(value)
+    return value
+
+
 def to_amount(number: float | int) -> Decimal:
     """Return the amount of a float64 result: 15 significant digits, half even.
 
@@ -104,6 +120,7 @@ __all__ = [
     "PATTERN",
     "canonical",
     "digits",
+    "encoded",
     "float_text",
     "number",
     "parse",

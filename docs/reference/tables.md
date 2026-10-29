@@ -88,7 +88,10 @@ and cannot be read back as Models.
 
 ## Polars
 
-`rangekeeper.io.polars.to_frame(Table | Flow | Stream)` returns detached columns.
+Install `rangekeeper[calculations]`. The public names of `rangekeeper.io.polars`
+are `to_frame`, `from_frame`, `to_table`, `dates` and `text_frame`.
+`rangekeeper.io.polars.to_frame(Table | Flow | Stream)` returns detached columns;
+a Stream gives the frame of `Stream.to_frame()`.
 For Tables, row IDs and Claims remain separate metadata. Homogeneous supported
 scalars use native Polars columns; opaque or mixed cells use Object columns to
 avoid silent coercion. `to_table(frame)` copies frame cells into unidentified Rows.
@@ -114,7 +117,8 @@ A Period-only coordinate requires an explicit timing convention. A recorded paym
 date takes precedence, including when the Movement also has a Period. This projection omits
 movement IDs, matching keys, coverage and Claims; use `to_frame` for interchange.
 Its magnitudes and the line columns of a Stream frame are `Float64` numerical
-projections, so integers become floats.
+projections, so integers become floats. A magnitude column with the name
+`date` raises `ContractError`.
 
 ## Text and CSV projections
 

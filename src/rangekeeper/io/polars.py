@@ -1,68 +1,95 @@
-"""Detached Polars projections. Records retain identity, units and field presence."""
+"""Detached Polars projections. Records retain identity, units and field presence.
+
+``to_frame`` and ``from_frame`` make a lossless round trip of a Flow, and
+``to_table`` copies a frame to a Table. ``dates`` and ``text_frame`` are
+display and text projections. Install ``rangekeeper[calculations]``.
+"""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import inspect
+import math
+from datetime import date, datetime
+from numbers import Real
+from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
-from rangekeeper.duration.period import PeriodTiming
+from rangekeeper.duration import PeriodTiming
 from rangekeeper.flow import Flow, Stream
-from rangekeeper.flow._table import stream_frame
-from rangekeeper.money import _encoded, is_currency
-from rangekeeper.shared.amounts import number
+from rangekeeper.money import is_currency
+from rangekeeper.schema.records import Movement as MovementRecord
+from rangekeeper.schema.validation import slots_for
+from rangekeeper.shared.amounts import encoded, number
+from rangekeeper.shared.errors import ContractError, EncodingError
 from rangekeeper.shared.optional import requires
 from rangekeeper.shared.table import Table
 
 if TYPE_CHECKING:
-    from polars import DataFrame
+    from polars import DataFrame, Series
+
+__all__ = ["dates", "from_frame", "text_frame", "to_frame", "to_table"]
 
 
-def to_frame(flow: Flow | Stream | Table) -> DataFrame:
-    """Export a Table or lossless Flow, retaining column and row order.
-
-    Table metadata stays outside the display frame; opaque cells use Object columns.
-    Flow columns are the Movement slots in schema order, then _present. Their
-    types come from the schema slots. Integer magnitudes stay integers; currency
-    amounts are Float64 (ADR-023), and ``from_frame`` converts them back.
-
-    Flow units are an explicit argument to from_frame; a table alone does not
-    carry the complete domain contract. Empty tables retain their movement columns.
-    """
+def _polars() -> Any:
+    """Import Polars, the optional dependency of these projections."""
     with requires("calculations"):
-        import polars as pl
+        import polars  # noqa: PLC0415 - optional dependency
 
-    if isinstance(flow, Stream):
-        return stream_frame(flow)
-    if isinstance(flow, Table):
-        # Object columns keep opaque Python cells intact. Native homogeneous
-        # scalars stay useful for Polars expressions without coercing mixed cells.
-        from datetime import date, datetime
+    return polars
 
-        columns = []
-        for name in flow.columns:
-            values = flow.column(name)
-            kinds = {type(value) for value in values if value is not None}
-            native = len(kinds) <= 1 and kinds <= {
-                str,
-                bool,
-                int,
-                float,
-                date,
-                datetime,
-            }
-            try:
-                column = pl.Series(name, values, dtype=None if native else pl.Object)
-            except OverflowError:
-                # Arbitrary Python integers are valid Table cells even when they
-                # exceed Polars' native integer widths.
-                column = pl.Series(name, values, dtype=pl.Object)
-            columns.append(column)
-        return pl.DataFrame(columns)
-    if not isinstance(flow, Flow):
-        raise TypeError("value must be a Flow or Table")
+
+def to_frame(value: Flow | Stream | Table) -> DataFrame:
+    """Export a Flow, a Stream or a Table, retaining column and row order.
+
+    A Flow frame is lossless: its columns are the Movement slots in schema
+    order, then ``_present``. Their types come from the schema slots. Integer
+    magnitudes stay integers; currency amounts are Float64 (ADR-023), and
+    ``from_frame`` converts them back. Flow units are an explicit argument to
+    ``from_frame``; a table alone does not carry the complete domain contract.
+    Empty Flows keep their Movement columns.
+
+    A Stream frame is the numerical projection of ``Stream.to_frame``.
+
+    A Table frame keeps the Table metadata outside the frame; opaque cells use
+    Object columns.
+    """
+    if isinstance(value, Stream):
+        return value.to_frame()
+    if isinstance(value, Table):
+        return _table_frame(value)
+    if isinstance(value, Flow):
+        return _flow_frame(value)
+    raise TypeError("value must be a Flow, a Stream or a Table")
+
+
+def _table_frame(table: Table) -> DataFrame:
+    """Return the frame of a Table; mixed or opaque cells use Object columns."""
+    pl = _polars()
+    # Object columns keep opaque Python cells intact. Native homogeneous
+    # scalars stay useful for Polars expressions without coercing mixed cells.
+    native_types = {str, bool, int, float, date, datetime}
+    columns = []
+    for name in table.columns:
+        values = table.column(name)
+        kinds = {type(value) for value in values if value is not None}
+        native = len(kinds) <= 1 and kinds <= native_types
+        try:
+            column = pl.Series(name, values, dtype=None if native else pl.Object)
+        except OverflowError:
+            # Arbitrary Python integers are valid Table cells even when they
+            # exceed Polars' native integer widths.
+            column = pl.Series(name, values, dtype=pl.Object)
+        columns.append(column)
+    return pl.DataFrame(columns)
+
+
+def _flow_frame(flow: Flow) -> DataFrame:
+    """Return the lossless frame of a Flow: one column for each Movement slot."""
+    pl = _polars()
     rows = [s.to_data() for s in flow.movements]
     # Omitted fields become null cells; _present keeps the record's field presence.
     columns = [
-        _movement_column(pl, name, slot, [row.get(name) for row in rows])
+        _movement_column(name, slot, [row.get(name) for row in rows])
         for name, slot in _movement_slots()
     ]
     present = [list(s.field_names()) for s in flow.movements]
@@ -70,23 +97,18 @@ def to_frame(flow: Flow | Stream | Table) -> DataFrame:
     return pl.DataFrame(columns)
 
 
-def _movement_slots():
+def _movement_slots() -> list[tuple[str, dict[str, Any]]]:
     """Return the Movement slots in schema order.
 
     slots.json sorts slot names, so the order comes from the generated
     constructor, which declares the fields in schema order.
     """
-    import inspect
-
-    from rangekeeper.schema.records import Movement as MovementRecord
-    from rangekeeper.schema.validation import slots_for
-
     slots = slots_for("Movement")
     names = inspect.signature(MovementRecord.__init__).parameters
     return [(name, slots[name]) for name in names if name != "self"]
 
 
-def _movement_column(pl, name, slot, values):
+def _movement_column(name: str, slot: dict[str, Any], values: list[Any]) -> Series:
     """Return one Movement column with the Polars type of its schema slot.
 
     UUIDs, strings and dates keep their wire text. A record column is a Struct
@@ -95,6 +117,7 @@ def _movement_column(pl, name, slot, values):
     Object column when the values mix integers and floats or exceed Int64. A
     currency amount is a float64 from ``money.to_number``.
     """
+    pl = _polars()
     kinds = {option["kind"] for option in slot["options"]}
     category, kind = slot["options"][0]["category"], slot["options"][0]["kind"]
     if category == "record":
@@ -135,9 +158,8 @@ def from_frame(frame: DataFrame, *, units: str) -> Flow:
             if field not in present:
                 movement.pop(field)
         if currency and movement.get("magnitude") is not None:
-            movement["magnitude"] = _encoded(movement["magnitude"])
-    result = Flow.from_data({"units": units, "movements": data})
-    return result
+            movement["magnitude"] = encoded(movement["magnitude"])
+    return Flow.from_data({"units": units, "movements": data})
 
 
 def to_table(frame: DataFrame) -> Table:
@@ -146,18 +168,23 @@ def to_table(frame: DataFrame) -> Table:
 
 
 def dates(
-    flow: Flow, *, name: str = "magnitude", timing: PeriodTiming | None = None
+    flow: Flow,
+    *,
+    name: str = "magnitude",
+    timing: PeriodTiming | None = None,
 ) -> DataFrame:
     """Project dates and magnitudes for display, with an explicit period convention.
 
     This omits Movement IDs, matching keys, coverage and Claims. Magnitudes are
-    Float64, so integers become floats. Use to_frame for interchange.
+    Float64, so integers become floats. Use to_frame for interchange. A
+    magnitude column with the name ``date`` raises ``ContractError``.
     """
-    with requires("calculations"):
-        import polars as pl
-
+    pl = _polars()
     if name == "date":
-        raise ValueError("magnitude column must differ from date")
+        raise ContractError(
+            "the magnitude column must not have the name 'date'",
+            values={"name": name},
+        )
     return pl.DataFrame(
         {
             "date": pl.Series(
@@ -171,15 +198,13 @@ def dates(
     )
 
 
-def text_frame(table: Table):
+def text_frame(table: Table) -> DataFrame:
     """Project scalar cells to text without mixed-column numeric rounding.
 
     Use the returned Polars frame for CSV or other textual exports. Rich and
     non-finite cells require an explicit caller encoding. Row IDs stay separate.
     """
-    with requires("calculations"):
-        import polars as pl
-
+    pl = _polars()
     if not isinstance(table, Table):
         raise TypeError("table must be a Table")
     # Serialize cells as text before dataframe construction. Inferring a shared
@@ -188,8 +213,8 @@ def text_frame(table: Table):
         column: pl.Series(
             column,
             [
-                _scalar(value, row_index, column)
-                for row_index, value in enumerate(table.column(column))
+                _scalar(value, row=row, column=column)
+                for row, value in enumerate(table.column(column))
             ],
             dtype=pl.String,
         )
@@ -198,24 +223,15 @@ def text_frame(table: Table):
     return pl.DataFrame(columns)
 
 
-def _scalar(
-    value: object,
-    row_index: int,
-    column: str,
-) -> str | None:
+def _scalar(value: object, *, row: int, column: str) -> str | None:
+    """Return the text of one scalar cell; raise EncodingError for another value."""
     if value is None:
         return None
-    import math
-    from numbers import Real
-    from uuid import UUID
-
-    from rangekeeper.shared.errors import EncodingError
-
     if isinstance(value, (str, bool, UUID, int)):
         return str(value)
     if isinstance(value, Real) and math.isfinite(float(value)):
         return str(value)
     raise EncodingError(
-        f"Text projection row {row_index} column {column!r} has unsupported value type "
+        f"Text projection row {row} column {column!r} has unsupported value type "
         f"{type(value).__name__}"
     )
