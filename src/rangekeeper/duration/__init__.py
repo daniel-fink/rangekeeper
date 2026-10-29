@@ -10,6 +10,7 @@ from rangekeeper.duration.calendar import (
     year_fraction,
 )
 from rangekeeper.duration.dates import NEVER, DateValue, Never, shift
+from rangekeeper.duration.errors import AlignmentError
 from rangekeeper.duration.grid import (
     DayGrid,
     Grid,
@@ -42,4 +43,5 @@ __all__ = [
     "Never",
     "DateValue",
     "shift",
+    "AlignmentError",
 ]
