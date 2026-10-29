@@ -9,8 +9,9 @@ Older code does not follow all of the rules yet. The issues of
 and changed code follow the rules. When a rule makes a piece of code less
 clear, do not follow it there: say why in a comment, and in the pull request.
 
-Each rule has a short example from this codebase. "Bad" examples show code at
-`a47d83d` that an open issue changes.
+Each rule has a short example from this codebase. "Bad" examples show code on
+`develop` that an open issue changes. The pull request that fixes a "Bad"
+example changes it to the next example on this page, or deletes it.
 
 ## Functions
 
@@ -57,7 +58,7 @@ Good: `Frequency.step` in `duration/calendar.py` reads its value from one
 table:
 
 ```python
-_STEPS = dict(zip(Frequency, ((1, 0), (7, 0), (14, 0), (0, 1), ...), strict=True))
+_STEPS = dict(zip(Frequency, ((1, 0), (7, 0), (0, 1), (0, 3), ...), strict=True))
 
 @property
 def step(self) -> tuple[int, int]:
@@ -119,9 +120,8 @@ options object or a small type, so that an invalid combination cannot be built.
 
 Bad: `containing_period` in `duration/period.py` takes `week_start`,
 `year_start_month` and `origin`. `week_start` applies only to week grids,
-`year_start_month` only to month-based grids, and `origin` only to fortnight
-and multi-year grids. Half of the body rejects the combinations that do not
-apply:
+`year_start_month` only to month-based grids, and `origin` only to multi-year
+grids. Half of the body rejects the combinations that do not apply:
 
 ```python
 if frequency is Frequency.DAY:
@@ -323,4 +323,4 @@ does not pass the ruff rules yet, and a mypy override for the packages that are
 not yet strict. Do not add to either. When you fix a function, remove its codes
 from the baseline; when a package passes strict mypy, remove it from the
 override. CI fails when a pull request adds to the baseline or to the override.
-See [Python formatting and linting](README.md#python-formatting-and-linting).
+See the [structure baseline](README.md#structure-baseline).
