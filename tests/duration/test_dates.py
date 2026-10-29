@@ -57,6 +57,18 @@ def test_a_length_is_a_whole_number_of_calendar_steps(by):
         shift(on=NEVER, by=by)
 
 
+@pytest.mark.parametrize(
+    ("by", "expected"),
+    [
+        ("1 yr", date(2028, 1, 1)),
+        ("2 quarters", date(2027, 7, 1)),
+        ("7 d", date(2027, 1, 8)),
+    ],
+)
+def test_a_length_takes_any_spelling_of_its_calendar_unit(by, expected):
+    assert shift(on=START, by=by) == expected
+
+
 @pytest.mark.parametrize("value", [None, "2027-01-01", 2027, datetime(2027, 1, 1)])
 def test_a_date_value_is_a_calendar_date_or_never(value):
     with pytest.raises(TypeError):
