@@ -624,11 +624,11 @@
   "Analysis": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], has_bounds: bool, undetermined: tuple[uuid.UUID, ...] = tuple()) -> None",
+    "__init__": "method (self, rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None",
     "underdetermined": "property"
    },
    "module": "rangekeeper.execution.analysis",
-   "signature": "(rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], has_bounds: bool, undetermined: tuple[uuid.UUID, ...] = tuple()) -> None"
+   "signature": "(rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "Assertion": {
    "kind": "class",

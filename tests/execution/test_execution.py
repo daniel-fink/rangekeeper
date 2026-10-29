@@ -16,6 +16,8 @@ from rangekeeper import Model, Quantity, Specification
 from rangekeeper.errors import Code
 from rangekeeper.execution import (
     ExecutionConfig,
+    OutcomeError,
+    Status,
     Tolerances,
     backends,
     bind_roles,
@@ -657,6 +659,44 @@ def test_unconstrained_unknown_has_explicit_choice_evidence():
         and area in {reference.target for reference in d.references or ()}
         for d in run.report.diagnostics
     )
+
+
+def with_rent_free(*bounds):
+    """Return the Outcome of the forward fixture with the rent freed and bounds."""
+    store, _ = setup()
+    payload = fresh(data("specification-forward"))
+    payload["assignments"] = [
+        a for a in payload["assignments"] if a["target"]["target"] != str(RENT)
+    ]
+    payload["unknowns"].append(dict(target=str(RENT)))
+    payload["formulations"] = [formulation(bound) for bound in bounds]
+    return execute_specification(Specification.from_data(payload), store)
+
+
+@pytest.mark.parametrize(
+    "bounds,code",
+    [
+        ((), Code.UNDERDETERMINED),
+        # A bound on a fixed value reads no free unknown.
+        (
+            (binary("less_than_or_equal", reference(COST), literal(1e12, "AUD/year")),),
+            Code.UNDERDETERMINED,
+        ),
+        # A bound that reads a free unknown can restrict it (#442).
+        (
+            (binary("less_than_or_equal", reference(CAPITAL), literal(1e12)),),
+            Code.UNIQUENESS_NOT_ASSESSED,
+        ),
+    ],
+)
+def test_free_unknowns_are_underdetermined_with_or_without_bounds(bounds, code):
+    outcome = with_rent_free(*bounds)
+    assert outcome.status is Status.UNDERDETERMINED
+    assert len(outcome.free_unknowns) == 3
+    assert code in {item.code for item in outcome.diagnostics}
+    with pytest.raises(OutcomeError) as raised:
+        outcome.raise_for_status()
+    assert raised.value.code is code
 
 
 def test_real_simplex_iteration_limit_has_no_infeasibility_claim():

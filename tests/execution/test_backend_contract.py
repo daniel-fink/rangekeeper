@@ -56,9 +56,7 @@ def test_build_problem_analyses_rank_free_variables_and_bounds():
     _, binding = bound()
     problem = build_problem(binding)
     assert problem.variables == binding.unknowns
-    assert problem.analysis == Analysis(
-        rank=2, unknown_count=2, free=(), has_bounds=False
-    )
+    assert problem.analysis == Analysis(rank=2, unknown_count=2, free=())
     assert not problem.analysis.underdetermined
     assert problem.equalities == problem.rows and problem.bounds == ()
     assert all(isinstance(row.relation, Relation) for row in problem.rows)
@@ -72,7 +70,8 @@ def test_a_free_variable_and_a_bound_are_in_the_analysis():
     ]
     _, binding = bound(spec_from(payload))
     problem = build_problem(binding)
-    assert problem.analysis.has_bounds
+    # The rows determine every unknown, so the bound restricts none.
+    assert problem.analysis.bounded == ()
     assert len(problem.bounds) == 1
     assert problem.analysis.free == ()
 

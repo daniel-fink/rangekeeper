@@ -17,7 +17,11 @@ class Status(StrEnum):
     FEASIBLE = "feasible"
     """An accepted candidate, and the equations determine each unknown."""
     UNDERDETERMINED = "underdetermined"
-    """An accepted candidate, but the equations leave some unknowns free."""
+    """An accepted candidate, but the equations leave some unknowns free.
+
+    Bounds do not change it: a bound can restrict a free unknown, but no
+    check proves that it fixes one.
+    """
     INFEASIBLE = "infeasible"
     """The backend proved that no candidate satisfies the equations."""
     UNSUPPORTED = "unsupported"
