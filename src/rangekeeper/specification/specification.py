@@ -1,20 +1,20 @@
 """A saved investigation contribution, distinct from its derived composition."""
 
 from collections.abc import Mapping
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rangekeeper.model import Model
-    from rangekeeper.quantity import Quantity
-    from rangekeeper.schema.records import Reference
+    from rangekeeper.shared.table import Table
 from dataclasses import dataclass
 from typing import Self
 from uuid import UUID, uuid4
 
 from rangekeeper.model.formulation.validation import check_formulation_names
-from rangekeeper.quantity import UnitSystem
+from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.index import RecordIndex
-from rangekeeper.schema.records import Metadata
+from rangekeeper.schema.records import Metadata, Reference
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.runtime import UNSET
@@ -25,7 +25,7 @@ from rangekeeper.schema.validation import (
 )
 from rangekeeper.shared.arguments import optional_text
 from rangekeeper.shared.diagnostics import ValidationReport
-from rangekeeper.shared.errors import UnsupportedVersionError
+from rangekeeper.shared.errors import UnitError, UnsupportedVersionError
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.shared.validation import bounded, require
 from rangekeeper.specification.composition import (
@@ -34,6 +34,7 @@ from rangekeeper.specification.composition import (
     check_roles,
     check_settings,
 )
+from rangekeeper.specification.roles import equation_targets, in_model_order, role_table
 
 
 def _validate_local(record: SpecificationRecord) -> ValidationReport:
@@ -86,6 +87,10 @@ class Specification:
     ``model.specify()`` makes a Specification of a Model revision. Each chained
     call, such as ``fix`` and ``free``, returns a new Specification with new
     Metadata; the Specification that it was called on does not change.
+
+    A value that is not fixed is free: the solve finds it. ``specify`` and each
+    chained call record as unknowns the values that the equations use and that
+    no fix or rule controls.
     """
 
     __slots__ = ("_record", "_model", "_resolver")
@@ -139,7 +144,13 @@ class Specification:
             name=UNSET if name is None else name,
             description=UNSET if description is None else description,
         )
-        return cls(SpecificationRecord(metadata=metadata, model=model.id), model=model)
+        record = SpecificationRecord(metadata=metadata, model=model.id)
+        unknowns = tuple(
+            Reference(target=identity) for identity in equation_targets(model, record)
+        )
+        if unknowns:
+            record = record.replace(unknowns=unknowns)
+        return cls(record, model=model)
 
     @classmethod
     def from_data(cls, data: Mapping[str, object]) -> "Specification":
@@ -155,6 +166,30 @@ class Specification:
     def metadata(self) -> Metadata:
         """Immutable revision identity, version, lineage and descriptive content."""
         return self._record.metadata
+
+    @property
+    def model_id(self) -> UUID | None:
+        """UUID of the Model revision that this Specification pins, or None."""
+        return self._record.model
+
+    @property
+    def roles(self) -> "Table":
+        """Return the role of each value: fixed with its Quantity, free or decided.
+
+        The Table has the columns ``key``, ``movement`` (a Movement UUID, or None
+        for a scalar Value), ``role`` (a ``Role``) and ``quantity`` (the fixed
+        Quantity, or None), in Model order. Each Row's ``id`` is its target's UUID.
+        A Specification with includes needs its resolver; a batch has no roles.
+        """
+        model = self._require_model()
+        if self.record.cases:
+            raise ValueError("a batch has no roles; read the roles of one case")
+        record = self.record
+        if record.includes:
+            if self._resolver is None:
+                raise ValueError("included Specifications require a resolver")
+            record = self.compose(resolver=self._resolver).requirements
+        return role_table(model, record)
 
     @property
     def record(self) -> SpecificationRecord:
@@ -232,21 +267,24 @@ class Specification:
 
     def fix(
         self,
-        targets: "Mapping[str | UUID | Reference, Quantity | Mapping[UUID, Quantity]] | None" = None,
+        targets: "Mapping[str | UUID | Reference, Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]] | None" = None,
         /,
-        **values: "Quantity | Mapping[UUID, Quantity]",
+        **values: "Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]",
     ) -> "Specification":
-        """Return a new Specification that fixes values, by key, to Quantities.
+        """Return a new Specification that fixes values, by key.
 
-        Name each value by its key, ``fix(land_cost=quantity)``. The mapping
+        Name each value by its key, ``fix(land_cost="20e6 AUD")``. The mapping
         form also takes a dotted path (``"building_a.income"``), a Value or
         Movement UUID, or a Reference. A bare key must name one Value of the
-        Model. One Quantity fixes a scalar value, or each Movement of a Flow; a
-        mapping from Movement UUIDs to Quantities fixes those Movements only.
-        A fix replaces an earlier fix or free of the same target.
+        Model. A value is a Quantity, Quantity text such as ``"65 %"``, or a
+        bare number for a ratio (``coverage=1.25``). Its units must be
+        compatible with the units of the value. One value fixes a scalar
+        value, or each Movement of a Flow; a mapping from Movement UUIDs to
+        values fixes those Movements only. A fix replaces an earlier fix or
+        free of the same target. When no role changes, ``fix`` returns this
+        Specification.
         """
         from rangekeeper.model.targets import target_units
-        from rangekeeper.quantity import Quantity
         from rangekeeper.schema.records import Assignment
 
         items = dict(targets or {})
@@ -263,13 +301,12 @@ class Specification:
             ids = tuple(quantity) if isinstance(quantity, Mapping) else None
             selected = self._targets(model, target, ids=ids)
             for ref in selected:
-                q = quantity[ref.target] if isinstance(quantity, Mapping) else quantity
-                if not isinstance(q, Quantity):
-                    raise TypeError(
-                        f"the value of {target} must be a Quantity or a mapping "
-                        "from Movement UUIDs to Quantities"
-                    )
-                model.unit_system.convert(q, to=target_units(model, ref))
+                q = _quantity(
+                    quantity[ref.target] if isinstance(quantity, Mapping) else quantity,
+                    target=target,
+                    units=target_units(model, ref),
+                    unit_system=model.unit_system,
+                )
                 assignments.append(Assignment(target=ref, quantity=q))
             refs.extend(selected)
         return self._edit_roles(refs, tuple(assignments))
@@ -277,9 +314,11 @@ class Specification:
     def free(self, *targets: "str | UUID | Reference") -> "Specification":
         """Return a new Specification that frees values: the solve finds them.
 
-        Each target is a key, a dotted path, a Value or Movement UUID, or a
-        Reference, as in ``fix``. A Flow frees each of its Movements. A free
-        removes an earlier fix of the same target.
+        A value that is not fixed is already free; ``free`` releases a value
+        that was fixed before. Each target is a key, a dotted path, a Value or
+        Movement UUID, or a Reference, as in ``fix``. A Flow frees each of its
+        Movements. A free removes an earlier fix of the same target. When no
+        role changes, ``free`` returns this Specification.
         """
         if not targets:
             raise TypeError("free takes at least one value")
@@ -342,19 +381,81 @@ class Specification:
         local_assignments = tuple(
             a for a in self.record.assignments or () if a.target.target not in targets
         )
+        local_assignments += assignments or ()
         local_unknowns = tuple(
             r for r in self.record.unknowns or () if r.target not in targets
         )
+        if assignments is None:
+            local_unknowns += tuple(refs)
         estimates = tuple(
             e for e in self.record.estimates or () if e.target.target not in targets
         )
+        # A value that the equations use and that nothing controls is free.
+        controlled = {a.target.target for a in local_assignments}
+        controlled.update(r.target for r in local_unknowns)
+        for contribution in composition.contributors:
+            record = contribution.record
+            if record.rules:
+                controlled.update(ref.target for ref in record.rules.targets)
+            if contribution.id != self.id:
+                controlled.update(ref.target for ref in record.unknowns or ())
+                controlled.update(
+                    item.target.target
+                    for field in ("assignments", "estimates")
+                    for item in getattr(record, field) or ()
+                )
+        local_unknowns += tuple(
+            Reference(target=identity)
+            for identity in equation_targets(model, self.record)
+            if identity not in controlled
+        )
+        unknowns = in_model_order(model, local_unknowns)
+        if (
+            local_assignments == (self.record.assignments or ())
+            and unknowns == (self.record.unknowns or ())
+            and estimates == (self.record.estimates or ())
+        ):
+            # The roles do not change: a free of a free value, or the same fix.
+            return self
         revised = self._derive(
-            assignments=local_assignments + (assignments or ()),
-            unknowns=local_unknowns + (tuple(refs) if assignments is None else ()),
+            assignments=local_assignments,
+            unknowns=unknowns,
             estimates=estimates,
         )
         revised.compose(resolver=resolver)
         return revised
+
+
+def _quantity(
+    value: object,
+    *,
+    target: object,
+    units: str,
+    unit_system: UnitSystem,
+) -> Quantity:
+    """Return the Quantity that fixes a target, after a check of its units.
+
+    Text is read as a Quantity. A bare number is a ratio, so its target must have
+    dimensionless units.
+    """
+    if isinstance(value, Quantity):
+        quantity = value
+    elif isinstance(value, str):
+        quantity = Quantity(text=value)
+    elif isinstance(value, (int, float, Decimal)) and not isinstance(value, bool):
+        quantity = Quantity(magnitude=value, units="ratio")
+        if not unit_system.compatible("ratio", units):
+            raise UnitError(
+                f"a bare number fixes a ratio, but {target} has units {units!r}; "
+                f"give a Quantity or text with units, such as '{value} {units}'"
+            )
+    else:
+        raise TypeError(
+            f"the value of {target} must be a Quantity, Quantity text, a number "
+            "or a mapping from Movement UUIDs to these"
+        )
+    unit_system.convert(quantity, to=units)
+    return quantity
 
 
 from rangekeeper.model import model as _model_module  # noqa: E402

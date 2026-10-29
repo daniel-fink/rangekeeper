@@ -22,6 +22,7 @@ from rangekeeper.model.formulation import flow
 from rangekeeper.model.system import FlowRollup, Hierarchy, View
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import SolutionStatus
+from rangekeeper.shared.errors import UnitError
 from rangekeeper_examples.flux import (
     collection,
     forward_specification,
@@ -565,7 +566,7 @@ def test_rule_and_scalar_role_editing():
         )
         == 120
     )
-    with pytest.raises(TypeError, match="Quantity"):
+    with pytest.raises(UnitError, match="bare number fixes a ratio"):
         unlocked.fix({ids["initial"]: 120})
 
 

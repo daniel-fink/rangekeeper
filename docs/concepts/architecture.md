@@ -134,8 +134,10 @@ show the target API in use.
 
 **Investigate a Model** ([ADR-013](../decisions/013-execution-and-extensions.md))
 - Now: `model.specify(name=)` makes a Specification that pins one Model
-  revision; `fix(key=quantity)` and `free("key")` each return a new
-  Specification. Records add bounds and rules. `rangekeeper.execution.solve(specification=)`
+  revision; `fix(key=value)` and `free("key")` each return a new
+  Specification. `fix` takes a Quantity, Quantity text or a number for a ratio.
+  A value that is not fixed is free, and `roles` lists the role of each value.
+  Records add bounds and rules. `rangekeeper.execution.solve(specification=)`
   runs the typed stages: it resolves the cases, validates each composition, binds
   roles, builds the affine problem, solves it in a separate process, makes a
   candidate, verifies it independently and assembles an `Outcome`, and writes
@@ -155,8 +157,7 @@ show the target API in use.
   6. `execute` also publishes the Run and the output Model to a store.
   7. Read solved values from the `Outcome`.
 
-  Gap issues: [#290](https://github.com/daniel-fink/rangekeeper/issues/290),
-  [#292](https://github.com/daniel-fink/rangekeeper/issues/292),
+  Gap issues: [#292](https://github.com/daniel-fink/rangekeeper/issues/292),
   [#296](https://github.com/daniel-fink/rangekeeper/issues/296),
   [#297](https://github.com/daniel-fink/rangekeeper/issues/297).
 

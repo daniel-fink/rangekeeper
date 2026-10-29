@@ -68,7 +68,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
-| Role | What a Specification says about a value: fixed, free, decided, estimate or bound. `Specification.roles` lists them | `specification` | `Specification.roles`: none (planned, #290) |
+| Role | What a Specification says about a value: fixed, free, decided, estimate or bound. `Specification.roles` lists them | `specification` | `Specification.roles`, `rk.specification.Role` |
 | Fix | Supply a known value for an investigation (an Assignment) | `specification` | `Specification.fix` |
 | Free | Make a value an unknown that the solve finds. A value that is not fixed is free | `specification` | `Specification.free` |
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |

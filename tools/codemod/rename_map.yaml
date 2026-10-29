@@ -873,7 +873,7 @@ notes:
   - topic: Specification calls
     status: agreed
     source: "#255 D7, D8"
-    note: "`fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. `model.specify(name=)` makes one. `fix(target, quantity, id=, model=, ids=, recorded=)` is now `fix(key=quantity)`, or `fix({target: quantity})` for a dotted path, a UUID or a mapping of Movement UUIDs; `free(target, id=, model=, ids=)` is now `free(*targets)`. The Specification keeps its Model: pass `Specification(record, model=, resolver=)` for a record. `recorded=True` is removed: fix the recorded Quantities explicitly (#144)."
+    note: "`fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. `model.specify(name=)` makes one. `fix(target, quantity, id=, model=, ids=, recorded=)` is now `fix(key=quantity)`, or `fix({target: quantity})` for a dotted path, a UUID or a mapping of Movement UUIDs; `free(target, id=, model=, ids=)` is now `free(*targets)`. The Specification keeps its Model: pass `Specification(record, model=, resolver=)` for a record. `recorded=True` is removed: fix the recorded Quantities explicitly (#144). `fix` also takes Quantity text and a number for a ratio; a number for a value with other units raises `UnitError`, not `TypeError`. `specify` and each call record as unknowns the values that the equations use and that nothing fixes, so `free` is needed only to release a fixed value. `roles` lists the role of each value as an `rk.specification.Role` (#290)."
   - topic: Loan payment
     status: agreed
     source: "#255 D19"

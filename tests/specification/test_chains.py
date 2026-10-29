@@ -53,6 +53,7 @@ def test_specify_fills_in_the_metadata_and_pins_the_model():
     front = model.specify(name="Front door", description="Rent from cost")
     assert isinstance(front, Specification)
     assert front.record.model == model.id
+    assert front.model_id == model.id
     assert front.metadata.name == "Front door"
     assert front.metadata.description == "Rent from cost"
     assert front.metadata.schema_version == "1.0.0"
@@ -63,7 +64,9 @@ def test_specify_fills_in_the_metadata_and_pins_the_model():
 
 def test_each_call_returns_a_new_specification_and_leaves_the_last_one():
     model = costs()
-    land = model.value(owner=model.entity(code="project").id, key="land_cost")
+    project = model.entity(code="project").id
+    land = model.value(owner=project, key="land_cost")
+    total = model.value(owner=project, key="total_cost")
     front = model.specify(name="Front door")
     fixed = front.fix(land_cost=aud("20e6"), works_cost=aud("30e6"))
     assert fixed.id != front.id
@@ -79,9 +82,14 @@ def test_each_call_returns_a_new_specification_and_leaves_the_last_one():
         aud("25e6"),
     ]
     freed = refixed.free("land_cost")
-    assert targets(freed, "unknowns") == [Reference(target=land.id)]
+    assert targets(freed, "unknowns") == [
+        Reference(target=land.id),
+        Reference(target=total.id),
+    ]
     assert len(freed.record.assignments) == 1
-    assert not freed.fix(land_cost=aud("1")).record.unknowns
+    assert targets(freed.fix(land_cost=aud("1")), "unknowns") == [
+        Reference(target=total.id)
+    ]
 
 
 def test_dotted_paths_uuids_and_ambiguous_keys():
@@ -113,7 +121,7 @@ def test_a_flow_fixes_each_movement_or_the_selected_ones():
     first = model.specify().fix(rent_index={movements[0]: ratio})
     assert targets(first, "assignments") == [Reference(target=movements[0])]
     freed = every.free(movements[-1])
-    assert targets(freed, "unknowns") == [Reference(target=movements[-1])]
+    assert Reference(target=movements[-1]) in targets(freed, "unknowns")
     assert len(freed.record.assignments) == 2
 
 
@@ -124,8 +132,12 @@ def test_fix_and_free_check_their_arguments():
         spec.fix()
     with pytest.raises(TypeError, match="at least one"):
         spec.free()
-    with pytest.raises(TypeError, match="Quantity"):
+    with pytest.raises(UnitError, match="bare number fixes a ratio"):
         spec.fix(land_cost=20e6)
+    with pytest.raises(TypeError, match="Quantity"):
+        spec.fix(land_cost=True)
+    with pytest.raises(TypeError, match="Quantity"):
+        spec.fix(land_cost=None)
     with pytest.raises(UnitError):
         spec.fix(land_cost=rk.Quantity(text="20 sqm"))
     with pytest.raises(ValueError, match="more than once"):
@@ -160,10 +172,8 @@ def test_a_chained_specification_solves():
     model = costs()
     store = MemoryStore()
     store.put(model)
-    front = (
-        model.specify(name="Front door")
-        .fix(land_cost=aud("20e6"), works_cost=aud("30e6"))
-        .free("project.total_cost")
+    front = model.specify(name="Front door").fix(
+        land_cost=aud("20e6"), works_cost=aud("30e6")
     )
     back = front.fix({"project.total_cost": aud("60e6")}).free("land_cost")
     results = {}

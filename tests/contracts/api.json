@@ -79,13 +79,15 @@
     "__init__": "method (self, record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
-    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | Mapping[UUID, Quantity]] | None = None, /, **values: Quantity | Mapping[UUID, Quantity]) -> Specification",
+    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
     "free": "method (self, *targets: str | UUID | Reference) -> Specification",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Specification",
     "id": "property",
     "metadata": "property",
+    "model_id": "property",
     "record": "property",
     "revise": "method (self, replacement: rangekeeper.schema.records.Specification) -> Specification",
+    "roles": "property",
     "to_data": "method (self) -> dict[str, object]",
     "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
@@ -2632,6 +2634,15 @@
    ],
    "module": "rangekeeper.schema.enums"
   },
+  "Role": {
+   "kind": "enum",
+   "members": [
+    "FIXED",
+    "FREE",
+    "DECIDED"
+   ],
+   "module": "rangekeeper.specification.roles"
+  },
   "Settings": {
    "kind": "class",
    "members": {
@@ -2652,13 +2663,15 @@
     "__init__": "method (self, record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
-    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | Mapping[UUID, Quantity]] | None = None, /, **values: Quantity | Mapping[UUID, Quantity]) -> Specification",
+    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
     "free": "method (self, *targets: str | UUID | Reference) -> Specification",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Specification",
     "id": "property",
     "metadata": "property",
+    "model_id": "property",
     "record": "property",
     "revise": "method (self, replacement: rangekeeper.schema.records.Specification) -> Specification",
+    "roles": "property",
     "to_data": "method (self) -> dict[str, object]",
     "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },

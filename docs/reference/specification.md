@@ -132,25 +132,34 @@ Function can still be unsupported by the selected executor.
 ## Fix and free quantities
 
 `model.specify(*, name=None, description=None)` returns a new Specification of
-that Model revision, with no roles yet. Its Metadata has a new UUID, the schema
-version, the name and the description. Each chained call returns a new
-Specification; the Specification that it is called on does not change. The new
-Metadata has a new UUID and `previous=specification.id`, and keeps the name and
-description. No call saves or executes the revision.
+that Model revision. Its Metadata has a new UUID, the schema version, the name
+and the description. Each chained call returns a new Specification; the
+Specification that it is called on does not change. The new Metadata has a new
+UUID and `previous=specification.id`, and keeps the name and description. No
+call saves or executes the revision. `model_id` is the UUID of the pinned Model
+revision.
+
+A value that is not fixed is free: the solve finds it. `specify` and each chained
+call record as unknowns the Values and Movements that the equations use and that
+no fix or rule controls. The equations are the Constraints of the Model and of
+the Specification's own Formulations. A record that you make yourself has only
+the roles that it declares, until a chained call adds the free values.
 
 ```python
 front = (
     model.specify(name="Front door")
-    .fix(land_cost=rk.Quantity(text="20e6 AUD"), works_cost=works)
-    .free("total_cost")
+    .fix(land_cost="20e6 AUD", works_cost=works)
+    .fix(leverage="65 %", coverage=1.25)
 )
-back = front.fix(total_cost=rk.Quantity(text="60e6 AUD")).free("land_cost")
+back = front.fix(rent_factor=1).free("land_cost")
+back.roles  # each value: fixed with its Quantity, free or decided
 ```
 
-`fix(**values)` fixes each named value to a Quantity, and `free(*targets)` frees
-each target: the solve finds it. A fix or free replaces an earlier fix or free
-of the same target in this Specification, and `fix` also removes its estimates.
-Both retain the equations and unrelated Specification content.
+`fix(**values)` fixes each named value, and `free(*targets)` releases a value
+that was fixed before. A fix or free replaces an earlier fix or free of the same
+target in this Specification, and `fix` also removes its estimates. Both retain
+the equations and unrelated Specification content. When no role changes, such as
+a free of a free value, the call returns the same Specification.
 
 | Target | Meaning |
 | --- | --- |
@@ -158,11 +167,31 @@ Both retain the equations and unrelated Specification content.
 | A dotted path, `fix({"building_a.income": ...})` or `free("building_a.income")` | The Value with that key on the Entity or Assembly with that code |
 | A Value or Movement UUID, or a Reference | That Value or Movement |
 
+| Value given to `fix` | Meaning |
+| --- | --- |
+| A Quantity | That Quantity |
+| Text, `"20e6 AUD"` or `"65 %"` | The Quantity that the text gives; text without units raises `UnitError` |
+| A number, `coverage=1.25` | A ratio. A target with units that are not dimensionless raises `UnitError` |
+
 `fix` takes the targets that are not keywords, such as dotted paths and UUIDs, in
-a mapping as its first argument. One Quantity fixes a scalar Value, or each
-Movement of a Flow Value; a mapping from Movement UUIDs to Quantities fixes those
-Movements only. A Flow target of `free` frees each of its Movements. Each
-Quantity must convert to the units of its target (`UnitError`).
+a mapping as its first argument. One value fixes a scalar Value, or each
+Movement of a Flow Value; a mapping from Movement UUIDs to values fixes those
+Movements only. A Flow target of `free` frees each of its Movements. Each value
+must convert to the units of its target (`UnitError`). A boolean or another type
+raises `TypeError`.
+
+`roles` returns a [Table](tables.md) with one row for each value that has a
+role, in Model order. Each Row's `id` is the UUID of its target.
+
+| Column | Content |
+| --- | --- |
+| `key` | The key that `fix` takes: the bare key, or the dotted path when several Values have the key |
+| `movement` | The Movement UUID, or None for a scalar Value |
+| `role` | `rk.specification.Role`: `FIXED`, `FREE` or `DECIDED` (a rule controls the value) |
+| `quantity` | The fixed Quantity, or None |
+
+A Specification with includes reads its roles from its Composition, so it needs
+its resolver. A batch has no roles (`ValueError`).
 
 Key lookup needs the pinned Model. A Specification from `model.specify()` keeps
 it, and so does each Specification that a chained call returns. For a record,
