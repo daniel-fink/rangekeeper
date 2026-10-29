@@ -31,11 +31,11 @@ LARGEST_CONSTANT = 1e19
 TERMINATIONS = {
     "convergenceCriteriaSatisfied": Termination.FEASIBLE,
     "provenInfeasible": Termination.INFEASIBLE,
-    "maxTimeLimit": Termination.LIMIT,
-    "iterationLimit": Termination.LIMIT,
-    "objectiveLimit": Termination.LIMIT,
-    "error": Termination.ERROR,
-    "interrupted": Termination.ERROR,
+    "maxTimeLimit": Termination.LIMITED,
+    "iterationLimit": Termination.LIMITED,
+    "objectiveLimit": Termination.LIMITED,
+    "error": Termination.FAILED,
+    "interrupted": Termination.FAILED,
 }
 
 
@@ -119,7 +119,7 @@ class PyomoHighs:
             )
         if remaining <= 0:
             return BackendResult(
-                Termination.LIMIT,
+                Termination.LIMITED,
                 evidence={"termination_condition": "worker_deadline"},
                 diagnostics=tuple(findings),
             )
@@ -158,7 +158,7 @@ class PyomoHighs:
             )
         except subprocess.TimeoutExpired:
             return BackendResult(
-                Termination.LIMIT,
+                Termination.LIMITED,
                 evidence={
                     "termination_condition": "worker_deadline",
                     "worker_budget_seconds": remaining,

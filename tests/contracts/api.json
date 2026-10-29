@@ -695,7 +695,7 @@
     "LIMITED",
     "FAILED"
    ],
-   "module": "rangekeeper.execution.statuses"
+   "module": "rangekeeper.execution.status"
   },
   "Tolerances": {
    "kind": "class",
@@ -809,8 +809,8 @@
    "members": [
     "FEASIBLE",
     "INFEASIBLE",
-    "LIMIT",
-    "ERROR",
+    "LIMITED",
+    "FAILED",
     "UNKNOWN"
    ],
    "module": "rangekeeper.execution.backends.base"
@@ -2547,16 +2547,16 @@
   "Report": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, status: Status, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> None",
     "diagnostics": "property",
-    "replace": "method (self, *, status: Status | Unset = <Unset>, runtime: Runtime | Unset | Omit = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = <Unset>, trace: tuple[Step, ...] | None | Unset | Omit = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, status: RunStatus | Unset = <Unset>, runtime: Runtime | Unset | Omit = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = <Unset>, trace: tuple[Step, ...] | None | Unset | Omit = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset | Omit = <Unset>) -> Self",
     "rule_evidence": "property",
     "runtime": "property",
     "status": "property",
     "trace": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, status: Status, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> None"
+   "signature": "(*, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> None"
   },
   "Run": {
    "kind": "class",
@@ -2587,6 +2587,17 @@
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, report: Report) -> None"
+  },
+  "RunStatus": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, completion: CompletionStatus, solution: SolutionStatus) -> None",
+    "completion": "property",
+    "replace": "method (self, *, completion: CompletionStatus | Unset = <Unset>, solution: SolutionStatus | Unset = <Unset>) -> Self",
+    "solution": "property"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, completion: CompletionStatus, solution: SolutionStatus) -> None"
   },
   "Runtime": {
    "kind": "class",
@@ -2620,17 +2631,6 @@
     "NOT_APPLICABLE"
    ],
    "module": "rangekeeper.schema.enums"
-  },
-  "Status": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, completion: CompletionStatus, solution: SolutionStatus) -> None",
-    "completion": "property",
-    "replace": "method (self, *, completion: CompletionStatus | Unset = <Unset>, solution: SolutionStatus | Unset = <Unset>) -> Self",
-    "solution": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, completion: CompletionStatus, solution: SolutionStatus) -> None"
   },
   "Step": {
    "kind": "class",

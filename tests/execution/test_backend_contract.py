@@ -89,8 +89,8 @@ def test_backend_results_carry_a_termination_not_a_backend_word():
     assert {item.value for item in Termination} == {
         "feasible",
         "infeasible",
-        "limit",
-        "error",
+        "limited",
+        "failed",
         "unknown",
     }
 
@@ -155,7 +155,7 @@ def test_the_highs_iteration_clamp_lives_in_the_backend(monkeypatch):
         remaining=0,
         options={},
     )
-    assert result.termination is Termination.LIMIT
+    assert result.termination is Termination.LIMITED
     assert result.limits is None
     clamp = next(d for d in result.diagnostics if d.code == Code.SETTINGS_ADJUSTED)
     assert clamp.values["effective"] == highs.ITERATION_MAXIMUM

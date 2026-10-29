@@ -61,6 +61,26 @@ def test_a_feasible_outcome_has_its_status_and_evidence(back_outcome):
     assert back_outcome.diagnostics == back_outcome.run.report.diagnostics
 
 
+def with_termination(outcome, word):
+    """Return the Outcome with another word in its solver_termination evidence."""
+    data = outcome.run.to_data()
+    for item in data["report"]["diagnostics"]:
+        if item["code"] == Code.SOLVER_TERMINATION.value:
+            item["values"]["termination"] = word
+    return rk.execution.Outcome(run=rk.Run.from_data(data), outputs=outcome.outputs)
+
+
+@pytest.mark.parametrize(
+    "word,termination",
+    [("limit", Termination.LIMITED), ("error", Termination.FAILED)],
+)
+def test_evidence_reads_the_termination_words_of_an_older_run(
+    back_outcome, word, termination
+):
+    older = with_termination(back_outcome, word)
+    assert older.evidence.termination is termination
+
+
 def test_equations_that_leave_values_free_name_them():
     loose = back().free("works_cost")
     outcome = solve(loose, store())
@@ -132,8 +152,8 @@ class Breaks:
 @pytest.mark.parametrize(
     "backend,status,error",
     [
-        (Ends(Termination.LIMIT), Status.LIMITED, OutcomeError),
-        (Ends(Termination.ERROR), Status.FAILED, OutcomeError),
+        (Ends(Termination.LIMITED), Status.LIMITED, OutcomeError),
+        (Ends(Termination.FAILED), Status.FAILED, OutcomeError),
         (Ends(Termination.UNKNOWN), Status.FAILED, OutcomeError),
         (Breaks(), Status.FAILED, NumericalError),
     ],

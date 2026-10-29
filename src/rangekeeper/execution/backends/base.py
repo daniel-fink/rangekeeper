@@ -15,13 +15,14 @@ class Termination(StrEnum):
     """How a backend finished, in words that generic code reads.
 
     Only independent verification decides whether a candidate is accepted.
-    ``LIMIT`` and ``UNKNOWN`` never prove infeasibility.
+    ``LIMITED`` and ``UNKNOWN`` never prove infeasibility. The words are the
+    words of ``Status`` for the same idea.
     """
 
     FEASIBLE = "feasible"
     INFEASIBLE = "infeasible"
-    LIMIT = "limit"
-    ERROR = "error"
+    LIMITED = "limited"
+    FAILED = "failed"
     UNKNOWN = "unknown"
 
 
@@ -30,8 +31,8 @@ class BackendResult:
     """A backend's claim, its candidate and its raw evidence.
 
     - ``termination``: ``FEASIBLE`` (a feasible candidate), ``INFEASIBLE``
-      (proven infeasible), ``LIMIT`` (a time, iteration or other limit),
-      ``ERROR`` (failed or interrupted) or ``UNKNOWN``.
+      (proven infeasible), ``LIMITED`` (a time, iteration or other limit),
+      ``FAILED`` (failed or interrupted) or ``UNKNOWN``.
     - ``candidate`` maps each variable to a value, or is None.
     - ``limits`` are the limits that the solver applied: the request, or the
       request after the backend adjusted it. None when no solver invocation
