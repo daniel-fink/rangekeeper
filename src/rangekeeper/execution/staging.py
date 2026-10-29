@@ -25,29 +25,21 @@ from rangekeeper.schema.records import Expression, ExpressionKind
 
 
 @dataclass(frozen=True)
-class Stage:
-    """One earlier stage: its affine problem, the backend result and what it determined."""
-
-    problem: AffineProblem
-    result: BackendResult
-    determined: tuple[UUID, ...]
-
-
-@dataclass(frozen=True)
 class Staged:
     """The problem that the backend solves last, and the values found before it.
 
     ``problem`` is the affine problem over the unknowns that remain, with the
     determined values fixed and the rows that they satisfy removed.
     ``determined`` maps each unknown that an earlier stage determined to its
-    value, in its Measure units. ``ended`` is the result of an earlier stage
-    that ended the solve, for example a proof of infeasibility; ``problem`` is
-    then that stage's problem.
+    value, in its Measure units. ``stage_count`` is the number of earlier
+    stages; the Run's trace records each of them. ``ended`` is the result of
+    an earlier stage that ended the solve, for example a proof of
+    infeasibility; ``problem`` is then that stage's problem.
     """
 
     problem: AffineProblem
     determined: Mapping[UUID, float]
-    stages: tuple[Stage, ...] = ()
+    stage_count: int = 0
     ended: BackendResult | None = None
 
 
@@ -74,7 +66,7 @@ def stage(
         )
     except UnsupportedError:
         pass  # a row is not affine; stage the solve
-    current, determined, stages = binding, dict[UUID, float](), list[Stage]()
+    current, determined, count = binding, dict[UUID, float](), 0
     while True:
         checkpoint()
         deferred = _deferred(current, checkpoint)
@@ -83,7 +75,7 @@ def stage(
             return Staged(
                 build_problem(final, limits=limits, checkpoint=checkpoint),
                 MappingProxyType(determined),
-                tuple(stages),
+                count,
             )
         affine = tuple(
             item
@@ -106,11 +98,9 @@ def stage(
             build_problem(current, limits=limits, checkpoint=checkpoint)
             raise AssertionError("a deferred row lowered")  # pragma: no cover
         result = solve(problem)
-        stages.append(Stage(problem, result, known))
+        count += 1
         if result.termination is not Termination.FEASIBLE or result.candidate is None:
-            return Staged(
-                problem, MappingProxyType(determined), tuple(stages), ended=result
-            )
+            return Staged(problem, MappingProxyType(determined), count, ended=result)
         values = {id: result.candidate[id] for id in known}
         determined.update(values)
         current = _fix(current, values)

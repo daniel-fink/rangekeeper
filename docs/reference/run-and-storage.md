@@ -102,7 +102,7 @@ must establish that it really is a batch. External references are not loaded dur
 construction or codec reads.
 
 `run.validate(resolver=...)`, `run.check(resolver=...)` and
-`rangekeeper.run.validate(run, resolver=..., prerequisites=None)` resolve the attempted Specification,
+`rangekeeper.run.validate(run, resolver=..., units=None)` resolve the attempted Specification,
 its includes/cases/Model pins, spawned Runs, output Models, and scoped report documents.
 Successful resolutions are cached. Report references carry no kind discriminator;
 resolving a previously unseen report document can require up to three typed lookups.
@@ -118,11 +118,10 @@ report `not_assessed` with a `specification_invalid` diagnostic. Declared extern
 references must still resolve before store publication. Local Specification validity
 is still required for every saved contribution.
 
-`prerequisites` is a `rangekeeper.run.Prerequisites` with the compositions and the
-Specification check scopes that the caller already computed for leaf
-Specifications of the tree, by UUID. Validation uses them instead of composing and
-checking those Specifications again. Execution passes its own; other callers
-need not.
+To validate the Run of an Outcome before its outputs are stored, lay them over the
+resolver with `rangekeeper.execution.Overlay(resolver, models=, runs=)`.
+Execution validates its Runs this way, and it reuses the compositions and
+Specification checks that it already ran; that reuse is internal to execution.
 
 These checks **do not prove equation satisfaction, optimality, numerical reproduction,
 or that execution happened**. The public Run validator now converts physically

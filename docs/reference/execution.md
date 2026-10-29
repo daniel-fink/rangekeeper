@@ -50,7 +50,7 @@ Each execution validates once ([#132](https://github.com/daniel-fink/rangekeeper
 | Composition | Once for each leaf, in `resolve_cases` |
 | Specification against its Model | Once for each leaf, in `validate` |
 | Candidate Model | Once for each candidate, when `make_candidate` builds it |
-| Run tree | Once for each execution: one `rangekeeper.run.validate` of the root Run, with the unstored outputs and case Runs laid over the resolver. It reuses the compositions and Specification checks above (`run.Prerequisites`) |
+| Run tree | Once for each execution: one validation of the root Run, as `rangekeeper.run.validate` does, with the unstored outputs and case Runs laid over the resolver (`Overlay`). It reuses the compositions and Specification checks above |
 
 `execute` runs this validation against `store` before it puts anything, with the
 unit system of the input Model as a store does. It marks each Run as validated
@@ -202,14 +202,25 @@ and only the backend starts a process. `solve` calls the stages for each case;
 
 | # | Stage | Input | Result | Raises |
 | --- | --- | --- | --- | --- |
-| 1 | `resolve_cases(specification, *, resolver)` | The root Specification | `Cases`: the documents, the pinned Models and one composition for each leaf. `Cases` is also a resolver | Missing or wrong-kind revisions, cycles, a contradicted batch Model pin. A leaf whose composition fails keeps its `ValidationError` |
-| 2 | `validate(composition, *, resolver, units=None)` | One composition | `Validation`: the report, the input Model and the unit system | Nothing for a content problem; it is an issue in the report |
+| 1 | `resolve_cases(specification, *, resolver)` | The root Specification | `Cases`: the documents, the pinned Models, the `compositions` of the leaves that compose and the `failures` (a `ValidationError` each) of those that do not. `Cases` is also a resolver | Missing or wrong-kind revisions, cycles, a contradicted batch Model pin. A leaf whose composition fails is in `failures` |
+| 2 | `validate(composition, *, resolver, units=None)` | One composition | `Validation`: the `report`, the `composition`, the input `model` and the `units` | Nothing for a content problem; it is an issue in the report |
 | 3 | `bind_roles(validation, *, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
-| 4 | `build_problem(binding, *, limits=None, checkpoint=)`; `staging.stage(binding, *, solve, limits=None, checkpoint=)` for a [staged solve](#staged-solve) | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis` (equality rank, free variables, whether bounds exist) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`; `NumericalError` |
+| 4 | `build_problem(binding, *, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis`: `equality_rank`, `unknown_count`, the `undetermined` unknowns and those of them that a bound reads (`bounded`) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`, or for a row that is not affine; `NumericalError` |
 | 5 | `Backend.solve(problem, *, limits, remaining, options)` | An `AffineProblem` | `backends.BackendResult`: a `Termination`, the candidate values, the applied limits, the backend's diagnostics and its raw evidence | `BackendUnavailableError`, `NumericalError`, `UnsupportedError` for a refused option or row |
 | 6 | `make_candidate(binding, values, *, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
-| 7 | `verify(binding, candidate, *, tolerances=Tolerances())` | The candidate | `Verification`: accepted or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
-| 8 | `assemble(specification, report, *, id, output, resolver, units=None, validate=True)`; `assemble_batch(specification, cases, *, resolver, validate=True)` | The report of one leaf; the Outcomes of a batch's cases | An `Outcome` with the finalized Run. With `validate`, the Run is validated once with the unstored outputs and Runs laid over the resolver | `ValidationError` |
+| 7 | `verify(binding, candidate, *, tolerances=Tolerances())` | The candidate | `Verification`: `passed` or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
+| 8 | `assemble(specification, report, *, id, output)`; `assemble_batch(specification, cases)` | The report of one leaf; the Outcomes of a batch's cases | An `Outcome` with the finalized Run. Nothing is resolved or validated | `ValidationError` for a Run that is not locally consistent |
+
+Run validation is its own step after stage 8: `rk.run.validate(outcome.run,
+resolver=rk.execution.Overlay(resolver, models=..., runs=...))`. The `Overlay`
+returns the unstored outputs and case Runs, and reads everything else from the
+resolver, so nothing is stored before the Run is valid. `solve` validates the
+whole tree once this way.
+
+`solve` does not run stage 4 alone. When a row is not affine under the fixed
+values, it builds the problem in stages ([staged solve](#staged-solve)), and the
+Run's trace records each stage. The public stages give the problem of one
+stage.
 
 `checkpoint` is a callable that raises `AttemptDeadlineError` when the attempt's
 time limit has passed. The stages call it between steps.
@@ -259,8 +270,8 @@ this check precedes simplification and is repeated during acceptance.
 A row that is not affine under the fixed values can become affine when other rows
 determine one of its unknowns. In lesson 02's front door,
 `effective_income = rent_factor * reference_income` has two unknowns, but
-`reference_income` is a sum of products of fixed values. `execution.staging.stage`
-then solves in stages ([#276](https://github.com/daniel-fink/rangekeeper/issues/276)):
+`reference_income` is a sum of products of fixed values. `solve` then solves in
+stages (`execution.staging`, internal) ([#276](https://github.com/daniel-fink/rangekeeper/issues/276)):
 
 1. Build the problem of the rows that are affine, and read its rank analysis.
 2. When the analysis determines an unknown of a deferred row, solve that problem
@@ -376,7 +387,7 @@ error that `raise_for_status()` raises
 
 Limits, ambiguous termination and solver failure do not
 prove infeasibility. A zero-objective feasibility solve establishes no preference
-optimum. `build_problem` computes the equality rank and the free variables in
+optimum. `build_problem` computes the equality rank and the undetermined unknowns in
 pure Python, for every backend: Gaussian elimination on rows divided by their
 largest coefficient, where an entry at or below `max(rows, unknowns)` times the
 machine epsilon counts as zero. Bounds may constrain otherwise free directions,

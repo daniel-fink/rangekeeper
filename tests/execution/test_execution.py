@@ -451,7 +451,7 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     next(node for node in records(changed["system"]) if node.get("id") == str(RENT))[
         "quantity"
     ]["magnitude"] = 30001
-    assert not verify(binding, Model.from_data(changed)).accepted
+    assert not verify(binding, Model.from_data(changed)).passed
 
 
 def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():

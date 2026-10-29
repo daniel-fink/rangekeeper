@@ -69,12 +69,11 @@ class Attempt:
         view: Composition | ValidationError,
         *,
         resolver: DocumentResolver,
-        validate: bool = True,
     ) -> None:
         self.config, self.backend = config, backend
         self.units: UnitSystem | None = config.units
         self.specification, self.view = specification, view
-        self.resolver, self.validate = resolver, validate
+        self.resolver = resolver
         self.run_id, self.started, self.clock = uuid4(), _now(), time.monotonic()
         self.findings: list[Diagnostic] = []
         self.trace: list[Step] = []
@@ -217,8 +216,8 @@ class Attempt:
                 at=_now(),
                 message=f"Expanded {len(self.binding.references)} scalar/Movement symbols and {len(problem.rows)} affine constraints; limits {self.limits.symbol_limit}/{self.limits.constraint_limit}."
                 + (
-                    f" {len(staged.stages)} earlier stages determined {len(staged.determined)} values."
-                    if staged.stages
+                    f" {staged.stage_count} earlier stages determined {len(staged.determined)} values."
+                    if staged.stage_count
                     else ""
                 ),
             )
@@ -321,7 +320,7 @@ class Attempt:
                 )
             )
             self.findings.extend(checked.diagnostics)
-            if checked.accepted:
+            if checked.passed:
                 self.output, self.solution = candidate, SolutionStatus.FEASIBLE
                 self.diagnose(
                     Code.FEASIBLE_CANDIDATE,
@@ -354,7 +353,7 @@ class Attempt:
         )
         self.diagnose(
             Code.UNIQUENESS_NOT_ASSESSED if analysis.bounded else Code.UNDERDETERMINED,
-            f"Numerical equality rank {analysis.rank} for {analysis.unknown_count} unknowns."
+            f"Numerical equality rank {analysis.equality_rank} for {analysis.unknown_count} unknowns."
             " The equations do not determine these free unknowns; the candidate holds one value for each: "
             + ", ".join(str(ref.target) for ref in free)
             + "."
@@ -363,13 +362,13 @@ class Attempt:
             document=self.binding.model.id,
             references=tuple(free),
             values={
-                "equality_rank": analysis.rank,
+                "equality_rank": analysis.equality_rank,
                 "unknown_count": analysis.unknown_count,
             },
         )
 
     def finish(self) -> Outcome:
-        """Assemble the Outcome; validate its Run unless a later commit point will."""
+        """Assemble the Outcome. The caller validates its Run, once for the tree."""
         # No returned worker evidence means no claim that its iteration setting or
         # solver implementation actually ran. The parent deadline still applies.
         effective = (
@@ -425,7 +424,4 @@ class Attempt:
             report,
             id=self.run_id,
             output=self.output,
-            resolver=self.resolver,
-            units=self.units if self.binding is None else self.binding.units,
-            validate=self.validate,
         )

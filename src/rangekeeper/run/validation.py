@@ -145,7 +145,6 @@ def validate(
     *,
     resolver: "DocumentResolver",
     units: UnitSystem | None = None,
-    prerequisites: Prerequisites | None = None,
 ) -> ValidationReport:
     """Check a finalized tree and published outputs against exact resolved revisions.
 
@@ -158,8 +157,26 @@ def validate(
     outcomes with the required diagnostic. No solver or scheduler is invoked.
     Assignments are compared after explicit conversion to output Measure units;
     this does not evaluate equations or certify a solver's numerical claims.
-    ``prerequisites`` are checks that the caller already ran on the same
-    revisions; validation does not repeat them.
+    To validate the Run of an Outcome that is not stored yet, lay its outputs
+    and case Runs over the resolver with ``rk.execution.Overlay``.
+    """
+    return validate_executed(
+        run, resolver=resolver, units=units, prerequisites=Prerequisites()
+    )
+
+
+def validate_executed(
+    run: "Run",
+    *,
+    resolver: "DocumentResolver",
+    prerequisites: Prerequisites,
+    units: UnitSystem | None = None,
+) -> ValidationReport:
+    """Validate the Run of an execution, reusing the checks that it already ran.
+
+    ``prerequisites`` are the compositions and Specification checks of the
+    execution on the same revisions; validation does not repeat them. The
+    execution layer calls this; other callers use ``validate``.
     """
     from rangekeeper.run.run import Run
     from rangekeeper.shared.errors import (
