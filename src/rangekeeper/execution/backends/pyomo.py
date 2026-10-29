@@ -119,7 +119,7 @@ class PyomoHighs:
             )
         if remaining <= 0:
             return BackendResult(
-                Termination.LIMITED,
+                termination=Termination.LIMITED,
                 evidence={"termination_condition": "worker_deadline"},
                 diagnostics=tuple(findings),
             )
@@ -158,7 +158,7 @@ class PyomoHighs:
             )
         except subprocess.TimeoutExpired:
             return BackendResult(
-                Termination.LIMITED,
+                termination=Termination.LIMITED,
                 evidence={
                     "termination_condition": "worker_deadline",
                     "worker_budget_seconds": remaining,
@@ -178,22 +178,22 @@ class PyomoHighs:
             values = data.get("candidate")
             condition = data["termination"]
             return BackendResult(
-                TERMINATIONS.get(condition, Termination.UNKNOWN),
-                (
+                termination=TERMINATIONS.get(condition, Termination.UNKNOWN),
+                candidate=(
                     None
                     if values is None
                     else MappingProxyType(
                         {UUID(key): float(value) for key, value in values.items()}
                     )
                 ),
-                tuple(
+                implementations=tuple(
                     Implementation.from_data(item) for item in data["implementations"]
                 ),
-                MappingProxyType(
+                evidence=MappingProxyType(
                     {"termination_condition": condition, **data["evidence"]}
                 ),
-                tuple(findings),
-                applied,
+                diagnostics=tuple(findings),
+                limits=applied,
             )
         except (KeyError, TypeError, json.JSONDecodeError) as error:
             raise NumericalError("invalid solver-worker response") from error

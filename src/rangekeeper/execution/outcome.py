@@ -76,7 +76,7 @@ def _decisive(report: Report) -> Diagnostic | None:
     return ending[-1] if ending else None
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Evidence:
     """The typed solver evidence of one leaf Outcome.
 
@@ -102,7 +102,7 @@ class Evidence:
     implementations: tuple[Implementation, ...] = ()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Outcome:
     """The finalized Run of one Specification, with its outputs and cases.
 

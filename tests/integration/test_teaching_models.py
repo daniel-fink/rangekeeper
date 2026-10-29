@@ -19,7 +19,9 @@ from tests.integration.models import deterministic, flexible, linear, probabilis
 def execute(consumer, model, **requirements):
     store = MemoryStore()
     store.put(model)
-    run = execution.execute(consumer.specify(model, **requirements), store).run
+    run = execution.execute(
+        specification=consumer.specify(model, **requirements), store=store
+    ).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE, run.report.to_data()
     validate(run, resolver=store).raise_if_invalid()
     output = store.load_model(run.record.outputs[0])

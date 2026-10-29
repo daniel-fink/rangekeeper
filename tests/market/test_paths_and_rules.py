@@ -272,7 +272,7 @@ def test_rule_run_rejects_forged_information_timing_and_actions():
     rules = investment.build_stop_gain_resale_rules(model, minimum_holding_periods=1)
     store = MemoryStore()
     store.put(model)
-    run = execute(investment.specify(model, rules=rules), store).run
+    run = execute(specification=investment.specify(model, rules=rules), store=store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE
     for mutation in ("availability", "assignment", "rule", "termination"):
         data = run.to_data()
@@ -330,7 +330,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
         a for a in data["assignments"] if a["target"] != observed.to_data()
     ]
     data["unknowns"].append(observed.to_data())
-    run = execute(Specification.from_data(data), store).run
+    run = execute(specification=Specification.from_data(data), store=store).run
     assert not run.record.outputs
     assert [d.code for d in run.report.diagnostics if d.severity == Severity.ERROR] == [
         Code.UNSUPPORTED_CAPABILITY

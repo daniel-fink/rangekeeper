@@ -84,7 +84,7 @@ def spec_from(payload):
 
 def test_backend_results_carry_a_termination_not_a_backend_word():
     with pytest.raises(TypeError):
-        BackendResult("optimal")  # type: ignore[arg-type]
+        BackendResult(termination="optimal")  # type: ignore[arg-type]
     assert {item.value for item in Termination} == {
         "feasible",
         "infeasible",
@@ -98,12 +98,14 @@ def test_generic_code_reads_no_backend_words_in_the_evidence():
     class Claims:
         def solve(self, problem, **kwargs):
             return BackendResult(
-                Termination.UNKNOWN,
+                termination=Termination.UNKNOWN,
                 evidence={"termination_condition": "provenInfeasible"},
             )
 
     store, _ = setup()
-    run = execute(spec(), store, config=ExecutionConfig(backend=Claims())).run
+    run = execute(
+        specification=spec(), store=store, config=ExecutionConfig(backend=Claims())
+    ).run
     assert run.report.status.completion == CompletionStatus.COMPLETED
     assert run.report.status.solution == SolutionStatus.UNKNOWN
     evidence = next(
@@ -116,10 +118,12 @@ def test_generic_code_reads_no_backend_words_in_the_evidence():
 def test_an_infeasible_termination_is_completed_and_infeasible():
     class Proves:
         def solve(self, problem, **kwargs):
-            return BackendResult(Termination.INFEASIBLE)
+            return BackendResult(termination=Termination.INFEASIBLE)
 
     store, _ = setup()
-    run = execute(spec(), store, config=ExecutionConfig(backend=Proves())).run
+    run = execute(
+        specification=spec(), store=store, config=ExecutionConfig(backend=Proves())
+    ).run
     assert run.report.status.completion == CompletionStatus.COMPLETED
     assert run.report.status.solution == SolutionStatus.INFEASIBLE
 

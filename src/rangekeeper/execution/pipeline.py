@@ -23,9 +23,9 @@ from rangekeeper.specification import Specification
 
 
 def solve(
+    *,
     specification: Specification,
     resolver: DocumentResolver | None = None,
-    *,
     config: ExecutionConfig | None = None,
 ) -> Outcome:
     """Run every stage for each case of ``specification``; write nothing.
@@ -101,9 +101,9 @@ class Pinned:
 
 
 def execute(
+    *,
     specification: Specification,
     store: RecordStore,
-    *,
     config: ExecutionConfig | None = None,
 ) -> Outcome:
     """Solve ``specification`` with ``store`` as resolver, then publish the result.
@@ -146,7 +146,9 @@ def _run(
     )
     cases = resolve_cases(specification, resolver=resolver)
     scopes: dict[UUID, object] = {}
-    outcome = _case(specification, cases, config, backend, scopes)
+    outcome = _case(
+        specification, cases=cases, config=config, backend=backend, scopes=scopes
+    )
     tree = tuple(outcome.walk())
     overlay = assembly.Overlay(
         cases,
@@ -199,6 +201,7 @@ def _unstored(outcome: Outcome, cases: Cases) -> set[UUID]:
 
 def _case(
     specification: Specification,
+    *,
     cases: Cases,
     config: ExecutionConfig,
     backend: Backend,
@@ -206,12 +209,15 @@ def _case(
 ) -> Outcome:
     # A case's key is the name of its Specification.
     key = specification.metadata.name
-    outcome = _attempt(specification, cases, config, backend, scopes)
+    outcome = _attempt(
+        specification, cases=cases, config=config, backend=backend, scopes=scopes
+    )
     return outcome if key is None else replace(outcome, key=key)
 
 
 def _attempt(
     specification: Specification,
+    *,
     cases: Cases,
     config: ExecutionConfig,
     backend: Backend,
@@ -219,17 +225,23 @@ def _attempt(
 ) -> Outcome:
     if specification.record.cases:
         return assembly.assemble_batch(
-            specification,
-            tuple(
-                _case(cases.documents[id], cases, config, backend, scopes)
+            specification=specification,
+            cases=tuple(
+                _case(
+                    cases.documents[id],
+                    cases=cases,
+                    config=config,
+                    backend=backend,
+                    scopes=scopes,
+                )
                 for id in specification.record.cases
             ),
         )
     attempt = Attempt(
-        config,
-        backend,
         specification,
         cases.failures.get(specification.id) or cases.compositions[specification.id],
+        config=config,
+        backend=backend,
         resolver=cases,
     )
     outcome = attempt.execute()

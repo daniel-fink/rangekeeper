@@ -7,14 +7,14 @@ from enum import StrEnum, unique
 from rangekeeper.schema.records import Assignment, ObservedQuantity, RuleEvidence
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class Observation:
     """Only quantities available at one date; no Model or resolver handle."""
 
     at: date
     quantities: tuple[ObservedQuantity, ...]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if type(self.at) is not date:
             raise TypeError("observation at must be a date")
         items = tuple(self.quantities)
@@ -23,13 +23,13 @@ class Observation:
         object.__setattr__(self, "quantities", items)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class RuleResult:
     """Ordered evidence makes no claim about numerical feasibility."""
 
     evidence: tuple[RuleEvidence, ...]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         items = tuple(self.evidence)
         if any(not isinstance(item, RuleEvidence) for item in items):
             raise TypeError("evidence must be RuleEvidence records")

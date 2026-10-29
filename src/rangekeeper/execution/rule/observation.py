@@ -69,7 +69,7 @@ def _observe(scope, *, at, bindings, evidence, prior, controlled):
                 available_at=available,
             )
         )
-    return Observation(at, tuple(result))
+    return Observation(at=at, quantities=tuple(result))
 
 
 def observe(

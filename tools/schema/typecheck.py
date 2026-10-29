@@ -89,8 +89,8 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
     )
     print(result.stdout)
     assert result.returncode == 1, result.stderr
-    assert result.stdout.count(": error:") == 4, result.stdout
-    print("Verified four intended execution API static rejections")
+    assert result.stdout.count(": error:") == 5, result.stdout
+    print("Verified five intended execution API static rejections")
     result = subprocess.run(
         command + [str(Path(__file__).with_name("typing_graph_invalid.py"))],
         cwd=ROOT / "src",

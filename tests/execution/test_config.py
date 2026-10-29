@@ -101,8 +101,8 @@ def test_config_limits_apply_when_the_specification_has_no_settings():
 
     store, _ = setup()
     run = execute(
-        spec(settings={}),
-        store,
+        specification=spec(settings={}),
+        store=store,
         config=ExecutionConfig(backend=Uncalled(), limits=Limits(symbol_limit=1)),
     ).run
     assert run.report.status.completion == CompletionStatus.FAILED
@@ -113,7 +113,9 @@ def test_config_limits_apply_when_the_specification_has_no_settings():
 def test_backend_options_reach_the_solver_and_its_evidence():
     store, _ = setup()
     run = execute(
-        spec(), store, config=ExecutionConfig(backend_options={"presolve": "off"})
+        specification=spec(),
+        store=store,
+        config=ExecutionConfig(backend_options={"presolve": "off"}),
     ).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE
     evidence = next(
@@ -127,7 +129,7 @@ def test_a_reserved_backend_option_fails_the_attempt_with_evidence():
     config = ExecutionConfig(
         backend=PyomoHighs(), backend_options={"output_flag": True}
     )
-    run = execute(spec(), store, config=config).run
+    run = execute(specification=spec(), store=store, config=config).run
     assert run.report.status.completion == CompletionStatus.FAILED
     assert not run.record.outputs
     assert any(

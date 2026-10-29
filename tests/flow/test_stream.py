@@ -385,14 +385,14 @@ def test_underdetermined_and_inconsistent_reverse_cases():
     under = reverse.free(
         *[m.id for m in model.value(ids["A_rent"]).flow.movements[-2:]]
     )
-    run = execute(under, store).run
+    run = execute(specification=under, store=store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE
     result = store.load_model(run.record.outputs[0])
     assert sum(
         m.number for m in result.value(ids["A_rent"]).flow.movements[-2:]
     ) == pytest.approx(320)
     assert any(d.code == "underdetermined" for d in run.report.diagnostics)
-    failed = execute(reverse, store).run
+    failed = execute(specification=reverse, store=store).run
     assert failed.report.status.solution is SolutionStatus.INFEASIBLE
     assert not failed.record.outputs
 
@@ -526,7 +526,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
     )
     store = MemoryStore()
     store.put(model)
-    run = execute(spec, store).run
+    run = execute(specification=spec, store=store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE, run.report.to_data()
     result = (
         store.load_model(run.record.outputs[0])

@@ -20,7 +20,10 @@ class Exact:
     """A backend that returns the known solution, in this process."""
 
     def solve(self, problem, **kwargs):
-        return BackendResult(Termination.FEASIBLE, {NOI: 550000.0, CAPITAL: 11000000.0})
+        return BackendResult(
+            termination=Termination.FEASIBLE,
+            candidate={NOI: 550000.0, CAPITAL: 11000000.0},
+        )
 
 
 CONFIG = ExecutionConfig(backend=Exact())
@@ -74,7 +77,7 @@ def test_solve_needs_no_store_and_returns_the_whole_tree():
     batch = batch_of(model, first, second)
     for document in (first, second, batch):
         store.put(document)
-    outcome = solve(batch, Unchanged(store), config=CONFIG)
+    outcome = solve(specification=batch, resolver=Unchanged(store), config=CONFIG)
     assert isinstance(outcome, Outcome)
     assert len(outcome.cases) == 2
     assert all(
@@ -91,7 +94,7 @@ def test_solve_validates_each_run_once(monkeypatch):
     store, _ = setup()
     specification = spec()
     store.put(specification)
-    outcome = solve(specification, store, config=CONFIG)
+    outcome = solve(specification=specification, resolver=store, config=CONFIG)
     assert counts == {outcome.run.id: 1}
 
 
@@ -104,7 +107,7 @@ def test_execute_publishes_outputs_then_runs_and_validates_the_tree_once(monkeyp
     for document in (first, second):
         store.put(document)
     store.puts.clear()
-    outcome = execute(batch, store, config=CONFIG)
+    outcome = execute(specification=batch, store=store, config=CONFIG)
     leaves = outcome.cases
     assert store.puts == [
         ("Specification", batch.id),
@@ -126,7 +129,7 @@ def test_execute_puts_nothing_when_solving_raises():
     store.puts.clear()
     missing = spec(model=Model.from_data(fresh(model.to_data())))
     with pytest.raises(MissingReferenceError):
-        execute(missing, store, config=CONFIG)
+        execute(specification=missing, store=store, config=CONFIG)
     assert store.puts == []
 
 
@@ -134,11 +137,11 @@ def test_an_outcome_matches_its_run():
     store, _ = setup()
     specification = spec()
     store.put(specification)
-    outcome = solve(specification, store, config=CONFIG)
+    outcome = solve(specification=specification, resolver=store, config=CONFIG)
     with pytest.raises(ValueError, match="outputs"):
-        Outcome(outcome.run)
+        Outcome(run=outcome.run)
     with pytest.raises(ValueError, match="cases"):
-        Outcome(outcome.run, outcome.outputs, (outcome,))
+        Outcome(run=outcome.run, outputs=outcome.outputs, cases=(outcome,))
     with pytest.raises(TypeError):
-        Outcome(outcome.run.to_data())  # type: ignore[arg-type]
+        Outcome(run=outcome.run.to_data())  # type: ignore[arg-type]
     assert isinstance(outcome.run, Run)

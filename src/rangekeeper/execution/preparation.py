@@ -26,7 +26,7 @@ from rangekeeper.specification import Composition
 from rangekeeper.specification.validation import prepare as validate_prepared
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Assertion:
     """One imposed predicate and the revision owning its Constraint declaration."""
 
@@ -35,7 +35,7 @@ class Assertion:
     predicate: Expression
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Validation:
     """The validation of one composition against its input Model.
 
@@ -51,7 +51,7 @@ class Validation:
     _scope: object = field(default=None, init=False, repr=False, compare=False)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Binding:
     """The bound roles of one composition; derived, never serialized."""
 
@@ -95,10 +95,12 @@ def validate(
     validated = validate_prepared(composition, resolver=resolver, units=units)
     model = validated.model
     validation = Validation(
-        validated.report,
-        composition,
-        model,
-        None if model is None else model.unit_system if units is None else units,
+        report=validated.report,
+        composition=composition,
+        model=model,
+        units=(
+            None if model is None else model.unit_system if units is None else units
+        ),
     )
     object.__setattr__(validation, "_scope", validated.scope)
     return validation
@@ -189,16 +191,20 @@ def bind_roles(
         for item in (*(requirements.assignments or ()), *rule_assignments)
     }
     return Binding(
-        model,
-        composition,
-        MappingProxyType(value_units),
-        MappingProxyType(assignments),
-        tuple(ref.target for ref in requirements.unknowns or ()),
-        tuple(
-            Assertion(document, declaration, expressions[declaration.predicate])
+        model=model,
+        composition=composition,
+        value_units=MappingProxyType(value_units),
+        assignments=MappingProxyType(assignments),
+        unknowns=tuple(ref.target for ref in requirements.unknowns or ()),
+        assertions=tuple(
+            Assertion(
+                document=document,
+                constraint=declaration,
+                predicate=expressions[declaration.predicate],
+            )
             for document, declaration in declarations
         ),
-        units,
-        MappingProxyType(references),
-        rule_evidence,
+        units=units,
+        references=MappingProxyType(references),
+        rule_evidence=rule_evidence,
     )

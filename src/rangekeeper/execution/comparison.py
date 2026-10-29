@@ -63,7 +63,7 @@ def compare(
     return Paired._of(named, wanted, baseline)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Pair:
     """One Outcome member and the baseline member that it is paired with.
 
@@ -77,7 +77,7 @@ class Pair:
     baseline: Outcome
 
 
-@dataclass(frozen=True, init=False)
+@dataclass(frozen=True, kw_only=True, init=False)
 class SideBySide:
     """The values of named leaf Outcomes on some keys, side by side.
 
@@ -149,7 +149,7 @@ class SideBySide:
         return str(self)
 
 
-@dataclass(frozen=True, init=False)
+@dataclass(frozen=True, kw_only=True, init=False)
 class Paired:
     """The paired differences of named Outcomes from a baseline, on some keys.
 
@@ -228,12 +228,21 @@ class Paired:
         members = self._members[self._compared(outcome)]
         bases = self._members[self.baseline]
         if bases[0][0] is None:  # a leaf baseline pairs with every member
-            return tuple(Pair(case, member, bases[0][1]) for case, member in members)
+            return tuple(
+                Pair(case=case, member=member, baseline=bases[0][1])
+                for case, member in members
+            )
         if members[0][0] is None:  # a leaf pairs with every baseline member
-            return tuple(Pair(case, members[0][1], base) for case, base in bases)
+            return tuple(
+                Pair(case=case, member=members[0][1], baseline=base)
+                for case, base in bases
+            )
         self._require_same_cases(outcome)
         by_case = dict(bases)
-        return tuple(Pair(case, member, by_case[case]) for case, member in members)
+        return tuple(
+            Pair(case=case, member=member, baseline=by_case[case])
+            for case, member in members
+        )
 
     def difference(self, *, outcome: str, key: str) -> tuple[Quantity, ...]:
         """Return the paired differences of one Outcome on one key, in pair order.

@@ -125,7 +125,7 @@ def test_stage_calls_the_backend_only_for_rows_that_need_it():
 
 def test_a_stage_that_ends_returns_its_result():
     def proves(problem):
-        return BackendResult(Termination.INFEASIBLE)
+        return BackendResult(termination=Termination.INFEASIBLE)
 
     staged = stage(binding_of(front()), solve=proves)
     assert staged.ended is not None

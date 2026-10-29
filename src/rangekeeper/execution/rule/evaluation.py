@@ -109,4 +109,4 @@ def evaluate(
         )
     except ContractError as error:
         raise RuleCapabilityError(str(error)) from error
-    return RuleResult(tuple(outcomes))
+    return RuleResult(evidence=tuple(outcomes))
