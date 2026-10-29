@@ -180,7 +180,7 @@ and only the backend starts a process. `solve` calls the stages for each case;
 | 1 | `resolve_cases(specification, *, resolver)` | The root Specification | `Cases`: the documents, the pinned Models and one composition for each leaf. `Cases` is also a resolver | Missing or wrong-kind revisions, cycles, a contradicted batch Model pin. A leaf whose composition fails keeps its `ValidationError` |
 | 2 | `validate(composition, *, resolver, units=None)` | One composition | `Validation`: the report, the input Model and the unit system | Nothing for a content problem; it is an issue in the report |
 | 3 | `bind_roles(validation, *, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
-| 4 | `build_problem(binding, *, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis` (equality rank, free variables, whether bounds exist) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`; `NumericalError` |
+| 4 | `build_problem(binding, *, limits=None, checkpoint=)`; `staging.stage(binding, *, solve, limits=None, checkpoint=)` for a [staged solve](#staged-solve) | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis` (equality rank, free variables, whether bounds exist) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`; `NumericalError` |
 | 5 | `Backend.solve(problem, *, limits, remaining, options)` | An `AffineProblem` | `backends.BackendResult`: a `Termination`, the candidate values, the applied limits, the backend's diagnostics and its raw evidence | `BackendUnavailableError`, `NumericalError`, `UnsupportedError` for a refused option or row |
 | 6 | `make_candidate(binding, values, *, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
 | 7 | `verify(binding, candidate, *, tolerances=Tolerances())` | The candidate | `Verification`: accepted or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
@@ -196,6 +196,7 @@ time limit has passed. The stages call it between steps.
 | `execution/planning.py` | Stage 1: the case graph, the pinned Models and one composition for each leaf. |
 | `execution/preparation.py` | Stages 2 and 3: validate the composition against its exact Model, keep the contributor scope, collect imposed predicates and normalize assignments to Measure units. |
 | `execution/compiler.py` | Stage 4: derive affine coefficients after assignments; check arithmetic capability, dimensions and the symbol and constraint limits; keep the original Constraint identity. No backend dependency. |
+| `execution/staging.py` | The staged solve: build the affine rows' problem, read its rank analysis, solve it when it determines a deferred row's unknown, and fix the determined values for the next stage. |
 | `execution/analysis.py` | Rank and free-variable analysis of the rows, in pure Python. |
 | `execution/backends/base.py` | Stage 5: the narrow problem and result protocol; a backend candidate is a claim that waits for verification. |
 | `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
@@ -227,6 +228,33 @@ equality, nonstrict upper/lower bounds, conjunctions and Boolean constants. Stri
 comparisons are supported only when every referenced operand is explicitly fixed;
 this check precedes simplification and is repeated during acceptance.
 
+### Staged solve
+
+A row that is not affine under the fixed values can become affine when other rows
+determine one of its unknowns. In lesson 02's front door,
+`effective_income = rent_factor * reference_income` has two unknowns, but
+`reference_income` is a sum of products of fixed values. `execution.staging.stage`
+then solves in stages ([#276](https://github.com/daniel-fink/rangekeeper/issues/276)):
+
+1. Build the problem of the rows that are affine, and read its rank analysis.
+2. When the analysis determines an unknown of a deferred row, solve that problem
+   with the backend and fix each determined unknown to its value.
+3. Repeat until every remaining row is affine. The last stage is one affine
+   problem over the unknowns that remain; rows that only determined values
+   satisfy are removed from it.
+4. If a stage determines no unknown of a deferred row, the first deferred row
+   raises its `UnsupportedError`, as without stages.
+
+A subexpression whose references are all fixed, or determined by an earlier stage,
+is evaluated as a constant. So a non-affine function of determined values, such
+as a product, quotient or power, takes part in the last stage. The candidate
+holds the backend's values and the determined values, and verification checks
+every original row against it. An earlier stage that does not end with a feasible
+candidate, for example a proof of infeasibility, ends the attempt with its own
+result. Each earlier stage adds a `solve` step to the trace; only the last backend
+result gives the `solver_termination` evidence. A problem without such rows is
+one stage, unchanged.
+
 All Model and Specification Constraints are imposed. Unused reporting expressions
 remain passive, including the fixture's area query. No stored amount supplies a
 missing role. Estimates are reported as unused by this simplex feasibility method.
@@ -234,7 +262,7 @@ Canonical units come from each scalar Value's Measure or Flow units; conversion 
 equations must compare compatible dimensions. Multiplicative arithmetic that would
 require unsupported offset-unit handling is rejected.
 
-The adapter explicitly rejects nonlinear unknown products/divisors/powers, strict
+After staging, the adapter explicitly rejects nonlinear unknown products/divisors/powers, strict
 comparisons involving unknowns, disjunctions, function calls, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
 Values and market path generation follow the [temporal contract](market-paths-and-rules.md).

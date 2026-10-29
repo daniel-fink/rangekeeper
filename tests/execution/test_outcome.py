@@ -24,7 +24,7 @@ from rangekeeper.shared.errors import (
     UnsupportedError,
     ValidationError,
 )
-from tests.execution.lesson02 import MODEL, back, front, q, store
+from tests.execution.lesson02 import MODEL, back, q, store
 
 A, B, C, D = (uuid4() for _ in range(4))
 
@@ -220,8 +220,3 @@ def test_a_flow_value_reads_as_a_flow():
 )
 def test_undetermined_unknowns_follow_the_row_space(rows, expected):
     assert undetermined(rows, (A, B, C)) == expected
-
-
-def test_the_front_door_waits_for_the_staged_solve():
-    # A product of the free rent factor and the reference income (#276).
-    assert solve(front(), store()).status is Status.UNSUPPORTED
