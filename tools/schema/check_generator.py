@@ -95,3 +95,19 @@ for schema in ({"type": "string", "uniqueItems": True}, {"format": "email"}):
     else:
         raise SystemExit(f"The node check compiler accepted {schema}")
 print("Checked 2 node check keywords")
+
+shared = {
+    "$defs": {
+        "Example": {
+            "properties": {"flag": {"type": ["boolean", "null"]}, "code": {}},
+            "if": {"required": ["flag"]},
+            "then": {
+                "properties": {"flag": {"const": "true"}, "code": {"const": "true"}}
+            },
+        }
+    }
+}
+generation.boolean_constants(shared)
+then = shared["$defs"]["Example"]["then"]["properties"]
+assert then == {"flag": {"const": True}, "code": {"const": "true"}}
+print("Checked boolean rule constants")

@@ -3,8 +3,7 @@
 A test has three results: it passes, it fails, or its value is missing. An
 Entity passes a Filter when every test passes. It fails when any test fails.
 Otherwise a tested value is missing: the Entity does not pass, and the Match
-counts it as missing (ADR-016). A
-missing value is never zero.
+counts it as undecided (ADR-016). A missing value is never zero.
 """
 
 import math
@@ -21,14 +20,15 @@ from rangekeeper.schema.records import Filter, Quantity, ValueTest
 from rangekeeper.shared.amounts import number as _number
 
 # The relative tolerance of equality, as in ``rangekeeper.quantity.isclose``.
+# ``schema/query.yaml`` states the same value.
 _RELATIVE = 1e-9
 _COMPARISONS = {
     ValueRelation.EQUAL,
     ValueRelation.NOT_EQUAL,
-    ValueRelation.LESS,
-    ValueRelation.LESS_OR_EQUAL,
-    ValueRelation.GREATER,
-    ValueRelation.GREATER_OR_EQUAL,
+    ValueRelation.LESS_THAN,
+    ValueRelation.LESS_THAN_OR_EQUAL,
+    ValueRelation.GREATER_THAN,
+    ValueRelation.GREATER_THAN_OR_EQUAL,
 }
 
 # One test of one Entity: True passes, False fails, None has a missing value.
@@ -37,21 +37,22 @@ Test = Callable[[Entity], bool | None]
 
 @dataclass(frozen=True)
 class Match:
-    """Entities that pass a Filter, fail it, or have a missing tested value.
+    """Entities that pass a Filter, fail it, or that it cannot decide.
 
     The three tuples partition the tested Entities and keep their order.
-    ``missing`` holds the Entities that no test failed but at least one could not
-    decide, because its Value or Label is missing. They do not pass.
+    ``undecided`` holds the Entities that no test failed but at least one could
+    not decide, because its Value or Label is missing. They do not pass.
+    ``Coverage.undecided`` of a rollup holds the same Entities.
     """
 
     passed: tuple[UUID, ...]
     failed: tuple[UUID, ...]
-    missing: tuple[UUID, ...]
+    undecided: tuple[UUID, ...]
 
     @property
     def complete(self) -> bool:
-        """Whether every tested Entity was decided: none has a missing value."""
-        return not self.missing
+        """Whether every tested Entity was decided: none is undecided."""
+        return not self.undecided
 
 
 def _content(value: Value) -> object:
@@ -74,11 +75,11 @@ def _compare(relation: ValueRelation, left: float, right: float) -> bool:
         return equal
     if relation is ValueRelation.NOT_EQUAL:
         return not equal
-    if relation is ValueRelation.LESS:
+    if relation is ValueRelation.LESS_THAN:
         return left < right and not equal
-    if relation is ValueRelation.LESS_OR_EQUAL:
+    if relation is ValueRelation.LESS_THAN_OR_EQUAL:
         return left < right or equal
-    if relation is ValueRelation.GREATER:
+    if relation is ValueRelation.GREATER_THAN:
         return left > right and not equal
     return left > right or equal
 
@@ -120,11 +121,11 @@ def _value_test(model: Model, test: ValueTest, unit_system: UnitSystem) -> Test:
         if relation is ValueRelation.BETWEEN:
             low, high = operands
             return _compare(
-                ValueRelation.GREATER_OR_EQUAL,
+                ValueRelation.GREATER_THAN_OR_EQUAL,
                 number(recorded, low.units),
                 own(low),
             ) and _compare(
-                ValueRelation.LESS_OR_EQUAL,
+                ValueRelation.LESS_THAN_OR_EQUAL,
                 number(recorded, high.units),
                 own(high),
             )
@@ -209,11 +210,13 @@ def match(
     test = _prepare(model, condition, unit_system=unit_system)
     passed: list[UUID] = []
     failed: list[UUID] = []
-    missing: list[UUID] = []
+    undecided: list[UUID] = []
     for entity in entities:
         result = test(model.entity(entity.id))
-        (passed if result else failed if result is False else missing).append(entity.id)
-    return Match(tuple(passed), tuple(failed), tuple(missing))
+        (passed if result else failed if result is False else undecided).append(
+            entity.id
+        )
+    return Match(tuple(passed), tuple(failed), tuple(undecided))
 
 
 __all__ = ["Match", "match"]

@@ -130,6 +130,40 @@ def simplify_conjunctions(node):
             del node["anyOf"]
 
 
+BOOLEANS = {"true": True, "false": False}
+
+
+def _boolean_constants(node: object, names: frozenset[str]) -> None:
+    if isinstance(node, list):
+        for child in node:
+            _boolean_constants(child, names)
+    elif isinstance(node, dict):
+        for name, prop in node.get("properties", {}).items():
+            if name in names and prop.get("const") in BOOLEANS:
+                prop["const"] = BOOLEANS[prop["const"]]
+        for child in node.values():
+            _boolean_constants(child, names)
+
+
+def boolean_constants(shared: dict) -> None:
+    """Write a rule's `equals_string` on a boolean slot as a JSON boolean.
+
+    LinkML writes `equals_string: 'true'` as the text "true", which no boolean
+    value equals. A rule that requires a boolean slot to be true then accepts
+    `true` and refuses `false` and null, as the schema text says.
+    """
+    for definition in shared["$defs"].values():
+        names = frozenset(
+            name
+            for name, prop in definition.get("properties", {}).items()
+            if "boolean" in (prop.get("type") or ())
+        )
+        if names:
+            _boolean_constants(
+                {k: v for k, v in definition.items() if k != "properties"}, names
+            )
+
+
 def check_dependencies():
     """Return the installed generator versions; stop when they differ from PINNED."""
     versions = {name: importlib.metadata.version(name) for name in PINNED}
@@ -187,6 +221,7 @@ def load(directory: Path, sources) -> Loaded:
         "$defs": schema["$defs"],
     }
     simplify_conjunctions(shared)
+    boolean_constants(shared)
     Draft202012Validator.check_schema(shared)
     opaque = frozenset(
         name
@@ -827,6 +862,10 @@ class CheckCompiler:
             "additionalProperties",
             "allOf",
             "oneOf",
+            # LinkML writes the rule of a class with one rule at the top level.
+            "if",
+            "then",
+            "else",
         }
         unknown = set(schema) - expected
         if unknown or schema.get("type") != "object":
@@ -862,7 +901,11 @@ class CheckCompiler:
                 f"        if not {test}:",
                 f"            issues.append(('structure.value', {'invalid ' + field!r}, {'/' + field!r}))",
             ]
-        rules = {k: schema[k] for k in ("allOf", "oneOf") if k in schema}
+        rules = {
+            k: schema[k]
+            for k in ("allOf", "oneOf", "if", "then", "else")
+            if k in schema
+        }
         if rules:
             self.depth = 0
             lines += [

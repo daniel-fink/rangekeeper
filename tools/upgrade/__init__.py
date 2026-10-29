@@ -1,4 +1,5 @@
-"""One-off conversion of 0.x documents and Bundles to the 1.0.0 formats (#120).
+"""Conversion of stored documents and Bundles of earlier releases (#120, #386).
 
-The tool is in the repository, not in the wheel. See README.md.
+It converts the 0.x formats, and the 1.0.0 documents that 1.0.0a2 wrote, to the
+current formats. The tool is in the repository, not in the wheel. See README.md.
 """

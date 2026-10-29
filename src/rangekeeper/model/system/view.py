@@ -209,9 +209,9 @@ class View:
         """Test each selected Entity against a declarative Filter.
 
         The Match partitions the Entities, in View order, into those that pass,
-        those that fail and those with a missing tested value. A missing value
-        never passes and never counts as zero. Value tests convert units with
-        the Model's unit system.
+        those that fail and those that are undecided because a tested value is
+        missing. A missing value never passes and never counts as zero. Value
+        tests convert units with the Model's unit system.
         """
         from rangekeeper.model.system.matching import match
 
@@ -220,8 +220,8 @@ class View:
     def where(self, *, condition: "Filter") -> "View":
         """Keep the Entities that pass a Filter, and the edges between them.
 
-        Entities with a missing tested value do not pass; use ``match`` to count
-        them.
+        Undecided Entities, with a missing tested value, do not pass; use
+        ``match`` to count them.
         """
         nodes = set(self.match(condition=condition).passed)
         return View(

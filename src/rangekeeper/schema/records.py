@@ -1238,7 +1238,7 @@ class Criterion(Record):
 
     @property
     def exclusive(self) -> bool | None:
-        'Whether only the Classification itself matches; absent or false also matches its sub-types in its Taxonomy.'
+        'True when only the Classification itself matches; when absent, its sub-types in its Taxonomy also match.'
         return cast('bool | None', self._data.get('exclusive'))
 
 
@@ -2348,7 +2348,7 @@ class Filter(Record):
 
     @property
     def exclusive(self) -> bool | None:
-        'Whether only the Classification itself matches; absent or false also matches its sub-types in its Taxonomy.'
+        'True when only the Classification itself matches; when absent, its sub-types in its Taxonomy also match.'
         return cast('bool | None', self._data.get('exclusive'))
 
     @property

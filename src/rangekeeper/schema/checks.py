@@ -353,6 +353,8 @@ def check_Criterion(d, fields=None):
         v = d['key']
         if not ((((type(v) is str))) and (type(v) is not str or _P2.search(v) is not None) and (type(v) is str)):
             issues.append(('structure.value', 'invalid key', '/key'))
+    if not (((not ('exclusive' in d) or (('exclusive' not in d or (d['exclusive'] == True)) and 'exclusive' in d)) and (('exclusive' in d) or True))):
+        issues.append(('structure.rule', 'a Criterion rule is not met', ''))
     return issues
 
 
@@ -709,6 +711,8 @@ def check_Filter(d, fields=None):
         v = d['tests']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
             issues.append(('structure.value', 'invalid tests', '/tests'))
+    if not (((not ('exclusive' in d) or (('exclusive' not in d or (d['exclusive'] == True)) and 'classification' in d and 'exclusive' in d)) and (('exclusive' in d) or True))):
+        issues.append(('structure.rule', 'a Filter rule is not met', ''))
     return issues
 
 
@@ -2392,9 +2396,9 @@ def check_ValueTest(d, fields=None):
             issues.append(('structure.value', 'invalid quantity', '/quantity'))
     if 'relation' in d and (fields is None or 'relation' in fields):
         v = d['relation']
-        if not ((v in ('equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal', 'between', 'present', 'missing') and (type(v) is str))):
+        if not ((v in ('equal', 'not_equal', 'less_than', 'less_than_or_equal', 'greater_than', 'greater_than_or_equal', 'between', 'present', 'missing') and (type(v) is str))):
             issues.append(('structure.value', 'invalid relation', '/relation'))
-    if not ((((not (('relation' not in d or (d['relation'] in ('equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal'))) and 'relation' in d) or ((not ('minimum' in d)) and (not ('maximum' in d)) and 'quantity' in d)) and ((('relation' not in d or (d['relation'] in ('equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal'))) and 'relation' in d) or True))) and (((not (('relation' not in d or (d['relation'] == 'between')) and 'relation' in d) or ((not ('quantity' in d)) and 'minimum' in d and 'maximum' in d)) and ((('relation' not in d or (d['relation'] == 'between')) and 'relation' in d) or True))) and (((not (('relation' not in d or (d['relation'] in ('present', 'missing'))) and 'relation' in d) or ((not ('quantity' in d)) and (not ('minimum' in d)) and (not ('maximum' in d)))) and ((('relation' not in d or (d['relation'] in ('present', 'missing'))) and 'relation' in d) or True)))):
+    if not ((((not (('relation' not in d or (d['relation'] in ('equal', 'not_equal', 'less_than', 'less_than_or_equal', 'greater_than', 'greater_than_or_equal'))) and 'relation' in d) or ((not ('minimum' in d)) and (not ('maximum' in d)) and 'quantity' in d)) and ((('relation' not in d or (d['relation'] in ('equal', 'not_equal', 'less_than', 'less_than_or_equal', 'greater_than', 'greater_than_or_equal'))) and 'relation' in d) or True))) and (((not (('relation' not in d or (d['relation'] == 'between')) and 'relation' in d) or ((not ('quantity' in d)) and 'minimum' in d and 'maximum' in d)) and ((('relation' not in d or (d['relation'] == 'between')) and 'relation' in d) or True))) and (((not (('relation' not in d or (d['relation'] in ('present', 'missing'))) and 'relation' in d) or ((not ('quantity' in d)) and (not ('minimum' in d)) and (not ('maximum' in d)))) and ((('relation' not in d or (d['relation'] in ('present', 'missing'))) and 'relation' in d) or True)))):
         issues.append(('structure.rule', 'a ValueTest rule is not met', ''))
     return issues
 

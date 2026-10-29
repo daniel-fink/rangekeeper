@@ -74,6 +74,7 @@ classes:
     notes:
     - A Label matches when it includes the Classification or, unless exclusive, one of its sub-types in
       its Taxonomy. An Entity without a Label of this key has a missing value; it does not pass.
+    - exclusive is true or absent. Absence means that sub-types match; false is not written.
     attributes:
       key:
         range: string
@@ -93,19 +94,29 @@ classes:
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
       exclusive:
-        description: Whether only the Classification itself matches; absent or false also matches its
-          sub-types in its Taxonomy.
+        description: True when only the Classification itself matches; when absent, its sub-types in its
+          Taxonomy also match.
         range: boolean
+    rules:
+    - preconditions:
+        slot_conditions:
+          exclusive:
+            value_presence: PRESENT
+      postconditions:
+        slot_conditions:
+          exclusive:
+            equals_string: 'true'
   ValueTest:
     description: One test of the recorded measurement Value with an owner-local key, after conversion to
       the units of the test.
     notes:
     - A comparison converts the recorded Quantity to the units of the test with the Model's unit system.
       Incompatible units are an error, not a failed test.
-    - Equality and the inclusive bounds use the unit system's closeness tolerance, so 1 km equals 1000 m.
+    - Equality and the inclusive bounds use a relative tolerance of 1e-9 after the conversion, so 1 km
+      equals 1000 m.
     - A missing Value or an unresolved Quantity is a missing value. It never counts as zero. A comparison
-      with a missing value does not pass, and the result counts it as missing. Only the missing relation
-      passes it.
+      with a missing value does not pass, and the result counts the Entity as undecided. Only the missing
+      relation passes it.
     - present and missing test any Value kind; the comparisons need a measurement Value.
     attributes:
       key:
@@ -147,10 +158,10 @@ classes:
             equals_string_in:
             - equal
             - not_equal
-            - less
-            - less_or_equal
-            - greater
-            - greater_or_equal
+            - less_than
+            - less_than_or_equal
+            - greater_than
+            - greater_than_or_equal
       postconditions:
         slot_conditions:
           quantity:
@@ -200,8 +211,10 @@ classes:
     notes:
     - classification matches the Classification and its sub-types in its Taxonomy, unless exclusive. An
       Entity without a classification does not pass.
+    - exclusive is true or absent, and only with a classification. Absence means that sub-types match;
+      false is not written.
     - All Label criteria and all Value tests must hold. A test that cannot be decided because its value is
-      missing does not pass; results count such Entities as missing, separately from those that fail.
+      missing does not pass; results count such Entities as undecided, separately from those that fail.
     - An empty filter matches every candidate. Raw-text properties have no tests.
     attributes:
       classification:
@@ -214,8 +227,8 @@ classes:
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
       exclusive:
-        description: Whether only the Classification itself matches; absent or false also matches its
-          sub-types in its Taxonomy.
+        description: True when only the Classification itself matches; when absent, its sub-types in its
+          Taxonomy also match.
         range: boolean
       labels:
         range: Criterion
@@ -237,6 +250,17 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: true
+    rules:
+    - preconditions:
+        slot_conditions:
+          exclusive:
+            value_presence: PRESENT
+      postconditions:
+        slot_conditions:
+          classification:
+            required: true
+          exclusive:
+            equals_string: 'true'
   Projection:
     description: Select Entity identities or Values belonging to each matching Entity.
     notes:
@@ -408,16 +432,16 @@ enums:
   ValueRelation:
     permissible_values:
       equal:
-        description: The value equals quantity, within the unit system's closeness tolerance.
+        description: The value equals quantity, within a relative tolerance of 1e-9.
       not_equal:
         description: The value does not equal quantity.
-      less:
+      less_than:
         description: The value is less than quantity and not equal to it.
-      less_or_equal:
+      less_than_or_equal:
         description: The value is less than or equal to quantity.
-      greater:
+      greater_than:
         description: The value is greater than quantity and not equal to it.
-      greater_or_equal:
+      greater_than_or_equal:
         description: The value is greater than or equal to quantity.
       between:
         description: The value is from minimum to maximum, both included.

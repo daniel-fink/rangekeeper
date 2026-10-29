@@ -1854,10 +1854,10 @@
    "members": [
     "EQUAL",
     "NOT_EQUAL",
-    "LESS",
-    "LESS_OR_EQUAL",
-    "GREATER",
-    "GREATER_OR_EQUAL",
+    "LESS_THAN",
+    "LESS_THAN_OR_EQUAL",
+    "GREATER_THAN",
+    "GREATER_THAN_OR_EQUAL",
     "BETWEEN",
     "PRESENT",
     "MISSING"
@@ -2194,11 +2194,11 @@
   "Match": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...]) -> None",
+    "__init__": "method (self, passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...]) -> None",
     "complete": "property"
    },
    "module": "rangekeeper.model.system.matching",
-   "signature": "(passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...]) -> None"
+   "signature": "(passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...]) -> None"
   },
   "Partition": {
    "kind": "class",

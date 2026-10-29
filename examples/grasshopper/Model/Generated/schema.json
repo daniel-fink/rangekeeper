@@ -594,6 +594,14 @@
     "Criterion": {
       "additionalProperties": false,
       "description": "Require an Entity Label with this owner-local key to include a Classification, or one of its sub-types.",
+      "if": {
+        "properties": {
+          "exclusive": {}
+        },
+        "required": [
+          "exclusive"
+        ]
+      },
       "properties": {
         "classification": {
           "anyOf": [
@@ -607,7 +615,7 @@
           "type": "string"
         },
         "exclusive": {
-          "description": "Whether only the Classification itself matches; absent or false also matches its sub-types in its Taxonomy.",
+          "description": "True when only the Classification itself matches; when absent, its sub-types in its Taxonomy also match.",
           "type": [
             "boolean",
             "null"
@@ -628,6 +636,16 @@
         "key",
         "classification"
       ],
+      "then": {
+        "properties": {
+          "exclusive": {
+            "const": true
+          }
+        },
+        "required": [
+          "exclusive"
+        ]
+      },
       "title": "Criterion",
       "type": "object"
     },
@@ -1789,6 +1807,14 @@
     "Filter": {
       "additionalProperties": false,
       "description": "Conjunctive tests of Entity metadata and recorded Values, as data. A missing value never passes a test.",
+      "if": {
+        "properties": {
+          "exclusive": {}
+        },
+        "required": [
+          "exclusive"
+        ]
+      },
       "properties": {
         "classification": {
           "anyOf": [
@@ -1805,7 +1831,7 @@
           "type": "string"
         },
         "exclusive": {
-          "description": "Whether only the Classification itself matches; absent or false also matches its sub-types in its Taxonomy.",
+          "description": "True when only the Classification itself matches; when absent, its sub-types in its Taxonomy also match.",
           "type": [
             "boolean",
             "null"
@@ -1831,6 +1857,18 @@
             "null"
           ]
         }
+      },
+      "then": {
+        "properties": {
+          "classification": {},
+          "exclusive": {
+            "const": true
+          }
+        },
+        "required": [
+          "classification",
+          "exclusive"
+        ]
       },
       "title": "Filter",
       "type": "object"
@@ -4651,10 +4689,10 @@
       "enum": [
         "equal",
         "not_equal",
-        "less",
-        "less_or_equal",
-        "greater",
-        "greater_or_equal",
+        "less_than",
+        "less_than_or_equal",
+        "greater_than",
+        "greater_than_or_equal",
         "between",
         "present",
         "missing"
@@ -4672,10 +4710,10 @@
                 "enum": [
                   "equal",
                   "not_equal",
-                  "less",
-                  "less_or_equal",
-                  "greater",
-                  "greater_or_equal"
+                  "less_than",
+                  "less_than_or_equal",
+                  "greater_than",
+                  "greater_than_or_equal"
                 ]
               }
             },
