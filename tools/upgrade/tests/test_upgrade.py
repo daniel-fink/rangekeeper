@@ -8,6 +8,8 @@ import pytest
 import yaml
 
 from rangekeeper import Model, Run, Specification
+from rangekeeper.execution import Outcome
+from rangekeeper.execution.backends import Termination
 from rangekeeper.io import MemoryStore
 from rangekeeper.io._amounts import amounts
 from rangekeeper.run import validate
@@ -67,6 +69,15 @@ def test_documents_convert_to_valid_1_0_documents():
     run = documents["run.json"]
     assert run.report.rule_evidence
     assert validate(run, resolver=store).valid
+
+
+def test_the_solver_evidence_of_a_converted_run_reads_as_unknown():
+    _, documents = converted()
+    outcome = Outcome(run=documents["run.json"], outputs=(documents["output.json"],))
+    evidence = outcome.evidence
+    # A 0.x Run keeps its solver evidence in the message, as recorded.
+    assert evidence.termination is Termination.UNKNOWN
+    assert evidence.backend == {}
 
 
 def test_identities_and_lineage_do_not_change():
