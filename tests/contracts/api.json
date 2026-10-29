@@ -556,6 +556,22 @@
    "module": "rangekeeper.execution.planning",
    "signature": "(root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition | rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
   },
+  "Comparison": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: tuple[str, ...], baseline: str | None = None, members: collections.abc.Mapping[str, tuple[tuple[int | None, rangekeeper.execution.outcome.Outcome], ...]] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None",
+    "compared": "property",
+    "difference": "method (self, *, outcome: str, key: str) -> tuple[rangekeeper.quantity.Quantity, ...]",
+    "differences": "property",
+    "pairs": "method (self, *, outcome: str) -> tuple[rangekeeper.execution.comparison.Pair, ...]",
+    "select": "method (self, *keys: str) -> Comparison",
+    "summary": "method (self) -> rangekeeper.shared.table.Table",
+    "values": "property",
+    "where": "method (self, **values: object) -> Comparison"
+   },
+   "module": "rangekeeper.execution.comparison",
+   "signature": "(outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: tuple[str, ...], baseline: str | None = None, members: collections.abc.Mapping[str, tuple[tuple[int | None, rangekeeper.execution.outcome.Outcome], ...]] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+  },
   "Evidence": {
    "kind": "class",
    "members": {
@@ -604,6 +620,14 @@
    },
    "module": "rangekeeper.execution.errors",
    "signature": "(message: str, *, status: enum.StrEnum, code: rangekeeper.shared.codes.Code | None = None, document: uuid.UUID | None = None, target: uuid.UUID | None = None) -> None"
+  },
+  "Pair": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, case: int | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
+   },
+   "module": "rangekeeper.execution.comparison",
+   "signature": "(case: int | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
   },
   "Relation": {
    "kind": "enum",
@@ -678,6 +702,11 @@
    "kind": "function",
    "module": "rangekeeper.execution.compiler",
    "signature": "(binding: rangekeeper.execution.preparation.Binding, *, limits: rangekeeper.execution.settings.Limits | None = None, checkpoint: collections.abc.Callable[[], None] = <function>) -> rangekeeper.execution.compiler.AffineProblem"
+  },
+  "compare": {
+   "kind": "function",
+   "module": "rangekeeper.execution.comparison",
+   "signature": "(*, outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: collections.abc.Sequence[str], baseline: str | None = None) -> Comparison"
   },
   "execute": {
    "kind": "function",

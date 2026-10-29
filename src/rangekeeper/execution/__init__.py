@@ -16,7 +16,8 @@ to no store:
 
 An ``Outcome`` reads its result by key, ``outcome["land_cost"]``. Its
 ``status`` is a ``Status``, and ``raise_for_status()`` raises when the solve
-found no determined result.
+found no determined result. ``compare`` compares two or more Outcomes, side by
+side or paired with a baseline.
 
 ``solve`` runs the stages for each case and writes nothing. ``execute`` solves,
 then publishes the outputs and the Runs to a store.
@@ -27,6 +28,7 @@ backend options, with one source of defaults.
 from rangekeeper.execution.acceptance import Tolerances, Verification, verify
 from rangekeeper.execution.analysis import Analysis
 from rangekeeper.execution.assembly import assemble, assemble_batch
+from rangekeeper.execution.comparison import Comparison, Pair, compare
 from rangekeeper.execution.compiler import AffineProblem, Relation, Row, build_problem
 from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.errors import OutcomeError
@@ -49,11 +51,13 @@ __all__ = [
     "Assertion",
     "Binding",
     "Cases",
+    "Comparison",
     "Evidence",
     "ExecutionConfig",
     "Limits",
     "Outcome",
     "OutcomeError",
+    "Pair",
     "Relation",
     "Row",
     "Status",
@@ -64,6 +68,7 @@ __all__ = [
     "assemble_batch",
     "bind_roles",
     "build_problem",
+    "compare",
     "execute",
     "make_candidate",
     "resolve_cases",
