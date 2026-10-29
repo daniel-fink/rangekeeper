@@ -27,23 +27,17 @@ class Frequency(Enum):
         return _STEPS[self]
 
 
-_STEPS = dict(
-    zip(
-        Frequency,
-        (
-            (1, 0),
-            (7, 0),
-            (0, 1),
-            (0, 3),
-            (0, 6),
-            (0, 12),
-            (0, 24),
-            (0, 60),
-            (0, 120),
-        ),
-        strict=True,
-    )
-)
+_STEPS: dict[Frequency, tuple[int, int]] = {
+    Frequency.DAY: (1, 0),
+    Frequency.WEEK: (7, 0),
+    Frequency.MONTH: (0, 1),
+    Frequency.QUARTER: (0, 3),
+    Frequency.HALFYEAR: (0, 6),
+    Frequency.YEAR: (0, 12),
+    Frequency.BIENNIUM: (0, 24),
+    Frequency.QUINQUENNIUM: (0, 60),
+    Frequency.DECADE: (0, 120),
+}
 
 
 @unique
@@ -80,6 +74,20 @@ def require_date(value: date) -> date:
     return value
 
 
+def require_frequency(frequency: Frequency) -> Frequency:
+    """Require a Frequency member, not its text."""
+    if not isinstance(frequency, Frequency):
+        raise TypeError("frequency must be a Frequency")
+    return frequency
+
+
+def require_month_roll(month_roll: MonthRoll) -> MonthRoll:
+    """Require a MonthRoll member, not its text."""
+    if not isinstance(month_roll, MonthRoll):
+        raise TypeError("month_roll must be a MonthRoll")
+    return month_roll
+
+
 def offset(
     value: date,
     *,
@@ -89,10 +97,8 @@ def offset(
 ) -> date:
     """Apply steps from the supplied anchor, preserving its month-end rule."""
     require_date(value)
-    if not isinstance(frequency, Frequency):
-        raise TypeError("frequency must be a Frequency")
-    if not isinstance(month_roll, MonthRoll):
-        raise TypeError("month_roll must be a MonthRoll")
+    require_frequency(frequency)
+    require_month_roll(month_roll)
     if type(count) is not int:
         raise TypeError("count must be an integer")
     days, months = frequency.step
@@ -131,7 +137,8 @@ def count_steps(
     offset. It counts steps from the earlier endpoint, not calendar bins crossed.
     """
     difference = elapsed_days(start, end)
-    offset(start, frequency=frequency, count=0, month_roll=month_roll)
+    require_frequency(frequency)
+    require_month_roll(month_roll)
     if difference < 0:
         return -count_steps(end, start, frequency=frequency, month_roll=month_roll)
     days, months = frequency.step

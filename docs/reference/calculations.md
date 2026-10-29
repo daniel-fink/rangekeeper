@@ -329,6 +329,38 @@ anchor, so `extend` keeps a month-end anchor. Only a Span partition with
 `include_partial=True` ends with a partial Period, and it cannot extend.
 `containing(on=)` raises `MissingReferenceError` for a date outside.
 
+## Calendar grids
+
+A grid divides the calendar into Periods of one `Frequency`.
+`rk.duration.containing_period(on=, grid=)` returns the Period of a grid that
+contains a date. Each kind of grid takes only the choices that apply to it, so a
+choice that does not apply cannot be given:
+
+| Grid | Frequencies | Choices |
+| --- | --- | --- |
+| `DayGrid()` | `DAY` | None |
+| `WeekGrid(starts=)` | `WEEK` | The first weekday, a `calendar.Day`; `Day.MONDAY` by default |
+| `MonthGrid(frequency=, year_starts=)` | `MONTH`, `QUARTER`, `HALFYEAR`, `YEAR` | The first month of the year, a `calendar.Month`; `Month.JANUARY` by default. Months are the same for each start |
+| `MultiYearGrid(frequency=, origin=)` | `BIENNIUM`, `QUINQUENNIUM`, `DECADE` | An origin on the first day of a month, which also gives the first month of the year. The grid continues on both sides of it |
+
+```python
+from calendar import Month
+from datetime import date
+
+import rangekeeper as rk
+
+fiscal = rk.duration.MonthGrid(
+    frequency=rk.duration.Frequency.YEAR, year_starts=Month.JULY
+)
+rk.duration.containing_period(on=date(2026, 3, 3), grid=fiscal)
+# Period(start='2025-07-01', end='2026-07-01')
+```
+
+`calendar.Day` and `calendar.Month` are the standard library enums. A grid is a
+frozen value, and it checks its choices when it is made: a frequency of another
+kind of grid, or an origin that is not the first day of a month, raises
+`ContractError`. `rk.duration.Grid` is the union of the four grid types.
+
 ## Dates and NEVER
 
 A date value is a calendar date or `rk.duration.NEVER`. NEVER means the event
@@ -356,8 +388,9 @@ the same rules ([expressions](expressions.md#dates-and-never)).
 
 `Frequency` owns the nine supported steps, from a day to a decade. There is no
 fortnight step: offset by `Frequency.WEEK` with `count=2`, or give 14-day
-Periods explicitly. `duration.offset`, `count_steps`, `containing_period`,
-`cover`, `make_period`, `make_periods` and `periods_between` use native dates.
+Periods explicitly. `duration.offset`, `count_steps`, `containing_period` and
+the grids, `cover`, `make_period`, `make_periods` and `periods_between` use
+native dates.
 Month offsets default to `MonthRoll.PRESERVE_END`; `CLAMP` is explicit. These rules
 are independent of the Period wire-field migration. `DayCount` owns supported
 financial year fractions; imported PyXIRR constants remain an adapter detail.

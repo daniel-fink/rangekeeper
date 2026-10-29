@@ -56,6 +56,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Boundary conversion | `to_number` from an amount to float64 for a calculation, and `to_amount` back at 15 significant digits | `money` | — |
 | Unit system | The curated registry that parses, checks and converts units; a Model records its own as `Model.unit_system`. See [units](../reference/units.md) | `quantity` | `UnitSystem`; a parameter is sometimes called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
+| Grid | A division of the calendar into Periods of one frequency: `DayGrid`, `WeekGrid`, `MonthGrid` or `MultiYearGrid`. `containing_period(on=, grid=)` finds the Period of a date | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | — |
 | Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | —; `PeriodIndex` in 0.8. Some functions still return `tuple[Period, ...]` |
 | Span | A named half-open range of time | `duration` | — |

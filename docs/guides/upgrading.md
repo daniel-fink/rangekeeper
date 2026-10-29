@@ -352,6 +352,7 @@ them; the issues that the table names make the changes.
 | Growth and distribution profiles | `rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#303). | #255 D12 |
 | Market paths | `rk.market.Dynamics`, `rk.market.generate` and `rk.market.Paths` replace the scenario plan and the trend and cycle kernels (#298, #299). | #255 D29, D31 |
 | Fixed words are enums | Diagnostic codes are `rk.errors.Code` (#154); "the event does not happen" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings. | #255 D26 |
+| Calendar grids | `containing_period(value, *, frequency=, week_start=, year_start_month=, origin=)` is now `containing_period(*, on=, grid=)`. The grid is `DayGrid()`, `WeekGrid(starts=calendar.Day.MONDAY)`, `MonthGrid(frequency=, year_starts=calendar.Month.JANUARY)` for months, quarters, half-years and years, or `MultiYearGrid(frequency=, origin=)` for bienniums, quinquenniums and decades. A grid takes only the choices that apply to it; a week grid takes no origin. | #399, #403 |
 | Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215). | ADR-021, #255 D41, D42 |
 
 <!-- rename-map:end -->

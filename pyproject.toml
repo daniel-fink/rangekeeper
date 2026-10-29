@@ -217,7 +217,6 @@ known-first-party = ["rangekeeper", "rangekeeper_examples"]
 # landed (#400). Do not add entries; CI fails when a pull request adds one
 # (tools/ci/check_baseline.py). When you fix a hotspot, remove its codes here.
 # B023: nested helpers run only inside the loop iteration that defines them.
-"src/rangekeeper/duration/period.py" = ["C901", "PLR0912", "ANN001", "ANN204"]
 "src/rangekeeper/execution/acceptance.py" = ["ANN001", "ANN202"]
 "src/rangekeeper/execution/analysis.py" = ["PLR0917"]
 "src/rangekeeper/execution/assembly.py" = ["PLR0913"]
@@ -363,7 +362,6 @@ warn_unused_configs = true
 # Strict typing ratchet (#399). These packages are not yet strict. The PR that
 # makes a package pass removes it from this list. Do not add a package.
 module = [
-    "rangekeeper.duration.*",
     "rangekeeper.finance.*",
     "rangekeeper.profile",
     "rangekeeper.quantity",

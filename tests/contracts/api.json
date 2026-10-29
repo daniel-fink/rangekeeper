@@ -159,6 +159,15 @@
    ],
    "module": "rangekeeper.duration.calendar"
   },
+  "DayGrid": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self) -> None",
+    "frequency": "property"
+   },
+   "module": "rangekeeper.duration.grid",
+   "signature": "() -> None"
+  },
   "Frequency": {
    "kind": "enum",
    "members": [
@@ -174,6 +183,18 @@
    ],
    "module": "rangekeeper.duration.calendar"
   },
+  "Grid": {
+   "kind": "alias",
+   "value": "rangekeeper.duration.grid.DayGrid | rangekeeper.duration.grid.WeekGrid | rangekeeper.duration.grid.MonthGrid | rangekeeper.duration.grid.MultiYearGrid"
+  },
+  "MonthGrid": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, frequency: Frequency, year_starts: Month = calendar.JANUARY) -> None"
+   },
+   "module": "rangekeeper.duration.grid",
+   "signature": "(*, frequency: Frequency, year_starts: Month = calendar.JANUARY) -> None"
+  },
   "MonthRoll": {
    "kind": "enum",
    "members": [
@@ -181,6 +202,14 @@
     "CLAMP"
    ],
    "module": "rangekeeper.duration.calendar"
+  },
+  "MultiYearGrid": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, frequency: Frequency, origin: date) -> None"
+   },
+   "module": "rangekeeper.duration.grid",
+   "signature": "(*, frequency: Frequency, origin: date) -> None"
   },
   "NEVER": {
    "kind": "value",
@@ -249,10 +278,19 @@
    "module": "rangekeeper.duration.period",
    "signature": "(*, name: str | None | Unset = <Unset>, start: date, end: date | None = None, length: Quantity | str | None = None) -> None"
   },
+  "WeekGrid": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, starts: Day = calendar.MONDAY) -> None",
+    "frequency": "property"
+   },
+   "module": "rangekeeper.duration.grid",
+   "signature": "(*, starts: Day = calendar.MONDAY) -> None"
+  },
   "containing_period": {
    "kind": "function",
-   "module": "rangekeeper.duration.period",
-   "signature": "(value: date, *, frequency: Frequency, week_start: int = 0, year_start_month: int = 1, origin: date | None = None) -> Period"
+   "module": "rangekeeper.duration.grid",
+   "signature": "(*, on: date, grid: Grid) -> Period"
   },
   "count_steps": {
    "kind": "function",

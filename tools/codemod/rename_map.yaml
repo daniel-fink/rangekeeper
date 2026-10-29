@@ -921,6 +921,10 @@ notes:
     status: agreed
     source: "#255 D26"
     note: "Diagnostic codes are `rk.errors.Code` (#154); \"the event does not happen\" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings."
+  - topic: Calendar grids
+    status: agreed
+    source: "#399, #403"
+    note: "`containing_period(value, *, frequency=, week_start=, year_start_month=, origin=)` is now `containing_period(*, on=, grid=)`. The grid is `DayGrid()`, `WeekGrid(starts=calendar.Day.MONDAY)`, `MonthGrid(frequency=, year_starts=calendar.Month.JANUARY)` for months, quarters, half-years and years, or `MultiYearGrid(frequency=, origin=)` for bienniums, quinquenniums and decades. A grid takes only the choices that apply to it; a week grid takes no origin."
   - topic: Rules
     status: agreed
     source: "ADR-021, #255 D41, D42"

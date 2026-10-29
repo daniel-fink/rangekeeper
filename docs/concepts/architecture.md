@@ -57,7 +57,7 @@ contracts enforce the rule.
 | 2 | `schema` (internal) | Data-only generated records, enums and JSON; the record runtime; the kind registry; structural validation |
 | — | `money` | Currency amounts: the ISO 4217 catalogue, boundary conversions and rounding |
 | — | `quantity` | `Quantity` (also at the root) and `UnitSystem`, with the curated unit registry |
-| 3 | `duration` | Frequency, Period, Periods, Span, `NEVER` and calendar rules |
+| 3 | `duration` | Frequency, Period, Periods, Span, calendar grids, `NEVER` and calendar rules |
 | 4 | `profile` | Growth and distribution profiles: how an amount develops over Periods |
 | 5 | `flow` | Movement, Flow, Stream, their options and table display, and the private engine |
 | 6 | `market` | Path generators (`Dynamics`) and the market paths document (`Paths`) |
@@ -203,7 +203,7 @@ contents are not yet in their 1.0 owner:
 | `schema` | Data-only generated records, enums, the record runtime, the kind registry and structural validation | — |
 | `money` | The ISO 4217 catalogue and minor units, `to_number`, `to_amount` and `round` | — |
 | `quantity` | `Quantity`, `UnitSystem` and the curated unit registry | — |
-| `duration` | Frequency, Period, Span and calendar rules | — |
+| `duration` | Frequency, Period, Periods, Span, calendar grids and calendar rules | — |
 | `profile` | Growth profiles (`Constant`, `Linear`, `Compounding`), distribution profiles (`Uniform`, `SCurve`), the `Profile` Protocol and the `profiles` registry; the Distribution owner (public as `rangekeeper.model.Distribution`). `Flow.from_profile` in `flow` makes the Flow | — |
 | `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
 | `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#298](https://github.com/daniel-fink/rangekeeper/issues/298), [#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Generation, `Market` and replay still import `model`, above `market` |
