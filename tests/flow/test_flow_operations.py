@@ -8,6 +8,7 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.duration import DayCount, Frequency, Period, Periods, Span
+from rangekeeper.errors import Code, MissingReferenceError
 from rangekeeper.flow import (
     Flow,
     MissingValueHandling,
@@ -156,8 +157,13 @@ def test_rounding_mode_is_an_enum_of_the_decimal_constants():
 def test_select_values_and_with_policy():
     flow = Flow.from_events([date(2026, 1, 1)], [None], units="AUD")
     stream = Stream(flows={"a": flow, "b": flow})
-    with pytest.raises(KeyError):
+    with pytest.raises(MissingReferenceError) as missing:
         stream.select_values([uuid4()])
+    assert missing.value.code is Code.REFERENCE_MISSING
+    assert missing.value.by == "id" and missing.value.where == "Stream"
+    with pytest.raises(MissingReferenceError) as named:
+        stream.select("c")
+    assert named.value.candidates == () and named.value.by == "name"
     with pytest.raises(ValueError, match="at least one"):
         stream.select()
     skipping = stream.with_policy(missing=MissingValueHandling.SKIP)

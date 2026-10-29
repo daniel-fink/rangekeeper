@@ -120,8 +120,9 @@ Assignment alone does not display the chart.
 shared `plotly_white`/`plotly_dark` styles, fonts, controls and colour palettes.
 Use colours stay the same across the hierarchy charts. Package colours stay the
 same in the development timeline. `show_timeline()` displays supplied dates;
-`show_equations()` derives its edges from the actual equations and lets the reader
-switch Specification roles without changing the relationships. Line charts also
+`show_equations(of=)` derives its edges from the actual equations; for a
+Specification it marks each value fixed or free without changing the relationships,
+and `show_relations()` lets the reader switch between Specifications. Line charts also
 use different dashes and markers. Helpers apply the style to a copy of the Figure.
 
 The local HTML embeds share a Plotly bundle in their output folder. A small
@@ -132,8 +133,9 @@ changing numerical values, use colours, zoom or drill-down. To style a Figure fo
 direct notebook display or a fixed export, call `apply_theme(figure, mode="light")`
 or `apply_theme(figure, mode="dark")` from `helpers.theme`.
 
-`show_geometry(view)` writes the local geometry viewer for the data package and
-shows one view: `context`, `property`, `floors` or `utilities`. The viewer checks
+`show_geometry(view, name=)` writes the local geometry viewer for the data package
+`name` (only `mixed_use_property` has geometry) and shows one view: `context`,
+`property`, `floors` or `utilities`. The viewer checks
 the data package hashes before it displays the geometry. Its
 [build procedure](../../examples/walkthrough/viewer/README.md) keeps the viewer bundle local.
 

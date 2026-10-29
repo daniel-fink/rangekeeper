@@ -11,8 +11,11 @@ from collections.abc import Sequence
 from datetime import date
 
 from rangekeeper.duration import Period
+from rangekeeper.duration.errors import AlignmentError
 from rangekeeper.flow._flow import Flow, Movement
 from rangekeeper.flow._options import ResampleMethod
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError
 
 # The resample methods that weight each value.
 MEANS = frozenset({ResampleMethod.MEAN, ResampleMethod.ELAPSED_MEAN})
@@ -25,8 +28,9 @@ def alignment(
     coordinates = reference.coordinate_index()
     maps = [flow.coordinate_index() for flow in flows]
     if any(set(mapping) != set(coordinates) for mapping in maps):
-        raise ValueError(
-            "Flow coordinates do not match; supply an explicit mapping for lagged relationships"
+        raise AlignmentError(
+            "Flow coordinates do not match; supply an explicit mapping for lagged relationships",
+            code=Code.ALIGNMENT_DIFFER,
         )
     return [
         (movement, tuple(mapping[key] for mapping in maps))
@@ -41,7 +45,7 @@ def period_indices(
     starts = []
     for i, period in enumerate(periods):
         if i and periods[i - 1].end > period.start:
-            raise ValueError("resampling periods overlap or are unordered")
+            raise ContractError("resampling periods overlap or are unordered")
         starts.append(period.start)
     groups = []
     for coordinate in coordinates:
@@ -53,7 +57,11 @@ def period_indices(
             or start >= periods[index].end
             or (end is not None and end > periods[index].end)
         ):
-            raise ValueError("movement is outside or crosses target periods")
+            raise AlignmentError(
+                "movement is outside or crosses target periods",
+                code=Code.ALIGNMENT_CROSSES,
+                values={"coordinate": list(coordinate)},
+            )
         groups.append(index)
     return tuple(groups)
 
@@ -69,7 +77,7 @@ def weights(
     if method is not ResampleMethod.ELAPSED_MEAN:
         return (1.0,) * len(coordinates)
     if any(c[0] != "period" for c in coordinates):
-        raise ValueError("an elapsed mean requires bounded movements")
+        raise ContractError("an elapsed mean requires bounded movements")
     return tuple(
         float((date.fromisoformat(c[2]) - date.fromisoformat(c[1])).days)
         for c in coordinates

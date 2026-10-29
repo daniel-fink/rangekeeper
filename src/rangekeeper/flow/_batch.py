@@ -11,11 +11,14 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from rangekeeper.duration import Period
+from rangekeeper.duration.errors import AlignmentError
 from rangekeeper.flow._flow import Flow, Movement, _number
 from rangekeeper.flow._mapping import MEANS, period_indices, weights
 from rangekeeper.flow._options import MissingValueHandling as Missing
 from rangekeeper.flow._options import ResampleMethod
 from rangekeeper.quantity import Quantity, default_units
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError, NumericalError
 from rangekeeper.shared.optional import requires
 
 if TYPE_CHECKING:
@@ -107,7 +110,7 @@ def stable_reduce(frame, keys, method):
             ]
             result = result.with_columns(pl.Series("result", values, dtype=pl.Float64))
     if result.filter(pl.col("result").is_infinite() | pl.col("result").is_nan()).height:
-        raise ValueError("Flow reduction produced a non-finite magnitude")
+        raise NumericalError("Flow reduction produced a non-finite magnitude")
     return result
 
 
@@ -207,8 +210,13 @@ class Batch:
                     keep.append(i)
             elif end > span.start and start < span.end:
                 if start < span.start or end > span.end:
-                    raise ValueError(
-                        "trim crosses a movement period; allocate explicitly"
+                    raise AlignmentError(
+                        "trim crosses a movement period; allocate explicitly",
+                        code=Code.ALIGNMENT_CROSSES,
+                        values={
+                            "span": f"{span.start}/{span.end}",
+                            "period": f"{c[1]}/{c[2]}",
+                        },
                     )
                 keep.append(i)
         frame = self.frame.filter(pl.col("coordinate").is_in(keep))
@@ -244,18 +252,14 @@ class Batch:
             raise TypeError("join must be an AlignmentJoin")
         modes = {self.coordinates[c][0] for c in self.frame["coordinate"].unique()}
         if len(modes) > 1:
-            raise ValueError(
-                "cannot align event dates with period coverage; resample conflicting lines to common periods"
-            )
+            raise _mixed()
         sets = [set() for _ in self.units]
         for line, coord in self.frame.select("line", "coordinate").iter_rows():
             sets[line].add(coord)
         if not sets:
-            raise ValueError("alignment needs at least one Flow")
+            raise ContractError("alignment needs at least one Flow")
         if join is AlignmentJoin.EXACT and any(s != sets[0] for s in sets[1:]):
-            raise ValueError(
-                "Flow coordinates differ; request union/intersection explicitly or resample the lines"
-            )
+            raise _differ()
         selected = (
             set.intersection(*sets)
             if join is AlignmentJoin.INTERSECTION
@@ -309,7 +313,7 @@ class Batch:
         if not isinstance(missing, Missing) or not isinstance(join, AlignmentJoin):
             raise TypeError("missing and join require their enum types")
         if not self.units:
-            raise ValueError("alignment needs at least one Flow")
+            raise ContractError("alignment needs at least one Flow")
         pl = polars()
         unit = units or self.units[0]
         sets = [set() for _ in self.units]
@@ -319,23 +323,21 @@ class Batch:
         memberships = []
         for group, indices in enumerate(groups):
             if not indices or len(set(indices)) != len(indices):
-                raise ValueError("aggregation requires unique contributors")
+                raise ContractError(
+                    "aggregation requires unique contributors", code=Code.UNIQUE
+                )
             selected = [sets[i] for i in indices]
             if join is AlignmentJoin.EXACT and any(
                 s != selected[0] for s in selected[1:]
             ):
-                raise ValueError(
-                    "Flow coordinates differ; request union/intersection explicitly or resample the lines"
-                )
+                raise _differ()
             grid = (
                 set.intersection(*selected)
                 if join is AlignmentJoin.INTERSECTION
                 else set.union(*selected)
             )
             if len({self.coordinates[c][0] for c in grid}) > 1:
-                raise ValueError(
-                    "cannot align event dates with period coverage; resample conflicting lines to common periods"
-                )
+                raise _mixed()
             grids.append(
                 tuple(
                     sorted(
@@ -401,7 +403,7 @@ class Batch:
             # missing amount; only unresolved amounts are missing.
             complete = count == size
             if not complete and missing is Missing.ERROR:
-                raise ValueError("missing/unresolved movement in aligned flows")
+                raise NumericalError("missing/unresolved movement in aligned flows")
             if missing is Missing.ZERO and count == size:
                 if size < total and method is AggregationMethod.MIN:
                     value = min(value, 0.0)
@@ -565,6 +567,24 @@ _REDUCTIONS: dict[ResampleMethod, str] = {
 }
 
 
+def _mixed() -> AlignmentError:
+    """Return the error for lines that mix dated and period coordinates."""
+    return AlignmentError(
+        "cannot align event dates with period coverage; "
+        "resample conflicting lines to common periods",
+        code=Code.ALIGNMENT_MIXED,
+    )
+
+
+def _differ() -> AlignmentError:
+    """Return the error for lines whose coordinates differ under an exact join."""
+    return AlignmentError(
+        "Flow coordinates differ; request union/intersection explicitly or "
+        "resample the lines",
+        code=Code.ALIGNMENT_DIFFER,
+    )
+
+
 def _check_resample(
     methods: Sequence[ResampleMethod], *, missing: Missing, lines: int
 ) -> None:
@@ -574,7 +594,7 @@ def _check_resample(
     if any(not isinstance(method, ResampleMethod) for method in methods):
         raise TypeError("method must be a ResampleMethod")
     if len(methods) != lines:
-        raise ValueError("resample needs one method for each line")
+        raise ContractError("resample needs one method for each line")
 
 
 def _plan(methods: Sequence[ResampleMethod]) -> dict[ResampleMethod, tuple[int, ...]]:
@@ -627,7 +647,7 @@ def _apply_missing(grid: DataFrame, missing: Missing) -> DataFrame:
     pl = polars()
     complete = (pl.col("size") > 0) & (pl.col("count") == pl.col("size"))
     if missing is Missing.ERROR and grid.filter(~complete).height:
-        raise ValueError("empty/unresolved target period")
+        raise NumericalError("empty/unresolved target period")
     usable = complete | (
         (pl.col("count") > 0) if missing is Missing.SKIP else pl.lit(False)
     )
@@ -684,7 +704,7 @@ def align(flows, *, join, missing):
             source = mapping.get(key, templates[key])
             known = present and source.magnitude is not None
             if not known and missing is Missing.ERROR:
-                raise ValueError("missing/unresolved movement")
+                raise NumericalError("missing/unresolved movement")
             magnitude = (
                 source.magnitude
                 if present

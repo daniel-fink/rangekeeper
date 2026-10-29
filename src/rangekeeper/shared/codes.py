@@ -79,10 +79,15 @@ class Code(StrEnum):
     BATCH_REQUIRED = "batch.required"
     BATCH_UNSUPPORTED = "batch.unsupported"
 
-    # Periods that do not align: a Period crosses the bounds of a selection, or
-    # Periods end with a partial Period.
+    # Periods and coordinates that do not align: a Period crosses the bounds of a
+    # selection, Periods end with a partial Period, Flows mix dates and Periods,
+    # coordinates differ or repeat, or Periods leave a gap.
     ALIGNMENT_CROSSES = "alignment.crosses"
     ALIGNMENT_PARTIAL = "alignment.partial"
+    ALIGNMENT_MIXED = "alignment.mixed"
+    ALIGNMENT_DIFFER = "alignment.differ"
+    ALIGNMENT_DUPLICATE = "alignment.duplicate"
+    ALIGNMENT_GAP = "alignment.gap"
 
     # References between records and documents.
     REFERENCE_AMBIGUOUS = "reference.ambiguous"

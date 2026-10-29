@@ -196,10 +196,17 @@ every other field by keyword, with the same field names in each error class
 ([#408](https://github.com/daniel-fink/rangekeeper/issues/408)). See
 [errors and diagnostics](../reference/errors.md).
 
-Bad, from `Stream.select` in `flow/__init__.py`:
+Good, from `Stream.select` in `flow/__init__.py`, which raised a bare
+`KeyError` before [#407](https://github.com/daniel-fink/rangekeeper/issues/407):
 
 ```python
-raise KeyError("selection contains a member outside this Stream")
+raise MissingReferenceError(
+    str(absent[0]),
+    kind="Flow",
+    by="name" if available is self.names else "id",
+    where="Stream",
+    candidates=difflib.get_close_matches(str(absent[0]), names),
+)
 ```
 
 Good, from `model/draft.py`:
