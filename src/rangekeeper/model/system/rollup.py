@@ -334,10 +334,18 @@ class _Decision:
         return self.test(entity)
 
 
-def _decision(contributors, model: Model):
-    """Return a Filter's three-valued test; other rules stay as they are."""
+def _decision(
+    contributors: "Contributor | Filter | Callable[[Entity], bool]",
+    model: Model,
+    *,
+    unit_system: UnitSystem,
+) -> "Contributor | _Decision | Callable[[Entity], bool]":
+    """Return a Filter's three-valued test; other rules stay as they are.
+
+    The Filter's Value tests convert units with ``unit_system``.
+    """
     if isinstance(contributors, Filter):
-        return _Decision(_prepare(model, contributors))
+        return _Decision(_prepare(model, contributors, unit_system=unit_system))
     return contributors
 
 
@@ -372,6 +380,16 @@ class _Rollup:
     def execute(self, hierarchy: Hierarchy) -> RollupResult:
         """Return a detached derived result over ``hierarchy``."""
         raise NotImplementedError
+
+    def _unit_system(self, model: Model) -> UnitSystem:
+        """Return the unit system of the Values and the Filter tests: the Model's."""
+        return model.unit_system
+
+    def _contributor_rule(
+        self, model: Model
+    ) -> "Contributor | _Decision | Callable[[Entity], bool]":
+        """Return the contributor rule, with a Filter tested in this unit system."""
+        return _decision(self.contributors, model, unit_system=self._unit_system(model))
 
     def pivot(
         self,
@@ -440,7 +458,7 @@ class _Rollup:
         if self.measure is not None:
             # A supplied Measure must exist even when no owner has the key.
             model._index.get(self.measure, Measure)
-        rule = _decision(self.contributors, model)
+        rule = self._contributor_rule(model)
         selected: dict[UUID, Value | None] = {}
         populations: dict[UUID, tuple[UUID, ...]] = {}
         undecided: dict[UUID, tuple[UUID, ...]] = {}
@@ -469,7 +487,8 @@ class QuantityRollup(_Rollup):
     the Measure UUID of each selected Value; it never selects a Value by itself.
     Contributors default to the leaves, so a parent that records a total is not
     counted twice. Missing Values and unresolved Quantities count as missing,
-    never as zero. Without ``unit_system``, ``execute`` uses the Model's.
+    never as zero. ``unit_system`` converts the Values and the Value tests of a
+    ``Filter`` contributor rule; without it, ``execute`` uses the Model's.
     """
 
     unit_system: UnitSystem | None = None
@@ -496,11 +515,7 @@ class QuantityRollup(_Rollup):
         weighted. Missing keys and unresolved quantities count as missing.
         """
         selected, populations, undecided = self._population(hierarchy)
-        unit_system = (
-            hierarchy.view.model.unit_system
-            if self.unit_system is None
-            else self.unit_system
-        )
+        unit_system = self._unit_system(hierarchy.view.model)
         if self.units is not None:
             unit_system.validate_units(self.units)
         quantities = {
@@ -529,6 +544,10 @@ class QuantityRollup(_Rollup):
             owner: value.id for owner, value in selected.items() if value is not None
         }
         return RollupResult(hierarchy, entries, value_ids, self.require_complete)
+
+    def _unit_system(self, model: Model) -> UnitSystem:
+        """Return ``unit_system``, or the Model's when it is None."""
+        return model.unit_system if self.unit_system is None else self.unit_system
 
 
 @dataclass(frozen=True)

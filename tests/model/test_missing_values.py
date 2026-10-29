@@ -33,7 +33,7 @@ from rangekeeper.model.system import (
     Reducer,
     View,
 )
-from rangekeeper.quantity import Quantity
+from rangekeeper.quantity import Quantity, UnitSystem, default_units
 
 KIND = {
     code: Classification(id=uuid4(), code=code, name=code, parent=None)
@@ -66,7 +66,7 @@ def value(key, magnitude):
     )
 
 
-def project():
+def project(units: UnitSystem = default_units):
     entities, ids = [], {}
     for code, kind, gfa, nla in FLOORS:
         values = tuple(
@@ -98,6 +98,7 @@ def project():
             ),
         ),
         system=System(entities=tuple(entities), assemblies=(building,)),
+        units=units,
     )
     ids["b"] = building.id
     return model, Hierarchy.from_membership(View(model), root=building.id), ids
@@ -131,6 +132,28 @@ def test_a_filter_selects_contributors_and_counts_undecided_ones():
     assert coverage.status is CoverageStatus.INCOMPLETE and not coverage.complete
     assert result.value(ids["b"]) is None
     assert result.available_value(ids["b"]).number == 1500
+
+
+def test_a_filter_tests_values_in_the_rollup_unit_system() -> None:
+    # The Model reads a bay as 1000 m^2; the rollup reads it as 2000 m^2. The
+    # rollup's unit system converts the Values and tests the Filter (#433).
+    model, rows, ids = project(UnitSystem(definitions=("bay = 1000 m^2",)))
+    bays = UnitSystem(definitions=("bay = 2000 m^2",))
+    one_bay = Filter(
+        classification=FLOOR.id,
+        tests=(
+            ValueTest(
+                key="gfa",
+                relation=ValueRelation.GREATER_THAN_OR_EQUAL,
+                quantity=Quantity(magnitude=1, units="bay"),
+            ),
+        ),
+    )
+    result = nla(contributors=one_bay, unit_system=bays).execute(rows)
+    assert result.coverage(ids["b"]).selected == (ids["f2"],)
+    # Without its own unit system, the rollup tests with the Model's.
+    selected = nla(contributors=one_bay).execute(rows).coverage(ids["b"]).selected
+    assert selected == (ids["f1"], ids["f2"], ids["f5"])
 
 
 def test_undecided_contributors_alone_make_coverage_incomplete():
