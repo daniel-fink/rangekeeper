@@ -307,6 +307,10 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | Current | Use instead | Status |
 | --- | --- | --- |
 | `rangekeeper.duration.Frequency.BIWEEK` | `offset(..., frequency=Frequency.WEEK, count=2)` for a 14-day step, or explicit 14-day Periods for a grid. There is no fortnight frequency | agreed |
+| `rangekeeper.duration.make_period` | `Period(start=, end=)` | agreed |
+| `rangekeeper.duration.make_periods` | `Periods(start=, frequency=, count=, month_roll=)`. It returns a `Periods`, not a tuple: compare it with another `Periods`, and use `tuple(periods)` for a tuple | agreed |
+| `rangekeeper.duration.periods_between` | `Span(start=, end=).periods(frequency=, include_partial=, month_roll=)`, which returns a `Periods`. A Span is not empty, so the start must be before the end | agreed |
+| `rangekeeper.duration.Span.from_duration` | `Span(start=, length="10 years", name=)`, or `Periods(start=, frequency=, count=, month_roll=).span` for a half-year, a decade or another `MonthRoll` | agreed |
 | `rangekeeper.model.system.reducers` | The `rangekeeper.model.system.Reducer` enum: `SUM`, `MEAN`, `MIN`, `MAX` and `COUNT`, passed as `reducer=` to `QuantityRollup` or `FlowRollup` | agreed |
 | `rangekeeper.calculations.account` | Compose the funding with Flows: a balance is `cumulative()`. Interest is the Model equation `rangekeeper.model.formulation.financial.interest`; `rx.finance.interest` in equation text follows (#255 D2, D23, #278). A how-to recipe follows (#194) | agreed |
 | `rangekeeper.model.formulation.account.schedule` | Equations over Flows, such as `funding_need = -(net_cash_flow + loan_interest).cumulative()`. A Model declares no account (#255 D2) | agreed |
@@ -352,6 +356,7 @@ them; the issues that the table names make the changes.
 | Growth and distribution profiles | `rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#303). | #255 D12 |
 | Market paths | `rk.market.Dynamics`, `rk.market.generate` and `rk.market.Paths` replace the scenario plan and the trend and cycle kernels (#298, #299). | #255 D29, D31 |
 | Fixed words are enums | Diagnostic codes are `rk.errors.Code` (#154); "the event does not happen" is `rk.duration.NEVER`; `Role`, `DecisionResult`, `Status` and `Direction` are enums. Words that the data defines stay strings. | #255 D26 |
+| Date shift | `rk.duration.shift(value, by=)` is now `shift(on=, by=)`. `rk.duration.DateValue` (a date or `NEVER`) names its type. `shift` moves a date value by a length; `offset(value, frequency=, count=, month_roll=)` moves a date by whole steps of a Frequency. | #255 D14, D25, #389 |
 | Calendar grids | `containing_period(value, *, frequency=, week_start=, year_start_month=, origin=)` is now `containing_period(*, on=, grid=)`. The grid is `DayGrid()`, `WeekGrid(starts=calendar.Day.MONDAY)`, `MonthGrid(frequency=, year_starts=calendar.Month.JANUARY)` for months, quarters, half-years and years, or `MultiYearGrid(frequency=, origin=)` for bienniums, quinquenniums and decades. A grid takes only the choices that apply to it; a week grid takes no origin. | #399, #403 |
 | Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215). | ADR-021, #255 D41, D42 |
 

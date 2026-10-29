@@ -9,7 +9,7 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.duration import Frequency, Span, make_periods
+from rangekeeper.duration import Frequency, Periods, Span
 from rangekeeper.execution import execute
 from rangekeeper.flow import AlignmentJoin as Join
 from rangekeeper.flow import Flow, Stream
@@ -89,7 +89,7 @@ def test_flow_display_preserves_records_and_uses_shared_rendering(period_content
     amounts = [0, None, -1.234]
     source = (
         Flow.from_periods(
-            make_periods(start, frequency=Frequency.MONTH, count=3),
+            Periods(start=start, frequency=Frequency.MONTH, count=3),
             amounts,
             units="AUD",
         )
@@ -127,7 +127,7 @@ def test_empty_flow_display_and_invalid_presentation_options():
 def test_native_display_shows_full_selection_and_restores_config(transpose):
     import polars as pl
 
-    periods = make_periods(date(2001, 1, 1), frequency=Frequency.YEAR, count=80)
+    periods = Periods(start=date(2001, 1, 1), frequency=Frequency.YEAR, count=80)
     label = "Income from the property's commercial and residential tenancies"
     source = Flow.from_periods(periods, [1234.567] * 80, units="AUD")
     table = Stream(flows={label: source, "Other": source}).display(
@@ -176,7 +176,7 @@ def test_native_display_restores_config_after_renderer_failure(monkeypatch, meth
 def test_native_display_missing_states_and_numeric_export(transpose):
     import polars as pl
 
-    periods = make_periods(date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
+    periods = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
     receipts = Flow.from_periods(periods[:2], [0, None], units="AUD")
     stream = Stream(
         flows={
@@ -213,9 +213,7 @@ def test_native_display_empty_collections(transpose):
 
 
 def test_span_anchor_partial_and_decoded_behavior():
-    span = Span.from_duration(
-        name="Leap", start=date(2024, 1, 31), frequency=Frequency.MONTH, count=3
-    )
+    span = Span(name="Leap", start=date(2024, 1, 31), length="3 months")
     assert span.end == date(2024, 4, 30)
     assert [p.end for p in span.periods(frequency=Frequency.MONTH)] == [
         date(2024, 2, 29),
@@ -228,10 +226,8 @@ def test_span_anchor_partial_and_decoded_behavior():
     with pytest.raises(ValueError, match="partial"):
         span.periods(frequency=Frequency.YEAR)
     assert len(span.periods(frequency=Frequency.YEAR, include_partial=True)) == 1
-    with pytest.raises(ValueError):
-        Span.from_duration(
-            name="Empty", start=date(2024, 1, 1), frequency=Frequency.YEAR, count=0
-        )
+    with pytest.raises(UnitError, match="positive"):
+        Span(name="Empty", start=date(2024, 1, 1), length="0 years")
 
 
 @pytest.mark.parametrize(
@@ -239,7 +235,7 @@ def test_span_anchor_partial_and_decoded_behavior():
     [(R.SUM, 6), (R.MIN, 1), (R.MAX, 3), (R.FIRST, 1), (R.LAST, 3), (R.MEAN, 2)],
 )
 def test_resampling_independent_oracle_and_claims(method, expected):
-    periods = make_periods(date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
+    periods = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
     claim = uuid4()
     source = Flow.from_periods(periods, [1, 2, 3], units="AUD")
     source = source.replace(
@@ -247,7 +243,7 @@ def test_resampling_independent_oracle_and_claims(method, expected):
     )
     stream = Stream(flows={"Receipts": source})
     result = stream.resample(
-        periods=make_periods(date(2027, 1, 1), frequency=Frequency.QUARTER, count=1),
+        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.QUARTER, count=1),
         method=method,
         weighting=Weight.OBSERVATIONS if method is R.MEAN else None,
     )
@@ -259,7 +255,7 @@ def test_resampling_independent_oracle_and_claims(method, expected):
 
 
 def test_methods_mapping_missing_zero_and_html_escape():
-    periods = make_periods(date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
+    periods = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
     receipts = Flow.from_periods(periods[:2], [0, None], units="AUD")
     balance = Flow.from_periods(periods[:2], [10, 20], units="AUD")
     stream = Stream(
@@ -306,13 +302,14 @@ def test_cancellation_units_empty_and_boundaries():
         Stream(
             flows={
                 "annual": Flow.from_periods(
-                    make_periods(day, frequency=Frequency.YEAR, count=1),
+                    Periods(start=day, frequency=Frequency.YEAR, count=1),
                     [1],
                     units="AUD",
                 )
             }
         ).resample(
-            periods=make_periods(day, frequency=Frequency.MONTH, count=12), method=R.SUM
+            periods=Periods(start=day, frequency=Frequency.MONTH, count=12),
+            method=R.SUM,
         )
     with pytest.raises(ValueError, match="trim crosses"):
         stream = collection()
@@ -327,7 +324,7 @@ def test_model_selections_cannot_hide_numerical_transformations():
     declaration = flow.sum(model, id=uuid4(), summands=selected, total=ids["A_net"])
     assert declaration.bindings[0].value == ids["A_rent"]
     detached = selected.resample(
-        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=1),
+        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1),
         method=R.SUM,
     )
     with pytest.raises(ValueError, match="intermediate"):
@@ -466,8 +463,8 @@ def test_symbolic_resampling_keeps_unknowns_and_fixed_membership(method):
 
 
 def test_selection_releases_unselected_coordinates_before_trim():
-    months = make_periods(date(2027, 1, 1), frequency=Frequency.MONTH, count=12)
-    years = make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=1)
+    months = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=12)
+    years = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1)
     stream = Stream(
         flows={
             "months": Flow.from_periods(months, [1] * 12, units="AUD"),

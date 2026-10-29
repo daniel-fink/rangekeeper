@@ -32,7 +32,7 @@ def require_date_value(value: object) -> DateValue:
     return require_date(value)
 
 
-def shift(on: DateValue, *, by: Quantity | str) -> DateValue:
+def shift(*, on: DateValue, by: Quantity | str) -> DateValue:
     """Return the date a whole length later, such as ``"1 year"``, or earlier.
 
     ``by`` is a whole number of days, weeks, months, quarters or years, as a

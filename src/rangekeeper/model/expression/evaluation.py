@@ -115,7 +115,7 @@ def evaluate_date(
     length = evaluate(right, values, units=units)  # type: ignore[arg-type]
     if node.operator is Operator.SUBTRACT:
         length = Quantity(magnitude=-length.number, units=length.units)
-    return shift(evaluate_date(left, values, units=units), by=length)
+    return shift(on=evaluate_date(left, values, units=units), by=length)
 
 
 def compare_dates(relation: Operator, left: DateValue, right: DateValue) -> bool:

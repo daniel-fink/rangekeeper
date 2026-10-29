@@ -7,7 +7,7 @@ from decimal import Decimal
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.duration import Frequency, Periods, Span, make_periods
+from rangekeeper.duration import Frequency, Periods, Span
 from rangekeeper.flow import Flow
 from rangekeeper.model import Distribution
 from rangekeeper.profile import (
@@ -46,7 +46,9 @@ def test_growth_uses_years_since_the_first_period():
     )
     assert flow.movements[4].number == pytest.approx(1.1)
     assert flow.movements[2].number == pytest.approx(math.sqrt(1.1))
-    tuple_years = make_periods(date(2001, 1, 1), frequency=Frequency.YEAR, count=3)
+    tuple_years = tuple(
+        Periods(start=date(2001, 1, 1), frequency=Frequency.YEAR, count=3)
+    )
     assert Compounding(rate="10 % pa").factors(periods=tuple_years) == pytest.approx(
         (1, 1.1, 1.21)
     )

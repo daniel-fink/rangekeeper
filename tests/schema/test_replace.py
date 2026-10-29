@@ -14,8 +14,8 @@ from rangekeeper.shared.errors import ValidationError
 
 @pytest.fixture
 def flow():
-    periods = rk.duration.make_periods(
-        date(2026, 1, 1), frequency=rk.duration.Frequency.MONTH, count=120
+    periods = rk.duration.Periods(
+        start=date(2026, 1, 1), frequency=rk.duration.Frequency.MONTH, count=120
     )
     return Flow.from_periods(periods, [float(i) for i in range(120)], units="AUD")
 

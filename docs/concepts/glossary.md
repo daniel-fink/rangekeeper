@@ -58,7 +58,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Grid | A division of the calendar into Periods of one frequency: `DayGrid`, `WeekGrid`, `MonthGrid` or `MultiYearGrid`. `containing_period(on=, grid=)` finds the Period of a date | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | — |
-| Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | —; `PeriodIndex` in 0.8. Some functions still return `tuple[Period, ...]` |
+| Periods | An ordered, gap-free sequence of Periods with one frequency; an argument that takes one is named `periods=` | `duration` | —; `PeriodIndex` in 0.8 |
 | Span | A named half-open range of time | `duration` | — |
 | Never | `rk.duration.NEVER`: a date value meaning "the event does not happen"; also `NEVER` in equation text. Not `None`, which means missing | `duration` | None (planned, #280) |
 | Profile | How an amount develops over Periods: growth from an initial amount, or distribution of a total | `profile` | — |

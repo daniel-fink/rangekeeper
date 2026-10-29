@@ -7,7 +7,7 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.duration import Frequency
-from rangekeeper.duration.period import make_periods
+from rangekeeper.duration.period import Periods
 from rangekeeper.errors import Code
 from rangekeeper.execution import ExecutionConfig, execute
 from rangekeeper.flow import Flow, Movement
@@ -37,7 +37,7 @@ from rangekeeper.specification.targets import assign_flow, unknown_flow
 def oracle():
     ids = {name: uuid4() for name in ("initial", "rate", "cash", "discounted", "pv")}
     money, ratio = uuid4(), uuid4()
-    periods = make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3)
+    periods = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=3)
     values = [
         Value(id=ids[name], key=name, kind=ValueKind.MEASUREMENT, measure=measure)
         for name, measure in [("initial", money), ("rate", ratio), ("pv", money)]

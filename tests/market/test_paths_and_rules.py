@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.duration import Frequency, Periods
 from rangekeeper.errors import Code
 from rangekeeper.execution.rule import RuleCapabilityError, evaluate, observe
 from rangekeeper.flow import Flow, Movement
@@ -36,7 +36,7 @@ def base():
 def test_parallel_streams_and_replay(monkeypatch):
     model = base()
     plan = make_plan(
-        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=4),
+        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=4),
         seed=23,
     )
     first = generate(model, plan, scenario_keys=("one", "two"))
@@ -67,7 +67,7 @@ def test_fixed_market_oracle_and_shock_applied_once():
         shock_dissipation=0.5,
     )
     plan = make_plan(
-        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
+        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
         seed=2,
         parameters=params,
     )
@@ -103,8 +103,8 @@ def test_fixed_market_oracle_and_shock_applied_once():
 
 def rule_model(factors):
     measure = Measure(id=uuid4(), code="factor", name="Factor", units="dimensionless")
-    periods = make_periods(
-        date(2027, 1, 1), frequency=Frequency.YEAR, count=len(factors)
+    periods = Periods(
+        start=date(2027, 1, 1), frequency=Frequency.YEAR, count=len(factors)
     )
     values = []
     for name in ("pricing", "holding", "sale"):
@@ -197,7 +197,7 @@ def test_future_changes_cannot_change_earlier_decision_and_missing_is_not_zero()
 
 def test_independent_realizations_capture_distribution_draws():
     plan = make_plan(
-        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
+        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
         seed=9,
         method="market.independent",
         parameters=dict(
@@ -222,7 +222,7 @@ def test_supplied_innovations_realize_without_randomness(monkeypatch):
     from rangekeeper.market.generation import capture, realize
 
     plan = make_plan(
-        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
+        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
         seed=123,
         parameters=dict(
             initial_value=2.0,

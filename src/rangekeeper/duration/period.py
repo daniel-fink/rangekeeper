@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterator, Sequence
+from dataclasses import dataclass
 from datetime import date, timedelta
 from itertools import pairwise
 from typing import overload
@@ -152,55 +153,60 @@ class Span(records.Span, Period):
             end=offset(self.end, frequency=frequency, count=count),
         )
 
-    @classmethod
-    def from_duration(
-        cls,
-        *,
-        name: str,
-        start: date,
-        frequency: Frequency,
-        count: int,
-        month_roll: MonthRoll | None = None,
-    ) -> Span:
-        """Create a positive named extent from anchored calendar steps."""
-        if type(count) is not int or count <= 0:
-            raise ValueError("span count must be a positive integer")
-        span = cls(
-            name=name,
-            start=start,
-            end=offset(
-                start,
-                frequency=frequency,
-                count=count,
-                month_roll=MonthRoll.PRESERVE_END if month_roll is None else month_roll,
-            ),
-        )
-        return span
-
     def periods(
         self,
         *,
         frequency: Frequency,
         include_partial: bool = False,
-        month_roll: MonthRoll | None = None,
+        month_roll: MonthRoll = MonthRoll.PRESERVE_END,
     ) -> Periods:
         """Partition this extent; a partial final period requires explicit permission."""
-        roll = MonthRoll.PRESERVE_END if month_roll is None else month_roll
+        if type(include_partial) is not bool:
+            raise TypeError("include_partial must be a Boolean")
+        steps = _Steps(anchor=self.start, frequency=frequency, month_roll=month_roll)
+        count = count_steps(
+            self.start, self.end, frequency=frequency, month_roll=month_roll
+        )
+        whole = steps.periods(0, count)
+        rest = steps.boundary(count)
+        if rest == self.end:
+            return Periods._of(whole, steps=steps, first=0)
+        if not include_partial:
+            raise ValueError("span contains a partial final period")
         return Periods._of(
-            periods_between(
-                self.start,
-                self.end,
-                frequency=frequency,
-                include_partial=include_partial,
-                month_roll=roll,
-            ),
-            frequency=frequency,
-            month_roll=roll,
-            anchor=self.start,
-            first=0,
+            (*whole, Period(start=rest, end=self.end)), steps=steps, first=0
         )
 
 
+@dataclass(frozen=True, slots=True)
+class _Steps:
+    """Calendar steps of one Frequency from an anchor date, by a MonthRoll."""
+
+    anchor: date
+    frequency: Frequency
+    month_roll: MonthRoll
+
+    def __post_init__(self) -> None:
+        require_date(self.anchor)
+        require_frequency(self.frequency)
+        require_month_roll(self.month_roll)
+
+    def boundary(self, index: int) -> date:
+        """Return the date ``index`` steps from the anchor."""
+        return offset(
+            self.anchor,
+            frequency=self.frequency,
+            count=index,
+            month_roll=self.month_roll,
+        )
+
+    def periods(self, start: int, stop: int) -> tuple[Period, ...]:
+        """Return the Periods from step ``start`` to step ``stop``."""
+        boundaries = [self.boundary(index) for index in range(start, stop + 1)]
+        return tuple(Period(start=a, end=b) for a, b in pairwise(boundaries))
+
+
+@dataclass(frozen=True, slots=True, init=False, eq=False, repr=False)
 class Periods(Sequence[Period]):
     """An ordered, gap-free sequence of Periods with one frequency.
 
@@ -211,7 +217,10 @@ class Periods(Sequence[Period]):
     the same Periods.
     """
 
-    __slots__ = ("_periods", "_frequency", "_month_roll", "_anchor", "_first")
+    _periods: tuple[Period, ...]
+    _steps: _Steps
+    # The step of the first Period, counted from the anchor.
+    _first: int
 
     def __init__(
         self,
@@ -221,67 +230,34 @@ class Periods(Sequence[Period]):
         count: int,
         month_roll: MonthRoll = MonthRoll.PRESERVE_END,
     ) -> None:
-        self._set(
-            make_periods(
-                start, frequency=frequency, count=count, month_roll=month_roll
-            ),
-            frequency=frequency,
-            month_roll=month_roll,
-            anchor=start,
-            first=0,
-        )
+        steps = _Steps(anchor=start, frequency=frequency, month_roll=month_roll)
+        if type(count) is not int or count < 0:
+            raise ValueError("period count must be a nonnegative integer")
+        self._assign(steps.periods(0, count), steps=steps, first=0)
 
     @classmethod
-    def _of(
-        cls,
-        periods: Iterable[Period],
-        *,
-        frequency: Frequency,
-        month_roll: MonthRoll,
-        anchor: date,
-        first: int,
-    ) -> Periods:
+    def _of(cls, periods: tuple[Period, ...], *, steps: _Steps, first: int) -> Periods:
+        """Return Periods from parts that the caller made from ``steps``."""
         result = object.__new__(cls)
-        result._set(
-            tuple(periods),
-            frequency=frequency,
-            month_roll=month_roll,
-            anchor=anchor,
-            first=first,
-        )
+        result._assign(periods, steps=steps, first=first)
         return result
 
-    def _set(
-        self,
-        periods: tuple[Period, ...],
-        *,
-        frequency: Frequency,
-        month_roll: MonthRoll,
-        anchor: date,
-        first: int,
+    def _assign(
+        self, periods: tuple[Period, ...], *, steps: _Steps, first: int
     ) -> None:
-        if not isinstance(frequency, Frequency):
-            raise TypeError("frequency must be a Frequency")
-        self._periods: tuple[Period, ...] = periods
-        self._frequency: Frequency = frequency
-        self._month_roll: MonthRoll = month_roll
-        self._anchor: date = anchor
-        self._first: int = first
-
-    def __setattr__(self, name: str, value: object) -> None:
-        if hasattr(self, "_first"):
-            raise AttributeError("Periods are immutable")
-        object.__setattr__(self, name, value)
+        object.__setattr__(self, "_periods", periods)
+        object.__setattr__(self, "_steps", steps)
+        object.__setattr__(self, "_first", first)
 
     @property
     def frequency(self) -> Frequency:
         """The calendar step of each Period."""
-        return self._frequency
+        return self._steps.frequency
 
     @property
     def start(self) -> date:
         """The start of the first Period, or the anchor of an empty sequence."""
-        return self._periods[0].start if self._periods else self._step(0)
+        return self._periods[0].start if self._periods else self._boundary(0)
 
     @property
     def end(self) -> date:
@@ -293,13 +269,8 @@ class Periods(Sequence[Period]):
         """The Span from the start to the end, without a name."""
         return Span(start=self.start, end=self.end)
 
-    def _step(self, index: int) -> date:
-        return offset(
-            self._anchor,
-            frequency=self._frequency,
-            count=self._first + index,
-            month_roll=self._month_roll,
-        )
+    def _boundary(self, index: int) -> date:
+        return self._steps.boundary(self._first + index)
 
     def __len__(self) -> int:
         return len(self._periods)
@@ -323,26 +294,22 @@ class Periods(Sequence[Period]):
 
     def _slice(self, start: int, stop: int) -> Periods:
         return Periods._of(
-            self._periods[start:stop],
-            frequency=self._frequency,
-            month_roll=self._month_roll,
-            anchor=self._anchor,
-            first=self._first + start,
+            self._periods[start:stop], steps=self._steps, first=self._first + start
         )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Periods):
             return NotImplemented
-        return self._frequency is other._frequency and self._periods == other._periods
+        return self.frequency is other.frequency and self._periods == other._periods
 
     __hash__ = None  # type: ignore[assignment]
 
     def __repr__(self) -> str:
         if not self._periods:
-            return f"Periods(frequency={self._frequency.value}, count=0)"
+            return f"Periods(frequency={self.frequency.value}, count=0)"
         return (
             f"Periods(start={self.start.isoformat()}, end={self.end.isoformat()}, "
-            f"frequency={self._frequency.value}, count={len(self)})"
+            f"frequency={self.frequency.value}, count={len(self)})"
         )
 
     def trim(self, *, span: Period) -> Periods:
@@ -365,18 +332,11 @@ class Periods(Sequence[Period]):
         """Return these Periods with ``count`` more steps at the end."""
         if type(count) is not int or count < 0:
             raise ValueError("count must be a nonnegative integer")
-        if self._periods and self._periods[-1].end != self._step(len(self)):
+        if self._periods and self._periods[-1].end != self._boundary(len(self)):
             raise ValueError("cannot extend Periods that end with a partial Period")
-        total = len(self) + count
-        periods = tuple(
-            make_period(self._step(i), self._step(i + 1)) for i in range(total)
-        )
+        stop = self._first + len(self) + count
         return Periods._of(
-            periods,
-            frequency=self._frequency,
-            month_roll=self._month_roll,
-            anchor=self._anchor,
-            first=self._first,
+            self._steps.periods(self._first, stop), steps=self._steps, first=self._first
         )
 
     def containing(self, *, on: date) -> Period:
@@ -388,61 +348,6 @@ class Periods(Sequence[Period]):
         raise MissingReferenceError(
             on.isoformat(), kind="Period", by="date", where=repr(self)
         )
-
-
-def make_period(start: date, end: date) -> Period:
-    """Construct a positive interval; convert old inclusive end dates explicitly."""
-    return Period(
-        start=require_date(start),
-        end=require_date(end),
-    )
-
-
-def make_periods(
-    start: date,
-    *,
-    frequency: Frequency,
-    count: int,
-    month_roll: MonthRoll = MonthRoll.PRESERVE_END,
-) -> tuple[Period, ...]:
-    """Create adjacent periods using cumulative offsets from the original anchor."""
-    require_date(start)
-    require_frequency(frequency)
-    require_month_roll(month_roll)
-    if type(count) is not int or count < 0:
-        raise ValueError("period count must be a nonnegative integer")
-    boundaries = [
-        offset(start, frequency=frequency, count=i, month_roll=month_roll)
-        for i in range(count + 1)
-    ]
-    return tuple(make_period(a, b) for a, b in pairwise(boundaries))
-
-
-def periods_between(
-    start: date,
-    end: date,
-    *,
-    frequency: Frequency,
-    include_partial: bool = False,
-    month_roll: MonthRoll = MonthRoll.PRESERVE_END,
-) -> tuple[Period, ...]:
-    """Partition an interval; require explicit permission for a partial final period."""
-    if elapsed_days(start, end) < 0:
-        raise ValueError("end precedes start")
-    require_frequency(frequency)
-    require_month_roll(month_roll)
-    if type(include_partial) is not bool:
-        raise TypeError("include_partial must be a Boolean")
-    count = count_steps(start, end, frequency=frequency, month_roll=month_roll)
-    result = make_periods(
-        start, frequency=frequency, count=count, month_roll=month_roll
-    )
-    previous = result[-1].end if result else start
-    if previous < end:
-        if not include_partial:
-            raise ValueError("span contains a partial final period")
-        result += (make_period(previous, end),)
-    return result
 
 
 def cover(periods: Sequence[Period], *, name: str | None = None) -> Span:

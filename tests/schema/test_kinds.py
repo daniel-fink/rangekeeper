@@ -109,8 +109,8 @@ def test_generated_slots_match_the_packaged_artifact_and_children_are_cached():
     assert {kind: slots_for(kind) for kind in _TYPES} == {
         kind: packaged[kind] for kind in _TYPES
     }
-    periods = rk.duration.make_periods(
-        date(2026, 1, 1), frequency=rk.duration.Frequency.MONTH, count=3
+    periods = rk.duration.Periods(
+        start=date(2026, 1, 1), frequency=rk.duration.Frequency.MONTH, count=3
     )
     flow = rk.flow.Flow.from_periods(periods, [1.0, 2.0, 3.0], units="USD")
     assert flow.movements is flow.movements

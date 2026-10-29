@@ -35,26 +35,26 @@ def test_never_is_a_one_member_enum_and_not_missing():
     ],
 )
 def test_shift_by_a_whole_calendar_length(by, expected):
-    assert shift(START, by=by) == expected
+    assert shift(on=START, by=by) == expected
 
 
 def test_a_month_step_keeps_the_last_day_of_a_month():
-    assert shift(date(2027, 1, 31), by="1 month") == date(2027, 2, 28)
-    assert shift(date(2027, 2, 28), by="1 month") == date(2027, 3, 31)
-    assert shift(date(2027, 1, 30), by="1 month") == date(2027, 2, 28)
+    assert shift(on=date(2027, 1, 31), by="1 month") == date(2027, 2, 28)
+    assert shift(on=date(2027, 2, 28), by="1 month") == date(2027, 3, 31)
+    assert shift(on=date(2027, 1, 30), by="1 month") == date(2027, 2, 28)
 
 
 def test_never_shifted_is_never():
-    assert shift(NEVER, by="1 year") is NEVER
-    assert shift(NEVER, by="-3 months") is NEVER
+    assert shift(on=NEVER, by="1 year") is NEVER
+    assert shift(on=NEVER, by="-3 months") is NEVER
 
 
 @pytest.mark.parametrize("by", ["1.5 years", "1 AUD", "2", "1 hour"])
 def test_a_length_is_a_whole_number_of_calendar_steps(by):
     with pytest.raises(UnitError):
-        shift(START, by=by)
+        shift(on=START, by=by)
     with pytest.raises(UnitError):
-        shift(NEVER, by=by)
+        shift(on=NEVER, by=by)
 
 
 @pytest.mark.parametrize("value", [None, "2027-01-01", 2027, datetime(2027, 1, 1)])
@@ -62,9 +62,15 @@ def test_a_date_value_is_a_calendar_date_or_never(value):
     with pytest.raises(TypeError):
         require_date_value(value)
     with pytest.raises(TypeError):
-        shift(value, by="1 year")
+        shift(on=value, by="1 year")
 
 
 def test_never_is_later_than_every_date():
     assert sorted([NEVER, date.max, START], key=order) == [START, date.max, NEVER]
     assert order(NEVER) == order(NEVER)
+
+
+def test_shift_names_its_arguments_and_its_types_are_public():
+    with pytest.raises(TypeError):
+        shift(START, by="1 year")
+    assert rk.duration.DateValue == date | Never

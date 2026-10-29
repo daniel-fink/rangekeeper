@@ -11,7 +11,7 @@ from datetime import date
 from typing import Any, cast
 from uuid import UUID, uuid4, uuid5
 
-from rangekeeper.duration import Frequency, PeriodTiming, make_periods
+from rangekeeper.duration import Frequency, Periods, PeriodTiming
 from rangekeeper.errors import MissingReferenceError
 from rangekeeper.flow import Flow
 from rangekeeper.model import (
@@ -37,9 +37,7 @@ from rangekeeper.model.expression.authoring import (
     power,
     reference,
 )
-from rangekeeper.model.expression.authoring import (
-    sum as expression_sum,
-)
+from rangekeeper.model.expression.authoring import sum as expression_sum
 from rangekeeper.model.formulation import declare
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.records import Assignment
@@ -201,7 +199,7 @@ def author(
         )
     if len(selected) != len(set(selected)):
         raise ValueError("duplicate contributor")
-    periods = make_periods(date(2001, 1, 1), frequency=Frequency.YEAR, count=11)
+    periods = Periods(start=date(2001, 1, 1), frequency=Frequency.YEAR, count=11)
     namespace = uuid4()
     measures = {}
     for key, unit in [

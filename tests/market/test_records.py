@@ -8,7 +8,7 @@ from uuid import UUID
 import numpy as np
 import pytest
 
-from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.duration import Frequency, Periods
 from rangekeeper.market import Market
 from rangekeeper.market import generation as market
 from rangekeeper.model import Binding, Distribution, Metadata, Model
@@ -32,7 +32,7 @@ def plan(**kwargs):
     return market.make_plan(
         id=UUID(int=18),
         seed=12345,
-        periods=make_periods(date(2021, 1, 1), frequency=Frequency.YEAR, count=6),
+        periods=Periods(start=date(2021, 1, 1), frequency=Frequency.YEAR, count=6),
         **kwargs,
     )
 

@@ -469,7 +469,7 @@ assert display_stream.to_frame()['Receipts'].to_list() == [0, None] + [None] * 1
 from rangekeeper.duration import Span, Frequency
 from rangekeeper.quantity import Quantity
 from rangekeeper import profile
-periods = Span.from_duration(name='Forecast', start=date(2026, 1, 1), frequency=Frequency.YEAR, count=2).periods(frequency=Frequency.YEAR)
+periods = Span(name='Forecast', start=date(2026, 1, 1), length='2 years').periods(frequency=Frequency.YEAR)
 assert [m.number for m in Flow.from_profile(profile=profile.Compounding(rate='2 % pa'), periods=periods, initial=Quantity(magnitude=100, units='AUD')).movements] == [100, 102]
 assert Flow.from_profile(profile=profile.SCurve(), periods=periods, total='100 AUD').total().magnitude == 100
 table = Table(columns=('code', 'status', 'value'), rows=({'code': '001', 'status': 'NA', 'value': None},))

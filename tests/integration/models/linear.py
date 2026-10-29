@@ -1,7 +1,7 @@
 """Readable known-data DCF composition using canonical Flow content."""
 
 from rangekeeper import profile
-from rangekeeper.duration import Frequency, PeriodTiming, make_periods, offset
+from rangekeeper.duration import Frequency, Periods, PeriodTiming, offset
 from rangekeeper.finance import financial
 from rangekeeper.flow import AlignmentJoin, Flow, MissingValueHandling
 from rangekeeper.quantity import Quantity
@@ -14,8 +14,8 @@ class Model:
     def __init__(self, params: dict):
         units = params["units"]
         frequency = Frequency(params["frequency"])
-        periods = make_periods(
-            offset(params["start_date"], frequency=Frequency.YEAR),
+        periods = Periods(
+            start=offset(params["start_date"], frequency=Frequency.YEAR),
             frequency=frequency,
             count=params["num_periods"] + 1,
         )
@@ -48,8 +48,8 @@ class Model:
         self.pv_sums = financial.calculate_pv(
             self.ncf_disposition, rate=params["discount_rate"]
         )
-        acquisition_period = make_periods(
-            params["start_date"], frequency=Frequency.YEAR, count=1
+        acquisition_period = Periods(
+            start=params["start_date"], frequency=Frequency.YEAR, count=1
         )
         self.acquisition = Flow.from_periods(
             acquisition_period, (-abs(params["acquisition_price"]),), units=units

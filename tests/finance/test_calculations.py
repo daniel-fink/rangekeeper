@@ -13,8 +13,8 @@ from rangekeeper import Model, profile
 from rangekeeper.duration import (
     DayCount,
     Frequency,
-    make_period,
-    make_periods,
+    Period,
+    Periods,
     offset,
     year_fraction,
 )
@@ -50,7 +50,7 @@ from tests.streams import lines
 
 def annual(values, *, units="AUD"):
     return Flow.from_periods(
-        make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=len(values)),
+        Periods(start=date(2020, 1, 1), frequency=Frequency.YEAR, count=len(values)),
         values,
         units=units,
     )
@@ -193,14 +193,14 @@ def test_model_flow_content_store_and_stream():
     ],
 )
 def test_calendar_frequencies(frequency, count, end):
-    periods = make_periods(
-        date(2020, 1, 1), frequency=Frequency(frequency), count=count
+    periods = Periods(
+        start=date(2020, 1, 1), frequency=Frequency(frequency), count=count
     )
     assert periods[-1].end == end and periods[0].end == periods[1].start
 
 
 def test_month_anchor_and_leap_year():
-    periods = make_periods(date(2020, 1, 31), frequency=Frequency.MONTH, count=2)
+    periods = Periods(start=date(2020, 1, 31), frequency=Frequency.MONTH, count=2)
     assert periods[0].end == date(2020, 2, 29)
     assert periods[1].end == date(2020, 3, 31)
     assert offset(date(2020, 3, 31), frequency=Frequency.MONTH, count=-1) == date(
@@ -225,7 +225,9 @@ def test_duplicate_events_order_and_periods():
     with pytest.raises(ValueError):
         Flow.from_events([date(2021, 1, 1), today], [1, 2], units="m")
     with pytest.raises(ValueError):
-        Flow.from_periods([make_period(today, date(2020, 2, 1))] * 2, [1, 2], units="m")
+        Flow.from_periods(
+            [Period(start=today, end=date(2020, 2, 1))] * 2, [1, 2], units="m"
+        )
 
 
 def test_units_and_factor_product():
@@ -254,7 +256,7 @@ def test_units_and_factor_product():
 
 
 def test_explicit_calendar_integration():
-    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
+    periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
     rates = Flow.from_periods(periods, [3660, 3660], units="AUD/year")
     assert [
         s.number
@@ -306,7 +308,7 @@ def test_resample_complete_calendar_and_explicit_reduction():
         [10, 20, 40],
         units="dwelling",
     )
-    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
+    periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
     with pytest.raises(ValueError):
         lines([flow]).resample(periods=periods, method=ResampleMethod.SUM)
     result = lines([flow]).resample(
@@ -361,7 +363,7 @@ def test_profile_and_partition_invariants():
     assert profile.pad(
         [2, 3], before=1, after=2, left=PaddingMode.UNITIZE, right=PaddingMode.EXTEND
     ) == (1, 2, 3, 3, 3)
-    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=7)
+    periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=7)
     flow = Flow.from_profile(
         profile=profile.SCurve(distribution=Distribution.pert()),
         periods=periods,
@@ -419,11 +421,11 @@ def test_dynamics_fixed_inputs():
 
 
 def test_weighted_rates_and_partial_period_helpers():
-    from rangekeeper.duration import cover, periods_between
+    from rangekeeper.duration import Span, cover
 
-    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
+    periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
     rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
-    target = (make_period(date(2020, 1, 1), date(2020, 3, 1)),)
+    target = (Period(start=date(2020, 1, 1), end=date(2020, 3, 1)),)
     with pytest.raises(ValueError, match="weighting"):
         rates.resample(periods=target, method=ResampleMethod.MEAN)
     result = rates.resample(
@@ -442,14 +444,13 @@ def test_weighted_rates_and_partial_period_helpers():
     )
     assert cover(periods).end == periods[-1].end
     with pytest.raises(ValueError, match="partial"):
-        periods_between(date(2020, 1, 1), date(2020, 2, 2), frequency=Frequency.MONTH)
+        Span(start=date(2020, 1, 1), end=date(2020, 2, 2)).periods(
+            frequency=Frequency.MONTH
+        )
     assert (
         len(
-            periods_between(
-                date(2020, 1, 1),
-                date(2020, 2, 2),
-                frequency=Frequency.MONTH,
-                include_partial=True,
+            Span(start=date(2020, 1, 1), end=date(2020, 2, 2)).periods(
+                frequency=Frequency.MONTH, include_partial=True
             )
         )
         == 2

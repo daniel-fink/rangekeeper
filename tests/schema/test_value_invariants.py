@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.duration import Frequency, Period, Span, make_periods
+from rangekeeper.duration import Frequency, Period, Periods, Span
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model import Distribution, DistributionFamily, Value, ValueKind
 from rangekeeper.shared.errors import ValidationError
@@ -66,7 +66,7 @@ def test_a_flow_is_ordered_with_unique_ids(movements, message):
 
 
 def test_overlapping_periods_are_rejected():
-    periods = make_periods(DAY, frequency=Frequency.MONTH, count=2)
+    periods = Periods(start=DAY, frequency=Frequency.MONTH, count=2)
     flow = Flow.from_periods(periods, [1, 2], units="AUD")
     with pytest.raises(ValidationError, match="overlap or are out of order"):
         flow.replace(movements=tuple(reversed(flow.movements)))

@@ -16,9 +16,9 @@ from rangekeeper import Model, profile
 from rangekeeper.duration import (
     Frequency,
     MonthRoll,
+    Period,
+    Periods,
     PeriodTiming,
-    make_period,
-    make_periods,
     offset,
 )
 from rangekeeper.duration.calendar import elapsed_days
@@ -66,7 +66,7 @@ def test_month_end_is_explicit_and_period_end_is_exclusive():
         count=3,
         month_roll=MonthRoll.PRESERVE_END,
     ) == date(2020, 5, 31)
-    period = make_period(date(2020, 2, 1), date(2020, 3, 1))
+    period = Period(start=date(2020, 2, 1), end=date(2020, 3, 1))
     assert period.end - timedelta(days=1) == date(2020, 2, 29)
     assert elapsed_days(period.start, period.end) == 29
 
@@ -86,14 +86,14 @@ def test_flow_construction_detachment_and_negation():
 
 
 def test_allocation_and_annual_resampling_preserve_total():
-    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
+    periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
     flow = Flow.from_profile(
         profile=profile.Uniform(),
         periods=periods,
         total=Quantity(magnitude=100, units="AUD"),
     )
     assert amounts(flow) == pytest.approx((4,) * 25)
-    years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
+    years = Periods(start=date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
     reduced = flow.negate().resample(periods=years, method=ResampleMethod.SUM)
     assert amounts(reduced) == pytest.approx((-48, -48, -4))
     assert reduced.total().number == pytest.approx(-100)
@@ -107,21 +107,21 @@ def test_resampling_uses_declared_calendar_bins(frequency):
         units="meter",
     )
     count = {"day": 91, "month": 3, "quarter": 1, "year": 1}[frequency]
-    periods = make_periods(
-        date(2020, 1, 1), frequency=Frequency(frequency), count=count
+    periods = Periods(
+        start=date(2020, 1, 1), frequency=Frequency(frequency), count=count
     )
     result = source.resample(
         periods=periods, method=ResampleMethod.SUM, missing=MissingValueHandling.ZERO
     )
     assert result.total().magnitude == 6
-    assert tuple(m.period for m in result.movements) == periods
+    assert tuple(m.period for m in result.movements) == tuple(periods)
 
 
 def test_sampling_is_explicit_before_allocation():
     spec = Distribution.pert(lower=2, upper=8, mode=5, weighting=4, units="AUD")
     draws = spec.sample(size=20, generator=np.random.default_rng(23))
     assert all(2 <= x <= 8 for x in draws)
-    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
+    periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
     for amount in draws:
         flow = Flow.from_profile(
             profile=profile.Uniform(),
@@ -136,8 +136,8 @@ def test_stream_selection_and_mixed_frequency_totals():
     flows = [
         Flow.from_profile(
             profile=profile.Uniform(),
-            periods=make_periods(
-                date(2020, 1, 1),
+            periods=Periods(
+                start=date(2020, 1, 1),
                 frequency=Frequency(freq),
                 count=count,
             ),
@@ -168,7 +168,7 @@ def test_stream_selection_and_mixed_frequency_totals():
     stream = Stream.from_values(model, tuple(v.id for v in values))
     assert stream.merge(stream).values == stream.values
     assert stream.select(value_ids=(values[1].id,)).values == (values[1],)
-    years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
+    years = Periods(start=date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
     # Weekly coverage can cross a calendar-year boundary. Select payment timing
     # explicitly; a bounded coverage interval must not be assigned by accident.
     with pytest.raises(ValueError, match="crosses"):
@@ -193,7 +193,7 @@ def test_stream_selection_and_mixed_frequency_totals():
 
 
 def test_product_preserves_units_and_explicit_exposure_removes_time():
-    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=1)
+    periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=1)
     rate = Flow.from_periods(periods, (math.pi,), units="AUD/meter**2/month")
     factor = Flow.from_periods(periods, (2,), units="dimensionless")
     product = rate.multiply(factor)
