@@ -2,11 +2,12 @@
 
 import json
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
 from uuid import uuid4
 
 import pytest
 
-from rangekeeper.duration import Frequency, Period, Periods, Span
+from rangekeeper.duration import DayCount, Frequency, Period, Periods, Span
 from rangekeeper.flow import (
     Flow,
     MissingValueHandling,
@@ -14,6 +15,7 @@ from rangekeeper.flow import (
     ResampleMethod,
     Stream,
 )
+from rangekeeper.money import RoundingMode
 from rangekeeper.quantity import Quantity
 from rangekeeper.shared.errors import ValidationError
 from tests.streams import lines
@@ -82,18 +84,18 @@ def test_exposure_is_an_explicit_operation_without_a_rate_classification():
     area = length.integrate(exposures=[Quantity(magnitude=3, units="m")], units="m**2")
     assert area.movements[0].magnitude == 6
     assert length.movements[0].magnitude == 2
-    with pytest.raises(ValueError, match="exposures or day_count"):
-        length.integrate()
+    with pytest.raises(ValueError, match="exposure count"):
+        length.integrate(exposures=[])
+    with pytest.raises(ValueError, match="bounded periods"):
+        length.integrate_time(day_count=DayCount.ACTUAL_365)
 
 
 @pytest.mark.parametrize("reduction", ["sum", "last", "mean"])
 def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
     periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
     flow = Flow.from_periods(periods[:2], [10, None], units="AUD")
-    result = lines([flow]).resample(
-        periods=periods,
-        method=ResampleMethod(reduction),
-        missing=MissingValueHandling.ZERO,
+    result = lines([flow], missing=MissingValueHandling.ZERO).resample(
+        periods=periods, method=ResampleMethod(reduction)
     )
     assert [s.magnitude for s in result.flows[0].movements] == [10, None, 0]
     assert result.coverage["0"] == (1, 0, 0)
@@ -107,3 +109,60 @@ def test_flow_and_stream_trim_take_the_same_span():
     assert flow.trim(span=span) == Stream(flows={"a": flow}).trim(span=span).flows[0]
     with pytest.raises(TypeError, match="Period or Span"):
         flow.trim(span=(periods[1].start, periods[2].end))
+
+
+def test_total_and_collapse_take_every_missing_policy():
+    days = [date(2026, 1, 1), date(2026, 1, 2)]
+    partial = Flow.from_events(days, [5, None], units="AUD")
+    unknown = Flow.from_events(days, [None, None], units="AUD")
+    with pytest.raises(ValueError, match="unresolved"):
+        partial.total()
+    assert partial.total(missing=MissingValueHandling.PROPAGATE) is None
+    assert partial.total(missing=MissingValueHandling.SKIP).number == 5
+    assert partial.total(missing=MissingValueHandling.ZERO).number == 5
+    assert unknown.total(missing=MissingValueHandling.SKIP) is None
+    assert unknown.total(missing=MissingValueHandling.ZERO).number == 0
+    collapsed = unknown.collapse(on=days[0], missing=MissingValueHandling.ZERO)
+    assert collapsed.movements[0].number == 0
+
+
+def test_multiply_and_scale_follow_the_operator():
+    days = [date(2026, 1, 1), date(2026, 1, 2)]
+    claim = uuid4()
+    rates = Flow.from_events(days, [2, None], units="AUD/day")
+    rates = rates.replace(
+        movements=tuple(m.replace(claims=(claim,)) for m in rates.movements)
+    )
+    factors = Flow.from_events(days, [50, 10], units="percent")
+    product = rates.multiply(factors)
+    assert product == rates * factors
+    assert [m.magnitude for m in product.movements] == [1, None]
+    assert product.movements[0].claims == (claim,)
+    assert rates.scale(3) == 3 * rates
+    with pytest.raises(TypeError, match="number"):
+        rates.scale("3")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="Flows"):
+        rates.multiply(2)  # type: ignore[arg-type]
+
+
+def test_rounding_mode_is_an_enum_of_the_decimal_constants():
+    flow = Flow.from_events([date(2026, 1, 1)], ["0.125"], units="AUD")
+    assert flow.round().movements[0].magnitude == Decimal("0.12")
+    rounded = flow.round(mode=RoundingMode.HALF_UP)
+    assert rounded.movements[0].magnitude == Decimal("0.13")
+    assert RoundingMode.HALF_UP == ROUND_HALF_UP
+
+
+def test_select_values_and_with_policy():
+    flow = Flow.from_events([date(2026, 1, 1)], [None], units="AUD")
+    stream = Stream(flows={"a": flow, "b": flow})
+    with pytest.raises(KeyError):
+        stream.select_values([uuid4()])
+    with pytest.raises(ValueError, match="at least one"):
+        stream.select()
+    skipping = stream.with_policy(missing=MissingValueHandling.SKIP)
+    assert skipping.missing is MissingValueHandling.SKIP
+    assert skipping.join is stream.join
+    assert skipping.sum().movements[0].magnitude is None
+    with pytest.raises(ValueError, match="unresolved"):
+        stream.sum()

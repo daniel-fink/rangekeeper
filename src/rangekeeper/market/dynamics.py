@@ -4,6 +4,7 @@ import math
 from collections.abc import Sequence
 
 from rangekeeper.profile import GrowthMethod, grow_values
+from rangekeeper.shared.errors import ContractError, NumericalError
 
 
 def calculate_trend(
@@ -37,16 +38,20 @@ def calculate_cycle(
     Restrict shear to (-1, 1) so the implicit equation has a unique root. The
     bisection interval follows the sine bound and iteration count is finite.
     """
-    if (
-        type(count) is not int
-        or count < 0
-        or period <= 0
-        or not -1 < asymmetry < 1
-        or not 0 < tolerance < 1
-    ):
-        raise ValueError("invalid cycle parameters")
+    if type(count) is not int:
+        raise TypeError("count must be an int")
     if not all(math.isfinite(x) for x in (period, phase, amplitude, asymmetry)):
-        raise ValueError("cycle parameters must be finite")
+        raise ContractError("cycle parameters must be finite")
+    if count < 0 or period <= 0 or not -1 < asymmetry < 1 or not 0 < tolerance < 1:
+        raise ContractError(
+            "invalid cycle parameters",
+            values={
+                "count": count,
+                "period": period,
+                "asymmetry": asymmetry,
+                "tolerance": tolerance,
+            },
+        )
     values = []
     for i in range(count):
         angle = (i - phase) * 2 * math.pi / period
@@ -72,7 +77,7 @@ def calculate_autoregression(
 ) -> tuple[float, ...]:
     """Add each innovation to the parameter times the previous value (AR(1))."""
     if not math.isfinite(parameter) or any(not math.isfinite(x) for x in innovations):
-        raise ValueError("autoregression inputs must be finite")
+        raise ContractError("autoregression inputs must be finite")
     values: list[float] = []
     for innovation in innovations:
         values.append(innovation + (parameter * values[-1] if values else 0))
@@ -90,7 +95,9 @@ def accumulate_volatility(
     if len(trend) != len(returns) or not all(
         math.isfinite(x) for x in (*trend, *returns, growth_rate, mean_reversion)
     ):
-        raise ValueError("volatility inputs must be finite and have matching lengths")
+        raise ContractError(
+            "volatility inputs must be finite and have matching lengths"
+        )
     result: list[float] = []
     for i, level in enumerate(trend):
         result.append(
@@ -100,7 +107,7 @@ def accumulate_volatility(
             + mean_reversion * (trend[i - 1] - result[-1])
         )
     if any(not math.isfinite(x) for x in result):
-        raise ValueError("volatility accumulation overflowed")
+        raise NumericalError("volatility accumulation overflowed")
     return tuple(result)
 
 
@@ -121,9 +128,12 @@ def calculate_shock(
         or not 0 <= dissipation <= 1
         or not math.isfinite(impact)
     ):
-        raise ValueError("invalid shock parameters")
+        raise ContractError(
+            "invalid shock parameters",
+            values={"likelihood": likelihood, "dissipation": dissipation},
+        )
     if any(not math.isfinite(x) or not 0 <= x <= 1 for x in events):
-        raise ValueError("event draws must lie in [0, 1]")
+        raise ContractError("event draws must lie in [0, 1]")
     first = next((i for i, event in enumerate(events) if event < likelihood), None)
     return tuple(
         0.0 if first is None or i < first else impact * (1 - dissipation) ** (i - first)

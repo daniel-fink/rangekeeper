@@ -8,6 +8,7 @@ dependency. ``Pivot.display()`` returns a ``PivotTable``. Stream tables are in
 from dataclasses import dataclass
 
 from rangekeeper.flow._table import render
+from rangekeeper.shared.errors import ContractError
 
 
 @dataclass(frozen=True)
@@ -22,8 +23,12 @@ class PivotTable:
     precision: int = 2
 
     def __post_init__(self):
-        if type(self.precision) is not int or not 0 <= self.precision <= 12:
-            raise ValueError("precision must be an integer from 0 to 12")
+        if type(self.precision) is not int:
+            raise TypeError("precision must be an int")
+        if not 0 <= self.precision <= 12:
+            raise ContractError(
+                "precision must be from 0 to 12", values={"precision": self.precision}
+            )
 
     def _cells(self):
         from rangekeeper.quantity import Quantity
@@ -51,7 +56,9 @@ class PivotTable:
             for item in pivot.columns:
                 value = pivot.value(id, item)
                 if value is not None and not isinstance(value, Quantity):
-                    raise TypeError("display requires scalar Quantity cells")
+                    raise ContractError(
+                        "display shows Quantity cells; this Pivot holds Flows"
+                    )
                 if not pivot.coverage(id, item).selected:
                     cells.append("—")
                 elif value is None:

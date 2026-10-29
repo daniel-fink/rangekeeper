@@ -40,6 +40,7 @@ from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
     MissingReferenceError,
+    ReferenceTypeError,
     UnsupportedVersionError,
 )
 from rangekeeper.shared.references import SpecificationResolver
@@ -422,8 +423,7 @@ class Model:
         """
         text = require_text(path, "key")
         if "." in text:
-            code, key = text.split(".", 1)
-            return self.value(owner=self.entity(code=code).id, key=key)
+            return self._value_on_path(text)
         owners = [
             owner
             for kind, owner, key in self._keys
@@ -448,6 +448,37 @@ class Model:
             candidates=get_close_matches(text, keys, n=3),
         )
 
+    def _value_on_path(self, path: str) -> Value:
+        """Return the Value at a dotted path; no match raises MissingReferenceError.
+
+        The error has ``by="path"`` and the whole path, and its candidates are
+        the nearest dotted paths of the revision.
+        """
+        code, key = path.split(".", 1)
+        owners = [
+            record.id
+            for record in self._index.records.values()
+            if isinstance(record, Entity) and record.code == code
+        ]
+        identity = self._keys.get((Value, owners[0], key)) if len(owners) == 1 else None
+        if identity is not None:
+            return cast(Value, self._index.records[identity])
+        if len(owners) > 1:
+            # Several Entities have the code: the code names no single owner.
+            self.entity(code=code)
+        paths = sorted(
+            f"{self._path(owner)}.{name}"
+            for kind, owner, name in self._keys
+            if kind is Value and owner is not None
+        )
+        raise MissingReferenceError(
+            path,
+            kind="Value",
+            by="path",
+            where=self._index.where,
+            candidates=get_close_matches(path, paths, n=3),
+        )
+
     def _path(self, owner: UUID) -> str:
         """Return the code of an owner, or its UUID when it has no code."""
         return getattr(self._index.records[owner], "code", None) or str(owner)
@@ -462,7 +493,11 @@ class Model:
             raise TypeError("reference must be a Reference")
         record = self._index.get(reference.target, Record)
         if not isinstance(record, (Value, Movement)):
-            raise TypeError("reference must target a Value or Movement")
+            raise ReferenceTypeError(
+                f"{reference.target} is a {type(record).__name__}, not a Value or "
+                "Movement",
+                targets=(reference.target,),
+            )
         return record
 
     def formulation(self, id: UUID) -> Formulation:

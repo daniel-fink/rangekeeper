@@ -137,9 +137,9 @@ stream.select("PGI", "OPEX").sum(), stream.trim(span=span), stream.display()
 flow.split(frequency=rk.duration.Frequency.QUARTER)  # #103, #405
 flow.resample(frequency=yearly, method=rk.flow.ResampleMethod.SUM)  # #103
 growth = rk.profile.Compounding(rate="2 % pa")  # G70
-pgi = rk.flow.Flow.from_profile(
-    profile=growth, periods=years, initial="100 USD", base=None, start=None, every=None
-)
+pgi = rk.flow.Flow.from_profile(profile=growth, periods=years, initial="100 USD")
+# Growth options (base, start, every) go on the profile, not on from_profile (#406):
+rk.profile.Compounding(rate="2 % pa", base=None, start=None, every=None)
 fees = rk.flow.Flow.from_profile(
     profile=rk.profile.SCurve(), periods=build, total="3e6 AUD"
 )

@@ -28,9 +28,10 @@ invalid argument types raise `TypeError`.
 Supplied row IDs must be UUIDs and unique. Ordinary Tables can mix identified and
 unidentified rows. A Table never invents IDs or derives them from current positions.
 `Table.row(uuid)` returns the stored identified Row; it raises `TypeError` for a
-non-UUID and `KeyError` for an absent UUID. `Table.column(name)` preserves row order
-and raises `KeyError` for an unknown column. Identity is metadata, never an implicit
-column.
+non-UUID and `MissingReferenceError` for an absent UUID. `Table.column(name)`
+preserves row order and raises `MissingReferenceError` with the nearest column
+names for an unknown column. `MissingReferenceError` is a `LookupError`, not a
+`KeyError`. Identity is metadata, never an implicit column.
 
 Construction reuses a supplied Row when its columns already match in order.
 Otherwise it creates a Row in the Table's column order without changing the input.

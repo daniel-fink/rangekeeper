@@ -22,7 +22,7 @@ from rangekeeper.flow import Flow
 from rangekeeper.money import is_currency
 from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.schema import records
-from rangekeeper.shared.errors import NumericalError, UnitError
+from rangekeeper.shared.errors import ContractError, NumericalError, UnitError
 from rangekeeper.shared.optional import requires
 
 # The unit of one step of each Frequency that a payment can be per.
@@ -46,7 +46,9 @@ def _rate(rate: Quantity | str) -> float:
     """Return an effective rate per year, such as ``"7 % pa"``, as a number."""
     value = default_units.convert(_quantity(rate, "rate"), to="pa").number
     if not math.isfinite(value) or value <= -1:
-        raise ValueError("rate must be finite and greater than -100 % pa")
+        raise ContractError(
+            "rate must be finite and greater than -100 % pa", values={"rate": value}
+        )
     return value
 
 
@@ -55,7 +57,7 @@ def _dates(flow: Flow, timing: PeriodTiming) -> list[date]:
         raise TypeError("flow must be a Flow")
     if not isinstance(timing, PeriodTiming):
         raise TypeError("timing must be a PeriodTiming")
-    flow.check(resolved=True)
+    flow.require_resolved()
     return [movement.resolve(timing=timing) for movement in flow.movements]
 
 
@@ -173,9 +175,10 @@ def payment(
     if not is_currency(amount.units):
         raise UnitError(f"principal must be a currency amount, not {amount.units!r}")
     if frequency not in _PER:
-        raise ValueError(
+        raise ContractError(
             f"payments per {frequency.value} have no unit; use day, week, month, "
-            "quarter or year"
+            "quarter or year",
+            values={"frequency": frequency.value},
         )
     count = _periods(term, frequency)
     days, months = frequency.step

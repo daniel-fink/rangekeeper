@@ -5,7 +5,8 @@ import pytest
 import rangekeeper as rk
 from rangekeeper.execution import Outcome, Status
 from rangekeeper.flow import Stream
-from rangekeeper.shared.errors import MissingReferenceError
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError, MissingReferenceError
 from tests.execution.test_temporal_execution import investigate, oracle
 
 pytest.importorskip("pyomo")
@@ -28,8 +29,9 @@ def test_a_case_outcome_has_the_key_of_its_case():
     with pytest.raises(MissingReferenceError) as error:
         outcome.case(key="middle")
     assert error.value.candidates == ("low", "high")
-    with pytest.raises(TypeError, match="leaf"):
+    with pytest.raises(ContractError) as error:
         low.case(key="low")
+    assert error.value.code is Code.BATCH_REQUIRED
     # A Specification without a name gives an Outcome without a key.
     assert rk.execution.solve(specification=base).key is None
 
@@ -60,10 +62,12 @@ def test_a_stream_holds_the_solved_flows_by_key():
     assert isinstance(stream, Stream)
     assert stream.names == ("cash", "discounted")
     assert stream.flows[0] == low["cash"]
-    with pytest.raises(TypeError, match="batch"):
+    with pytest.raises(ContractError) as error:
         outcome.stream("cash")
-    with pytest.raises(TypeError, match="not a Flow"):
+    assert error.value.code is Code.BATCH_UNSUPPORTED
+    with pytest.raises(ContractError, match="not a Flow") as error:
         low.stream("pv")
+    assert error.value.values == {"key": "pv"}
     with pytest.raises(TypeError, match="at least one"):
         low.stream()
 

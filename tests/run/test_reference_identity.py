@@ -128,7 +128,10 @@ def test_global_identity_requires_an_independent_copy_for_another_value():
 
 def test_constructor_ids_are_explicit_but_decoders_never_invent_them():
     identity = uuid4()
-    flow = Flow.from_events([date(2027, 1, 1)], [0], units="AUD", ids=[identity])
+    flow = Flow(
+        units="AUD",
+        movements=(Movement(id=identity, date=date(2027, 1, 1), magnitude=0),),
+    )
     assert flow.movements[0].id == identity
     assert not flow.movements[0].has_field("key")
     assert Flow.from_data(flow.to_data()) == flow

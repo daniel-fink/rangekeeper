@@ -132,9 +132,9 @@ def mixed_case(legacy):
             f.resample(periods=annual, method=method, missing=Missing.SKIP)
             for f in flows.values()
         ]
-        result = Stream(flows={str(i): f for i, f in enumerate(parts)}).sum(
-            missing=Missing.SKIP
-        )
+        result = Stream(
+            flows={str(i): f for i, f in enumerate(parts)}, missing=Missing.SKIP
+        ).sum()
     else:
         result = (
             Stream(flows=flows, missing=Missing.SKIP)

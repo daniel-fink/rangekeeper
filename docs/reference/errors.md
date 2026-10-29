@@ -24,11 +24,11 @@ contract: a Run that is read back has the same code text.
 | Group | Values | Examples |
 | --- | --- | --- |
 | Structure | `structure.json`, `structure.kind`, `structure.<keyword>` for each JSON Schema keyword, and `structure.value` and `structure.rule` from the generated node checks of typed construction and `replace` | `STRUCTURE_REQUIRED`, `STRUCTURE_TYPE`. A keyword without its own member has the code `STRUCTURE` and a `keyword` value |
-| Semantic | `semantic.*` | `CONTRACT`, `UNIQUE`, `CYCLE`, `IDENTITY`, `UNITS`, `ROLE_MISSING` |
+| Semantic | `semantic.*` | `CONTRACT`, `UNIQUE`, `CYCLE`, `IDENTITY`, `UNITS`, `ROLE_MISSING`, `MODEL_MISSING` (no Model, or no pinned Model), `RESOLVER_MISSING` (a call must load included or case Specifications and has no resolver) |
 | Currency amounts | `currency_amount` (a magnitude whose type does not match its units) and `amount_digits` (more than 15 significant digits) | `CURRENCY_AMOUNT`, `AMOUNT_DIGITS` |
 | Invariants | `invariant.<kind>` for the local rules of a value type: Period, Span, Movement, Flow and Distribution | `INVARIANT_FLOW`, `INVARIANT_PERIOD` |
 | References | `reference.*` | `REFERENCE_MISSING`, `REFERENCE_AMBIGUOUS`, `REFERENCE_KIND` |
-| Batches | `batch.*` | `BATCH_MODEL` |
+| Batches | `batch.*` | `BATCH_MODEL`; `BATCH_REQUIRED` (the call reads the cases of a batch, and the Specification or Outcome has none) and `BATCH_UNSUPPORTED` (the call takes one concrete Specification or one leaf Outcome, not a batch) |
 | Hierarchies | `hierarchy.*` | `HIERARCHY_CYCLE`, `HIERARCHY_MULTIPLE_PARENTS` |
 | Equation text | `equation.*` | `EQUATION_SYNTAX` (text that does not parse), `EQUATION_FUNCTION` (a function, method or member that equation text cannot use) |
 | Alignment | `alignment.*` for Periods that do not align | `ALIGNMENT_CROSSES`, `ALIGNMENT_PARTIAL` |
@@ -152,9 +152,9 @@ fields:
 | Field | Contents |
 | --- | --- |
 | `requested` | The value that the caller gave: a UUID, code, name, key or JSON Pointer |
-| `by` | What `requested` is: `"id"`, `"code"`, `"name"`, `"key"` or `"path"` |
-| `kind` | The kind of item, for example `"Entity"`, `"Measure"` or `"document"` |
-| `where` | The document, store or owner that was searched, for example `"Model <uuid>"` |
+| `by` | What `requested` is: `"id"`, `"code"`, `"name"`, `"key"` or `"path"`. A dotted path such as `"building_a.income"` is a `"path"`, and `requested` is the whole path |
+| `kind` | The kind of item: a record or class name, such as `"Entity"`, `"Value"`, `"Movement"`, `"Specification"` or `"Outcome"`, or `"document"` for a store |
+| `where` | The document, store or owner that was searched: its kind, then its code, name or UUID when it has one, for example `"Model <uuid>"`, `"Entity building_a"`, `"Specification Front door"` or `"ModelDraft"` |
 | `candidates` | For a missing item, the nearest codes or names that exist; for an ambiguous one, the code of each match |
 
 ```python
@@ -166,11 +166,19 @@ except rk.errors.MissingReferenceError as error:
 
 An argument of the wrong Python type raises `TypeError`. Every other failure on
 a public path raises a `RangekeeperError` subclass with a `Code`: a wrong value,
-a lookup that finds nothing, data or state that is not valid. `duration`
-follows this rule. Some paths in the other layers below `model` still raise a
-plain `ValueError` or `KeyError`;
+a lookup that finds nothing, data or state that is not valid. `shared`,
+`schema`, `money`, `duration`, `finance` (`pv`, `npv`, `irr` and `payment`),
+`market.dynamics`, `model`, `specification` and the `Outcome` and comparisons of
+`execution` follow this rule: for example, `Table.column` and
+`Record.has_field` raise `MissingReferenceError`, and `Record.from_data` raises
+`ValidationError` with `structure.json` for data that is not JSON. Some paths in
+`flow` still raise a plain `ValueError` or `KeyError`;
 [#407](https://github.com/daniel-fink/rangekeeper/issues/407) changes them
-before 1.0.0b1. An optional dependency that is not installed raises
+before 1.0.0b1. The older `finance.financial` functions and the other internal
+`market` modules also raise plain errors; their replacements
+([#167](https://github.com/daniel-fink/rangekeeper/issues/167),
+[#298](https://github.com/daniel-fink/rangekeeper/issues/298)) follow the rule.
+An optional dependency that is not installed raises
 `ImportError`.
 `ValidationError` has the same name as an error in jsonschema, which the
 library uses inside; import it from `rangekeeper.errors`.

@@ -145,7 +145,7 @@ def test_model_flow_content_store_and_stream():
         system=System(entities=(entity,)),
     )
     stream = Stream.from_values(model, (a.id, b.id))
-    assert stream.select(value_ids=(b.id,)).values == (b,)
+    assert stream.select_values((b.id,)).values == (b,)
     assert len(stream.merge(stream).values) == 2
     with pytest.raises(ValueError):
         Stream.from_values(model, (a.id, a.id))
@@ -259,7 +259,7 @@ def test_explicit_calendar_integration():
     rates = Flow.from_periods(periods, [3660, 3660], units="AUD/year")
     assert [
         s.number
-        for s in rates.integrate(
+        for s in rates.integrate_time(
             day_count=DayCount.ACTUAL_ACTUAL, units="AUD"
         ).movements
     ] == pytest.approx([310, 290])
@@ -270,22 +270,22 @@ def test_missing_alignment_and_coverage():
     b = annual([2, 3, 4])
     with pytest.raises(ValueError):
         lines((a, b)).aggregate()
-    result = lines((a, b)).aggregate(missing=MissingValueHandling.PROPAGATE)
+    result = lines((a, b), missing=MissingValueHandling.PROPAGATE).aggregate()
     assert [s.magnitude for s in result.flow.movements] == [
         3,
         None,
         4,
     ] and result.coverage == (1, 0.5, 1)
     assert (
-        lines((a, b))
-        .aggregate(missing=MissingValueHandling.SKIP)
+        lines((a, b), missing=MissingValueHandling.SKIP)
+        .aggregate()
         .flow.movements[1]
         .magnitude
         == 3
     )
     assert (
-        lines((annual([None]), annual([None])))
-        .aggregate(missing=MissingValueHandling.SKIP)
+        lines((annual([None]), annual([None])), missing=MissingValueHandling.SKIP)
+        .aggregate()
         .flow.movements[0]
         .magnitude
         is None
@@ -310,8 +310,8 @@ def test_resample_complete_calendar_and_explicit_reduction():
     periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
     with pytest.raises(ValueError):
         lines([flow]).resample(periods=periods, method=ResampleMethod.SUM)
-    result = lines([flow]).resample(
-        periods=periods, method=ResampleMethod.SUM, missing=MissingValueHandling.ZERO
+    result = lines([flow], missing=MissingValueHandling.ZERO).resample(
+        periods=periods, method=ResampleMethod.SUM
     )
     assert [s.magnitude for s in result.flows[0].movements] == [
         30,

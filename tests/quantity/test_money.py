@@ -14,6 +14,7 @@ from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.schema.runtime import exact_equal
 from rangekeeper.shared.encoding import encode
 from rangekeeper.shared.errors import (
+    ContractError,
     NumericalError,
     UnitError,
     ValidationError,
@@ -181,8 +182,11 @@ def test_rounding_uses_minor_units_and_rounds_only_on_request():
     )
     assert [money.minor_unit(c) for c in ("AUD", "JPY", "KWD", "CLF")] == [2, 0, 3, 4]
     assert money.minor_unit("XAU") is None
-    with pytest.raises(ValueError, match="no minor unit"):
+    with pytest.raises(UnitError, match="no minor unit"):
         Quantity(magnitude="1.23456", units="XAU").round()
+    with pytest.raises(ContractError) as raised:
+        money.round(Decimal("1.5"), "AUD", mode="ROUND_SOMETIMES")
+    assert raised.value.values == {"mode": "ROUND_SOMETIMES"}
     assert Quantity(magnitude="1.23456", units="XAU").round(places=3).magnitude == (
         Decimal("1.235")
     )

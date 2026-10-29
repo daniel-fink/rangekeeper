@@ -21,6 +21,7 @@ from rangekeeper.model.formulation.flow import aligned, shape
 from rangekeeper.model.targets import target_value
 from rangekeeper.schema.enums import Operator
 from rangekeeper.schema.records import Expression, Formulation, Reference
+from rangekeeper.shared.errors import ContractError, UnsupportedError
 
 
 def discount(
@@ -36,10 +37,14 @@ def discount(
 
     Series and discounted identify Flow Values in compatible units.
     Rate is a scalar Reference, dimensionless per Flow step. No day-count or annualization is inferred.
-    Negative initial exponents and coordinate mismatches raise ValueError.
+    A negative initial exponent raises ContractError.
     """
-    if type(first_period) is not int or first_period < 0:
-        raise ValueError("first_period must be a nonnegative integer")
+    if type(first_period) is not int:
+        raise TypeError("first_period must be an int")
+    if first_period < 0:
+        raise ContractError(
+            "first_period must not be negative", values={"first_period": first_period}
+        )
     equations = [
         (
             m.id,
@@ -95,7 +100,7 @@ def interest(
     Enforce principal >= 0.
     """
     if nonnegative_principal is not True:
-        raise ValueError(
+        raise UnsupportedError(
             "symbolic overdraft interest is unsupported; use known-data calculation"
         )
     prepared = shape(model, principal)

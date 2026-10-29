@@ -97,7 +97,7 @@ declared `units`, or `None` for a date.
 - An entity or Assembly code is unique in the Model, and a Value key is unique
   in its entity. A second declaration raises `ContractError` with code `UNIQUE`.
 - A Value key is a Python identifier that is not a keyword or a reserved word of
-  equation text (`rx`, `rk`, `NEVER`).
+  equation text (`rx`, `rk`, `NEVER`). Another key raises `ContractError`.
 - Units must parse in the unit system of the Model; unknown units raise
   `UnitError` with suggestions. Values share one Measure for each units text: the
   draft uses a Measure with those units, or declares one whose code is the units.
@@ -107,6 +107,7 @@ declared `units`, or `None` for a date.
   have raises `AmbiguousReferenceError`.
 - An equation is equation text or an Expression record whose root is Boolean:
   an equality, a comparison, a logical operation, a Boolean literal or a call.
+  Another Expression record raises `ContractError` with the code `PREDICATE`.
   Text names the keys of its entity, and `code.key` names a key of another
   entity. Every Value or Movement that it references must be in the Model or
   the draft. Text that does not make an equation raises `EquationError` with
@@ -117,7 +118,9 @@ declared `units`, or `None` for a date.
   entity's first equation is added.
 
 A missing entity or key raises `MissingReferenceError` with the nearest codes or
-keys. A commit with no change raises `RevisionConflictError`. A failed commit
+keys. Its `where` names the owner that was searched, such as `"Entity project"`,
+or `"ModelDraft"` for the draft. A handle of another draft raises
+`ContractError`. A commit with no change raises `RevisionConflictError`. A failed commit
 leaves the draft open to correct; after a commit, the draft and its handles raise
 `RevisionConflictError` for any change.
 

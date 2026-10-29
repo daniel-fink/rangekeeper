@@ -165,7 +165,7 @@ Specification, with its estimates.
 | Target | Meaning |
 | --- | --- |
 | A key, `fix(land_cost=...)` or `free("land_cost")` | The one Value of the Model with that key. Several Values with the key raise `AmbiguousReferenceError` with their dotted paths |
-| A dotted path, `fix({"building_a.income": ...})` or `free("building_a.income")` | The Value with that key on the Entity or Assembly with that code |
+| A dotted path, `fix({"building_a.income": ...})` or `free("building_a.income")` | The Value with that key on the Entity or Assembly with that code. A path that names no Value raises `MissingReferenceError` with `by="path"`, the whole path in `requested` and the nearest paths in `candidates` |
 | A Value or Movement UUID, or a Reference | That Value or Movement |
 
 | Value given to `fix` | Meaning |
@@ -179,7 +179,11 @@ a mapping as its first argument. One value fixes a scalar Value, or each
 Movement of a Flow Value; a mapping from Movement UUIDs to values fixes those
 Movements only. A Flow target of `free` frees each of its Movements. Each value
 must convert to the units of its target (`UnitError`). A boolean or another type
-raises `TypeError`.
+raises `TypeError`. A Movement UUID that is not in the Flow raises
+`MissingReferenceError` (`kind="Movement"`), and a target given twice raises
+`ContractError` with the code `UNIQUE`. A target that a rule decides, or that an
+included Specification gives a role, raises `ContractError`: change it at its
+owner.
 
 `roles` returns a [Table](tables.md) with one row for each value that has a
 role, in Model order. Each Row's `id` is the UUID of its target.
@@ -192,7 +196,15 @@ role, in Model order. Each Row's `id` is the UUID of its target.
 | `quantity` | The fixed Quantity, or None |
 
 A Specification with includes reads its roles from its Composition, so it needs
-its resolver. A batch has no roles (`ValueError`).
+its resolver. A batch has no roles.
+
+| Failure | Error |
+| --- | --- |
+| A batch, for `roles`, `fix`, `free`, `cases` and `on` | `ContractError` with the code `BATCH_UNSUPPORTED`: use one case |
+| `case` of a concrete Specification | `ContractError` with the code `BATCH_REQUIRED` |
+| No pinned Model, for a key | `ContractError` with the code `MODEL_MISSING` |
+| Includes, or the cases of a batch read from data, without a resolver | `ContractError` with the code `RESOLVER_MISSING` |
+| A Model that is not the revision that the record pins | `ContractError` with the code `IDENTITY` |
 
 ## Move to another Model revision
 
@@ -214,10 +226,11 @@ declares. Otherwise `on` raises `ContractError` with the code
 convert to the units of its target in the new revision (`UnitError`). An
 estimate stays only when its target is free in the new revision, and then its
 Quantity must convert too; `on` drops the estimate of a value that the revision
-does not declare or that a fix or rule controls. `on` keeps a target by its UUID, so it follows a Value that a
-draft of the earlier revision kept, or that a Model with the same namespace
-derives. A batch, or a Specification with includes, raises `ValueError`. When
-the Model is the pinned revision, `on` returns the same Specification.
+does not declare or that a fix or rule controls. `on` keeps a target by its
+UUID, so it follows a Value that a draft of the earlier revision kept, or that a
+Model with the same namespace derives. A batch, or a Specification with
+includes, raises `ContractError`. When the Model is the pinned revision, `on`
+returns the same Specification.
 
 ## Cases
 
@@ -242,9 +255,10 @@ batch.case(key="weak")  # the case Specification
 The batch keeps its case Specifications, so `solve` resolves them without a store,
 and `execute` puts them in its store before the batch. `case(key=)` returns the
 case with that Metadata name; a batch read from data loads its cases with its
-resolver. No case with the key raises `MissingReferenceError` with the keys that
-exist. `cases` of a batch, and `case` of a concrete Specification, raise
-`ValueError`. Each case Outcome has the case key as its `key`; see
+resolver. No case with the key raises `MissingReferenceError` with
+`kind="Specification"`, `by="key"` and the keys that exist. `cases` of a batch
+raises `ContractError` with the code `BATCH_UNSUPPORTED`, and `case` of a
+concrete Specification with the code `BATCH_REQUIRED`. Each case Outcome has the case key as its `key`; see
 [reading an Outcome](execution.md#read-an-outcome).
 
 ## Model and resolver
@@ -253,7 +267,7 @@ Key lookup needs the pinned Model. A Specification from `model.specify()` keeps
 it, and so does each Specification that a chained call returns. The `model` and
 `resolver` properties return them, or None. For a record,
 pass it: `Specification(record, model=model)`; a record that pins another revision
-raises `ValueError`. A Specification with includes also needs
+raises `ContractError` with the code `IDENTITY`. A Specification with includes also needs
 `Specification(record, model=model, resolver=store)`. The Model and resolver are
 not saved with the document. Inherited roles and rule-controlled targets must be
 edited at their owner. Composition is checked after each edit, and normal

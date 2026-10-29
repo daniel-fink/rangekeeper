@@ -171,20 +171,20 @@ its own `units`; a Movement uses the `units` of its Flow. Rates such as
   back with `to_amount`.
 
 The library rounds only on request. `Quantity.round(places=None,
-mode=ROUND_HALF_EVEN)`, `Flow.round(...)` and `money.round(amount, code, ...)`
+mode=RoundingMode.HALF_EVEN)`, `Flow.round(...)` and `money.round(amount, code, ...)`
 round to the minor unit by default. `Flow.round` rounds each Movement, so the
-total of the rounded movements can differ from the rounded total. A code without a minor unit needs `places`; a negative `places`
-rounds to tens or hundreds. `mode` is one of the rounding constants of the
-`decimal` module.
+total of the rounded movements can differ from the rounded total. A code without a minor unit needs `places`, or the call raises `UnitError`; a
+negative `places` rounds to tens or hundreds. `mode` is a
+`rangekeeper.money.RoundingMode`; each member equals the `decimal` rounding
+constant of the same name. Another value raises `ContractError`.
 
 ```python
-from decimal import ROUND_HALF_UP
-
 from rangekeeper import Quantity
+from rangekeeper.money import RoundingMode
 
 price = Quantity(magnitude="0.125", units="AUD")
 price.round().magnitude  # Decimal('0.12')
-price.round(mode=ROUND_HALF_UP).magnitude  # Decimal('0.13')
+price.round(mode=RoundingMode.HALF_UP).magnitude  # Decimal('0.13')
 ```
 
 ## Named unit systems

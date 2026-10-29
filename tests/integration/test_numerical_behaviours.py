@@ -167,7 +167,7 @@ def test_stream_selection_and_mixed_frequency_totals():
     )
     stream = Stream.from_values(model, tuple(v.id for v in values))
     assert stream.merge(stream).values == stream.values
-    assert stream.select(value_ids=(values[1].id,)).values == (values[1],)
+    assert stream.select_values((values[1].id,)).values == (values[1],)
     years = Periods(start=date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
     # Weekly coverage can cross a calendar-year boundary. Select payment timing
     # explicitly; a bounded coverage interval must not be assigned by accident.
