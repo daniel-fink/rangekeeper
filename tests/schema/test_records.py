@@ -19,7 +19,7 @@ from rangekeeper.run import ImplementationKind
 from rangekeeper.run.validation import validate_records as validate_run
 from rangekeeper.schema import records as r
 from rangekeeper.schema.validation import schema_for, validate
-from rangekeeper.shared.errors import ValidationError
+from rangekeeper.shared.errors import MissingReferenceError, ValidationError
 from rangekeeper.specification.validation import (
     validate_records as check_specification,
 )
@@ -80,8 +80,9 @@ def test_presence_zero_false_and_null():
         {"values": None},
     ]
     assert not absent.has_field("values") and null.has_field("values")
-    with pytest.raises(KeyError):
+    with pytest.raises(MissingReferenceError) as raised:
         absent.has_field("not_a_field")
+    assert (raised.value.kind, raised.value.by) == ("field", "name")
     assert r.Quantity(magnitude=0, units="dimensionless").magnitude == 0
     assert (
         r.Expression(id=uuid4(), kind=ExpressionKind.BOOLEAN, boolean=False).boolean
@@ -380,3 +381,18 @@ def test_lineage_annotation_marks_revision_identity_slots():
         if slot["lineage"]
     }
     assert lineage == {("Metadata", "id"), ("Metadata", "previous")}
+
+
+def test_data_that_is_not_json_raises_one_structure_issue():
+    from datetime import date
+
+    from rangekeeper.errors import Code
+
+    data = {"start": date(2026, 1, 1)}
+    with pytest.raises(ValidationError) as raised:
+        r.Period.from_data(data)
+    assert raised.value.code is Code.STRUCTURE_JSON
+    # validate() reports the same failure with the same helper.
+    assert validate("Period", data).issues == raised.value.report.issues
+    with pytest.raises(ValidationError, match="non-finite"):
+        r.Quantity.from_data({"magnitude": float("nan"), "units": "m"})

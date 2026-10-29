@@ -173,9 +173,10 @@ its own `units`; a Movement uses the `units` of its Flow. Rates such as
 The library rounds only on request. `Quantity.round(places=None,
 mode=RoundingMode.HALF_EVEN)`, `Flow.round(...)` and `money.round(amount, code, ...)`
 round to the minor unit by default. `Flow.round` rounds each Movement, so the
-total of the rounded movements can differ from the rounded total. A code without a minor unit needs `places`; a negative `places`
-rounds to tens or hundreds. `mode` is a `rangekeeper.money.RoundingMode`; each
-member equals the `decimal` rounding constant of the same name.
+total of the rounded movements can differ from the rounded total. A code without a minor unit needs `places`, or the call raises `UnitError`; a
+negative `places` rounds to tens or hundreds. `mode` is a
+`rangekeeper.money.RoundingMode`; each member equals the `decimal` rounding
+constant of the same name. Another value raises `ContractError`.
 
 ```python
 from rangekeeper import Quantity

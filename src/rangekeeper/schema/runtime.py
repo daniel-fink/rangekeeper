@@ -8,6 +8,7 @@ import re
 from collections.abc import Mapping
 from datetime import date as Date
 from decimal import Decimal
+from difflib import get_close_matches
 from functools import cache
 from types import MappingProxyType
 from typing import TypeAlias, TypeVar, cast
@@ -34,6 +35,7 @@ JSONValue: TypeAlias = (
 )
 from rangekeeper.schema.kinds import record_type  # noqa: E402
 from rangekeeper.shared import amounts as _amounts  # noqa: E402
+from rangekeeper.shared.errors import MissingReferenceError  # noqa: E402
 
 R = TypeVar("R", bound="Record")
 
@@ -474,11 +476,11 @@ class Record:
 
     def _set_data(self, data: object) -> None:
         """Copy, validate with jsonschema and freeze untrusted data."""
-        from rangekeeper.schema.validation import _validate_json
+        from rangekeeper.schema.validation import _validate_json, detached
 
         if hasattr(self, "_data"):
             raise AttributeError("records are already initialized")
-        data = copy_json(data)
+        data = detached(data)
         _validate_json(self._kind, data).raise_if_invalid()
         object.__setattr__(self, "_data", _freeze(_normalize(self._kind, data)))
         if _reaches_invariants(self._kind):
@@ -490,7 +492,11 @@ class Record:
 
     @classmethod
     def from_data(cls: type[R], data: Mapping[str, object]) -> R:
-        """Validate and copy serialized data; normalize schema-declared UUIDs."""
+        """Validate and copy serialized data; normalize schema-declared UUIDs.
+
+        Data that is not JSON, such as a ``date`` or a non-finite number,
+        raises ``ValidationError`` with ``Code.STRUCTURE_JSON``.
+        """
         record = cls.__new__(cls)
         record._set_data(data)
         return record
@@ -507,11 +513,22 @@ class Record:
         return copy_json(self._data)
 
     def has_field(self, name: str) -> bool:
-        """Return whether a field is present; raise KeyError for an unknown field."""
+        """Return whether a field is present.
+
+        A name that is not a field of this kind raises ``MissingReferenceError``
+        with the nearest field names.
+        """
         from rangekeeper.schema.validation import _slot_map
 
-        if name not in _slot_map(self._kind):
-            raise KeyError(name)
+        fields = _slot_map(self._kind)
+        if name not in fields:
+            raise MissingReferenceError(
+                name,
+                kind="field",
+                by="name",
+                where=self._kind,
+                candidates=get_close_matches(str(name), sorted(fields), n=3),
+            )
         return name in self._data
 
     def field_names(self) -> tuple[str, ...]:

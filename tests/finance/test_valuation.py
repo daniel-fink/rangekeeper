@@ -7,7 +7,7 @@ import pytest
 
 import rangekeeper as rk
 from rangekeeper.duration import DayCount, Frequency, Periods, PeriodTiming
-from rangekeeper.errors import NumericalError, UnitError
+from rangekeeper.errors import ContractError, NumericalError, UnitError
 from rangekeeper.finance import irr, npv, payment, pv
 from rangekeeper.flow import Flow
 from rangekeeper.quantity import Quantity, isclose
@@ -119,7 +119,7 @@ def test_payment_errors():
         payment(
             principal="1 sqm", rate="6 % pa", term="1 year", frequency=Frequency.MONTH
         )
-    with pytest.raises(ValueError, match="no unit"):
+    with pytest.raises(ContractError, match="no unit"):
         payment(
             principal="1 AUD",
             rate="6 % pa",

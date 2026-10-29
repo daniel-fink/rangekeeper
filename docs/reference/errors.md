@@ -166,12 +166,19 @@ except rk.errors.MissingReferenceError as error:
 
 An argument of the wrong Python type raises `TypeError`. Every other failure on
 a public path raises a `RangekeeperError` subclass with a `Code`: a wrong value,
-a lookup that finds nothing, data or state that is not valid. `duration`,
-`model`, `specification` and the `Outcome` and comparisons of `execution` follow
-this rule. Some paths in the other layers below `model` still raise a plain
-`ValueError` or `KeyError`;
+a lookup that finds nothing, data or state that is not valid. `shared`,
+`schema`, `money`, `duration`, `finance` (`pv`, `npv`, `irr` and `payment`),
+`market.dynamics`, `model`, `specification` and the `Outcome` and comparisons of
+`execution` follow this rule: for example, `Table.column` and
+`Record.has_field` raise `MissingReferenceError`, and `Record.from_data` raises
+`ValidationError` with `structure.json` for data that is not JSON. Some paths in
+`flow` still raise a plain `ValueError` or `KeyError`;
 [#407](https://github.com/daniel-fink/rangekeeper/issues/407) changes them
-before 1.0.0b1. An optional dependency that is not installed raises
+before 1.0.0b1. The older `finance.financial` functions and the other internal
+`market` modules also raise plain errors; their replacements
+([#167](https://github.com/daniel-fink/rangekeeper/issues/167),
+[#298](https://github.com/daniel-fink/rangekeeper/issues/298)) follow the rule.
+An optional dependency that is not installed raises
 `ImportError`.
 `ValidationError` has the same name as an error in jsonschema, which the
 library uses inside; import it from `rangekeeper.errors`.
