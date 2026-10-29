@@ -91,6 +91,7 @@ class Code(StrEnum):
     CONSTRAINT_RESIDUAL = "constraint_residual"
     ESTIMATES_UNUSED = "estimates_unused"
     FEASIBLE_CANDIDATE = "feasible_candidate"
+    NONAFFINE_UNKNOWNS = "nonaffine_unknowns"
     NUMERICAL_FAILURE = "numerical_failure"
     NUMERICAL_REJECTION = "numerical_rejection"
     SETTINGS_ADJUSTED = "settings_adjusted"

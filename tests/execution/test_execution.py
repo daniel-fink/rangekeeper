@@ -332,9 +332,44 @@ def test_expected_failures_have_evidence_and_no_output(kind):
     assert not run.record.outputs
     assert any(
         d.code
-        in {"unsupported_capability", "specification_invalid", "numerical_failure"}
+        in {
+            "unsupported_capability",
+            "nonaffine_unknowns",
+            "specification_invalid",
+            "numerical_failure",
+        }
         for d in run.report.diagnostics
     )
+
+
+def test_nonaffine_unknowns_diagnostic_names_the_equation_and_unknowns():
+    store, _ = setup()
+    payload = fresh(data("specification-forward"))
+    payload["assignments"] = [
+        a for a in payload["assignments"] if a["target"]["target"] != str(RATE)
+    ]
+    payload["unknowns"].append(dict(target=str(RATE)))
+    run = execute(store, Specification.from_data(payload))
+    (diagnostic,) = (
+        d for d in run.report.diagnostics if d.code == Code.NONAFFINE_UNKNOWNS
+    )
+    assert diagnostic.values["equation"] == "capital_value * capitalization_rate = NOI"
+    assert list(diagnostic.values["unknowns"]) == [
+        "capital_value",
+        "capitalization_rate",
+    ]
+    assert diagnostic.target is not None
+
+
+def test_constraint_residual_diagnostics_name_their_equation():
+    store, _ = setup()
+    run = execute(store, spec())
+    equations = {
+        d.values["equation"]
+        for d in run.report.diagnostics
+        if d.code == Code.CONSTRAINT_RESIDUAL
+    }
+    assert "capital_value * capitalization_rate = NOI" in equations
 
 
 def test_underdetermined_case_returns_one_candidate_without_uniqueness_claim():

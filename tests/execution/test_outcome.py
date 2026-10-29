@@ -94,9 +94,10 @@ def test_a_product_of_two_unknowns_is_unsupported():
     assert outcome.evidence.termination is None
     with pytest.raises(UnsupportedError) as raised:
         outcome.raise_for_status()
-    # The decisive diagnostic gives the code (nonaffine_unknowns after #289).
+    # The decisive diagnostic gives the code and the equation's text.
     decisive = [d for d in outcome.diagnostics if d.severity == Severity.ERROR]
-    assert raised.value.code == decisive[-1].code
+    assert raised.value.code == decisive[-1].code == Code.NONAFFINE_UNKNOWNS
+    assert raised.value.equation == decisive[-1].values["equation"]
     assert raised.value.target is not None
     with pytest.raises(UnsupportedError):
         outcome["noi"]

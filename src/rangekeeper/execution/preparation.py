@@ -8,6 +8,7 @@ from uuid import UUID
 from rangekeeper.execution.errors import UnsupportedError
 from rangekeeper.flow import Movement
 from rangekeeper.model import Model
+from rangekeeper.model.expression.text import render
 from rangekeeper.model.targets import target_units
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.index import walk
@@ -63,6 +64,18 @@ class Binding:
     units: UnitSystem
     references: Mapping[UUID, Reference]
     rule_evidence: tuple[RuleEvidence, ...] = ()
+
+    def key(self, reference: Reference) -> str:
+        """Return the key of a referenced Value or Movement, or else its UUID."""
+        try:
+            key = self.model.resolve(reference).key
+        except (LookupError, TypeError):
+            key = None
+        return key or str(reference.target)
+
+    def text(self, expression: Expression) -> str:
+        """Return the text of ``expression``, with each reference named by its key."""
+        return render(expression, name=self.key)
 
 
 def validate(

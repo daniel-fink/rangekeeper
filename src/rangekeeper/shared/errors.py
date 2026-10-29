@@ -232,6 +232,9 @@ class UnsupportedError(RangekeeperError, ValueError):
     """A declared problem or expression is outside the supported capability.
 
     ``document`` and ``target`` locate the declaration when they are known.
+    ``equation`` is the text of that declaration, for example
+    ``"noi = coverage * debt_service"``. With the code ``nonaffine_unknowns``,
+    ``unknowns`` gives the keys of the unknowns in the term that is not affine.
     """
 
     def __init__(
@@ -241,11 +244,25 @@ class UnsupportedError(RangekeeperError, ValueError):
         code: Code = Code.UNSUPPORTED_CAPABILITY,
         document: UUID | None = None,
         target: UUID | None = None,
+        equation: str | None = None,
+        unknowns: Iterable[str] = (),
     ) -> None:
         super().__init__(message)
         self.code = Code(code)
         self.document = document
         self.target = target
+        self.equation = equation
+        self.unknowns = tuple(unknowns)
+
+    def __reduce__(self):
+        fields = dict(
+            code=self.code,
+            document=self.document,
+            target=self.target,
+            equation=self.equation,
+            unknowns=self.unknowns,
+        )
+        return _rebuild, (type(self), str(self), fields)
 
 
 class NumericalError(RangekeeperError, ValueError):
