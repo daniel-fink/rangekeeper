@@ -193,6 +193,31 @@ role, in Model order. Each Row's `id` is the UUID of its target.
 A Specification with includes reads its roles from its Composition, so it needs
 its resolver. A batch has no roles (`ValueError`).
 
+## Move to another Model revision
+
+`on(model=)` returns a new Specification of another Model revision, with the
+same fixes, rules and estimates; the Specification that it is called on does not
+change. Its Metadata has a new UUID and `previous=specification.id`. The free
+values are those that the equations of the new revision use and that nothing
+fixes or decides, so a value that the revision adds is free.
+
+```python
+moved = front.on(model=revised)
+lean = front.free("operating_cost").on(model=without_operating_cost)
+```
+
+Each fixed or decided target must be a Value or Movement that the new revision
+declares. Otherwise `on` raises `ContractError` with the code
+`REFERENCE_MISSING`, the target UUIDs in `targets` and their keys in
+`values["keys"]`: free the value first, then call `on`. Each fixed Quantity and
+estimate must convert to the units of its target in the new revision
+(`UnitError`). `on` keeps a target by its UUID, so it follows a Value that a
+draft of the earlier revision kept, or that a Model with the same namespace
+derives. A batch, or a Specification with includes, raises `ValueError`. When
+the Model is the pinned revision, `on` returns the same Specification.
+
+## Model and resolver
+
 Key lookup needs the pinned Model. A Specification from `model.specify()` keeps
 it, and so does each Specification that a chained call returns. For a record,
 pass it: `Specification(record, model=model)`; a record that pins another revision

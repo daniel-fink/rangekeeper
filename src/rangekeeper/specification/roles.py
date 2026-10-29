@@ -113,10 +113,7 @@ def role_table(
     if record.rules is not None:
         for reference in record.rules.targets:
             roles[reference.target] = (Role.DECIDED, None)
-    keys: dict[str, int] = {}
-    for item in model._index.records.values():
-        if isinstance(item, Value):
-            keys[item.key] = keys.get(item.key, 0) + 1
+    keys = _key_counts(model)
     rows = []
     for identity in in_model_order(model, roles):
         role, quantity = roles[identity]
@@ -133,6 +130,20 @@ def role_table(
             )
         )
     return Table(ROLE_COLUMNS, rows)
+
+
+def target_key(model: "Model", identity: UUID) -> str:
+    """Return the key that ``fix`` takes for a Value, or for a Movement's Value."""
+    return _name(model, identity, _key_counts(model))[0]
+
+
+def _key_counts(model: "Model") -> dict[str, int]:
+    """Return the number of Values with each key."""
+    keys: dict[str, int] = {}
+    for item in model._index.records.values():
+        if isinstance(item, Value):
+            keys[item.key] = keys.get(item.key, 0) + 1
+    return keys
 
 
 def _name(model: "Model", identity: UUID, keys) -> tuple[str, UUID | None]:

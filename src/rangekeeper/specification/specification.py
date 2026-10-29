@@ -252,18 +252,27 @@ class Specification:
         check_revision(self._record, replacement)
         return type(self)(replacement, model=self._model, resolver=self._resolver)
 
-    def _derive(self, **changes: object) -> "Specification":
+    def _derive(
+        self,
+        *,
+        model: "Model | None" = None,
+        **changes: object,
+    ) -> "Specification":
         """Return the next revision with these record changes and new Metadata.
 
         Each chained call makes its revision here: a new UUID, and ``previous``
-        is this revision.
+        is this revision. ``model`` pins another Model revision and keeps it.
         """
-        return self.revise(
-            self._record.replace(
-                metadata=self.metadata.replace(id=uuid4(), previous=self.id),
-                **changes,  # type: ignore[arg-type]
-            )
+        if model is None:
+            model = self._model
+        else:
+            changes["model"] = model.id
+        replacement = self._record.replace(
+            metadata=self.metadata.replace(id=uuid4(), previous=self.id),
+            **changes,  # type: ignore[arg-type]
         )
+        check_revision(self._record, replacement)
+        return type(self)(replacement, model=model, resolver=self._resolver)
 
     def fix(
         self,
@@ -325,6 +334,85 @@ class Specification:
         model = self._require_model()
         refs = [ref for target in targets for ref in self._targets(model, target)]
         return self._edit_roles(refs, None)
+
+    def on(self, *, model: "Model") -> "Specification":
+        """Return a new Specification of another Model revision, with the same roles.
+
+        Each fix, estimate and rule target must be a Value or Movement that
+        ``model`` declares, with units that its Quantity converts to. A fixed
+        value that ``model`` does not declare raises ContractError with the code
+        ``REFERENCE_MISSING`` and its keys: free it first, then call ``on``. The
+        free values are those that the equations of ``model`` use and that
+        nothing controls; an estimate of another value is dropped.
+
+        A Specification with includes, or a batch, raises ValueError. When
+        ``model`` is the pinned revision, ``on`` returns this Specification.
+        """
+        from rangekeeper.model import Model
+        from rangekeeper.model.targets import target_units
+        from rangekeeper.shared.codes import Code
+        from rangekeeper.shared.errors import ContractError
+
+        if not isinstance(model, Model):
+            raise TypeError("model must be a Model")
+        if self.record.cases:
+            raise ValueError("move each case of a batch, not the batch")
+        if self.record.includes:
+            raise ValueError(
+                "a Specification with includes cannot move to another Model; "
+                "move each included Specification"
+            )
+        if model.id == self.record.model:
+            if self._model is not None:
+                return self
+            return type(self)(self.record, model=model, resolver=self._resolver)
+        record = self.record
+        declared = model._index.records
+        controlled = [a.target for a in record.assignments or ()]
+        if record.rules is not None:
+            controlled.extend(record.rules.targets)
+        missing = [ref.target for ref in controlled if ref.target not in declared]
+        if missing:
+            keys = tuple(self._key(identity) for identity in missing)
+            raise ContractError(
+                f"Model {model.id} does not declare these fixed or decided "
+                f"values: {', '.join(keys)}; free them first, then call on",
+                code=Code.REFERENCE_MISSING,
+                document_id=self.id,
+                targets=missing,
+                values={"keys": keys},
+            )
+        for assignment in record.assignments or ():
+            model.unit_system.convert(
+                assignment.quantity, to=target_units(model, assignment.target)
+            )
+        for estimate in record.estimates or ():
+            if estimate.target.target in declared:
+                model.unit_system.convert(
+                    estimate.quantity, to=target_units(model, estimate.target)
+                )
+        taken = {ref.target for ref in controlled}
+        unknowns = tuple(
+            Reference(target=identity)
+            for identity in equation_targets(model, record)
+            if identity not in taken
+        )
+        free = {ref.target for ref in unknowns}
+        return self._derive(
+            model=model,
+            unknowns=unknowns,
+            estimates=tuple(
+                e for e in record.estimates or () if e.target.target in free
+            ),
+        )
+
+    def _key(self, identity: UUID) -> str:
+        """Name a target by its key in the pinned Model, or by its UUID."""
+        if self._model is None or identity not in self._model._index.records:
+            return str(identity)
+        from rangekeeper.specification.roles import target_key
+
+        return target_key(self._model, identity)
 
     def _require_model(self) -> "Model":
         if self._model is None:

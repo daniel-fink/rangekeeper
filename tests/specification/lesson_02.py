@@ -6,6 +6,8 @@ evaluate a product of fixed values before the affine stage (G09), so the
 reference income of cell 6b is a fixed total here.
 """
 
+from uuid import UUID
+
 import rangekeeper as rk
 from rangekeeper.model.expression.authoring import (
     add,
@@ -39,12 +41,25 @@ DATA = {
 }
 
 
-def lesson_02_model() -> rk.Model:
-    """Return the Model of lesson 02, cells 4 to 5."""
-    model = rk.Model(name="Mixed-use feasibility")
+def lesson_02_model(
+    *,
+    name: str = "Mixed-use feasibility",
+    namespace: UUID | None = None,
+    operating_cost: bool = True,
+) -> rk.Model:
+    """Return the Model of lesson 02, cells 4 to 5.
+
+    Models with one ``namespace`` give their Values the same UUIDs. Without
+    ``operating_cost``, the Model has no operating cost: ``effective_income = noi``.
+    """
+    model = rk.Model(name=name, namespace=namespace)
     draft = model.edit()
     project = draft.add_entity(code="project", classification="project")
-    handles = {key: project.value(key=key, units=units) for key, units in UNITS.items()}
+    handles = {
+        key: project.value(key=key, units=units)
+        for key, units in UNITS.items()
+        if operating_cost or key != "operating_cost"
+    }
 
     def ref(key):
         return reference(Reference(target=handles[key].id))
@@ -54,7 +69,10 @@ def lesson_02_model() -> rk.Model:
         equal(ref("mortgage"), multiply(ref("leverage"), ref("total_cost"))),
         equal(ref("debt_service"), multiply(ref("mortgage_constant"), ref("mortgage"))),
         equal(ref("noi"), multiply(ref("coverage"), ref("debt_service"))),
-        equal(ref("effective_income"), add(ref("noi"), ref("operating_cost"))),
+        equal(
+            ref("effective_income"),
+            add(ref("noi"), ref("operating_cost")) if operating_cost else ref("noi"),
+        ),
         equal(
             ref("effective_income"),
             multiply(ref("rent_factor"), ref("reference_income")),
