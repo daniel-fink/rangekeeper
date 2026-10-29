@@ -13,7 +13,6 @@ from rangekeeper.model.update import Update
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.records import Provenance, System
 from rangekeeper.schema.runtime import copy_json
-from rangekeeper.shared.references import DocumentResolver
 
 
 def make_candidate(
@@ -108,25 +107,3 @@ def make_candidate(
     # only what a stored revision can hold.
     text = json.dumps(result.to_data(), ensure_ascii=False, allow_nan=False)
     return Model.from_data(copy_json(json.loads(text)), units=result.unit_system)
-
-
-class CandidateResolver:
-    """Overlay one not-yet-published Model for final Run validation before any put."""
-
-    def __init__(self, candidate: Model, resolver: DocumentResolver) -> None:
-        self.candidate = candidate
-        self.resolver = resolver
-
-    def load_model(self, id: UUID) -> Model:
-        """Return the candidate Model for its UUID, else load it from the resolver."""
-        return (
-            self.candidate if id == self.candidate.id else self.resolver.load_model(id)
-        )
-
-    def load_specification(self, id: UUID):
-        """Load a Specification from the underlying resolver."""
-        return self.resolver.load_specification(id)
-
-    def load_run(self, id: UUID):
-        """Load a Run from the underlying resolver."""
-        return self.resolver.load_run(id)

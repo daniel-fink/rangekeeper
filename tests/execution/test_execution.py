@@ -16,7 +16,6 @@ from rangekeeper import Model, Quantity, Specification
 from rangekeeper.errors import Code
 from rangekeeper.execution import (
     ExecutionConfig,
-    Executor,
     Tolerances,
     backends,
     bind_roles,
@@ -24,6 +23,7 @@ from rangekeeper.execution import (
     preparation,
     verify,
 )
+from rangekeeper.execution import execute as execute_specification
 from rangekeeper.execution import validate as validate_composition
 from rangekeeper.execution.backends import PyomoHighs, Result
 from rangekeeper.io import DirectoryStore, MemoryStore, yaml
@@ -102,7 +102,7 @@ def spec(name="specification-forward", *, model=None, **changes):
 
 
 def execute(store, specification):
-    run = Executor(store).execute(specification)
+    run = execute_specification(specification, store).run
     validate(run, resolver=store).raise_if_invalid()
     assert store.load_run(run.id).to_data() == run.to_data()
     return run
@@ -362,15 +362,17 @@ def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
     specification = spec()
     store.put(specification)
     with pytest.raises(UnknownExtensionError, match="pyomo-highs"):
-        Executor(store, config=ExecutionConfig(backend="pyomo"))
+        execute_specification(
+            specification, store, config=ExecutionConfig(backend="pyomo")
+        )
     registry: Registry[backends.Backend] = Registry("backends", backends.Backend)
     registry.register("wrong", WrongCandidate())
     monkeypatch.setattr(backends, "registry", registry)
-    monkeypatch.setattr("rangekeeper.execution.executor.registry", registry)
+    monkeypatch.setattr("rangekeeper.execution.pipeline.registry", registry)
     monkeypatch.setattr("rangekeeper.execution.attempt.registry", registry)
-    run = Executor(store, config=ExecutionConfig(backend="wrong")).execute(
-        specification
-    )
+    run = execute_specification(
+        specification, store, config=ExecutionConfig(backend="wrong")
+    ).run
     solvers = {
         item.name: item.version
         for item in run.report.runtime.implementations
@@ -379,9 +381,9 @@ def test_backends_are_chosen_by_name_and_recorded_by_fingerprint(monkeypatch):
     assert solvers["rangekeeper.backends:wrong"].startswith("extension/v1:")
     other = spec()
     store.put(other)
-    unregistered = Executor(
-        store, config=ExecutionConfig(backend=PyomoHighs())
-    ).execute(other)
+    unregistered = execute_specification(
+        other, store, config=ExecutionConfig(backend=PyomoHighs())
+    ).run
     assert any(
         item.name == "rangekeeper.execution.backends.pyomo:PyomoHighs"
         for item in unregistered.report.runtime.implementations
@@ -392,9 +394,9 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     store, model = setup()
     specification = spec()
     store.put(specification)
-    run = Executor(store, config=ExecutionConfig(backend=WrongCandidate())).execute(
-        specification
-    )
+    run = execute_specification(
+        specification, store, config=ExecutionConfig(backend=WrongCandidate())
+    ).run
     assert run.report.status.completion == CompletionStatus.FAILED
     assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
@@ -532,7 +534,9 @@ def test_backend_statuses_do_not_overclaim(termination):
             return Result(termination)
 
     store, _ = setup()
-    run = Executor(store, config=ExecutionConfig(backend=Backend())).execute(spec())
+    run = execute_specification(
+        spec(), store, config=ExecutionConfig(backend=Backend())
+    ).run
     assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
     assert run.report.status.completion == (
@@ -550,7 +554,7 @@ def test_missing_references_and_invalid_batch_graph_raise_before_execution():
     store, _ = setup()
     missing = spec(model=Model.from_data(fresh(data("model"))))
     with pytest.raises(MissingReferenceError):
-        Executor(store).execute(missing)
+        execute_specification(missing, store)
     id1, id2 = uuid4(), uuid4()
     for id, other in ((id1, id2), (id2, id1)):
         store.put(
@@ -562,7 +566,7 @@ def test_missing_references_and_invalid_batch_graph_raise_before_execution():
             )
         )
     with pytest.raises(ValidationError, match="cycle"):
-        Executor(store).execute(store.load_specification(id1))
+        execute_specification(store.load_specification(id1), store)
 
 
 @pytest.mark.parametrize(
@@ -783,7 +787,9 @@ def test_nonfinite_or_boolean_backend_candidates_are_never_published(magnitude):
             )
 
     store, _ = setup()
-    run = Executor(store, config=ExecutionConfig(backend=Backend())).execute(spec())
+    run = execute_specification(
+        spec(), store, config=ExecutionConfig(backend=Backend())
+    ).run
     assert run.report.status.completion == CompletionStatus.FAILED
     assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs

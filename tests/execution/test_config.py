@@ -8,9 +8,9 @@ import pytest
 from rangekeeper.errors import Code
 from rangekeeper.execution import (
     ExecutionConfig,
-    Executor,
     Limits,
     Tolerances,
+    execute,
     settings,
 )
 from rangekeeper.execution.backends import PyomoHighs
@@ -100,10 +100,11 @@ def test_config_limits_apply_when_the_specification_has_no_settings():
             raise AssertionError("the symbol limit must stop the attempt")
 
     store, _ = setup()
-    run = Executor(
+    run = execute(
+        spec(settings={}),
         store,
         config=ExecutionConfig(backend=Uncalled(), limits=Limits(symbol_limit=1)),
-    ).execute(spec(settings={}))
+    ).run
     assert run.report.status.completion == CompletionStatus.FAILED
     assert any(d.code == Code.SYMBOL_LIMIT for d in run.report.diagnostics)
 
@@ -111,9 +112,9 @@ def test_config_limits_apply_when_the_specification_has_no_settings():
 @needs_backend
 def test_backend_options_reach_the_solver_and_its_evidence():
     store, _ = setup()
-    run = Executor(
-        store, config=ExecutionConfig(backend_options={"presolve": "off"})
-    ).execute(spec())
+    run = execute(
+        spec(), store, config=ExecutionConfig(backend_options={"presolve": "off"})
+    ).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE
     evidence = next(
         d.values for d in run.report.diagnostics if d.code == Code.SOLVER_TERMINATION
@@ -126,7 +127,7 @@ def test_a_reserved_backend_option_fails_the_attempt_with_evidence():
     config = ExecutionConfig(
         backend=PyomoHighs(), backend_options={"output_flag": True}
     )
-    run = Executor(store, config=config).execute(spec())
+    run = execute(spec(), store, config=config).run
     assert run.report.status.completion == CompletionStatus.FAILED
     assert not run.record.outputs
     assert any(

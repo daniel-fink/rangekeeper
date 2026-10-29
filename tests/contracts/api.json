@@ -553,15 +553,6 @@
    "module": "rangekeeper.execution.config",
    "signature": "(backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
   },
-  "Executor": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, store: rangekeeper.shared.store.RecordStore, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> None",
-    "execute": "method (self, specification: rangekeeper.specification.specification.Specification) -> rangekeeper.run.run.Run"
-   },
-   "module": "rangekeeper.execution.executor",
-   "signature": "(store: rangekeeper.shared.store.RecordStore, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> None"
-  },
   "Limits": {
    "kind": "class",
    "members": {
@@ -570,6 +561,15 @@
    },
    "module": "rangekeeper.execution.settings",
    "signature": "(time_limit: float = 30, iteration_limit: int = 100000, symbol_limit: int = 10000, constraint_limit: int = 20000) -> None"
+  },
+  "Outcome": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple()) -> None",
+    "walk": "method (self) -> collections.abc.Iterator['Outcome']"
+   },
+   "module": "rangekeeper.execution.outcome",
+   "signature": "(run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple()) -> None"
   },
   "Tolerances": {
    "kind": "class",
@@ -598,7 +598,12 @@
   "assemble": {
    "kind": "function",
    "module": "rangekeeper.execution.assembly",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, report: rangekeeper.schema.records.Report, *, id: uuid.UUID, output: rangekeeper.model.model.Model | None, resolver: rangekeeper.shared.references.DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.run.run.Run"
+   "signature": "(specification: rangekeeper.specification.specification.Specification, report: rangekeeper.schema.records.Report, *, id: uuid.UUID, output: rangekeeper.model.model.Model | None, resolver: rangekeeper.shared.references.DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None, validate: bool = True) -> rangekeeper.execution.outcome.Outcome"
+  },
+  "assemble_batch": {
+   "kind": "function",
+   "module": "rangekeeper.execution.assembly",
+   "signature": "(specification: rangekeeper.specification.specification.Specification, cases: collections.abc.Sequence[rangekeeper.execution.outcome.Outcome], *, resolver: rangekeeper.shared.references.DocumentResolver, validate: bool = True) -> rangekeeper.execution.outcome.Outcome"
   },
   "bind_roles": {
    "kind": "function",
@@ -610,6 +615,11 @@
    "module": "rangekeeper.execution.compiler",
    "signature": "(binding: rangekeeper.execution.preparation.Binding, *, limits: rangekeeper.execution.settings.Limits | None = None, checkpoint: collections.abc.Callable[[], None] = <function>) -> rangekeeper.execution.compiler.AffineProblem"
   },
+  "execute": {
+   "kind": "function",
+   "module": "rangekeeper.execution.pipeline",
+   "signature": "(specification: rangekeeper.specification.specification.Specification, store: rangekeeper.shared.store.RecordStore, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> rangekeeper.execution.outcome.Outcome"
+  },
   "make_candidate": {
    "kind": "function",
    "module": "rangekeeper.execution.publication",
@@ -619,6 +629,11 @@
    "kind": "function",
    "module": "rangekeeper.execution.planning",
    "signature": "(specification: rangekeeper.specification.specification.Specification, *, resolver: rangekeeper.shared.references.DocumentResolver) -> rangekeeper.execution.planning.Cases"
+  },
+  "solve": {
+   "kind": "function",
+   "module": "rangekeeper.execution.pipeline",
+   "signature": "(specification: rangekeeper.specification.specification.Specification, resolver: rangekeeper.shared.references.DocumentResolver, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> rangekeeper.execution.outcome.Outcome"
   },
   "validate": {
    "kind": "function",

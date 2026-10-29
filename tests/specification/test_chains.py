@@ -153,7 +153,7 @@ def test_a_specification_needs_its_model_for_keys():
     reason="requires the optional execution extra",
 )
 def test_a_chained_specification_solves():
-    from rangekeeper.execution import Executor
+    from rangekeeper.execution import execute
     from rangekeeper.io import MemoryStore
     from rangekeeper.run import SolutionStatus
 
@@ -168,7 +168,7 @@ def test_a_chained_specification_solves():
     back = front.fix({"project.total_cost": aud("60e6")}).free("land_cost")
     results = {}
     for name, specification in (("front", front), ("back", back)):
-        run = Executor(store).execute(specification)
+        run = execute(specification, store).run
         assert run.report.status.solution == SolutionStatus.FEASIBLE
         results[name] = store.load_model(run.record.outputs[0])
     project = model.entity(code="project").id

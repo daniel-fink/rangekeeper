@@ -4,7 +4,7 @@ from datetime import date
 from uuid import uuid4
 
 from rangekeeper.duration import Frequency, Span
-from rangekeeper.execution import Executor
+from rangekeeper.execution import execute
 from rangekeeper.flow import Flow, ResampleMethod, Stream
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
@@ -150,7 +150,7 @@ def solve_example():
     model, ids = hierarchy_model()
     store = MemoryStore()
     store.put(model)
-    forward = Executor(store).execute(forward_specification(model, ids))
+    forward = execute(forward_specification(model, ids), store).run
     assert forward.report.status.solution is SolutionStatus.FEASIBLE, (
         forward.report.to_data()
     )
@@ -160,7 +160,7 @@ def solve_example():
         {ids["portfolio"]: Quantity(magnitude=2880, units="AUD")}
     )
     reverse = reverse.free(solved.value(ids["A_rent"]).flow.movements[-1].id)
-    inverse = Executor(store).execute(reverse)
+    inverse = execute(reverse, store).run
     assert inverse.report.status.solution is SolutionStatus.FEASIBLE, (
         inverse.report.to_data()
     )

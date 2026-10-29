@@ -29,11 +29,11 @@ as `Compounding(rate=)`.
 ## Register an implementation
 
 ```python
-from rangekeeper.execution import ExecutionConfig, Executor
+from rangekeeper.execution import ExecutionConfig, execute
 from rangekeeper.execution.backends import registry
 
 registry.register("my-solver", MySolver())
-executor = Executor(store, config=ExecutionConfig(backend="my-solver"))
+outcome = execute(specification, store, config=ExecutionConfig(backend="my-solver"))
 ```
 
 `register` checks the implementation against the Protocol with `isinstance`
@@ -96,7 +96,7 @@ registration at import time reads no source.
 Evidence records `Registration.qualified_name` with the fingerprint as the
 version. A registered implementation is `rangekeeper.<point>:<name>`, for example
 `rangekeeper.backends:pyomo-highs`. An unregistered implementation, such as a
-backend object passed to `Executor` directly, is `<module>:<qualified name>`.
+backend object in an `ExecutionConfig`, is `<module>:<qualified name>`.
 
 ## Add an extension point
 

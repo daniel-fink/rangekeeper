@@ -10,7 +10,7 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.duration import Frequency, Span, make_periods
-from rangekeeper.execution import Executor
+from rangekeeper.execution import execute
 from rangekeeper.flow import AlignmentJoin as Join
 from rangekeeper.flow import Flow, Stream
 from rangekeeper.flow import MeanWeighting as Weight
@@ -382,14 +382,14 @@ def test_underdetermined_and_inconsistent_reverse_cases():
     under = reverse.free(
         *[m.id for m in model.value(ids["A_rent"]).flow.movements[-2:]]
     )
-    run = Executor(store).execute(under)
+    run = execute(under, store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE
     result = store.load_model(run.record.outputs[0])
     assert sum(
         m.number for m in result.value(ids["A_rent"]).flow.movements[-2:]
     ) == pytest.approx(320)
     assert any(d.code == "underdetermined" for d in run.report.diagnostics)
-    failed = Executor(store).execute(reverse)
+    failed = execute(reverse, store).run
     assert failed.report.status.solution is SolutionStatus.INFEASIBLE
     assert not failed.record.outputs
 
@@ -525,7 +525,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
     )
     store = MemoryStore()
     store.put(model)
-    run = Executor(store).execute(spec)
+    run = execute(spec, store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE, run.report.to_data()
     result = (
         store.load_model(run.record.outputs[0])

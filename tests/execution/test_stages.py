@@ -12,21 +12,24 @@ from rangekeeper.execution import (
     Binding,
     Cases,
     ExecutionConfig,
+    Outcome,
     Tolerances,
     Validation,
     Verification,
     assemble,
+    assemble_batch,
     bind_roles,
     build_problem,
     make_candidate,
     resolve_cases,
+    solve,
     validate,
     verify,
 )
 from rangekeeper.execution.attempt import Attempt
 from rangekeeper.execution.backends import Result
 from rangekeeper.execution.settings import Limits
-from rangekeeper.run import Run, SolutionStatus
+from rangekeeper.run import SolutionStatus
 from rangekeeper.shared.errors import NumericalError, UnsupportedError, ValidationError
 from tests.execution.test_execution import (
     CAPITAL,
@@ -90,9 +93,10 @@ class Exact:
         return Result("optimal", SOLUTION)
 
 
-def attempt(cases, composition):
+def attempt(cases, composition, specification=None):
+    specification = cases.root if specification is None else specification
     return Attempt(
-        ExecutionConfig(), Exact(), cases.root, composition, resolver=cases
+        ExecutionConfig(), Exact(), specification, composition, resolver=cases
     ).execute()
 
 
@@ -246,23 +250,78 @@ def test_verify_accepts_the_solution_and_rejects_another():
 
 def test_assemble_validates_the_run_with_its_output_laid_over_the_resolver():
     cases, composition, _ = stages()
-    attempted, output = attempt(cases, composition)
-    run = assemble(
+    attempted = attempt(cases, composition)
+    (output,) = attempted.outputs
+    outcome = assemble(
         cases.root,
-        attempted.report,
-        id=attempted.id,
+        attempted.run.report,
+        id=attempted.run.id,
         output=output,
         resolver=cases,
     )
-    assert isinstance(run, Run)
-    assert run.to_data() == attempted.to_data()
+    assert isinstance(outcome, Outcome)
+    assert outcome.run.to_data() == attempted.run.to_data()
+    assert outcome.outputs == (output,)
     with pytest.raises(ValidationError):
-        assemble(cases.root, attempted.report, id=uuid4(), output=None, resolver=cases)
+        assemble(
+            cases.root, attempted.run.report, id=uuid4(), output=None, resolver=cases
+        )
+    # Without validation, nothing is resolved: a later commit point validates.
+    unchecked = assemble(
+        cases.root,
+        attempted.run.report,
+        id=uuid4(),
+        output=output,
+        resolver=None,  # type: ignore[arg-type]
+        validate=False,
+    )
+    assert unchecked.outputs == (output,)
+
+
+def test_assemble_batch_spawns_each_case_and_unites_their_outputs():
+    store, model = setup()
+    first, second = spec(), spec()
+    batch = Specification.from_data(
+        {
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
+            "model": str(model.id),
+            "cases": [str(first.id), str(second.id)],
+        }
+    )
+    for document in (first, second, batch):
+        store.put(document)
+    cases = resolve_cases(batch, resolver=Unchanged(store))
+    outcomes = [
+        attempt(cases, cases.compositions[leaf.id], leaf) for leaf in (first, second)
+    ]
+    outcome = assemble_batch(batch, outcomes, resolver=cases)
+    assert outcome.cases == tuple(outcomes)
+    assert outcome.run.record.spawns == tuple(item.run.id for item in outcomes)
+    assert outcome.outputs == tuple(item.outputs[0] for item in outcomes)
+    assert outcome.run.report.status.solution == SolutionStatus.NOT_APPLICABLE
+    assert [item.run.id for item in outcome.walk()] == [
+        *(item.run.id for item in outcomes),
+        outcome.run.id,
+    ]
 
 
 def test_an_attempt_runs_every_stage_with_a_backend_that_starts_no_process():
     cases, composition, _ = stages()
-    run, output = attempt(cases, composition)
-    assert run.report.status.solution == SolutionStatus.FEASIBLE
-    assert run.record.outputs == (output.id,)
+    outcome = attempt(cases, composition)
+    (output,) = outcome.outputs
+    assert outcome.run.report.status.solution == SolutionStatus.FEASIBLE
+    assert outcome.run.record.outputs == (output.id,)
     assert output.value(NOI).quantity.number == pytest.approx(550000)
+
+
+def test_solve_runs_every_stage_and_writes_nothing():
+    store, _ = setup()
+    specification = spec()
+    store.put(specification)
+    outcome = solve(
+        specification,
+        Unchanged(store),
+        config=ExecutionConfig(backend=Exact()),
+    )
+    assert outcome.run.report.status.solution == SolutionStatus.FEASIBLE
+    assert outcome.outputs[0].value(CAPITAL).quantity.number == pytest.approx(11e6)

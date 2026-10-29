@@ -135,13 +135,14 @@ show the target API in use.
 **Investigate a Model** ([ADR-013](../decisions/013-execution-and-extensions.md))
 - Now: `model.specify(name=)` makes a Specification that pins one Model
   revision; `fix(key=quantity)` and `free("key")` each return a new
-  Specification. Records add bounds and rules. `rangekeeper.execution.Executor(store).execute(specification)`
+  Specification. Records add bounds and rules. `rangekeeper.execution.solve(specification, resolver)`
   runs the typed stages: it resolves the cases, validates each composition, binds
   roles, builds the affine problem, solves it in a separate process, makes a
-  candidate, verifies it independently and assembles the Run. Then it publishes
-  the output Model and the final Run. Each stage is a public function that
-  writes to no store. Read the results from the Run and the output Model. See
-  the [execution reference](../reference/execution.md#stages).
+  candidate, verifies it independently and assembles an `Outcome`, and writes
+  nothing. `execute(specification, store)` also publishes the output Models and
+  then the Runs. Each stage is a public function that writes to no store. Read
+  the results from `outcome.run` and `outcome.outputs`. See the
+  [execution reference](../reference/execution.md#stages).
 - 1.0 target:
   1. Write a Specification that pins one Model revision. Fix and free values,
      and add bounds or rules.
@@ -152,8 +153,7 @@ show the target API in use.
   6. `execute` also publishes the Run and the output Model to a store.
   7. Read solved values from the `Outcome`.
 
-  Gap issues: [#126](https://github.com/daniel-fink/rangekeeper/issues/126),
-  [#127](https://github.com/daniel-fink/rangekeeper/issues/127),
+  Gap issues: [#127](https://github.com/daniel-fink/rangekeeper/issues/127),
   [#129](https://github.com/daniel-fink/rangekeeper/issues/129),
   [#290](https://github.com/daniel-fink/rangekeeper/issues/290),
   [#292](https://github.com/daniel-fink/rangekeeper/issues/292),

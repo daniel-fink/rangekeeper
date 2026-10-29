@@ -10,18 +10,21 @@ to no store:
 5. A ``Backend`` solves the problem.
 6. ``make_candidate`` writes the solved values into a candidate Model.
 7. ``verify`` checks the candidate against the original mathematics.
-8. ``assemble`` makes the finalized Run.
+8. ``assemble`` makes the ``Outcome`` of a leaf, and ``assemble_batch`` the
+   Outcome of a batch.
 
-``Executor`` runs the stages for each case and stores the results.
+``solve`` runs the stages for each case and writes nothing. ``execute`` solves,
+then publishes the outputs and the Runs to a store.
 ``ExecutionConfig`` holds the backend, unit system, limits, tolerances and
 backend options, with one source of defaults.
 """
 
 from rangekeeper.execution.acceptance import Tolerances, Verification, verify
-from rangekeeper.execution.assembly import assemble
+from rangekeeper.execution.assembly import assemble, assemble_batch
 from rangekeeper.execution.compiler import AffineProblem, build_problem
 from rangekeeper.execution.config import ExecutionConfig
-from rangekeeper.execution.executor import Executor
+from rangekeeper.execution.outcome import Outcome
+from rangekeeper.execution.pipeline import execute, solve
 from rangekeeper.execution.planning import Cases, resolve_cases
 from rangekeeper.execution.preparation import (
     Assertion,
@@ -39,16 +42,19 @@ __all__ = [
     "Binding",
     "Cases",
     "ExecutionConfig",
-    "Executor",
     "Limits",
+    "Outcome",
     "Tolerances",
     "Validation",
     "Verification",
     "assemble",
+    "assemble_batch",
     "bind_roles",
     "build_problem",
+    "execute",
     "make_candidate",
     "resolve_cases",
+    "solve",
     "validate",
     "verify",
 ]

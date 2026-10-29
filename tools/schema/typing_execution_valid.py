@@ -1,12 +1,19 @@
 """Static examples for the public execution boundary; not executed."""
 
 from rangekeeper import Run, Specification
-from rangekeeper.execution import ExecutionConfig, Executor, Limits, Tolerances
+from rangekeeper.execution import (
+    ExecutionConfig,
+    Limits,
+    Outcome,
+    Tolerances,
+    execute,
+    solve,
+)
 from rangekeeper.execution.backends import Backend, PyomoHighs
 from rangekeeper.io import MemoryStore
 
 
-def execute(specification: Specification) -> Run:
+def investigate(specification: Specification) -> Run:
     backend: Backend = PyomoHighs()
     config = ExecutionConfig(
         backend=backend,
@@ -14,4 +21,11 @@ def execute(specification: Specification) -> Run:
         tolerances=Tolerances(relative=1e-10),
         backend_options={"presolve": "off"},
     )
-    return Executor(MemoryStore(), config=config).execute(specification)
+    return execute(specification, MemoryStore(), config=config).run
+
+
+def answer(specification: Specification, store: MemoryStore) -> Outcome:
+    outcome = solve(specification, store)
+    run: Run = outcome.run
+    assert run.id == outcome.run.id
+    return outcome
