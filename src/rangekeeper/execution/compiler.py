@@ -353,13 +353,18 @@ def build_problem(
         row.residual.coefficients for row in rows if row.relation is Relation.EQUAL
     ]
     rank = equality_rank(equalities, len(variables))
+    loose = undetermined(equalities, variables) if rank < len(variables) else ()
+    bounds = {
+        key
+        for row in rows
+        if row.relation is not Relation.EQUAL
+        for key in row.residual.coefficients
+    }
     analysis = Analysis(
         rank=rank,
         unknown_count=len(variables),
         free=tuple(id for id in variables if id not in constrained),
-        has_bounds=any(row.relation is not Relation.EQUAL for row in rows),
-        undetermined=(
-            undetermined(equalities, variables) if rank < len(variables) else ()
-        ),
+        undetermined=loose,
+        bounded=tuple(id for id in loose if id in bounds),
     )
     return AffineProblem(binding, variables, tuple(rows), analysis)

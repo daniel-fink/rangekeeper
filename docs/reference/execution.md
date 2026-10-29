@@ -96,8 +96,8 @@ outcome["project.land_cost"]  # the same value, by its dotted path
 
 | `Status` | Run report | `raise_for_status()` raises |
 | --- | --- | --- |
-| `FEASIBLE` | Solution `feasible`, and no `underdetermined` diagnostic | Nothing |
-| `UNDERDETERMINED` | Solution `feasible`, with an `underdetermined` diagnostic | `OutcomeError`, code `underdetermined` |
+| `FEASIBLE` | Solution `feasible`, and no `underdetermined` or `uniqueness_not_assessed` diagnostic | Nothing |
+| `UNDERDETERMINED` | Solution `feasible`, with an `underdetermined` or `uniqueness_not_assessed` diagnostic: the equations leave some unknowns free, with or without bounds | `OutcomeError`, with the code of that diagnostic |
 | `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination` |
 | `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError`, code `solver_termination` |
 | `INVALID` | Failed, with `specification_invalid` | `ValidationError`, with the validation issues of the attempt |
@@ -115,7 +115,9 @@ still reads every value; a free unknown holds one candidate value.
 unknown is undetermined when its value can change while every equality row still
 holds. In lesson 02's loose back door, freeing both the land cost and the rent
 factor leaves one degree of freedom along a line through all seven chained
-values, so all seven are named; fixing any one of them determines the rest. Bounds can still restrict these values (`uniqueness_not_assessed`).
+values, so all seven are named; fixing any one of them determines the rest. A
+bound that reads one of these values can still restrict it; the diagnostic is
+then `uniqueness_not_assessed`, and the status is still `UNDERDETERMINED`.
 
 `table(*keys)` returns a [Table](tables.md) with the columns `case`, `status`
 and one column for each key: the Quantity of a scalar value, or the Flow of a
@@ -374,10 +376,13 @@ optimum. `build_problem` computes the equality rank and the free variables in
 pure Python, for every backend: Gaussian elimination on rows divided by their
 largest coefficient, where an entry at or below `max(rows, unknowns)` times the
 machine epsilon counts as zero. Bounds may constrain otherwise free directions,
-so rank alone is not a uniqueness proof. The `underdetermined` or
-`uniqueness_not_assessed` diagnostic references the free unknowns that the
-equations do not determine, as `free_unknowns` reads them;
-`pyomo-highs` gives each of them the value zero.
+so rank alone is not a uniqueness proof. `Analysis.bounded` names the
+undetermined unknowns that an inequality row reads. The diagnostic references
+the free unknowns that the equations do not determine, as `free_unknowns` reads
+them: its code is `uniqueness_not_assessed` when `bounded` is not empty, and
+`underdetermined` otherwise. Both give `Status.UNDERDETERMINED`, because no
+check proves that a bound fixes a value. `pyomo-highs` gives each free unknown
+the value zero.
 
 ## Independent acceptance and immutable publication
 
