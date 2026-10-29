@@ -387,7 +387,7 @@ class Model:
             return self._index.get(id, Value)
         if id is None and owner is None and key is not None:
             return self._value_at(require_text(key, "key"))
-        return self._keyed(Value, id, owner, key)
+        return self._keyed(Value, id=id, owner=owner, key=key)
 
     def key_of(self, id: UUID) -> str:
         """Return the key that ``value(key=)`` takes for a Value: its inverse.
@@ -433,9 +433,9 @@ class Model:
         """
         if id is not None and owner is None and key is None:
             return self._index.get(id, Label)
-        return self._keyed(Label, id, owner, key)
+        return self._keyed(Label, id=id, owner=owner, key=key)
 
-    def _keyed(self, kind: type[K], id, owner, key) -> K:
+    def _keyed(self, kind: type[K], *, id, owner, key) -> K:
         if id is not None or owner is None or key is None:
             selectors = "an id, a key, or" if kind is Value else "an id, or"
             raise TypeError(

@@ -57,6 +57,13 @@ store-protocol methods and the Python protocol methods. Name the arguments:
 | `profile` | `SCurve(distribution)` | `SCurve(distribution=)` |
 | `finance` | `financial.calculate_pv(flow, rate=)`, and the same for `calculate_xnpv` and `calculate_irr` | `financial.calculate_pv(flow=, rate=)`, `calculate_xnpv(flow=, ...)`, `calculate_irr(flow=)` |
 | `finance` | `IrrResult(rate, residual, guess)` | `IrrResult(rate=, residual=, guess=)` |
+| `model` | `pivot.value(row, column)`, and the same for `available_value`, `cell`, `coverage` and `partition` | `pivot.value(row=, column=)`; `column` stays optional |
+| `model` | `Pivot(rows, columns, label=)` | `Pivot(rows=, columns=, label=)` |
+| `model` | `system.classified(model, classification, exclusive=)` | `classified(model=, classification=, exclusive=)` |
+| `model` | `system.membership.entities_in(model, assembly)`, `relationships_in(model, assembly)`, `containing_assemblies(model, entity)` | `entities_in(model=, assembly=)`, `relationships_in(model=, assembly=)`, `containing_assemblies(model=, entity=)` |
+| `model` | `formulation.declare(id, name, equations, values)` | `declare(id=, name=, equations=, values=)` |
+| `model` | `formulation.flow.shape(model, value)`, `aligned(model, members, reference)` | `shape(model=, value=)`, `aligned(model=, members=, reference=)` |
+| `model` | `Coverage`, `RollupEntry`, `RollupResult`, `Match`, `PivotColumn`, `Partition`, and the table columns `FieldColumn`, `ValueColumn`, `LabelColumn`, `PropertyColumn` | The same records, by keyword: `ValueColumn(name="net_area", key="net", units="meter**2")` |
 
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 

@@ -40,7 +40,7 @@ def test_projection_prepares_columns_before_cells_and_uses_hierarchy_order(monke
 
     model, root, *_ = fixture()
     hierarchy = Hierarchy(View(model))
-    column = ValueColumn("net", "net", "meter ** 2")
+    column = ValueColumn(name="net", key="net", units="meter ** 2")
 
     def factory_must_not_run(*args, **kwargs):
         pytest.fail("projection constructed a selector for a cell")
@@ -51,9 +51,11 @@ def test_projection_prepares_columns_before_cells_and_uses_hierarchy_order(monke
     assert tree.row(root.id).values["parent_id"] is None
     assert to_table(hierarchy.view, columns=(column,)).columns == ("net",)
     with pytest.raises(TableError, match="reserved"):
-        to_table(hierarchy, columns=(FieldColumn("parent_id", EntityField.NAME),))
+        to_table(
+            hierarchy, columns=(FieldColumn(name="parent_id", field=EntityField.NAME),)
+        )
     with pytest.raises(TypeError, match="EntityField"):
-        FieldColumn("name", "name")
+        FieldColumn(name="name", field="name")
 
 
 def test_aggregate_entries_enforce_structure_without_reducing_again():
@@ -65,9 +67,17 @@ def test_aggregate_entries_enforce_structure_without_reducing_again():
     copied = replace(result, entries=dict(result.entries))
     assert copied == result
     with pytest.raises(RollupError, match="available"):
-        RollupEntry(None, Coverage((a.id,), (a.id,), ()))
+        RollupEntry(
+            available=None,
+            coverage=Coverage(selected=(a.id,), measured=(a.id,), missing=()),
+        )
     with pytest.raises(RollupError, match="exactly"):
-        RollupResult(hierarchy, {}, result.value_ids, True)
+        RollupResult(
+            hierarchy=hierarchy,
+            entries={},
+            value_ids=result.value_ids,
+            require_complete=True,
+        )
 
 
 def test_table_constructs_each_raw_mapping_row_once(monkeypatch):
@@ -119,8 +129,8 @@ def test_projection_preflights_each_measure_once_and_reserved_name_first(monkeyp
 
     model, _, _, _, _, _, measure = fixture()
     columns = (
-        ValueColumn("first", "net", "meter ** 2", measure.id),
-        ValueColumn("second", "gross", "meter ** 2", measure.id),
+        ValueColumn(name="first", key="net", units="meter ** 2", measure=measure.id),
+        ValueColumn(name="second", key="gross", units="meter ** 2", measure=measure.id),
     )
     calls = []
     original = RecordIndex.get
@@ -139,8 +149,8 @@ def test_projection_preflights_each_measure_once_and_reserved_name_first(monkeyp
         to_table(
             Hierarchy(View(model)),
             columns=(
-                FieldColumn("parent_id", EntityField.NAME),
-                ValueColumn("invalid", "net", "not_a_real_unit"),
+                FieldColumn(name="parent_id", field=EntityField.NAME),
+                ValueColumn(name="invalid", key="net", units="not_a_real_unit"),
             ),
         )
 
@@ -154,7 +164,8 @@ def test_aggregate_mapping_copy_and_subtree_ownership():
     assert copied.root_value == result.root_value
     wrong = dict(result.entries)
     wrong[a.id] = RollupEntry(
-        result.available_value(b.id), Coverage((b.id,), (b.id,), ())
+        available=result.available_value(b.id),
+        coverage=Coverage(selected=(b.id,), measured=(b.id,), missing=()),
     )
     with pytest.raises(RollupError, match="subtree"):
         replace(result, entries=wrong)
@@ -184,7 +195,7 @@ def test_canonical_classification_lookups_reuse_the_model_index(monkeypatch):
 
     monkeypatch.setattr(RecordIndex, "build", rebuilding_is_an_error)
     assert to_table(
-        view, columns=(FieldColumn("kind", EntityField.CLASSIFICATION_CODE),)
+        view, columns=(FieldColumn(name="kind", field=EntityField.CLASSIFICATION_CODE),)
     ).column("kind") == ("room", "room", "room", None)
     assert all(
         model.classification(e.classification).code == "room"

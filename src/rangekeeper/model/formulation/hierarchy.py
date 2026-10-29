@@ -43,7 +43,7 @@ def formulate(hierarchy, *, id, aggregates, selected, populations, rule):
                 "an aggregate Value must belong to its Entity",
                 targets=(entity, value_id),
             )
-        total = shape(model, value_id)
+        total = shape(model=model, value=value_id)
         contributors = populations[entity]
         if not contributors or any(owner not in prepared for owner in contributors):
             raise ContractError(
@@ -99,4 +99,4 @@ def formulate(hierarchy, *, id, aggregates, selected, populations, rule):
                 )
             )
         bindings.append(value_id)
-    return declare(id, "hierarchy_sum", equations, bindings)
+    return declare(id=id, name="hierarchy_sum", equations=equations, values=bindings)
