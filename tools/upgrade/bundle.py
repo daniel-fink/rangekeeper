@@ -147,8 +147,8 @@ def upgrade(source: Path, destination: Path, *, release: str) -> dict[str, Any]:
     roots = {(r["kind"], r["id"]) for r in manifest.get("roots", [])}
     selected = [d for d in others if (type(d).__name__, str(d.id)) in roots]
     return current.write(
-        destination,
-        model,
+        root=destination,
+        model=model,
         documents=selected,
         resolver=store,
         geometry=current.GeometrySources(directories=geometries),

@@ -22,7 +22,7 @@ def _parse(text: str) -> object:
         raise DecodeError(str(error)) from error
 
 
-def loads(text: str, *, kind: type[D]) -> D:
+def loads(*, text: str, kind: type[D]) -> D:
     """Decode and locally validate an explicit root kind; resolve no external inputs.
 
     Malformed/ambiguous text raises DecodeError; valid JSON with an invalid document
@@ -47,15 +47,15 @@ def dumps(document: Document) -> str:
     )
 
 
-def read(path: Path, *, kind: type[D]) -> D:
+def read(*, path: Path, kind: type[D]) -> D:
     """Read UTF-8; filesystem errors propagate and malformed text raises DecodeError."""
     try:
         text = Path(path).read_text(encoding="utf-8")
     except UnicodeError as error:
         raise DecodeError(str(error)) from error
-    return loads(text, kind=kind)
+    return loads(text=text, kind=kind)
 
 
-def write(document: Document, path: Path) -> Path:
+def write(*, document: Document, path: Path) -> Path:
     """Atomically create a new file; never replace an existing destination."""
     return write_new(Path(path), dumps(document))

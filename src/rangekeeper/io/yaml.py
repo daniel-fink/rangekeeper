@@ -21,7 +21,7 @@ def _implementation() -> Any:
     return yaml
 
 
-def loads(text: str, *, kind: type[D]) -> D:
+def loads(*, text: str, kind: type[D]) -> D:
     """Decode safe JSON-compatible YAML with unique string keys and explicit kind.
 
     The policy is ``rangekeeper.shared.yaml.decode``. Cyclic aliases and
@@ -55,15 +55,15 @@ def dumps(document: Document) -> str:
     )
 
 
-def read(path: Path, *, kind: type[D]) -> D:
+def read(*, path: Path, kind: type[D]) -> D:
     """Read UTF-8 without resolving referenced revisions; OSError remains visible."""
     try:
         text = Path(path).read_text(encoding="utf-8")
     except UnicodeError as error:
         raise DecodeError(str(error)) from error
-    return loads(text, kind=kind)
+    return loads(text=text, kind=kind)
 
 
-def write(document: Document, path: Path) -> Path:
+def write(*, document: Document, path: Path) -> Path:
     """Atomically create new YAML; require an existing parent and absent destination."""
     return write_new(Path(path), dumps(document))

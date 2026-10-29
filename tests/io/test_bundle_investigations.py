@@ -26,10 +26,10 @@ FIXTURES = Path(__file__).parents[2] / "examples/schema"
 
 def inputs():
     store = MemoryStore()
-    model = yaml.read(FIXTURES / "model.yaml", kind=Model)
-    common = yaml.read(FIXTURES / "specification-common.yaml", kind=Specification)
+    model = yaml.read(path=FIXTURES / "model.yaml", kind=Model)
+    common = yaml.read(path=FIXTURES / "specification-common.yaml", kind=Specification)
     spec = yaml.read(
-        FIXTURES / "specification-composed-forward.yaml", kind=Specification
+        path=FIXTURES / "specification-composed-forward.yaml", kind=Specification
     )
     for d in (model, common, spec):
         store.put(d)
@@ -41,8 +41,10 @@ def test_real_run_closure_and_further_execution(tmp_path):
     run = execute(specification=spec, store=store).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE
     output = store.load_model(run.record.outputs[0])
-    first = write(tmp_path / "bundle", output, documents=[run], resolver=store)
-    reader = Reader(tmp_path / "bundle")
+    first = write(
+        root=tmp_path / "bundle", model=output, documents=[run], resolver=store
+    )
+    reader = Reader(root=tmp_path / "bundle")
     assert {d.id for d in reader.documents()} == {
         model.id,
         common.id,
@@ -74,13 +76,13 @@ def test_real_run_closure_and_further_execution(tmp_path):
     again = execute(specification=revised, store=fresh).run
     assert again.report.status.solution is SolutionStatus.FEASIBLE
     second = write(
-        tmp_path / "second",
-        fresh.load_model(again.record.outputs[0]),
+        root=tmp_path / "second",
+        model=fresh.load_model(again.record.outputs[0]),
         documents=[again],
         resolver=fresh,
     )
     assert second["id"] != first["id"]
-    assert Reader(tmp_path / "bundle").manifest == first
+    assert Reader(root=tmp_path / "bundle").manifest == first
     assert (
         fresh.load_specification(spec.id).compose(resolver=fresh).model_id == model.id
     )
@@ -88,16 +90,16 @@ def test_real_run_closure_and_further_execution(tmp_path):
 
 def test_unexecuted_composition_history_and_repacking(tmp_path):
     store, model, common, spec = inputs()
-    first = write(tmp_path / "one", model, documents=[spec], resolver=store)
+    first = write(root=tmp_path / "one", model=model, documents=[spec], resolver=store)
     second = write(
-        tmp_path / "two",
-        model,
+        root=tmp_path / "two",
+        model=model,
         documents=[spec],
         resolver=store,
         parquet=ParquetOptions(compression="snappy", row_group_size=1),
     )
     assert first["id"] == second["id"] != identity(model)
-    reader = Reader(tmp_path / "one")
+    reader = Reader(root=tmp_path / "one")
     assert len(reader.documents()) == 3
     assert (
         reader.records(document=spec.id, kind="Specification")["items"][0]["kind"]
@@ -108,13 +110,13 @@ def test_unexecuted_composition_history_and_repacking(tmp_path):
     data = model.to_data()
     data["metadata"]["previous"] = str(uuid4())
     historic = Model.from_data(data)
-    write(tmp_path / "history", historic)
-    assert len(Reader(tmp_path / "history").documents()) == 1
+    write(root=tmp_path / "history", model=historic)
+    assert len(Reader(root=tmp_path / "history").documents()) == 1
 
 
 def test_batch_includes_actual_failed_attempt_and_outputs(tmp_path):
     store, model, common, spec = inputs()
-    bad = yaml.read(FIXTURES / "specification-objectives.yaml", kind=Specification)
+    bad = yaml.read(path=FIXTURES / "specification-objectives.yaml", kind=Specification)
     store.put(bad)
     batch = Specification.from_data(
         dict(
@@ -130,8 +132,8 @@ def test_batch_includes_actual_failed_attempt_and_outputs(tmp_path):
         for r in children
     )
     assert any(r.report.status.solution is SolutionStatus.FEASIBLE for r in children)
-    write(tmp_path / "batch", model, documents=[run], resolver=store)
-    reader = Reader(tmp_path / "batch")
+    write(root=tmp_path / "batch", model=model, documents=[run], resolver=store)
+    reader = Reader(root=tmp_path / "batch")
     assert len([d for d in reader.documents() if isinstance(d, Run)]) == 3
     reader.copy_to(MemoryStore())
 
@@ -139,7 +141,7 @@ def test_batch_includes_actual_failed_attempt_and_outputs(tmp_path):
 def test_missing_wrong_resolver_and_conflicting_records_fail_before_export(tmp_path):
     store, model, common, spec = inputs()
     with pytest.raises(MissingReferenceError):
-        write(tmp_path / "missing", model, documents=[spec])
+        write(root=tmp_path / "missing", model=model, documents=[spec])
     assert not (tmp_path / "missing").exists()
 
     class Wrong:
@@ -147,22 +149,26 @@ def test_missing_wrong_resolver_and_conflicting_records_fail_before_export(tmp_p
             return spec
 
     with pytest.raises(IdentityConflictError):
-        write(tmp_path / "wrong", model, documents=[spec], resolver=Wrong())
+        write(root=tmp_path / "wrong", model=model, documents=[spec], resolver=Wrong())
     changed = model.to_data()
     changed["metadata"]["name"] = "Conflicting retained revision"
     with pytest.raises(RevisionConflictError):
-        write(tmp_path / "conflict", model, documents=[Model.from_data(changed)])
+        write(
+            root=tmp_path / "conflict",
+            model=model,
+            documents=[Model.from_data(changed)],
+        )
 
 
 def test_copy_conflict_preflight_preserves_destination(tmp_path):
     store, model, common, spec = inputs()
-    write(tmp_path / "bundle", model, documents=[spec], resolver=store)
+    write(root=tmp_path / "bundle", model=model, documents=[spec], resolver=store)
     other = MemoryStore()
     data = model.to_data()
     data["metadata"]["name"] = "Conflict"
     other.put(Model.from_data(data))
     with pytest.raises(RevisionConflictError):
-        Reader(tmp_path / "bundle").copy_to(other)
+        Reader(root=tmp_path / "bundle").copy_to(other)
     with pytest.raises(MissingReferenceError):
         other.load_specification(common.id)
     assert other.load_model(model.id).metadata.name == "Conflict"
@@ -173,7 +179,9 @@ def test_copy_conflict_preflight_preserves_destination(tmp_path):
 )
 def test_manifest_cannot_rebind_or_hide_documents(tmp_path, case):
     store, model, common, spec = inputs()
-    manifest = write(tmp_path / "bundle", model, documents=[spec], resolver=store)
+    manifest = write(
+        root=tmp_path / "bundle", model=model, documents=[spec], resolver=store
+    )
     if case == "root":
         manifest["roots"][0]["id"] = str(uuid4())
     elif case == "digest":
@@ -188,17 +196,19 @@ def test_manifest_cannot_rebind_or_hide_documents(tmp_path, case):
         manifest["format"] = "rangekeeper.bundle/1-proposal"
     (tmp_path / "bundle/manifest.json").write_text(json.dumps(manifest))
     with pytest.raises((ValueError, MissingReferenceError, OSError)):
-        Reader(tmp_path / "bundle")
+        Reader(root=tmp_path / "bundle")
 
 
 def test_document_budget_and_corrupt_supporting_payload(tmp_path):
     store, model, common, spec = inputs()
-    manifest = write(tmp_path / "bundle", model, documents=[spec], resolver=store)
+    manifest = write(
+        root=tmp_path / "bundle", model=model, documents=[spec], resolver=store
+    )
     with pytest.raises(ValueError, match="document limit"):
-        Reader(tmp_path / "bundle", limits=ReadLimits(documents=2))
+        Reader(root=tmp_path / "bundle", limits=ReadLimits(documents=2))
     path = tmp_path / "bundle" / manifest["documents"][0]["tables"][0]["path"]
     data = bytearray(path.read_bytes())
     data[-1] ^= 1
     path.write_bytes(data)
     with pytest.raises(ValueError, match="integrity"):
-        Reader(tmp_path / "bundle")
+        Reader(root=tmp_path / "bundle")

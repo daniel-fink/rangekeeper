@@ -145,7 +145,7 @@ def test_bundle_conversion_writes_a_new_bundle_with_the_same_documents(tmp_path)
 
     _, documents = converted()
     assert main(["bundle", str(SAMPLES / "bundle"), str(tmp_path / "new")]) == 0
-    reader = Reader(tmp_path / "new")
+    reader = Reader(root=tmp_path / "new")
     restored = {document.id: document for document in reader.documents()}
     for document in documents.values():
         assert exact_equal(restored[document.id].to_data(), document.to_data())

@@ -109,8 +109,8 @@ def main() -> None:
     """Write model.json and the Bundle next to this script."""
     assert rangekeeper.__version__ == "1.0.0a2", rangekeeper.__version__
     sample = model()
-    json_codec.write(sample, HERE / "model.json")
-    bundle.write(HERE / "bundle", sample)
+    json_codec.write(document=sample, path=HERE / "model.json")
+    bundle.write(root=HERE / "bundle", model=sample)
 
 
 if __name__ == "__main__":

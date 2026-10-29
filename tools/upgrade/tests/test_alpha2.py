@@ -83,11 +83,11 @@ def test_the_command_converts_documents_from_1_0_0a2(tmp_path: Path) -> None:
 def test_a_1_0_0a2_bundle_converts_to_a_bundle_the_reader_opens(tmp_path: Path) -> None:
     # The current Reader refuses the 1.0.0a2 schema pin.
     with pytest.raises(ValueError, match="schema pin"):
-        Reader(SAMPLES / "bundle")
+        Reader(root=SAMPLES / "bundle")
     destination = tmp_path / "new"
     arguments = ["bundle", "--from", "1.0.0a2", str(SAMPLES / "bundle")]
     assert main([*arguments, str(destination)]) == 0
-    restored = Reader(destination).model()
+    restored = Reader(root=destination).model()
     expected = Model.from_data(convert(load(), release="1.0.0a2"))
     assert exact_equal(restored.to_data(), expected.to_data())
     # The 0.x release refuses the 1.0.0a2 pin.

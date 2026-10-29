@@ -3,7 +3,7 @@
 Every extension point uses one pattern ([ADR-013](../decisions/013-execution-and-extensions.md#extension-points)):
 
 - a `Protocol` that each implementation satisfies;
-- a registry in the package that owns the point, with `register(name, implementation)`;
+- a registry in the package that owns the point, with `register(name=, implementation=)`;
 - an optional entry point group, `rangekeeper.<point>`, for installed distributions;
 - a fingerprint for each implementation, which evidence records.
 
@@ -32,7 +32,7 @@ as `Compounding(rate=)`.
 from rangekeeper.execution import ExecutionConfig, execute
 from rangekeeper.execution.backends import registry
 
-registry.register("my-solver", MySolver())
+registry.register(name="my-solver", implementation=MySolver())
 outcome = execute(specification, store, config=ExecutionConfig(backend="my-solver"))
 ```
 
@@ -45,7 +45,7 @@ the same name changes nothing. Another implementation under a used name raises
 
 | Member | Behaviour |
 | --- | --- |
-| `register(name, implementation, *, fingerprint=None, modules=(), replace=False)` | Registers one implementation and returns its `Registration` |
+| `register(*, name, implementation, fingerprint=None, modules=(), replace=False)` | Registers one implementation and returns its `Registration` |
 | `get(name)` | Returns the implementation. An unknown name raises `UnknownExtensionError`, a `LookupError` with `suggestions` |
 | `registration(name)` | Returns the `Registration`: `point`, `name`, `implementation`, `fingerprint` and `qualified_name` |
 | `names()` | Returns the registered and declared names. It loads no entry point |
@@ -114,7 +114,7 @@ class Profile(Protocol):
 
 
 registry: Registry[Profile] = Registry("profiles", Profile)
-registry.register("uniform", Uniform())
+registry.register(name="uniform", implementation=Uniform())
 ```
 
 - Make the Protocol `runtime_checkable`; `Registry` refuses one that is not.

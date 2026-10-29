@@ -418,7 +418,7 @@ def test_revision_pinning_and_stale_selector_rejection():
     assert View(changed).rollup(definition=reduction()).root_value.magnitude == 70
     assert select_value("net")(changed, a).quantity.magnitude == 50
     assert (
-        View(codec.loads(codec.dumps(changed), kind=Model))
+        View(codec.loads(text=codec.dumps(changed), kind=Model))
         .rollup(definition=reduction())
         .root_value.magnitude
         == 70

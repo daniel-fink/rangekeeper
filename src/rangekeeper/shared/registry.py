@@ -2,7 +2,7 @@
 
 An extension point is a Protocol and a ``Registry``. The package that owns the
 point makes the registry and registers its built-in implementations. Other code
-calls ``register(name, implementation)``. An installed distribution can also
+calls ``register(name=, implementation=)``. An installed distribution can also
 declare implementations in the entry point group ``rangekeeper.<point>``; the
 registry loads an entry point only when a lookup asks for its name.
 
@@ -112,9 +112,9 @@ class Registry[T]:
 
     def register(
         self,
+        *,
         name: str,
         implementation: T,
-        *,
         fingerprint: str | None = None,
         modules: Iterable[str] = (),
         replace: bool = False,
@@ -198,7 +198,7 @@ class Registry[T]:
                     f"entry point {name!r} in {self.group} from "
                     f"{_distribution(entry)} failed to load: {error}"
                 ) from error
-            return self.register(name, implementation)
+            return self.register(name=name, implementation=implementation)
 
     def describe(self, implementation: T) -> Registration[T]:
         """Return the registration that evidence records for an implementation.

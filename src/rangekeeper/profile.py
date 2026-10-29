@@ -187,7 +187,7 @@ for _name, _profile in (
     ("uniform", Uniform),
     ("scurve", SCurve),
 ):
-    profiles.register(_name, _profile)
+    profiles.register(name=_name, implementation=_profile)
 
 
 @register

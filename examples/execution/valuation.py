@@ -28,7 +28,7 @@ def main() -> None:
             "output must be a fresh or empty directory; previous evidence is immutable"
         )
     store = DirectoryStore(args.output / "revisions")
-    model = yaml.read(args.examples / "model.yaml", kind=Model)
+    model = yaml.read(path=args.examples / "model.yaml", kind=Model)
     store.put(model)
     specifications = {}
     for name in (
@@ -36,7 +36,9 @@ def main() -> None:
         "specification-composed-forward",
         "specification-composed-inverse",
     ):
-        specification = yaml.read(args.examples / f"{name}.yaml", kind=Specification)
+        specification = yaml.read(
+            path=args.examples / f"{name}.yaml", kind=Specification
+        )
         store.put(specification)
         specifications[name] = specification
     forward_spec = specifications["specification-composed-forward"]
@@ -86,7 +88,7 @@ def main() -> None:
         ("model-inverse", second),
         ("run-batch", batch),
     ):
-        codec.write(document, args.output / f"{name}.json")
+        codec.write(document=document, path=args.output / f"{name}.json")
     for run in (forward, inverse, batch):
         validate(run, resolver=store).raise_if_invalid()
     capital = UUID("a947d40b-d9b0-54cb-a2a4-f8f598405ac2")

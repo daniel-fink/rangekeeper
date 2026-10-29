@@ -1184,7 +1184,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *args, **kwargs)",
-    "validate": "method (self, path: pathlib.Path, geometry: rangekeeper.schema.records.Geometry) -> None"
+    "validate": "method (self, *, path: pathlib.Path, geometry: rangekeeper.schema.records.Geometry) -> None"
    },
    "module": "rangekeeper.io.geometry",
    "signature": "(*args, **kwargs)"
@@ -1262,7 +1262,7 @@
   "Reader": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, root: pathlib.Path, *, providers: collections.abc.Mapping[tuple[str, str, str], rangekeeper.io.geometry.GeometryProvider] = <mappingproxy>, limits: rangekeeper.io.bundle.ReadLimits = <ReadLimits>, index: rangekeeper.io.bundle.IndexCheck = IndexCheck.FULL) -> None",
+    "__init__": "method (self, *, root: pathlib.Path, providers: collections.abc.Mapping[tuple[str, str, str], rangekeeper.io.geometry.GeometryProvider] = <mappingproxy>, limits: rangekeeper.io.bundle.ReadLimits = <ReadLimits>, index: rangekeeper.io.bundle.IndexCheck = IndexCheck.FULL) -> None",
     "copy_to": "method (self, store: rangekeeper.shared.store.RecordStore) -> tuple[dict[str, str], ...]",
     "documents": "method (self) -> tuple[rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run, ...]",
     "geometry_path": "method (self, id: uuid.UUID | None = None) -> pathlib.Path | None",
@@ -1274,12 +1274,12 @@
     "verify_geometry": "method (self) -> None"
    },
    "module": "rangekeeper.io.bundle",
-   "signature": "(root: pathlib.Path, *, providers: collections.abc.Mapping[tuple[str, str, str], rangekeeper.io.geometry.GeometryProvider] = <mappingproxy>, limits: rangekeeper.io.bundle.ReadLimits = <ReadLimits>, index: rangekeeper.io.bundle.IndexCheck = IndexCheck.FULL) -> None"
+   "signature": "(*, root: pathlib.Path, providers: collections.abc.Mapping[tuple[str, str, str], rangekeeper.io.geometry.GeometryProvider] = <mappingproxy>, limits: rangekeeper.io.bundle.ReadLimits = <ReadLimits>, index: rangekeeper.io.bundle.IndexCheck = IndexCheck.FULL) -> None"
   },
   "write": {
    "kind": "function",
    "module": "rangekeeper.io.bundle",
-   "signature": "(root: pathlib.Path, model: rangekeeper.model.model.Model, *, documents: collections.abc.Iterable[rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run] = tuple(), resolver: rangekeeper.shared.references.DocumentResolver | None = None, geometry: rangekeeper.io.bundle.GeometrySources = <GeometrySources>, parquet: rangekeeper.io.bundle.ParquetOptions = <ParquetOptions>) -> dict[str, typing.Any]"
+   "signature": "(*, root: pathlib.Path, model: rangekeeper.model.model.Model, documents: collections.abc.Iterable[rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run] = tuple(), resolver: rangekeeper.shared.references.DocumentResolver | None = None, geometry: rangekeeper.io.bundle.GeometrySources = <GeometrySources>, parquet: rangekeeper.io.bundle.ParquetOptions = <ParquetOptions>) -> dict[str, typing.Any]"
   }
  },
  "rangekeeper.io.json": {
@@ -1291,29 +1291,29 @@
   "loads": {
    "kind": "function",
    "module": "rangekeeper.io.json",
-   "signature": "(text: str, *, kind: type[~D]) -> ~D"
+   "signature": "(*, text: str, kind: type[~D]) -> ~D"
   },
   "read": {
    "kind": "function",
    "module": "rangekeeper.io.json",
-   "signature": "(path: pathlib.Path, *, kind: type[~D]) -> ~D"
+   "signature": "(*, path: pathlib.Path, kind: type[~D]) -> ~D"
   },
   "write": {
    "kind": "function",
    "module": "rangekeeper.io.json",
-   "signature": "(document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run, path: pathlib.Path) -> pathlib.Path"
+   "signature": "(*, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run, path: pathlib.Path) -> pathlib.Path"
   }
  },
  "rangekeeper.io.polars": {
   "dates": {
    "kind": "function",
    "module": "rangekeeper.io.polars",
-   "signature": "(flow: Flow, *, name: str = 'magnitude', timing: PeriodTiming | None = None) -> DataFrame"
+   "signature": "(*, flow: Flow, name: str = 'magnitude', timing: PeriodTiming | None = None) -> DataFrame"
   },
   "from_frame": {
    "kind": "function",
    "module": "rangekeeper.io.polars",
-   "signature": "(frame: DataFrame, *, units: str) -> Flow"
+   "signature": "(*, frame: DataFrame, units: str) -> Flow"
   },
   "text_frame": {
    "kind": "function",
@@ -1340,17 +1340,17 @@
   "loads": {
    "kind": "function",
    "module": "rangekeeper.io.yaml",
-   "signature": "(text: str, *, kind: type[~D]) -> ~D"
+   "signature": "(*, text: str, kind: type[~D]) -> ~D"
   },
   "read": {
    "kind": "function",
    "module": "rangekeeper.io.yaml",
-   "signature": "(path: pathlib.Path, *, kind: type[~D]) -> ~D"
+   "signature": "(*, path: pathlib.Path, kind: type[~D]) -> ~D"
   },
   "write": {
    "kind": "function",
    "module": "rangekeeper.io.yaml",
-   "signature": "(document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run, path: pathlib.Path) -> pathlib.Path"
+   "signature": "(*, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run, path: pathlib.Path) -> pathlib.Path"
   }
  },
  "rangekeeper.market": {

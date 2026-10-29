@@ -820,6 +820,6 @@ def _coordinate(movement: records.Movement) -> tuple:
 unit_systems: Registry[UnitSystem] = Registry(
     "unit_systems", UnitSystem, fingerprint=lambda system: system.fingerprint
 )
-unit_systems.register("default", default_units)
+unit_systems.register(name="default", implementation=default_units)
 
 __all__ = ["Quantity", "UnitSystem", "default_units", "isclose", "unit_systems"]

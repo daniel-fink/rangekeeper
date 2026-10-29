@@ -144,7 +144,7 @@ def _movement_column(name: str, slot: dict[str, Any], values: list[Any]) -> Seri
     return pl.Series(name, values, dtype=dtype)
 
 
-def from_frame(frame: DataFrame, *, units: str) -> Flow:
+def from_frame(*, frame: DataFrame, units: str) -> Flow:
     """Copy an explicit movement table; NaN is invalid rather than an alias for missing.
 
     With currency units, each magnitude becomes an amount through
@@ -168,8 +168,8 @@ def to_table(frame: DataFrame) -> Table:
 
 
 def dates(
-    flow: Flow,
     *,
+    flow: Flow,
     name: str = "magnitude",
     timing: PeriodTiming | None = None,
 ) -> DataFrame:

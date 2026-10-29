@@ -78,7 +78,7 @@ composition.validate(resolver=memory).raise_if_invalid()
 validate_run(run, resolver=memory).raise_if_invalid()
 memory.put(run)
 assert memory.load_run(run.id).report.status.completion is CompletionStatus.FAILED
-assert json.loads(json.dumps(run), kind=rk.Run).to_data() == run.to_data()
+assert json.loads(text=json.dumps(run), kind=rk.Run).to_data() == run.to_data()
 
 with TemporaryDirectory() as directory:
     root = Path(directory)
@@ -88,8 +88,8 @@ with TemporaryDirectory() as directory:
         disk.put(document)
     assert disk.put(run) == run.id  # identical revision: no replacement
     assert disk.load_model(model.id).to_data() == model.to_data()
-    json.write(run, root / "run.json")
-    assert json.read(root / "run.json", kind=rk.Run).id == run.id
+    json.write(document=run, path=root / "run.json")
+    assert json.read(path=root / "run.json", kind=rk.Run).id == run.id
 ```
 
 ## Local Run checks and resolved validation

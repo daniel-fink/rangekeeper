@@ -236,7 +236,7 @@ from rangekeeper.io import json as codec
 from rangekeeper.model import Model
 
 # Working directory: examples/walkthrough
-model = codec.read(Path("../data/mixed_use_property/model.json"), kind=Model)
+model = codec.read(path=Path("../data/mixed_use_property/model.json"), kind=Model)
 ```
 
 The source preparation [evidence](../research/notebook-02-source-2026-10-12/README.md)

@@ -264,7 +264,7 @@ with TemporaryDirectory() as directory:
     for store in (MemoryStore(), DirectoryStore(Path(directory) / 'records')):
         for doc in (domain, spec, failed):
             store.put(doc)
-            assert json.loads(json.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
+            assert json.loads(text=json.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
         assert store.load_run(failed.id).to_data() == failed.to_data()
 for prefix in ('yaml', 'pint', 'pandas', 'numpy', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.rollup'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
@@ -313,17 +313,17 @@ import rangekeeper as rk
 from rangekeeper.io import json, yaml, MemoryStore, DirectoryStore
 from rangekeeper.run import validate, CompletionStatus, SolutionStatus
 examples = Path('examples')
-models = [yaml.read(path, kind=rk.Model) for path in sorted(examples.glob('model*.yaml'))]
-specs = [yaml.read(path, kind=rk.Specification) for path in sorted(examples.glob('specification*.yaml'))]
-runs = [yaml.read(examples / ('run-' + name + '.yaml'), kind=rk.Run) for name in ('forward', 'inverse', 'failed', 'skipped', 'batch')]
+models = [yaml.read(path=path, kind=rk.Model) for path in sorted(examples.glob('model*.yaml'))]
+specs = [yaml.read(path=path, kind=rk.Specification) for path in sorted(examples.glob('specification*.yaml'))]
+runs = [yaml.read(path=examples / ('run-' + name + '.yaml'), kind=rk.Run) for name in ('forward', 'inverse', 'failed', 'skipped', 'batch')]
 for store in (MemoryStore(), DirectoryStore(Path('revisions'))):
     for doc in models + specs + runs:
         store.put(doc)
-        assert json.loads(json.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
-        assert yaml.loads(yaml.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
+        assert json.loads(text=json.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
+        assert yaml.loads(text=yaml.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
     for run in runs:
         assert validate(store.load_run(run.id), resolver=store).valid
-    spec = yaml.read(examples / 'specification-composed-forward.yaml', kind=rk.Specification)
+    spec = yaml.read(path=examples / 'specification-composed-forward.yaml', kind=rk.Specification)
     assert spec.compose(resolver=store).validate(resolver=store).valid
     from rangekeeper.execution import execute
     unavailable = execute(specification=spec, store=store).run
@@ -346,7 +346,7 @@ hierarchy = Hierarchy.from_membership(View(model, assembly=group.id), root=group
 result = QuantityRollup(key='net', units='centimeter ** 2', contributors=lambda item: item.id == entity.id).execute(hierarchy)
 assert result.root_value.magnitude == 120000 and result.coverage(group.id).complete
 assert result.value_ids[entity.id] == value.id
-assert json.loads(json.dumps(model), kind=rk.Model).to_data() == model.to_data()
+assert json.loads(text=json.dumps(model), kind=rk.Model).to_data() == model.to_data()
 for prefix in ('networkx', 'pandas', 'rangekeeper.legacy', 'rangekeeper.graph', 'pyomo', 'highspy'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: canonical membership, explicit Value rollup, coverage and conversion passed')
@@ -405,15 +405,15 @@ from rangekeeper.run import validate, CompletionStatus, SolutionStatus
 for prefix in ('pyomo', 'highspy', 'numpy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.rollup'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 store = DirectoryStore(Path('executed'))
-model = yaml.read(Path('examples/model.yaml'), kind=rk.Model)
+model = yaml.read(path=Path('examples/model.yaml'), kind=rk.Model)
 store.put(model)
 for name in ('specification-common', 'specification-composed-forward', 'specification-composed-inverse'):
-    store.put(yaml.read(Path('examples') / (name + '.yaml'), kind=rk.Specification))
-forward = execute(specification=yaml.read(Path('examples/specification-composed-forward.yaml'), kind=rk.Specification), store=store).run
+    store.put(yaml.read(path=Path('examples') / (name + '.yaml'), kind=rk.Specification))
+forward = execute(specification=yaml.read(path=Path('examples/specification-composed-forward.yaml'), kind=rk.Specification), store=store).run
 assert forward.report.status.solution is SolutionStatus.FEASIBLE, forward.report
 first = store.load_model(forward.record.outputs[0])
 assert abs(first.value(UUID('a947d40b-d9b0-54cb-a2a4-f8f598405ac2')).quantity.magnitude - 11000000) < 1e-6
-data = yaml.read(Path('examples/specification-inverse.yaml'), kind=rk.Specification).to_data()
+data = yaml.read(path=Path('examples/specification-inverse.yaml'), kind=rk.Specification).to_data()
 data['metadata']['id'] = str(uuid4())
 data['model'] = str(first.id)
 inverse = execute(specification=rk.Specification.from_data(data), store=store).run
@@ -448,8 +448,8 @@ from rangekeeper.io import polars
 assert importlib.util.find_spec('pandas') is None
 assert importlib.util.find_spec('rangekeeper.adapters') is None
 flow = Flow.from_events(dates=[date(2026, 1, 1)], magnitudes=[0], units='AUD')
-assert polars.from_frame(polars.to_frame(flow), units='AUD') == flow
-assert polars.dates(flow)['date'].to_list() == [date(2026, 1, 1)]
+assert polars.from_frame(frame=polars.to_frame(flow), units='AUD') == flow
+assert polars.dates(flow=flow)['date'].to_list() == [date(2026, 1, 1)]
 assert '&lt;Cash&gt; [AUD]' in flow.display(name='<Cash>')._repr_html_()
 assert 'Flow [AUD]' in flow._repr_html_()
 from rangekeeper.flow import Stream

@@ -18,7 +18,7 @@ __all__ = ["GeometryProvider", "geometry_providers"]
 class GeometryProvider(Protocol):
     """Check that native files resolve the selectors of one Geometry."""
 
-    def validate(self, path: Path, geometry: Geometry) -> None:
+    def validate(self, *, path: Path, geometry: Geometry) -> None:
         """Raise an error when the files at ``path`` do not match ``geometry``."""
         ...
 

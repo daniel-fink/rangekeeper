@@ -26,7 +26,7 @@ def write(source: str | Path, destination: str | Path) -> Path:
         hashes[name] = hashlib.sha256((source / name).read_bytes()).hexdigest()
         if hashes[name] != manifest["files"][name]["sha256"]:
             raise ValueError(f"Geometry source checksum mismatch: {name}")
-    model = codec.loads((source / "model.json").read_text(), kind=Model)
+    model = codec.loads(text=(source / "model.json").read_text(), kind=Model)
     validate_associations(model, json.loads((source / "associations.json").read_text()))
     assets = files(__package__).joinpath("assets/geometry")
     bundle = json.loads(assets.joinpath("manifest.json").read_text())
