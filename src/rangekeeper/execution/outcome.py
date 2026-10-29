@@ -336,7 +336,23 @@ def _error(outcome: Outcome) -> RangekeeperError | None:
     target = None if decisive is None else decisive.target
     if status is Status.UNSUPPORTED:
         assert code is not None
-        return UnsupportedError(message, code=code, document=document, target=target)
+        values = {} if decisive is None else decisive.values
+        if not isinstance(values, Mapping):
+            values = {}
+        equation = values.get("equation")
+        unknowns = values.get("unknowns")
+        return UnsupportedError(
+            message,
+            code=code,
+            document=document,
+            target=target,
+            equation=equation if isinstance(equation, str) else None,
+            unknowns=(
+                tuple(str(key) for key in unknowns)
+                if isinstance(unknowns, (list, tuple))
+                else ()
+            ),
+        )
     if status is Status.INVALID:
         assert code is not None
         return ValidationError(
