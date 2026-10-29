@@ -142,8 +142,9 @@ reads stored and converted Runs too: `limit` and `error` from a Run before
 ## Compare Outcomes
 
 `rk.execution.compare(outcomes=, keys=, baseline=None)` compares two or more
-named Outcomes on some scalar keys with one call (D30). It returns a
-`Comparison`, which displays as a table with the `calculations` extra:
+named Outcomes on some scalar keys with one call (D30). Without `baseline` it
+returns a `SideBySide`; with `baseline`, the name of one of the Outcomes, it
+returns a `Paired`. Each displays as a table with the `calculations` extra:
 
 ```python
 rk.execution.compare(
@@ -152,26 +153,41 @@ rk.execution.compare(
 )
 ```
 
-Without `baseline`, `values` is a `Table` with a `key` column and one column
-for each Outcome; each Outcome must be a leaf. With `baseline`, the name of one
-of the Outcomes, each other Outcome is paired with it:
+A `SideBySide` compares leaf Outcomes. `values` is a `Table` with a `key`
+column and one column for each Outcome, and `select(*keys)` gives the same
+comparison on some of its keys.
+
+A `Paired` pairs each other Outcome with the baseline:
 
 | Member | Result |
 | --- | --- |
-| `pairs(outcome=)` | The `Pair`s of one Outcome: each `member`, the `baseline` member it pairs with, and its `case` position (None for a leaf) |
+| `compared` | The names of the Outcomes that are not the baseline |
+| `pairs(outcome=)` | The `Pair`s of one Outcome: each `member`, the `baseline` member it pairs with, and its `case` key (None when both are leaves) |
 | `difference(outcome=, key=)` | The paired differences, value less baseline, in the baseline's units |
 | `differences` | A `Table`: `outcome`, `key`, `case`, `value`, `baseline` and `difference` for each pair |
 | `summary()` | A `Table`: `outcome`, `key`, `count`, `mean`, `minimum`, `maximum` and `share_above_zero` of the paired differences |
-| `select(*keys)` | The same Comparison on some of its keys |
-| `where(**values)` | The Comparison of the pairs whose compared member has these values; a list means any of them, and Quantities compare after unit conversion |
+| `select(*keys)` | The same comparison on some of its keys |
+| `where(**values)` | The comparison of the pairs whose compared member has these values; a list means any of them, and Quantities compare after unit conversion |
 
-Each member is one leaf case, in `walk()` order. Batches pair case by case, by
-position, and must have the same number of cases; a leaf pairs with every case
-of the other side. A key that names no value raises `MissingReferenceError`; a
-Flow value raises `TypeError`. Pairing by path key, `by`, `by_case` and
-`distribution(outcome=, key=)` follow with cases and paths
-([#292](https://github.com/daniel-fink/rangekeeper/issues/292),
-[#296](https://github.com/daniel-fink/rangekeeper/issues/296),
+Each member is one leaf case, in `walk()` order. The cases of two batches pair
+by case key, the `case` column of `Outcome.table`: the keys of nested batches
+joined by `/`, or the position of a case without a key. A leaf pairs with every
+case of the other side. Neither type has a public constructor: make them with
+`compare`.
+
+| Failure | Error |
+| --- | --- |
+| A key that names no value of an Outcome, or that the comparison does not have | `MissingReferenceError` (`kind="Value"`, `by="key"`) |
+| A baseline or outcome name that is not compared | `MissingReferenceError` (`kind="Outcome"`, `by="name"`) |
+| A Flow value | `ContractError`, `comparison.scalar` |
+| A batch without `baseline` | `ContractError`, `comparison.batch` |
+| Batches with different case keys, or a key that two cases share | `ContractError`, `comparison.cases`, with `missing` and `extra`, or `repeated`, in `values` |
+| `where` keeps no case of an Outcome | `ContractError`, `comparison.empty` |
+| Fewer than two Outcomes, or a repeated key | `ContractError` |
+| A wrong Python type, such as one string for `keys` | `TypeError` |
+
+`by`, `by_case` and `distribution(outcome=, key=)` follow with paths
+([#296](https://github.com/daniel-fink/rangekeeper/issues/296),
 [#310](https://github.com/daniel-fink/rangekeeper/issues/310)).
 
 ## Configuration
@@ -239,7 +255,7 @@ time limit has passed. The stages call it between steps.
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
-| `execution/comparison.py` | `compare` and `Comparison`: values side by side, or paired differences from a baseline, with `summary`, `select` and `where`. |
+| `execution/comparison.py` | `compare`, `SideBySide` and `Paired`: values side by side, or paired differences from a baseline by case key, with `summary`, `select` and `where`. |
 | `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns` and `Evidence`. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |

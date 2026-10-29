@@ -127,6 +127,12 @@ class Code(StrEnum):
     EQUATION_SYNTAX = "equation.syntax"
     EQUATION_FUNCTION = "equation.function"
 
+    # A comparison of Outcomes that cannot pair or read its values.
+    COMPARISON_BATCH = "comparison.batch"
+    COMPARISON_CASES = "comparison.cases"
+    COMPARISON_EMPTY = "comparison.empty"
+    COMPARISON_SCALAR = "comparison.scalar"
+
     # A selected graph that is not one rooted tree.
     HIERARCHY_CYCLE = "hierarchy.cycle"
     HIERARCHY_DISCONNECTED = "hierarchy.disconnected"
