@@ -194,6 +194,7 @@ classes:
         required: true
 enums:
   ObjectiveKind:
+    description: Whether an objective prefers smaller or larger results.
     permissible_values:
       minimize:
         description: Prefer smaller results of the objective Expression.

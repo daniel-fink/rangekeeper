@@ -185,6 +185,9 @@ classes:
         description: Reason for termination, required when terminated is true.
 enums:
   ActionKind:
+    description: What a Rule action does.
     permissible_values:
-      assign: {}
-      terminate: {}
+      assign:
+        description: Assign a quantity to a controlled target.
+      terminate:
+        description: End the decision sequence.

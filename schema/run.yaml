@@ -376,6 +376,7 @@ classes:
             required: true
 enums:
   CompletionStatus:
+    description: How an execution attempt ended, apart from its mathematical conclusion.
     permissible_values:
       completed:
         description: The attempt completed normally; this does not imply mathematical feasibility.
@@ -390,6 +391,7 @@ enums:
       skipped:
         description: The attempt was not started.
   SolutionStatus:
+    description: The mathematical conclusion of a Run.
     permissible_values:
       feasible:
         description: Published output satisfies the investigation requirements under recorded checking
@@ -403,6 +405,7 @@ enums:
       not_applicable:
         description: The Run aggregates case outcomes rather than asserting one mathematical conclusion.
   ImplementationKind:
+    description: The role of an implementation that a Run records.
     permissible_values:
       evaluator:
         description: Evaluates a supported formulation or computation.
@@ -414,6 +417,7 @@ enums:
         description: A numerical convention that affects results, such as the conversion and summation
           rules for currency amounts.
   Severity:
+    description: How much a Diagnostic affects the interpretation of a result.
     permissible_values:
       info:
         description: Informational finding.
@@ -422,6 +426,7 @@ enums:
       error:
         description: Failure requiring attention.
   StepKind:
+    description: The kind of an execution step that a Run records.
     permissible_values:
       validation:
         description: Validation of inputs, requirements, or results.

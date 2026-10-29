@@ -1,6 +1,6 @@
 """Typed choices and wire values have explicit, separate boundaries."""
 
-from enum import Enum
+from enum import StrEnum
 from uuid import uuid4
 
 import pytest
@@ -14,12 +14,14 @@ from rangekeeper.shared.errors import ValidationError
 from rangekeeper.specification.rule import Action, ActionKind
 
 
-def test_generated_enums_are_unique_plain_enums_with_unchanged_wire_values():
+def test_generated_enums_are_unique_str_enums_with_unchanged_wire_values():
+    # A member equals its stored word (D26, #390); the enum keeps its docstring.
     for kind in _ENUM_TYPES.values():
-        assert issubclass(kind, Enum) and not issubclass(kind, str)
+        assert issubclass(kind, StrEnum)
         assert len(kind.__members__) == len(kind)
         assert all(type(member.value) is str for member in kind)
-        assert all(member != member.value for member in kind)
+        assert all(member == member.value == str(member) for member in kind)
+        assert (kind.__doc__ or "").strip()
     assert ValueKind.MEASUREMENT.value == "measurement"
     assert Operator.LESS_THAN.value == "less_than"
     assert ActionKind.ASSIGN.value == "assign"

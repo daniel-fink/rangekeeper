@@ -17,7 +17,7 @@ the shared record layer and its method ownership.
 | --- | --- |
 | `schema/*.yaml` | Authoritative field, enum, inheritance and description definitions |
 | `tools/schema/generate.py` | Explicit constructors, properties, typed replacement signatures and the owner table |
-| `rangekeeper/schema/enums.py` | Canonical plain Enum classes; typed fields decode members and wire data retains strings |
+| `rangekeeper/schema/enums.py` | Canonical `StrEnum` classes with the LinkML descriptions as docstrings; a member equals its stored word, typed fields decode members and wire data retains strings |
 | `rangekeeper/schema/records.py` | Data-only immutable classes and the owner module of each value type |
 | `rangekeeper/schema/kinds.py` | The kind registry: the owner class that each kind constructs and decodes to |
 | `rangekeeper/schema/runtime.py` | Shared field encoding, strict JSON copying, freezing, replacement, field presence and schema equivalence |

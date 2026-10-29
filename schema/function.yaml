@@ -231,6 +231,7 @@ classes:
           result domain and units can be established without reading a member.
 enums:
   DomainKind:
+    description: The kind of content that a Domain accepts or a Function gives.
     permissible_values:
       number:
         description: Dimensionless numerical content.
@@ -257,6 +258,7 @@ enums:
       collection:
         description: A collection of elements within the specified item domain.
   CollectionKind:
+    description: Whether a collection is ordered and whether it keeps repeated elements.
     permissible_values:
       set:
         description: Unordered distinct elements.
@@ -265,12 +267,14 @@ enums:
       sequence:
         description: Ordered elements retaining multiplicity.
   ParameterKind:
+    description: How a call supplies a Function argument.
     permissible_values:
       positional_or_named:
         description: Supply by position or by name, but not both.
       named_only:
         description: Supply by name only.
   EmptyHandling:
+    description: What a Function gives for an empty collection.
     permissible_values:
       error:
         description: Reject an empty collection.

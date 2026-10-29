@@ -37,7 +37,11 @@ classes:
         required: true
 enums:
   DistributionFamily:
+    description: The family of a Distribution.
     permissible_values:
-      uniform: {}
-      triangular: {}
-      pert: {}
+      uniform:
+        description: Every value from lower to upper is equally likely.
+      triangular:
+        description: A triangular distribution from lower to upper, with its peak at mode.
+      pert:
+        description: A PERT (beta) distribution from lower to upper around mode, weighted by shape.
