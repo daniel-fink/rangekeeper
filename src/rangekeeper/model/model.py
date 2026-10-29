@@ -71,6 +71,7 @@ class Model:
         "_record",
         "_index",
         "_keys",
+        "_named",
         "_units",
         "_namespace",
     )
@@ -78,6 +79,9 @@ class Model:
     _index: RecordIndex
     # The UUID of each Value and Label by its kind, owner UUID and key.
     _keys: Mapping[tuple[type, UUID | None, str], UUID]
+    # The UUIDs of the Values with each key, and of the Entities and Assemblies
+    # with each code, in revision order: the names of ``value(key=)``.
+    _named: Mapping[tuple[type, str], tuple[UUID, ...]]
     _units: UnitSystem
     # The UUID namespace of the drafts made from this object, or None.
     _namespace: UUID | None
@@ -145,10 +149,21 @@ class Model:
             for identity, item in index.records.items()
             if isinstance(item, (Value, Label))
         }
+        named: dict[tuple[type, str], tuple[UUID, ...]] = {}
+        for identity, item in index.records.items():
+            name: tuple[type, str]
+            if isinstance(item, Value) and index.owners[identity] is not None:
+                name = (Value, item.key)
+            elif isinstance(item, Entity) and item.code is not None:
+                name = (Entity, item.code)
+            else:
+                continue
+            named[name] = (*named.get(name, ()), identity)
         # Publish state only after both structural/local indexes and semantics pass.
         object.__setattr__(self, "_record", record)
         object.__setattr__(self, "_index", index)
         object.__setattr__(self, "_keys", MappingProxyType(keys))
+        object.__setattr__(self, "_named", MappingProxyType(named))
         object.__setattr__(self, "_units", units)
         object.__setattr__(self, "_namespace", namespace)
 
@@ -355,15 +370,53 @@ class Model:
         owner: UUID | None = None,
         key: str | None = None,
     ) -> Value:
-        """Return a Value by its UUID, or by its owner's UUID and its key.
+        """Return a Value by its UUID, by its key, or by its owner's UUID and its key.
 
         The owner is the Entity, Assembly, Relationship or Formulation that holds
         the Value; the key is exact and case-sensitive. Unresolved Values are
         returned too. A missing Value raises MissingReferenceError.
+
+        ``key`` alone takes what ``key_of`` gives: a key that one Value of the
+        revision has, a dotted key such as ``building_a.income`` (the key on the
+        Entity or Assembly with that code), or the text of a Value UUID. A key
+        that several Values have raises AmbiguousReferenceError with the
+        ``key_of`` of each; a dotted key that names no Value raises
+        MissingReferenceError with ``by="path"``.
         """
         if id is not None and owner is None and key is None:
             return self._index.get(id, Value)
+        if id is None and owner is None and key is not None:
+            return self._value_at(require_text(key, "key"))
         return self._keyed(Value, id, owner, key)
+
+    def key_of(self, id: UUID) -> str:
+        """Return the key that ``value(key=)`` takes for a Value: its inverse.
+
+        It is the Value's key when no other Value of the revision has that key;
+        else the dotted key ``code.key`` when the Value's owner is the one
+        Entity or Assembly with that code; else the text of the Value's UUID.
+        For a Movement, it is the key of its Flow Value. Another record raises
+        ReferenceTypeError, and a missing UUID MissingReferenceError.
+        """
+        record = self._index.get(require_uuid(id, "id"), Record)
+        if isinstance(record, Movement):
+            flow = self._index.owners[record.id]
+            assert flow is not None  # a Movement belongs to its Flow Value
+            record = self._index.records[flow]
+        if not isinstance(record, Value):
+            raise ReferenceTypeError(
+                f"{id} is a {type(record).__name__}, not a Value or Movement",
+                targets=(id,),
+            )
+        if len(self._named.get((Value, record.key), ())) == 1:
+            return record.key
+        owner = self._index.owners[record.id]
+        code = (
+            None if owner is None else getattr(self._index.records[owner], "code", None)
+        )
+        if code is not None and self._named.get((Entity, code)) == (owner,):
+            return f"{code}.{record.key}"
+        return str(record.id)
 
     def label(
         self,
@@ -384,8 +437,9 @@ class Model:
 
     def _keyed(self, kind: type[K], id, owner, key) -> K:
         if id is not None or owner is None or key is None:
+            selectors = "an id, a key, or" if kind is Value else "an id, or"
             raise TypeError(
-                f"{kind.__name__.lower()} takes an id, or an owner and a key"
+                f"{kind.__name__.lower()} takes {selectors} an owner and a key"
             )
         item = self._local(kind, owner, key)
         if item is None:
@@ -413,33 +467,25 @@ class Model:
         identity = self._keys.get((kind, owner, require_text(key, "key")))
         return None if identity is None else cast(K, self._index.records[identity])
 
-    def _value_at(self, path: str) -> Value:
-        """Return the Value at a key or a dotted path, such as ``building_a.income``.
-
-        A bare key must name one Value in the revision; a dotted path names the
-        code of its Entity or Assembly and then its key. No match raises
-        MissingReferenceError; several matches raise AmbiguousReferenceError
-        with their dotted paths.
-        """
-        text = require_text(path, "key")
+    def _value_at(self, text: str) -> Value:
+        """Return the Value at a key, a dotted key or a Value UUID text."""
         if "." in text:
             return self._value_on_path(text)
-        owners = [
-            owner
-            for kind, owner, key in self._keys
-            if kind is Value and key == text and owner is not None
-        ]
-        if len(owners) == 1:
-            return self._local(Value, owners[0], text)  # type: ignore[return-value]
-        if owners:
+        found = self._named.get((Value, text), ())
+        if len(found) == 1:
+            return cast(Value, self._index.records[found[0]])
+        if found:
             raise AmbiguousReferenceError(
                 text,
                 kind="Value",
                 by="key",
                 where=self._index.where,
-                candidates=[f"{self._path(owner)}.{text}" for owner in owners],
+                candidates=[self.key_of(identity) for identity in found],
             )
-        keys = sorted({key for kind, _, key in self._keys if kind is Value})
+        identity = _uuid_text(text)
+        if identity is not None:
+            return self._index.get(identity, Value)
+        keys = sorted(key for kind, key in self._named if kind is Value)
         raise MissingReferenceError(
             text,
             kind="Value",
@@ -449,27 +495,29 @@ class Model:
         )
 
     def _value_on_path(self, path: str) -> Value:
-        """Return the Value at a dotted path; no match raises MissingReferenceError.
+        """Return the Value at a dotted key; no match raises MissingReferenceError.
 
         The error has ``by="path"`` and the whole path, and its candidates are
-        the nearest dotted paths of the revision.
+        the nearest dotted keys of the revision.
         """
         code, key = path.split(".", 1)
-        owners = [
-            record.id
-            for record in self._index.records.values()
-            if isinstance(record, Entity) and record.code == code
-        ]
-        identity = self._keys.get((Value, owners[0], key)) if len(owners) == 1 else None
-        if identity is not None:
-            return cast(Value, self._index.records[identity])
+        owners = self._named.get((Entity, code), ())
         if len(owners) > 1:
             # Several Entities have the code: the code names no single owner.
             self.entity(code=code)
+        identity = self._keys.get((Value, owners[0], key)) if owners else None
+        if identity is not None:
+            return cast(Value, self._index.records[identity])
+        codes = {
+            identity: code
+            for (kind, code), owners in self._named.items()
+            if kind is Entity
+            for identity in owners
+        }
         paths = sorted(
-            f"{self._path(owner)}.{name}"
+            f"{codes[owner]}.{name}"
             for kind, owner, name in self._keys
-            if kind is Value and owner is not None
+            if kind is Value and owner in codes
         )
         raise MissingReferenceError(
             path,
@@ -478,10 +526,6 @@ class Model:
             where=self._index.where,
             candidates=get_close_matches(path, paths, n=3),
         )
-
-    def _path(self, owner: UUID) -> str:
-        """Return the code of an owner, or its UUID when it has no code."""
-        return getattr(self._index.records[owner], "code", None) or str(owner)
 
     def movement(self, id: UUID) -> Movement:
         """Resolve one Movement by identity, independently of matching keys."""
@@ -594,3 +638,12 @@ class Model:
         """
         assert _SPECIFICATION is not None  # rangekeeper imports specification
         return _SPECIFICATION._start(self, name=name, description=description)
+
+
+def _uuid_text(text: str) -> UUID | None:
+    """Return the UUID that ``text`` writes in canonical form, or None."""
+    try:
+        identity = UUID(text)
+    except ValueError:
+        return None
+    return identity if str(identity) == text else None

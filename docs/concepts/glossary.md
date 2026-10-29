@@ -37,6 +37,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Characteristics | The Values, Labels and properties that an Entity owns | `model` | — |
 | Value | One owned datum: a Measurement, a Flow, a date or Content | `model` | The `Value` record; its `kind` is a `ValueKind` (`MEASUREMENT`, `FLOW`, `DATE` or `PROPERTY` for Content) |
 | Key | The name of a Value, unique within its owner | `model` | — |
+| Dotted key | `code.key`: the key of a Value on the Entity or Assembly with that code, such as `building_a.income`. It names a Value whose key is not unique in the Model. `Model.value(key=)` reads a key, a dotted key or a Value UUID text, and `Model.key_of(id)` gives the one that names a Value. Not a market path | `model` | — |
 | Code | A catalogue identifier, such as a Classification code. Not `rk.errors.Code`; see [words with one meaning only](#words-with-one-meaning-only) | `model` | — |
 | Label | A Classification attached to an Entity in addition to its main Classification | `model` | — |
 | Formulation | A named set of equations over Values, such as "Funding". It does not say which values are known. `project.add_formulation(name=)` makes one and `project.formulation(name=)` finds one; each takes `equations(...)` | `model` | The `Formulation` record. The handles: none (planned, #305) |
