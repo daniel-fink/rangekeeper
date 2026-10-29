@@ -80,7 +80,7 @@ class CoverageStatus(StrEnum):
     INCOMPLETE = "incomplete"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Coverage:
     """Selected, measured, missing and undecided owner UUIDs.
 
@@ -129,7 +129,7 @@ class Coverage:
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RollupEntry:
     """The result over the measured contributors of one node, and its coverage."""
 
@@ -157,7 +157,7 @@ class RollupEntry:
             raise RollupError("measured coverage and available result must agree")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RollupResult:
     """Immutable entries and selected Value identities, pinned to a Hierarchy.
 
@@ -259,9 +259,9 @@ class RollupResult:
 
 
 def classified(
+    *,
     model: Model,
     classification: UUID,
-    *,
     exclusive: bool = False,
 ) -> Callable[[Entity], bool]:
     """Return a contributor rule that selects Entities in a Classification.
@@ -316,7 +316,11 @@ def _collect_quantities(
             quantities.append(quantity)
     return QuantityPopulation(
         quantities=tuple(quantities),
-        coverage=Coverage(tuple(selected), tuple(measured), tuple(missing)),
+        coverage=Coverage(
+            selected=tuple(selected),
+            measured=tuple(measured),
+            missing=tuple(missing),
+        ),
         value_ids=MappingProxyType(value_ids),
     )
 
@@ -444,7 +448,7 @@ class _Rollup:
         return eligible
 
     def _selection(self, model: Model, entity: Entity) -> Value | None:
-        selected = _local_value(model, entity, self.key, self.measure)
+        selected = _local_value(model, entity, key=self.key, measure=self.measure)
         if selected is not None and selected.kind is not self._kind:
             raise RollupError(f"expected {self._kind.value} Values")
         return selected
@@ -541,12 +545,23 @@ class QuantityRollup(_Rollup):
                     else unit_system.convert(quantity=result, to=self.units)
                 )
             entries[node] = RollupEntry(
-                available, Coverage(population, measured, missing, undecided[node])
+                available=available,
+                coverage=Coverage(
+                    selected=population,
+                    measured=measured,
+                    missing=missing,
+                    undecided=undecided[node],
+                ),
             )
         value_ids = {
             owner: value.id for owner, value in selected.items() if value is not None
         }
-        return RollupResult(hierarchy, entries, value_ids, self.require_complete)
+        return RollupResult(
+            hierarchy=hierarchy,
+            entries=entries,
+            value_ids=value_ids,
+            require_complete=self.require_complete,
+        )
 
     def _unit_system(self, model: Model) -> UnitSystem:
         """Return ``unit_system``, or the Model's when it is None."""
@@ -677,11 +692,21 @@ class FlowRollup(_Rollup):
             missing = tuple(owner for owner in population if owner not in available)
             result = results.get(node)
             entries[node] = RollupEntry(
-                None if result is None else result.flow,
-                Coverage(population, measured, missing, undecided[node]),
-                () if result is None else result.coverage,
+                available=None if result is None else result.flow,
+                coverage=Coverage(
+                    selected=population,
+                    measured=measured,
+                    missing=missing,
+                    undecided=undecided[node],
+                ),
+                period_coverage=() if result is None else result.coverage,
             )
-        return RollupResult(hierarchy, entries, value_ids, self.require_complete)
+        return RollupResult(
+            hierarchy=hierarchy,
+            entries=entries,
+            value_ids=value_ids,
+            require_complete=self.require_complete,
+        )
 
     def formulate(
         self,

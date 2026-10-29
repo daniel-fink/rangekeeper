@@ -33,8 +33,8 @@ from rangekeeper.model.system.membership import entities_in, containing_assembli
 
 view = View(model, assembly=assembly_id)
 children = view.successors(parent_id)  # selected Relationships only
-members = entities_in(model, assembly_id, recursive=True)
-parents = containing_assemblies(model, entity_id, recursive=True)
+members = entities_in(model=model, assembly=assembly_id, recursive=True)
+parents = containing_assemblies(model=model, entity=entity_id, recursive=True)
 
 two_bed = view.filter(entity_classification=two_bed_id)  # includes sub-types
 exactly = view.filter(entity_classification=two_bed_id, exclusive=True)
@@ -269,11 +269,11 @@ its `Coverage` still lists the selected and missing owners.
 units_with_price = QuantityRollup(
     key="launch_price",
     reducer=Reducer.COUNT,
-    contributors=classified(model, two_bed_id),
+    contributors=classified(model=model, classification=two_bed_id),
 )
 ```
 
-`classified(model, classification_id, exclusive=False)` returns a contributor rule
+`classified(*, model, classification, exclusive=False)` returns a contributor rule
 for Entities in a Classification. It uses the same sub-type rule as `View.filter`:
 
 ```python
@@ -282,7 +282,9 @@ from rangekeeper.model.system import classified
 two_bed_price = QuantityRollup(
     key="launch_price",
     units="AUD",
-    contributors=classified(model, two_bed_id),  # 2B, 2B+S, 2B Courtyard ...
+    contributors=classified(
+        model=model, classification=two_bed_id
+    ),  # 2B, 2B+S, 2B Courtyard ...
 )
 ```
 
@@ -293,14 +295,14 @@ Unclassified Entities never match. The UUID must exist in the Model.
 `RollupResult` exposes:
 
 - `value(id)` / `result[id]`, and `root_value`: the result under the coverage policy.
-- `coverage(id)`: a `Coverage(selected, measured, missing, undecided)` of owner
+- `coverage(id)`: a `Coverage(selected=, measured=, missing=, undecided=)` of owner
   UUIDs. `measured` and `missing` partition `selected`; `undecided` holds the
   owners that a Filter could not decide. `complete` needs a nonempty selection
   with no missing and no undecided owner. `status` is a `CoverageStatus`:
   `EMPTY` (nothing selected or undecided), `COMPLETE` or `INCOMPLETE`.
 - `available_value(id)`: the result over measured contributors despite missing
   values, for every reducer.
-- `entries`: one immutable `RollupEntry(available, coverage, period_coverage)`
+- `entries`: one immutable `RollupEntry(available=, coverage=, period_coverage=)`
   per hierarchy node.
 - `require_complete`: the policy used to derive `value` from each entry.
 - `value_ids`: immutable owner-to-selected-Value IDs, including unresolved Values.
@@ -327,10 +329,10 @@ from rangekeeper.model.system import QuantityRollup
 launch_price = QuantityRollup(key="launch_price", units="AUD")
 pivot = launch_price.pivot(levels, by=apartment_id, depth=1, only=None)
 
-pivot.value(level_id)  # the "All" column
-pivot.value(level_id, two_bed_id)  # 2B, with its sub-types
-pivot.cell(level_id, two_bed_id)  # RollupEntry(available, coverage)
-pivot.partition(level_id)  # do the 2B, 3B ... columns add up to All?
+pivot.value(row=level_id)  # the "All" column
+pivot.value(row=level_id, column=two_bed_id)  # 2B, with its sub-types
+pivot.cell(row=level_id, column=two_bed_id)  # RollupEntry(available=, coverage=)
+pivot.partition(row=level_id)  # do the 2B, 3B ... columns add up to All?
 pivot.display()
 ```
 
@@ -363,8 +365,8 @@ Classification ([ADR-017](../decisions/017-api-and-formats.md)):
 ```python
 gfa = QuantityRollup(key="gfa", units="m^2")
 by_use = gfa.pivot(buildings, label="use")  # columns: residential, hotel, retail
-by_use.value(building_a_id, hotel_id)
-by_use.partition(building_a_id)  # overlap, uncovered, outside
+by_use.value(row=building_a_id, column=hotel_id)
+by_use.partition(row=building_a_id)  # overlap, uncovered, outside
 ```
 
 - A column holds the Entities whose Label with that key includes the column's
@@ -379,9 +381,9 @@ by_use.partition(building_a_id)  # overlap, uncovered, outside
 - `only` still tests the Entity's Classification. `Pivot.label` records the key;
   it is None for Classification columns.
 
-`PivotColumn(classification, parent, depth, result)` describes one column.
+`PivotColumn(classification=, parent=, depth=, result=)` describes one column.
 The "All" column has depth 0 and no parent. A `parent` of None on a depth-1 column
-means "All". `Pivot(rows, columns)` keeps column order and requires one "All"
+means "All". `Pivot(rows=, columns=)` keeps column order and requires one "All"
 column, unique Classifications, a parent column one level up for each column, and
 RollupResults over `rows`. Unknown Classification UUIDs raise
 `MissingReferenceError`; a malformed column set raises `RollupError`.
@@ -391,10 +393,11 @@ A `Pivot` exposes:
 - `columns`, `column(id)` and `children(id)`. `None` names the "All" column. A
   Classification without a column raises `MissingReferenceError`
   (`kind="PivotColumn"`).
-- `cell(row, column=None)`: the column's `RollupEntry` for that row.
+- `cell(*, row, column=None)`: the column's `RollupEntry` for that row.
 - `value`, `coverage` and `available_value`, as on `RollupResult`, for one column.
-- `partition(row, column=None)`: a `Partition(complete, overlap, uncovered,
-  outside)` that compares the column's `Coverage.selected` with its sub-columns'.
+  They take `row=` and `column=` by keyword, as `cell` does.
+- `partition(*, row, column=None)`: a `Partition(complete=, overlap=,
+  uncovered=, outside=)` that compares the column's `Coverage.selected` with its sub-columns'.
   `overlap` lists records in more than one sub-column, `uncovered` lists records
   in no sub-column, such as unclassified records, and `outside` lists sub-column
   records that the column does not select (possible with `exclusive=True`).

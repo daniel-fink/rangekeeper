@@ -56,10 +56,15 @@ def discount(
                 ),
             ),
         )
-        for i, (m, matches) in enumerate(aligned(model, (series,), discounted))
+        for i, (m, matches) in enumerate(
+            aligned(model=model, members=(series,), reference=discounted)
+        )
     ]
     return declare(
-        id, "discount", equations, (series, target_value(model, rate).id, discounted)
+        id=id,
+        name="discount",
+        equations=equations,
+        values=(series, target_value(model, rate).id, discounted),
     )
 
 
@@ -73,15 +78,15 @@ def pv(model: Model, *, id: UUID, sequence: UUID, value: Reference) -> Formulati
         expression_sum(
             [
                 reference(Reference(target=m.id))
-                for m in shape(model, sequence).movements
+                for m in shape(model=model, value=sequence).movements
             ]
         ),
     )
     return declare(
-        id,
-        "present_value",
-        [("total", equation)],
-        (sequence, target_value(model, value).id),
+        id=id,
+        name="present_value",
+        equations=[("total", equation)],
+        values=(sequence, target_value(model, value).id),
     )
 
 
@@ -103,10 +108,13 @@ def interest(
         raise UnsupportedError(
             "symbolic overdraft interest is unsupported; use known-data calculation"
         )
-    prepared = shape(model, principal)
+    prepared = shape(model=model, value=principal)
     equations: list[tuple[str, Expression]] = []
     for movement, matches in aligned(
-        model, (principal,), interest, shapes={principal: prepared}
+        model=model,
+        members=(principal,),
+        reference=interest,
+        shapes={principal: prepared},
     ):
         p = Reference(target=matches[0].id)
         equations.extend(
@@ -129,5 +137,8 @@ def interest(
             )
         )
     return declare(
-        id, "interest", equations, (principal, target_value(model, rate).id, interest)
+        id=id,
+        name="interest",
+        equations=equations,
+        values=(principal, target_value(model, rate).id, interest),
     )

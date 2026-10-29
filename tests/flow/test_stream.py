@@ -379,11 +379,11 @@ def test_flow_reductions_pivot_with_the_same_cells_as_execute():
     pivot = rollup.pivot(hierarchy)
     expected = rollup.execute(hierarchy)
     for node in hierarchy.preorder():
-        assert pivot.coverage(node) == expected.coverage(node)
-        assert [m.number for m in pivot.value(node).movements] == [
+        assert pivot.coverage(row=node) == expected.coverage(node)
+        assert [m.number for m in pivot.value(row=node).movements] == [
             m.number for m in expected.value(node).movements
         ]
-    assert pivot.value(ids["root"]).movements[0].number == 2880
+    assert pivot.value(row=ids["root"]).movements[0].number == 2880
 
 
 def test_underdetermined_and_inconsistent_reverse_cases():

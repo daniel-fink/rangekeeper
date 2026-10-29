@@ -35,7 +35,7 @@ _COMPARISONS = {
 Test = Callable[[Entity], bool | None]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Match:
     """Entities that pass a Filter, fail it, or that it cannot decide.
 
@@ -216,7 +216,7 @@ def match(
         (passed if result else failed if result is False else undecided).append(
             entity.id
         )
-    return Match(tuple(passed), tuple(failed), tuple(undecided))
+    return Match(passed=tuple(passed), failed=tuple(failed), undecided=tuple(undecided))
 
 
 __all__ = ["Match", "match"]

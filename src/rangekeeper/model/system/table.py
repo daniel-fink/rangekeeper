@@ -29,7 +29,7 @@ class EntityField(Enum):
     CLASSIFICATION_NAME = "classification_name"
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class FieldColumn:
     """A named column containing a public Entity field or its pinned revision UUID."""
 
@@ -42,7 +42,7 @@ class FieldColumn:
             raise TypeError("field must be EntityField")
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class ValueColumn:
     """Project one owner-local Value to explicit units; absent/unresolved gives None.
 
@@ -61,7 +61,7 @@ class ValueColumn:
         select_value(self.key, measure=self.measure)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class LabelColumn:
     """Project one local Label to classification UUIDs; missing gives None."""
 
@@ -73,7 +73,7 @@ class LabelColumn:
         require_text(self.key, "key")
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class PropertyColumn:
     """Detached rich property content selected by owner-local key.
 
@@ -91,9 +91,9 @@ class PropertyColumn:
 
 Column = FieldColumn | ValueColumn | LabelColumn | PropertyColumn
 DEFAULT_COLUMNS = (
-    FieldColumn("model_id", EntityField.MODEL_ID),
-    FieldColumn("entity_id", EntityField.ENTITY_ID),
-    FieldColumn("name", EntityField.NAME),
+    FieldColumn(name="model_id", field=EntityField.MODEL_ID),
+    FieldColumn(name="entity_id", field=EntityField.ENTITY_ID),
+    FieldColumn(name="name", field=EntityField.NAME),
 )
 
 
@@ -145,7 +145,7 @@ def to_table(
         for c in columns:
             result: object
             if isinstance(c, ValueColumn):
-                item = _local_value(view.model, entity, c.key, c.measure)
+                item = _local_value(view.model, entity, key=c.key, measure=c.measure)
                 result = (
                     None
                     if item is None or item.quantity is None

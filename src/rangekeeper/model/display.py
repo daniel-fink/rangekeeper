@@ -59,12 +59,12 @@ class PivotTable:
             label = entity.name or entity.code or f"Entity {index + 1}"
             cells = ["  " * depths[id] + label]
             for item in pivot.columns:
-                value = pivot.value(id, item)
+                value = pivot.value(row=id, column=item)
                 if value is not None and not isinstance(value, Quantity):
                     raise ContractError(
                         "display shows Quantity cells; this Pivot holds Flows"
                     )
-                if not pivot.coverage(id, item).selected:
+                if not pivot.coverage(row=id, column=item).selected:
                     cells.append("—")
                 elif value is None:
                     cells.append("?")

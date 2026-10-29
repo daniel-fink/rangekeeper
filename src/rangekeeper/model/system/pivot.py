@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from rangekeeper.shared.table import Table
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class PivotColumn:
     """One column: a Classification, its parent column and its RollupResult.
 
@@ -65,7 +65,7 @@ class PivotColumn:
             raise RollupError("a column cannot be its own parent")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Partition:
     """Whether a column's sub-columns hold exactly its records, once each.
 
@@ -102,9 +102,9 @@ class Pivot:
 
     def __init__(
         self,
+        *,
         rows: Hierarchy,
         columns: Iterable[PivotColumn],
-        *,
         label: str | None = None,
     ) -> None:
         if not isinstance(rows, Hierarchy):
@@ -171,38 +171,53 @@ class Pivot:
         return self._children.get(self.column(column).classification, ())
 
     def cell(
-        self, row: UUID, column: "UUID | PivotColumn | None" = None
+        self,
+        *,
+        row: UUID,
+        column: "UUID | PivotColumn | None" = None,
     ) -> RollupEntry:
         """Return the RollupEntry for a row and column."""
         self.rows.view.entity(row)
         return self.column(column).result.entries[row]
 
     def value(
-        self, row: UUID, column: "UUID | PivotColumn | None" = None
+        self,
+        *,
+        row: UUID,
+        column: "UUID | PivotColumn | None" = None,
     ) -> Quantity | Flow | None:
         """Return the cell result under its column's coverage policy."""
         return self.column(column).result.value(row)
 
     def coverage(
-        self, row: UUID, column: "UUID | PivotColumn | None" = None
+        self,
+        *,
+        row: UUID,
+        column: "UUID | PivotColumn | None" = None,
     ) -> Coverage:
         """Return the contributor coverage of one cell."""
         return self.column(column).result.coverage(row)
 
     def available_value(
-        self, row: UUID, column: "UUID | PivotColumn | None" = None
+        self,
+        *,
+        row: UUID,
+        column: "UUID | PivotColumn | None" = None,
     ) -> Quantity | Flow | None:
         """Return the result over measured contributors, despite missing ones."""
         return self.column(column).result.available_value(row)
 
     def partition(
-        self, row: UUID, column: "UUID | PivotColumn | None" = None
+        self,
+        *,
+        row: UUID,
+        column: "UUID | PivotColumn | None" = None,
     ) -> Partition:
         """Compare a column's records with its sub-columns' records at one row.
 
         A column without sub-columns has every record uncovered.
         """
-        selected = set(self.coverage(row, column).selected)
+        selected = set(self.coverage(row=row, column=column).selected)
         counts: dict[UUID, int] = {}
         for child in self.children(column):
             for id in child.result.coverage(row).selected:
@@ -215,7 +230,10 @@ class Pivot:
         uncovered = ordered(selected - set(counts))
         outside = ordered(set(counts) - selected)
         return Partition(
-            not (overlap or uncovered or outside), overlap, uncovered, outside
+            complete=not (overlap or uncovered or outside),
+            overlap=overlap,
+            uncovered=uncovered,
+            outside=outside,
         )
 
     def to_table(self) -> "Table":
@@ -237,7 +255,7 @@ class Pivot:
                 "parent_id": self.rows.parent(id),
             }
             for item, label in zip(self.columns, labels, strict=True):
-                cells[label] = self.value(id, item)
+                cells[label] = self.value(row=id, column=item)
             rows.append(Row(cells, id))
         return Table(("name", "parent_id", *labels), rows)
 
@@ -387,7 +405,9 @@ def pivot(
         if only is None
         else replace(rollup, contributors=_rule(base, scope)).execute(hierarchy)
     )
-    columns = [PivotColumn(None, None, 0, everything)]
+    columns = [
+        PivotColumn(classification=None, parent=None, depth=0, result=everything)
+    ]
     if by is not None:
         model.classification(by)
         for id, parent, level in _column_classes(definitions, by, depth):
@@ -395,13 +415,13 @@ def pivot(
             rule = _rule(base, (*scope, _member(model, label, classes)))
             columns.append(
                 PivotColumn(
-                    id,
-                    parent,
-                    level,
-                    replace(rollup, contributors=rule).execute(hierarchy),
+                    classification=id,
+                    parent=parent,
+                    depth=level,
+                    result=replace(rollup, contributors=rule).execute(hierarchy),
                 )
             )
-    return Pivot(hierarchy, columns, label=label)
+    return Pivot(rows=hierarchy, columns=columns, label=label)
 
 
 __all__ = ["Pivot", "PivotColumn", "Partition"]

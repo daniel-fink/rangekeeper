@@ -449,9 +449,9 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
         # Explicit mapped capitalisation; this cyclic test mapping is deliberate,
         # not a financial timing default.
         declare(
-            uuid4(),
-            "reversion",
-            [
+            id=uuid4(),
+            name="reversion",
+            equations=[
                 (
                     out.id,
                     equal(
@@ -470,7 +470,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
                 )
                 for i, out in enumerate(model.value(ids["reversion"]).flow.movements)
             ],
-            (ids["discounted"], ids["rate"], ids["reversion"]),
+            values=(ids["discounted"], ids["rate"], ids["reversion"]),
         ),
     ]
     data = model.system.to_data()

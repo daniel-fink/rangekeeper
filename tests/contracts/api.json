@@ -2341,7 +2341,7 @@
   "declare": {
    "kind": "function",
    "module": "rangekeeper.model.formulation.authoring",
-   "signature": "(id: uuid.UUID, name: str, equations: collections.abc.Sequence[tuple[str | uuid.UUID, rangekeeper.schema.records.Expression]], values: collections.abc.Sequence[uuid.UUID]) -> rangekeeper.schema.records.Formulation"
+   "signature": "(*, id: uuid.UUID, name: str, equations: collections.abc.Sequence[tuple[str | uuid.UUID, rangekeeper.schema.records.Expression]], values: collections.abc.Sequence[uuid.UUID]) -> rangekeeper.schema.records.Formulation"
   },
   "financial": {
    "kind": "module",
@@ -2372,12 +2372,12 @@
   "Coverage": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, selected: tuple[uuid.UUID, ...], measured: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...] = tuple()) -> None",
+    "__init__": "method (self, *, selected: tuple[uuid.UUID, ...], measured: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...] = tuple()) -> None",
     "complete": "property",
     "status": "property"
    },
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(selected: tuple[uuid.UUID, ...], measured: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...] = tuple()) -> None"
+   "signature": "(*, selected: tuple[uuid.UUID, ...], measured: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "CoverageStatus": {
    "kind": "enum",
@@ -2432,44 +2432,44 @@
   "Match": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...]) -> None",
+    "__init__": "method (self, *, passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...]) -> None",
     "complete": "property"
    },
    "module": "rangekeeper.model.system.matching",
-   "signature": "(passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...]) -> None"
+   "signature": "(*, passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...]) -> None"
   },
   "Partition": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, complete: bool, overlap: tuple[uuid.UUID, ...], uncovered: tuple[uuid.UUID, ...], outside: tuple[uuid.UUID, ...]) -> None"
+    "__init__": "method (self, *, complete: bool, overlap: tuple[uuid.UUID, ...], uncovered: tuple[uuid.UUID, ...], outside: tuple[uuid.UUID, ...]) -> None"
    },
    "module": "rangekeeper.model.system.pivot",
-   "signature": "(complete: bool, overlap: tuple[uuid.UUID, ...], uncovered: tuple[uuid.UUID, ...], outside: tuple[uuid.UUID, ...]) -> None"
+   "signature": "(*, complete: bool, overlap: tuple[uuid.UUID, ...], uncovered: tuple[uuid.UUID, ...], outside: tuple[uuid.UUID, ...]) -> None"
   },
   "Pivot": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], *, label: str | None = None) -> None",
-    "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None",
-    "cell": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.rollup.RollupEntry",
+    "__init__": "method (self, *, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], label: str | None = None) -> None",
+    "available_value": "method (self, *, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None",
+    "cell": "method (self, *, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.rollup.RollupEntry",
     "children": "method (self, column: UUID | PivotColumn | None = None) -> tuple[rangekeeper.model.system.pivot.PivotColumn, ...]",
     "column": "method (self, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.PivotColumn",
-    "coverage": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.rollup.Coverage",
+    "coverage": "method (self, *, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.rollup.Coverage",
     "display": "method (self, *, precision: int = 2) -> PivotTable",
-    "partition": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.Partition",
+    "partition": "method (self, *, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.Partition",
     "to_table": "method (self) -> Table",
-    "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None"
+    "value": "method (self, *, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.pivot",
-   "signature": "(rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], *, label: str | None = None) -> None"
+   "signature": "(*, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], label: str | None = None) -> None"
   },
   "PivotColumn": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, classification: uuid.UUID | None, parent: uuid.UUID | None, depth: int, result: rangekeeper.model.system.rollup.RollupResult) -> None"
+    "__init__": "method (self, *, classification: uuid.UUID | None, parent: uuid.UUID | None, depth: int, result: rangekeeper.model.system.rollup.RollupResult) -> None"
    },
    "module": "rangekeeper.model.system.pivot",
-   "signature": "(classification: uuid.UUID | None, parent: uuid.UUID | None, depth: int, result: rangekeeper.model.system.rollup.RollupResult) -> None"
+   "signature": "(*, classification: uuid.UUID | None, parent: uuid.UUID | None, depth: int, result: rangekeeper.model.system.rollup.RollupResult) -> None"
   },
   "PivotTable": {
    "kind": "class",
@@ -2511,10 +2511,10 @@
   "RollupEntry": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, available: rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None, coverage: rangekeeper.model.system.rollup.Coverage, period_coverage: tuple[float, ...] = tuple()) -> None"
+    "__init__": "method (self, *, available: rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None, coverage: rangekeeper.model.system.rollup.Coverage, period_coverage: tuple[float, ...] = tuple()) -> None"
    },
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(available: rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None, coverage: rangekeeper.model.system.rollup.Coverage, period_coverage: tuple[float, ...] = tuple()) -> None"
+   "signature": "(*, available: rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None, coverage: rangekeeper.model.system.rollup.Coverage, period_coverage: tuple[float, ...] = tuple()) -> None"
   },
   "RollupError": {
    "kind": "class",
@@ -2527,7 +2527,7 @@
   "RollupResult": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.rollup.RollupEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None",
+    "__init__": "method (self, *, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.rollup.RollupEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None",
     "available_value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None",
     "coverage": "method (self, id: uuid.UUID) -> rangekeeper.model.system.rollup.Coverage",
     "display": "method (self, *, transpose: bool = False, precision: int = 2) -> StreamTable",
@@ -2535,7 +2535,7 @@
     "value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | None"
    },
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.rollup.RollupEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None"
+   "signature": "(*, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.rollup.RollupEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None"
   },
   "SelectionError": {
    "kind": "class",
@@ -2570,7 +2570,7 @@
   "classified": {
    "kind": "function",
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(model: rangekeeper.model.model.Model, classification: uuid.UUID, *, exclusive: bool = False) -> collections.abc.Callable[[rangekeeper.schema.records.Entity], bool]"
+   "signature": "(*, model: rangekeeper.model.model.Model, classification: uuid.UUID, exclusive: bool = False) -> collections.abc.Callable[[rangekeeper.schema.records.Entity], bool]"
   },
   "membership": {
    "kind": "module",

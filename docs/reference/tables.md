@@ -55,21 +55,21 @@ from rangekeeper.model.system.table import (
 )
 
 columns = (
-    FieldColumn("model_id", EntityField.MODEL_ID),
-    FieldColumn("entity_id", EntityField.ENTITY_ID),
-    FieldColumn("name", EntityField.NAME),
-    ValueColumn("net_area", "net", "meter**2"),
-    PropertyColumn("notes", "notes"),
+    FieldColumn(name="model_id", field=EntityField.MODEL_ID),
+    FieldColumn(name="entity_id", field=EntityField.ENTITY_ID),
+    FieldColumn(name="name", field=EntityField.NAME),
+    ValueColumn(name="net_area", key="net", units="meter**2"),
+    PropertyColumn(name="notes", key="notes"),
 )
 table = to_table(View(model), columns=columns)
 ```
 
 | Column | Meaning |
 | --- | --- |
-| `FieldColumn(name, field)` | Requires an `EntityField` member: `MODEL_ID`, `ENTITY_ID`, `CODE`, `NAME`, `ENTITY_KIND`, `CLASSIFICATION_ID`, `CLASSIFICATION_CODE` or `CLASSIFICATION_NAME`. Raw strings are rejected. |
-| `ValueColumn(name, key, units, measure=None)` | Selects one owner-local Value key and converts its quantity to explicit units. Optional `measure` asserts a Measure UUID; it does not select a Value by Measure. |
-| `LabelColumn(name, key)` | Returns classification UUIDs for a local Label. It does not substitute potentially ambiguous codes. |
-| `PropertyColumn(name, key)` | Returns detached decoded property content. A non-property Value raises `TableError`. Missing and explicit null return `None`; `False` and zero retain their types. |
+| `FieldColumn(*, name, field)` | Requires an `EntityField` member: `MODEL_ID`, `ENTITY_ID`, `CODE`, `NAME`, `ENTITY_KIND`, `CLASSIFICATION_ID`, `CLASSIFICATION_CODE` or `CLASSIFICATION_NAME`. Raw strings are rejected. |
+| `ValueColumn(*, name, key, units, measure=None)` | Selects one owner-local Value key and converts its quantity to explicit units. Optional `measure` asserts a Measure UUID; it does not select a Value by Measure. |
+| `LabelColumn(*, name, key)` | Returns classification UUIDs for a local Label. It does not substitute potentially ambiguous codes. |
+| `PropertyColumn(*, name, key)` | Returns detached decoded property content. A non-property Value raises `TableError`. Missing and explicit null return `None`; `False` and zero retain their types. |
 
 `to_table(source, *, columns=DEFAULT_COLUMNS, units=None)` returns a
 Table. Without `units`, conversion uses `Model.unit_system` of the View's Model. Defaults are Model UUID, Entity UUID and name. Row IDs are Entity UUIDs;

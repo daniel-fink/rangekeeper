@@ -188,7 +188,9 @@ def value_test(relation, quantity=None, *, minimum=None, maximum=None, key="gfa"
 
 def test_an_empty_filter_passes_every_entity():
     result = VIEW.match(condition=Filter())
-    assert result == Match(tuple(item.id for item in VIEW.entities), (), ())
+    assert result == Match(
+        passed=tuple(item.id for item in VIEW.entities), failed=(), undecided=()
+    )
     assert result.complete
 
 
