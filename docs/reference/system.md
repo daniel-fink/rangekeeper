@@ -8,7 +8,10 @@ The [architecture map](../concepts/architecture.md) places these operations unde
 `rangekeeper.model.system`. `View` owns selection, `Hierarchy` owns explicit tree
 projection, `QuantityRollup` and `FlowRollup` own rollups of recorded Values, and
 `Pivot` holds one rollup result per column of a Taxonomy. `membership` provides
-Assembly traversal; `selection` provides owner-local Value selection. None of
+Assembly traversal; `selection` provides owner-local Value selection. Import the
+classes from `rangekeeper.model.system`; its public modules are `membership`,
+`pivot`, `selection` and `table`. The `rollup` and `matching` modules are
+internal: `View.match(condition=)` and the rollup classes are their API. None of
 these operations owns canonical field declarations.
 
 The algorithms consume canonical Model records. Operation-local preparation uses
@@ -303,6 +306,11 @@ Unclassified Entities never match. The UUID must exist in the Model.
 - `value_ids`: immutable owner-to-selected-Value IDs, including unresolved Values.
 - `hierarchy`: the selection/revision that produced the derived results.
 
+`View.quantities(key, units=, measure=None)` collects the same population without
+a reducer: a `QuantityPopulation` with `quantities` (the recorded Quantities of
+the measured contributors, converted to `units`), `coverage` (a `Coverage`) and
+`value_ids` (each contributor's selected Value UUID).
+
 Missing keys and unresolved quantities count as missing; zero counts as measured.
 No reducer reads a missing value as zero: a sum or a count leaves it out, a mean
 divides by the measured contributors only, and the coverage is incomplete. A
@@ -397,7 +405,7 @@ A `Pivot` exposes:
 - `to_table()`: a [Table](tables.md) in row preorder, with `name`, `parent_id`,
   `All` and one column per Classification code. Cells hold `value` results:
   a Quantity, a Flow or None. Row IDs are Entity UUIDs.
-- `display(precision=2)`: a Polars table of scalar cells with rows indented by
+- `display(precision=2)`: a `PivotTable`, a Polars table of scalar cells with rows indented by
   depth. "—" marks a cell with no contributor; "?" marks a cell with no value
   under its coverage policy. A Pivot of Flows raises `ContractError`. It needs
   the `calculations` extra.
@@ -416,7 +424,7 @@ an index. See [the consumer guide](tables.md) for examples and errors.
 
 ## Legacy boundary
 
-`model.system.View` and `model.system.rollup` are Model-backed operations and reject old
+`model.system.View` and the rollups are Model-backed operations and reject old
 Graph inputs. New records come from `rangekeeper.model`. See [tables](tables.md)
 for projections of these views.
 

@@ -906,7 +906,6 @@
   "PyomoHighs": {
    "kind": "class",
    "members": {
-    "scale": "staticmethod (row) -> float",
     "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object] = <mappingproxy>) -> rangekeeper.execution.backends.base.BackendResult"
    },
    "module": "rangekeeper.execution.backends.pyomo",
@@ -1699,7 +1698,7 @@
   "EntityHandle": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, draft: ModelDraft, id: uuid.UUID) -> None",
+    "__init__": "method (self) -> None",
     "code": "property",
     "date": "method (self, *, key: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
     "equations": "method (self, *equations: str | rangekeeper.schema.records.Expression) -> None",
@@ -1709,7 +1708,7 @@
     "value": "method (self, *, key: str, units: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle"
    },
    "module": "rangekeeper.model.draft",
-   "signature": "(draft: ModelDraft, id: uuid.UUID) -> None"
+   "signature": "() -> None"
   },
   "Expression": {
    "kind": "class",
@@ -2074,10 +2073,10 @@
   "ValueHandle": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, id: uuid.UUID, key: str, owner: uuid.UUID, units: str | None) -> None"
+    "__init__": "method (self) -> None"
    },
    "module": "rangekeeper.model.draft",
-   "signature": "(id: uuid.UUID, key: str, owner: uuid.UUID, units: str | None) -> None"
+   "signature": "() -> None"
   },
   "ValueKind": {
    "kind": "enum",
@@ -2388,7 +2387,7 @@
    "members": {
     "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.rollup.RollupResult",
-    "formulate": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, id: uuid.UUID, aggregates: collections.abc.Mapping[uuid.UUID, uuid.UUID])",
+    "formulate": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, id: uuid.UUID, aggregates: collections.abc.Mapping[uuid.UUID, uuid.UUID]) -> Formulation",
     "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
    },
    "module": "rangekeeper.model.system.rollup",
@@ -2447,10 +2446,10 @@
     "__init__": "method (self, rows: rangekeeper.model.system.hierarchy.Hierarchy, columns: collections.abc.Iterable[rangekeeper.model.system.pivot.PivotColumn], *, label: str | None = None) -> None",
     "available_value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None",
     "cell": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.rollup.RollupEntry",
-    "children": "method (self, column: UUID | PivotColumn | None = None)",
+    "children": "method (self, column: UUID | PivotColumn | None = None) -> tuple[rangekeeper.model.system.pivot.PivotColumn, ...]",
     "column": "method (self, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.PivotColumn",
     "coverage": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.rollup.Coverage",
-    "display": "method (self, *, precision: int = 2)",
+    "display": "method (self, *, precision: int = 2) -> PivotTable",
     "partition": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.model.system.pivot.Partition",
     "to_table": "method (self) -> Table",
     "value": "method (self, row: uuid.UUID, column: UUID | PivotColumn | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None"
@@ -2465,6 +2464,22 @@
    },
    "module": "rangekeeper.model.system.pivot",
    "signature": "(classification: uuid.UUID | None, parent: uuid.UUID | None, depth: int, result: rangekeeper.model.system.rollup.RollupResult) -> None"
+  },
+  "PivotTable": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, pivot: Pivot, precision: int = 2) -> None"
+   },
+   "module": "rangekeeper.model.display",
+   "signature": "(*, pivot: Pivot, precision: int = 2) -> None"
+  },
+  "QuantityPopulation": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, quantities: tuple[rangekeeper.quantity.Quantity, ...], coverage: rangekeeper.model.system.rollup.Coverage, value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID]) -> None"
+   },
+   "module": "rangekeeper.model.system.rollup",
+   "signature": "(*, quantities: tuple[rangekeeper.quantity.Quantity, ...], coverage: rangekeeper.model.system.rollup.Coverage, value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID]) -> None"
   },
   "QuantityRollup": {
    "kind": "class",
@@ -2509,7 +2524,7 @@
     "__init__": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, entries: collections.abc.Mapping[uuid.UUID, rangekeeper.model.system.rollup.RollupEntry], value_ids: collections.abc.Mapping[uuid.UUID, uuid.UUID], require_complete: bool) -> None",
     "available_value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None",
     "coverage": "method (self, id: uuid.UUID) -> rangekeeper.model.system.rollup.Coverage",
-    "display": "method (self, *, transpose: bool = False, precision: int = 2)",
+    "display": "method (self, *, transpose: bool = False, precision: int = 2) -> StreamTable",
     "root_value": "property",
     "value": "method (self, id: uuid.UUID) -> rangekeeper.quantity.Quantity | rangekeeper.flow.Flow | None"
    },
@@ -2535,7 +2550,7 @@
     "leaves": "property",
     "match": "method (self, *, condition: Filter) -> Match",
     "predecessors": "method (self, id: uuid.UUID) -> tuple[rangekeeper.schema.records.Entity, ...]",
-    "quantities": "method (self, key: str, *, units: str, measure: uuid.UUID | None = None)",
+    "quantities": "method (self, key: str, *, units: str, measure: uuid.UUID | None = None) -> QuantityPopulation",
     "relationship": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Relationship",
     "relationships": "property",
     "rollup": "method (self, *, definition: QuantityRollup | FlowRollup) -> RollupResult",
@@ -2551,10 +2566,6 @@
    "module": "rangekeeper.model.system.rollup",
    "signature": "(model: rangekeeper.model.model.Model, classification: uuid.UUID, *, exclusive: bool = False) -> collections.abc.Callable[[rangekeeper.schema.records.Entity], bool]"
   },
-  "matching": {
-   "kind": "module",
-   "module": "rangekeeper.model.system.matching"
-  },
   "membership": {
    "kind": "module",
    "module": "rangekeeper.model.system.membership"
@@ -2562,10 +2573,6 @@
   "pivot": {
    "kind": "module",
    "module": "rangekeeper.model.system.pivot"
-  },
-  "rollup": {
-   "kind": "module",
-   "module": "rangekeeper.model.system.rollup"
   },
   "selection": {
    "kind": "module",

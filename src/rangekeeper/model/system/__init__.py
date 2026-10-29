@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from rangekeeper.shared.exports import lazy as _lazy
 
 if TYPE_CHECKING:
+    from ..display import PivotTable as PivotTable
     from .errors import (
         HierarchyError as HierarchyError,
     )
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
     from .rollup import Coverage as Coverage
     from .rollup import CoverageStatus as CoverageStatus
     from .rollup import FlowRollup as FlowRollup
+    from .rollup import QuantityPopulation as QuantityPopulation
     from .rollup import QuantityRollup as QuantityRollup
     from .rollup import Reducer as Reducer
     from .rollup import RollupEntry as RollupEntry
@@ -54,13 +56,15 @@ _EXPORTS = {
     "Pivot": "pivot",
     "PivotColumn": "pivot",
     "Partition": "pivot",
+    # ``PivotTable`` lives in ``rangekeeper.model.display``, beside the Stream
+    # table display; the leading dot makes the path relative to ``model``.
+    "PivotTable": ".display",
+    "QuantityPopulation": "rollup",
     "SelectionError": "errors",
     "HierarchyError": "errors",
     "RollupError": "errors",
 }
 _MODULES = {
-    "matching",
-    "rollup",
     "table",
     "membership",
     "selection",

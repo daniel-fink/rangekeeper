@@ -89,8 +89,12 @@ model = draft.commit()
 | `ref(key=)` | The handle of a Value of the entity, declared now or in an earlier revision |
 | `equations(*equations)` | Adds equations to the entity's default Formulation: [equation text](expressions.md#equation-text), such as `"total_cost = land_cost + works_cost"`, or Boolean Expression records |
 
-A `ValueHandle` has the Value's `id`, `key`, `owner` (the UUID of its entity) and
-declared `units`, or `None` for a date.
+A `ValueHandle` has the Value's `id`, `key`, `kind` (a `ValueKind`), `owner`
+(the UUID of its entity) and declared `units`, or `None` for a date. Only a draft
+makes handles: `ValueHandle(...)` and `EntityHandle(...)` raise `TypeError`. A
+handle displays its kind, key, units and entity without UUIDs, such as
+`<value land_cost [AUD] on project>` or `<entity project 'Project'>`, so a
+notebook cell that ends with a declaration shows a short line.
 
 **Rules that each call checks.**
 

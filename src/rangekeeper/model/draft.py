@@ -96,17 +96,57 @@ class _Names:
         return self.draft._ref(self.draft.entity(code=code).id, key).id
 
 
-@dataclass(frozen=True, slots=True)
-class ValueHandle:
-    """A Value that a draft declared or found, by its UUID, key and owner.
+# The word for each kind of Value in the display of a handle.
+_VALUE_WORDS = {
+    ValueKind.MEASUREMENT: "value",
+    ValueKind.FLOW: "flow",
+    ValueKind.DATE: "date",
+    ValueKind.PROPERTY: "property",
+}
 
+
+@dataclass(frozen=True, slots=True, init=False)
+class ValueHandle:
+    """A Value that a draft declared or found: its UUID, key, kind, owner and units.
+
+    A draft makes handles: ``value``, ``flow``, ``date`` and ``ref`` on an
+    entity handle return them. ``owner`` is the UUID of the entity, and
     ``units`` are the declared units, or None for a Value with no Measure.
+    The display names the kind, key, units and entity, for example
+    ``<value land_cost [AUD] on project>``.
     """
 
     id: UUID
     key: str
+    kind: ValueKind
     owner: UUID
     units: str | None
+    # The name or code of the owner, for the display only.
+    _entity: str = field(repr=False, compare=False)
+
+    def __init__(self) -> None:
+        raise TypeError("a draft makes ValueHandles; call value() on an entity handle")
+
+    @classmethod
+    def _of(cls, value: Value, *, owner: "_Owner", units: str | None) -> "ValueHandle":
+        """Return the handle of a Value of ``owner`` in a draft."""
+        handle = object.__new__(cls)
+        fields = {
+            "id": value.id,
+            "key": value.key,
+            "kind": value.kind,
+            "owner": owner.record.id,
+            "units": units,
+            "_entity": owner.label,
+        }
+        for name, item in fields.items():
+            object.__setattr__(handle, name, item)
+        return handle
+
+    def __repr__(self) -> str:
+        units = "" if self.units is None else f" [{self.units}]"
+        word = _VALUE_WORDS.get(self.kind, "value")
+        return f"<{word} {self.key}{units} on {self._entity}>"
 
 
 @dataclass(slots=True, eq=False)
@@ -127,6 +167,11 @@ class _Owner:
         return self.record.code or str(self.record.id)
 
     @property
+    def label(self) -> str:
+        """The name of the record for a display, or its code or UUID."""
+        return self.record.name or self.path
+
+    @property
     def where(self) -> str:
         """Name the record in an error: its kind, and its code or UUID."""
         return f"{type(self.record).__name__} {self.path}"
@@ -137,14 +182,24 @@ class EntityHandle:
 
     A draft makes handles: ``draft.add_entity(...)`` and ``draft.entity(...)``
     return them. Declarations are checked when they are made; ``commit()`` on
-    the draft validates them again with the whole revision.
+    the draft validates them again with the whole revision. The display names
+    the kind, code and name, for example ``<entity project "Project">``.
     """
 
     __slots__ = ("_draft", "_id")
+    _draft: "ModelDraft"
+    _id: UUID
 
-    def __init__(self, draft: "ModelDraft", id: UUID) -> None:
-        self._draft = draft
-        self._id = id
+    def __init__(self) -> None:
+        raise TypeError("a draft makes EntityHandles; call add_entity() or entity()")
+
+    @classmethod
+    def _of(cls, draft: "ModelDraft", id: UUID) -> "EntityHandle":
+        """Return the handle of the Entity or Assembly ``id`` of ``draft``."""
+        handle = cls.__new__(cls)
+        handle._draft = draft
+        handle._id = id
+        return handle
 
     @property
     def id(self) -> UUID:
@@ -157,7 +212,10 @@ class EntityHandle:
         return self._draft._owner(self._id).record.code
 
     def __repr__(self) -> str:
-        return f"EntityHandle(code={self.code!r}, id={self._id!r})"
+        record = self._draft._owner(self._id).record
+        word = "assembly" if isinstance(record, Assembly) else "entity"
+        name = "" if record.name is None else f" {record.name!r}"
+        return f"<{word} {record.code or self._id}{name}>"
 
     def value(
         self,
@@ -578,7 +636,7 @@ class ModelDraft:
     def _handle(self, id: UUID) -> EntityHandle:
         handle = self._handles.get(id)
         if handle is None:
-            handle = self._handles[id] = EntityHandle(self, id)
+            handle = self._handles[id] = EntityHandle._of(self, id)
         return handle
 
     def _entity_id(self, item: "str | UUID | EntityHandle") -> UUID:
@@ -662,7 +720,7 @@ class ModelDraft:
         self._known.add(value.id)
         if isinstance(flow, Flow):
             self._known.update(movement.id for movement in flow.movements)
-        return ValueHandle(value.id, key, owner_id, units)
+        return ValueHandle._of(value, owner=owner, units=units)
 
     def _ref(self, owner_id: UUID, key: str) -> ValueHandle:
         owner = self._owner(owner_id)
@@ -681,7 +739,7 @@ class ModelDraft:
             units = next(
                 item.units for item in self._measures if item.id == value.measure
             )
-        return ValueHandle(value.id, key, owner_id, units)
+        return ValueHandle._of(value, owner=owner, units=units)
 
     def _add_equations(
         self,

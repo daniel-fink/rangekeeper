@@ -32,7 +32,9 @@ if TYPE_CHECKING:
         AlignmentJoin,
         ResampleMethod,
     )
+    from rangekeeper.flow._table import StreamTable  # public with #413
     from rangekeeper.model.system.pivot import Pivot
+    from rangekeeper.schema.records import Formulation
 
 
 @unique
@@ -235,7 +237,7 @@ class RollupResult:
         self.hierarchy.view.entity(id)
         return self.entries[id].available
 
-    def display(self, *, transpose: bool = False, precision: int = 2):
+    def display(self, *, transpose: bool = False, precision: int = 2) -> "StreamTable":
         """Display available Flow results; owner and period coverage remain inspectable."""
         from rangekeeper.flow import Stream
 
@@ -280,9 +282,15 @@ def classified(
     return contributes
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class QuantityPopulation:
-    """Raw quantities, contributor coverage and selected identities for one scope."""
+    """Raw quantities, contributor coverage and selected identities for one scope.
+
+    ``View.quantities`` returns it. ``quantities`` are the recorded Quantities
+    of the measured contributors, in the units asked for; ``coverage`` gives
+    the selected, measured and missing contributors; ``value_ids`` maps each
+    contributor with a selected Value to that Value's UUID.
+    """
 
     quantities: tuple[Quantity, ...]
     coverage: Coverage
@@ -307,9 +315,9 @@ def _collect_quantities(
             measured.append(entity.id)
             quantities.append(quantity)
     return QuantityPopulation(
-        tuple(quantities),
-        Coverage(tuple(selected), tuple(measured), tuple(missing)),
-        MappingProxyType(value_ids),
+        quantities=tuple(quantities),
+        coverage=Coverage(tuple(selected), tuple(measured), tuple(missing)),
+        value_ids=MappingProxyType(value_ids),
     )
 
 
@@ -681,7 +689,7 @@ class FlowRollup(_Rollup):
         *,
         id: UUID,
         aggregates: Mapping[UUID, UUID],
-    ):
+    ) -> "Formulation":
         """Declare hierarchy sums over the same original structural contributors."""
         from rangekeeper.model.formulation.hierarchy import formulate
 

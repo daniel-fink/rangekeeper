@@ -179,7 +179,7 @@ This table lists the public names that 1.x consumers use, with their state in
 | `model.system.Reduction`, with `execute`, `pivot`, `Contributor` and callable contributors | Unchanged | `QuantityRollup(key=, units=, reducer=)` and `FlowRollup(key=, reducer=, ...)` with one `Reducer` enum; both default to leaf contributors; `View.aggregate` becomes `View.rollup(definition=)` ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)) |
 | `model.system.reduction.Aggregation` | `RollupResult` (the codemod renames it) | — |
 | `calculations.series.Aggregation` | `rangekeeper.flow.FlowAggregate` (the codemod renames it) | — |
-| `model.system.reduction.AggregateEntry`, `Coverage`, `CoverageStatus` | Unchanged | `rangekeeper.model.system.rollup.RollupEntry`, `Coverage`, `CoverageStatus` ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)); `Coverage.undecided` lists the owners that a `Filter` contributor rule could not decide; missing values never count as zero, and `FlowRollup` refuses `MissingValueHandling.ZERO` ([#157](https://github.com/daniel-fink/rangekeeper/issues/157)) |
+| `model.system.reduction.AggregateEntry`, `Coverage`, `CoverageStatus` | Unchanged | `rangekeeper.model.system.RollupEntry`, `Coverage`, `CoverageStatus` ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)); `Coverage.undecided` lists the owners that a `Filter` contributor rule could not decide; missing values never count as zero, and `FlowRollup` refuses `MissingValueHandling.ZERO` ([#157](https://github.com/daniel-fink/rangekeeper/issues/157)) |
 | `model.system.Pivot`, `PivotColumn`, `Partition` | Unchanged | `pivot(..., label=)` splits the columns by a label key; `PivotColumn.aggregation` becomes `result` ([#158](https://github.com/daniel-fink/rangekeeper/issues/158), [#159](https://github.com/daniel-fink/rangekeeper/issues/159)) |
 | `model.system.classified`, `Model.descendants` | Unchanged | — |
 | `model.system.reducers` | Unchanged | Removed: the `Reducer` enum replaces it ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)) |
@@ -247,7 +247,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
 | `rangekeeper.model.scenario` | `rangekeeper.market` | agreed | The generators, paths and replay move as they are. `rk.market.Paths` and the MarketPaths document replace the scenario plan (#298, #299). |
 | `rangekeeper.model.scenario.market` | `rangekeeper.market.generation` | draft | Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name. |
-| `rangekeeper.model.system.reduction` | `rangekeeper.model.system.rollup` | agreed | `QuantityRollup` and `FlowRollup` replace `Reduction`; see the symbol entries. |
+| `rangekeeper.model.system.reduction` | `rangekeeper.model.system` | agreed | `QuantityRollup` and `FlowRollup` replace `Reduction`; see the symbol entries. The rollup classes are exported by `rangekeeper.model.system`; the `rollup` module that defines them is internal (#391). |
 | `rangekeeper.model.scope` | `rangekeeper.model._scope` | agreed | Internal. The checks over raw mappings become private; the typed target lookups move to `rangekeeper.model.targets`. |
 | `src/tests/` | `tests/` | agreed | The pass moves the suite to the top level. #177 adds the sub-folders that mirror the packages, and tests/contracts, tests/integration and tests/walkthrough. |
 
@@ -257,8 +257,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | --- | --- | --- | --- |
 | `rangekeeper.calculations.series.Aggregation` | `FlowAggregate` | draft |  |
 | `rangekeeper.model.system.reduction.Aggregation` | `RollupResult` | draft |  |
-| `rangekeeper.model.system.reduction.Reduction` | `rangekeeper.model.system.rollup.QuantityRollup` | agreed (needs refactor) | The scalar and Flow modes split. `Reduction(select=select_value(key), reducer=reducers.sum, units=)` becomes `QuantityRollup(key=, units=, reducer=Reducer.SUM)`; `Reduction.flows(key=, aggregation=, ...)` becomes `FlowRollup(key=, reducer=, ...)`. Both default to `Contributor.LEAVES`; the scalar default was every node. Custom selectors and reducers are removed. |
-| `rangekeeper.model.system.reduction.AggregateEntry` | `rangekeeper.model.system.rollup.RollupEntry` | agreed | `aggregate` is the word for combining Flows (D38). |
+| `rangekeeper.model.system.reduction.Reduction` | `rangekeeper.model.system.QuantityRollup` | agreed (needs refactor) | The scalar and Flow modes split. `Reduction(select=select_value(key), reducer=reducers.sum, units=)` becomes `QuantityRollup(key=, units=, reducer=Reducer.SUM)`; `Reduction.flows(key=, aggregation=, ...)` becomes `FlowRollup(key=, reducer=, ...)`. Both default to `Contributor.LEAVES`; the scalar default was every node. Custom selectors and reducers are removed. |
+| `rangekeeper.model.system.reduction.AggregateEntry` | `rangekeeper.model.system.RollupEntry` | agreed | `aggregate` is the word for combining Flows (D38). |
 | `rangekeeper.model.system.errors.AggregationError` | `RollupError` | agreed | `aggregate` is the word for combining Flows (D38). Its code is `Code.ROLLUP`, with the text `rollup`. |
 | `rangekeeper.model.duration.calendar.measure` | `count_steps` | draft |  |
 | `rangekeeper.model.duration.period.align` | `containing_period` | draft |  |

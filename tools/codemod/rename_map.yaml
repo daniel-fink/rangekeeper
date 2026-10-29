@@ -166,10 +166,10 @@ modules:
     source: "ADR-010, #255 D29"
     note: Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name.
   - old: rangekeeper.model.system.reduction
-    new: rangekeeper.model.system.rollup
+    new: rangekeeper.model.system
     status: agreed
-    source: "ADR-012, #158"
-    note: "`QuantityRollup` and `FlowRollup` replace `Reduction`; see the symbol entries."
+    source: "ADR-012, #158, #391"
+    note: "`QuantityRollup` and `FlowRollup` replace `Reduction`; see the symbol entries. The rollup classes are exported by `rangekeeper.model.system`; the `rollup` module that defines them is internal (#391)."
   - old: rangekeeper.model.scope
     new: rangekeeper.model._scope
     status: agreed
@@ -206,7 +206,7 @@ symbols:
   - module: rangekeeper.model.system.reduction
     name: Reduction
     new_name: QuantityRollup
-    new_module: rangekeeper.model.system.rollup
+    new_module: rangekeeper.model.system
     status: agreed
     source: "ADR-012, #158"
     requires: [refactor]
@@ -220,7 +220,7 @@ symbols:
   - module: rangekeeper.model.system.reduction
     name: AggregateEntry
     new_name: RollupEntry
-    new_module: rangekeeper.model.system.rollup
+    new_module: rangekeeper.model.system
     status: agreed
     source: "ADR-012, #158, #255 D38"
     note: "`aggregate` is the word for combining Flows (D38)."
