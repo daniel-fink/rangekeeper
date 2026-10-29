@@ -326,6 +326,7 @@ them; the issues that the table names make the changes.
 | Topic | 1.0 | Source |
 | --- | --- | --- |
 | Quantity text in API arguments | Arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year. | #255 D13, D16, D17 |
+| Execution configuration | `Executor(store, backend=, units=, tolerances=)` becomes `Executor(store, config=ExecutionConfig(backend=, units=, tolerances=))`. `ExecutionConfig` also holds the default `limits` and the `backend_options`. | ADR-013, #128 |
 | Keyword-only arguments | Every Rangekeeper call names its arguments. | #255 D14 |
 | Model authoring and builder names | `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles. `Model(record, units=)` is removed: `rk.Model(name=)` makes an empty Model, and `Model.create(...)` or `Model.from_data(...)` take complete records (#141, #281). | #255 D6, D16, D18 |
 | Specification calls | `fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. `model.specify(name=)` makes one. `fix(target, quantity, id=, model=, ids=, recorded=)` is now `fix(key=quantity)`, or `fix({target: quantity})` for a dotted path, a UUID or a mapping of Movement UUIDs; `free(target, id=, model=, ids=)` is now `free(*targets)`. The Specification keeps its Model: pass `Specification(record, model=, resolver=)` for a record. `recorded=True` is removed: fix the recorded Quantities explicitly (#144). | #255 D7, D8 |

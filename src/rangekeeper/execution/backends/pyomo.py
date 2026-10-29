@@ -4,13 +4,18 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from types import MappingProxyType
 from uuid import UUID
 
 from rangekeeper.execution.backends.base import Result
 from rangekeeper.execution.compiler import AffineProblem
-from rangekeeper.execution.errors import BackendUnavailableError, NumericalError
+from rangekeeper.execution.errors import (
+    BackendUnavailableError,
+    NumericalError,
+    UnsupportedError,
+)
 from rangekeeper.execution.settings import Limits
 from rangekeeper.schema.records import Implementation
 
@@ -21,12 +26,37 @@ class PyomoHighs:
     Only numerical rows cross the private JSON protocol; no solver object or
     mutable Model crosses it. Pyomo/highspy imports happen in the child. Timeout
     kills and reaps that process, discards partial output, and proves no infeasibility.
+
+    ``options`` are HiGHS options. They replace the defaults of the worker, except
+    for the options in ``RESERVED``, which the backend sets itself.
     """
 
+    RESERVED = frozenset(
+        {
+            "log_file",
+            "log_to_console",
+            "output_flag",
+            "simplex_iteration_limit",
+            "threads",
+            "time_limit",
+        }
+    )
+
     def solve(
-        self, problem: AffineProblem, *, limits: Limits, remaining: float
+        self,
+        problem: AffineProblem,
+        *,
+        limits: Limits,
+        remaining: float,
+        options: Mapping[str, object] = MappingProxyType({}),
     ) -> Result:
         """Solve a compiled problem in a child process and return its Result."""
+        refused = sorted(self.RESERVED.intersection(options))
+        if refused:
+            raise UnsupportedError(
+                "the pyomo-highs backend sets these HiGHS options itself: "
+                + ", ".join(refused)
+            )
         if remaining <= 0:
             return Result("worker_deadline", evidence={"remaining_seconds": 0})
         ids = problem.binding.unknowns
@@ -44,6 +74,7 @@ class PyomoHighs:
             ],
             "remaining": remaining,
             "iteration_limit": limits.iteration_limit,
+            "options": dict(options),
         }
         environment = dict(os.environ)
         # Resolve the installed package root, not a repository-specific path. This

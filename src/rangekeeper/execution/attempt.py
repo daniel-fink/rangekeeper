@@ -17,6 +17,7 @@ from rangekeeper.execution import (
 )
 from rangekeeper.execution.backends import Backend, registry
 from rangekeeper.execution.backends.base import Result
+from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.errors import (
     AttemptDeadlineError,
     BackendUnavailableError,
@@ -61,15 +62,15 @@ class Attempt:
 
     def __init__(
         self,
+        config: ExecutionConfig,
         backend: Backend,
-        units: UnitSystem | None,
-        tolerances: acceptance.Tolerances,
         specification: Specification,
         view: Composition | ValidationError,
         *,
         resolver: DocumentResolver,
     ) -> None:
-        self.backend, self.units, self.tolerances = backend, units, tolerances
+        self.config, self.backend = config, backend
+        self.units: UnitSystem | None = config.units
         self.specification, self.view = specification, view
         self.resolver = resolver
         self.run_id, self.started, self.clock = uuid4(), _now(), time.monotonic()
@@ -211,7 +212,9 @@ class Attempt:
         """Validate, bind roles and build the problem within one deadline."""
         if isinstance(self.view, ValidationError):
             raise self.view
-        self.limits, adjustments = settings.resolve(self.view.requirements.settings)
+        self.limits, adjustments = settings.resolve(
+            self.view.requirements.settings, defaults=self.config.limits
+        )
         self.findings.extend(adjustments)
         validation = preparation.validate(
             self.view, resolver=self.resolver, units=self.units
@@ -266,6 +269,7 @@ class Attempt:
             problem,
             limits=self.limits,
             remaining=self.limits.time_limit - (time.monotonic() - self.clock),
+            options=self.config.backend_options,
         )
         self.implementations.extend(self.result.implementations)
         self.diagnose(
@@ -308,7 +312,7 @@ class Attempt:
                 self.binding, result.candidate, run_id=self.run_id
             )
             checked = acceptance.verify(
-                self.binding, candidate, tolerances=self.tolerances
+                self.binding, candidate, tolerances=self.config.tolerances
             )
             units = unit_systems.describe(self.binding.units)
             self.implementations.extend(

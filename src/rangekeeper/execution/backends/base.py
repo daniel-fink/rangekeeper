@@ -25,7 +25,16 @@ class Backend(Protocol):
     """Backends must enforce the remaining wall deadline and return finite evidence."""
 
     def solve(
-        self, problem: AffineProblem, *, limits: Limits, remaining: float
+        self,
+        problem: AffineProblem,
+        *,
+        limits: Limits,
+        remaining: float,
+        options: Mapping[str, object],
     ) -> Result:
-        """Solve a compiled problem within the remaining seconds; return a Result."""
+        """Solve a problem within the remaining seconds; return a Result.
+
+        ``options`` are the ``backend_options`` of the ExecutionConfig. Raise
+        UnsupportedError for an option that the backend refuses.
+        """
         ...

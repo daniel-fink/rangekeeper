@@ -545,14 +545,31 @@
    "module": "rangekeeper.execution.planning",
    "signature": "(root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition | rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
   },
+  "ExecutionConfig": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+   },
+   "module": "rangekeeper.execution.config",
+   "signature": "(backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+  },
   "Executor": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, store: rangekeeper.shared.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None",
+    "__init__": "method (self, store: rangekeeper.shared.store.RecordStore, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> None",
     "execute": "method (self, specification: rangekeeper.specification.specification.Specification) -> rangekeeper.run.run.Run"
    },
    "module": "rangekeeper.execution.executor",
-   "signature": "(store: rangekeeper.shared.store.RecordStore, *, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>) -> None"
+   "signature": "(store: rangekeeper.shared.store.RecordStore, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> None"
+  },
+  "Limits": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, time_limit: float = 30, iteration_limit: int = 100000, symbol_limit: int = 10000, constraint_limit: int = 20000) -> None",
+    "record": "method (self) -> rangekeeper.schema.records.Settings"
+   },
+   "module": "rangekeeper.execution.settings",
+   "signature": "(time_limit: float = 30, iteration_limit: int = 100000, symbol_limit: int = 10000, constraint_limit: int = 20000) -> None"
   },
   "Tolerances": {
    "kind": "class",
@@ -619,7 +636,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *args, **kwargs)",
-    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float) -> rangekeeper.execution.backends.base.Result"
+    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object]) -> rangekeeper.execution.backends.base.Result"
    },
    "module": "rangekeeper.execution.backends.base",
    "signature": "(*args, **kwargs)"
@@ -627,7 +644,7 @@
   "PyomoHighs": {
    "kind": "class",
    "members": {
-    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float) -> rangekeeper.execution.backends.base.Result"
+    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object] = <mappingproxy>) -> rangekeeper.execution.backends.base.Result"
    },
    "module": "rangekeeper.execution.backends.pyomo",
    "signature": "()"

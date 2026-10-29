@@ -53,6 +53,7 @@ def solve(request):
         "dual_feasibility_tolerance": 1e-7,
         "output_flag": False,
     }
+    options.update(request.get("options") or {})
     remaining = max(1e-9, request["remaining"] - (time.monotonic() - started))
     result = Highs().solve(
         model,
