@@ -110,7 +110,7 @@ def investigate(model, ids, *, inverse=False):
     fixed = "pv" if inverse else "initial"
     unknown = "initial" if inverse else "pv"
     return Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=(
@@ -139,7 +139,7 @@ def test_forward_then_inverse_temporal_oracle():
     store.put(model)
     run = execute(specification=investigate(model, ids), store=store).run
     assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report.to_data()
-    validate(run, resolver=store).raise_if_invalid()
+    validate(run=run, resolver=store).raise_if_invalid()
     result = store.load_model(run.record.outputs[0])
     assert [
         m.magnitude for m in result.value(ids["cash"]).flow.movements
@@ -187,7 +187,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
         unknown_flow(model, ids["cash"], ids=[first, first])
     assert repeated.value.code is Code.UNIQUE
     specification = Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=(
@@ -500,7 +500,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
         for i, x in enumerate((10, -20, 5))
     )
     spec = Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(assigned),

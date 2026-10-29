@@ -62,8 +62,8 @@ def _decide(decision, observation, *, units):
 
 
 def evaluate(
-    rules: RuleSet,
     *,
+    rules: RuleSet,
     model: Model,
     units: UnitSystem | None = None,
 ) -> RuleResult:

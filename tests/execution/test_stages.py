@@ -83,14 +83,14 @@ def stages(specification=None):
     specification = spec() if specification is None else specification
     store.put(specification)
     resolver = Unchanged(store)
-    cases = resolve_cases(specification, resolver=resolver)
+    cases = resolve_cases(specification=specification, resolver=resolver)
     return cases, cases.compositions[specification.id], model
 
 
 class Exact:
     """A backend that returns the known solution."""
 
-    def solve(self, problem, *, limits, remaining, options):
+    def solve(self, *, problem, limits, remaining, options):
         assert isinstance(problem, AffineProblem)
         return BackendResult(termination=Termination.FEASIBLE, candidate=SOLUTION)
 
@@ -108,7 +108,9 @@ def attempt(cases, composition, specification=None):
 
 def bound(specification=None):
     cases, composition, _ = stages(specification)
-    return cases, bind_roles(validate(composition, resolver=cases))
+    return cases, bind_roles(
+        validation=validate(composition=composition, resolver=cases)
+    )
 
 
 def test_resolve_cases_composes_each_leaf_and_resolves_its_revisions():
@@ -129,7 +131,7 @@ def test_resolve_cases_composes_each_leaf_and_resolves_its_revisions():
     )
     for document in (good, other, conflict):
         store.put(document)
-    cases = resolve_cases(batch, resolver=Unchanged(store))
+    cases = resolve_cases(specification=batch, resolver=Unchanged(store))
     assert isinstance(cases, Cases)
     assert cases.root is batch
     assert set(cases.documents) == {batch.id, good.id, other.id, conflict.id}
@@ -156,12 +158,12 @@ def test_resolve_cases_raises_for_a_contradicted_batch_pin():
         }
     )
     with pytest.raises(ValidationError, match="batch input Model"):
-        resolve_cases(batch, resolver=Unchanged(store))
+        resolve_cases(specification=batch, resolver=Unchanged(store))
 
 
 def test_validate_reports_problems_and_raises_nothing():
     cases, composition, model = stages()
-    validation = validate(composition, resolver=cases)
+    validation = validate(composition=composition, resolver=cases)
     assert isinstance(validation, Validation)
     assert validation.report.valid
     assert validation.model is not None and validation.model.id == model.id
@@ -172,10 +174,10 @@ def test_validate_reports_problems_and_raises_nothing():
         a for a in payload["assignments"] if a["target"]["target"] != str(RENT)
     ]
     cases, composition, _ = stages(Specification.from_data(payload))
-    invalid = validate(composition, resolver=cases)
+    invalid = validate(composition=composition, resolver=cases)
     assert not invalid.report.valid
     with pytest.raises(ValidationError):
-        bind_roles(invalid)
+        bind_roles(validation=invalid)
 
 
 def test_bind_roles_gives_each_value_its_role_in_measure_units():
@@ -191,21 +193,21 @@ def test_bind_roles_rejects_objectives_before_any_backend():
     payload = fresh(data("specification-objectives"))
     cases, composition, _ = stages(Specification.from_data(payload))
     with pytest.raises(UnsupportedError, match="objectives"):
-        bind_roles(validate(composition, resolver=cases))
+        bind_roles(validation=validate(composition=composition, resolver=cases))
 
 
 def test_build_problem_lowers_assertions_and_checks_limits():
     _, binding = bound()
-    problem = build_problem(binding)
+    problem = build_problem(binding=binding)
     assert isinstance(problem, AffineProblem)
     assert problem.binding is binding
     assert len(problem.rows) == len(binding.assertions) > 1
     assert all(set(row.residual.coefficients) <= {NOI, CAPITAL} for row in problem.rows)
     with pytest.raises(UnsupportedError) as symbols:
-        build_problem(binding, limits=Limits(symbol_limit=1))
+        build_problem(binding=binding, limits=Limits(symbol_limit=1))
     assert symbols.value.code == Code.SYMBOL_LIMIT
     with pytest.raises(UnsupportedError) as rows:
-        build_problem(binding, limits=Limits(constraint_limit=1))
+        build_problem(binding=binding, limits=Limits(constraint_limit=1))
     assert rows.value.code == Code.CONSTRAINT_LIMIT
     assert len(rows.value.targets) == 1
 
@@ -224,7 +226,7 @@ def test_build_problem_names_the_declaration_outside_the_affine_slice():
     specification = Specification.from_data(payload)
     _, binding = bound(specification)
     with pytest.raises(UnsupportedError, match="nonlinear") as error:
-        build_problem(binding)
+        build_problem(binding=binding)
     assert error.value.code is Code.NONAFFINE_UNKNOWNS
     assert error.value.equation == "capital_value = NOI * capital_value"
     assert error.value.unknowns == ("NOI", "capital_value")
@@ -276,8 +278,8 @@ def test_assemble_makes_the_outcome_and_validation_is_its_own_step():
     assert outcome.run.to_data() == attempted.run.to_data()
     assert outcome.outputs == (output,)
     # The unstored output is laid over the resolver for Run validation.
-    overlay = Overlay(cases, models=outcome.outputs)
-    assert rk.run.validate(outcome.run, resolver=overlay).valid
+    overlay = Overlay(resolver=cases, models=outcome.outputs)
+    assert rk.run.validate(run=outcome.run, resolver=overlay).valid
     # A feasible report without its output is not a Run.
     with pytest.raises(ValidationError):
         assemble(
@@ -287,7 +289,7 @@ def test_assemble_makes_the_outcome_and_validation_is_its_own_step():
             output=None,
         )
     # Without the overlay, the unstored output does not resolve.
-    assert not rk.run.validate(outcome.run, resolver=cases).valid
+    assert not rk.run.validate(run=outcome.run, resolver=cases).valid
 
 
 def test_assemble_batch_spawns_each_case_and_unites_their_outputs():
@@ -302,7 +304,7 @@ def test_assemble_batch_spawns_each_case_and_unites_their_outputs():
     )
     for document in (first, second, batch):
         store.put(document)
-    cases = resolve_cases(batch, resolver=Unchanged(store))
+    cases = resolve_cases(specification=batch, resolver=Unchanged(store))
     outcomes = [
         attempt(cases, cases.compositions[leaf.id], leaf) for leaf in (first, second)
     ]

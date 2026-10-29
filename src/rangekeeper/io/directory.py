@@ -78,7 +78,7 @@ class DirectoryStore:
         if isinstance(candidate, Run) and not validated_in(
             candidate, self, lambda id: (self.root / f"{id}.json").exists()
         ):
-            validate_run(candidate, resolver=self).raise_if_invalid()
+            validate_run(run=candidate, resolver=self).raise_if_invalid()
         if existing is not None:
             return candidate.id
         text = (

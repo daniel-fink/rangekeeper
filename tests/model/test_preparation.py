@@ -62,7 +62,7 @@ def fixture_model():
 
 def specification(**fields):
     return Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"), **fields
         )
     )
@@ -90,7 +90,7 @@ def test_batch_preparation_exports_and_resolves_each_revision_once(
         return original(document)
 
     monkeypatch.setattr(Specification, "to_data", exported)
-    cases = resolve_cases(root, resolver=resolver)
+    cases = resolve_cases(specification=root, resolver=resolver)
     documents, compositions = cases.documents, cases.compositions
 
     assert exports == {identity: 1 for identity in documents}
@@ -594,7 +594,7 @@ def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
         )
     )
     model = Model.from_data(data)
-    result = evaluate(rules, model=model, units=units)
+    result = evaluate(rules=rules, model=model, units=units)
     assert result.evidence[0].rule == UUID(rule)
     assert len(conversions) >= 2
     assert all(
@@ -639,6 +639,6 @@ def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
         ]
     run = Run.from_data(raw)
     conversions.clear()
-    report = validate(run, resolver=store, units=units)
+    report = validate(run=run, resolver=store, units=units)
     assert report.valid, report.issues
     assert conversions and all(context is units for context, _, _ in conversions)

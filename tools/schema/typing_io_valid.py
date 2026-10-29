@@ -47,5 +47,5 @@ run = rk.Run(
         ),
     )
 )
-validate(run, resolver=store)
+validate(run=run, resolver=store)
 restored: rk.Run = json.loads(text=json.dumps(run), kind=rk.Run)

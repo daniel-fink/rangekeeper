@@ -124,10 +124,10 @@ def test_roles_need_the_model_and_a_concrete_specification():
         model=model.id,
     )
     with pytest.raises(ValueError, match="no Model"):
-        Specification(record).roles  # noqa: B018
+        Specification(record=record).roles  # noqa: B018
     case = model.specify()
     batch = Specification(
-        rk.specification.SpecificationRecord(
+        record=rk.specification.SpecificationRecord(
             metadata=rk.model.Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             cases=(case.id,),
@@ -143,7 +143,7 @@ def test_a_rule_decides_its_target():
     land = model.value(owner=model.entity(code="project").id, key="land_cost")
     record = model.specify().record
     controlled = Specification(
-        record.replace(
+        record=record.replace(
             unknowns=tuple(r for r in record.unknowns if r.target != land.id),
             rules=RuleSet(
                 id=uuid4(), targets=(Reference(target=land.id),), decisions=()

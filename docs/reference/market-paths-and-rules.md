@@ -122,7 +122,7 @@ queries of [ADR-021](../decisions/021-sequential-decisions.md) replace these
 records ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)). There is no public `decide` or `DecisionHistory` wrapper.
 
 Import `evaluate`, `observe`, `RuleResult` and `RuleCapabilityError` from
-`rangekeeper.execution.rule`. `evaluate(rules, model=..., units=None)` prepares the scope and availability index
+`rangekeeper.execution.rule`. `evaluate(rules=..., model=..., units=None)` prepares the scope and availability index
 once; without `units` it uses `Model.unit_system`. It then applies the first true rule or the explicit fallback. Actions assign
 controls and may terminate. `observe` accepts only named quantities available by
 the decision date. Earlier evidence can supply later observations; a recorded

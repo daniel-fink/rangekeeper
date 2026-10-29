@@ -144,14 +144,14 @@ def _run(
         if isinstance(config.backend, str)
         else config.backend
     )
-    cases = resolve_cases(specification, resolver=resolver)
+    cases = resolve_cases(specification=specification, resolver=resolver)
     scopes: dict[UUID, object] = {}
     outcome = _case(
         specification, cases=cases, config=config, backend=backend, scopes=scopes
     )
     tree = tuple(outcome.walk())
     overlay = assembly.Overlay(
-        cases,
+        resolver=cases,
         models=(model for item in tree for model in item.outputs),
         runs=(item.run for item in tree),
     )

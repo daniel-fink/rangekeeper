@@ -68,7 +68,7 @@ def test_documents_convert_to_valid_1_0_documents():
     assert specification["rules"] == load("specification.yaml")["policy"]
     run = documents["run.json"]
     assert run.report.rule_evidence
-    assert validate(run, resolver=store).valid
+    assert validate(run=run, resolver=store).valid
 
 
 def test_the_solver_evidence_of_a_converted_run_reads_as_unknown():
@@ -150,7 +150,7 @@ def test_bundle_conversion_writes_a_new_bundle_with_the_same_documents(tmp_path)
     for document in documents.values():
         assert exact_equal(restored[document.id].to_data(), document.to_data())
     (run,) = [d for d in restored.values() if isinstance(d, Run)]
-    assert validate(run, resolver=reader).valid
+    assert validate(run=run, resolver=reader).valid
     assert {kind for kind, _ in read(SAMPLES / "bundle", release="0.x")} == {
         "Model",
         "Specification",

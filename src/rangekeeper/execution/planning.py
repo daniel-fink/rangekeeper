@@ -56,7 +56,7 @@ class Cases:
         return self.resolver.load_run(id)
 
 
-def resolve_cases(specification: Specification, *, resolver: DocumentResolver) -> Cases:
+def resolve_cases(*, specification: Specification, resolver: DocumentResolver) -> Cases:
     """Resolve the case graph of ``specification`` and compose each leaf once.
 
     Missing or wrong-kind revisions, cycles and a batch Model pin that a leaf

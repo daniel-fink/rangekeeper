@@ -44,9 +44,12 @@ no `classification`. In code, omit `exclusive` instead of passing `False`.
 
 Public functions and records take their arguments by name (D14,
 [#410](https://github.com/daniel-fink/rangekeeper/issues/410)). A call that
-passes them by position raises `TypeError`. The exceptions are a function with
-one argument, a natural pair such as `start, end`, a list of any length, the
-store-protocol methods and the Python protocol methods. Name the arguments:
+passes them by position raises `TypeError`. A call with more than one argument
+names all of them, also its first argument. The exceptions are a function with
+one argument in all, a natural pair such as `start, end`, a list of any length,
+the store-protocol methods, the Python protocol methods, an error constructor
+(the message first) and one positional-only mapping
+(`Specification.fix(targets, /, **values)`). Name the arguments:
 
 | Layer | 1.0.0a2 | 1.0.0b1 |
 | --- | --- | --- |
@@ -64,6 +67,12 @@ store-protocol methods and the Python protocol methods. Name the arguments:
 | `model` | `formulation.declare(id, name, equations, values)` | `declare(id=, name=, equations=, values=)` |
 | `model` | `formulation.flow.shape(model, value)`, `aligned(model, members, reference)` | `shape(model=, value=)`, `aligned(model=, members=, reference=)` |
 | `model` | `Coverage`, `RollupEntry`, `RollupResult`, `Match`, `PivotColumn`, `Partition`, and the table columns `FieldColumn`, `ValueColumn`, `LabelColumn`, `PropertyColumn` | The same records, by keyword: `ValueColumn(name="net_area", key="net", units="meter**2")` |
+| `specification` | `Specification(record, model=, resolver=)` | `Specification(record=, model=, resolver=)` |
+| `run` | `rk.run.validate(run, resolver=, units=)` | `rk.run.validate(run=, resolver=, units=)` |
+| `execution` | `resolve_cases(specification, resolver=)`, `validate(composition, resolver=, units=)`, `bind_roles(validation)`, `build_problem(binding, limits=)` | `resolve_cases(specification=, resolver=)`, `validate(composition=, resolver=, units=)`, `bind_roles(validation=)`, `build_problem(binding=, limits=)` |
+| `execution` | `Overlay(resolver, models=, runs=)` | `Overlay(resolver=, models=, runs=)` |
+| `execution` | `rule.evaluate(rules, model=)`, `rule.observe(model, at=, bindings=)` | `evaluate(rules=, model=)`, `observe(model=, at=, bindings=)` |
+| `execution` | A backend: `def solve(self, problem, *, limits, remaining, options)` | `def solve(self, *, problem, limits, remaining, options)`; Rangekeeper calls `solve(problem=, ...)` |
 
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
@@ -335,7 +344,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.execution.errors.AttemptDeadline` | `AttemptDeadlineError` | agreed |  |
 | `rangekeeper.execution.backends.base.Result` | `rangekeeper.execution.backends.BackendResult` | agreed | `termination` is a `Termination`, not a backend word; the backend's own condition moves into `evidence`. A backend also returns its `limits` and `diagnostics`. |
 | `rangekeeper.execution.compiler.Compiled` | `rangekeeper.execution.AffineProblem` | agreed | The typed result of the build-problem stage. |
-| `rangekeeper.execution.compiler.compile` | `rangekeeper.execution.build_problem` | agreed | `build_problem(binding, limits=)` also checks the symbol and constraint limits; `constraint_limit=` is replaced by `limits=`. |
+| `rangekeeper.execution.compiler.compile` | `rangekeeper.execution.build_problem` | agreed | `build_problem(binding=, limits=)` also checks the symbol and constraint limits; `constraint_limit=` is replaced by `limits=`. |
 | `rangekeeper.execution.preparation.Prepared` | `rangekeeper.execution.Binding` | agreed | The typed result of the bind-roles stage. |
 | `rangekeeper.execution.publication.candidate` | `rangekeeper.execution.make_candidate` | agreed |  |
 | `rangekeeper.execution.acceptance.check` | `rangekeeper.execution.verify` | agreed |  |
@@ -404,9 +413,9 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scenario.view.Market` | The MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.execution.compiler.Row.scale` | Rows are unscaled. `PyomoHighs.scale(row)` gives the divisor of the `pyomo-highs` backend | agreed |
 | `rangekeeper.execution.executor.Executor` | `rangekeeper.execution.execute(specification=, store=, config=)`, which returns an `Outcome`; read the Run as `outcome.run`. Use `rangekeeper.execution.solve(specification=, config=)` to write nothing | agreed |
-| `rangekeeper.execution.publication.CandidateResolver` | `rangekeeper.execution.Overlay(resolver, models=, runs=)` | agreed |
-| `rangekeeper.execution.planning.Plan` | `rangekeeper.execution.resolve_cases(specification, resolver=)`. It returns `Cases`, which is also a resolver | agreed |
-| `rangekeeper.execution.preparation.prepare` | `rangekeeper.execution.validate(composition, resolver=, units=)`, then `rangekeeper.execution.bind_roles(validation)` | agreed |
+| `rangekeeper.execution.publication.CandidateResolver` | `rangekeeper.execution.Overlay(resolver=, models=, runs=)` | agreed |
+| `rangekeeper.execution.planning.Plan` | `rangekeeper.execution.resolve_cases(specification=, resolver=)`. It returns `Cases`, which is also a resolver | agreed |
+| `rangekeeper.execution.preparation.prepare` | `rangekeeper.execution.validate(composition=, resolver=, units=)`, then `rangekeeper.execution.bind_roles(validation=)` | agreed |
 | `rangekeeper.shared.errors.BoundaryError` | rangekeeper.errors.RangekeeperError | agreed |
 | `rangekeeper.shared.errors.ValueEncodingError` | rangekeeper.errors.EncodingError | agreed |
 | `rangekeeper.io.atomic` | `rangekeeper.io.json.write` and `rangekeeper.io.yaml.write`, which publish a new file atomically | agreed |
@@ -420,12 +429,12 @@ them; the issues that the table names make the changes.
 | --- | --- | --- |
 | Quantity text in API arguments | Arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year. | #255 D13, D16, D17 |
 | Execution configuration | `Executor(store, backend=, units=, tolerances=)` becomes `execute(specification=, store=, config=ExecutionConfig(backend=, units=, tolerances=))`. `ExecutionConfig` also holds the default `limits` and the `backend_options`. | ADR-013, #128 |
-| Execution calls | The arguments of `rk.execution.solve`, `execute`, `assemble`, `assemble_batch`, `make_candidate` and `verify` are keyword-only: `solve(specification, store)` is now `solve(specification=, resolver=)`. The records of `rk.execution`, `rk.execution.backends` and `rk.execution.rule` take keyword arguments only, for example `Limits(time_limit=)`, `Tolerances(absolute=, relative=)` and `BackendResult(termination=, candidate=)`. | #255 D14, #410 |
+| Execution calls | The arguments of `rk.execution.solve`, `execute`, `assemble`, `assemble_batch`, `make_candidate` and `verify` are keyword-only: `solve(specification, store)` is now `solve(specification=, resolver=)`, and so are the stage calls `resolve_cases(specification=, resolver=)`, `validate(composition=, resolver=, units=)`, `bind_roles(validation=)` and `build_problem(binding=, limits=)`, the rule calls `rk.execution.rule.evaluate(rules=, model=)` and `observe(model=, at=, bindings=)`, `Overlay(resolver=, models=, runs=)` and `rk.run.validate(run=, resolver=)`. A backend declares `def solve(self, *, problem, limits, remaining, options)`. The records of `rk.execution`, `rk.execution.backends` and `rk.execution.rule` take keyword arguments only, for example `Limits(time_limit=)`, `Tolerances(absolute=, relative=)` and `BackendResult(termination=, candidate=)`. | #255 D14, #410 |
 | Resample options | `resample(method=)` takes one `ResampleMethod` for each line, and the weighting of a mean is part of the method: `MEAN` or `ELAPSED_MEAN`. `split(periods=)` or `split(frequency=)` divides amounts over shorter Periods and takes no `method=` or `missing=`. | #399, #405 |
 | Flow and Stream options | Each argument chooses one thing. `flow.check(resolved=True)` is `flow.require_resolved()`. `clean(remove_zeroes=True)` is `clean().drop_zeroes()`; `extent()` takes no flag. `round(mode=)` takes a `rangekeeper.money.RoundingMode`. `collapse(on=)` takes a date or a `PeriodTiming` (was `timing=`). `integrate(day_count=)` is `integrate_time(day_count=)`. `from_periods` and `from_events` take no `dates=` or `ids=`: make the `Movement` records. `multiply` and `scale` follow `*`, so an unresolved amount gives an unresolved product. `Stream.select(value_ids=)` is `Stream.select_values(ids)`. The `missing` and `join` policies live on the Stream: `Stream(..., missing=, join=)` or `stream.with_policy(missing=, join=)`; `aggregate`, `sum`, `min`, `max` and `resample` take no `missing=` or `join=`. `sum(timing=)` is `stream.dated(timing=).sum()`. | #399, #406 |
 | Keyword-only arguments | Every Rangekeeper call names its arguments. | #255 D14 |
 | Model authoring and builder names | `rk.Model(name=)`, `model.edit()`, `ModelDraft.add_entity(code=)` and entity handles. `Model(record, units=)` is removed: `rk.Model(name=)` makes an empty Model, and `Model.create(...)` or `Model.from_data(...)` take complete records (#141, #281). | #255 D6, D16, D18 |
-| Specification calls | `fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. `model.specify(name=)` makes one. `fix(target, quantity, id=, model=, ids=, recorded=)` is now `fix(key=quantity)`, or `fix({target: quantity})` for a dotted path, a UUID or a mapping of Movement UUIDs; `free(target, id=, model=, ids=)` is now `free(*targets)`. The Specification keeps its Model: pass `Specification(record, model=, resolver=)` for a record. `recorded=True` is removed: fix the recorded Quantities explicitly (#144). `fix` also takes Quantity text and a number for a ratio; a number for a value with other units raises `UnitError`, not `TypeError`. `specify` and each call record as unknowns the values that the equations use and that nothing fixes, so `free` is needed only to release a fixed value. `roles` lists the role of each value as an `rk.specification.Role` (#290). | #255 D7, D8 |
+| Specification calls | `fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. `model.specify(name=)` makes one. `fix(target, quantity, id=, model=, ids=, recorded=)` is now `fix(key=quantity)`, or `fix({target: quantity})` for a dotted path, a UUID or a mapping of Movement UUIDs; `free(target, id=, model=, ids=)` is now `free(*targets)`. The Specification keeps its Model: pass `Specification(record=, model=, resolver=)` for a record. `recorded=True` is removed: fix the recorded Quantities explicitly (#144). `fix` also takes Quantity text and a number for a ratio; a number for a value with other units raises `UnitError`, not `TypeError`. `specify` and each call record as unknowns the values that the equations use and that nothing fixes, so `free` is needed only to release a fixed value. `roles` lists the role of each value as an `rk.specification.Role` (#290). | #255 D7, D8 |
 | Loan payment | `rangekeeper.finance.payment(principal=, rate=, term=, frequency=)` (#167). | #255 D19 |
 | Funding accounts | There is no account class and no account declaration. A balance is `cumulative()` of a Flow. | #255 D2, D23 |
 | Growth and distribution profiles | `rk.profile.Constant`, `Linear`, `Compounding`, `Uniform` and `SCurve` with `rk.flow.Flow.from_profile(profile=, periods=, initial= or total=)` replace `extrapolate`, `distribute` and `GrowthMethod` (#303). | #255 D12 |

@@ -58,7 +58,7 @@ def test_specification_and_run_readers_reject_0x_formats():
     model = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     with pytest.raises(UnsupportedVersionError):
         Specification(
-            SpecificationRecord(
+            record=SpecificationRecord(
                 metadata=Metadata(id=uuid4(), schema_version="0.7.0"), model=model.id
             )
         )

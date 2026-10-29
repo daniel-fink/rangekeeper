@@ -388,7 +388,7 @@ def specify(
         ),
     )
     return Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(assignments),

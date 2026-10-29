@@ -88,7 +88,7 @@ def test_a_batch_read_from_data_loads_its_cases():
     with pytest.raises(ContractError) as error:
         loaded.case(key="low")
     assert error.value.code is Code.RESOLVER_MISSING
-    attached = Specification(loaded.record, model=model, resolver=store)
+    attached = Specification(record=loaded.record, model=model, resolver=store)
     assert attached.case(key="high").id == batch.case(key="high").id
     assert attached.resolver is store
 
@@ -123,7 +123,7 @@ def test_cases_check_their_arguments():
         model=model.id,
     )
     with pytest.raises(ContractError, match="no Model") as error:
-        Specification(record).cases(cases=CASES)
+        Specification(record=record).cases(cases=CASES)
     assert error.value.code is Code.MODEL_MISSING
 
 

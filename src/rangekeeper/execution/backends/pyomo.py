@@ -71,8 +71,8 @@ class PyomoHighs:
 
     def solve(
         self,
-        problem: AffineProblem,
         *,
+        problem: AffineProblem,
         limits: Limits,
         remaining: float,
         options: Mapping[str, object] = MappingProxyType({}),

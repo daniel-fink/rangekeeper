@@ -11,7 +11,7 @@ model.entity("entity-code")
 model.find_entities(classification="class-code")
 model.metadata = Metadata(id=uuid4(), schema_version="1.0.0")
 Update(system=None)
-Specification(model)
+Specification(record=model)
 
 
 def invalid_compose(resolver: DocumentResolver) -> None:

@@ -57,7 +57,7 @@ def failed_run(model, specification, *, code, solution):
     assert run.report.status.solution is solution
     assert not run.record.outputs
     assert code in {item.code for item in run.report.diagnostics}
-    validate(run, resolver=store).raise_if_invalid()
+    validate(run=run, resolver=store).raise_if_invalid()
     assert store.load_run(run.id).to_data() == run.to_data()
     return run
 
@@ -197,7 +197,7 @@ def test_incomplete_selected_rule_trace_uses_capability_failure_boundary():
         }
     )
     with pytest.raises(RuleCapabilityError, match="each controlled target"):
-        evaluate(RuleSet.from_data(rules), model=model)
+        evaluate(rules=RuleSet.from_data(rules), model=model)
     failed_run(
         model,
         specification,

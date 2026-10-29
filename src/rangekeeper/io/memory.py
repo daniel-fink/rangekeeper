@@ -46,7 +46,7 @@ class MemoryStore:
             if isinstance(candidate, Run) and not validated_in(
                 candidate, self, lambda id: id in self._documents
             ):
-                validate_run(candidate, resolver=self).raise_if_invalid()
+                validate_run(run=candidate, resolver=self).raise_if_invalid()
             self._documents.setdefault(candidate.id, candidate)
         return candidate.id
 

@@ -77,7 +77,7 @@
   "Specification": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
+    "__init__": "method (self, *, record: rangekeeper.schema.records.Specification, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
     "case": "method (self, *, key: str) -> Specification",
     "cases": "method (self, *, cases: Mapping[str, Mapping[str | UUID | Reference, object]]) -> Specification",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
@@ -98,7 +98,7 @@
     "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
    "module": "rangekeeper.specification.specification",
-   "signature": "(record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None"
+   "signature": "(*, record: rangekeeper.schema.records.Specification, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None"
   },
   "duration": {
    "kind": "module",
@@ -736,13 +736,13 @@
   "Overlay": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, resolver: rangekeeper.shared.references.DocumentResolver, *, models: collections.abc.Iterable[rangekeeper.model.model.Model] = tuple(), runs: collections.abc.Iterable[rangekeeper.run.run.Run] = tuple()) -> None",
+    "__init__": "method (self, *, resolver: rangekeeper.shared.references.DocumentResolver, models: collections.abc.Iterable[rangekeeper.model.model.Model] = tuple(), runs: collections.abc.Iterable[rangekeeper.run.run.Run] = tuple()) -> None",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
     "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification"
    },
    "module": "rangekeeper.execution.assembly",
-   "signature": "(resolver: rangekeeper.shared.references.DocumentResolver, *, models: collections.abc.Iterable[rangekeeper.model.model.Model] = tuple(), runs: collections.abc.Iterable[rangekeeper.run.run.Run] = tuple()) -> None"
+   "signature": "(*, resolver: rangekeeper.shared.references.DocumentResolver, models: collections.abc.Iterable[rangekeeper.model.model.Model] = tuple(), runs: collections.abc.Iterable[rangekeeper.run.run.Run] = tuple()) -> None"
   },
   "Pair": {
    "kind": "class",
@@ -842,12 +842,12 @@
   "bind_roles": {
    "kind": "function",
    "module": "rangekeeper.execution.preparation",
-   "signature": "(validation: rangekeeper.execution.preparation.Validation, *, checkpoint: collections.abc.Callable[[], None] = <function>) -> rangekeeper.execution.preparation.Binding"
+   "signature": "(*, validation: rangekeeper.execution.preparation.Validation, checkpoint: collections.abc.Callable[[], None] = <function>) -> rangekeeper.execution.preparation.Binding"
   },
   "build_problem": {
    "kind": "function",
    "module": "rangekeeper.execution.compiler",
-   "signature": "(binding: rangekeeper.execution.preparation.Binding, *, limits: rangekeeper.execution.settings.Limits | None = None, checkpoint: collections.abc.Callable[[], None] = <function>) -> rangekeeper.execution.compiler.AffineProblem"
+   "signature": "(*, binding: rangekeeper.execution.preparation.Binding, limits: rangekeeper.execution.settings.Limits | None = None, checkpoint: collections.abc.Callable[[], None] = <function>) -> rangekeeper.execution.compiler.AffineProblem"
   },
   "compare": {
    "kind": "function",
@@ -867,7 +867,7 @@
   "resolve_cases": {
    "kind": "function",
    "module": "rangekeeper.execution.planning",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, *, resolver: rangekeeper.shared.references.DocumentResolver) -> rangekeeper.execution.planning.Cases"
+   "signature": "(*, specification: rangekeeper.specification.specification.Specification, resolver: rangekeeper.shared.references.DocumentResolver) -> rangekeeper.execution.planning.Cases"
   },
   "solve": {
    "kind": "function",
@@ -877,7 +877,7 @@
   "validate": {
    "kind": "function",
    "module": "rangekeeper.execution.preparation",
-   "signature": "(composition: rangekeeper.specification.composition.Composition, *, resolver: rangekeeper.shared.references.SpecificationResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.execution.preparation.Validation"
+   "signature": "(*, composition: rangekeeper.specification.composition.Composition, resolver: rangekeeper.shared.references.SpecificationResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.execution.preparation.Validation"
   },
   "verify": {
    "kind": "function",
@@ -890,7 +890,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *args, **kwargs)",
-    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object]) -> rangekeeper.execution.backends.base.BackendResult"
+    "solve": "method (self, *, problem: rangekeeper.execution.compiler.AffineProblem, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object]) -> rangekeeper.execution.backends.base.BackendResult"
    },
    "module": "rangekeeper.execution.backends.base",
    "signature": "(*args, **kwargs)"
@@ -906,7 +906,7 @@
   "PyomoHighs": {
    "kind": "class",
    "members": {
-    "solve": "method (self, problem: rangekeeper.execution.compiler.AffineProblem, *, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object] = <mappingproxy>) -> rangekeeper.execution.backends.base.BackendResult"
+    "solve": "method (self, *, problem: rangekeeper.execution.compiler.AffineProblem, limits: rangekeeper.execution.settings.Limits, remaining: float, options: collections.abc.Mapping[str, object] = <mappingproxy>) -> rangekeeper.execution.backends.base.BackendResult"
    },
    "module": "rangekeeper.execution.backends.pyomo",
    "signature": "()"
@@ -956,12 +956,12 @@
   "evaluate": {
    "kind": "function",
    "module": "rangekeeper.execution.rule.evaluation",
-   "signature": "(rules: rangekeeper.schema.records.RuleSet, *, model: rangekeeper.model.model.Model, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.execution.rule.result.RuleResult"
+   "signature": "(*, rules: rangekeeper.schema.records.RuleSet, model: rangekeeper.model.model.Model, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.execution.rule.result.RuleResult"
   },
   "observe": {
    "kind": "function",
    "module": "rangekeeper.execution.rule.observation",
-   "signature": "(model: rangekeeper.model.model.Model, *, at: datetime.date, bindings: collections.abc.Sequence[rangekeeper.schema.records.ObservationBinding]) -> rangekeeper.execution.rule.result.Observation"
+   "signature": "(*, model: rangekeeper.model.model.Model, at: datetime.date, bindings: collections.abc.Sequence[rangekeeper.schema.records.ObservationBinding]) -> rangekeeper.execution.rule.result.Observation"
   }
  },
  "rangekeeper.finance": {
@@ -2923,7 +2923,7 @@
   "validate": {
    "kind": "function",
    "module": "rangekeeper.run.validation",
-   "signature": "(run: Run, *, resolver: DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
+   "signature": "(*, run: Run, resolver: DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
   }
  },
  "rangekeeper.specification": {
@@ -2996,7 +2996,7 @@
   "Specification": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
+    "__init__": "method (self, *, record: rangekeeper.schema.records.Specification, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
     "case": "method (self, *, key: str) -> Specification",
     "cases": "method (self, *, cases: Mapping[str, Mapping[str | UUID | Reference, object]]) -> Specification",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
@@ -3017,7 +3017,7 @@
     "validate": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
    "module": "rangekeeper.specification.specification",
-   "signature": "(record: rangekeeper.schema.records.Specification, *, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None"
+   "signature": "(*, record: rangekeeper.schema.records.Specification, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None"
   },
   "SpecificationRecord": {
    "kind": "class",

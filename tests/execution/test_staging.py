@@ -98,9 +98,9 @@ def test_an_infeasible_stage_ends_the_solve():
 
 
 def binding_of(specification):
-    cases = resolve_cases(specification, resolver=store())
+    cases = resolve_cases(specification=specification, resolver=store())
     composition = cases.compositions[specification.id]
-    return bind_roles(validate(composition, resolver=cases))
+    return bind_roles(validation=validate(composition=composition, resolver=cases))
 
 
 def test_stage_calls_the_backend_only_for_rows_that_need_it():
@@ -108,7 +108,9 @@ def test_stage_calls_the_backend_only_for_rows_that_need_it():
 
     def recorded(problem):
         calls.append(problem)
-        return PyomoHighs().solve(problem, limits=_limits(), remaining=30.0, options={})
+        return PyomoHighs().solve(
+            problem=problem, limits=_limits(), remaining=30.0, options={}
+        )
 
     staged = stage(binding_of(back()), solve=recorded)
     assert calls == [] and staged.stage_count == 0 and staged.determined == {}

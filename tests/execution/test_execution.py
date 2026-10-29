@@ -105,7 +105,7 @@ def spec(name="specification-forward", *, model=None, **changes):
 
 def execute(store, specification):
     run = execute_specification(specification=specification, store=store).run
-    validate(run, resolver=store).raise_if_invalid()
+    validate(run=run, resolver=store).raise_if_invalid()
     assert store.load_run(run.id).to_data() == run.to_data()
     return run
 
@@ -387,8 +387,8 @@ def test_underdetermined_case_returns_one_candidate_without_uniqueness_claim():
 
 
 class WrongCandidate:
-    def solve(self, problem, **kwargs):
-        result = PyomoHighs().solve(problem, **kwargs)
+    def solve(self, *, problem, **kwargs):
+        result = PyomoHighs().solve(problem=problem, **kwargs)
         values = dict(result.candidate)
         values[CAPITAL] += 1000000
         return replace(result, candidate=values)
@@ -450,7 +450,9 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     )
 
     binding = bind_roles(
-        validate_composition(specification.compose(resolver=store), resolver=store)
+        validation=validate_composition(
+            composition=specification.compose(resolver=store), resolver=store
+        )
     )
     proposed = make_candidate(
         binding=binding, unknowns={NOI: 550000, CAPITAL: 11000000}, run_id=uuid4()
@@ -575,7 +577,7 @@ def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
 )
 def test_backend_statuses_do_not_overclaim(termination):
     class Backend:
-        def solve(self, problem, **kwargs):
+        def solve(self, *, problem, **kwargs):
             return BackendResult(termination=termination)
 
     store, _ = setup()
@@ -867,7 +869,7 @@ def test_supported_arithmetic_and_conjunction(operation):
 @pytest.mark.parametrize("magnitude", [float("nan"), float("inf"), True])
 def test_nonfinite_or_boolean_backend_candidates_are_never_published(magnitude):
     class Backend:
-        def solve(self, problem, **kwargs):
+        def solve(self, *, problem, **kwargs):
             return BackendResult(
                 termination=Termination.FEASIBLE,
                 candidate={NOI: 550000.0, CAPITAL: magnitude},
@@ -916,10 +918,10 @@ def test_scalar_preparation_reuses_the_composed_requirements(monkeypatch):
         views.append(view)
         return view
 
-    def reused(view, **kwargs):
-        assert views == [view]
-        assert view is views[0]
-        return check(view, **kwargs)
+    def reused(*, composition, **kwargs):
+        assert views == [composition]
+        assert composition is views[0]
+        return check(composition=composition, **kwargs)
 
     monkeypatch.setattr(implementation, "compose", recorded)
     monkeypatch.setattr(preparation, "validate", reused)

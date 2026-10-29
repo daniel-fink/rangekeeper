@@ -84,11 +84,11 @@ def test_run_preserves_historical_claim_types_order_and_field_presence(before, a
         },
     }
     unchanged, resolver = publication(data, deepcopy(data))
-    assert validate(unchanged, resolver=resolver).valid
+    assert validate(run=unchanged, resolver=resolver).valid
     output = deepcopy(data)
     output["provenance"]["claims"][0]["content"] = after
     forged, resolver = publication(data, output)
-    result = validate(forged, resolver=resolver)
+    result = validate(run=forged, resolver=resolver)
     assert not result.valid
     assert any("historical Claims changed" in issue.message for issue in result.issues)
 
@@ -148,7 +148,7 @@ def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidenc
         ],
     }
     with pytest.raises(RuleCapabilityError, match="earlier decision"):
-        evaluate(RuleSet.from_data(rules), model=Model.from_data(data))
+        evaluate(rules=RuleSet.from_data(rules), model=Model.from_data(data))
     forged = {
         "decision": point,
         "at": at,
@@ -176,7 +176,7 @@ def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidenc
             }
         ]
         run = Run.from_data(raw)
-    result = validate(run, resolver=resolver)
+    result = validate(run=run, resolver=resolver)
     assert not result.valid
     assert any("earlier decision" in issue.message for issue in result.issues)
 

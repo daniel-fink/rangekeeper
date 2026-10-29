@@ -52,7 +52,7 @@ def stage(
 ) -> Staged:
     """Determine values stage by stage until every remaining row is affine.
 
-    Without a deferred row, this is ``build_problem(binding)``. Otherwise each
+    Without a deferred row, this is ``build_problem(binding=binding)``. Otherwise each
     stage builds the problem of the affine rows and solves it with ``solve``
     only when its rank analysis determines an unknown of a deferred row. A
     stage that determines none of them raises the UnsupportedError of the
@@ -61,7 +61,7 @@ def stage(
     """
     try:
         return Staged(
-            build_problem(binding, limits=limits, checkpoint=checkpoint),
+            build_problem(binding=binding, limits=limits, checkpoint=checkpoint),
             MappingProxyType({}),
         )
     except UnsupportedError:
@@ -73,7 +73,7 @@ def stage(
         if not deferred:
             final = _remaining(current, determined) if determined else current
             return Staged(
-                build_problem(final, limits=limits, checkpoint=checkpoint),
+                build_problem(binding=final, limits=limits, checkpoint=checkpoint),
                 MappingProxyType(determined),
                 count,
             )
@@ -83,7 +83,9 @@ def stage(
             if index not in deferred
         )
         problem = build_problem(
-            replace(current, assertions=affine), limits=limits, checkpoint=checkpoint
+            binding=replace(current, assertions=affine),
+            limits=limits,
+            checkpoint=checkpoint,
         )
         free = set(problem.analysis.undetermined)
         needed = {
@@ -95,7 +97,7 @@ def stage(
         if not needed & set(known):
             # No stage can help: build_problem raises the first deferred row's
             # UnsupportedError, scoped to its declaration.
-            build_problem(current, limits=limits, checkpoint=checkpoint)
+            build_problem(binding=current, limits=limits, checkpoint=checkpoint)
             raise AssertionError("a deferred row lowered")  # pragma: no cover
         result = solve(problem)
         count += 1
