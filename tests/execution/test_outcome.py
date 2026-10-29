@@ -103,7 +103,9 @@ def test_a_product_of_two_unknowns_is_unsupported():
 
 
 def test_an_invalid_specification_raises_a_validation_error():
-    missing = MODEL.specify().fix(land_cost=q("20e6 AUD"))
+    fixed = MODEL.specify().fix(land_cost=q("20e6 AUD"))
+    # A record that frees no value lacks the roles of the other values.
+    missing = Specification(fixed.record.replace(unknowns=()), model=MODEL)
     outcome = solve(missing, store())
     assert outcome.status is Status.INVALID
     with pytest.raises(ValidationError) as raised:
