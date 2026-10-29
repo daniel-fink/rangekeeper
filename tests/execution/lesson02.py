@@ -4,6 +4,8 @@ The equations are Expression records until equation text lands. Each
 Specification frees its derived values by name, as lesson 02 does by default.
 """
 
+from uuid import UUID
+
 import rangekeeper as rk
 from rangekeeper.io import MemoryStore
 from rangekeeper.model.expression.authoring import (
@@ -44,6 +46,8 @@ DERIVED = (
     "reference_income",
 )
 CONSTANT = q("8.6 % pa")
+# The Expression UUID of an equation, by the key on its left side.
+EQUATIONS: dict[str, UUID] = {}
 
 
 def build_model() -> rk.Model:
@@ -80,11 +84,13 @@ def build_model() -> rk.Model:
             subtract(literal(1, "dimensionless"), r(f"{use}_vacancy")),
         )
 
+    noi = equal(r("noi"), multiply(r("coverage"), r("debt_service")))
+    EQUATIONS["noi"] = noi.id
     project.equations(
         equal(r("total_cost"), add(r("land_cost"), r("works_cost"))),
         equal(r("mortgage"), multiply(r("leverage"), r("total_cost"))),
         equal(r("debt_service"), multiply(r("mortgage_constant"), r("mortgage"))),
-        equal(r("noi"), multiply(r("coverage"), r("debt_service"))),
+        noi,
         equal(r("effective_income"), add(r("noi"), r("operating_cost"))),
         equal(r("effective_income"), multiply(r("rent_factor"), r("reference_income"))),
         equal(

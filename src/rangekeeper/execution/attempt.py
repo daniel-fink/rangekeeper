@@ -14,6 +14,7 @@ from rangekeeper.execution import (
     preparation,
     publication,
     settings,
+    staging,
     statuses,
 )
 from rangekeeper.execution.backends import Backend, registry
@@ -141,9 +142,12 @@ class Attempt:
     def execute(self) -> Outcome:
         """Run the stages, account for each expected failure, and return the Outcome."""
         try:
-            problem = self.prepare()
-            result = self.solve(problem)
-            self.accept(problem, result)
+            staged = self.prepare()
+            if staged.ended is None:
+                result = self.solve(staged.problem)
+            else:
+                result = self.record(staged.ended)
+            self.accept(staged, result)
         except statuses.EXPECTED as error:
             self.fail(error)
         return self.finish()
@@ -165,8 +169,8 @@ class Attempt:
             target=getattr(error, "target", None) or UNSET,
         )
 
-    def prepare(self) -> compiler.AffineProblem:
-        """Validate, bind roles and build the problem within one deadline."""
+    def prepare(self) -> staging.Staged:
+        """Validate, bind roles and build the staged problem within one deadline."""
         if isinstance(self.view, ValidationError):
             raise self.view
         self.limits, adjustments = settings.resolve(
@@ -190,14 +194,23 @@ class Attempt:
                 message="Validated additive composition, exact Model pin, scalar roles and recorded units.",
             )
         )
-        problem = compiler.build_problem(
-            self.binding, limits=self.limits, checkpoint=self.checkpoint
+        staged = staging.stage(
+            self.binding,
+            solve=self.solve_stage,
+            limits=self.limits,
+            checkpoint=self.checkpoint,
         )
+        problem = staged.problem
         self.trace.append(
             Step(
                 kind=StepKind.FORMULATION,
                 at=_now(),
-                message=f"Expanded {len(self.binding.references)} scalar/Movement symbols and {len(problem.rows)} affine constraints; limits {self.limits.symbol_limit}/{self.limits.constraint_limit}.",
+                message=f"Expanded {len(self.binding.references)} scalar/Movement symbols and {len(problem.rows)} affine constraints; limits {self.limits.symbol_limit}/{self.limits.constraint_limit}."
+                + (
+                    f" {len(staged.stages)} earlier stages determined {len(staged.determined)} values."
+                    if staged.stages
+                    else ""
+                ),
             )
         )
         if self.view.requirements.estimates:
@@ -206,17 +219,42 @@ class Attempt:
                 "Simplex feasibility uses no initial primal estimate; estimates are not assignments.",
             )
         self.checkpoint()
-        return problem
+        return staged
 
-    def solve(self, problem: compiler.AffineProblem) -> BackendResult:
-        """Retain backend evidence without treating its candidate as accepted."""
+    def solve_stage(self, problem: compiler.AffineProblem) -> BackendResult:
+        """Solve the affine rows of an earlier stage; the result is not a candidate."""
         assert self.limits is not None
-        self.result = self.backend.solve(
+        result = self.backend.solve(
             problem,
             limits=self.limits,
             remaining=self.limits.time_limit - (time.monotonic() - self.clock),
             options=self.config.backend_options,
         )
+        self.trace.append(
+            Step(
+                kind=StepKind.SOLVE,
+                at=_now(),
+                message=f"Stage of {len(problem.rows)} affine constraints: backend returned {result.termination.value}.",
+            )
+        )
+        self.checkpoint()
+        return result
+
+    def solve(self, problem: compiler.AffineProblem) -> BackendResult:
+        """Retain backend evidence without treating its candidate as accepted."""
+        assert self.limits is not None
+        return self.record(
+            self.backend.solve(
+                problem,
+                limits=self.limits,
+                remaining=self.limits.time_limit - (time.monotonic() - self.clock),
+                options=self.config.backend_options,
+            )
+        )
+
+    def record(self, result: BackendResult) -> BackendResult:
+        """Record the backend result that ends the solve, and its evidence."""
+        self.result = result
         self.reached = statuses.Reached.SOLVED
         self.implementations.extend(self.result.implementations)
         self.findings.extend(self.result.diagnostics)
@@ -238,14 +276,21 @@ class Attempt:
         )
         return self.result
 
-    def accept(self, problem: compiler.AffineProblem, result: BackendResult) -> None:
-        """Check a serialized candidate against the original expressions."""
+    def accept(self, staged: staging.Staged, result: BackendResult) -> None:
+        """Check a serialized candidate against the original expressions.
+
+        The candidate holds the backend's values and the values that earlier
+        stages determined.
+        """
         assert self.binding is not None
+        problem = staged.problem
         ending = statuses.TERMINATIONS[result.termination]
         self.completion, self.solution = ending.completion, ending.solution
-        if ending.verify and result.candidate is not None:
+        if ending.verify and result.candidate is not None and staged.ended is None:
             candidate = publication.make_candidate(
-                self.binding, result.candidate, run_id=self.run_id
+                self.binding,
+                {**result.candidate, **staged.determined},
+                run_id=self.run_id,
             )
             checked = acceptance.verify(
                 self.binding, candidate, tolerances=self.config.tolerances

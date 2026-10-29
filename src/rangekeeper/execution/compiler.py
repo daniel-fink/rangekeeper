@@ -131,6 +131,31 @@ class Compiler:
             coefficients[key] = coefficients.get(key, 0) + sign * value
         return _affine(left.constant + sign * right.constant, coefficients, left.units)
 
+    def fold(self, node: Expression) -> Affine | None:
+        """Evaluate an expression whose references are all fixed, else return None.
+
+        A staged solve fixes the values that earlier stages determined, so a
+        function of them is a constant here. None means that an unknown
+        remains or that the evaluator does not support the expression.
+        """
+        for child, _, _ in walk(node):
+            if (
+                isinstance(child, Expression)
+                and child.kind is ExpressionKind.REFERENCE
+                and (
+                    child.target is None
+                    or child.target.target not in self.binding.assignments
+                )
+            ):
+                return None
+        try:
+            value = numerical(node, self.binding.assignments, units=self.binding.units)
+        except (UnsupportedError, UnitError):
+            return None
+        except (ArithmeticError, TypeError, ValueError) as error:
+            raise NumericalError(str(error)) from error
+        return _affine(value.number, {}, value.units)
+
     def expression(self, node: Expression) -> Affine:
         """Compile only arithmetic affine under this Specification's assignments."""
         self.checkpoint()
@@ -157,9 +182,12 @@ class Compiler:
             Operator.DIVIDE,
             Operator.POWER,
         }:
-            raise UnsupportedError(
-                f"unsupported scalar expression: {node.kind}/{node.operator}"
-            )
+            folded = self.fold(node)
+            if folded is None:
+                raise UnsupportedError(
+                    f"unsupported scalar expression: {node.kind}/{node.operator}"
+                )
+            return folded
         assert node.operands is not None
         left, right = (self.expression(x) for x in node.operands)
         if node.operator in {Operator.ADD, Operator.SUBTRACT}:
