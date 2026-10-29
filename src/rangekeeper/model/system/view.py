@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from rangekeeper.model.system.matching import Match
     from rangekeeper.model.system.rollup import (
         FlowRollup,
+        QuantityPopulation,
         QuantityRollup,
         RollupResult,
     )
@@ -234,7 +235,13 @@ class View:
             ),
         )
 
-    def quantities(self, key: str, *, units: str, measure: UUID | None = None):
+    def quantities(
+        self,
+        key: str,
+        *,
+        units: str,
+        measure: UUID | None = None,
+    ) -> "QuantityPopulation":
         """Collect recorded quantities and coverage from this exact Model scope.
 
         Missing Values and unavailable quantities remain missing contributors.

@@ -30,6 +30,7 @@ from rangekeeper.shared.arguments import require_text
 from rangekeeper.shared.errors import MissingReferenceError
 
 if TYPE_CHECKING:
+    from rangekeeper.model.display import PivotTable
     from rangekeeper.model.system.rollup import _Rollup
     from rangekeeper.shared.table import Table
 
@@ -162,7 +163,10 @@ class Pivot:
             raise MissingReferenceError(key, kind="PivotColumn", by="id", where="Pivot")
         return found
 
-    def children(self, column: "UUID | PivotColumn | None" = None):
+    def children(
+        self,
+        column: "UUID | PivotColumn | None" = None,
+    ) -> tuple[PivotColumn, ...]:
         """Return the sub-columns of a column, in column order."""
         return self._children.get(self.column(column).classification, ())
 
@@ -237,11 +241,11 @@ class Pivot:
             rows.append(Row(cells, id))
         return Table(("name", "parent_id", *labels), rows)
 
-    def display(self, *, precision: int = 2):
+    def display(self, *, precision: int = 2) -> "PivotTable":
         """Return an HTML/text table of scalar cells, with rows indented by depth."""
         from rangekeeper.model.display import PivotTable
 
-        return PivotTable(self, precision=precision)
+        return PivotTable(pivot=self, precision=precision)
 
     def _labels(self) -> tuple[str, ...]:
         model = self.rows.view.model

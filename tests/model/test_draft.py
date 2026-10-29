@@ -110,9 +110,11 @@ def test_a_later_draft_finds_entities_and_values_and_adds_equations():
     assert draft.entity(code="project") is project
     assert draft.entity(project.id) is project
     total = project.ref(key="total_cost")
-    assert total == ValueHandle(
+    assert isinstance(total, ValueHandle)
+    assert (total.id, total.key, total.kind, total.owner, total.units) == (
         revision.value(owner=project.id, key="total_cost").id,
         "total_cost",
+        ValueKind.MEASUREMENT,
         project.id,
         "AUD",
     )
@@ -235,7 +237,8 @@ def test_equations_are_checked_when_added():
     with pytest.raises(ContractError, match="Boolean") as error:
         project.equations(add(ref(land), literal(1, "AUD")))
     assert error.value.code is Code.PREDICATE
-    stranger = ValueHandle(uuid4(), "other", project.id, "AUD")
+    other = rk.Model(name="Other").edit().add_entity(code="other")
+    stranger = other.value(key="other", units="AUD")
     with pytest.raises(MissingReferenceError) as missing:
         project.equations(equal(ref(land), ref(stranger)))
     assert missing.value.where == "Entity project"
@@ -536,3 +539,23 @@ def test_a_date_equation_needs_dates_and_calendar_lengths():
     project.equations(equal(ref(land), add(ref(start), literal(1, "AUD"))))
     with pytest.raises(rk.errors.ValidationError, match="date length"):
         draft.commit()
+
+
+def test_handles_are_made_by_a_draft_and_display_briefly():
+    draft = rk.Model(name="Display").edit()
+    project = draft.add_entity(code="project", name="Project")
+    site = draft.add_entity(code="site")
+    assert repr(project) == "<entity project 'Project'>"
+    assert repr(site) == "<entity site>"
+    assert repr(project.value(key="land_cost", units="AUD")) == (
+        "<value land_cost [AUD] on Project>"
+    )
+    assert repr(site.flow(key="rent", units="AUD")) == "<flow rent [AUD] on site>"
+    assert repr(site.date(key="start")) == "<date start on site>"
+    assert "-" not in repr(project.ref(key="land_cost"))
+    group = draft.add_assembly(code="group", entities=[project, site])
+    assert repr(group) == "<assembly group>"
+    with pytest.raises(TypeError):
+        ValueHandle()
+    with pytest.raises(TypeError):
+        EntityHandle()

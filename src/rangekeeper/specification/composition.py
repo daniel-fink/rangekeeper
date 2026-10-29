@@ -110,7 +110,7 @@ class Composition:
         return tuple(document.id for document in self.contributors)
 
     @property
-    def effective(self):
+    def effective(self) -> dict[str, object]:
         """Return the effective requirements as a detached JSON-compatible tree."""
         return self.requirements.to_data()
 

@@ -6,12 +6,17 @@ dependency. ``Pivot.display()`` returns a ``PivotTable``. Stream tables are in
 """
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from rangekeeper.flow._table import render
 from rangekeeper.shared.errors import ContractError
 
+if TYPE_CHECKING:
+    # The pivot module imports this module to display a Pivot.
+    from rangekeeper.model.system.pivot import Pivot
 
-@dataclass(frozen=True)
+
+@dataclass(frozen=True, kw_only=True)
 class PivotTable:
     """Rows indented by depth, one column per pivot column, with units.
 
@@ -19,7 +24,7 @@ class PivotTable:
     its column's coverage policy, for example because a contributor is missing.
     """
 
-    pivot: object
+    pivot: "Pivot"
     precision: int = 2
 
     def __post_init__(self):

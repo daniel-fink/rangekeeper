@@ -11,7 +11,7 @@ from types import MappingProxyType
 from uuid import UUID
 
 from rangekeeper.execution.backends.base import BackendResult, Termination
-from rangekeeper.execution.compiler import AffineProblem
+from rangekeeper.execution.compiler import AffineProblem, Row
 from rangekeeper.execution.errors import (
     BackendUnavailableError,
     NumericalError,
@@ -84,7 +84,7 @@ class PyomoHighs:
                 "the pyomo-highs backend sets these HiGHS options itself: "
                 + ", ".join(refused)
             )
-        scales = tuple(self.scale(row) for row in problem.rows)
+        scales = tuple(self._scale(row) for row in problem.rows)
         findings = [
             Diagnostic(
                 severity=Severity.INFO,
@@ -199,7 +199,7 @@ class PyomoHighs:
             raise NumericalError("invalid solver-worker response") from error
 
     @staticmethod
-    def scale(row) -> float:
+    def _scale(row: Row) -> float:
         """Return the divisor of one row, or raise UnsupportedError for its range.
 
         Only coefficients set the divisor, so that a large constant does not
