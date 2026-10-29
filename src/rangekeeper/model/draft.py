@@ -173,6 +173,26 @@ class EntityHandle:
             periods=periods,
         )
 
+    def date(
+        self,
+        *,
+        key: str,
+        description: str | None = None,
+    ) -> ValueHandle:
+        """Declare a date Value with its key, and return its handle.
+
+        A date has no units. Its content is a calendar date or
+        ``rk.duration.NEVER``; the Value has none recorded, so a Specification
+        fixes it or a solve finds it. The key follows the rules of ``value``.
+        """
+        return self._draft._add_value(
+            self._id,
+            key=key,
+            units=None,
+            kind=ValueKind.DATE,
+            description=description,
+        )
+
     def ref(self, *, key: str) -> ValueHandle:
         """Return the handle of a Value of this entity, declared now or before.
 
@@ -557,7 +577,7 @@ class ModelDraft:
         owner_id: UUID,
         *,
         key: str,
-        units: str,
+        units: str | None,
         kind: ValueKind,
         description: str | None,
         periods: Iterable[Period] | None = None,
@@ -565,7 +585,8 @@ class ModelDraft:
         self._require_open()
         owner = self._owner(owner_id)
         _require_key(key)
-        self._base.unit_system.validate_units(require_text(units, "units"))
+        if units is not None:
+            self._base.unit_system.validate_units(require_text(units, "units"))
         optional_text(description, "description")
         if key in owner.keys:
             raise _duplicate("Value", "key", key, where=f"Entity {owner.path}")
@@ -574,6 +595,7 @@ class ModelDraft:
             items = tuple(periods)
             if not all(isinstance(item, Period) for item in items):
                 raise TypeError("periods must be Periods")
+            assert units is not None
             flow = Flow(
                 units=units,
                 movements=[
@@ -590,7 +612,7 @@ class ModelDraft:
             id=self._identify("value", owner.path, key),
             key=key,
             kind=kind,
-            measure=self._measure(units).id,
+            measure=UNSET if units is None else self._measure(units).id,
             description=UNSET if description is None else description,
             flow=flow,
         )

@@ -103,16 +103,17 @@ show the target API in use.
   1. `rk.Model(name=)` makes an empty Model; `model.edit()` returns a `ModelDraft`.
   2. The draft adds Measures, Classifications, entities, assemblies and
      relationships. `draft.add_entity(code=, classification=)` returns an entity
-     handle, which declares values and Flows with `value(key=, units=)` and
-     `flow(key=, units=, periods=)`. `equations(...)` takes Expression records
-     from `rangekeeper.model.expression.authoring`.
+     handle, which declares values, Flows and dates with `value(key=, units=)`,
+     `flow(key=, units=, periods=)` and `date(key=)`. `equations(...)` takes
+     Expression records from `rangekeeper.model.expression.authoring`, including
+     date literals, `NEVER` and date arithmetic.
   3. `commit()` validates the revision once and returns it.
   4. Put the revision into an append-only store.
 
   `Model.create(...)` and `Model.from_data(...)` still take complete records,
   and `model.revise(Update(...))` replaces complete sections. See the
   [Model reference](../reference/model.md).
-- 1.0 target: equations in text and in `rx`, date values, Formulation handles,
+- 1.0 target: equations in text and in `rx`, with `NEVER`, Formulation handles,
   equation keys and edits of existing declarations.
 
   Gap issues: [#142](https://github.com/daniel-fink/rangekeeper/issues/142),

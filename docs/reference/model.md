@@ -88,11 +88,12 @@ model = draft.commit()
 | --- | --- |
 | `value(key=, units=, description=None)` | A measurement Value with no recorded quantity; returns its `ValueHandle` |
 | `flow(key=, units=, periods=None, description=None)` | A Flow Value. With `periods`, it has one unresolved Movement in each Period; without, its Periods come from its equations |
+| `date(key=, description=None)` | A date Value with no units and no recorded date; returns its `ValueHandle` ([value kinds](#value-kinds)) |
 | `ref(key=)` | The handle of a Value of the entity, declared now or in an earlier revision |
 | `equations(*equations)` | Adds Boolean Expression records to the entity's default Formulation |
 
 A `ValueHandle` has the Value's `id`, `key`, `owner` (the UUID of its entity) and
-declared `units`.
+declared `units`, or `None` for a date.
 
 **Rules that each call checks.**
 

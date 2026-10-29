@@ -1367,6 +1367,7 @@
    "members": {
     "__init__": "method (self, draft: ModelDraft, id: uuid.UUID) -> None",
     "code": "property",
+    "date": "method (self, *, key: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
     "equations": "method (self, *equations: rangekeeper.schema.records.Expression) -> None",
     "flow": "method (self, *, key: str, units: str, periods: collections.abc.Iterable[rangekeeper.duration.period.Period] | None = None, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
     "id": "property",
