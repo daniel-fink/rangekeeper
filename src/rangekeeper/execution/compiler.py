@@ -322,8 +322,8 @@ class Compiler:
 
 
 def build_problem(
-    binding: Binding,
     *,
+    binding: Binding,
     limits: Limits | None = None,
     checkpoint: Callable[[], None] = lambda: None,
 ) -> AffineProblem:

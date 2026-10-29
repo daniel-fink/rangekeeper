@@ -101,10 +101,25 @@ further checks.
 
 ### Named arguments
 
-Public functions name their arguments (D14): put `*` first. The exceptions are
-a function with one argument, a natural pair such as `start, end`, a list of
-any length, and the store-protocol methods such as `load_model(id)` and
-`put(document)` ([#410](https://github.com/daniel-fink/rangekeeper/issues/410)).
+Public functions name their arguments (D14): put `*` first. This applies to
+each public function, method and constructor with more than one argument, also
+when only one of them has no default. So `f(subject, *, option=None)` is wrong:
+write `f(*, subject, option=None)`. The exceptions are:
+
+- a function with one argument: one argument in all, such as `Run(record)` and
+  `Model.movement(id)`;
+- a natural pair, such as `start, end`, `left, right` and
+  `numerator, denominator`;
+- a list of any length, such as `free(*targets)` and `table(*keys)`;
+- the store-protocol methods, such as `load_model(id)` and `put(document)`;
+- the Python protocol methods, such as `__getitem__(key)`;
+- an error constructor, which takes the message first and every other field by
+  keyword: `ContractError(message, *, values=None)`
+  ([#408](https://github.com/daniel-fink/rangekeeper/issues/408));
+- one positional-only mapping beside keyword values, such as
+  `Specification.fix(targets=None, /, **values)`.
+
+The decision is in [#410](https://github.com/daniel-fink/rangekeeper/issues/410).
 Public records use `@dataclass(frozen=True, kw_only=True)`. In private code, a
 function has at most three positional arguments. A function has at most six
 arguments in all. Use an options object, or split the function, when it needs
@@ -228,8 +243,8 @@ Good: `offset` in `duration/calendar.py`:
 
 ```python
 def offset(
-    value: date,
     *,
+    value: date,
     frequency: Frequency,
     count: int = 1,
     month_roll: MonthRoll = MonthRoll.PRESERVE_END,

@@ -140,7 +140,7 @@ def test_a_product_of_two_unknowns_is_unsupported():
 def test_an_invalid_specification_raises_a_validation_error():
     fixed = MODEL.specify().fix(land_cost=q("20e6 AUD"))
     # A record that frees no value lacks the roles of the other values.
-    missing = Specification(fixed.record.replace(unknowns=()), model=MODEL)
+    missing = Specification(record=fixed.record.replace(unknowns=()), model=MODEL)
     outcome = solve(specification=missing, resolver=store())
     assert outcome.status is Status.INVALID
     (decisive,) = (
@@ -170,12 +170,12 @@ class Ends:
     def __init__(self, termination):
         self.termination = termination
 
-    def solve(self, problem, **kwargs):
+    def solve(self, *, problem, **kwargs):
         return BackendResult(termination=self.termination)
 
 
 class Breaks:
-    def solve(self, problem, **kwargs):
+    def solve(self, *, problem, **kwargs):
         raise NumericalError("the backend found a non-finite coefficient")
 
 

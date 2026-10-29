@@ -201,11 +201,11 @@ def test_diagnostic_participants_use_input_model_even_for_a_specification_subjec
         target=str(spec.id),
         references=[{"target": str(value.id)}],
     )
-    assert validate_run(Run.from_data(data), resolver=store).valid
+    assert validate_run(run=Run.from_data(data), resolver=store).valid
     unrelated, extra = example()
     store.put(unrelated)
     diagnostic["references"] = [{"target": str(extra.flow.movements[0].id)}]
-    assert not validate_run(Run.from_data(data), resolver=store).valid
+    assert not validate_run(run=Run.from_data(data), resolver=store).valid
 
 
 @pytest.mark.parametrize("kind", ["batch", "missing_input"])
@@ -227,9 +227,9 @@ def test_diagnostic_participants_require_one_valid_input_scope(kind):
             "message": "Scope test",
         }
     ]
-    assert validate_run(Run.from_data(data), resolver=store).valid
+    assert validate_run(run=Run.from_data(data), resolver=store).valid
     data["report"]["diagnostics"][0]["references"] = [{"target": str(uuid4())}]
-    report = validate_run(Run.from_data(data), resolver=store)
+    report = validate_run(run=Run.from_data(data), resolver=store)
     assert not report.valid
     assert any("valid input Model" in issue.message for issue in report.issues)
 
@@ -273,6 +273,6 @@ def test_constraint_subject_and_participant_scope_are_separate():
         target=str(constraint),
         references=[{"target": str(value.flow.movements[0].id)}],
     )
-    assert validate_run(Run.from_data(data), resolver=store).valid
+    assert validate_run(run=Run.from_data(data), resolver=store).valid
     diagnostic["references"] = [{"target": str(local)}]
-    assert not validate_run(Run.from_data(data), resolver=store).valid
+    assert not validate_run(run=Run.from_data(data), resolver=store).valid

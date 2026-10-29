@@ -21,7 +21,7 @@ owner: UUID | None = location.owner_id
 path: str = location.path
 revision: Model = model.revise(Update(system=System()))
 specification = Specification(
-    SpecificationRecord(
+    record=SpecificationRecord(
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"), model=model.id
     )
 )

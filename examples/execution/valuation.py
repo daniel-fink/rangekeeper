@@ -90,7 +90,7 @@ def main() -> None:
     ):
         codec.write(document=document, path=args.output / f"{name}.json")
     for run in (forward, inverse, batch):
-        validate(run, resolver=store).raise_if_invalid()
+        validate(run=run, resolver=store).raise_if_invalid()
     capital = UUID("a947d40b-d9b0-54cb-a2a4-f8f598405ac2")
     rent = UUID("e3fb1434-5371-5bcb-b0b8-e3af2bf65022")
     noi = UUID("9324f928-cfc8-50bb-ba99-fe8c02a6dbd2")

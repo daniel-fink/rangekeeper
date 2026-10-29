@@ -39,14 +39,14 @@ from rangekeeper.model import Metadata, Reference
 from rangekeeper.specification import Specification, SpecificationRecord
 
 shared = Specification(
-    SpecificationRecord(
+    record=SpecificationRecord(
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         model=model.id,
         unknowns=(Reference(target=gross.id),),
     )
 )
 investigation = Specification(
-    SpecificationRecord(
+    record=SpecificationRecord(
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         includes=(shared.id,),
     )
@@ -267,9 +267,9 @@ concrete Specification with the code `BATCH_REQUIRED`. Each case Outcome has the
 Key lookup needs the pinned Model. A Specification from `model.specify()` keeps
 it, and so does each Specification that a chained call returns. The `model` and
 `resolver` properties return them, or None. For a record,
-pass it: `Specification(record, model=model)`; a record that pins another revision
+pass it: `Specification(record=record, model=model)`; a record that pins another revision
 raises `ContractError` with the code `IDENTITY`. A Specification with includes also needs
-`Specification(record, model=model, resolver=store)`. The Model and resolver are
+`Specification(record=record, model=model, resolver=store)`. The Model and resolver are
 not saved with the document. Inherited roles and rule-controlled targets must be
 edited at their owner. Composition is checked after each edit, and normal
 execution still performs full effective validation. Annual totals alone do not

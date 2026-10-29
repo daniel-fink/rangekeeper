@@ -137,12 +137,12 @@ def validate_document(
         from rangekeeper.run.run import _validate_local
 
         return _validate_local(run.record)
-    return validate(run, resolver=resolver, units=units)
+    return validate(run=run, resolver=resolver, units=units)
 
 
 def validate(
-    run: "Run",
     *,
+    run: "Run",
     resolver: "DocumentResolver",
     units: UnitSystem | None = None,
 ) -> ValidationReport:

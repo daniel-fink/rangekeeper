@@ -8,7 +8,7 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 | --- | --- |
 | `run/run.py` | Frozen Run facade over the generated `RunRecord`, with `from_data`, `id`, `metadata`, `record`, `report`, and detached `to_data`. No revise method. |
 | `run/report.py`, `run/outputs.py` | Shared status/report rules and pure output conformance checks; no output helper owns traversal state. |
-| `run/validation.py` | One operation-local owner resolves exact documents, caches matching preparation, and checks the Run tree; public `validate(run, *, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
+| `run/validation.py` | One operation-local owner resolves exact documents, caches matching preparation, and checks the Run tree; public `validate(*, run, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
 | `shared/references.py` | `SpecificationResolver` supplies Model/Specification reads; `DocumentResolver` extends it with Run reads. Domain code imports no IO implementation. |
 | `shared/store.py` | `RecordStore` protocol: three typed reads plus `put(document) -> UUID`. `execution` depends on this protocol, not on `io`. Import it from `rangekeeper.io`. |
 | `io/json.py`, `io/yaml.py` | Explicit-kind `loads`, `dumps`, `read`, and atomic create-only `write`. YAML is imported only when used. |
@@ -46,7 +46,7 @@ from rangekeeper.io import MemoryStore, DirectoryStore, json
 
 model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
 specification = rk.Specification(
-    SpecificationRecord(
+    record=SpecificationRecord(
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         model=model.id,
     )
@@ -75,7 +75,7 @@ memory.put(model)
 memory.put(specification)
 composition = specification.compose(resolver=memory)
 composition.validate(resolver=memory).raise_if_invalid()
-validate_run(run, resolver=memory).raise_if_invalid()
+validate_run(run=run, resolver=memory).raise_if_invalid()
 memory.put(run)
 assert memory.load_run(run.id).report.status.completion is CompletionStatus.FAILED
 assert json.loads(text=json.dumps(run), kind=rk.Run).to_data() == run.to_data()
@@ -102,7 +102,7 @@ must establish that it really is a batch. External references are not loaded dur
 construction or codec reads.
 
 `run.validate(resolver=...)`, `run.check(resolver=...)` and
-`rangekeeper.run.validate(run, resolver=..., units=None)` resolve the attempted Specification,
+`rangekeeper.run.validate(run=..., resolver=..., units=None)` resolve the attempted Specification,
 its includes/cases/Model pins, spawned Runs, output Models, and scoped report documents.
 Successful resolutions are cached. Report references carry no kind discriminator;
 resolving a previously unseen report document can require up to three typed lookups.
@@ -119,7 +119,7 @@ references must still resolve before store publication. Local Specification vali
 is still required for every saved contribution.
 
 To validate the Run of an Outcome before its outputs are stored, lay them over the
-resolver with `rangekeeper.execution.Overlay(resolver, models=, runs=)`.
+resolver with `rangekeeper.execution.Overlay(resolver=, models=, runs=)`.
 Execution validates its Runs this way, and it reuses the compositions and
 Specification checks that it already ran; that reuse is internal to execution.
 

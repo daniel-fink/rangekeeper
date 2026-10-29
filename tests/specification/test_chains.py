@@ -160,14 +160,14 @@ def test_a_specification_needs_its_model_for_keys():
         model=model.id,
     )
     with pytest.raises(ContractError, match="no Model"):
-        Specification(record).fix(land_cost=aud("1"))
-    attached = Specification(record, model=model).fix(land_cost=aud("1"))
+        Specification(record=record).fix(land_cost=aud("1"))
+    attached = Specification(record=record, model=model).fix(land_cost=aud("1"))
     assert attached.metadata.previous == record.metadata.id
     with pytest.raises(ContractError, match="pins") as error:
-        Specification(record, model=rk.Model(name="Other"))
+        Specification(record=record, model=rk.Model(name="Other"))
     assert error.value.code is Code.IDENTITY
     with pytest.raises(TypeError, match="Model"):
-        Specification(record, model=object())  # type: ignore[arg-type]
+        Specification(record=record, model=object())  # type: ignore[arg-type]
 
 
 @pytest.mark.skipif(

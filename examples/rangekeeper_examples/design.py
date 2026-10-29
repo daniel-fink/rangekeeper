@@ -509,7 +509,7 @@ def specify(model: Model) -> Specification:
                 elif item.quantity is not None:
                     inputs[item.id] = item
     return Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(

@@ -189,11 +189,11 @@ class Attempt:
         )
         self.findings.extend(adjustments)
         self.validation = preparation.validate(
-            self.view, resolver=self.resolver, units=self.units
+            composition=self.view, resolver=self.resolver, units=self.units
         )
         self.checkpoint()
         self.binding = preparation.bind_roles(
-            self.validation, checkpoint=self.checkpoint
+            validation=self.validation, checkpoint=self.checkpoint
         )
         self.reached = statuses.Reached.BOUND
         self.checkpoint()
@@ -236,7 +236,7 @@ class Attempt:
         """Solve the affine rows of an earlier stage; the result is not a candidate."""
         assert self.limits is not None
         result = self.backend.solve(
-            problem,
+            problem=problem,
             limits=self.limits,
             remaining=self.limits.time_limit - (time.monotonic() - self.clock),
             options=self.config.backend_options,
@@ -256,7 +256,7 @@ class Attempt:
         assert self.limits is not None
         return self.record(
             self.backend.solve(
-                problem,
+                problem=problem,
                 limits=self.limits,
                 remaining=self.limits.time_limit - (time.monotonic() - self.clock),
                 options=self.config.backend_options,

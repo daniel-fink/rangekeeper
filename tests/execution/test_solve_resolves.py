@@ -40,7 +40,7 @@ def test_the_specification_s_own_resolver_supplies_its_includes():
             "includes": [str(included.id)],
         }
     )
-    including = Specification(record, model=MODEL, resolver=documents)
+    including = Specification(record=record, model=MODEL, resolver=documents)
     assert solve(specification=including).status is Status.FEASIBLE
 
 

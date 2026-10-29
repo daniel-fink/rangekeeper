@@ -54,7 +54,7 @@ def test_equality_rank_needs_no_numpy(rows, rank):
 
 def test_build_problem_analyses_rank_free_variables_and_bounds():
     _, binding = bound()
-    problem = build_problem(binding)
+    problem = build_problem(binding=binding)
     assert problem.variables == binding.unknowns
     assert problem.analysis == Analysis(equality_rank=2, unknown_count=2)
     assert not problem.analysis.underdetermined
@@ -69,7 +69,7 @@ def test_a_free_variable_and_a_bound_are_in_the_analysis():
         formulation(binary("less_than_or_equal", reference(CAPITAL), literal(2e7)))
     ]
     _, binding = bound(spec_from(payload))
-    problem = build_problem(binding)
+    problem = build_problem(binding=binding)
     # The rows determine every unknown, so the bound restricts none.
     assert problem.analysis.bounded == ()
     assert len(problem.bounds) == 1
@@ -96,7 +96,7 @@ def test_backend_results_carry_a_termination_not_a_backend_word():
 
 def test_generic_code_reads_no_backend_words_in_the_evidence():
     class Claims:
-        def solve(self, problem, **kwargs):
+        def solve(self, *, problem, **kwargs):
             return BackendResult(
                 termination=Termination.UNKNOWN,
                 evidence={"termination_condition": "provenInfeasible"},
@@ -117,7 +117,7 @@ def test_generic_code_reads_no_backend_words_in_the_evidence():
 
 def test_an_infeasible_termination_is_completed_and_infeasible():
     class Proves:
-        def solve(self, problem, **kwargs):
+        def solve(self, *, problem, **kwargs):
             return BackendResult(termination=Termination.INFEASIBLE)
 
     store, _ = setup()
@@ -136,7 +136,7 @@ def test_underdetermined_analysis_comes_from_rk_not_the_backend():
     payload["assignments"].remove(rent)
     payload["unknowns"].append({"target": rent["target"]["target"]})
     _, binding = bound(spec_from(payload))
-    analysis = build_problem(binding).analysis
+    analysis = build_problem(binding=binding).analysis
     assert analysis.underdetermined
     assert (analysis.equality_rank, analysis.unknown_count) == (2, 3)
 
@@ -151,9 +151,9 @@ def no_process(monkeypatch):
 def test_the_highs_iteration_clamp_lives_in_the_backend(monkeypatch):
     no_process(monkeypatch)
     _, binding = bound()
-    problem = build_problem(binding)
+    problem = build_problem(binding=binding)
     result = PyomoHighs().solve(
-        problem,
+        problem=problem,
         limits=Limits(iteration_limit=highs.ITERATION_MAXIMUM + 1),
         remaining=0,
         options={},
@@ -184,7 +184,7 @@ def test_the_highs_scaling_range_lives_in_the_backend(monkeypatch):
     ]
     specification = spec_from(payload)
     _, binding = bound(specification)
-    problem = build_problem(binding)  # rk accepts the row
+    problem = build_problem(binding=binding)  # rk accepts the row
     with pytest.raises(UnsupportedError, match="HiGHS") as error:
-        PyomoHighs().solve(problem, limits=Limits(), remaining=1, options={})
+        PyomoHighs().solve(problem=problem, limits=Limits(), remaining=1, options={})
     assert error.value.document_id == specification.id

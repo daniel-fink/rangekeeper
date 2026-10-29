@@ -23,7 +23,7 @@ def execute(consumer, model, **requirements):
         specification=consumer.specify(model, **requirements), store=store
     ).run
     assert run.report.status.solution is SolutionStatus.FEASIBLE, run.report.to_data()
-    validate(run, resolver=store).raise_if_invalid()
+    validate(run=run, resolver=store).raise_if_invalid()
     output = store.load_model(run.record.outputs[0])
     return consumer.report(output), run
 

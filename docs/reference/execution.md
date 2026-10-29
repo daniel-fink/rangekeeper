@@ -219,17 +219,17 @@ and only the backend starts a process. `solve` calls the stages for each case;
 
 | # | Stage | Input | Result | Raises |
 | --- | --- | --- | --- | --- |
-| 1 | `resolve_cases(specification, *, resolver)` | The root Specification | `Cases`: the documents, the pinned Models, the `compositions` of the leaves that compose and the `failures` (a `ValidationError` each) of those that do not. `Cases` is also a resolver | Missing or wrong-kind revisions, cycles, a contradicted batch Model pin. A leaf whose composition fails is in `failures` |
-| 2 | `validate(composition, *, resolver, units=None)` | One composition | `Validation`: the `report`, the `composition`, the input `model` and the `units` | Nothing for a content problem; it is an issue in the report |
-| 3 | `bind_roles(validation, *, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
-| 4 | `build_problem(binding, *, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis`: `equality_rank`, `unknown_count`, the `undetermined` unknowns and those of them that a bound reads (`bounded`) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`, or for a row that is not affine; `NumericalError` |
-| 5 | `Backend.solve(problem, *, limits, remaining, options)` | An `AffineProblem` | `backends.BackendResult`: a `Termination`, the candidate values, the applied limits, the backend's diagnostics and its raw evidence | `BackendUnavailableError`, `NumericalError`, `UnsupportedError` for a refused option or row |
+| 1 | `resolve_cases(*, specification, resolver)` | The root Specification | `Cases`: the documents, the pinned Models, the `compositions` of the leaves that compose and the `failures` (a `ValidationError` each) of those that do not. `Cases` is also a resolver | Missing or wrong-kind revisions, cycles, a contradicted batch Model pin. A leaf whose composition fails is in `failures` |
+| 2 | `validate(*, composition, resolver, units=None)` | One composition | `Validation`: the `report`, the `composition`, the input `model` and the `units` | Nothing for a content problem; it is an issue in the report |
+| 3 | `bind_roles(*, validation, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
+| 4 | `build_problem(*, binding, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis`: `equality_rank`, `unknown_count`, the `undetermined` unknowns and those of them that a bound reads (`bounded`) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`, or for a row that is not affine; `NumericalError` |
+| 5 | `Backend.solve(*, problem, limits, remaining, options)` | An `AffineProblem` | `backends.BackendResult`: a `Termination`, the candidate values, the applied limits, the backend's diagnostics and its raw evidence | `BackendUnavailableError`, `NumericalError`, `UnsupportedError` for a refused option or row |
 | 6 | `make_candidate(*, binding, unknowns, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
 | 7 | `verify(*, binding, candidate, tolerances=Tolerances())` | The candidate | `Verification`: `passed` or not, with residual diagnostics | `NumericalError`, `UnsupportedError` |
 | 8 | `assemble(*, specification, report, id, output)`; `assemble_batch(*, specification, cases)` | The report of one leaf; the Outcomes of a batch's cases | An `Outcome` with the finalized Run. Nothing is resolved or validated | `ValidationError` for a Run that is not locally consistent |
 
-Run validation is its own step after stage 8: `rk.run.validate(outcome.run,
-resolver=rk.execution.Overlay(resolver, models=..., runs=...))`. The `Overlay`
+Run validation is its own step after stage 8: `rk.run.validate(run=outcome.run,
+resolver=rk.execution.Overlay(resolver=resolver, models=..., runs=...))`. The `Overlay`
 returns the unstored outputs and case Runs, and reads everything else from the
 resolver, so nothing is stored before the Run is valid. `solve` validates the
 whole tree once this way.

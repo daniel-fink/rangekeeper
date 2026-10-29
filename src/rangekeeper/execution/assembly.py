@@ -24,15 +24,15 @@ class Overlay:
     """A resolver that returns unstored outputs and Runs, then reads ``resolver``.
 
     Validate the Run of an Outcome before anything is stored with
-    ``rk.run.validate(outcome.run, resolver=Overlay(store,
+    ``rk.run.validate(run=outcome.run, resolver=Overlay(resolver=store,
     models=outcome.outputs))``. For a batch, give every output and case Run of
     ``outcome.walk()``. ``execute`` validates its Runs this way.
     """
 
     def __init__(
         self,
-        resolver: DocumentResolver,
         *,
+        resolver: DocumentResolver,
         models: Iterable[Model] = (),
         runs: Iterable[Run] = (),
     ) -> None:
@@ -65,7 +65,7 @@ def assemble(
     """Make the Outcome of one leaf case, with its finalized Run.
 
     Nothing is resolved or validated. Validate the Run as its own step, with
-    ``rk.run.validate(outcome.run, resolver=Overlay(resolver,
+    ``rk.run.validate(run=outcome.run, resolver=Overlay(resolver=resolver,
     models=outcome.outputs))``, or let a store validate it on ``put``.
     """
     run = Run(

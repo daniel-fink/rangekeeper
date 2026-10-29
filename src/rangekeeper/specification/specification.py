@@ -110,8 +110,8 @@ class Specification:
 
     def __init__(
         self,
-        record: SpecificationRecord,
         *,
+        record: SpecificationRecord,
         model: "Model | None" = None,
         resolver: SpecificationResolver | None = None,
     ) -> None:
@@ -166,12 +166,12 @@ class Specification:
         )
         if unknowns:
             record = record.replace(unknowns=unknowns)
-        return cls(record, model=model)
+        return cls(record=record, model=model)
 
     @classmethod
     def from_data(cls, data: Mapping[str, object]) -> "Specification":
         """Copy and validate local structure/ownership; perform no external lookup."""
-        return cls(SpecificationRecord.from_data(data))
+        return cls(record=SpecificationRecord.from_data(data))
 
     @property
     def id(self) -> UUID:
@@ -277,7 +277,9 @@ class Specification:
         if not isinstance(replacement, SpecificationRecord):
             raise TypeError("replacement must be a generated Specification record")
         check_revision(self._record, replacement)
-        return type(self)(replacement, model=self._model, resolver=self._resolver)
+        return type(self)(
+            record=replacement, model=self._model, resolver=self._resolver
+        )
 
     def _derive(
         self,
@@ -316,7 +318,7 @@ class Specification:
                 **changes,  # type: ignore[arg-type]
             )
         check_revision(self._record, replacement)
-        revised = type(self)(replacement, model=model, resolver=self._resolver)
+        revised = type(self)(record=replacement, model=model, resolver=self._resolver)
         if isinstance(documents, Mapping):
             object.__setattr__(revised, "_cases", MappingProxyType(dict(documents)))
         return revised
@@ -482,7 +484,7 @@ class Specification:
         if model.id == self.record.model:
             if self._model is not None:
                 return self
-            return type(self)(self.record, model=model, resolver=self._resolver)
+            return type(self)(record=self.record, model=model, resolver=self._resolver)
         record = self.record
         declared = model._index.records
         controlled = [a.target for a in record.assignments or ()]

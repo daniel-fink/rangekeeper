@@ -82,8 +82,8 @@ class Binding:
 
 
 def validate(
-    composition: Composition,
     *,
+    composition: Composition,
     resolver: SpecificationResolver,
     units: UnitSystem | None = None,
 ) -> Validation:
@@ -107,8 +107,8 @@ def validate(
 
 
 def bind_roles(
-    validation: Validation,
     *,
+    validation: Validation,
     checkpoint: Callable[[], None] = lambda: None,
 ) -> Binding:
     """Give each value its role and normalize assignments to Measure units.
@@ -171,7 +171,7 @@ def bind_roles(
         from rangekeeper.execution.rule.observation import RuleCapabilityError
 
         try:
-            rule_result = evaluate(requirements.rules, model=model, units=units)
+            rule_result = evaluate(rules=requirements.rules, model=model, units=units)
             checkpoint()
         except RuleCapabilityError as error:
             raise UnsupportedError(str(error)) from error

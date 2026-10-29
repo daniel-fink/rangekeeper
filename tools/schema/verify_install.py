@@ -231,7 +231,7 @@ domain = DomainModel.create(metadata=Metadata(id=uuid4(), schema_version='1.0.0'
 assert domain.entity(entity.id).code == 'A'
 revised = domain.revise(Update(system=System()))
 assert revised.metadata.previous == domain.id
-spec = Specification(SpecificationRecord(metadata=Metadata(id=uuid4(), schema_version='1.0.0'), model=domain.id))
+spec = Specification(record=SpecificationRecord(metadata=Metadata(id=uuid4(), schema_version='1.0.0'), model=domain.id))
 class Resolver:
     def load_model(self, id):
         assert id == domain.id
@@ -322,7 +322,7 @@ for store in (MemoryStore(), DirectoryStore(Path('revisions'))):
         assert json.loads(text=json.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
         assert yaml.loads(text=yaml.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
     for run in runs:
-        assert validate(store.load_run(run.id), resolver=store).valid
+        assert validate(run=store.load_run(run.id), resolver=store).valid
     spec = yaml.read(path=examples / 'specification-composed-forward.yaml', kind=rk.Specification)
     assert spec.compose(resolver=store).validate(resolver=store).valid
     from rangekeeper.execution import execute
@@ -420,7 +420,7 @@ inverse = execute(specification=rk.Specification.from_data(data), store=store).r
 second = store.load_model(inverse.record.outputs[0])
 assert abs(second.value(UUID('e3fb1434-5371-5bcb-b0b8-e3af2bf65022')).quantity.magnitude - 27500) < 1e-6
 assert second.metadata.previous == first.id
-assert validate(inverse, resolver=store).valid
+assert validate(run=inverse, resolver=store).valid
 for prefix in ('pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction', 'linkml', 'linkml_runtime'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: actual process-isolated forward/inverse solves, output reuse, acceptance and disk publication passed')

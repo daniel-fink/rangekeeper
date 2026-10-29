@@ -86,7 +86,7 @@ def test_fixed_market_oracle_and_shock_applied_once():
     )
     with pytest.raises(RuleCapabilityError, match="unavailable"):
         observe(
-            result.model,
+            model=result.model,
             at=date(2027, 12, 31),
             bindings=[
                 ObservationBinding(
@@ -95,7 +95,7 @@ def test_fixed_market_oracle_and_shock_applied_once():
             ],
         )
     assert observe(
-        result.model,
+        model=result.model,
         at=date(2028, 12, 31),
         bindings=[ObservationBinding(name="forward", target=ref)],
     ).quantities[0].quantity.number == pytest.approx(2.2 / 3.2)
@@ -157,7 +157,7 @@ def test_resale_dates_strict_threshold_and_holding(factors, minimum, sale):
         threshold=1.2,
         minimum_holding_periods=minimum,
     )
-    result = evaluate(rules, model=model)
+    result = evaluate(rules=rules, model=model)
     sales = [
         a.quantity.magnitude
         for a in result.assignments
@@ -185,14 +185,14 @@ def test_future_changes_cannot_change_earlier_decision_and_missing_is_not_zero()
         sale=v["sale"].id,
         threshold=1.2,
     )
-    before = evaluate(rules, model=model)
+    before = evaluate(rules=rules, model=model)
     data = model.system.to_data()
     data["formulations"][0]["values"][0]["flow"]["movements"][-1]["magnitude"] = 99
     revised = model.revise(Update(system=System.from_data(data)))
-    assert evaluate(rules, model=revised).evidence[:2] == before.evidence[:2]
+    assert evaluate(rules=rules, model=revised).evidence[:2] == before.evidence[:2]
     data["formulations"][0]["values"][0]["flow"]["movements"][0]["magnitude"] = None
     with pytest.raises(RuleCapabilityError, match="unresolved"):
-        evaluate(rules, model=model.revise(Update(system=System.from_data(data))))
+        evaluate(rules=rules, model=model.revise(Update(system=System.from_data(data))))
 
 
 def test_independent_realizations_capture_distribution_draws():
@@ -287,7 +287,7 @@ def test_rule_run_rejects_forged_information_timing_and_actions():
         else:
             decision["terminated"] = True
         candidate = Run.from_data(data)
-        assert not validate(candidate, resolver=store).valid
+        assert not validate(run=candidate, resolver=store).valid
 
 
 def test_control_roles_conflict_across_contributors_and_endogenous_observation_fails():
@@ -304,7 +304,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     store.put(model)
     store.put(spec)
     other = Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             rules=rules,
@@ -312,7 +312,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     )
     store.put(other)
     joined = Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             includes=(spec.id, other.id),
         )

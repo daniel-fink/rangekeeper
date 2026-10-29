@@ -435,7 +435,7 @@ def test_role_editing_is_explicit_atomic_and_revision_pinned():
     store.put(model)
     store.put(base)
     included = Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"), includes=(base.id,)
         ),
         model=model,
@@ -529,7 +529,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
     )
     model = model.revise(Update(system=model.system.replace(formulations=(relation,))))
     spec = Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=assign_flow(model, net.id),
@@ -594,7 +594,7 @@ def test_role_edit_rejects_rule_control_without_changing_the_specification():
             id=uuid4(), targets=(Reference(target=ids["initial"]),), decisions=()
         ),
     )
-    controlled = Specification(record, model=model)
+    controlled = Specification(record=record, model=model)
     before = controlled.to_data()
     with pytest.raises(ContractError, match="rule controls") as error:
         controlled.free(Reference(target=ids["initial"]))

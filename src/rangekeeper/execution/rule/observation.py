@@ -73,8 +73,8 @@ def _observe(scope, *, at, bindings, evidence, prior, controlled):
 
 
 def observe(
-    model: Model,
     *,
+    model: Model,
     at: date,
     bindings: Sequence[ObservationBinding],
 ) -> Observation:

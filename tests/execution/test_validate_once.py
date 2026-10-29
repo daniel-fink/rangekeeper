@@ -17,7 +17,7 @@ from tests.execution.test_execution import CAPITAL, NOI, setup, spec
 
 
 class Exact:
-    def solve(self, problem, **kwargs):
+    def solve(self, *, problem, **kwargs):
         return BackendResult(
             termination=Termination.FEASIBLE, candidate={NOI: 550000.0, CAPITAL: 11e6}
         )

@@ -52,7 +52,7 @@ class Resolver:
 
 def spec(**fields):
     return Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"), **fields
         )
     )
@@ -134,12 +134,12 @@ def test_missing_wrong_kind_wrong_identity_and_cycles():
         spec(includes=(model.id,)).compose(resolver=Resolver(model))
     left_id, right_id = uuid4(), uuid4()
     left = Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=left_id, schema_version="1.0.0"), includes=(right_id,)
         )
     )
     right = Specification(
-        SpecificationRecord(
+        record=SpecificationRecord(
             metadata=Metadata(id=right_id, schema_version="1.0.0"), includes=(left_id,)
         )
     )
@@ -233,7 +233,9 @@ def test_duplicate_local_references_and_identity_reuse_are_rejected():
         spec(unknowns=(Reference(target=target), Reference(target=target)))
     metadata = Metadata(id=uuid4(), schema_version="1.0.0")
     with pytest.raises(ValidationError, match="cycle"):
-        Specification(SpecificationRecord(metadata=metadata, includes=(metadata.id,)))
+        Specification(
+            record=SpecificationRecord(metadata=metadata, includes=(metadata.id,))
+        )
 
 
 def test_specification_local_recorded_quantity_units_are_checked_after_composition():

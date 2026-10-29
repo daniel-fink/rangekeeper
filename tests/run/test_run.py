@@ -106,7 +106,7 @@ def test_real_store_resolves_all_synthetic_fixture_trees():
     store = inputs()
     for name in ("forward", "inverse", "failed", "skipped", "batch"):
         run = Run.from_data(load("run-" + name))
-        assert validate(run, resolver=store).valid
+        assert validate(run=run, resolver=store).valid
         assert store.put(run) == run.id
         assert store.put(run) == run.id
         assert store.load_run(run.id).to_data() == run.to_data()
@@ -120,7 +120,7 @@ def test_missing_output_rejects_publication_without_partial_run():
     data["report"]["trace"] = []
     data["report"]["diagnostics"] = []
     run = Run.from_data(data)
-    assert validate(run, resolver=store).issues[0].code == "reference.missing"
+    assert validate(run=run, resolver=store).issues[0].code == "reference.missing"
     with pytest.raises(ValidationError):
         store.put(run)
     with pytest.raises(MissingReferenceError):
@@ -149,7 +149,7 @@ def test_failed_attempt_can_reference_an_incomplete_saved_specification():
             },
         }
     )
-    assert validate(run, resolver=store).valid
+    assert validate(run=run, resolver=store).valid
     store.put(run)
 
 
@@ -174,7 +174,7 @@ def test_resolver_results_must_match_requested_kind_and_revision(problem, code):
             raise MissingReferenceError(str(identity))
 
     assert (
-        validate(Run.from_data(load("run-failed")), resolver=WrongResolver())
+        validate(run=Run.from_data(load("run-failed")), resolver=WrongResolver())
         .issues[0]
         .code
         == code
@@ -197,7 +197,7 @@ def test_spawn_cycle_is_detected_without_infinite_resolution():
         def load_run(self, identity):
             return {root.id: root, child.id: child}[identity]
 
-    report = validate(root, resolver=Resolver())
+    report = validate(run=root, resolver=Resolver())
     assert not report.valid and "cycle" in report.issues[0].message
 
 
@@ -211,9 +211,9 @@ def test_scoped_report_documents_resolve_outside_the_input_tree():
     data["report"]["diagnostics"][0].update(
         document=str(extra.id), target=str(extra.id)
     )
-    assert validate(Run.from_data(data), resolver=store).valid
+    assert validate(run=Run.from_data(data), resolver=store).valid
     data["report"]["diagnostics"][0]["target"] = str(uuid4())
-    assert not validate(Run.from_data(data), resolver=store).valid
+    assert not validate(run=Run.from_data(data), resolver=store).valid
 
 
 def test_repeated_report_references_keep_revision_scopes_separate():
@@ -234,6 +234,6 @@ def test_repeated_report_references_keep_revision_scopes_separate():
         for _ in range(250)
         for model in extra
     ]
-    assert validate(Run.from_data(data), resolver=store).valid
+    assert validate(run=Run.from_data(data), resolver=store).valid
     data["report"]["diagnostics"][-1]["target"] = str(extra[0].id)
-    assert not validate(Run.from_data(data), resolver=store).valid
+    assert not validate(run=Run.from_data(data), resolver=store).valid

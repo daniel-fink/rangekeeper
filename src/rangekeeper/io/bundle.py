@@ -357,7 +357,7 @@ def _collect(model, documents, resolver, max_documents=1000):
     )
     for document in found.documents():
         if isinstance(document, Run):
-            validate_run(document, resolver=found).raise_if_invalid()
+            validate_run(run=document, resolver=found).raise_if_invalid()
     return found
 
 

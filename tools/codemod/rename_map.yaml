@@ -538,7 +538,7 @@ symbols:
     status: agreed
     source: "ADR-013, #125"
     note: >-
-      `build_problem(binding, limits=)` also checks the symbol and constraint
+      `build_problem(binding=, limits=)` also checks the symbol and constraint
       limits; `constraint_limit=` is replaced by `limits=`.
   - module: rangekeeper.execution.preparation
     name: Prepared
@@ -938,19 +938,19 @@ removed:
     status: agreed
     source: "ADR-013, #126"
   - name: rangekeeper.execution.publication.CandidateResolver
-    replacement: "`rangekeeper.execution.Overlay(resolver, models=, runs=)`"
+    replacement: "`rangekeeper.execution.Overlay(resolver=, models=, runs=)`"
     status: agreed
     source: "ADR-013, #126"
   - name: rangekeeper.execution.planning.Plan
     replacement: >-
-      `rangekeeper.execution.resolve_cases(specification, resolver=)`. It
+      `rangekeeper.execution.resolve_cases(specification=, resolver=)`. It
       returns `Cases`, which is also a resolver
     status: agreed
     source: "ADR-013, #125"
   - name: rangekeeper.execution.preparation.prepare
     replacement: >-
-      `rangekeeper.execution.validate(composition, resolver=, units=)`, then
-      `rangekeeper.execution.bind_roles(validation)`
+      `rangekeeper.execution.validate(composition=, resolver=, units=)`, then
+      `rangekeeper.execution.bind_roles(validation=)`
     status: agreed
     source: "ADR-013, #125"
   - name: rangekeeper.shared.errors.BoundaryError
@@ -990,7 +990,13 @@ notes:
       The arguments of `rk.execution.solve`, `execute`, `assemble`,
       `assemble_batch`, `make_candidate` and `verify` are keyword-only:
       `solve(specification, store)` is now `solve(specification=,
-      resolver=)`. The records of `rk.execution`, `rk.execution.backends`
+      resolver=)`, and so are the stage calls `resolve_cases(specification=,
+      resolver=)`, `validate(composition=, resolver=, units=)`,
+      `bind_roles(validation=)` and `build_problem(binding=, limits=)`, the
+      rule calls `rk.execution.rule.evaluate(rules=, model=)` and
+      `observe(model=, at=, bindings=)`, `Overlay(resolver=, models=, runs=)`
+      and `rk.run.validate(run=, resolver=)`. A backend declares
+      `def solve(self, *, problem, limits, remaining, options)`. The records of `rk.execution`, `rk.execution.backends`
       and `rk.execution.rule` take keyword arguments only, for example
       `Limits(time_limit=)`, `Tolerances(absolute=, relative=)` and
       `BackendResult(termination=, candidate=)`.
@@ -1030,7 +1036,7 @@ notes:
   - topic: Specification calls
     status: agreed
     source: "#255 D7, D8"
-    note: "`fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. `model.specify(name=)` makes one. `fix(target, quantity, id=, model=, ids=, recorded=)` is now `fix(key=quantity)`, or `fix({target: quantity})` for a dotted path, a UUID or a mapping of Movement UUIDs; `free(target, id=, model=, ids=)` is now `free(*targets)`. The Specification keeps its Model: pass `Specification(record, model=, resolver=)` for a record. `recorded=True` is removed: fix the recorded Quantities explicitly (#144). `fix` also takes Quantity text and a number for a ratio; a number for a value with other units raises `UnitError`, not `TypeError`. `specify` and each call record as unknowns the values that the equations use and that nothing fixes, so `free` is needed only to release a fixed value. `roles` lists the role of each value as an `rk.specification.Role` (#290)."
+    note: "`fix`, `free`, `cases`, `across` and `parameters` each return a new Specification; unfixed values are free. `model.specify(name=)` makes one. `fix(target, quantity, id=, model=, ids=, recorded=)` is now `fix(key=quantity)`, or `fix({target: quantity})` for a dotted path, a UUID or a mapping of Movement UUIDs; `free(target, id=, model=, ids=)` is now `free(*targets)`. The Specification keeps its Model: pass `Specification(record=, model=, resolver=)` for a record. `recorded=True` is removed: fix the recorded Quantities explicitly (#144). `fix` also takes Quantity text and a number for a ratio; a number for a value with other units raises `UnitError`, not `TypeError`. `specify` and each call record as unknowns the values that the equations use and that nothing fixes, so `free` is needed only to release a fixed value. `roles` lists the role of each value as an `rk.specification.Role` (#290)."
   - topic: Loan payment
     status: agreed
     source: "#255 D19"

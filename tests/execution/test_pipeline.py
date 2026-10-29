@@ -19,7 +19,7 @@ from tests.execution.test_stages import Unchanged
 class Exact:
     """A backend that returns the known solution, in this process."""
 
-    def solve(self, problem, **kwargs):
+    def solve(self, *, problem, **kwargs):
         return BackendResult(
             termination=Termination.FEASIBLE,
             candidate={NOI: 550000.0, CAPITAL: 11000000.0},
