@@ -35,8 +35,13 @@ from rangekeeper.shared.errors import (
 from rangekeeper.shared.table import Table
 
 _FREE = (Code.UNDERDETERMINED.value, Code.UNIQUENESS_NOT_ASSESSED.value)
-# The Termination words that Runs recorded before 1.0.0b1 (#379).
-_OLDER_WORDS = {"limit": Termination.LIMITED, "error": Termination.FAILED}
+# The Termination of each recorded word, with the words of Runs before
+# 1.0.0b1 (#379).
+_WORDS = {
+    **{item.value: item for item in Termination},
+    "limit": Termination.LIMITED,
+    "error": Termination.FAILED,
+}
 
 
 def status_of(report: Report) -> Status:
@@ -78,7 +83,9 @@ class Evidence:
 
     - ``termination`` is the backend's ``Termination``, or None when no
       backend ran. The words ``limit`` and ``error`` of an older Run read as
-      ``LIMITED`` and ``FAILED``.
+      ``LIMITED`` and ``FAILED``. A Run that recorded no Termination word, or
+      a word of its backend (1.0.0a1, or a Run that ``tools/upgrade``
+      converted), reads as ``UNKNOWN``; ``backend`` keeps that word.
     - ``backend`` is the backend's own evidence, such as its status words and
       iteration count. Generic code does not read it.
     - ``equality_rank`` and ``unknown_count`` come from the rank analysis of
@@ -172,7 +179,7 @@ class Outcome:
                 dict(item.values) if isinstance(item.values, Mapping) else {}
             )
             if item.code == Code.SOLVER_TERMINATION.value:
-                termination = _termination(str(values.pop("termination")))
+                termination = _termination(values)
                 backend = values
             elif item.code in _FREE:
                 rank = _integer(values.get("equality_rank"))
@@ -386,9 +393,17 @@ def _key(model: Model, value: Value) -> str:
     return f"{model._path(owner)}.{value.key}"
 
 
-def _termination(word: str) -> Termination:
-    """Return the Termination of a recorded word, also a word of an older Run."""
-    return _OLDER_WORDS.get(word) or Termination(word)
+def _termination(values: dict[str, FrozenJSONValue]) -> Termination:
+    """Remove the Termination word from solver evidence and return its Termination.
+
+    A missing word, or a word that is not a Termination word, is ``UNKNOWN``,
+    and the word stays in ``values``.
+    """
+    found = _WORDS.get(str(values.get("termination")))
+    if found is None:
+        return Termination.UNKNOWN
+    del values["termination"]
+    return found
 
 
 def _integer(value: object) -> int | None:
