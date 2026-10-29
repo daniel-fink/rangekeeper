@@ -10,13 +10,16 @@ from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.execution.planning import Cases, resolve_cases
 from rangekeeper.model import Model
-from rangekeeper.run import Prerequisites, Run
-from rangekeeper.run import validate as validate_run
-from rangekeeper.run.validation import mark_validated
+from rangekeeper.run import Run
+from rangekeeper.run.validation import (
+    Prerequisites,
+    mark_validated,
+    validate_executed,
+)
 from rangekeeper.shared.errors import MissingReferenceError
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.shared.store import RecordStore
-from rangekeeper.specification import Composition, Specification
+from rangekeeper.specification import Specification
 
 
 def solve(
@@ -150,16 +153,9 @@ def _run(
         models=(model for item in tree for model in item.outputs),
         runs=(item.run for item in tree),
     )
-    prerequisites = Prerequisites(
-        compositions={
-            id: view
-            for id, view in cases.compositions.items()
-            if isinstance(view, Composition)
-        },
-        scopes=scopes,
-    )
+    prerequisites = Prerequisites(compositions=cases.compositions, scopes=scopes)
     # A store validates with the unit system of the input Model; so does execute.
-    validate_run(
+    validate_executed(
         outcome.run,
         resolver=overlay,
         units=config.units if store is None else None,
@@ -228,19 +224,16 @@ def _attempt(
                 _case(cases.documents[id], cases, config, backend, scopes)
                 for id in specification.record.cases
             ),
-            resolver=cases,
-            validate=False,
         )
     attempt = Attempt(
         config,
         backend,
         specification,
-        cases.compositions[specification.id],
+        cases.failures.get(specification.id) or cases.compositions[specification.id],
         resolver=cases,
-        validate=False,
     )
     outcome = attempt.execute()
     validation = attempt.validation
-    if validation is not None and validation.report.valid and validation.scope:
-        scopes[specification.id] = validation.scope
+    if validation is not None and validation.report.valid and validation._scope:
+        scopes[specification.id] = validation._scope
     return outcome

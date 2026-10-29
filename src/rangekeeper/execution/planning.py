@@ -25,8 +25,9 @@ class Cases:
 
     ``documents`` holds the root and each reachable include and case.
     ``models`` holds each Model revision that a document pins. ``compositions``
-    holds one composition for each leaf case, or the ValidationError of its
-    composition, so that the leaf can record its own Run evidence.
+    holds the composition of each leaf case that composes, and ``failures``
+    the ValidationError of each leaf case that does not, so that the leaf can
+    record its own Run evidence. Each leaf case is in one of the two.
 
     A Cases is also a resolver: it returns its own revisions and reads other
     identities from ``resolver``. It holds no cache that changes after
@@ -36,7 +37,8 @@ class Cases:
     root: Specification
     documents: Mapping[UUID, Specification]
     models: Mapping[UUID, Model]
-    compositions: Mapping[UUID, Composition | ValidationError]
+    compositions: Mapping[UUID, Composition]
+    failures: Mapping[UUID, ValidationError]
     resolver: DocumentResolver
 
     def load_model(self, id: UUID) -> Model:
@@ -59,7 +61,7 @@ def resolve_cases(specification: Specification, *, resolver: DocumentResolver) -
 
     Missing or wrong-kind revisions, cycles and a batch Model pin that a leaf
     contradicts raise. A leaf whose composition fails keeps its
-    ValidationError in ``compositions``. Nothing is written.
+    ValidationError in ``failures``. Nothing is written.
     """
     if not isinstance(specification, Specification):
         raise TypeError("specification must be a Specification")
@@ -80,9 +82,11 @@ def resolve_cases(specification: Specification, *, resolver: DocumentResolver) -
         MappingProxyType(documents),
         MappingProxyType(models),
         MappingProxyType({}),
+        MappingProxyType({}),
         resolver,
     )
-    compositions: dict[UUID, Composition | ValidationError] = {}
+    compositions: dict[UUID, Composition] = {}
+    failures: dict[UUID, ValidationError] = {}
 
     def check_pins(current: Specification, pins: tuple[UUID, ...] = ()) -> None:
         if current.record.cases:
@@ -90,7 +94,7 @@ def resolve_cases(specification: Specification, *, resolver: DocumentResolver) -
             for id in current.record.cases:
                 check_pins(documents[id], pins)
             return
-        if current.id not in compositions:
+        if current.id not in compositions and current.id not in failures:
             try:
                 compositions[current.id] = compose(
                     current,
@@ -99,9 +103,9 @@ def resolve_cases(specification: Specification, *, resolver: DocumentResolver) -
                     catalogue=catalogue,
                 )
             except ValidationError as error:
-                compositions[current.id] = error
-        view = compositions[current.id]
-        if isinstance(view, ValidationError):
+                failures[current.id] = error
+        view = compositions.get(current.id)
+        if view is None:
             return  # the leaf records its conflicting composition
         if view.model_id is not None and any(pin != view.model_id for pin in pins):
             raise ValidationError(
@@ -122,5 +126,6 @@ def resolve_cases(specification: Specification, *, resolver: DocumentResolver) -
         MappingProxyType(documents),
         MappingProxyType(models),
         MappingProxyType(compositions),
+        MappingProxyType(failures),
         resolver,
     )

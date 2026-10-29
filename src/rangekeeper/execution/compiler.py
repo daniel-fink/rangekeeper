@@ -348,7 +348,6 @@ def build_problem(
                 unknowns=error.unknowns,
             ) from error
     variables = tuple(binding.unknowns)
-    constrained = {key for row in rows for key in row.residual.coefficients}
     equalities = [
         row.residual.coefficients for row in rows if row.relation is Relation.EQUAL
     ]
@@ -361,9 +360,8 @@ def build_problem(
         for key in row.residual.coefficients
     }
     analysis = Analysis(
-        rank=rank,
+        equality_rank=rank,
         unknown_count=len(variables),
-        free=tuple(id for id in variables if id not in constrained),
         undetermined=loose,
         bounded=tuple(id for id in loose if id in bounds),
     )

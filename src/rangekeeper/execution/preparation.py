@@ -48,7 +48,7 @@ class Validation:
     model: Model | None = None
     units: UnitSystem | None = None
     # The scope of a valid Specification check, which Run validation reuses.
-    scope: object = field(default=None, repr=False, compare=False)
+    _scope: object = field(default=None, init=False, repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -91,13 +91,14 @@ def validate(
     """
     validated = validate_prepared(composition, resolver=resolver, units=units)
     model = validated.model
-    return Validation(
+    validation = Validation(
         validated.report,
         composition,
         model,
         None if model is None else model.unit_system if units is None else units,
-        validated.scope,
     )
+    object.__setattr__(validation, "_scope", validated.scope)
+    return validation
 
 
 def bind_roles(

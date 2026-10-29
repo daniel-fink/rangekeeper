@@ -624,11 +624,11 @@
   "Analysis": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None",
+    "__init__": "method (self, equality_rank: int, unknown_count: int, undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None",
     "underdetermined": "property"
    },
    "module": "rangekeeper.execution.analysis",
-   "signature": "(rank: int, unknown_count: int, free: tuple[uuid.UUID, ...], undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None"
+   "signature": "(equality_rank: int, unknown_count: int, undetermined: tuple[uuid.UUID, ...] = tuple(), bounded: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "Assertion": {
    "kind": "class",
@@ -651,13 +651,13 @@
   "Cases": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition | rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None",
+    "__init__": "method (self, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
     "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification"
    },
    "module": "rangekeeper.execution.planning",
-   "signature": "(root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition | rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
+   "signature": "(root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
   },
   "Comparison": {
    "kind": "class",
@@ -737,6 +737,17 @@
    "module": "rangekeeper.execution.errors",
    "signature": "(message: str, *, status: rangekeeper.execution.status.Status, **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
+  "Overlay": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, resolver: rangekeeper.shared.references.DocumentResolver, *, models: collections.abc.Iterable[rangekeeper.model.model.Model] = tuple(), runs: collections.abc.Iterable[rangekeeper.run.run.Run] = tuple()) -> None",
+    "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
+    "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
+    "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification"
+   },
+   "module": "rangekeeper.execution.assembly",
+   "signature": "(resolver: rangekeeper.shared.references.DocumentResolver, *, models: collections.abc.Iterable[rangekeeper.model.model.Model] = tuple(), runs: collections.abc.Iterable[rangekeeper.run.run.Run] = tuple()) -> None"
+  },
   "Pair": {
    "kind": "class",
    "members": {
@@ -786,28 +797,28 @@
   "Validation": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None, scope: object = None) -> None"
+    "__init__": "method (self, report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
    },
    "module": "rangekeeper.execution.preparation",
-   "signature": "(report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None, scope: object = None) -> None"
+   "signature": "(report: rangekeeper.shared.diagnostics.ValidationReport, composition: rangekeeper.specification.composition.Composition, model: rangekeeper.model.model.Model | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> None"
   },
   "Verification": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, accepted: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
+    "__init__": "method (self, passed: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
    },
    "module": "rangekeeper.execution.acceptance",
-   "signature": "(accepted: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
+   "signature": "(passed: bool, diagnostics: tuple[rangekeeper.schema.records.Diagnostic, ...]) -> None"
   },
   "assemble": {
    "kind": "function",
    "module": "rangekeeper.execution.assembly",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, report: rangekeeper.schema.records.Report, *, id: uuid.UUID, output: rangekeeper.model.model.Model | None, resolver: rangekeeper.shared.references.DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None, validate: bool = True) -> rangekeeper.execution.outcome.Outcome"
+   "signature": "(specification: rangekeeper.specification.specification.Specification, report: rangekeeper.schema.records.Report, *, id: uuid.UUID, output: rangekeeper.model.model.Model | None) -> rangekeeper.execution.outcome.Outcome"
   },
   "assemble_batch": {
    "kind": "function",
    "module": "rangekeeper.execution.assembly",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, cases: collections.abc.Sequence[rangekeeper.execution.outcome.Outcome], *, resolver: rangekeeper.shared.references.DocumentResolver, validate: bool = True) -> rangekeeper.execution.outcome.Outcome"
+   "signature": "(specification: rangekeeper.specification.specification.Specification, cases: collections.abc.Sequence[rangekeeper.execution.outcome.Outcome]) -> rangekeeper.execution.outcome.Outcome"
   },
   "bind_roles": {
    "kind": "function",
@@ -2621,14 +2632,6 @@
    ],
    "module": "rangekeeper.schema.enums"
   },
-  "Prerequisites": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, compositions: collections.abc.Mapping[uuid.UUID, 'Composition'] = <_HAS_DEFAULT_FACTORY_CLASS>, scopes: collections.abc.Mapping[uuid.UUID, typing.Any] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
-   },
-   "module": "rangekeeper.run.validation",
-   "signature": "(compositions: collections.abc.Mapping[uuid.UUID, 'Composition'] = <_HAS_DEFAULT_FACTORY_CLASS>, scopes: collections.abc.Mapping[uuid.UUID, typing.Any] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
-  },
   "Report": {
    "kind": "class",
    "members": {
@@ -2745,7 +2748,7 @@
   "validate": {
    "kind": "function",
    "module": "rangekeeper.run.validation",
-   "signature": "(run: Run, *, resolver: DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None, prerequisites: rangekeeper.run.validation.Prerequisites | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
+   "signature": "(run: Run, *, resolver: DocumentResolver, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
   }
  },
  "rangekeeper.specification": {
