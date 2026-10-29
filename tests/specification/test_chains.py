@@ -9,8 +9,10 @@ import pytest
 import rangekeeper as rk
 from rangekeeper.model.expression.authoring import add, equal, reference
 from rangekeeper.schema.records import Assignment, Reference
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
+    ContractError,
     MissingReferenceError,
     UnitError,
 )
@@ -107,6 +109,12 @@ def test_dotted_paths_uuids_and_ambiguous_keys():
     with pytest.raises(MissingReferenceError) as error:
         spec.fix(land_cots=aud("1"))
     assert "land_cost" in error.value.candidates
+    for path in ("zz.total_cost", "project.total_cots"):
+        with pytest.raises(MissingReferenceError) as error:
+            spec.fix({path: aud("1")})
+        assert (error.value.kind, error.value.by) == ("Value", "path")
+        assert error.value.requested == path
+    assert "project.total_cost" in error.value.candidates
     with pytest.raises(TypeError, match="twice"):
         spec.fix({"land_cost": aud("1")}, land_cost=aud("2"))
 
@@ -140,8 +148,9 @@ def test_fix_and_free_check_their_arguments():
         spec.fix(land_cost=None)
     with pytest.raises(UnitError):
         spec.fix(land_cost=rk.Quantity(text="20 sqm"))
-    with pytest.raises(ValueError, match="more than once"):
+    with pytest.raises(ContractError, match="more than once") as error:
         spec.free("land_cost", "project.land_cost")
+    assert error.value.code is Code.UNIQUE
 
 
 def test_a_specification_needs_its_model_for_keys():
@@ -150,12 +159,13 @@ def test_a_specification_needs_its_model_for_keys():
         metadata=rk.model.Metadata(id=uuid4(), schema_version="1.0.0"),
         model=model.id,
     )
-    with pytest.raises(ValueError, match="no Model"):
+    with pytest.raises(ContractError, match="no Model"):
         Specification(record).fix(land_cost=aud("1"))
     attached = Specification(record, model=model).fix(land_cost=aud("1"))
     assert attached.metadata.previous == record.metadata.id
-    with pytest.raises(ValueError, match="pins"):
+    with pytest.raises(ContractError, match="pins") as error:
         Specification(record, model=rk.Model(name="Other"))
+    assert error.value.code is Code.IDENTITY
     with pytest.raises(TypeError, match="Model"):
         Specification(record, model=object())  # type: ignore[arg-type]
 

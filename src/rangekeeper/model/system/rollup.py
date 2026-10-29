@@ -245,7 +245,9 @@ class RollupResult:
             if value is None:
                 continue
             if not isinstance(value, Flow):
-                raise TypeError("display requires Flow rollup results")
+                raise RollupError(
+                    "display shows Flow rollup results; this result holds Quantities"
+                )
             entity = self.hierarchy.view.entity(identity)
             label = entity.name or entity.code or f"Entity {index + 1}"
             if label in flows:
@@ -494,9 +496,9 @@ class QuantityRollup(_Rollup):
             raise TypeError("unit_system must be a UnitSystem")
         if self.reducer is Reducer.COUNT:
             if self.units is not None:
-                raise TypeError("count rollups take no units")
+                raise RollupError("count rollups take no units")
         elif self.units is None:
-            raise TypeError("quantity rollups require units")
+            raise RollupError("quantity rollups require units")
         elif self.unit_system is not None:
             # Without a unit system, execute checks units against the Model's.
             self.unit_system.validate_units(self.units)
@@ -584,9 +586,9 @@ class FlowRollup(_Rollup):
 
         super().__post_init__()
         if self.reducer not in (Reducer.SUM, Reducer.MIN, Reducer.MAX):
-            raise ValueError("Flow rollups take Reducer.SUM, MIN or MAX")
+            raise RollupError("Flow rollups take Reducer.SUM, MIN or MAX")
         if (self.periods is None) != (self.resampling is None):
-            raise ValueError("supply both periods and resampling, or neither")
+            raise RollupError("supply both periods and resampling, or neither")
         if self.resampling is not None and not isinstance(
             self.resampling, ResampleMethod
         ):
@@ -598,7 +600,7 @@ class FlowRollup(_Rollup):
         ):
             raise TypeError("missing and join require their enum types")
         if missing is MissingValueHandling.ZERO:
-            raise ValueError(
+            raise RollupError(
                 "a Flow rollup never treats a missing value as zero; "
                 "use ERROR, PROPAGATE or SKIP"
             )
@@ -684,10 +686,11 @@ class FlowRollup(_Rollup):
         from rangekeeper.model.formulation.hierarchy import formulate
 
         if self.reducer is not Reducer.SUM:
-            raise ValueError("formulate requires Reducer.SUM")
+            raise RollupError("formulate requires Reducer.SUM")
         if not isinstance(self.contributors, Contributor):
-            raise ValueError(
-                "symbolic selection requires Contributor.LEAVES or ALL; select a structural View explicitly"
+            raise RollupError(
+                "symbolic selection requires Contributor.LEAVES or ALL; "
+                "select a structural View explicitly"
             )
         selected, populations, _ = self._population(hierarchy)
         return formulate(

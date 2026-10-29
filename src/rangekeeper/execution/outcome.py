@@ -131,11 +131,19 @@ class Outcome:
         if tuple(model.id for model in self.outputs) != tuple(
             self.run.record.outputs or ()
         ):
-            raise ValueError("outputs must be the Run's outputs, in order")
+            raise ContractError(
+                "outputs must be the Run's outputs, in order",
+                document_id=self.run.id,
+                targets=tuple(model.id for model in self.outputs),
+            )
         if tuple(case.run.id for case in self.cases) != tuple(
             self.run.record.spawns or ()
         ):
-            raise ValueError("cases must be the Run's spawned cases, in order")
+            raise ContractError(
+                "cases must be the Run's spawned cases, in order",
+                document_id=self.run.id,
+                targets=tuple(case.run.id for case in self.cases),
+            )
 
     def walk(self) -> Iterator["Outcome"]:
         """Yield each case Outcome before its parent, ending with this one."""
@@ -250,18 +258,24 @@ class Outcome:
         """Return the Outcome of the direct case with the key ``key``.
 
         No case with the key raises MissingReferenceError with the keys that
-        exist. A leaf Outcome has no cases (TypeError).
+        exist. A leaf Outcome has no cases: ContractError with the code
+        ``BATCH_REQUIRED``.
         """
         if not self.cases:
-            raise TypeError("a leaf Outcome has no cases")
+            raise ContractError(
+                "a leaf Outcome has no cases",
+                code=Code.BATCH_REQUIRED,
+                document_id=self.run.id,
+            )
         for case in self.cases:
             if case.key == key:
                 return case
         raise MissingReferenceError(
             key,
-            kind="case",
+            kind="Outcome",
             by="key",
-            where=self.key,
+            where=f"Outcome {self.key or self.run.id}",
+            document_id=self.run.id,
             candidates=[case.key for case in self.cases if case.key is not None],
         )
 
@@ -291,7 +305,8 @@ class Outcome:
         """Return a Stream of the solved Flows at these keys, named by key.
 
         A batch has no single Stream: read it from one case,
-        ``outcome.case(key=...).stream(...)``.
+        ``outcome.case(key=...).stream(...)``. A key of a scalar value raises
+        ContractError.
         """
         self._require_leaf("stream")
         if not keys:
@@ -300,7 +315,11 @@ class Outcome:
         for key in keys:
             value = self[key]
             if not isinstance(value, Flow):
-                raise TypeError(f"{key} is not a Flow value")
+                raise ContractError(
+                    f"{key} is not a Flow value",
+                    document_id=self.run.id,
+                    values={"key": key},
+                )
             flows[key] = value
         return Stream(flows=flows)
 
@@ -350,9 +369,12 @@ class Outcome:
         return (item for item in self.walk() if not item.cases)
 
     def _require_leaf(self, name: str) -> None:
+        """Raise ContractError with the code ``BATCH_UNSUPPORTED`` for a batch."""
         if self.cases:
-            raise TypeError(
-                f"a batch Outcome has no single {name}; read it from one of its cases"
+            raise ContractError(
+                f"a batch Outcome has no single {name}; read it from one of its cases",
+                code=Code.BATCH_UNSUPPORTED,
+                document_id=self.run.id,
             )
 
 

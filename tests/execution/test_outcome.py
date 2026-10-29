@@ -21,6 +21,7 @@ from rangekeeper.schema.records import Severity
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     AttemptDeadlineError,
+    ContractError,
     MissingReferenceError,
     NumericalError,
     UnsupportedError,
@@ -221,9 +222,10 @@ def test_a_batch_takes_the_status_of_its_first_case_that_is_not_feasible():
     with pytest.raises(UnsupportedError):
         outcome.raise_for_status()
     for name in ("model", "evidence", "free_unknowns"):
-        with pytest.raises(TypeError, match="batch"):
+        with pytest.raises(ContractError) as error:
             getattr(outcome, name)
-    with pytest.raises(TypeError, match="batch"):
+        assert error.value.code is Code.BATCH_UNSUPPORTED
+    with pytest.raises(ContractError, match="batch"):
         outcome["land_cost"]
     whole = batch_of(feasible, later)
     assert solve(whole, store(feasible, later, whole)).status is Status.FEASIBLE

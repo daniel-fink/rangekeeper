@@ -185,8 +185,9 @@ def test_codes_and_keys_are_unique_and_checked_when_declared():
         project.value(key="land_cost", units="AUD")
     assert error.value.values["key"] == "land_cost"
     for key in ("land cost", "class", "rx", "NEVER", "2nd"):
-        with pytest.raises(ValueError, match="identifier"):
+        with pytest.raises(ContractError, match="identifier") as error:
             project.value(key=key, units="AUD")
+        assert error.value.values == {"key": key}
     with pytest.raises(UnitError) as unit:
         project.value(key="area", units="sqmm")
     assert unit.value.code == Code.UNITS
@@ -231,11 +232,13 @@ def test_equations_are_checked_when_added():
     land = project.ref(key="land_cost")
     with pytest.raises(TypeError, match="text or an Expression"):
         project.equations(42)  # type: ignore[arg-type]
-    with pytest.raises(ValueError, match="Boolean"):
+    with pytest.raises(ContractError, match="Boolean") as error:
         project.equations(add(ref(land), literal(1, "AUD")))
+    assert error.value.code is Code.PREDICATE
     stranger = ValueHandle(uuid4(), "other", project.id, "AUD")
-    with pytest.raises(MissingReferenceError):
+    with pytest.raises(MissingReferenceError) as missing:
         project.equations(equal(ref(land), ref(stranger)))
+    assert missing.value.where == "Entity project"
     with pytest.raises(TypeError):
         project.equations()
 
@@ -344,8 +347,9 @@ def test_a_handle_belongs_to_its_draft():
     handle = first.add_entity(code="a")
     second = rk.Model(name="B").edit()
     second.add_entity(code="a")
-    with pytest.raises(ValueError, match="another draft"):
+    with pytest.raises(ContractError, match="another draft") as error:
         second.add_assembly(code="group", entities=[handle])
+    assert error.value.targets == (handle.id,)
 
 
 def test_a_draft_is_made_by_edit():

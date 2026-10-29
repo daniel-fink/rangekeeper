@@ -21,7 +21,7 @@ from rangekeeper.model.formulation import flow
 from rangekeeper.model.system import FlowRollup, Hierarchy, View
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import SolutionStatus
-from rangekeeper.shared.errors import UnitError
+from rangekeeper.shared.errors import ContractError, UnitError, UnsupportedError
 from rangekeeper_examples.flux import (
     collection,
     forward_specification,
@@ -456,7 +456,7 @@ def test_symbolic_resampling_keeps_unknowns_and_fixed_membership(method):
             method=R.SUM,
             missing=Missing.SKIP,
         )
-    with pytest.raises(ValueError, match="piecewise"):
+    with pytest.raises(UnsupportedError, match="piecewise"):
         flow.resample(
             model,
             id=uuid4(),
@@ -584,8 +584,9 @@ def test_role_edit_rejects_rule_control_without_changing_the_specification():
     )
     controlled = Specification(record, model=model)
     before = controlled.to_data()
-    with pytest.raises(ValueError, match="rule-controlled"):
+    with pytest.raises(ContractError, match="rule controls") as error:
         controlled.free(Reference(target=ids["initial"]))
+    assert error.value.targets == (ids["initial"],)
     assert controlled.to_data() == before
 
 

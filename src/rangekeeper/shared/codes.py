@@ -55,6 +55,7 @@ class Code(StrEnum):
     IDENTITY = "semantic.identity"
     MODEL_MISSING = "semantic.model"
     PREDICATE = "semantic.predicate"
+    RESOLVER_MISSING = "semantic.resolver"
     ROLE_MISSING = "semantic.role"
     UNIQUE = "semantic.unique"
     UNITS = "semantic.units"
@@ -71,8 +72,12 @@ class Code(StrEnum):
     INVARIANT_PERIOD = "invariant.Period"
     INVARIANT_SPAN = "invariant.Span"
 
-    # Batches of cases.
+    # Batches of cases. ``BATCH_REQUIRED``: the call reads the cases of a batch,
+    # and the Specification or Outcome has none. ``BATCH_UNSUPPORTED``: the call
+    # takes one concrete Specification or one leaf Outcome, not a batch.
     BATCH_MODEL = "batch.model"
+    BATCH_REQUIRED = "batch.required"
+    BATCH_UNSUPPORTED = "batch.unsupported"
 
     # Periods that do not align: a Period crosses the bounds of a selection, or
     # Periods end with a partial Period.

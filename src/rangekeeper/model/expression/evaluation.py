@@ -9,13 +9,13 @@ from uuid import UUID
 from rangekeeper.duration.dates import NEVER, DateValue, order, shift
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.records import Expression, ExpressionKind, Operator
-from rangekeeper.shared.errors import UnsupportedError
+from rangekeeper.shared.errors import ContractError, NumericalError, UnsupportedError
 
 
 def finite_quantity(magnitude: float, units: str) -> Quantity:
     """Reject Boolean, complex and nonfinite numerical results."""
     if type(magnitude) not in (int, float) or not math.isfinite(magnitude):
-        raise ValueError("expression evaluation produced a non-finite magnitude")
+        raise NumericalError("expression evaluation produced a non-finite magnitude")
     return Quantity(magnitude=float(magnitude), units=units)
 
 
@@ -28,15 +28,15 @@ def evaluate(
     """Read only supplied values; never obtain quantities from a Model or resolver."""
     if node.kind is ExpressionKind.QUANTITY:
         if node.quantity is None:
-            raise ValueError("quantity expression requires a quantity")
+            raise _malformed(node, "quantity expression requires a quantity")
         return node.quantity
     if node.kind is ExpressionKind.REFERENCE:
         if node.target is None:
-            raise ValueError("reference expression requires a target")
+            raise _malformed(node, "reference expression requires a target")
         return values[node.target.target]
     if node.kind is ExpressionKind.UNARY and node.operator is Operator.NEGATE:
         if node.operand is None:
-            raise ValueError("negation requires an operand")
+            raise _malformed(node, "negation requires an operand")
         value = evaluate(node.operand, values, units=units)
         return finite_quantity(-value.number, value.units)
     if node.kind is not ExpressionKind.BINARY or node.operator not in {
@@ -50,7 +50,7 @@ def evaluate(
             f"unsupported numerical expression: {node.kind}/{node.operator}"
         )
     if node.operands is None or len(node.operands) != 2:
-        raise ValueError("binary expression requires two operands")
+        raise _malformed(node, "binary expression requires two operands")
     left, right = (evaluate(child, values, units=units) for child in node.operands)
     a, b = left.number, right.number
     if node.operator in (Operator.ADD, Operator.SUBTRACT):
@@ -91,14 +91,17 @@ def evaluate_date(
         if node.never is not None:
             return NEVER
         if node.date is None:
-            raise ValueError("date expression requires a date or NEVER")
+            raise _malformed(node, "date expression requires a date or NEVER")
         return node.date
     if node.kind is ExpressionKind.REFERENCE:
         if node.target is None:
-            raise ValueError("reference expression requires a target")
+            raise _malformed(node, "reference expression requires a target")
         value = values[node.target.target]
         if not (value is NEVER or isinstance(value, date)):
-            raise TypeError("a date expression references a date Value")
+            raise ContractError(
+                "a date expression references a date Value",
+                targets=(node.target.target,),
+            )
         return value
     if node.kind is not ExpressionKind.BINARY or node.operator not in (
         Operator.ADD,
@@ -108,7 +111,7 @@ def evaluate_date(
             f"unsupported date expression: {node.kind}/{node.operator}"
         )
     if node.operands is None or len(node.operands) != 2:
-        raise ValueError("binary expression requires two operands")
+        raise _malformed(node, "binary expression requires two operands")
     left, right = node.operands
     if node.operator is Operator.ADD and not _is_date(left, values):
         left, right = right, left
@@ -137,3 +140,8 @@ def _is_date(node: Expression, values: Mapping[UUID, object]) -> bool:
             _is_date(item, values) for item in node.operands
         )
     return False
+
+
+def _malformed(node: Expression, message: str) -> ContractError:
+    """Return the error for an Expression record that lacks a part of its kind."""
+    return ContractError(message, targets=(node.id,), values={"kind": node.kind})

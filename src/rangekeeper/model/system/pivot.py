@@ -27,6 +27,7 @@ from rangekeeper.model.system.rollup import (
 )
 from rangekeeper.quantity import Quantity
 from rangekeeper.shared.arguments import require_text
+from rangekeeper.shared.errors import MissingReferenceError
 
 if TYPE_CHECKING:
     from rangekeeper.model.system.rollup import _Rollup
@@ -149,14 +150,17 @@ class Pivot:
         )
 
     def column(self, column: "UUID | PivotColumn | None" = None) -> PivotColumn:
-        """Return a column by Classification UUID; None is the All column."""
+        """Return a column by Classification UUID; None is the All column.
+
+        A Classification without a column raises MissingReferenceError.
+        """
         key = column.classification if isinstance(column, PivotColumn) else column
         if key is not None and not isinstance(key, UUID):
             raise TypeError("column must be a UUID, PivotColumn or None")
-        try:
-            return self._columns[key]
-        except KeyError:
-            raise KeyError(f"no pivot column for {key}") from None
+        found = self._columns.get(key)
+        if found is None:
+            raise MissingReferenceError(key, kind="PivotColumn", by="id", where="Pivot")
+        return found
 
     def children(self, column: "UUID | PivotColumn | None" = None):
         """Return the sub-columns of a column, in column order."""
@@ -356,8 +360,10 @@ def pivot(
     """Run one rollup per column; see ``QuantityRollup.pivot``."""
     if not isinstance(hierarchy, Hierarchy):
         raise TypeError("hierarchy must be a Hierarchy")
-    if type(depth) is not int or depth < 1:
-        raise ValueError("depth must be a positive int")
+    if type(depth) is not int:
+        raise TypeError("depth must be an int")
+    if depth < 1:
+        raise RollupError("depth must be at least 1")
     if type(exclusive) is not bool:
         raise TypeError("exclusive must be bool")
     if label is not None:

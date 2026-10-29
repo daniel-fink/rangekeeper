@@ -510,9 +510,9 @@ def test_count_reducer_ignores_units_and_rejects_requested_units():
     ) == Quantity(magnitude=2, units="dimensionless")
     with pytest.raises(TypeError):
         reducers.count((1,))
-    with pytest.raises(TypeError):
+    with pytest.raises(RollupError):
         reduction(reducer=Reducer.COUNT, units="dimensionless")
-    with pytest.raises(TypeError):
+    with pytest.raises(RollupError):
         reduction(reducer=Reducer.SUM, units=None)
 
 

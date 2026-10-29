@@ -15,12 +15,14 @@ from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from rangekeeper.schema.records import PropertyContent
+from rangekeeper.shared.errors import DecodeError, EncodingError
 
 
 def encode(value: object) -> PropertyContent:
     """Copy a supported Python value to typed, immutable schema content.
 
-    Cycles, non-finite numbers, and unsupported classes raise ValueError/TypeError.
+    Cycles and non-finite numbers raise EncodingError; unsupported classes raise
+    TypeError.
     Mapping insertion order and list/tuple distinctions survive interchange.
     """
     active: set[int] = set()
@@ -31,7 +33,7 @@ def encode(value: object) -> PropertyContent:
         typ = type(item)
         if typ in (bool, int, float, str):
             if typ is float and not math.isfinite(item):
-                raise ValueError("property numbers must be finite")
+                raise EncodingError("property numbers must be finite")
             kind = {bool: "boolean", int: "integer", float: "float", str: "string"}[typ]
             return {"kind": kind, "text": item if typ is str else repr(item)}
         if typ is UUID:
@@ -48,7 +50,7 @@ def encode(value: object) -> PropertyContent:
             micros = (item.days * 86400 + item.seconds) * 1_000_000 + item.microseconds
             return {"kind": "duration", "text": str(micros)}
         if id(item) in active:
-            raise ValueError("property content cannot contain cycles")
+            raise EncodingError("property content cannot contain cycles")
         active.add(id(item))
         try:
             if typ in (list, tuple, set, frozenset):
@@ -72,7 +74,10 @@ def encode(value: object) -> PropertyContent:
 
 
 def decode(content: PropertyContent) -> object:
-    """Validate tagged content and return a detached Python representation."""
+    """Validate tagged content and return a detached Python representation.
+
+    Content that does not decode to one value raises DecodeError.
+    """
 
     def visit(data):
         kind = data["kind"]
@@ -91,35 +96,35 @@ def decode(content: PropertyContent) -> object:
         if kind in scalar:
             allowed.add("text")
             if "text" not in data:
-                raise ValueError(f"{kind} content requires text")
+                raise DecodeError(f"{kind} content requires text")
         elif kind in {"list", "tuple", "set", "frozenset"}:
             allowed.add("items")
             if not isinstance(data.get("items"), list):
-                raise ValueError(f"{kind} content requires items")
+                raise DecodeError(f"{kind} content requires items")
         elif kind in {"mapping", "mapping_proxy"}:
             allowed.add("entries")
             if not isinstance(data.get("entries"), list):
-                raise ValueError("mapping content requires entries")
+                raise DecodeError("mapping content requires entries")
         if kind in {"datetime", "time"}:
             allowed.update(("zone", "fold"))
         if set(data) - allowed:
-            raise ValueError(f"unexpected fields in {kind} content")
+            raise DecodeError(f"unexpected fields in {kind} content")
         text = data.get("text")
         if kind == "null":
             return None
         if kind == "boolean":
             if text not in ("True", "False"):
-                raise ValueError("invalid Boolean text")
+                raise DecodeError("invalid Boolean text")
             return text == "True"
         if kind == "integer":
             value = int(text)
             if str(value) != text:
-                raise ValueError("integer text must be canonical")
+                raise DecodeError("integer text must be canonical")
             return value
         if kind == "float":
             value = float(text)
             if not math.isfinite(value) or repr(value) != text:
-                raise ValueError("float text must be finite and canonical")
+                raise DecodeError("float text must be finite and canonical")
             return value
         if kind == "string":
             return text
@@ -134,7 +139,7 @@ def decode(content: PropertyContent) -> object:
                     tzinfo=ZoneInfo(data["zone"]), fold=data.get("fold", 0)
                 )
                 if value.utcoffset() != zoned.utcoffset():
-                    raise ValueError("timezone and encoded offset disagree")
+                    raise DecodeError("timezone and encoded offset disagree")
                 value = zoned
             return value.replace(fold=data.get("fold", 0))
         if kind == "duration":
@@ -145,22 +150,24 @@ def decode(content: PropertyContent) -> object:
                 kind
             ](items)
             if kind in {"set", "frozenset"} and len(result) != len(items):
-                raise ValueError("duplicate set member")
+                raise DecodeError("duplicate set member")
             return result
         if kind in {"mapping", "mapping_proxy"}:
             result = {}
             for entry in data["entries"]:
                 key = visit(entry["key"])
                 if key in result:
-                    raise ValueError("duplicate mapping key")
+                    raise DecodeError("duplicate mapping key")
                 result[key] = visit(entry["value"])
             return MappingProxyType(result) if kind == "mapping_proxy" else result
-        raise ValueError(f"unsupported content kind: {kind}")
+        raise DecodeError(f"unsupported content kind: {kind}")
 
     try:
         return visit(content.to_data())
-    except (LookupError, OverflowError) as error:
-        raise ValueError(f"invalid property content: {error}") from error
+    except DecodeError:
+        raise
+    except (LookupError, OverflowError, ValueError) as error:
+        raise DecodeError(f"invalid property content: {error}") from error
 
 
 def check_content(content: PropertyContent) -> None:

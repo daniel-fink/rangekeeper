@@ -6,7 +6,8 @@ from uuid import uuid4
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.shared.errors import MissingReferenceError, UnitError
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError, MissingReferenceError, UnitError
 from rangekeeper.specification import Role, Specification
 from tests.specification.lesson_02 import lesson_02_model
 from tests.specification.test_roles import front_door
@@ -67,8 +68,10 @@ def test_case_finds_a_case_by_key():
     with pytest.raises(MissingReferenceError) as error:
         batch.case(key="weak")
     assert error.value.candidates == ("low", "reference", "high")
-    with pytest.raises(ValueError, match="batch"):
+    assert (error.value.kind, error.value.by) == ("Specification", "key")
+    with pytest.raises(ContractError) as error:
         front_door(model).case(key="low")
+    assert error.value.code is Code.BATCH_REQUIRED
 
 
 def test_a_batch_read_from_data_loads_its_cases():
@@ -82,8 +85,9 @@ def test_a_batch_read_from_data_loads_its_cases():
         store.put(batch.case(key=key))
     store.put(batch)
     loaded = Specification.from_data(batch.to_data())
-    with pytest.raises(ValueError, match="resolver"):
+    with pytest.raises(ContractError) as error:
         loaded.case(key="low")
+    assert error.value.code is Code.RESOLVER_MISSING
     attached = Specification(loaded.record, model=model, resolver=store)
     assert attached.case(key="high").id == batch.case(key="high").id
     assert attached.resolver is store
@@ -96,23 +100,31 @@ def test_cases_check_their_arguments():
         front.cases(cases={})
     with pytest.raises(TypeError, match="mapping"):
         front.cases(cases={"low": "50 %"})  # type: ignore[dict-item]
+    with pytest.raises(ContractError, match="key"):
+        front.cases(cases={" ": {}})
     with pytest.raises(TypeError, match="key"):
-        front.cases(cases={"": {}})
+        front.cases(cases={1: {}})  # type: ignore[dict-item]
     with pytest.raises(UnitError):
         front.cases(cases={"low": {"leverage": "5 AUD"}})
     with pytest.raises(MissingReferenceError):
         front.cases(cases={"low": {"leverag": "50 %"}})
     batch = front.cases(cases=CASES)
-    with pytest.raises(ValueError, match="batch"):
-        batch.cases(cases=CASES)
-    with pytest.raises(ValueError, match="batch"):
-        batch.fix(leverage="50 %")
+    for call in (
+        lambda: batch.cases(cases=CASES),
+        lambda: batch.fix(leverage="50 %"),
+        lambda: batch.roles,
+        lambda: batch.on(model=model),
+    ):
+        with pytest.raises(ContractError) as error:
+            call()
+        assert error.value.code is Code.BATCH_UNSUPPORTED
     record = rk.specification.SpecificationRecord(
         metadata=rk.model.Metadata(id=uuid4(), schema_version="1.0.0"),
         model=model.id,
     )
-    with pytest.raises(ValueError, match="no Model"):
+    with pytest.raises(ContractError, match="no Model") as error:
         Specification(record).cases(cases=CASES)
+    assert error.value.code is Code.MODEL_MISSING
 
 
 @requires_execution

@@ -351,7 +351,7 @@ def test_pivot_validates_its_arguments_and_columns():
         reduction.pivot(rows, by=uuid4())
     with pytest.raises(MissingReferenceError):
         reduction.pivot(rows, only=uuid4())
-    with pytest.raises(ValueError):
+    with pytest.raises(RollupError):
         reduction.pivot(rows, by=kinds["unit"], depth=0)
     with pytest.raises(TypeError):
         reduction.pivot(rows, exclusive=None)
@@ -377,5 +377,6 @@ def test_pivot_validates_its_arguments_and_columns():
     with pytest.raises(RollupError):
         Pivot(rows, (PivotColumn(None, None, 0, reduction.execute(other)),))
     pivot = reduction.pivot(rows, by=kinds["apartment"])
-    with pytest.raises(KeyError):
+    with pytest.raises(MissingReferenceError) as error:
         pivot.value(ids["building"], kinds["retail"])
+    assert (error.value.kind, error.value.requested) == ("PivotColumn", kinds["retail"])

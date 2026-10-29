@@ -79,18 +79,18 @@ outcome["project.land_cost"]  # the same value, by its dotted path
 
 | Member | Leaf | Batch |
 | --- | --- | --- |
-| `outcome["key"]` | The solved value. Without an output, the error of `raise_for_status()` | `TypeError`: read a case |
-| `quantity(reference)` | The solved Quantity of a scalar Value or a Movement, by `Reference` or UUID | `TypeError` |
-| `model` | The accepted output Model. Without one, the error of `raise_for_status()` | `TypeError` |
+| `outcome["key"]` | The solved value. Without an output, the error of `raise_for_status()` | `ContractError`, `batch.unsupported`: read a case |
+| `quantity(reference)` | The solved Quantity of a scalar Value or a Movement, by `Reference` or UUID | `ContractError`, `batch.unsupported` |
+| `model` | The accepted output Model. Without one, the error of `raise_for_status()` | `ContractError`, `batch.unsupported` |
 | `status` | A `Status`, from the Run report | The status of the first leaf case, in `walk()` order, that is not `FEASIBLE`; else `FEASIBLE` |
 | `raise_for_status()` | Returns the Outcome when its status is `FEASIBLE`; otherwise raises | Raises for the first leaf case that is not `FEASIBLE` |
-| `free_unknowns` | The keys of the free values that the equations do not determine | `TypeError` |
+| `free_unknowns` | The keys of the free values that the equations do not determine | `ContractError`, `batch.unsupported` |
 | `diagnostics` | The Run's diagnostics, in report order | The batch Run's diagnostics |
-| `evidence` | The typed solver `Evidence` | `TypeError` |
+| `evidence` | The typed solver `Evidence` | `ContractError`, `batch.unsupported` |
 | `key` | The name of the solved Specification: for a case, its case key. None when it has no name | The same |
-| `case(key=)` | `TypeError` | The Outcome of the direct case with that key. No such case raises `MissingReferenceError` with the keys that exist |
+| `case(key=)` | `ContractError`, `batch.required` | The Outcome of the direct case with that key. No such case raises `MissingReferenceError` (`kind="Outcome"`, `by="key"`) with the keys that exist |
 | `table(*keys)` | One row | One row for each leaf case, in `walk()` order |
-| `stream(*keys)` | A `Stream` of the solved Flows, named by key. A scalar value raises `TypeError` | `TypeError`: read a case |
+| `stream(*keys)` | A `Stream` of the solved Flows, named by key. A scalar value raises `ContractError` | `ContractError`, `batch.unsupported`: read a case |
 
 `rk.execution.Status` has one member for each result:
 
