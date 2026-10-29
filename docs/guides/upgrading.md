@@ -140,13 +140,13 @@ This table lists the public names that 1.x consumers use, with their state in
 | --- | --- | --- |
 | `model.system.View` | Unchanged | `View.match(condition=)` and `View.where(condition=)` take a declarative `rangekeeper.model.Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)) |
 | `model.system.Hierarchy` | Unchanged | — |
-| `model.system.Reduction`, with `execute`, `pivot`, `Contributor` and callable contributors | Unchanged | Splits into `QuantityRollup` and `FlowRollup` with one reducer enum (ADR-012, draft) |
+| `model.system.Reduction`, with `execute`, `pivot`, `Contributor` and callable contributors | Unchanged | `QuantityRollup(key=, units=, reducer=)` and `FlowRollup(key=, reducer=, ...)` with one `Reducer` enum; both default to leaf contributors; `View.aggregate` becomes `View.rollup(definition=)` ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)) |
 | `model.system.reduction.Aggregation` | `RollupResult` (the codemod renames it) | — |
 | `calculations.series.Aggregation` | `rangekeeper.flow.FlowAggregate` (the codemod renames it) | — |
-| `model.system.reduction.AggregateEntry`, `Coverage`, `CoverageStatus` | Unchanged | Missing values never count as zero ([#157](https://github.com/daniel-fink/rangekeeper/issues/157)) |
+| `model.system.reduction.AggregateEntry`, `Coverage`, `CoverageStatus` | Unchanged | `rangekeeper.model.system.rollup.RollupEntry`, `Coverage`, `CoverageStatus` ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)); missing values never count as zero ([#157](https://github.com/daniel-fink/rangekeeper/issues/157)) |
 | `model.system.Pivot`, `PivotColumn`, `Partition` | Unchanged | A Pivot can use a label key for its columns (ADR-017) |
 | `model.system.classified`, `Model.descendants` | Unchanged | — |
-| `model.system.reducers` | Unchanged | Part of the `Reduction` split |
+| `model.system.reducers` | Unchanged | Removed: the `Reducer` enum replaces it ([#158](https://github.com/daniel-fink/rangekeeper/issues/158)) |
 | `shared.units.UnitSystem`, `default_units` | `rangekeeper.quantity.UnitSystem`, `default_units` (the codemod moves them). `Model.unit_system` is unchanged | — |
 | `model.measure.Quantity`, `model.Quantity` | `rangekeeper.Quantity` and `rangekeeper.quantity.Quantity` (the codemod moves them) | Quantity text in API arguments ([#255](https://github.com/daniel-fink/rangekeeper/pull/255) D13, D16) |
 | `model.system.System`, `Entity`, `Assembly`, `Relationship` | `rangekeeper.model` only (the codemod moves them). `model.system` keeps the views, rollups and pivots | — |
@@ -211,6 +211,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.system.projection` | `rangekeeper.model.system.table` | draft |  |
 | `rangekeeper.model.scenario` | `rangekeeper.market` | agreed | The generators, paths and replay move as they are. `rk.market.Paths` and the MarketPaths document replace the scenario plan (#298, #299). |
 | `rangekeeper.model.scenario.market` | `rangekeeper.market.generation` | draft | Sampling, capture and realization of market paths; `rangekeeper.market.market` would repeat the name. |
+| `rangekeeper.model.system.reduction` | `rangekeeper.model.system.rollup` | agreed | `QuantityRollup` and `FlowRollup` replace `Reduction`; see the symbol entries. |
 | `rangekeeper.model.scope` | `rangekeeper.model._scope` | agreed | Internal. The checks over raw mappings become private; the typed target lookups move to `rangekeeper.model.targets`. |
 | `src/tests/` | `tests/` | agreed | The pass moves the suite to the top level. #177 adds the sub-folders that mirror the packages, and tests/contracts, tests/integration and tests/walkthrough. |
 
@@ -220,7 +221,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | --- | --- | --- | --- |
 | `rangekeeper.calculations.series.Aggregation` | `FlowAggregate` | draft |  |
 | `rangekeeper.model.system.reduction.Aggregation` | `RollupResult` | draft |  |
-| `rangekeeper.model.system.reduction.Reduction` | `QuantityRollup` | draft (needs refactor) | The scalar and Flow modes split into QuantityRollup and FlowRollup, with one Reducer enum. |
+| `rangekeeper.model.system.reduction.Reduction` | `rangekeeper.model.system.rollup.QuantityRollup` | agreed (needs refactor) | The scalar and Flow modes split. `Reduction(select=select_value(key), reducer=reducers.sum, units=)` becomes `QuantityRollup(key=, units=, reducer=Reducer.SUM)`; `Reduction.flows(key=, aggregation=, ...)` becomes `FlowRollup(key=, reducer=, ...)`. Both default to `Contributor.LEAVES`; the scalar default was every node. Custom selectors and reducers are removed. |
+| `rangekeeper.model.system.reduction.AggregateEntry` | `rangekeeper.model.system.rollup.RollupEntry` | agreed | `aggregate` is the word for combining Flows (D38). |
 | `rangekeeper.model.duration.calendar.measure` | `count_steps` | draft |  |
 | `rangekeeper.model.duration.period.align` | `containing_period` | draft |  |
 | `rangekeeper.model.measure.Quantity` | `rangekeeper.quantity.Quantity` | agreed | `rangekeeper.Quantity` at the root also gives the record. |
@@ -279,6 +281,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.flow.ResamplingMethod` | `ResampleMethod` | agreed | The enum also gains SPLIT, which divides each amount over shorter Periods. |
 | `rangekeeper.model.expression.Criterion` | `rangekeeper.model.Criterion` | agreed | `rangekeeper.model` exports the query Filter with its Criterion and ValueTest records. |
 | `rangekeeper.execution.compiler.Compiled.prepared` | `binding` | agreed |  |
+| `rangekeeper.model.system.view.View.aggregate` | `rollup` | agreed | Each use needs review. `view.aggregate(reduction)` becomes `view.rollup(definition=rollup)`. |
+| `rangekeeper.model.system.pivot.PivotColumn.aggregation` | `result` | agreed | Each use needs review. |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |
@@ -299,6 +303,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 
 | Current | Use instead | Status |
 | --- | --- | --- |
+| `rangekeeper.model.system.reducers` | The `rangekeeper.model.system.Reducer` enum: `SUM`, `MEAN`, `MIN`, `MAX` and `COUNT`, passed as `reducer=` to `QuantityRollup` or `FlowRollup` | agreed |
 | `rangekeeper.calculations.account` | Compose the funding with Flows: a balance is `cumulative()`. Interest is the Model equation `rangekeeper.model.formulation.financial.interest`; `rx.finance.interest` in equation text follows (#255 D2, D23, #278). A how-to recipe follows (#194) | agreed |
 | `rangekeeper.model.formulation.account.schedule` | Equations over Flows, such as `funding_need = -(net_cash_flow + loan_interest).cumulative()`. A Model declares no account (#255 D2) | agreed |
 | `rangekeeper.model.expression.authoring.sum` | Equation text or `rangekeeper.expressions` on entity handles (#255 D6, D18, D32). ADR-012 forbids public names that shadow builtins | agreed (needs refactor) |

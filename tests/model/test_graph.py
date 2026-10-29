@@ -28,15 +28,17 @@ from rangekeeper.model import (
 )
 from rangekeeper.model.system import (
     AggregationError,
+    Contributor,
     CoverageStatus,
     Hierarchy,
     HierarchyError,
     HierarchyKind,
-    Reduction,
+    QuantityRollup,
+    Reducer,
     SelectionError,
     View,
-    reducers,
 )
+from rangekeeper.model.system import _reducers as reducers
 from rangekeeper.model.system.membership import (
     containing_assemblies,
     entities_in,
@@ -131,14 +133,16 @@ def fixture(*, missing=False, overlap=False, amounts=(10, 20, 0)):
 
 def reduction(
     *,
-    select=None,
-    reducer=reducers.sum,
+    key="net",
+    measure=None,
+    reducer=Reducer.SUM,
     require_complete=True,
     contributors=None,
     units="meter ** 2",
 ):
-    return Reduction(
-        select=select or select_value("net"),
+    return QuantityRollup(
+        key=key,
+        measure=measure,
         reducer=reducer,
         units=units,
         contributors=contributors or (lambda entity: not isinstance(entity, Assembly)),
@@ -206,7 +210,7 @@ def test_explicit_endpoint_and_assembly_validation():
     with pytest.raises(TypeError):
         View(object())
     with pytest.raises(TypeError):
-        View(model).aggregate(object())
+        View(model).rollup(definition=object())
 
 
 @pytest.mark.parametrize("argument", ["entities", "relationships"])
@@ -328,13 +332,13 @@ def test_reduction_selects_value_key_not_measure_and_preserves_model():
     model, root, a, b, c, edges, measure = fixture()
     before = model.to_data()
     view = View(model, assembly=root.id)
-    result = view.aggregate(reduction(select=select_value("net", measure=measure.id)))
+    result = view.rollup(definition=reduction(key="net", measure=measure.id))
     assert result.root_value.magnitude == 30
     assert result[c.id].magnitude == 0
     assert result.coverage(root.id).complete
     assert result.coverage(root.id).selected == (a.id, b.id, c.id)
     assert result.value_ids[a.id] == a.characteristics.values[0].id
-    gross = view.aggregate(reduction(select=select_value("gross", measure=measure.id)))
+    gross = view.rollup(definition=reduction(key="gross", measure=measure.id))
     assert gross.root_value.magnitude == 300
     assert model.to_data() == before
     with pytest.raises(TypeError):
@@ -346,19 +350,21 @@ def test_reduction_selects_value_key_not_measure_and_preserves_model():
 def test_missing_values_and_known_subtotal_do_not_become_zero():
     model, root, a, b, c, edges, _ = fixture(missing=True)
     view = View(model, assembly=root.id)
-    strict = view.aggregate(reduction())
+    strict = view.rollup(definition=reduction())
     assert strict.root_value is None and strict.available_value(root.id).magnitude == 10
     assert strict.coverage(root.id).missing == (b.id,)
     assert strict.value(b.id) is None and strict.value(c.id).magnitude == 0
     assert b.id in strict.value_ids  # unresolved content still has an identity
-    assert view.aggregate(reduction(require_complete=False)).root_value.magnitude == 10
-    absent = view.aggregate(reduction(select=select_value("absent")))
+    assert (
+        view.rollup(definition=reduction(require_complete=False)).root_value.magnitude
+        == 10
+    )
+    absent = view.rollup(definition=reduction(key="absent"))
     assert absent.root_value is None and absent.available_value(root.id) is None
     assert not absent.value_ids
-    empty = view.aggregate(
-        Reduction(
-            select=select_value("net"),
-            reducer=reducers.sum,
+    empty = view.rollup(
+        definition=QuantityRollup(
+            key="net",
             units="meter ** 2",
             contributors=lambda e: False,
         )
@@ -378,23 +384,25 @@ def test_mean_reduces_raw_contributors_not_subtree_means():
 
     model = revise(model, edit)
     view = View(model)
-    mean = view.aggregate(reduction(reducer=reducers.mean))
+    mean = view.rollup(definition=reduction(reducer=Reducer.MEAN))
     assert mean.root_value.magnitude == 40 and mean.value(a.id).magnitude == 15
-    assert view.aggregate(reduction(reducer=reducers.min)).root_value.magnitude == 10
-    assert view.aggregate(reduction(reducer=reducers.max)).root_value.magnitude == 90
+    assert (
+        view.rollup(definition=reduction(reducer=Reducer.MIN)).root_value.magnitude
+        == 10
+    )
+    assert (
+        view.rollup(definition=reduction(reducer=Reducer.MAX)).root_value.magnitude
+        == 90
+    )
     assert mean.available_value(root.id).magnitude == mean.root_value.magnitude
 
 
 def test_unit_conversion_and_incompatible_results():
     model, root, a, b, c, edges, _ = fixture()
-    result = View(model).aggregate(reduction(units="centimeter ** 2"))
+    result = View(model).rollup(definition=reduction(units="centimeter ** 2"))
     assert result.root_value.number == pytest.approx(300000)
     with pytest.raises(UnitError):
-        View(model).aggregate(reduction(units="second"))
-    with pytest.raises(UnitError):
-        View(model).aggregate(
-            reduction(reducer=lambda values: Quantity(magnitude=1, units="AUD"))
-        )
+        View(model).rollup(definition=reduction(units="second"))
 
 
 def test_revision_pinning_and_stale_selector_rejection():
@@ -405,56 +413,44 @@ def test_revision_pinning_and_stale_selector_rejection():
             "quantity"
         ].update(magnitude=50),
     )
-    assert View(model).aggregate(reduction()).root_value.magnitude == 30
-    assert View(changed).aggregate(reduction()).root_value.magnitude == 70
+    assert View(model).rollup(definition=reduction()).root_value.magnitude == 30
+    assert View(changed).rollup(definition=reduction()).root_value.magnitude == 70
     assert select_value("net")(changed, a).quantity.magnitude == 50
-    with pytest.raises(SelectionError):
-        View(changed).aggregate(
-            reduction(select=lambda m, e: a.characteristics.values[0])
-        )
     assert (
         View(codec.loads(codec.dumps(changed), kind=Model))
-        .aggregate(reduction())
+        .rollup(definition=reduction())
         .root_value.magnitude
         == 70
     )
 
 
-@pytest.mark.parametrize("kind", ["other_owner", "formulation", "wrong_measure"])
-def test_selector_cannot_escape_owner_or_measure(kind):
+def test_a_measure_asserts_the_selected_value():
     model, root, a, b, c, edges, measure = fixture()
-    if kind == "other_owner":
-        selector = lambda m, e: b.characteristics.values[0]
-    elif kind == "formulation":
-        selector = lambda m, e: model.system.formulations[0].values[0]
-    else:
-        other = Measure(id=uuid4(), code="other", name="Other", units="meter ** 2")
-        model = model.revise(
-            Update(
-                definitions=Definitions(
-                    measures=(measure, other), taxonomies=model.definitions.taxonomies
-                )
+    other = Measure(id=uuid4(), code="other", name="Other", units="meter ** 2")
+    model = model.revise(
+        Update(
+            definitions=Definitions(
+                measures=(measure, other), taxonomies=model.definitions.taxonomies
             )
         )
-        selector = select_value("net", measure=other.id)
-    with pytest.raises(SelectionError):
-        View(model).aggregate(reduction(select=selector))
-
-
-@pytest.mark.parametrize("failure", ["selector", "reducer", "contributors"])
-def test_invalid_callback_results_are_not_silently_used(failure):
-    model, *_ = fixture()
-    kw = (
-        {"select": lambda m, e: 1}
-        if failure == "selector"
-        else (
-            {"reducer": lambda values: None}
-            if failure == "reducer"
-            else {"contributors": lambda e: 1}
-        )
     )
+    with pytest.raises(SelectionError):
+        View(model).rollup(definition=reduction(measure=other.id))
+    # A supplied Measure must exist even when no owner has the key.
+    with pytest.raises(MissingReferenceError):
+        View(model).rollup(definition=reduction(key="absent", measure=uuid4()))
+
+
+def test_invalid_arguments_and_callback_results_are_not_silently_used():
+    model, *_ = fixture()
     with pytest.raises(TypeError):
-        View(model).aggregate(reduction(**kw))
+        View(model).rollup(definition=reduction(contributors=lambda e: 1))
+    with pytest.raises(TypeError):
+        reduction(reducer="sum")
+    with pytest.raises(TypeError):
+        reduction(contributors="leaves")
+    with pytest.raises(TypeError):
+        reduction(require_complete=1)
 
 
 def test_reducers_reject_empty_mixed_and_overflow_quantities():
@@ -471,12 +467,12 @@ def test_reducers_reject_empty_mixed_and_overflow_quantities():
 
 
 def count(**kw):
-    return reduction(reducer=reducers.count, units=None, **kw)
+    return reduction(reducer=Reducer.COUNT, units=None, **kw)
 
 
 def test_count_reducer_counts_measured_contributors_without_units():
     model, root, a, b, c, edges, _ = fixture()
-    result = View(model).aggregate(count())
+    result = View(model).rollup(definition=count())
     assert result.root_value == Quantity(magnitude=3, units="dimensionless")
     assert result.coverage(root.id).status is CoverageStatus.COMPLETE
     # A recorded zero is a value, so it is counted.
@@ -485,7 +481,7 @@ def test_count_reducer_counts_measured_contributors_without_units():
 
 def test_count_reducer_skips_missing_values():
     model, root, a, b, c, edges, _ = fixture(missing=True)
-    result = View(model).aggregate(count())
+    result = View(model).rollup(definition=count())
     assert result.root_value is None
     assert result.available_value(root.id) == Quantity(
         magnitude=2, units="dimensionless"
@@ -493,14 +489,14 @@ def test_count_reducer_skips_missing_values():
     assert result.coverage(root.id).status is CoverageStatus.INCOMPLETE
     assert result.coverage(root.id).missing == (b.id,)
     assert result.available_value(b.id) is None
-    assert View(model).aggregate(count(require_complete=False)).root_value == Quantity(
-        magnitude=2, units="dimensionless"
-    )
+    assert View(model).rollup(
+        definition=count(require_complete=False)
+    ).root_value == Quantity(magnitude=2, units="dimensionless")
 
 
 def test_count_reducer_over_empty_coverage_is_unavailable():
     model, root, a, b, c, edges, _ = fixture()
-    result = View(model).aggregate(count(contributors=lambda entity: False))
+    result = View(model).rollup(definition=count(contributors=lambda entity: False))
     assert result.root_value is None and result.available_value(root.id) is None
     assert result.coverage(root.id).status is CoverageStatus.EMPTY
     with pytest.raises(AggregationError):
@@ -514,9 +510,9 @@ def test_count_reducer_ignores_units_and_rejects_requested_units():
     with pytest.raises(TypeError):
         reducers.count((1,))
     with pytest.raises(TypeError):
-        reduction(reducer=reducers.count, units="dimensionless")
+        reduction(reducer=Reducer.COUNT, units="dimensionless")
     with pytest.raises(TypeError):
-        reduction(reducer=reducers.sum, units=None)
+        reduction(reducer=Reducer.SUM, units=None)
 
 
 def test_imports_are_lightweight():
@@ -567,30 +563,22 @@ def test_membership_root_must_be_an_explicit_selected_uuid():
     assert error.value.code is Code.HIERARCHY_ROOT_MISMATCH
 
 
-def test_aggregation_requires_a_deliberate_parent_contributor_policy():
+def test_rollups_default_to_leaf_contributors():
     model, root, a, b, c, edges, _ = fixture()
-    # Default includes the unmeasured Assembly, so it must not silently report complete.
-    result = View(model).aggregate(
-        Reduction(select=select_value("net"), reducer=reducers.sum, units="meter ** 2")
+    # The default selects leaves, so the unmeasured root does not contribute.
+    result = View(model).rollup(
+        definition=QuantityRollup(key="net", units="meter ** 2")
     )
-    assert result.root_value is None and result.coverage(root.id).missing == (root.id,)
-    assert result.available_value(root.id).magnitude == 30
-
-
-def test_custom_reducer_normalizes_returned_units_and_errors_remain_visible():
-    model, root, a, b, c, edges, _ = fixture()
-    result = View(model).aggregate(
-        reduction(
-            reducer=lambda values: Quantity(magnitude=10000, units="centimeter ** 2")
+    assert result.coverage(root.id).selected == (a.id, b.id, c.id)
+    assert result.root_value.magnitude == 30
+    # All nodes include the unmeasured root, so the result is not complete.
+    every = View(model).rollup(
+        definition=QuantityRollup(
+            key="net", units="meter ** 2", contributors=Contributor.ALL
         )
     )
-    assert result.root_value.magnitude == 1 and result.root_value.units == "meter ** 2"
-
-    def broken(values):
-        raise RuntimeError("caller reducer failed")
-
-    with pytest.raises(RuntimeError, match="caller reducer failed"):
-        View(model).aggregate(reduction(reducer=broken))
+    assert every.root_value is None and every.coverage(root.id).missing == (root.id,)
+    assert every.available_value(root.id).magnitude == 30
 
 
 def test_selector_validates_measure_even_when_local_key_is_absent():

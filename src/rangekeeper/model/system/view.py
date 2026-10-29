@@ -13,7 +13,11 @@ from rangekeeper.model.system.membership import _assembly
 if TYPE_CHECKING:
     from rangekeeper.model import Filter
     from rangekeeper.model.system.matching import Match
-    from rangekeeper.model.system.reduction import Reduction, RollupResult
+    from rangekeeper.model.system.rollup import (
+        FlowRollup,
+        QuantityRollup,
+        RollupResult,
+    )
 
 
 @dataclass(frozen=True, init=False)
@@ -237,7 +241,7 @@ class View:
         Real zero remains a measured quantity. No completeness policy is applied.
         Conversion uses the Model's unit system.
         """
-        from rangekeeper.model.system.reduction import _collect_quantities
+        from rangekeeper.model.system.rollup import _collect_quantities
         from rangekeeper.model.system.selection import select_value
 
         select = select_value(key, measure=measure)
@@ -259,14 +263,18 @@ class View:
         ids = {edge.target for edge in self.relationships if edge.source == id}
         return tuple(item for item in self.entities if item.id in ids)
 
-    def aggregate(self, reduction: "Reduction") -> "RollupResult":
-        """Reduce recorded quantities over this View's relationship hierarchy."""
+    def rollup(
+        self,
+        *,
+        definition: "QuantityRollup | FlowRollup",
+    ) -> "RollupResult":
+        """Roll up recorded Values over this View's relationship hierarchy."""
         from rangekeeper.model.system.hierarchy import Hierarchy
-        from rangekeeper.model.system.reduction import Reduction
+        from rangekeeper.model.system.rollup import FlowRollup, QuantityRollup
 
-        if not isinstance(reduction, Reduction):
-            raise TypeError("reduction must be a Reduction")
-        return reduction.execute(Hierarchy.from_relationships(self))
+        if not isinstance(definition, (QuantityRollup, FlowRollup)):
+            raise TypeError("definition must be a QuantityRollup or FlowRollup")
+        return definition.execute(Hierarchy.from_relationships(self))
 
 
 __all__ = ["View"]

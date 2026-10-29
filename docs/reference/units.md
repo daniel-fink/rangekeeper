@@ -209,7 +209,7 @@ A revision keeps the unit system of its predecessor.
 Derived operations on a Model use `Model.unit_system` when the caller supplies no
 unit system:
 
-- `View.quantities`, `to_table` and `Reduction.execute` (and so `View.aggregate`
+- `View.quantities`, `to_table` and `QuantityRollup.execute` (and so `View.rollup`
   and pivots);
 - `Specification.fix` and `Specification.free`;
 - `Composition.validate` and Specification preparation;

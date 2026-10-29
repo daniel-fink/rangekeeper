@@ -21,12 +21,10 @@ from rangekeeper.model import (
 from rangekeeper.model.definitions import descendants
 from rangekeeper.model.system import (
     Hierarchy,
-    Reduction,
+    QuantityRollup,
     View,
     classified,
-    reducers,
 )
-from rangekeeper.model.system.selection import select_value
 from rangekeeper.quantity import Quantity
 from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
 
@@ -197,9 +195,8 @@ def test_classified_contributor_rule_selects_sub_types_unless_exclusive():
     tree = Hierarchy.from_membership(View(model), root=building.id)
 
     def total(rule):
-        reduction = Reduction(
-            select=select_value("price"),
-            reducer=reducers.sum,
+        reduction = QuantityRollup(
+            key="price",
             units="AUD",
             contributors=rule,
         )

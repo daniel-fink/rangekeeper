@@ -4,8 +4,13 @@ from uuid import UUID
 
 from rangekeeper import Model
 from rangekeeper.model import Entity
-from rangekeeper.model.system import Hierarchy, Reduction, RollupResult, View, reducers
-from rangekeeper.model.system.selection import select_value
+from rangekeeper.model.system import (
+    Hierarchy,
+    QuantityRollup,
+    Reducer,
+    RollupResult,
+    View,
+)
 from rangekeeper.quantity import Quantity
 
 
@@ -13,10 +18,8 @@ def inspect(model: Model, id: UUID) -> Quantity | None:
     view = View(model, entities=(id,))
     entity: Entity = view.entity(id)
     hierarchy = Hierarchy.from_relationships(view)
-    reduction = Reduction(
-        select=select_value("net"), reducer=reducers.sum, units="m ** 2"
-    )
-    result: RollupResult = reduction.execute(hierarchy)
+    rollup = QuantityRollup(key="net", reducer=Reducer.SUM, units="m ** 2")
+    result: RollupResult = rollup.execute(hierarchy)
     value = result.value(entity.id)
     assert value is None or isinstance(value, Quantity)
     return value

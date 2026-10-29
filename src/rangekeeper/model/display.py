@@ -35,7 +35,7 @@ class PivotTable:
             units = next(
                 (
                     entry.available.units
-                    for entry in item.aggregation.entries.values()
+                    for entry in item.result.entries.values()
                     if entry.available is not None
                 ),
                 None,

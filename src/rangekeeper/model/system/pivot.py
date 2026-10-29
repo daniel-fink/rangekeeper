@@ -1,6 +1,6 @@
 """One recorded Value pivoted over a rows tree and a Taxonomy's columns.
 
-Every cell is an ``AggregateEntry`` from ``Reduction.execute``. A Pivot adds no
+Every cell is a ``RollupEntry`` from a rollup's ``execute``. A Pivot adds no
 arithmetic; it only chooses each column's contributors and compares populations.
 """
 
@@ -15,22 +15,22 @@ from rangekeeper.model import Entity
 from rangekeeper.model.definitions import _classes
 from rangekeeper.model.system.errors import AggregationError
 from rangekeeper.model.system.hierarchy import Hierarchy
-from rangekeeper.model.system.reduction import (
-    AggregateEntry,
+from rangekeeper.model.system.rollup import (
     Contributor,
     Coverage,
+    RollupEntry,
     RollupResult,
 )
 from rangekeeper.quantity import Quantity
 
 if TYPE_CHECKING:
-    from rangekeeper.model.system.reduction import Reduction
+    from rangekeeper.model.system.rollup import _Rollup
     from rangekeeper.shared.table import Table
 
 
 @dataclass(frozen=True)
 class PivotColumn:
-    """One column: a Classification, its parent column and its Aggregation.
+    """One column: a Classification, its parent column and its RollupResult.
 
     ``classification=None`` is the "All" column, at depth 0. A ``parent`` of
     None means the "All" column is the parent.
@@ -39,7 +39,7 @@ class PivotColumn:
     classification: UUID | None
     parent: UUID | None
     depth: int
-    aggregation: RollupResult
+    result: RollupResult
 
     def __post_init__(self) -> None:
         for name in ("classification", "parent"):
@@ -48,8 +48,8 @@ class PivotColumn:
                 raise TypeError(f"{name} must be a UUID or None")
         if type(self.depth) is not int or self.depth < 0:
             raise TypeError("depth must be a non-negative int")
-        if not isinstance(self.aggregation, RollupResult):
-            raise TypeError("aggregation must be an Aggregation")
+        if not isinstance(self.result, RollupResult):
+            raise TypeError("result must be a RollupResult")
         if (self.classification is None) != (self.depth == 0):
             raise AggregationError("only the All column has depth 0")
         if self.classification is None and self.parent is not None:
@@ -76,11 +76,11 @@ class Partition:
 
 @dataclass(frozen=True, init=False)
 class Pivot:
-    """Columns of Aggregations over one rows Hierarchy, keyed by Classification.
+    """Columns of RollupResults over one rows Hierarchy, keyed by Classification.
 
     Columns keep their given order. Exactly one column is "All"
     (``classification=None``). Each column's parent is another column one level
-    up. Every Aggregation must use ``rows``.
+    up. Every RollupResult must use ``rows``.
     """
 
     __slots__ = ("rows", "columns", "_columns", "_children", "_positions")
@@ -106,8 +106,8 @@ class Pivot:
         model = rows.view.model
         children: dict[UUID | None, list[PivotColumn]] = {}
         for item in columns:
-            if item.aggregation.hierarchy != rows:
-                raise AggregationError("every column must aggregate the rows")
+            if item.result.hierarchy != rows:
+                raise AggregationError("every column must roll up the rows")
             if item.classification is None:
                 continue
             model.classification(item.classification)
@@ -147,28 +147,28 @@ class Pivot:
 
     def cell(
         self, row: UUID, column: "UUID | PivotColumn | None" = None
-    ) -> AggregateEntry:
-        """Return the AggregateEntry for a row and column."""
+    ) -> RollupEntry:
+        """Return the RollupEntry for a row and column."""
         self.rows.view.entity(row)
-        return self.column(column).aggregation.entries[row]
+        return self.column(column).result.entries[row]
 
     def value(
         self, row: UUID, column: "UUID | PivotColumn | None" = None
     ) -> Quantity | Flow | None:
         """Return the cell result under its column's coverage policy."""
-        return self.column(column).aggregation.value(row)
+        return self.column(column).result.value(row)
 
     def coverage(
         self, row: UUID, column: "UUID | PivotColumn | None" = None
     ) -> Coverage:
         """Return the contributor coverage of one cell."""
-        return self.column(column).aggregation.coverage(row)
+        return self.column(column).result.coverage(row)
 
     def available_value(
         self, row: UUID, column: "UUID | PivotColumn | None" = None
     ) -> Quantity | Flow | None:
-        """Return the reduction over measured contributors, despite missing ones."""
-        return self.column(column).aggregation.available_value(row)
+        """Return the result over measured contributors, despite missing ones."""
+        return self.column(column).result.available_value(row)
 
     def partition(
         self, row: UUID, column: "UUID | PivotColumn | None" = None
@@ -180,7 +180,7 @@ class Pivot:
         selected = set(self.coverage(row, column).selected)
         counts: dict[UUID, int] = {}
         for child in self.children(column):
-            for id in child.aggregation.coverage(row).selected:
+            for id in child.result.coverage(row).selected:
                 counts[id] = counts.get(id, 0) + 1
 
         def ordered(ids):
@@ -234,9 +234,12 @@ class Pivot:
         )
 
 
-def _base_rule(reduction: "Reduction", rows: Hierarchy) -> Callable[[Entity], bool]:
-    rule = reduction.contributors
-    if rule is None or rule is Contributor.ALL:
+def _base_rule(
+    rollup: "_Rollup",
+    rows: Hierarchy,
+) -> Callable[[Entity], bool]:
+    rule = rollup.contributors
+    if rule is Contributor.ALL:
         return lambda entity: True
     if rule is Contributor.LEAVES:
         return lambda entity: not rows.children(entity.id)
@@ -282,7 +285,7 @@ def _column_classes(definitions, by, depth):
 
 
 def pivot(
-    reduction: "Reduction",
+    rollup: "_Rollup",
     hierarchy: Hierarchy,
     *,
     by: UUID | None = None,
@@ -290,7 +293,7 @@ def pivot(
     only: UUID | None = None,
     exclusive: bool = False,
 ) -> Pivot:
-    """Run one Reduction per column; see ``Reduction.pivot``."""
+    """Run one rollup per column; see ``QuantityRollup.pivot``."""
     if not isinstance(hierarchy, Hierarchy):
         raise TypeError("hierarchy must be a Hierarchy")
     if type(depth) is not int or depth < 1:
@@ -299,12 +302,12 @@ def pivot(
         raise TypeError("exclusive must be bool")
     model = hierarchy.view.model
     definitions = model.definitions
-    base = _base_rule(reduction, hierarchy)
+    base = _base_rule(rollup, hierarchy)
     scope = () if only is None else (_classes(definitions, only, exclusive=exclusive),)
     everything = (
-        reduction.execute(hierarchy)
+        rollup.execute(hierarchy)
         if only is None
-        else replace(reduction, contributors=_rule(base, scope)).execute(hierarchy)
+        else replace(rollup, contributors=_rule(base, scope)).execute(hierarchy)
     )
     columns = [PivotColumn(None, None, 0, everything)]
     if by is not None:
@@ -316,7 +319,7 @@ def pivot(
                     id,
                     parent,
                     level,
-                    replace(reduction, contributors=rule).execute(hierarchy),
+                    replace(rollup, contributors=rule).execute(hierarchy),
                 )
             )
     return Pivot(hierarchy, columns)
