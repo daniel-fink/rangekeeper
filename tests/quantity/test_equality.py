@@ -33,22 +33,30 @@ def test_quantities_order_in_compatible_units():
 
 
 def test_flows_are_equal_by_value_not_identity():
-    flow = Flow.from_periods(YEARS, [100, 102, 104.04], units="USD")
+    flow = Flow.from_periods(periods=YEARS, magnitudes=[100, 102, 104.04], units="USD")
     copy = flow.clone()
     assert copy.movements[0].id != flow.movements[0].id
     assert copy == flow
     assert not copy.equivalent(flow)
-    assert flow != Flow.from_periods(YEARS, [100, 102, 104.05], units="USD")
-    assert flow != Flow.from_periods(YEARS, [100, 102, 104.04], units="AUD")
-    assert flow != Flow.from_periods(YEARS[:2], [100, 102], units="USD")
-    dated = Flow.from_events([p.start for p in YEARS], [100, 102, 104.04], units="USD")
+    assert flow != Flow.from_periods(
+        periods=YEARS, magnitudes=[100, 102, 104.05], units="USD"
+    )
+    assert flow != Flow.from_periods(
+        periods=YEARS, magnitudes=[100, 102, 104.04], units="AUD"
+    )
+    assert flow != Flow.from_periods(
+        periods=YEARS[:2], magnitudes=[100, 102], units="USD"
+    )
+    dated = Flow.from_events(
+        dates=[p.start for p in YEARS], magnitudes=[100, 102, 104.04], units="USD"
+    )
     assert dated != flow
 
 
 def test_unresolved_amounts_are_equal_only_to_unresolved_amounts():
-    flow = Flow.from_periods(YEARS, [1, None, 3], units="m")
+    flow = Flow.from_periods(periods=YEARS, magnitudes=[1, None, 3], units="m")
     assert flow == flow.clone()
-    assert flow != Flow.from_periods(YEARS, [1, 0, 3], units="m")
+    assert flow != Flow.from_periods(periods=YEARS, magnitudes=[1, 0, 3], units="m")
 
 
 def test_isclose_quantities():
@@ -79,20 +87,22 @@ def test_isclose_quantities():
 
 
 def test_isclose_flows():
-    flow = Flow.from_periods(YEARS, [100, 102, 104.04], units="USD")
+    flow = Flow.from_periods(periods=YEARS, magnitudes=[100, 102, 104.04], units="USD")
     near = Flow.from_periods(
-        YEARS, [100, 102, Decimal("104.040000000001")], units="USD"
+        periods=YEARS, magnitudes=[100, 102, Decimal("104.040000000001")], units="USD"
     )
     assert near != flow
     assert isclose(actual=near, expected=flow)
     assert not isclose(actual=flow.trim(span=YEARS[0]), expected=flow)
     assert isclose(
-        actual=Flow.from_periods(YEARS, [1, None, 3], units="m"),
-        expected=Flow.from_periods(YEARS, [100, None, 300], units="cm"),
+        actual=Flow.from_periods(periods=YEARS, magnitudes=[1, None, 3], units="m"),
+        expected=Flow.from_periods(
+            periods=YEARS, magnitudes=[100, None, 300], units="cm"
+        ),
     )
     assert not isclose(
-        actual=Flow.from_periods(YEARS, [1, None, 3], units="m"),
-        expected=Flow.from_periods(YEARS, [1, 2, 3], units="m"),
+        actual=Flow.from_periods(periods=YEARS, magnitudes=[1, None, 3], units="m"),
+        expected=Flow.from_periods(periods=YEARS, magnitudes=[1, 2, 3], units="m"),
     )
     with pytest.raises(TypeError):
         isclose(actual=flow, expected=Quantity(text="1 USD"))

@@ -49,8 +49,10 @@ from tests.streams import lines
 
 def annual(values, *, units="AUD"):
     return Flow.from_periods(
-        Periods(start=date(2020, 1, 1), frequency=Frequency.YEAR, count=len(values)),
-        values,
+        periods=Periods(
+            start=date(2020, 1, 1), frequency=Frequency.YEAR, count=len(values)
+        ),
+        magnitudes=values,
         units=units,
     )
 
@@ -144,13 +146,13 @@ def test_model_flow_content_store_and_stream():
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(entity,)),
     )
-    stream = Stream.from_values(model, (a.id, b.id))
+    stream = Stream.from_values(model=model, value_ids=(a.id, b.id))
     assert stream.select_values((b.id,)).values == (b,)
     assert len(stream.merge(stream).values) == 2
     with pytest.raises(ValueError):
-        Stream.from_values(model, (a.id, a.id))
+        Stream.from_values(model=model, value_ids=(a.id, a.id))
     with pytest.raises(ValueError):
-        Stream.from_values(model, (prop.id,))
+        Stream.from_values(model=model, value_ids=(prop.id,))
     assert model.owner_of(a.id) == entity.id
     store = MemoryStore()
     store.put(model)
@@ -216,16 +218,21 @@ def test_month_anchor_and_leap_year():
 def test_duplicate_events_order_and_periods():
     today = date(2020, 1, 1)
     with pytest.raises(ValueError, match="repeated event|duplicate"):
-        Flow.from_events([today, today], [1, 2], units="m")
+        Flow.from_events(dates=[today, today], magnitudes=[1, 2], units="m")
     flow = Flow.from_events(
-        [today, today], [1, 2], units="m", keys=["delivery-1", "delivery-2"]
+        dates=[today, today],
+        magnitudes=[1, 2],
+        units="m",
+        keys=["delivery-1", "delivery-2"],
     )
     assert flow.total().magnitude == 3
     with pytest.raises(ValueError):
-        Flow.from_events([date(2021, 1, 1), today], [1, 2], units="m")
+        Flow.from_events(dates=[date(2021, 1, 1), today], magnitudes=[1, 2], units="m")
     with pytest.raises(ValueError):
         Flow.from_periods(
-            [Period(start=today, end=date(2020, 2, 1))] * 2, [1, 2], units="m"
+            periods=[Period(start=today, end=date(2020, 2, 1))] * 2,
+            magnitudes=[1, 2],
+            units="m",
         )
 
 
@@ -256,7 +263,9 @@ def test_units_and_factor_product():
 
 def test_explicit_calendar_integration():
     periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
-    rates = Flow.from_periods(periods, [3660, 3660], units="AUD/year")
+    rates = Flow.from_periods(
+        periods=periods, magnitudes=[3660, 3660], units="AUD/year"
+    )
     assert [
         s.number
         for s in rates.integrate_time(
@@ -303,8 +312,8 @@ def test_missing_alignment_and_coverage():
 
 def test_resample_complete_calendar_and_explicit_reduction():
     flow = Flow.from_events(
-        [date(2020, 1, 1), date(2020, 1, 31), date(2020, 3, 1)],
-        [10, 20, 40],
+        dates=[date(2020, 1, 1), date(2020, 1, 31), date(2020, 3, 1)],
+        magnitudes=[10, 20, 40],
         units="dwelling",
     )
     periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
@@ -320,7 +329,9 @@ def test_resample_complete_calendar_and_explicit_reduction():
     ] and result.coverage["0"] == (1, 0, 1)
     assert result.flows[0].total().magnitude == 70
     stocks = Flow.from_events(
-        [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="dwelling"
+        dates=[date(2020, 1, 1), date(2020, 1, 31)],
+        magnitudes=[10, 20],
+        units="dwelling",
     )
     assert (
         stocks.resample(periods=periods[:1], method=ResampleMethod.LAST)
@@ -373,19 +384,19 @@ def test_profile_and_partition_invariants():
 
 def test_financial_independent_examples():
     flow = Flow.from_events(
-        [date(2021, 1, 1), date(2022, 1, 1)], [-100, 110], units="AUD"
+        dates=[date(2021, 1, 1), date(2022, 1, 1)], magnitudes=[-100, 110], units="AUD"
     )
     assert financial.calculate_xnpv(
-        flow, rate=0.1, valuation_date=date(2021, 1, 1)
+        flow=flow, rate=0.1, valuation_date=date(2021, 1, 1)
     ).number == pytest.approx(0, abs=1e-12)
-    result = financial.calculate_irr(flow)
+    result = financial.calculate_irr(flow=flow)
     assert result.rate == pytest.approx(0.1) and abs(result.residual.magnitude) < 1e-9
     assert [
         s.magnitude
-        for s in financial.calculate_pv(annual([110, 121]), rate=0.1).movements
+        for s in financial.calculate_pv(flow=annual([110, 121]), rate=0.1).movements
     ] == pytest.approx([100, 100])
     with pytest.raises(ValueError):
-        financial.calculate_irr(flow, guess=-1)
+        financial.calculate_irr(flow=flow, guess=-1)
 
 
 def test_adapter_exports_are_detached():
@@ -423,7 +434,7 @@ def test_weighted_rates_and_partial_period_helpers():
     from rangekeeper.duration import Span, cover
 
     periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
-    rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
+    rates = Flow.from_periods(periods=periods, magnitudes=(10, 20), units="AUD/year")
     target = (Period(start=date(2020, 1, 1), end=date(2020, 3, 1)),)
     result = rates.resample(periods=target, method=ResampleMethod.ELAPSED_MEAN)
     assert result.movements[0].number == pytest.approx((31 * 10 + 29 * 20) / 60)

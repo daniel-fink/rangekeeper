@@ -47,7 +47,7 @@ def test_show_plot_needs_a_title_or_a_path(workdir):
 
 def test_show_flows_labels_year_end_dates_by_year(workdir):
     dates = [date(year, 12, 31) for year in (2027, 2028, 2029)]
-    flow = Flow.from_events(dates, [1.0, 2.0, 3.0], units="AUD")
+    flow = Flow.from_events(dates=dates, magnitudes=[1.0, 2.0, 3.0], units="AUD")
     frame = plot.show_flows(flows={"Rent": flow}, title="Rent", path="rent.html")
     assert (workdir / "rent.html").is_file()
     assert "2027" in read(frame)

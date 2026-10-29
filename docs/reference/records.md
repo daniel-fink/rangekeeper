@@ -152,8 +152,8 @@ Movement
 
 Flow
   clone() -> Flow                         independent Movement UUIDs
-  from_events(dates, magnitudes, *, units, keys=None)
-  from_periods(periods, magnitudes, *, units, keys=None)
+  from_events(*, dates, magnitudes, units, keys=None)
+  from_periods(*, periods, magnitudes, units, keys=None)
   check(*, units=None) -> Flow / require_resolved() -> Flow
   convert(*, units, unit_system=None) / scale(factor) / negate()
   total(*, missing=MissingValueHandling.ERROR) -> Quantity | None

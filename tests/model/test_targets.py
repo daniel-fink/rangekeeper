@@ -45,7 +45,9 @@ def example():
         key="cash",
         kind=ValueKind.FLOW,
         measure=money.id,
-        flow=Flow.from_events([date(2027, 1, 1)], [30_000], units="AUD"),
+        flow=Flow.from_events(
+            dates=[date(2027, 1, 1)], magnitudes=[30_000], units="AUD"
+        ),
     )
     note = Value(id=uuid4(), key="note", kind=ValueKind.PROPERTY)
     owner = Entity(

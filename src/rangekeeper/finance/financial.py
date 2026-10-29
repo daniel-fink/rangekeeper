@@ -46,7 +46,7 @@ def _require_result(value: float | None, operation: str) -> float:
     return value
 
 
-def calculate_pv(flow: Flow, *, rate: float, first_period: int = 1) -> Flow:
+def calculate_pv(*, flow: Flow, rate: float, first_period: int = 1) -> Flow:
     """Discount each movement with PyXIRR PV, retaining its coordinates and Claims.
 
     Rate is per movement period; first_period=1 places the first payment one period
@@ -72,8 +72,8 @@ def calculate_pv(flow: Flow, *, rate: float, first_period: int = 1) -> Flow:
 
 
 def calculate_xnpv(
-    flow: Flow,
     *,
+    flow: Flow,
     rate: float,
     valuation_date: date,
     day_count: DayCount = DayCount.ACTUAL_365,
@@ -108,7 +108,7 @@ def calculate_xnpv(
     return Quantity(magnitude=value, units=flow.units)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class IrrResult:
     """One PyXIRR result and its NPV residual; does not establish root uniqueness."""
 
@@ -119,8 +119,8 @@ class IrrResult:
 
 
 def calculate_irr(
-    flow: Flow,
     *,
+    flow: Flow,
     guess: float | None = None,
     valuation_date: date | None = None,
     day_count: DayCount = DayCount.ACTUAL_365,
@@ -162,7 +162,7 @@ def calculate_irr(
     # Accept the root at the earliest payment. Moving the residual to a distant
     # valuation date scales it by (1 + root) ** t, but not the tolerance.
     anchored = calculate_xnpv(
-        flow,
+        flow=flow,
         rate=root,
         valuation_date=min(dates),
         day_count=day_count,
@@ -173,12 +173,12 @@ def calculate_irr(
     ):
         raise ValueError("IRR residual exceeds acceptance tolerance")
     if valuation_date is None or valuation_date == min(dates):
-        return IrrResult(root, anchored, guess)
+        return IrrResult(rate=root, residual=anchored, guess=guess)
     residual = calculate_xnpv(
-        flow,
+        flow=flow,
         rate=root,
         valuation_date=valuation_date,
         day_count=day_count,
         timing=timing,
     )
-    return IrrResult(root, residual, guess)
+    return IrrResult(rate=root, residual=residual, guess=guess)

@@ -24,7 +24,7 @@ zero. These operations have different purposes and never repair content silently
 from datetime import date
 from rangekeeper.flow import Flow
 
-flow = Flow.from_events([date(2026, 1, 1)], [100], units="AUD")
+flow = Flow.from_events(dates=[date(2026, 1, 1)], magnitudes=[100], units="AUD")
 assert flow.require_resolved().movements[0].number == 100.0
 assert flow.scale(2).total().magnitude == 200
 ```
@@ -126,7 +126,7 @@ with `rangekeeper.quantity.isclose`, which also takes two Flows
 `flow.Stream(flows=)` takes an ordered name-to-Flow mapping. It retains default
 `missing` and `join` policies: `MissingValueHandling.ERROR` and
 `AlignmentJoin.UNION`. Model-backed selections use
-`Stream.from_values(model, value_ids, names=None)`. Duplicate source IDs and
+`Stream.from_values(model=, value_ids=, names=None)`. Duplicate source IDs and
 ambiguous names are errors. `stream[name]` returns one Flow.
 `select("a", "b")` and `select_values(ids)` keep the selection order.
 `with_policy(missing=, join=)` returns the Stream with another policy; the
@@ -144,8 +144,8 @@ span = Span(name="Operations", start=date(2027, 1, 1), length="1 year")
 monthly = span.periods(frequency=Frequency.MONTH)
 income = Stream(
     flows={
-        "Rent": Flow.from_periods(monthly, [100] * 12, units="AUD"),
-        "Vacancy": Flow.from_periods(monthly, [-20] * 12, units="AUD"),
+        "Rent": Flow.from_periods(periods=monthly, magnitudes=[100] * 12, units="AUD"),
+        "Vacancy": Flow.from_periods(periods=monthly, magnitudes=[-20] * 12, units="AUD"),
     }
 )
 annual = income.resample(
@@ -246,7 +246,7 @@ Flow before placing an independent copy under a second Value.
 coordinates. It keeps the original known-value coverage and the missing policy.
 `Stream.aggregate(method=AggregationMethod.SUM, units=...)` shares unit conversion,
 Claim collection and coverage calculation, on an aligned or an unaligned Stream.
-Each aggregation returns `FlowAggregate(flow, coverage)`.
+Each aggregation returns `FlowAggregate(flow=, coverage=)`.
 
 `AlignmentJoin.UNION` is the default. `EXACT` and `INTERSECTION` are explicit.
 Missing choices use `MissingValueHandling`; reducer choices use `AggregationMethod`. Zero filling
@@ -434,7 +434,7 @@ from rangekeeper.duration import DayCount, Frequency, Periods
 from rangekeeper.flow import Flow
 
 periods = Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
-rates = Flow.from_periods(periods, (120, 120, 120), units="AUD/year")
+rates = Flow.from_periods(periods=periods, magnitudes=(120, 120, 120), units="AUD/year")
 amounts = rates.integrate_time(day_count=DayCount.ACTUAL_365, units="AUD")
 assert abs(amounts.total().magnitude - 120 * 90 / 365) < 1e-9
 ```

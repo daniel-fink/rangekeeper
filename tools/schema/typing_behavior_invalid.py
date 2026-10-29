@@ -11,5 +11,7 @@ movement.replace(magnitude=[1])
 movement.replace(unknown=1)
 movement.replace(date="2026-01-01")
 movement.number = 2
-Flow.from_events([date(2026, 1, 1)], [1], units="m").replace(movements=(1,))
+Flow.from_events(dates=[date(2026, 1, 1)], magnitudes=[1], units="m").replace(
+    movements=(1,)
+)
 Distribution.pert(mode="wrong")

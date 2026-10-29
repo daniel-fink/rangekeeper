@@ -44,7 +44,9 @@ def hierarchy_case(legacy):
                 key="cashflow",
                 kind=ValueKind.FLOW,
                 measure=measure.id,
-                flow=Flow.from_periods(months, [float(n)] * 120, units="AUD"),
+                flow=Flow.from_periods(
+                    periods=months, magnitudes=[float(n)] * 120, units="AUD"
+                ),
             )
             entity = Entity(
                 id=uuid4(),
@@ -118,7 +120,9 @@ def mixed_case(legacy):
         values = [float(i + 1)] * len(periods)
         if i % 3 == 0:
             values[-1] = None
-        flows[str(i)] = Flow.from_periods(periods, values, units="AUD")
+        flows[str(i)] = Flow.from_periods(
+            periods=periods, magnitudes=values, units="AUD"
+        )
     expected = math.fsum(
         m.magnitude
         for f in flows.values()

@@ -73,7 +73,7 @@ def test_display_needs_no_chart_or_graph_dependency():
         sys.meta_path.insert(0, Block())
         from rangekeeper.flow import Flow, Stream
 
-        flow = Flow.from_events([date(2027, 1, 1)], [12.5], units="AUD")
+        flow = Flow.from_events(dates=[date(2027, 1, 1)], magnitudes=[12.5], units="AUD")
         assert "12.50" in flow._repr_html_() and "12.50" in str(flow.display())
         assert "Rent [AUD]" in Stream(flows={"Rent": flow})._repr_html_()
         assert "rangekeeper.visualisation" not in sys.modules
@@ -88,13 +88,15 @@ def test_flow_display_preserves_records_and_uses_shared_rendering(period_content
     amounts = [0, None, -1.234]
     source = (
         Flow.from_periods(
-            Periods(start=start, frequency=Frequency.MONTH, count=3),
-            amounts,
+            periods=Periods(start=start, frequency=Frequency.MONTH, count=3),
+            magnitudes=amounts,
             units="AUD",
         )
         if period_content
         else Flow.from_events(
-            [date(2027, 1, day) for day in (1, 2, 3)], amounts, units="AUD"
+            dates=[date(2027, 1, day) for day in (1, 2, 3)],
+            magnitudes=amounts,
+            units="AUD",
         )
     )
     recorded = source.to_data()
@@ -128,7 +130,7 @@ def test_native_display_shows_full_selection_and_restores_config(transpose):
 
     periods = Periods(start=date(2001, 1, 1), frequency=Frequency.YEAR, count=80)
     label = "Income from the property's commercial and residential tenancies"
-    source = Flow.from_periods(periods, [1234.567] * 80, units="AUD")
+    source = Flow.from_periods(periods=periods, magnitudes=[1234.567] * 80, units="AUD")
     table = Stream(flows={label: source, "Other": source}).display(
         transpose=transpose, precision=1
     )
@@ -158,7 +160,9 @@ def test_native_display_shows_full_selection_and_restores_config(transpose):
 def test_native_display_restores_config_after_renderer_failure(monkeypatch, method):
     import polars as pl
 
-    table = Flow.from_events([date(2027, 1, 1)], [1], units="AUD").display()
+    table = Flow.from_events(
+        dates=[date(2027, 1, 1)], magnitudes=[1], units="AUD"
+    ).display()
 
     def fail_render(self):
         raise RuntimeError("native rendering failed")
@@ -176,11 +180,13 @@ def test_native_display_missing_states_and_numeric_export(transpose):
     import polars as pl
 
     periods = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
-    receipts = Flow.from_periods(periods[:2], [0, None], units="AUD")
+    receipts = Flow.from_periods(periods=periods[:2], magnitudes=[0, None], units="AUD")
     stream = Stream(
         flows={
             "Receipts": receipts,
-            "Expenses": Flow.from_periods(periods, [-1234.567] * 3, units="AUD"),
+            "Expenses": Flow.from_periods(
+                periods=periods, magnitudes=[-1234.567] * 3, units="AUD"
+            ),
         },
         join=Join.UNION,
     )
@@ -244,7 +250,7 @@ def test_span_anchor_partial_and_decoded_behavior():
 def test_resampling_independent_oracle_and_claims(method, expected):
     periods = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
     claim = uuid4()
-    source = Flow.from_periods(periods, [1, 2, 3], units="AUD")
+    source = Flow.from_periods(periods=periods, magnitudes=[1, 2, 3], units="AUD")
     source = source.replace(
         movements=tuple(m.replace(claims=(claim,)) for m in source.movements)
     )
@@ -262,8 +268,8 @@ def test_resampling_independent_oracle_and_claims(method, expected):
 
 def test_methods_mapping_missing_zero_and_html_escape():
     periods = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
-    receipts = Flow.from_periods(periods[:2], [0, None], units="AUD")
-    balance = Flow.from_periods(periods[:2], [10, 20], units="AUD")
+    receipts = Flow.from_periods(periods=periods[:2], magnitudes=[0, None], units="AUD")
+    balance = Flow.from_periods(periods=periods[:2], magnitudes=[10, 20], units="AUD")
     stream = Stream(
         flows={"<Receipts>": receipts, "Balance": balance}, missing=Missing.PROPAGATE
     )
@@ -287,7 +293,9 @@ def test_methods_mapping_missing_zero_and_html_escape():
     sparse = Stream(
         flows={
             "Receipt": receipts,
-            "Balance": Flow.from_periods(periods, [1, 2, 3], units="AUD"),
+            "Balance": Flow.from_periods(
+                periods=periods, magnitudes=[1, 2, 3], units="AUD"
+            ),
         },
         join=Join.UNION,
     )
@@ -298,7 +306,7 @@ def test_cancellation_units_empty_and_boundaries():
     day = date(2027, 1, 1)
     stream = Stream(
         flows={
-            str(i): Flow.from_events([day], [v], units="AUD")
+            str(i): Flow.from_events(dates=[day], magnitudes=[v], units="AUD")
             for i, v in enumerate([1e16, 1, -1e16])
         }
     )
@@ -307,8 +315,8 @@ def test_cancellation_units_empty_and_boundaries():
         Stream(
             flows={
                 "annual": Flow.from_periods(
-                    Periods(start=day, frequency=Frequency.YEAR, count=1),
-                    [1],
+                    periods=Periods(start=day, frequency=Frequency.YEAR, count=1),
+                    magnitudes=[1],
                     units="AUD",
                 )
             }
@@ -325,7 +333,9 @@ def test_cancellation_units_empty_and_boundaries():
 
 def test_model_selections_cannot_hide_numerical_transformations():
     model, ids = hierarchy_model()
-    selected = Stream.from_values(model, [ids["A_rent"], ids["A_expense"]])
+    selected = Stream.from_values(
+        model=model, value_ids=[ids["A_rent"], ids["A_expense"]]
+    )
     declaration = flow.sum(model, id=uuid4(), summands=selected, total=ids["A_net"])
     assert declaration.bindings[0].value == ids["A_rent"]
     detached = selected.resample(
@@ -348,7 +358,7 @@ def test_model_selections_cannot_hide_numerical_transformations():
         flow.sum(revised, id=uuid4(), summands=selected, total=ids["A_net"])
     assert selected.merge(selected.select("rent")).value_ids == selected.value_ids
     with pytest.raises(ValueError, match="twice"):
-        Stream.from_values(model, [ids["A_rent"]] * 2)
+        Stream.from_values(model=model, value_ids=[ids["A_rent"]] * 2)
 
 
 def test_forward_reverse_hierarchy_and_numeric_parity():
@@ -471,8 +481,10 @@ def test_selection_releases_unselected_coordinates_before_trim():
     years = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1)
     stream = Stream(
         flows={
-            "months": Flow.from_periods(months, [1] * 12, units="AUD"),
-            "years": Flow.from_periods(years, [12], units="AUD"),
+            "months": Flow.from_periods(
+                periods=months, magnitudes=[1] * 12, units="AUD"
+            ),
+            "years": Flow.from_periods(periods=years, magnitudes=[12], units="AUD"),
         }
     )
     stream._prepared()

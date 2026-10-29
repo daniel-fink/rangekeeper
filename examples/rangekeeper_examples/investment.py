@@ -461,7 +461,7 @@ def report(model: Model) -> InvestmentReport:
             magnitude=pv.number - abs(_quantity(v["acquisition_price"]).number),
             units=pv.units,
         ),
-        financial.calculate_irr(cashflows),
+        financial.calculate_irr(flow=cashflows),
         sale_date,
     )
 
@@ -612,7 +612,7 @@ def horizon_returns(model: Model) -> Flow:
                 )
             )
         irr = financial.calculate_irr(
-            Flow(units=_flow(v["total"]).units, movements=tuple(movements))
+            flow=Flow(units=_flow(v["total"]).units, movements=tuple(movements))
         )
         result.append(
             Movement(id=uuid4(), key=sale.key, date=sale.date, magnitude=100 * irr.rate)

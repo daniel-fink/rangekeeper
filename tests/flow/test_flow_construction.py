@@ -28,14 +28,18 @@ def test_flow_from_a_mapping_of_periods():
     flow = Flow(amounts={YEARS[1]: 102, YEARS[0]: 100}, units="USD")
     assert [m.period for m in flow.movements] == [YEARS[0], YEARS[1]]
     assert [m.magnitude for m in flow.movements] == [Decimal(100), Decimal(102)]
-    assert flow == Flow.from_periods(YEARS[:2], [100, 102], units="USD")
+    assert flow == Flow.from_periods(
+        periods=YEARS[:2], magnitudes=[100, 102], units="USD"
+    )
 
 
 def test_flow_from_a_mapping_of_dates_and_quantities():
     flow = Flow(amounts={date(2001, 1, 1): -Quantity(text="1000 USD")})
     assert flow.units == "USD"
     assert flow.movements[0].date == date(2001, 1, 1)
-    assert flow == Flow.from_events([date(2001, 1, 1)], [-1000], units="USD")
+    assert flow == Flow.from_events(
+        dates=[date(2001, 1, 1)], magnitudes=[-1000], units="USD"
+    )
     converted = Flow(amounts={date(2001, 1, 1): "1 km", date(2002, 1, 1): 5}, units="m")
     assert [m.magnitude for m in converted.movements] == [1000.0, 5]
 
@@ -61,12 +65,14 @@ def test_at_returns_the_amount_on_a_date():
     with pytest.raises(MissingReferenceError):
         flow.at(on=date(1999, 1, 1))
     events = Flow.from_events(
-        [date(2001, 1, 1)] * 2, [1, 2], units="USD", keys=["a", "b"]
+        dates=[date(2001, 1, 1)] * 2, magnitudes=[1, 2], units="USD", keys=["a", "b"]
     )
     with pytest.raises(AmbiguousReferenceError):
         events.at(on=date(2001, 1, 1))
     with pytest.raises(NumericalError):
-        Flow.from_periods(YEARS[:1], [None], units="USD").at(on=date(2001, 1, 1))
+        Flow.from_periods(periods=YEARS[:1], magnitudes=[None], units="USD").at(
+            on=date(2001, 1, 1)
+        )
 
 
 def test_arithmetic_with_numbers_and_quantities():
@@ -79,7 +85,9 @@ def test_arithmetic_with_numbers_and_quantities():
         text="5 %"
     )
     assert (flow / 4).at(on=date(2001, 1, 1)) == Quantity(text="25 USD")
-    rent = Flow.from_periods(YEARS[:1], [750], units="AUD per sqm pa")
+    rent = Flow.from_periods(
+        periods=YEARS[:1], magnitudes=[750], units="AUD per sqm pa"
+    )
     assert (rent * Quantity(text="100 sqm")).units == "AUD * pa"
     assert (Quantity(text="100 sqm") * rent).units == "AUD * pa"
     assert (-flow).at(on=date(2001, 1, 1)) == Quantity(text="-100 USD")
@@ -97,10 +105,10 @@ def test_addition_matches_coordinates_and_keeps_the_others():
     assert (first - flow).at(on=date(2002, 1, 1)) == Quantity(text="-102 USD")
     with pytest.raises(UnitError):
         _ = flow + growing(units="AUD")
-    dated = Flow.from_events([date(2001, 1, 1)], [1], units="USD")
+    dated = Flow.from_events(dates=[date(2001, 1, 1)], magnitudes=[1], units="USD")
     with pytest.raises(ValueError, match="Stream.sum"):
         _ = flow + dated
-    unresolved = Flow.from_periods(YEARS[:1], [None], units="USD")
+    unresolved = Flow.from_periods(periods=YEARS[:1], magnitudes=[None], units="USD")
     assert (flow + unresolved).movements[0].magnitude is None
 
 
@@ -123,8 +131,12 @@ def test_shift_moves_amounts_by_whole_periods():
     assert later.at(on=date(2003, 1, 1)) == flow.at(on=date(2001, 1, 1))
     assert flow.shift(by=0) == flow
     with pytest.raises(ValueError, match="Periods"):
-        Flow.from_events([date(2001, 1, 1)], [1], units="USD").shift(by=1)
-    gap = Flow.from_periods([YEARS[0], YEARS[2]], [1, 2], units="USD")
+        Flow.from_events(dates=[date(2001, 1, 1)], magnitudes=[1], units="USD").shift(
+            by=1
+        )
+    gap = Flow.from_periods(
+        periods=[YEARS[0], YEARS[2]], magnitudes=[1, 2], units="USD"
+    )
     with pytest.raises(ValueError, match="gap-free"):
         gap.shift(by=1)
     with pytest.raises(TypeError):
@@ -163,7 +175,9 @@ def test_split_and_sum_round_trip():
     with pytest.raises(TypeError):
         flow.split()
     with pytest.raises(ValueError, match="period movements"):
-        Flow.from_events([date(2001, 1, 1)], [1], units="USD").split(periods=YEARS[:1])
+        Flow.from_events(dates=[date(2001, 1, 1)], magnitudes=[1], units="USD").split(
+            periods=YEARS[:1]
+        )
 
 
 def test_stream_construction_lookup_and_with_flows():
@@ -189,7 +203,10 @@ def test_stream_sum_adds_lines_with_different_coordinates():
     assert total.at(on=date(2004, 1, 1)) == 2 * flow.at(on=date(2004, 1, 1))
     assert total.at(on=date(2005, 1, 1)) == flow.at(on=date(2005, 1, 1))
     unresolved = Stream(
-        flows={"a": flow, "b": Flow.from_periods(YEARS[:1], [None], units="USD")}
+        flows={
+            "a": flow,
+            "b": Flow.from_periods(periods=YEARS[:1], magnitudes=[None], units="USD"),
+        }
     )
     with pytest.raises(ValueError, match="unresolved"):
         unresolved.sum()

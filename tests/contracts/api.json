@@ -994,25 +994,25 @@
   "IrrResult": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, rate: float, residual: Quantity, guess: float | None, method: str = 'pyxirr.xirr') -> None"
+    "__init__": "method (self, *, rate: float, residual: Quantity, guess: float | None, method: str = 'pyxirr.xirr') -> None"
    },
    "module": "rangekeeper.finance.financial",
-   "signature": "(rate: float, residual: Quantity, guess: float | None, method: str = 'pyxirr.xirr') -> None"
+   "signature": "(*, rate: float, residual: Quantity, guess: float | None, method: str = 'pyxirr.xirr') -> None"
   },
   "calculate_irr": {
    "kind": "function",
    "module": "rangekeeper.finance.financial",
-   "signature": "(flow: Flow, *, guess: float | None = None, valuation_date: date | None = None, day_count: DayCount = DayCount.ACTUAL_365, timing: PeriodTiming | None = None) -> IrrResult"
+   "signature": "(*, flow: Flow, guess: float | None = None, valuation_date: date | None = None, day_count: DayCount = DayCount.ACTUAL_365, timing: PeriodTiming | None = None) -> IrrResult"
   },
   "calculate_pv": {
    "kind": "function",
    "module": "rangekeeper.finance.financial",
-   "signature": "(flow: Flow, *, rate: float, first_period: int = 1) -> Flow"
+   "signature": "(*, flow: Flow, rate: float, first_period: int = 1) -> Flow"
   },
   "calculate_xnpv": {
    "kind": "function",
    "module": "rangekeeper.finance.financial",
-   "signature": "(flow: Flow, *, rate: float, valuation_date: date, day_count: DayCount = DayCount.ACTUAL_365, timing: PeriodTiming | None = None) -> Quantity"
+   "signature": "(*, flow: Flow, rate: float, valuation_date: date, day_count: DayCount = DayCount.ACTUAL_365, timing: PeriodTiming | None = None) -> Quantity"
   },
   "resolve_day_count": {
    "kind": "function",
@@ -1053,8 +1053,8 @@
     "display": "method (self, *, name: str | None = None, transpose: bool = False, precision: int = 2) -> StreamTable",
     "drop_zeroes": "method (self) -> Flow",
     "extent": "method (self) -> tuple[date, date] | None",
-    "from_events": "classmethod (cls, dates: Sequence[date], magnitudes: Sequence[Decimal | str | int | float | None], *, units: str, keys: Sequence[str | None] | None = None) -> Flow",
-    "from_periods": "classmethod (cls, periods: Sequence[Period], magnitudes: Sequence[Decimal | str | int | float | None], *, units: str, keys: Sequence[str | None] | None = None) -> Flow",
+    "from_events": "classmethod (cls, *, dates: Sequence[date], magnitudes: Sequence[Decimal | str | int | float | None], units: str, keys: Sequence[str | None] | None = None) -> Flow",
+    "from_periods": "classmethod (cls, *, periods: Sequence[Period], magnitudes: Sequence[Decimal | str | int | float | None], units: str, keys: Sequence[str | None] | None = None) -> Flow",
     "from_profile": "classmethod (cls, *, profile: Profile, periods: Sequence[Period], initial: Quantity | str | None = None, total: Quantity | str | None = None) -> Flow",
     "integrate": "method (self, *, exposures: Sequence[Quantity], units: str | None = None) -> Flow",
     "integrate_time": "method (self, *, day_count: DayCount, units: str | None = None) -> Flow",
@@ -1079,10 +1079,10 @@
   "FlowAggregate": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, flow: Flow, coverage: tuple[float, ...]) -> None"
+    "__init__": "method (self, *, flow: Flow, coverage: tuple[float, ...]) -> None"
    },
    "module": "rangekeeper.flow.aggregation",
-   "signature": "(flow: Flow, coverage: tuple[float, ...]) -> None"
+   "signature": "(*, flow: Flow, coverage: tuple[float, ...]) -> None"
   },
   "MissingValueHandling": {
    "kind": "enum",
@@ -1134,7 +1134,7 @@
     "dated": "method (self, *, timing: PeriodTiming = PeriodTiming.END) -> Stream",
     "display": "method (self, *, transpose: bool = False, precision: int = 2) -> StreamTable",
     "flows": "property",
-    "from_values": "classmethod (cls, model: Model, value_ids: Iterable[UUID], *, names: Sequence[str] | None = None, missing: MissingValueHandling = MissingValueHandling.ERROR, join: AlignmentJoin | None = None) -> Stream",
+    "from_values": "classmethod (cls, *, model: Model, value_ids: Iterable[UUID], names: Sequence[str] | None = None, missing: MissingValueHandling = MissingValueHandling.ERROR, join: AlignmentJoin | None = None) -> Stream",
     "max": "method (self, *, units: str | None = None) -> Flow",
     "merge": "method (self, other: Stream) -> Stream",
     "min": "method (self, *, units: str | None = None) -> Flow",
@@ -1156,10 +1156,10 @@
   "StreamTable": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, stream: Stream, transpose: bool = False, precision: int = 2) -> None"
+    "__init__": "method (self, *, stream: Stream, transpose: bool = False, precision: int = 2) -> None"
    },
    "module": "rangekeeper.flow.table",
-   "signature": "(stream: Stream, transpose: bool = False, precision: int = 2) -> None"
+   "signature": "(*, stream: Stream, transpose: bool = False, precision: int = 2) -> None"
   }
  },
  "rangekeeper.io": {
@@ -2686,11 +2686,11 @@
   "SCurve": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, distribution: Distribution | None = None) -> None",
+    "__init__": "method (self, *, distribution: Distribution | None = None) -> None",
     "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
    },
    "module": "rangekeeper.profile",
-   "signature": "(distribution: Distribution | None = None) -> None"
+   "signature": "(*, distribution: Distribution | None = None) -> None"
   },
   "Uniform": {
    "kind": "class",
