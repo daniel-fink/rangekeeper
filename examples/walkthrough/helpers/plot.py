@@ -14,6 +14,7 @@ from urllib.parse import urlsplit
 import plotly.graph_objects as go
 from IPython.display import IFrame
 
+import rangekeeper as rk
 from rangekeeper.errors import MissingReferenceError
 from rangekeeper.model.content import decode
 
@@ -40,10 +41,16 @@ def _iframe(path, height, *, root=None):
     return IFrame(src=_displays[root].url(local_path), width="100%", height=height)
 
 
-def show_geometry(view="context", height=650):
-    """Write the local geometry viewer for the property and display one view."""
+def show_geometry(view="context", height=650, *, name="mixed_use_property"):
+    """Write the local geometry viewer for a data package and display one view.
+
+    ``name`` is the data package; ``mixed_use_property`` is the only one with
+    geometry. The viewer reads its captured transport, not a server.
+    """
     from . import geometry
 
+    if name != DATA.name:
+        raise ValueError(f"No geometry for {name!r}; the data package is {DATA.name!r}")
     if view not in {"context", "property", "floors", "utilities"}:
         raise ValueError("Unknown geometry view")
     page = geometry.write(DATA, LESSONS / "output" / "geometry")
@@ -220,6 +227,133 @@ def show_timeline(*, phases, path):
         ticktext=[str(d.year) for d in dates],
     )
     return show_plot(figure, path=path)
+
+
+def _equations(model):
+    """Return each equation of ``model`` as its text and the keys it contains."""
+    from rangekeeper.model.expression.text import render
+
+    def key(reference):
+        return model.resolve(reference).key
+
+    def keys(expression):
+        if expression.target is not None:
+            yield key(expression.target)
+        for operand in expression.operands or ():
+            yield from keys(operand)
+
+    equations = []
+    for formulation in model.system.formulations:
+        expressions = {item.id: item for item in formulation.expressions}
+        for constraint in formulation.constraints:
+            predicate = expressions[constraint.predicate]
+            equations.append(
+                (render(predicate, name=key), list(dict.fromkeys(keys(predicate))))
+            )
+    return equations
+
+
+# The equation column: values sit at 0 and equation labels need the space right.
+EQUATION_X = 0.4
+
+
+def _wrap(text, width=48):
+    """Break long equation text before ``+`` so that the label stays narrow."""
+    lines, line = [], ""
+    for part in text.split(" + "):
+        candidate = f"{line} + {part}" if line else part
+        if line and len(candidate) > width:
+            lines.append(line)
+            candidate = f"+ {part}"
+        line = candidate
+    return "<br>".join([*lines, line])
+
+
+def show_equations(*, of, height=None):
+    """Draw the equations of a Model, or of a Specification's Model with its roles.
+
+    Each value and each equation is a node, and a line joins an equation to each
+    value that it contains. The lines have no arrows: an equation has no
+    calculation direction. For a Specification, a square marks a fixed value and a
+    circle a free one. The edges come from the equations' own records.
+    """
+    if isinstance(of, rk.Specification):
+        # A Specification keeps its name through fix and free, so the title
+        # names the Model and the markers show this Specification's roles.
+        model = of.model
+        title = f"{model.metadata.name} · fixed and free values"
+        roles = {row.values["key"]: str(row.values["role"]) for row in of.roles.rows}
+    elif isinstance(of, rk.Model):
+        model, title, roles = of, f"{of.metadata.name} · equations", None
+    else:
+        raise TypeError("of must be a Model or a Specification")
+    equations = _equations(model)
+    names = list(dict.fromkeys(key for _, keys in equations for key in keys))
+    if roles is not None:
+        names = [key for key in roles if key in names]
+    value_y = {key: -index for index, key in enumerate(names)}
+    step = (len(names) - 1) / max(1, len(equations) - 1)
+    equation_y = [-index * step for index in range(len(equations))]
+    edge_x, edge_y = [], []
+    for (_, keys), y in zip(equations, equation_y, strict=True):
+        for key in keys:
+            edge_x.extend([0, EQUATION_X, None])
+            edge_y.extend([value_y[key], y, None])
+    figure = go.Figure(
+        go.Scatter(
+            x=edge_x,
+            y=edge_y,
+            mode="lines",
+            line=dict(color="#999999", width=1),
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
+    styles = (
+        [("fixed", "Fixed", "square", "#4477AA"), ("free", "Free", "circle", "#CC6677")]
+        if roles is not None
+        else [(None, "Value", "circle", "#4477AA")]
+    )
+    for role, label, symbol, color in styles:
+        keys = [key for key in names if roles is None or roles[key] == role]
+        figure.add_trace(
+            go.Scatter(
+                x=[0] * len(keys),
+                y=[value_y[key] for key in keys],
+                mode="markers+text",
+                name=label,
+                text=keys,
+                textposition="middle left",
+                cliponaxis=False,
+                marker=dict(color=color, symbol=symbol, size=13),
+                hovertemplate=f"%{{text}}<br>{label}<extra></extra>",
+                showlegend=roles is not None,
+            )
+        )
+    figure.add_trace(
+        go.Scatter(
+            x=[EQUATION_X] * len(equations),
+            y=equation_y,
+            mode="markers+text",
+            name="Equation",
+            text=[_wrap(text) for text, _ in equations],
+            textposition="middle right",
+            cliponaxis=False,
+            marker=dict(symbol="diamond-open", size=13, color="#999999"),
+            hovertext=[text for text, _ in equations],
+            hoverinfo="text",
+            showlegend=False,
+        )
+    )
+    figure.update_layout(
+        title=title,
+        height=height or 120 + 26 * len(names),
+        margin=dict(l=170, r=20, t=70, b=30),
+        legend=dict(orientation="h", x=1, xanchor="right", y=1.02, yanchor="bottom"),
+    )
+    figure.update_xaxes(visible=False, range=[-0.02, 1], fixedrange=True)
+    figure.update_yaxes(visible=False, fixedrange=True)
+    return show_plot(figure, path=Path("output") / f"equations-{of.id}.html")
 
 
 def show_relations(*, formulation, names, specifications, path):

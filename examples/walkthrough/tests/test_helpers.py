@@ -5,9 +5,10 @@ from urllib.request import urlopen
 
 import plotly.graph_objects as go
 import pytest
-from helpers import plot, theme
+from helpers import load_property, plot, theme
 from IPython.display import IFrame
 
+import rangekeeper as rk
 from rangekeeper.flow import Flow
 
 
@@ -88,3 +89,43 @@ def test_show_geometry_writes_a_verified_viewer_for_the_data_package(workdir):
     assert (plot.LESSONS / "output" / "geometry" / "geometry.json").is_file()
     with pytest.raises(ValueError, match="Unknown geometry view"):
         plot.show_geometry("roof")
+
+
+def test_show_geometry_draws_only_the_data_package_with_geometry(workdir):
+    with pytest.raises(ValueError, match="No geometry"):
+        plot.show_geometry(name="another_property")
+
+
+def test_load_property_gives_each_total_with_units_and_origin():
+    data = load_property(year=2032)
+    assert list(data)[:2] == ["works_cost", "operating_cost"]
+    assert "parking_rent" not in data
+    # The project brief: hotel GFA 11,716.69 m², at an efficiency of 0.8.
+    assert rk.quantity.isclose(
+        actual=data["hotel_area"],
+        expected=rk.Quantity(text="9373.35 sqm"),
+        tolerance="0.01 sqm",
+    )
+    assert data["hotel_rent"].units == "AUD per sqm pa"
+    assert data["operating_cost"].magnitude > 0
+    assert "finance allowance" in data.origin("works_cost")
+    assert "hotel_vacancy" in data._repr_html_()
+    with pytest.raises(ValueError, match="stabilised year"):
+        load_property(year=2031)
+
+
+def test_show_equations_joins_each_equation_to_its_values(workdir):
+    model = rk.Model(name="Costs")
+    draft = model.edit()
+    project = draft.add_entity(code="project", classification="project")
+    for key in ("land_cost", "works_cost", "total_cost"):
+        project.value(key=key, units="AUD")
+    project.equations("total_cost = land_cost + works_cost")
+    model = draft.commit()
+    page = read(plot.show_equations(of=model))
+    assert "total_cost = land_cost + works_cost" in page
+    specification = model.specify(name="Costs").fix(land_cost="1 AUD")
+    page = read(plot.show_equations(of=specification))
+    assert '"Fixed"' in page and '"Free"' in page
+    with pytest.raises(TypeError, match="Model or a Specification"):
+        plot.show_equations(of=None)
