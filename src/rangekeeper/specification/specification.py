@@ -330,8 +330,9 @@ class Specification:
         """Return a new Specification that fixes values, by key.
 
         Name each value by its key, ``fix(land_cost="20e6 AUD")``. The mapping
-        form also takes a dotted path (``"building_a.income"``), a Value or
-        Movement UUID, or a Reference. A bare key must name one Value of the
+        form also takes a dotted key (``"building_a.income"``), the text of a
+        Value UUID, a Value or Movement UUID, or a Reference: each key that
+        ``Model.value(key=)`` takes. A bare key must name one Value of the
         Model. A value is a Quantity, Quantity text such as ``"65 %"``, or a
         bare number for a ratio (``coverage=1.25``). Its units must be
         compatible with the units of the value. One value fixes a scalar
@@ -374,7 +375,7 @@ class Specification:
         """Return a new Specification that frees values: the solve finds them.
 
         A value that is not fixed is already free; ``free`` releases a value
-        that was fixed before. Each target is a key, a dotted path, a Value or
+        that was fixed before. Each target is a key, a dotted key, a Value or
         Movement UUID, or a Reference, as in ``fix``. A Flow frees each of its
         Movements. A free removes an earlier fix of the same target. When no
         role changes, ``free`` returns this Specification.
@@ -518,11 +519,12 @@ class Specification:
 
     def _key(self, identity: UUID) -> str:
         """Name a target by its key in the pinned Model, or by its UUID."""
-        if self._model is None or identity not in self._model._index.records:
+        if self._model is None:
             return str(identity)
-        from rangekeeper.specification.roles import target_key
-
-        return target_key(self._model, identity)
+        try:
+            return self._model.key_of(identity)
+        except LookupError:
+            return str(identity)
 
     @property
     def _where(self) -> str:
@@ -565,7 +567,7 @@ class Specification:
         from rangekeeper.specification.targets import expand_targets
 
         if isinstance(target, str):
-            target = model._value_at(target).id
+            target = model.value(key=target).id
         return expand_targets(model, target, ids=ids)
 
     def _edit_roles(

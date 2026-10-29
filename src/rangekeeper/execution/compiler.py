@@ -103,13 +103,18 @@ class Compiler:
         self.checkpoint = checkpoint
 
     def nonaffine(self, operation: str, *values: Affine) -> UnsupportedError:
-        """Return the error for an operation on unknowns that is not affine."""
+        """Return the error for an operation on unknowns that is not affine.
+
+        Its targets are those unknowns; ``compile`` scopes it to the Constraint
+        and keeps it as the cause, so that the diagnostic references them.
+        """
         ids = dict.fromkeys(id for value in values for id in value.coefficients)
         keys = tuple(self.binding.key(self.binding.references[id]) for id in ids)
         noun = "the unknown" if len(keys) == 1 else "the unknowns"
         return UnsupportedError(
             f"{operation} {noun} {', '.join(keys)} is nonlinear",
             code=Code.NONAFFINE_UNKNOWNS,
+            targets=ids,
             unknowns=keys,
         )
 

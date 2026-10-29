@@ -23,6 +23,7 @@ from rangekeeper.execution.status import Status
 from rangekeeper.schema.records import (
     CompletionStatus,
     Diagnostic,
+    Reference,
     Severity,
     SolutionStatus,
 )
@@ -253,6 +254,26 @@ def diagnosed(error: BaseException) -> dict[str, JSONValue]:
         if len(error.targets) > 1:
             values["targets"] = [str(target) for target in error.targets]
     return values
+
+
+def referenced(error: BaseException) -> tuple[Reference, ...]:
+    """Return the Values and Movements that the diagnostic of ``error`` references.
+
+    A ``nonaffine_unknowns`` failure references the unknowns of the term that
+    is not affine, as ``underdetermined`` references its free unknowns. The
+    compiler's error has them as its targets; ``compile`` scopes that error to
+    the Constraint and keeps it as the cause. Other errors reference nothing.
+    """
+    if not isinstance(error, UnsupportedError):
+        return ()
+    cause = error.__cause__
+    if (
+        error.code is not Code.NONAFFINE_UNKNOWNS
+        or not isinstance(cause, UnsupportedError)
+        or cause.code is not Code.NONAFFINE_UNKNOWNS
+    ):
+        return ()
+    return tuple(Reference(target=identity) for identity in cause.targets)
 
 
 def rebuilt(

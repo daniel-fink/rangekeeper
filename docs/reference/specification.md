@@ -164,8 +164,9 @@ Specification, with its estimates.
 
 | Target | Meaning |
 | --- | --- |
-| A key, `fix(land_cost=...)` or `free("land_cost")` | The one Value of the Model with that key. Several Values with the key raise `AmbiguousReferenceError` with their dotted paths |
-| A dotted path, `fix({"building_a.income": ...})` or `free("building_a.income")` | The Value with that key on the Entity or Assembly with that code. A path that names no Value raises `MissingReferenceError` with `by="path"`, the whole path in `requested` and the nearest paths in `candidates` |
+| A key, `fix(land_cost=...)` or `free("land_cost")` | The one Value of the Model with that key. Several Values with the key raise `AmbiguousReferenceError`; its `candidates` are the key of each, as `Model.key_of` gives it |
+| A dotted key, `fix({"building_a.income": ...})` or `free("building_a.income")` | The Value with that key on the Entity or Assembly with that code. A dotted key that names no Value raises `MissingReferenceError` with `by="path"`, the whole dotted key in `requested` and the nearest dotted keys in `candidates` |
+| The text of a Value UUID, `fix({"6f1c…": ...})` | That Value. `Model.key_of` gives it for a Value whose key is not unique and whose owner has no code, such as a Relationship |
 | A Value or Movement UUID, or a Reference | That Value or Movement |
 
 | Value given to `fix` | Meaning |
@@ -174,7 +175,7 @@ Specification, with its estimates.
 | Text, `"20e6 AUD"` or `"65 %"` | The Quantity that the text gives; text without units raises `UnitError` |
 | A number, `coverage=1.25` | A ratio. A target with units that are not dimensionless raises `UnitError` |
 
-`fix` takes the targets that are not keywords, such as dotted paths and UUIDs, in
+`fix` takes the targets that are not keywords, such as dotted keys and UUIDs, in
 a mapping as its first argument. One value fixes a scalar Value, or each
 Movement of a Flow Value; a mapping from Movement UUIDs to values fixes those
 Movements only. A Flow target of `free` frees each of its Movements. Each value
@@ -190,7 +191,7 @@ role, in Model order. Each Row's `id` is the UUID of its target.
 
 | Column | Content |
 | --- | --- |
-| `key` | The key that `fix` takes: the bare key, or the dotted path when several Values have the key |
+| `key` | The key that `fix` takes, from `Model.key_of`: the bare key; the dotted key when several Values have the key; or the text of the Value UUID when the owner has no code. For a Movement, the key of its Flow Value |
 | `movement` | The Movement UUID, or None for a scalar Value |
 | `role` | `rk.specification.Role`: `FIXED`, `FREE` or `DECIDED` (a rule controls the value) |
 | `quantity` | The fixed Quantity, or None |

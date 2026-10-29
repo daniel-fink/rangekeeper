@@ -213,6 +213,24 @@ exact, case-sensitive key. Generated records are plain data, so the Model reads
 them ([ADR-011](../decisions/011-records-and-validation.md)). A missing key
 raises `MissingReferenceError` with the owner in `where` and the nearest keys in
 `candidates`; `Model.value(id)` and `Model.label(id)` still look up by UUID.
+
+`Model.value(key=)` alone reads a Value by the key that names it in the whole
+revision, and `Model.key_of(id)` is its inverse: `model.value(key=model.key_of(id))`
+is the Value with that UUID. `fix`, `free`, `roles`, `outcome[key]`,
+`free_unknowns` and the `unknowns` of a `nonaffine_unknowns` failure use the
+same pair.
+
+| `key_of` gives | When |
+| --- | --- |
+| The key, `"income"` | No other Value of the revision has the key |
+| The dotted key, `"building_a.income"` | The owner is the one Entity or Assembly with that code |
+| The text of the Value UUID | The owner has no code, or shares it, such as a Relationship or a Formulation |
+
+`key_of` of a Movement gives the key of its Flow Value; another record raises
+`ReferenceTypeError`. `value(key=)` takes all three forms. A key that several
+Values have raises `AmbiguousReferenceError` with the `key_of` of each in
+`candidates`, and a dotted key that names no Value raises
+`MissingReferenceError` with `by="path"` ([lookups](errors.md#lookups)).
 Catalogue helpers similarly separate UUID lookup from `find_*` searches. They reject duplicate declaration UUIDs across the entire supplied catalogue, even when the requested UUID is unrelated. `Model.assembly` rejects an ordinary Entity. Multiple
 Values may share a Measure; Measure identity never chooses a unique Value implicitly.
 

@@ -66,12 +66,15 @@ class Binding:
     rule_evidence: tuple[RuleEvidence, ...] = ()
 
     def key(self, reference: Reference) -> str:
-        """Return the key of a referenced Value or Movement, or else its UUID."""
+        """Return the key of a referenced Value or Movement, or else its UUID.
+
+        The key is the one that ``Model.key_of`` gives: unique in the Model.
+        A Specification Value that the Model does not declare gives its UUID.
+        """
         try:
-            key = self.model.resolve(reference).key
+            return self.model.key_of(reference.target)
         except (LookupError, TypeError):
-            key = None
-        return key or str(reference.target)
+            return str(reference.target)
 
     def text(self, expression: Expression) -> str:
         """Return the text of ``expression``, with each reference named by its key."""
