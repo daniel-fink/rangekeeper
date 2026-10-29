@@ -129,6 +129,8 @@ def _infer_expression_domain(node, seen, *, scope: Scope, analysis, path) -> dic
         return dict(kind="quantity", units=node["quantity"]["units"])
     if kind == "boolean":
         return dict(kind=kind)
+    if kind in ("date", "never"):
+        return dict(kind="date")
     if kind == "reference":
         target = node["target"]
         value, movement = resolve_reference(target, scope.targets)

@@ -275,6 +275,34 @@ be large. Applications retain responsibility for request and response limits.
 Locations from an earlier Model keep that earlier revision's content after
 `revise`; no lookup loads history or crosses into another Model.
 
+## Value kinds
+
+A Value's `kind` decides which content fields it can have. Absent content is
+unresolved; a Specification fixes it or a solve finds it.
+
+| `ValueKind` | Measure | Content |
+| --- | --- | --- |
+| `MEASUREMENT` | Required | `quantity`, in units compatible with the Measure |
+| `FLOW` | Required | `flow`: dated Movements |
+| `DATE` | None | `date`, a calendar date, or `never`, `rk.duration.NEVER`; not both |
+| `PROPERTY` | None | `content`: inert typed data ([property content](#property-content)) |
+
+A date Value with neither `date` nor `never` is unresolved; it is not NEVER.
+Validation rejects a date Value with a Measure, a quantity, a Flow or property
+content, and date content on any other kind. Equations compare date Values and
+add calendar lengths to them ([dates and NEVER](expressions.md#dates-and-never)).
+
+```python
+from datetime import date
+from uuid import uuid4
+
+import rangekeeper as rk
+from rangekeeper.model import Value, ValueKind
+
+start = Value(id=uuid4(), key="start_date", kind=ValueKind.DATE, date=date(2027, 1, 1))
+b_start = Value(id=uuid4(), key="b_start", kind=ValueKind.DATE, never=rk.duration.NEVER)
+```
+
 ## Property content
 
 `model.content.encode` and `decode` retain typed property data separately from

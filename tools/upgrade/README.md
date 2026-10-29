@@ -25,6 +25,12 @@ The tool changes only what the 1.0.0 formats change:
 | A magnitude in ISO 4217 currency units, such as `AUD`, becomes the canonical text of its amount, at 15 significant digits (`0.30000000000000004` becomes `"0.3"`) | [#117](https://github.com/daniel-fink/rangekeeper/issues/117), [ADR-023](../../docs/decisions/023-decimal-money.md) |
 | A query `Filter` with a `classification`, and each Label `Criterion`, gets `exclusive: true`. The 0.x formats matched them exactly; 1.0.0 also matches sub-types unless `exclusive` is true | [#121](https://github.com/daniel-fink/rangekeeper/issues/121) |
 
+Date Values (`ValueKind.DATE`, with `date` or `never`) and the `date` and `never`
+Expression literals are new in 1.0.0
+([#280](https://github.com/daniel-fink/rangekeeper/issues/280)). The 0.x formats
+have no date kind, so the tool adds nothing for them. A 0.x property Value with
+date content stays a property Value; declare a date Value to use it in equations.
+
 Everything else stays the same:
 
 - **Identities.** Each document keeps its UUID and its `previous` lineage, so a

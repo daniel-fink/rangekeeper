@@ -1,8 +1,10 @@
 """Small constructors for ordered declarations; none reads or calculates Values."""
 
 from collections.abc import Sequence
+from datetime import date
 from uuid import UUID, uuid4
 
+from rangekeeper.duration.dates import NEVER, DateValue, require_date_value
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import ExpressionKind, Operator
 from rangekeeper.schema.records import Expression, Reference
@@ -17,6 +19,14 @@ def literal(
         kind=ExpressionKind.QUANTITY,
         quantity=Quantity(magnitude=magnitude, units=units),
     )
+
+
+def date_literal(value: DateValue, *, id: UUID | None = None) -> Expression:
+    """Declare a calendar date, or ``rk.duration.NEVER``, as a constant."""
+    if require_date_value(value) is NEVER:
+        return Expression(id=id or uuid4(), kind=ExpressionKind.NEVER, never=NEVER)
+    assert isinstance(value, date)
+    return Expression(id=id or uuid4(), kind=ExpressionKind.DATE, date=value)
 
 
 def reference(target: Reference, *, id: UUID | None = None) -> Expression:

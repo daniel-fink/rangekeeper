@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "8429bea8adf59675b6c9d20b3c1c3c8f8ae322218d84986ff64d5aa4a4e7fe89",
-    "enums.py": "15ea4304b36c2a3398ddb939ec18c1120ee52601afdd0422999045d5be4b0ad4",
-    "records.py": "d39d810f937b4b60869e602b8736323a2425f64936f3504ae3f2157256410f42",
-    "schema.json": "a89c9bdf31938e63994fb2eb62e5f3054d427e19a2bdcb396449554336d31d1a",
-    "slots.json": "23acf1db0f3af6771613566426700556ae07acde1ee0802293b31352f78c9514"
+    "checks.py": "de05ad39fc281ab25990aa25a8e241af81a617bff45546889bd3afce476f30f4",
+    "enums.py": "2641d761acdb5bafb454839cd93b8b23a78c73b1c09296aa5b7361c4f4537f5c",
+    "records.py": "0140fe20d558c75f8a002618f6781195d6a26bbf54e23a5d66a67984e1d70469",
+    "schema.json": "905971192a8b4647d2ff24af16c101a026915dffc7f65e5f40601b2e63ae1c26",
+    "slots.json": "2962ecf66f6474e1006bd90fe8b9c810a78a772a39975ea5c8a6fd7b86971f8d"
   },
   "classes": [
     "Action",
@@ -105,16 +105,16 @@
   "sources": {
     "schema/assembly.yaml": "780821a9ae2750975ea9a87c6ba527041f1e28570da2a65e7c62321f90554250",
     "schema/binding.yaml": "68a69d3be474c4bea52e4fbbf1dd853cf8f7eddd9923e79c489a0629ccbcc8ec",
-    "schema/characteristics.yaml": "2e53d57b2f67898865f6c8dc3f351c9233bdafcbd20cf53727c02dc87635cf29",
+    "schema/characteristics.yaml": "db59c72f1bca79580fd3c49de938670fa62881fd0df5b5dbfc2921fc29ea9d22",
     "schema/classification.yaml": "65e92ca8e598ed94e51468ffbed1f8e646bae0c7127983f905c884a35589c49d",
     "schema/common.yaml": "4cdf7eeb661a6356cc39d69d417099f43fcc15fdebe66da5ba11f31d46f31992",
     "schema/constraint.yaml": "74242011c99b655ce4ced89426df36b26c09eb7a0bbef8602983168e75c972dd",
     "schema/content.yaml": "86368a1b3649f552c400138b6820a9e06b1fe979ef0fb5fceeb1ca09359743af",
     "schema/definitions.yaml": "31e528ef991f92aa1ce8afea4ec32f2160a03860e8d20a2328560e3f476bde85",
     "schema/distribution.yaml": "c24b50fc3836b60aebfbb8ad7c24cf11f9228deac79ef1a363a092cd1e44d203",
-    "schema/duration.yaml": "02dbb776846f9715eff3a71c1acb30be160650d7e89928841b73a86595a7dc61",
+    "schema/duration.yaml": "e4d947b8b9d4e37b147e4a6c0963a0e07851f8537cd2535f2eda6dbfe367e9c2",
     "schema/entity.yaml": "956f005a80a6bcaa58bfd32896cb8e41e4c696dfa3ae02626b949a78a8dde7ae",
-    "schema/expression.yaml": "e1a185ff0c9903f6d46ae123b5ec326b7b257f168d6b970c479c706fb4d1fc61",
+    "schema/expression.yaml": "613a972f6faa55d1a512cede8bf3d7743c7b8a7f43b343a9d53c4c1c088a0374",
     "schema/flow.yaml": "445b1b8fea26c26a145de32a70c7b4c312cf419090d3077c1c4251b3fedeaf95",
     "schema/formulation.yaml": "659f4380df7cafae81c21af6830b9f100cb64b2cd47b1d6789ae3aa67f4e95d4",
     "schema/function.yaml": "b430d868c3d1973fea8abd272ff796987deb894f1218f4bd0838a5e95ba94c0d",

@@ -96,6 +96,8 @@ class EmptyHandling(Enum):
 class ExpressionKind(Enum):
     QUANTITY = 'quantity'
     BOOLEAN = 'boolean'
+    DATE = 'date'
+    NEVER = 'never'
     REFERENCE = 'reference'
     UNARY = 'unary'
     BINARY = 'binary'
@@ -114,6 +116,10 @@ class ImplementationKind(Enum):
 class MissingHandling(Enum):
     ERROR = 'error'
     OMIT = 'omit'
+
+@unique
+class Never(Enum):
+    NEVER = 'never'
 
 @unique
 class ObjectiveKind(Enum):
@@ -190,6 +196,7 @@ class ValueKind(Enum):
     MEASUREMENT = 'measurement'
     FLOW = 'flow'
     PROPERTY = 'property'
+    DATE = 'date'
 
 @unique
 class ValueRelation(Enum):
@@ -219,6 +226,7 @@ _ENUM_TYPES = {
     'ExpressionKind': ExpressionKind,
     'ImplementationKind': ImplementationKind,
     'MissingHandling': MissingHandling,
+    'Never': Never,
     'ObjectiveKind': ObjectiveKind,
     'Operator': Operator,
     'ParameterKind': ParameterKind,
@@ -233,4 +241,4 @@ _ENUM_TYPES = {
     'ValueRelation': ValueRelation,
 }
 
-__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'ObjectiveKind', 'Operator', 'ParameterKind', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']
+__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'Never', 'ObjectiveKind', 'Operator', 'ParameterKind', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']

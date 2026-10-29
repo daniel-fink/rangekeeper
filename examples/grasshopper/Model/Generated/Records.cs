@@ -671,6 +671,12 @@ public sealed class Expression : WireRecord
         get => ReadOptional<Call>("call");
         init => WriteOptional("call", value);
     }
+    /// <summary>Wire field date; missing and null remain distinct.</summary>
+    public Optional<DateOnly> Date
+    {
+        get => ReadOptional<DateOnly>("date");
+        init => WriteOptional("date", value);
+    }
     /// <summary>Wire field id; missing and null remain distinct.</summary>
     public Guid Id
     {
@@ -682,6 +688,12 @@ public sealed class Expression : WireRecord
     {
         get => Read<string>("kind");
         init => Write("kind", value);
+    }
+    /// <summary>Wire field never; missing and null remain distinct.</summary>
+    public Optional<string> Never
+    {
+        get => ReadOptional<string>("never");
+        init => WriteOptional("never", value);
     }
     /// <summary>Wire field operand; missing and null remain distinct.</summary>
     public Optional<Expression> Operand
@@ -2525,6 +2537,12 @@ public sealed class Value : WireRecord
         get => ReadOptional<PropertyContent>("content");
         init => WriteOptional("content", value);
     }
+    /// <summary>Wire field date; missing and null remain distinct.</summary>
+    public Optional<DateOnly> Date
+    {
+        get => ReadOptional<DateOnly>("date");
+        init => WriteOptional("date", value);
+    }
     /// <summary>Wire field description; missing and null remain distinct.</summary>
     public Optional<string> Description
     {
@@ -2560,6 +2578,12 @@ public sealed class Value : WireRecord
     {
         get => ReadOptional<Guid>("measure");
         init => WriteOptional("measure", value);
+    }
+    /// <summary>Wire field never; missing and null remain distinct.</summary>
+    public Optional<string> Never
+    {
+        get => ReadOptional<string>("never");
+        init => WriteOptional("never", value);
     }
     /// <summary>Wire field quantity; missing and null remain distinct.</summary>
     public Optional<Quantity> Quantity

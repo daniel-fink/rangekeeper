@@ -603,7 +603,7 @@ def check_Expression(d, fields=None):
     if 'kind' not in d:
         issues.append(('structure.required', 'kind is required', ''))
     for name in d:
-        if name not in ('boolean', 'call', 'id', 'kind', 'operand', 'operands', 'operator', 'quantity', 'query', 'selection', 'target'):
+        if name not in ('boolean', 'call', 'date', 'id', 'kind', 'never', 'operand', 'operands', 'operator', 'quantity', 'query', 'selection', 'target'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'boolean' in d and (fields is None or 'boolean' in fields):
         v = d['boolean']
@@ -613,14 +613,22 @@ def check_Expression(d, fields=None):
         v = d['call']
         if not ((isinstance(v, Mapping))):
             issues.append(('structure.value', 'invalid call', '/call'))
+    if 'date' in d and (fields is None or 'date' in fields):
+        v = d['date']
+        if not ((type(v) is not str or _date(v)) and (type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid date', '/date'))
     if 'id' in d and (fields is None or 'id' in fields):
         v = d['id']
         if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
             issues.append(('structure.value', 'invalid id', '/id'))
     if 'kind' in d and (fields is None or 'kind' in fields):
         v = d['kind']
-        if not ((v in ('quantity', 'boolean', 'reference', 'unary', 'binary', 'call', 'selection', 'query') and (type(v) is str))):
+        if not ((v in ('quantity', 'boolean', 'date', 'never', 'reference', 'unary', 'binary', 'call', 'selection', 'query') and (type(v) is str))):
             issues.append(('structure.value', 'invalid kind', '/kind'))
+    if 'never' in d and (fields is None or 'never' in fields):
+        v = d['never']
+        if not ((v in ('never',) and (type(v) is str))):
+            issues.append(('structure.value', 'invalid never', '/never'))
     if 'operand' in d and (fields is None or 'operand' in fields):
         v = d['operand']
         if not ((isinstance(v, Mapping))):
@@ -649,7 +657,7 @@ def check_Expression(d, fields=None):
         v = d['target']
         if not ((isinstance(v, Mapping))):
             issues.append(('structure.value', 'invalid target', '/target'))
-    if not ((((not (('kind' not in d or (d['kind'] == 'quantity')) and 'kind' in d) or ('quantity' in d)) and ((('kind' not in d or (d['kind'] == 'quantity')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'boolean')) and 'kind' in d) or ('boolean' in d)) and ((('kind' not in d or (d['kind'] == 'boolean')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'reference')) and 'kind' in d) or ('target' in d)) and ((('kind' not in d or (d['kind'] == 'reference')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'unary')) and 'kind' in d) or (('operator' not in d or (d['operator'] in ('negate', 'logical_not'))) and 'operator' in d and 'operand' in d)) and ((('kind' not in d or (d['kind'] == 'unary')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'binary')) and 'kind' in d) or (('operands' not in d or ((not _array(d['operands']) or all(True for x1 in d['operands'])) and (_array(d['operands'])))) and ('operator' not in d or (d['operator'] in ('add', 'subtract', 'multiply', 'divide', 'equal', 'not_equal', 'less_than', 'less_than_or_equal', 'greater_than', 'greater_than_or_equal', 'power', 'logical_and', 'logical_or'))) and 'operator' in d and 'operands' in d)) and ((('kind' not in d or (d['kind'] == 'binary')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'call')) and 'kind' in d) or ('call' in d)) and ((('kind' not in d or (d['kind'] == 'call')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'selection')) and 'kind' in d) or ('selection' in d)) and ((('kind' not in d or (d['kind'] == 'selection')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'query')) and 'kind' in d) or ('query' in d)) and ((('kind' not in d or (d['kind'] == 'query')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] in ('quantity', 'boolean', 'reference', 'call', 'selection', 'query'))) and 'kind' in d) or (not ('operator' in d))) and ((('kind' not in d or (d['kind'] in ('quantity', 'boolean', 'reference', 'call', 'selection', 'query'))) and 'kind' in d) or True))) and (sum(map(bool, (('quantity' in d), ('boolean' in d), ('target' in d), ('operand' in d), (('operands' not in d or ((not _array(d['operands']) or all(True for x2 in d['operands'])) and (_array(d['operands'])))) and 'operands' in d), ('call' in d), ('selection' in d), ('query' in d),))) == 1)):
+    if not ((((not (('kind' not in d or (d['kind'] == 'quantity')) and 'kind' in d) or ('quantity' in d)) and ((('kind' not in d or (d['kind'] == 'quantity')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'boolean')) and 'kind' in d) or ('boolean' in d)) and ((('kind' not in d or (d['kind'] == 'boolean')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'date')) and 'kind' in d) or ('date' in d)) and ((('kind' not in d or (d['kind'] == 'date')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'never')) and 'kind' in d) or ('never' in d)) and ((('kind' not in d or (d['kind'] == 'never')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'reference')) and 'kind' in d) or ('target' in d)) and ((('kind' not in d or (d['kind'] == 'reference')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'unary')) and 'kind' in d) or (('operator' not in d or (d['operator'] in ('negate', 'logical_not'))) and 'operator' in d and 'operand' in d)) and ((('kind' not in d or (d['kind'] == 'unary')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'binary')) and 'kind' in d) or (('operands' not in d or ((not _array(d['operands']) or all(True for x1 in d['operands'])) and (_array(d['operands'])))) and ('operator' not in d or (d['operator'] in ('add', 'subtract', 'multiply', 'divide', 'equal', 'not_equal', 'less_than', 'less_than_or_equal', 'greater_than', 'greater_than_or_equal', 'power', 'logical_and', 'logical_or'))) and 'operator' in d and 'operands' in d)) and ((('kind' not in d or (d['kind'] == 'binary')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'call')) and 'kind' in d) or ('call' in d)) and ((('kind' not in d or (d['kind'] == 'call')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'selection')) and 'kind' in d) or ('selection' in d)) and ((('kind' not in d or (d['kind'] == 'selection')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] == 'query')) and 'kind' in d) or ('query' in d)) and ((('kind' not in d or (d['kind'] == 'query')) and 'kind' in d) or True))) and (((not (('kind' not in d or (d['kind'] in ('quantity', 'boolean', 'date', 'never', 'reference', 'call', 'selection', 'query'))) and 'kind' in d) or (not ('operator' in d))) and ((('kind' not in d or (d['kind'] in ('quantity', 'boolean', 'date', 'never', 'reference', 'call', 'selection', 'query'))) and 'kind' in d) or True))) and (sum(map(bool, (('quantity' in d), ('boolean' in d), ('date' in d), ('never' in d), ('target' in d), ('operand' in d), (('operands' not in d or ((not _array(d['operands']) or all(True for x2 in d['operands'])) and (_array(d['operands'])))) and 'operands' in d), ('call' in d), ('selection' in d), ('query' in d),))) == 1)):
         issues.append(('structure.rule', 'a Expression rule is not met', ''))
     return issues
 
@@ -2309,12 +2317,16 @@ def check_Value(d, fields=None):
     if 'kind' not in d:
         issues.append(('structure.required', 'kind is required', ''))
     for name in d:
-        if name not in ('content', 'description', 'flow', 'id', 'key', 'kind', 'measure', 'quantity'):
+        if name not in ('content', 'date', 'description', 'flow', 'id', 'key', 'kind', 'measure', 'never', 'quantity'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'content' in d and (fields is None or 'content' in fields):
         v = d['content']
         if not (((isinstance(v, Mapping)) or ((v is None)))):
             issues.append(('structure.value', 'invalid content', '/content'))
+    if 'date' in d and (fields is None or 'date' in fields):
+        v = d['date']
+        if not ((type(v) is not str or _date(v)) and (type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid date', '/date'))
     if 'description' in d and (fields is None or 'description' in fields):
         v = d['description']
         if not ((type(v) is str or v is None)):
@@ -2333,12 +2345,16 @@ def check_Value(d, fields=None):
             issues.append(('structure.value', 'invalid key', '/key'))
     if 'kind' in d and (fields is None or 'kind' in fields):
         v = d['kind']
-        if not ((v in ('measurement', 'flow', 'property') and (type(v) is str))):
+        if not ((v in ('measurement', 'flow', 'property', 'date') and (type(v) is str))):
             issues.append(('structure.value', 'invalid kind', '/kind'))
     if 'measure' in d and (fields is None or 'measure' in fields):
         v = d['measure']
         if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str or v is None)):
             issues.append(('structure.value', 'invalid measure', '/measure'))
+    if 'never' in d and (fields is None or 'never' in fields):
+        v = d['never']
+        if not ((v in ('never',) and (type(v) is str))):
+            issues.append(('structure.value', 'invalid never', '/never'))
     if 'quantity' in d and (fields is None or 'quantity' in fields):
         v = d['quantity']
         if not (((isinstance(v, Mapping)) or ((v is None)))):

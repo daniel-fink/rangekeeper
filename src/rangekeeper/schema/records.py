@@ -52,6 +52,7 @@ from .enums import EmptyHandling as EmptyHandling
 from .enums import ExpressionKind as ExpressionKind
 from .enums import ImplementationKind as ImplementationKind
 from .enums import MissingHandling as MissingHandling
+from .enums import Never as Never
 from .enums import ObjectiveKind as ObjectiveKind
 from .enums import Operator as Operator
 from .enums import ParameterKind as ParameterKind
@@ -1945,6 +1946,20 @@ class Expression(Record):
                      'nullable': False,
                      'ordered': False,
                      'lineage': False},
+         'date': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False,
+                  'lineage': False},
+         'never': {'options': [{'kind': 'Never', 'category': 'enum'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False,
+                   'lineage': False},
          'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
                     'required': False,
                     'many': False,
@@ -2001,6 +2016,8 @@ class Expression(Record):
         kind: ExpressionKind,
         quantity: Quantity | Unset = UNSET,
         boolean: bool | Unset = UNSET,
+        date: Date | None | Unset = UNSET,
+        never: Never | Unset = UNSET,
         target: Reference | Unset = UNSET,
         operator: Operator | Unset = UNSET,
         operands: tuple[Expression, ...] | None | Unset = UNSET,
@@ -2016,6 +2033,10 @@ class Expression(Record):
             data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
         if boolean is not UNSET:
             data['boolean'] = copy_json(boolean)
+        if date is not UNSET:
+            data['date'] = _encode_date(date)
+        if never is not UNSET:
+            data['never'] = _encode_enum(never, Never, 'never')
         if target is not UNSET:
             data['target'] = _encode_record(target, Reference, 'target')
         if operator is not UNSET:
@@ -2037,6 +2058,8 @@ class Expression(Record):
         kind: ExpressionKind | Unset = UNSET,
         quantity: Quantity | Unset | Omit = UNSET,
         boolean: bool | Unset | Omit = UNSET,
+        date: Date | None | Unset | Omit = UNSET,
+        never: Never | Unset | Omit = UNSET,
         target: Reference | Unset | Omit = UNSET,
         operator: Operator | Unset | Omit = UNSET,
         operands: tuple[Expression, ...] | None | Unset | Omit = UNSET,
@@ -2059,6 +2082,14 @@ class Expression(Record):
             changes['boolean'] = OMIT
         elif boolean is not UNSET:
             changes['boolean'] = copy_json(boolean)
+        if date is OMIT:
+            changes['date'] = OMIT
+        elif date is not UNSET:
+            changes['date'] = _encode_date(date)
+        if never is OMIT:
+            changes['never'] = OMIT
+        elif never is not UNSET:
+            changes['never'] = _encode_enum(never, Never, 'never')
         if target is OMIT:
             changes['target'] = OMIT
         elif target is not UNSET:
@@ -2108,6 +2139,16 @@ class Expression(Record):
     def boolean(self) -> bool | None:
         'Boolean literal; false is a literal, not absence.'
         return cast('bool | None', self._data.get('boolean'))
+
+    @property
+    def date(self) -> Date | None:
+        'Calendar date literal of a date Expression.'
+        return cast('Date | None', _decode_date(self._data.get('date')))
+
+    @property
+    def never(self) -> Never | None:
+        'The NEVER literal of a never Expression; the event does not happen.'
+        return cast('Never | None', _decode_enum(self._data.get('never'), Never))
 
     @property
     def target(self) -> Reference | None:
@@ -7396,7 +7437,21 @@ class Value(Record):
                      'mapping': False,
                      'nullable': True,
                      'ordered': False,
-                     'lineage': False}}
+                     'lineage': False},
+         'date': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False,
+                  'lineage': False},
+         'never': {'options': [{'kind': 'Never', 'category': 'enum'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
@@ -7408,6 +7463,8 @@ class Value(Record):
         description: str | None | Unset = UNSET,
         flow: Flow | None | Unset = UNSET,
         content: PropertyContent | None | Unset = UNSET,
+        date: Date | None | Unset = UNSET,
+        never: Never | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         if measure is not UNSET:
@@ -7423,6 +7480,10 @@ class Value(Record):
             data['flow'] = _encode_record(flow, Flow, 'flow')
         if content is not UNSET:
             data['content'] = _encode_record(content, PropertyContent, 'content')
+        if date is not UNSET:
+            data['date'] = _encode_date(date)
+        if never is not UNSET:
+            data['never'] = _encode_enum(never, Never, 'never')
         self._set_checked(data)
 
     def replace(self, *,
@@ -7434,6 +7495,8 @@ class Value(Record):
         description: str | None | Unset | Omit = UNSET,
         flow: Flow | None | Unset | Omit = UNSET,
         content: PropertyContent | None | Unset | Omit = UNSET,
+        date: Date | None | Unset | Omit = UNSET,
+        never: Never | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -7463,6 +7526,14 @@ class Value(Record):
             changes['content'] = OMIT
         elif content is not UNSET:
             changes['content'] = _encode_record(content, PropertyContent, 'content')
+        if date is OMIT:
+            changes['date'] = OMIT
+        elif date is not UNSET:
+            changes['date'] = _encode_date(date)
+        if never is OMIT:
+            changes['never'] = OMIT
+        elif never is not UNSET:
+            changes['never'] = _encode_enum(never, Never, 'never')
         return self._replace(changes)
 
     @property
@@ -7504,6 +7575,16 @@ class Value(Record):
     def content(self) -> PropertyContent | None:
         'Inert typed content of a property Value.'
         return cast('PropertyContent | None', self._child('content', PropertyContent, False))
+
+    @property
+    def date(self) -> Date | None:
+        'Recorded calendar date of a date Value; absent when the date is unresolved or NEVER.'
+        return cast('Date | None', _decode_date(self._data.get('date')))
+
+    @property
+    def never(self) -> Never | None:
+        'Records that the event of a date Value does not happen; it excludes date.'
+        return cast('Never | None', _decode_enum(self._data.get('never'), Never))
 
 
 class ValueTest(Record):
@@ -7786,4 +7867,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']

@@ -38,8 +38,12 @@ classes:
       references.
     - Domains, units, scope, unique identities, function binding, finite numbers, and backend support require validation
       beyond record shape.
-    - Literal kinds are limited to Quantities and Booleans. Date and string literals are deferred; result types
+    - Literal kinds are Quantities, Booleans, calendar dates and NEVER. String literals are deferred; result types
       of references, selections, and calls are independent of the available literal kinds.
+    - Date arithmetic adds or subtracts a whole number of days, weeks, months, quarters or years, such as
+      1 year, and gives a date. A month step keeps the last day of a month. NEVER plus or minus a length is
+      NEVER. Dates and NEVER compare with each other; NEVER equals NEVER and is later than every date. Other
+      date operations, such as the difference of two dates, are not defined.
     attributes:
       id:
         description: Stable identity of this Expression across Model revisions.
@@ -63,6 +67,12 @@ classes:
         range: boolean
         any_of:
         - range: boolean
+      date:
+        description: Calendar date literal of a date Expression.
+        range: date
+      never:
+        description: The NEVER literal of a never Expression; the event does not happen.
+        range: Never
       target:
         range: Reference
         inlined: true
@@ -130,6 +140,22 @@ classes:
       postconditions:
         slot_conditions:
           boolean:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: date
+      postconditions:
+        slot_conditions:
+          date:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: never
+      postconditions:
+        slot_conditions:
+          never:
             required: true
     - preconditions:
         slot_conditions:
@@ -206,6 +232,8 @@ classes:
             equals_string_in:
             - quantity
             - boolean
+            - date
+            - never
             - reference
             - call
             - selection
@@ -220,6 +248,12 @@ classes:
           required: true
     - slot_conditions:
         boolean:
+          required: true
+    - slot_conditions:
+        date:
+          required: true
+    - slot_conditions:
+        never:
           required: true
     - slot_conditions:
         target:
@@ -357,6 +391,10 @@ enums:
         description: A numerical literal with explicit magnitude and units.
       boolean:
         description: A Boolean literal.
+      date:
+        description: A calendar date literal.
+      never:
+        description: The NEVER literal; the event does not happen.
       reference:
         description: A symbolic Value reference.
       unary:

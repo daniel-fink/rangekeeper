@@ -59,6 +59,8 @@ def _content(value: Value) -> object:
         return value.quantity
     if value.kind is ValueKind.FLOW:
         return value.flow
+    if value.kind is ValueKind.DATE:
+        return value.date if value.never is None else value.never
     return value.content
 
 

@@ -4,8 +4,19 @@ from enum import Enum
 from typing import cast
 from uuid import UUID
 
+from rangekeeper.duration.period import length_frequency
 from rangekeeper.model._scope import Scope
+from rangekeeper.shared.errors import UnitError
 from rangekeeper.shared.validation import require
+
+_COMPARISONS = (
+    "equal",
+    "not_equal",
+    "less_than",
+    "less_than_or_equal",
+    "greater_than",
+    "greater_than_or_equal",
+)
 
 
 class DomainCompatibility(Enum):
@@ -85,18 +96,13 @@ def infer_operator_domain(operator, domains, *, unary, scope):
         t["kind"] == "boolean" for t in domains
     ):
         return dict(kind="boolean")
+    if any(t["kind"] == "date" for t in domains):
+        return infer_date_domain(operator, domains, unary=unary, scope=scope)
     require(
         all(t["kind"] in ("number", "quantity", "measurement") for t in domains),
         "numerical operands required",
     )
-    if operator in (
-        "equal",
-        "not_equal",
-        "less_than",
-        "less_than_or_equal",
-        "greater_than",
-        "greater_than_or_equal",
-    ):
+    if operator in _COMPARISONS:
         return dict(kind="boolean")
     if all(get_numerical_units(t, scope=scope) == "dimensionless" for t in domains):
         return dict(kind="number")
@@ -105,6 +111,41 @@ def infer_operator_domain(operator, domains, *, unary, scope):
     # Full unit inference is deferred. Arithmetic alone does not supply
     # a Measurement's domain meaning or a Measure identity.
     return dict(kind="quantity")
+
+
+def infer_date_domain(operator, domains, *, unary, scope):
+    """Infer a date comparison or a date plus or minus a whole calendar length.
+
+    Two dates, or a date and NEVER, compare. A date plus a length, a length plus
+    a date and a date minus a length are dates. No other operation takes a date.
+    """
+    require(not unary, "a date cannot be negated")
+    if operator in _COMPARISONS:
+        require(
+            all(t["kind"] == "date" for t in domains),
+            "a date compares only with a date or NEVER",
+        )
+        return dict(kind="boolean")
+    left, right = domains
+    if operator == "add" and left["kind"] != "date":
+        left, right = right, left
+    require(
+        operator in ("add", "subtract")
+        and left["kind"] == "date"
+        and right["kind"] in ("quantity", "measurement"),
+        "date arithmetic adds or subtracts a length, such as 1 year, to a date",
+    )
+    units = get_numerical_units(right, scope=scope)
+    if units is not None:
+        try:
+            frequency = length_frequency(units)
+        except UnitError:
+            frequency = None
+        require(
+            frequency is not None,
+            "a date length is in days, weeks, months, quarters or years",
+        )
+    return dict(kind="date")
 
 
 def infer_selection_domain(base, *, scope, member=None, index=None, literal=None):

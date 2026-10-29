@@ -176,6 +176,17 @@
    ],
    "module": "rangekeeper.duration.calendar"
   },
+  "NEVER": {
+   "kind": "value",
+   "type": "Never"
+  },
+  "Never": {
+   "kind": "enum",
+   "members": [
+    "NEVER"
+   ],
+   "module": "rangekeeper.schema.enums"
+  },
   "Period": {
    "kind": "class",
    "members": {
@@ -266,6 +277,11 @@
    "kind": "function",
    "module": "rangekeeper.duration.period",
    "signature": "(start: date, end: date, *, frequency: Frequency, include_partial: bool = False, month_roll: MonthRoll = MonthRoll.PRESERVE_END) -> tuple[Period, ...]"
+  },
+  "shift": {
+   "kind": "function",
+   "module": "rangekeeper.duration.dates",
+   "signature": "(on: DateValue, *, by: Quantity | str) -> DateValue"
   },
   "year_fraction": {
    "kind": "function",
@@ -1363,22 +1379,24 @@
   "Expression": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, id: UUID, kind: ExpressionKind, quantity: Quantity | Unset = <Unset>, boolean: bool | Unset = <Unset>, target: Reference | Unset = <Unset>, operator: Operator | Unset = <Unset>, operands: tuple[Expression, ...] | None | Unset = <Unset>, operand: Expression | Unset = <Unset>, call: Call | Unset = <Unset>, selection: Selection | Unset = <Unset>, query: Query | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, id: UUID, kind: ExpressionKind, quantity: Quantity | Unset = <Unset>, boolean: bool | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>, target: Reference | Unset = <Unset>, operator: Operator | Unset = <Unset>, operands: tuple[Expression, ...] | None | Unset = <Unset>, operand: Expression | Unset = <Unset>, call: Call | Unset = <Unset>, selection: Selection | Unset = <Unset>, query: Query | Unset = <Unset>) -> None",
     "boolean": "property",
     "call": "property",
+    "date": "property",
     "id": "property",
     "kind": "property",
+    "never": "property",
     "operand": "property",
     "operands": "property",
     "operator": "property",
     "quantity": "property",
     "query": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, kind: ExpressionKind | Unset = <Unset>, quantity: Quantity | Unset | Omit = <Unset>, boolean: bool | Unset | Omit = <Unset>, target: Reference | Unset | Omit = <Unset>, operator: Operator | Unset | Omit = <Unset>, operands: tuple[Expression, ...] | None | Unset | Omit = <Unset>, operand: Expression | Unset | Omit = <Unset>, call: Call | Unset | Omit = <Unset>, selection: Selection | Unset | Omit = <Unset>, query: Query | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, id: UUID | Unset = <Unset>, kind: ExpressionKind | Unset = <Unset>, quantity: Quantity | Unset | Omit = <Unset>, boolean: bool | Unset | Omit = <Unset>, date: Date | None | Unset | Omit = <Unset>, never: Never | Unset | Omit = <Unset>, target: Reference | Unset | Omit = <Unset>, operator: Operator | Unset | Omit = <Unset>, operands: tuple[Expression, ...] | None | Unset | Omit = <Unset>, operand: Expression | Unset | Omit = <Unset>, call: Call | Unset | Omit = <Unset>, selection: Selection | Unset | Omit = <Unset>, query: Query | Unset | Omit = <Unset>) -> Self",
     "selection": "property",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, id: UUID, kind: ExpressionKind, quantity: Quantity | Unset = <Unset>, boolean: bool | Unset = <Unset>, target: Reference | Unset = <Unset>, operator: Operator | Unset = <Unset>, operands: tuple[Expression, ...] | None | Unset = <Unset>, operand: Expression | Unset = <Unset>, call: Call | Unset = <Unset>, selection: Selection | Unset = <Unset>, query: Query | Unset = <Unset>) -> None"
+   "signature": "(*, id: UUID, kind: ExpressionKind, quantity: Quantity | Unset = <Unset>, boolean: bool | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>, target: Reference | Unset = <Unset>, operator: Operator | Unset = <Unset>, operands: tuple[Expression, ...] | None | Unset = <Unset>, operand: Expression | Unset = <Unset>, call: Call | Unset = <Unset>, selection: Selection | Unset = <Unset>, query: Query | Unset = <Unset>) -> None"
   },
   "Fact": {
    "kind": "class",
@@ -1701,19 +1719,21 @@
   "Value": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>) -> None",
     "content": "property",
+    "date": "property",
     "description": "property",
     "flow": "property",
     "id": "property",
     "key": "property",
     "kind": "property",
     "measure": "property",
+    "never": "property",
     "quantity": "property",
-    "replace": "method (self, *, measure: UUID | None | Unset | Omit = <Unset>, quantity: Quantity | None | Unset | Omit = <Unset>, id: UUID | Unset = <Unset>, key: str | Unset = <Unset>, kind: ValueKind | Unset = <Unset>, description: str | None | Unset | Omit = <Unset>, flow: Flow | None | Unset | Omit = <Unset>, content: PropertyContent | None | Unset | Omit = <Unset>) -> Self"
+    "replace": "method (self, *, measure: UUID | None | Unset | Omit = <Unset>, quantity: Quantity | None | Unset | Omit = <Unset>, id: UUID | Unset = <Unset>, key: str | Unset = <Unset>, kind: ValueKind | Unset = <Unset>, description: str | None | Unset | Omit = <Unset>, flow: Flow | None | Unset | Omit = <Unset>, content: PropertyContent | None | Unset | Omit = <Unset>, date: Date | None | Unset | Omit = <Unset>, never: Never | Unset | Omit = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>) -> None"
+   "signature": "(*, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>) -> None"
   },
   "ValueHandle": {
    "kind": "class",
@@ -1728,7 +1748,8 @@
    "members": [
     "MEASUREMENT",
     "FLOW",
-    "PROPERTY"
+    "PROPERTY",
+    "DATE"
    ],
    "module": "rangekeeper.schema.enums"
   },
@@ -1858,6 +1879,8 @@
    "members": [
     "QUANTITY",
     "BOOLEAN",
+    "DATE",
+    "NEVER",
     "REFERENCE",
     "UNARY",
     "BINARY",

@@ -9,6 +9,7 @@ from rangekeeper.duration.calendar import (
     offset,
     year_fraction,
 )
+from rangekeeper.duration.dates import NEVER, Never, shift
 from rangekeeper.duration.period import (
     Period,
     Periods,
@@ -33,6 +34,9 @@ __all__ = [
     "periods_between",
     "containing_period",
     "cover",
+    "NEVER",
+    "Never",
+    "shift",
 ]
 
 """Schema-defined date intervals. Calendar operations live in ``duration``."""
