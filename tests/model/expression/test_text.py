@@ -156,6 +156,10 @@ def test_constants_are_boolean_and_never_literals():
     parsed = parse("b_start = NEVER or True != False", names=NAMES)
     never = parsed.operands[0].operands[1]
     assert records(never) == records(date_literal(rk.duration.NEVER))
+    # NEVER is a date literal with never, as a date Value records it (#387).
+    assert (never.kind, never.date) == (ExpressionKind.DATE, None)
+    assert text(never) == "NEVER"
+    assert text(date_literal(date(2027, 1, 1))) == "<date 2027-01-01>"
     assert [o.boolean for o in parsed.operands[1].operands] == [True, False]
 
 

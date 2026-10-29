@@ -224,7 +224,7 @@ class _Reader:
 
 def _constant(word: str) -> Expression:
     if word == syntax.NEVER:
-        return Expression(id=uuid4(), kind=ExpressionKind.NEVER, never=NEVER)
+        return Expression(id=uuid4(), kind=ExpressionKind.DATE, never=NEVER)
     return Expression(
         id=uuid4(), kind=ExpressionKind.BOOLEAN, boolean=word == syntax.TRUE
     )
@@ -272,12 +272,11 @@ def _write_boolean(node: Expression, name: _Namer) -> tuple[str, Precedence]:
 
 
 def _write_date(node: Expression, name: _Namer) -> tuple[str, Precedence]:
+    # A date literal records a calendar date or NEVER (#387).
+    if node.never is not None:
+        return syntax.NEVER, Precedence.ATOM
     assert node.date is not None
     return f"<date {node.date.isoformat()}>", Precedence.ATOM
-
-
-def _write_never(node: Expression, name: _Namer) -> tuple[str, Precedence]:
-    return syntax.NEVER, Precedence.ATOM
 
 
 def _write_reference(node: Expression, name: _Namer) -> tuple[str, Precedence]:
@@ -323,7 +322,6 @@ _WRITERS: dict[ExpressionKind, _Writer] = {
     ExpressionKind.QUANTITY: _write_quantity,
     ExpressionKind.BOOLEAN: _write_boolean,
     ExpressionKind.DATE: _write_date,
-    ExpressionKind.NEVER: _write_never,
     ExpressionKind.REFERENCE: _write_reference,
     ExpressionKind.UNARY: _write_unary,
     ExpressionKind.BINARY: _write_binary,
