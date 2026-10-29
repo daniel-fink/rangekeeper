@@ -402,7 +402,7 @@ the same rules ([expressions](expressions.md#dates-and-never)).
 fortnight step: offset by `Frequency.WEEK` with `count=2`, or give 14-day
 Periods explicitly. `Period`, `Span`, `Periods`, `offset`, `count_steps`,
 `containing_period` and the grids, and `cover` use native dates. `shift(on=,
-by=)` moves a date value, which can be `NEVER`, by a length; `offset(value,
+by=)` moves a date value, which can be `NEVER`, by a length; `offset(value=,
 frequency=, count=, month_roll=)` moves a date by whole steps of a `Frequency`,
 with an explicit `MonthRoll`.
 Month offsets default to `MonthRoll.PRESERVE_END`; `CLAMP` is explicit. These rules

@@ -117,7 +117,7 @@ def author(
     ):
         raise ValueError("invalid investment ratios")
     periods = Periods(
-        start=offset(p["start_date"], frequency=Frequency.YEAR),
+        start=offset(value=p["start_date"], frequency=Frequency.YEAR),
         frequency=Frequency.YEAR,
         count=p["num_periods"] + 1,
     )

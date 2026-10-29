@@ -15,7 +15,7 @@ class Model:
         units = params["units"]
         frequency = Frequency(params["frequency"])
         periods = Periods(
-            start=offset(params["start_date"], frequency=Frequency.YEAR),
+            start=offset(value=params["start_date"], frequency=Frequency.YEAR),
             frequency=frequency,
             count=params["num_periods"] + 1,
         )

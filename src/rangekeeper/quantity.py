@@ -280,7 +280,9 @@ def _sum_scale(left: str, right: str) -> float:
         return 1.0
     if not default_units.compatible(left, right):
         raise UnitError(f"cannot add or subtract {right!r} and {left!r}")
-    return default_units.convert(Quantity(magnitude=1.0, units=right), to=left).number
+    return default_units.convert(
+        quantity=Quantity(magnitude=1.0, units=right), to=left
+    ).number
 
 
 @register
@@ -328,7 +330,7 @@ class Quantity(records.Quantity):
 
     def to(self, *, units: str) -> "Quantity":
         """Return this Quantity in other, compatible units; currencies never convert."""
-        return default_units.convert(self, to=units)
+        return default_units.convert(quantity=self, to=units)
 
     def __eq__(self, other: object) -> bool:
         """Compare values: the same units text and equal magnitudes.
@@ -449,12 +451,14 @@ class Quantity(records.Quantity):
         if not isinstance(magnitude, Decimal):
             raise UnitError(f"{self.units!r} is not a currency; only amounts round")
         return Quantity(
-            magnitude=_round(magnitude, self.units, places=places, mode=mode),
+            magnitude=_round(
+                amount=magnitude, currency=self.units, places=places, mode=mode
+            ),
             units=self.units,
         )
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class UnitSystem:
     """Immutable curated unit catalogue with a private lazy Pint registry.
 
@@ -619,7 +623,7 @@ class UnitSystem:
         """Return quotient units; callers remain responsible for quantity meaning."""
         return str(self._parse(numerator) / self._parse(denominator))
 
-    def convert(self, quantity: records.Quantity, *, to: str) -> Quantity:
+    def convert(self, *, quantity: records.Quantity, to: str) -> Quantity:
         """Return a new finite Quantity; leave the original units and value untouched.
 
         Currencies never convert; a currency amount is copied without change.
@@ -694,8 +698,8 @@ class UnitSystem:
 
     def register(
         self,
-        name: str,
         *,
+        name: str,
         definition: str | None = None,
         aliases: tuple[str, ...] = (),
     ) -> "UnitSystem":
@@ -710,7 +714,7 @@ class UnitSystem:
         dimension = f"[{name}]" if definition is None else definition
         return self._extended(" = ".join((name, dimension, *aliases)), name)
 
-    def alias(self, alias: str, unit: str) -> "UnitSystem":
+    def alias(self, *, alias: str, unit: str) -> "UnitSystem":
         """Return a new system where ``alias`` is one more spelling of a known unit."""
         self._require_new((alias,))
         if unit not in self._spellings():

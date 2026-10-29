@@ -34,7 +34,7 @@ def _recorded_quantity(selected, units, unit_system):
         return None
     if units is None:
         return selected.quantity
-    return unit_system.convert(selected.quantity, to=units)
+    return unit_system.convert(quantity=selected.quantity, to=units)
 
 
 def select_value(key: str, *, measure: UUID | None = None) -> ValueSelector:

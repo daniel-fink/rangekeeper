@@ -1043,11 +1043,15 @@ notes:
   - topic: Date shift
     status: agreed
     source: "#255 D14, D25, #389"
-    note: "`rk.duration.shift(value, by=)` is now `shift(on=, by=)`. `rk.duration.DateValue` (a date or `NEVER`) names its type. `shift` moves a date value by a length; `offset(value, frequency=, count=, month_roll=)` moves a date by whole steps of a Frequency."
+    note: "`rk.duration.shift(value, by=)` is now `shift(on=, by=)`. `rk.duration.DateValue` (a date or `NEVER`) names its type. `shift` moves a date value by a length; `offset(value=, frequency=, count=, month_roll=)` moves a date by whole steps of a Frequency."
   - topic: Calendar grids
     status: agreed
     source: "#399, #403"
     note: "`containing_period(value, *, frequency=, week_start=, year_start_month=, origin=)` is now `containing_period(*, on=, grid=)`. The grid is `DayGrid()`, `WeekGrid(starts=calendar.Day.MONDAY)`, `MonthGrid(frequency=, year_starts=calendar.Month.JANUARY)` for months, quarters, half-years and years, or `MultiYearGrid(frequency=, origin=)` for bienniums, quinquenniums and decades. A grid takes only the choices that apply to it; a week grid takes no origin."
+  - topic: Keyword-only arguments in quantity, money and duration
+    status: agreed
+    source: "#410 D14"
+    note: "Name each argument: `UnitSystem(currencies=, definitions=)`, `UnitSystem.convert(quantity=, to=)`, `register(name=, definition=, aliases=)`, `alias(alias=, unit=)`, `rk.money.round(amount=, currency=, places=, mode=)`, `rk.duration.offset(value=, frequency=, count=, month_roll=)` and `cover(periods=, name=)`. A natural pair stays positional: `compatible(left, right)`, `multiply(left, right)`, `divide(numerator, denominator)`, `count_steps(start, end, frequency=)` and `year_fraction(start, end, convention=)`."
   - topic: Bundle options
     status: agreed
     source: "#411, #422"

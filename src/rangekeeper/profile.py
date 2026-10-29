@@ -59,7 +59,7 @@ def _rate(rate: Quantity | str) -> float:
     quantity = Quantity(text=rate) if isinstance(rate, str) else rate
     if not isinstance(quantity, records.Quantity):
         raise TypeError("rate must be a Quantity or its text, such as '2 % pa'")
-    value = default_units.convert(quantity, to="pa").number
+    value = default_units.convert(quantity=quantity, to="pa").number
     if not math.isfinite(value) or value <= -1:
         raise ValueError("a growth rate must be greater than -100 % pa")
     return value

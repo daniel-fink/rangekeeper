@@ -91,8 +91,8 @@ def require_month_roll(month_roll: MonthRoll) -> MonthRoll:
 
 
 def offset(
-    value: date,
     *,
+    value: date,
     frequency: Frequency,
     count: int = 1,
     month_roll: MonthRoll = MonthRoll.PRESERVE_END,
@@ -165,7 +165,10 @@ def count_steps(
     if days:
         return difference // days
     count = ((end.year - start.year) * 12 + end.month - start.month) // months
-    if offset(start, frequency=frequency, count=count, month_roll=month_roll) > end:
+    if (
+        offset(value=start, frequency=frequency, count=count, month_roll=month_roll)
+        > end
+    ):
         count -= 1
     return count
 

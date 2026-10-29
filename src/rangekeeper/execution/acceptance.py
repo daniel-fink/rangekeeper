@@ -75,7 +75,7 @@ def verify(
         value = recorded_scalar(candidate, binding.references[id])
         if value is None:
             raise NumericalError(f"candidate has no quantity for {id}")
-        values[id] = binding.units.convert(value, to=binding.value_units[id])
+        values[id] = binding.units.convert(quantity=value, to=binding.value_units[id])
     diagnostics = []
     passed = True
     for id, assigned in binding.assignments.items():
@@ -197,7 +197,7 @@ def _comparisons(
                 )
             left = evaluate(node.operands[0], values, units=units)
             right = units.convert(
-                evaluate(node.operands[1], values, units=units), to=left.units
+                quantity=evaluate(node.operands[1], values, units=units), to=left.units
             )
             yield node.operator.value, left, right, strict
         else:

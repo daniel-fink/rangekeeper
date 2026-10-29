@@ -501,7 +501,7 @@ class Specification:
             )
         for assignment in record.assignments or ():
             model.unit_system.convert(
-                assignment.quantity, to=target_units(model, assignment.target)
+                quantity=assignment.quantity, to=target_units(model, assignment.target)
             )
         taken = {ref.target for ref in controlled}
         unknowns = tuple(
@@ -513,7 +513,7 @@ class Specification:
         estimates = tuple(e for e in record.estimates or () if e.target.target in free)
         for estimate in estimates:
             model.unit_system.convert(
-                estimate.quantity, to=target_units(model, estimate.target)
+                quantity=estimate.quantity, to=target_units(model, estimate.target)
             )
         return self._derive(model=model, unknowns=unknowns, estimates=estimates)
 
@@ -742,7 +742,7 @@ def _quantity(
             f"the value of {target} must be a Quantity, Quantity text, a number "
             "or a mapping from Movement UUIDs to these"
         )
-    unit_system.convert(quantity, to=units)
+    unit_system.convert(quantity=quantity, to=units)
     return quantity
 
 
