@@ -137,7 +137,8 @@ show the target API in use.
   revision; `fix(key=value)` and `free("key")` each return a new
   Specification. `fix` takes a Quantity, Quantity text or a number for a ratio.
   A value that is not fixed is free, and `roles` lists the role of each value.
-  Records add bounds and rules. `rangekeeper.execution.solve(specification=)`
+  `on(model=)` moves the Specification to another Model revision. Records add
+  bounds and rules. `rangekeeper.execution.solve(specification=)`
   runs the typed stages: it resolves the cases, validates each composition, binds
   roles, builds the affine problem, solves it in a separate process, makes a
   candidate, verifies it independently and assembles an `Outcome`, and writes
