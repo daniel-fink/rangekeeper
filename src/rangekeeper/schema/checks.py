@@ -339,12 +339,16 @@ def check_Criterion(d, fields=None):
     if 'classification' not in d:
         issues.append(('structure.required', 'classification is required', ''))
     for name in d:
-        if name not in ('classification', 'key'):
+        if name not in ('classification', 'exclusive', 'key'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'classification' in d and (fields is None or 'classification' in fields):
         v = d['classification']
         if not ((((type(v) is not str or _P1.search(v) is not None) and (type(v) is str))) and (type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
             issues.append(('structure.value', 'invalid classification', '/classification'))
+    if 'exclusive' in d and (fields is None or 'exclusive' in fields):
+        v = d['exclusive']
+        if not ((type(v) is bool or v is None)):
+            issues.append(('structure.value', 'invalid exclusive', '/exclusive'))
     if 'key' in d and (fields is None or 'key' in fields):
         v = d['key']
         if not ((((type(v) is str))) and (type(v) is not str or _P2.search(v) is not None) and (type(v) is str)):
@@ -679,16 +683,24 @@ def check_Filter(d, fields=None):
     """Check the fields and rules of one Filter node."""
     issues = []
     for name in d:
-        if name not in ('classification', 'labels'):
+        if name not in ('classification', 'exclusive', 'labels', 'tests'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'classification' in d and (fields is None or 'classification' in fields):
         v = d['classification']
         if not ((((type(v) is not str or _P1.search(v) is not None) and (type(v) is str)) or ((v is None))) and (type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
             issues.append(('structure.value', 'invalid classification', '/classification'))
+    if 'exclusive' in d and (fields is None or 'exclusive' in fields):
+        v = d['exclusive']
+        if not ((type(v) is bool or v is None)):
+            issues.append(('structure.value', 'invalid exclusive', '/exclusive'))
     if 'labels' in d and (fields is None or 'labels' in fields):
         v = d['labels']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
             issues.append(('structure.value', 'invalid labels', '/labels'))
+    if 'tests' in d and (fields is None or 'tests' in fields):
+        v = d['tests']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
+            issues.append(('structure.value', 'invalid tests', '/tests'))
     return issues
 
 
@@ -2336,6 +2348,41 @@ def check_Value(d, fields=None):
     return issues
 
 
+def check_ValueTest(d, fields=None):
+    """Check the fields and rules of one ValueTest node."""
+    issues = []
+    if 'key' not in d:
+        issues.append(('structure.required', 'key is required', ''))
+    if 'relation' not in d:
+        issues.append(('structure.required', 'relation is required', ''))
+    for name in d:
+        if name not in ('key', 'maximum', 'minimum', 'quantity', 'relation'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'key' in d and (fields is None or 'key' in fields):
+        v = d['key']
+        if not ((((type(v) is str))) and (type(v) is not str or _P2.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid key', '/key'))
+    if 'maximum' in d and (fields is None or 'maximum' in fields):
+        v = d['maximum']
+        if not ((isinstance(v, Mapping))):
+            issues.append(('structure.value', 'invalid maximum', '/maximum'))
+    if 'minimum' in d and (fields is None or 'minimum' in fields):
+        v = d['minimum']
+        if not ((isinstance(v, Mapping))):
+            issues.append(('structure.value', 'invalid minimum', '/minimum'))
+    if 'quantity' in d and (fields is None or 'quantity' in fields):
+        v = d['quantity']
+        if not ((isinstance(v, Mapping))):
+            issues.append(('structure.value', 'invalid quantity', '/quantity'))
+    if 'relation' in d and (fields is None or 'relation' in fields):
+        v = d['relation']
+        if not ((v in ('equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal', 'between', 'present', 'missing') and (type(v) is str))):
+            issues.append(('structure.value', 'invalid relation', '/relation'))
+    if not ((((not (('relation' not in d or (d['relation'] in ('equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal'))) and 'relation' in d) or ((not ('minimum' in d)) and (not ('maximum' in d)) and 'quantity' in d)) and ((('relation' not in d or (d['relation'] in ('equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal'))) and 'relation' in d) or True))) and (((not (('relation' not in d or (d['relation'] == 'between')) and 'relation' in d) or ((not ('quantity' in d)) and 'minimum' in d and 'maximum' in d)) and ((('relation' not in d or (d['relation'] == 'between')) and 'relation' in d) or True))) and (((not (('relation' not in d or (d['relation'] in ('present', 'missing'))) and 'relation' in d) or ((not ('quantity' in d)) and (not ('minimum' in d)) and (not ('maximum' in d)))) and ((('relation' not in d or (d['relation'] in ('present', 'missing'))) and 'relation' in d) or True)))):
+        issues.append(('structure.rule', 'a ValueTest rule is not met', ''))
+    return issues
+
+
 CHECKS = {
     'Action': check_Action,
     'Argument': check_Argument,
@@ -2412,4 +2459,5 @@ CHECKS = {
     'Taxonomy': check_Taxonomy,
     'Traversal': check_Traversal,
     'Value': check_Value,
+    'ValueTest': check_ValueTest,
 }

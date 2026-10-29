@@ -10,7 +10,10 @@ changes only what the 1.0.0 format changes:
 - `Specification.policy` becomes `rules`, and `Report.outcomes` becomes
   `rule_evidence` (policy to rule, #95);
 - a magnitude in ISO 4217 currency units becomes the canonical text of its
-  amount, at 15 significant digits (#117, ADR-023).
+  amount, at 15 significant digits (#117, ADR-023);
+- a query Filter classification and each Label Criterion get
+  `exclusive: true`, because 0.x matched them exactly and 1.0.0 also matches
+  sub-types by default (#121).
 
 Identities, lineage and every other field stay the same. The renames of Python
 names in `tools/codemod/rename_map.yaml` change code, not data; the codemod
@@ -39,6 +42,12 @@ FIELDS = {
     "Span": {"start_inclusive": "start", "end_exclusive": "end"},
     "Specification": {"policy": "rules"},
     "Report": {"outcomes": "rule_evidence"},
+}
+# Fields added between the 0.x and 1.0.0 formats, to keep the 0.x meaning.
+ADDED = {
+    # 0.x matched a Filter classification and a Criterion exactly (#121).
+    "Filter": lambda data: {"exclusive": True} if "classification" in data else {},
+    "Criterion": lambda data: {"exclusive": True},
 }
 
 
@@ -77,6 +86,8 @@ def _fields(kind: str, data: object) -> object:
             elif not meta["many"]:
                 value = _fields(child, value)
         result[renamed.get(name, name)] = value
+    if kind in ADDED:
+        result.update(ADDED[kind](result))
     return result
 
 

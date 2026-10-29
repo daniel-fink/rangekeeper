@@ -23,6 +23,7 @@ The tool changes only what the 1.0.0 formats change:
 | Period and Span `start_inclusive` and `end_exclusive` become `start` and `end` | [#119](https://github.com/daniel-fink/rangekeeper/issues/119) |
 | `Specification.policy` becomes `rules`, and `Report.outcomes` becomes `rule_evidence` | [#95](https://github.com/daniel-fink/rangekeeper/issues/95) |
 | A magnitude in ISO 4217 currency units, such as `AUD`, becomes the canonical text of its amount, at 15 significant digits (`0.30000000000000004` becomes `"0.3"`) | [#117](https://github.com/daniel-fink/rangekeeper/issues/117), [ADR-023](../../docs/decisions/023-decimal-money.md) |
+| A query `Filter` with a `classification`, and each Label `Criterion`, gets `exclusive: true`. The 0.x formats matched them exactly; 1.0.0 also matches sub-types unless `exclusive` is true | [#121](https://github.com/daniel-fink/rangekeeper/issues/121) |
 
 Everything else stays the same:
 

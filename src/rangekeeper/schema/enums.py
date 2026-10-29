@@ -191,6 +191,18 @@ class ValueKind(Enum):
     FLOW = 'flow'
     PROPERTY = 'property'
 
+@unique
+class ValueRelation(Enum):
+    EQUAL = 'equal'
+    NOT_EQUAL = 'not_equal'
+    LESS = 'less'
+    LESS_OR_EQUAL = 'less_or_equal'
+    GREATER = 'greater'
+    GREATER_OR_EQUAL = 'greater_or_equal'
+    BETWEEN = 'between'
+    PRESENT = 'present'
+    MISSING = 'missing'
+
 _ENUM_TYPES = {
     'ActionKind': ActionKind,
     'Cardinality': Cardinality,
@@ -218,6 +230,7 @@ _ENUM_TYPES = {
     'StepKind': StepKind,
     'TraversalKind': TraversalKind,
     'ValueKind': ValueKind,
+    'ValueRelation': ValueRelation,
 }
 
-__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'ObjectiveKind', 'Operator', 'ParameterKind', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind']
+__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'ObjectiveKind', 'Operator', 'ParameterKind', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']

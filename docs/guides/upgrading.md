@@ -99,8 +99,11 @@ For each stored 0.x document or Bundle, choose one route:
 The conversion tool reads Model 0.7.0 and 0.8.0, Specification 0.7.0 and Run
 0.4.0, and Bundles that hold them. It changes the format version, the Period and
 Span fields `start` and `end`, `policy` to `rules`, `outcomes` to
-`rule_evidence`, and currency magnitudes to decimal text. Each document keeps its
-UUID, so put the converted documents in a new store or Bundle:
+`rule_evidence`, and currency magnitudes to decimal text. A query `Filter` with a
+`classification`, and each Label `Criterion`, gets `exclusive: true`, so it keeps
+the exact match of the 0.x formats
+([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). Each document
+keeps its UUID, so put the converted documents in a new store or Bundle:
 
 ```sh
 uv run python -m tools.upgrade documents old/model.json old/run.json --output converted
@@ -135,7 +138,7 @@ This table lists the public names that 1.x consumers use, with their state in
 
 | 1.0.0a1 name | 1.0.0a2 | Before 1.0.0 |
 | --- | --- | --- |
-| `model.system.View` | Unchanged | A declarative `Filter` adds data filters ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)) |
+| `model.system.View` | Unchanged | `View.match(condition=)` and `View.where(condition=)` take a declarative `rangekeeper.model.Filter` ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)) |
 | `model.system.Hierarchy` | Unchanged | — |
 | `model.system.Reduction`, with `execute`, `pivot`, `Contributor` and callable contributors | Unchanged | Splits into `QuantityRollup` and `FlowRollup` with one reducer enum (ADR-012, draft) |
 | `model.system.reduction.Aggregation` | `RollupResult` (the codemod renames it) | — |
@@ -274,6 +277,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scope.recorded_scalar` | `rangekeeper.model.targets.recorded_scalar` | agreed |  |
 | `rangekeeper.quantity.minor_unit` | `rangekeeper.money.minor_unit` | agreed | The money module owns the ISO 4217 catalogue, boundaries and rounding. |
 | `rangekeeper.flow.ResamplingMethod` | `ResampleMethod` | agreed | The enum also gains SPLIT, which divides each amount over shorter Periods. |
+| `rangekeeper.model.expression.Criterion` | `rangekeeper.model.Criterion` | agreed | `rangekeeper.model` exports the query Filter with its Criterion and ValueTest records. |
 | `rangekeeper.execution.compiler.Compiled.prepared` | `binding` | agreed |  |
 | `rangekeeper.specification.specification.Specification.lock` | `fix` | agreed |  |
 | `rangekeeper.specification.specification.Specification.unlock` | `free` | agreed |  |

@@ -1262,6 +1262,18 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, predicate: UUID) -> None"
   },
+  "Criterion": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, key: str, classification: UUID, exclusive: bool | None | Unset = <Unset>) -> None",
+    "classification": "property",
+    "exclusive": "property",
+    "key": "property",
+    "replace": "method (self, *, key: str | Unset = <Unset>, classification: UUID | Unset = <Unset>, exclusive: bool | None | Unset | Omit = <Unset>) -> Self"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, key: str, classification: UUID, exclusive: bool | None | Unset = <Unset>) -> None"
+  },
   "Definitions": {
    "kind": "class",
    "members": {
@@ -1379,6 +1391,19 @@
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, target: UUID, claims: tuple[UUID, ...], reconciliation: Reconciliation | None | Unset = <Unset>) -> None"
+  },
+  "Filter": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, classification: UUID | Unset = <Unset>, exclusive: bool | None | Unset = <Unset>, labels: tuple[Criterion, ...] | None | Unset = <Unset>, tests: tuple[ValueTest, ...] | None | Unset = <Unset>) -> None",
+    "classification": "property",
+    "exclusive": "property",
+    "labels": "property",
+    "replace": "method (self, *, classification: UUID | Unset | Omit = <Unset>, exclusive: bool | None | Unset | Omit = <Unset>, labels: tuple[Criterion, ...] | None | Unset | Omit = <Unset>, tests: tuple[ValueTest, ...] | None | Unset | Omit = <Unset>) -> Self",
+    "tests": "property"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, classification: UUID | Unset = <Unset>, exclusive: bool | None | Unset = <Unset>, labels: tuple[Criterion, ...] | None | Unset = <Unset>, tests: tuple[ValueTest, ...] | None | Unset = <Unset>) -> None"
   },
   "Formulation": {
    "kind": "class",
@@ -1706,6 +1731,35 @@
     "PROPERTY"
    ],
    "module": "rangekeeper.schema.enums"
+  },
+  "ValueRelation": {
+   "kind": "enum",
+   "members": [
+    "EQUAL",
+    "NOT_EQUAL",
+    "LESS",
+    "LESS_OR_EQUAL",
+    "GREATER",
+    "GREATER_OR_EQUAL",
+    "BETWEEN",
+    "PRESENT",
+    "MISSING"
+   ],
+   "module": "rangekeeper.schema.enums"
+  },
+  "ValueTest": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, key: str, relation: ValueRelation, quantity: Quantity | Unset = <Unset>, minimum: Quantity | Unset = <Unset>, maximum: Quantity | Unset = <Unset>) -> None",
+    "key": "property",
+    "maximum": "property",
+    "minimum": "property",
+    "quantity": "property",
+    "relation": "property",
+    "replace": "method (self, *, key: str | Unset = <Unset>, relation: ValueRelation | Unset = <Unset>, quantity: Quantity | Unset | Omit = <Unset>, minimum: Quantity | Unset | Omit = <Unset>, maximum: Quantity | Unset | Omit = <Unset>) -> Self"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, key: str, relation: ValueRelation, quantity: Quantity | Unset = <Unset>, minimum: Quantity | Unset = <Unset>, maximum: Quantity | Unset = <Unset>) -> None"
   }
  },
  "rangekeeper.model.expression": {
@@ -1748,17 +1802,6 @@
     "SEQUENCE"
    ],
    "module": "rangekeeper.schema.enums"
-  },
-  "Criterion": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, key: str, classification: UUID) -> None",
-    "classification": "property",
-    "key": "property",
-    "replace": "method (self, *, key: str | Unset = <Unset>, classification: UUID | Unset = <Unset>) -> Self"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, key: str, classification: UUID) -> None"
   },
   "Depth": {
    "kind": "enum",
@@ -2026,6 +2069,15 @@
    ],
    "module": "rangekeeper.model.system.hierarchy"
   },
+  "Match": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...]) -> None",
+    "complete": "property"
+   },
+   "module": "rangekeeper.model.system.matching",
+   "signature": "(passed: tuple[uuid.UUID, ...], failed: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...]) -> None"
+  },
   "Partition": {
    "kind": "class",
    "members": {
@@ -2100,12 +2152,14 @@
     "filter": "method (self, *, entity_classification: uuid.UUID | None = None, relationship_classification: uuid.UUID | None = None, predicate: collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] | None = None, exclusive: bool = False) -> View",
     "is_arborescence": "property",
     "leaves": "property",
+    "match": "method (self, *, condition: Filter) -> Match",
     "predecessors": "method (self, id: uuid.UUID) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "quantities": "method (self, key: str, *, units: str, measure: uuid.UUID | None = None)",
     "relationship": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Relationship",
     "relationships": "property",
     "roots": "property",
-    "successors": "method (self, id: uuid.UUID) -> tuple[rangekeeper.schema.records.Entity, ...]"
+    "successors": "method (self, id: uuid.UUID) -> tuple[rangekeeper.schema.records.Entity, ...]",
+    "where": "method (self, *, condition: Filter) -> View"
    },
    "module": "rangekeeper.model.system.view",
    "signature": "(model: rangekeeper.model.model.Model, *, entities: collections.abc.Iterable[uuid.UUID] | None = None, relationships: collections.abc.Iterable[uuid.UUID] | None = None, assembly: uuid.UUID | None = None) -> None"
@@ -2114,6 +2168,10 @@
    "kind": "function",
    "module": "rangekeeper.model.system.reduction",
    "signature": "(model: rangekeeper.model.model.Model, classification: uuid.UUID, *, exclusive: bool = False) -> collections.abc.Callable[[rangekeeper.schema.records.Entity], bool]"
+  },
+  "matching": {
+   "kind": "module",
+   "module": "rangekeeper.model.system.matching"
   },
   "membership": {
    "kind": "module",

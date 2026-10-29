@@ -365,6 +365,12 @@ public sealed class Criterion : WireRecord
         get => Read<Guid>("classification");
         init => Write("classification", value);
     }
+    /// <summary>Wire field exclusive; missing and null remain distinct.</summary>
+    public Optional<bool> Exclusive
+    {
+        get => ReadOptional<bool>("exclusive");
+        init => WriteOptional("exclusive", value);
+    }
     /// <summary>Wire field key; missing and null remain distinct.</summary>
     public string Key
     {
@@ -759,11 +765,23 @@ public sealed class Filter : WireRecord
         get => ReadOptional<Guid>("classification");
         init => WriteOptional("classification", value);
     }
+    /// <summary>Wire field exclusive; missing and null remain distinct.</summary>
+    public Optional<bool> Exclusive
+    {
+        get => ReadOptional<bool>("exclusive");
+        init => WriteOptional("exclusive", value);
+    }
     /// <summary>Wire field labels; missing and null remain distinct.</summary>
     public Optional<IReadOnlyList<Criterion>> Labels
     {
         get => ReadOptional<IReadOnlyList<Criterion>>("labels");
         init => WriteOptional("labels", value);
+    }
+    /// <summary>Wire field tests; missing and null remain distinct.</summary>
+    public Optional<IReadOnlyList<ValueTest>> Tests
+    {
+        get => ReadOptional<IReadOnlyList<ValueTest>>("tests");
+        init => WriteOptional("tests", value);
     }
 }
 
@@ -2548,5 +2566,43 @@ public sealed class Value : WireRecord
     {
         get => ReadOptional<Quantity>("quantity");
         init => WriteOptional("quantity", value);
+    }
+}
+
+/// <summary>Schema-derived ValueTest wire record. Exports and nested reads are detached.</summary>
+public sealed class ValueTest : WireRecord
+{
+    public ValueTest() { }
+    public ValueTest(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field key; missing and null remain distinct.</summary>
+    public string Key
+    {
+        get => Read<string>("key");
+        init => Write("key", value);
+    }
+    /// <summary>Wire field maximum; missing and null remain distinct.</summary>
+    public Optional<Quantity> Maximum
+    {
+        get => ReadOptional<Quantity>("maximum");
+        init => WriteOptional("maximum", value);
+    }
+    /// <summary>Wire field minimum; missing and null remain distinct.</summary>
+    public Optional<Quantity> Minimum
+    {
+        get => ReadOptional<Quantity>("minimum");
+        init => WriteOptional("minimum", value);
+    }
+    /// <summary>Wire field quantity; missing and null remain distinct.</summary>
+    public Optional<Quantity> Quantity
+    {
+        get => ReadOptional<Quantity>("quantity");
+        init => WriteOptional("quantity", value);
+    }
+    /// <summary>Wire field relation; missing and null remain distinct.</summary>
+    public string Relation
+    {
+        get => Read<string>("relation");
+        init => Write("relation", value);
     }
 }

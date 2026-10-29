@@ -11,6 +11,8 @@ from rangekeeper.model.system.errors import HierarchyError, SelectionError
 from rangekeeper.model.system.membership import _assembly
 
 if TYPE_CHECKING:
+    from rangekeeper.model import Filter
+    from rangekeeper.model.system.matching import Match
     from rangekeeper.model.system.reduction import Reduction, RollupResult
 
 
@@ -196,6 +198,35 @@ class View:
                     relationship_classes is None
                     or edge.classification in relationship_classes
                 )
+            ),
+        )
+
+    def match(self, *, condition: "Filter") -> "Match":
+        """Test each selected Entity against a declarative Filter.
+
+        The Match partitions the Entities, in View order, into those that pass,
+        those that fail and those with a missing tested value. A missing value
+        never passes and never counts as zero. Value tests convert units with
+        the Model's unit system.
+        """
+        from rangekeeper.model.system.matching import match
+
+        return match(self.model, self.entities, condition)
+
+    def where(self, *, condition: "Filter") -> "View":
+        """Keep the Entities that pass a Filter, and the edges between them.
+
+        Entities with a missing tested value do not pass; use ``match`` to count
+        them.
+        """
+        nodes = set(self.match(condition=condition).passed)
+        return View(
+            self.model,
+            entities=nodes,
+            relationships=(
+                edge.id
+                for edge in self.relationships
+                if edge.source in nodes and edge.target in nodes
             ),
         )
 

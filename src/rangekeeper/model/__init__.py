@@ -25,6 +25,9 @@ from rangekeeper.schema.records import (
     Constraint as Constraint,
 )
 from rangekeeper.schema.records import (
+    Criterion as Criterion,
+)
+from rangekeeper.schema.records import (
     Definitions as Definitions,
 )
 from rangekeeper.schema.records import (
@@ -38,6 +41,9 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.records import (
     Fact as Fact,
+)
+from rangekeeper.schema.records import (
+    Filter as Filter,
 )
 from rangekeeper.schema.records import (
     Formulation as Formulation,
@@ -90,6 +96,9 @@ from rangekeeper.schema.records import (
 from rangekeeper.schema.records import (
     Value as Value,
 )
+from rangekeeper.schema.records import (
+    ValueTest as ValueTest,
+)
 
 __all__ = [
     "Model",
@@ -126,6 +135,9 @@ __all__ = [
     "Source",
     "Claim",
     "Fact",
+    "Filter",
+    "Criterion",
+    "ValueTest",
 ]
 
 from rangekeeper.schema.enums import (
@@ -133,6 +145,13 @@ from rangekeeper.schema.enums import (
     DistributionFamily,
     ReconciliationStatus,
     ValueKind,
+    ValueRelation,
 )
 
-__all__ += ["ValueKind", "ClaimKind", "ReconciliationStatus", "DistributionFamily"]
+__all__ += [
+    "ValueKind",
+    "ClaimKind",
+    "ReconciliationStatus",
+    "DistributionFamily",
+    "ValueRelation",
+]
