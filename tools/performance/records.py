@@ -19,7 +19,7 @@ from pathlib import Path
 import yaml
 
 from rangekeeper import Model
-from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.duration import Frequency, Periods
 from rangekeeper.flow import Flow
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -37,7 +37,9 @@ def median(operation, repeat):
 
 def run(movements, repeat):
     """Time the record operations on one Flow and one example Model."""
-    periods = make_periods(date(2000, 1, 1), frequency=Frequency.MONTH, count=movements)
+    periods = Periods(
+        start=date(2000, 1, 1), frequency=Frequency.MONTH, count=movements
+    )
     magnitudes = [float(i) for i in range(movements)]
     flow = Flow.from_periods(periods, magnitudes, units="AUD")
     data = flow.to_data()
