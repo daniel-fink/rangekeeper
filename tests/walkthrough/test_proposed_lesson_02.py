@@ -23,7 +23,7 @@ LESSON = (
 # The cells that declare the Model and its equations.
 MODEL_CELLS = ("4", "4b", "5", "6", "6b")
 # The cells that investigate the Model; they need the execution extra.
-SOLVE_CELLS = ("8", "9", "10", "10b", "11", "12", "13", "15", "16", "17")
+SOLVE_CELLS = ("8", "9", "9b", "10", "10b", "11", "12", "13", "15", "16", "17")
 OPTIONAL_CELLS = ("18", "19", "20", "21", "22")
 EXECUTION = all(importlib.util.find_spec(name) for name in ("pyomo", "highspy"))
 
@@ -102,7 +102,7 @@ def investigated() -> dict[str, object]:
 
 
 def test_the_front_door_and_the_back_door_solve(investigated):
-    # The same answers by hand, as in cell 3, with the mortgage constant of cell 9.
+    # The same answers by hand, as in cell 3, with the mortgage constant of cell 9b.
     rate = investigated["constant"].to(units="1/year").number
     income = 8000 * 450 * 0.75 + 12000 * 520 * 0.96 + 3000 * 700 * 0.92
     front = (1.25 * rate * 0.65 * (20e6 + 60e6) + 1.5e6) / income
