@@ -291,9 +291,9 @@ A package `__init__.py` has a docstring, imports and `__all__`. Public types
 live in modules without a leading underscore. An underscore module holds
 private helpers only.
 
-Bad: `execution/backends/__init__.py` makes the backend `registry` and
-registers `PyomoHighs`
-([#413](https://github.com/daniel-fink/rangekeeper/issues/413)).
+Good: `execution/backends/registry.py` makes the backend `registry` and
+registers `PyomoHighs`; `execution/backends/__init__.py` imports `registry`
+and the backend types, and lists them in `__all__`.
 
 Each public module has an `__all__`, so that its imported helpers do not
 look public.
