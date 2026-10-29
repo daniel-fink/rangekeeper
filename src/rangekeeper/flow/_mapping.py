@@ -25,8 +25,8 @@ def alignment(
     flows: Sequence[Flow], reference: Flow
 ) -> list[tuple[Movement, tuple[Movement, ...]]]:
     """Match exact coordinate sets in reference order, without reading amounts."""
-    coordinates = reference.coordinate_index()
-    maps = [flow.coordinate_index() for flow in flows]
+    coordinates = reference._coordinate_index()
+    maps = [flow._coordinate_index() for flow in flows]
     if any(set(mapping) != set(coordinates) for mapping in maps):
         raise AlignmentError(
             "Flow coordinates do not match; supply an explicit mapping for lagged relationships",

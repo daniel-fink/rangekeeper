@@ -108,7 +108,7 @@ class Movement(records.Movement):
         return float(value)
 
     @property
-    def coordinate(self) -> tuple:
+    def _coordinate(self) -> tuple:
         """Return the matching coordinate independently of UUID identity."""
         movement = self
         if movement.period is not None:
@@ -264,7 +264,7 @@ class Flow(records.Flow):
 
     __hash__ = None  # type: ignore[assignment]
 
-    def coordinate_index(self) -> dict[tuple, Movement]:
+    def _coordinate_index(self) -> dict[tuple, Movement]:
         """Index exact coordinates in encounter order, rejecting ambiguous matches.
 
         Return the recorded Movements without reading magnitudes or changing IDs.
@@ -273,7 +273,7 @@ class Flow(records.Flow):
         flow = self
         result: dict[tuple, Movement] = {}
         for movement in flow.movements:
-            coordinate = movement.coordinate
+            coordinate = movement._coordinate
             if coordinate in result:
                 raise AlignmentError(
                     "duplicate coordinates make alignment ambiguous; use explicit key equations",
@@ -719,7 +719,7 @@ class Flow(records.Flow):
         if not isinstance(other, Flow):
             return NotImplemented
         scale = _sum_scale(self.units, other.units)
-        left, right = self.coordinate_index(), other.coordinate_index()
+        left, right = self._coordinate_index(), other._coordinate_index()
         if len({key[0] for key in (*left, *right)}) > 1:
             raise AlignmentError(
                 "cannot add dated and period amounts; use Stream.sum, which dates "

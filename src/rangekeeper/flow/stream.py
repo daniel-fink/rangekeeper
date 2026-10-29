@@ -473,7 +473,7 @@ class Stream:
             if frequency is None
             else sorted(
                 (m for f in self.flows for m in f.movements),
-                key=lambda m: m.coordinate[1:],
+                key=lambda m: m._coordinate[1:],
             )
         )
         return _target(movements, periods=periods, frequency=frequency)

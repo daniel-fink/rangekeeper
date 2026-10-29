@@ -1017,7 +1017,7 @@
   "resolve_day_count": {
    "kind": "function",
    "module": "rangekeeper.finance.financial",
-   "signature": "(convention: DayCount)"
+   "signature": "(convention: DayCount) -> pyxirr.DayCount"
   }
  },
  "rangekeeper.flow": {
@@ -1049,7 +1049,6 @@
     "clone": "method (self) -> Flow",
     "collapse": "method (self, *, on: date | PeriodTiming | None = None, missing: MissingValueHandling = MissingValueHandling.ERROR) -> Flow",
     "convert": "method (self, *, units: str, unit_system: UnitSystem | None = None) -> Flow",
-    "coordinate_index": "method (self) -> dict[tuple, Movement]",
     "difference": "method (self, *, initial: float | None = None) -> Flow",
     "display": "method (self, *, name: str | None = None, transpose: bool = False, precision: int = 2) -> StreamTable",
     "drop_zeroes": "method (self) -> Flow",
@@ -1100,7 +1099,6 @@
    "members": {
     "__init__": "method (self, *, id: UUID, key: str | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, period: Period | None | Unset = <Unset>, magnitude: Decimal | str | int | float | None | Unset = <Unset>, claims: tuple[UUID, ...] | None | Unset = <Unset>) -> None",
     "claims": "property",
-    "coordinate": "property",
     "date": "property",
     "id": "property",
     "key": "property",
@@ -1655,7 +1653,7 @@
     "mode": "property",
     "pert": "classmethod (cls, *, lower: float = 0, upper: float = 1, mode: float = 0.5, weighting: float = 4, units: str = 'dimensionless') -> Distribution",
     "replace": "method (self, *, kind: DistributionFamily | Unset = <Unset>, lower: int | float | Unset = <Unset>, upper: int | float | Unset = <Unset>, mode: int | float | None | Unset | Omit = <Unset>, weighting: int | float | None | Unset | Omit = <Unset>, units: str | Unset = <Unset>) -> Self",
-    "sample": "method (self, *, size: int, generator) -> tuple[float, ...]",
+    "sample": "method (self, *, size: int, generator: numpy.random.Generator) -> tuple[float, ...]",
     "symmetric": "classmethod (cls, *, kind: DistributionFamily, mean: float = 0, residual: float = 1, units: str = 'dimensionless') -> Distribution",
     "triangular": "classmethod (cls, *, lower: float = 0, upper: float = 1, mode: float = 0.5, units: str = 'dimensionless') -> Distribution",
     "uniform": "classmethod (cls, *, lower: float = 0, upper: float = 1, units: str = 'dimensionless') -> Distribution",

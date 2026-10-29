@@ -147,7 +147,6 @@ Neither operation converts units.
 ```text
 Movement
   number -> float                         finite magnitude; unresolved raises
-  coordinate -> tuple                     alignment coordinate, independent of UUID
   resolve(*, timing=None) -> date          recorded date, or explicit period rule
   replace(*, ...) -> Movement              typed, immutable structural replacement
 

@@ -43,7 +43,7 @@ class Derived:
     @property
     def coordinate(self):
         if isinstance(self.template, Movement):
-            return self.template.coordinate
+            return self.template._coordinate
         return (
             "period",
             self.template.start.isoformat(),
@@ -130,9 +130,9 @@ class Batch:
         rows: list[Movement] = []
         line_ids, coordinate_ids, orders, values = [], [], [], []
         for line, flow in enumerate(flows):
-            flow.coordinate_index()
+            flow._coordinate_index()
             for order, movement in enumerate(flow.movements):
-                key = movement.coordinate
+                key = movement._coordinate
                 if key not in lookup:
                     lookup[key] = len(coordinates)
                     coordinates.append(key)
@@ -682,7 +682,7 @@ def align(flows, *, join, missing):
     templates: dict[tuple, Movement] = {}
     mappings = []
     for flow in flows:
-        mapping = flow.coordinate_index()
+        mapping = flow._coordinate_index()
         mappings.append(mapping)
         for key, movement in mapping.items():
             templates.setdefault(key, movement)
