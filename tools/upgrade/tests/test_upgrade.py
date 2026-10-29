@@ -1,4 +1,4 @@
-"""Convert the 1.0.0a1 samples, which the published 1.0.0a1 package wrote."""
+"""Convert the 0.x samples, which the published 1.0.0a1 package wrote."""
 
 import json
 from decimal import Decimal
@@ -32,7 +32,7 @@ def converted():
         ("specification.yaml", Specification),
         ("run.json", Run),
     ):
-        result[name] = kind.from_data(convert(load(name)))
+        result[name] = kind.from_data(convert(load(name), release="0.x"))
         store.put(result[name])
     return store, result
 
@@ -111,9 +111,11 @@ def test_other_versions_and_kinds_are_refused():
     for version in ("1.0.0", "0.6.0", None):
         changed = {**data, "metadata": {**data["metadata"], "schema_version": version}}
         with pytest.raises(ConversionError, match="not a 0.x format"):
-            convert(changed)
+            convert(changed, release="0.x")
     with pytest.raises(ConversionError, match="unknown document kind"):
-        convert(data, "Paths")
+        convert(data, "Paths", release="0.x")
+    with pytest.raises(ConversionError, match="unknown release"):
+        convert(data, release="1.0.0a1")
     assert kind_of(load("run.json")) == "Run"
     assert kind_of(load("specification.yaml")) == "Specification"
 
@@ -121,7 +123,7 @@ def test_other_versions_and_kinds_are_refused():
 def test_the_input_does_not_change():
     data = load("specification.yaml")
     copy = json.loads(json.dumps(data))
-    convert(data)
+    convert(data, release="0.x")
     assert data == copy
 
 
@@ -138,7 +140,7 @@ def test_bundle_conversion_writes_a_new_bundle_with_the_same_documents(tmp_path)
         assert exact_equal(restored[document.id].to_data(), document.to_data())
     (run,) = [d for d in restored.values() if isinstance(d, Run)]
     assert validate(run, resolver=reader).valid
-    assert {kind for kind, _ in read(SAMPLES / "bundle")} == {
+    assert {kind for kind, _ in read(SAMPLES / "bundle", release="0.x")} == {
         "Model",
         "Specification",
         "Run",
@@ -156,7 +158,7 @@ def test_the_command_writes_new_files_and_never_replaces_one(tmp_path, capsys):
 
 
 def test_filters_keep_their_exact_match():
-    from tools.upgrade.convert import _fields
+    from tools.upgrade.convert import RELEASES, _fields
 
     query = {
         "starting_at": "00000000-0000-4000-8000-000000000001",
@@ -169,16 +171,16 @@ def test_filters_keep_their_exact_match():
         "projection": {"kind": "entity"},
         "duplicates": "distinct",
     }
-    result = _fields("Query", query)
+    result = _fields("Query", query, RELEASES["0.x"])
     assert result["filter"]["exclusive"] is True
     assert result["filter"]["labels"][0]["exclusive"] is True
     assert "exclusive" not in query["filter"]
     # A Filter without a classification gets no exclusive field.
-    assert _fields("Filter", {"labels": []}) == {"labels": []}
+    assert _fields("Filter", {"labels": []}, RELEASES["0.x"]) == {"labels": []}
 
 
 def test_a_property_date_stays_a_property_value():
-    from tools.upgrade.convert import _fields
+    from tools.upgrade.convert import RELEASES, _fields
 
     # The 0.x formats have no date kind (#280): a date in property content stays
     # property content, and the converted Value has no date or never field.
@@ -188,7 +190,7 @@ def test_a_property_date_stays_a_property_value():
         "kind": "property",
         "content": {"kind": "date", "text": "2027-01-01"},
     }
-    result = _fields("Value", value)
+    result = _fields("Value", value, RELEASES["0.x"])
     assert result == value
     assert not {"date", "never"} & set(result)
     assert all("never" not in keys(load(name)) for name in ("model.json", "run.json"))

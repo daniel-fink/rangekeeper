@@ -1,0 +1,126 @@
+{
+  "metadata": {
+    "id": "2cb3be63-1ee8-5efd-a052-895c44c6bc26",
+    "schema_version": "1.0.0",
+    "name": "Filters that 1.0.0a2 matched exactly"
+  },
+  "definitions": {
+    "taxonomies": [
+      {
+        "id": "a6d6e0b4-a37d-5ea7-8ef8-c8d50cd784e3",
+        "code": "kinds",
+        "name": "Kinds",
+        "classifications": [
+          {
+            "id": "80486c8b-d658-5bba-aa80-fb3dc39d056e",
+            "code": "floor",
+            "name": "floor"
+          },
+          {
+            "id": "7d76fa93-082d-5f23-8bdc-8b9115345cc2",
+            "code": "podium",
+            "name": "podium",
+            "parent": "80486c8b-d658-5bba-aa80-fb3dc39d056e"
+          }
+        ]
+      },
+      {
+        "id": "524af28e-241c-5f61-a289-c1f0176909d6",
+        "code": "uses",
+        "name": "Uses",
+        "classifications": [
+          {
+            "id": "32c1d75c-4966-5c5d-aeee-aed2e712b64a",
+            "code": "hotel",
+            "name": "hotel"
+          },
+          {
+            "id": "e45a6ec3-63bc-5e36-a6bc-7b650fdf81e5",
+            "code": "suite",
+            "name": "suite",
+            "parent": "32c1d75c-4966-5c5d-aeee-aed2e712b64a"
+          }
+        ]
+      }
+    ]
+  },
+  "system": {
+    "entities": [
+      {
+        "id": "5074f942-5e6e-5808-9f13-9a3bcbb1d4a8",
+        "code": "site",
+        "classification": "80486c8b-d658-5bba-aa80-fb3dc39d056e",
+        "characteristics": {
+          "labels": [
+            {
+              "id": "d568ecb9-c1d5-55a2-83dd-758ab5d5ec2f",
+              "key": "use",
+              "classifications": [
+                "32c1d75c-4966-5c5d-aeee-aed2e712b64a"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "a5ed7947-86ea-5aa9-9482-e800bb8144a0",
+        "code": "level_1",
+        "classification": "80486c8b-d658-5bba-aa80-fb3dc39d056e",
+        "characteristics": {
+          "labels": [
+            {
+              "id": "af89ed0d-5b61-57d3-a776-e4de01d7dc25",
+              "key": "use",
+              "classifications": [
+                "32c1d75c-4966-5c5d-aeee-aed2e712b64a"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "736170b5-6f39-5d35-a62e-4b8c070ea956",
+        "code": "level_2",
+        "classification": "7d76fa93-082d-5f23-8bdc-8b9115345cc2",
+        "characteristics": {
+          "labels": [
+            {
+              "id": "f966895a-7eac-559c-89b3-d6968680417a",
+              "key": "use",
+              "classifications": [
+                "e45a6ec3-63bc-5e36-a6bc-7b650fdf81e5"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "formulations": [
+      {
+        "id": "fa866648-900b-5d0f-8b94-88eaa1ae327d",
+        "expressions": [
+          {
+            "id": "617a082c-951c-576d-94cf-51de5a950bc6",
+            "kind": "query",
+            "query": {
+              "starting_at": "5074f942-5e6e-5808-9f13-9a3bcbb1d4a8",
+              "filter": {
+                "classification": "80486c8b-d658-5bba-aa80-fb3dc39d056e",
+                "labels": [
+                  {
+                    "key": "use",
+                    "classification": "32c1d75c-4966-5c5d-aeee-aed2e712b64a"
+                  }
+                ]
+              },
+              "projection": {
+                "kind": "entity"
+              },
+              "duplicates": "distinct"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

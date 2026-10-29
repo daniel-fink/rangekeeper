@@ -109,7 +109,7 @@ def large(minimum="1200 m^2"):
         tests=(
             ValueTest(
                 key="gfa",
-                relation=ValueRelation.GREATER_OR_EQUAL,
+                relation=ValueRelation.GREATER_THAN_OR_EQUAL,
                 quantity=Quantity(text=minimum),
             ),
         ),
@@ -152,7 +152,7 @@ def test_a_less_than_test_never_reads_a_missing_value_as_zero():
         tests=(
             ValueTest(
                 key="gfa",
-                relation=ValueRelation.LESS,
+                relation=ValueRelation.LESS_THAN,
                 quantity=Quantity(text="100 m^2"),
             ),
         ),

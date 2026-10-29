@@ -4,6 +4,42 @@ Each section describes one breaking release. Install the library and the example
 from the same reviewed revision. There are no forwarding modules, deprecated
 installation extras or automatic schema upgrades.
 
+## Upgrade from 1.0.0a2 to 1.0.0b1
+
+Release 1.0.0b1 freezes the public API and the stored formats
+([ADR-017](../decisions/017-api-and-formats.md)). This section lists the
+changes on `develop` that need an action.
+
+### Stored query Filters
+
+1.0.0a2 writes format 1.0.0, and 1.0.0b1 reads it, but one meaning changes
+([#121](https://github.com/daniel-fink/rangekeeper/issues/121),
+[#386](https://github.com/daniel-fink/rangekeeper/issues/386)). In 1.0.0a2, the
+`classification` of a query `Filter` and each Label `Criterion` match exactly.
+From 1.0.0b1 they also match sub-types in the Taxonomy, unless `exclusive` is
+true. So a stored 1.0.0a2 Filter selects more Entities when 1.0.0b1 reads it.
+Also, a Bundle that 1.0.0a2 wrote does not open in 1.0.0b1: its schema pin is
+the 1.0.0a2 slot map.
+
+Convert the documents and Bundles that 1.0.0a2 wrote, or rebuild them with
+1.0.0b1. The [conversion tool](../../tools/upgrade/README.md) adds
+`exclusive: true` to each Filter that has a `classification` and to each
+Criterion, so that they keep the 1.0.0a2 meaning. Nothing else changes:
+
+```sh
+uv run python -m tools.upgrade documents --from 1.0.0a2 old/model.json --output converted
+uv run python -m tools.upgrade bundle --from 1.0.0a2 old-bundle new-bundle
+```
+
+A 1.0.0 document does not record the release that wrote it, so convert only the
+documents that 1.0.0a2 wrote. The tool refuses a document that already has
+`exclusive`. Each document keeps its UUID, so put the converted documents in a
+new store or Bundle.
+
+`exclusive` is `true` or absent: absent means that sub-types match. Validation
+refuses `exclusive: false`, `exclusive: null` and a Filter with `exclusive` but
+no `classification`. In code, omit `exclusive` instead of passing `False`.
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names

@@ -2,7 +2,8 @@
 # These files are hashed byte for byte; keep their line endings.
 examples/data/** -text
 examples/walkthrough/helpers/assets/** -text
-# The conversion tool pins the 1.0.0a1 slot map by its SHA-256, and its samples
-# are a Bundle with recorded file hashes.
+# The conversion tool pins the 1.0.0a1 and 1.0.0a2 slot maps by their SHA-256,
+# and its samples are Bundles with recorded file hashes.
 tools/upgrade/legacy_slots.json -text
+tools/upgrade/alpha2_slots.json -text
 tools/upgrade/tests/samples/** -text

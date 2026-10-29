@@ -262,12 +262,13 @@ valid.append(("Query", q))
 q = copy.deepcopy(query)
 q["filter"]["exclusive"] = True
 q["filter"]["labels"] = [
-    dict(key="use", classification=q["filter"]["classification"], exclusive=False)
+    dict(key="use", classification=q["filter"]["classification"]),
+    dict(key="use", classification=q["filter"]["classification"], exclusive=True),
 ]
 q["filter"]["tests"] = [
     dict(
         key="gfa",
-        relation="greater_or_equal",
+        relation="greater_than_or_equal",
         quantity=dict(magnitude=1500, units="m^2"),
     ),
     dict(
@@ -466,7 +467,7 @@ bad = copy.deepcopy(query)
 bad["duplicates"] = "implicit"
 reject("Query", bad)
 for test in [
-    dict(key="gfa", relation="less"),
+    dict(key="gfa", relation="less_than"),
     dict(key="gfa", relation="approximately", quantity=dict(magnitude=1, units="m^2")),
     dict(key="gfa", relation="between", minimum=dict(magnitude=1, units="m^2")),
     dict(
@@ -490,6 +491,21 @@ for test in [
     reject("Query", bad)
 bad = copy.deepcopy(query)
 bad["filter"]["exclusive"] = "yes"
+reject("Query", bad)
+# exclusive is true or absent, and only with a classification (#386).
+for exclusive in (False, None):
+    bad = copy.deepcopy(query)
+    bad["filter"]["exclusive"] = exclusive
+    reject("Query", bad)
+    bad = copy.deepcopy(query)
+    bad["filter"]["labels"] = [
+        dict(key="use", classification=query["filter"]["classification"])
+    ]
+    bad["filter"]["labels"][0]["exclusive"] = exclusive
+    reject("Query", bad)
+bad = copy.deepcopy(query)
+del bad["filter"]["classification"]
+bad["filter"]["exclusive"] = True
 reject("Query", bad)
 bad = copy.deepcopy(query)
 bad["steps"][0]["relationship"] = bad["steps"][0].pop("classification")

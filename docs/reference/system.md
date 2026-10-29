@@ -100,14 +100,21 @@ must hold:
 - `classification`: the Entity's Classification, with its sub-types in its
   Taxonomy, as in [`View.filter`](#selection-and-traversal). `exclusive=True`
   matches only that Classification.
-- `labels`: `Criterion(key=, classification=, exclusive=None)` records. The
+- `labels`: `Criterion(key=, classification=, exclusive=)` records. The
   Entity's Label with that key must include the Classification or, unless
   `exclusive`, one of its sub-types.
 - `tests`: `ValueTest(key=, relation=, quantity=, minimum=, maximum=)` records
   on the Entity's Value with that key. A `ValueRelation` names the test:
-  `EQUAL`, `NOT_EQUAL`, `LESS`, `LESS_OR_EQUAL`, `GREATER` and
-  `GREATER_OR_EQUAL` compare with `quantity`; `BETWEEN` includes `minimum` and
-  `maximum`; `PRESENT` and `MISSING` test whether the Value has recorded content.
+  `EQUAL`, `NOT_EQUAL`, `LESS_THAN`, `LESS_THAN_OR_EQUAL`, `GREATER_THAN` and
+  `GREATER_THAN_OR_EQUAL` compare with `quantity`, with the words of the
+  expression `Operator`; `BETWEEN` includes `minimum` and `maximum`; `PRESENT`
+  and `MISSING` test whether the Value has recorded content.
+
+`exclusive` is `True` or absent. Absent means that sub-types match, and the
+stored form has no `exclusive: false`, so one meaning has one encoding. A
+`Filter` with `exclusive` needs a `classification`. Construction and validation
+refuse `exclusive=False`, `exclusive=None` and an `exclusive` Filter with no
+`classification` ([#386](https://github.com/daniel-fink/rangekeeper/issues/386)).
 
 ```python
 from rangekeeper.model import Criterion, Filter, ValueRelation, ValueTest
@@ -119,13 +126,13 @@ large_hotel_floors = Filter(
     tests=(
         ValueTest(
             key="gfa",
-            relation=ValueRelation.GREATER_OR_EQUAL,
+            relation=ValueRelation.GREATER_THAN_OR_EQUAL,
             quantity=Quantity(text="1500 m^2"),
         ),
     ),
 )
 match = view.match(condition=large_hotel_floors)
-match.passed, match.failed, match.missing  # Entity UUIDs, in View order
+match.passed, match.failed, match.undecided  # Entity UUIDs, in View order
 floors = view.where(condition=large_hotel_floors)  # a View of the passed Entities
 ```
 
@@ -143,8 +150,9 @@ partitions the tested Entities:
 
 - `passed`: every test passed;
 - `failed`: at least one test failed;
-- `missing`: no test failed, but at least one has a missing value. These Entities
-  do not pass, and `Match.complete` is false.
+- `undecided`: no test failed, but at least one has a missing value. These
+  Entities do not pass, and `Match.complete` is false. A rollup lists the same
+  Entities in `Coverage.undecided`.
 
 Only `MISSING` passes an Entity whose value is missing. An Entity without a
 classification fails a `classification` test. `View.where(condition=)` keeps
@@ -211,7 +219,7 @@ large_floors = Filter(
     tests=(
         ValueTest(
             key="gfa",
-            relation=ValueRelation.GREATER_OR_EQUAL,
+            relation=ValueRelation.GREATER_THAN_OR_EQUAL,
             quantity=Quantity(text="1500 m^2"),
         ),
     ),
