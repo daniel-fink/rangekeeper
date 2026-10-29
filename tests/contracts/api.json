@@ -448,6 +448,10 @@
     "UNSUPPORTED_VERSION",
     "EQUATION_SYNTAX",
     "EQUATION_FUNCTION",
+    "COMPARISON_BATCH",
+    "COMPARISON_CASES",
+    "COMPARISON_EMPTY",
+    "COMPARISON_SCALAR",
     "HIERARCHY_CYCLE",
     "HIERARCHY_DISCONNECTED",
     "HIERARCHY_EMPTY",
@@ -659,22 +663,6 @@
    "module": "rangekeeper.execution.planning",
    "signature": "(root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
   },
-  "Comparison": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: tuple[str, ...], baseline: str | None = None, members: collections.abc.Mapping[str, tuple[tuple[int | None, rangekeeper.execution.outcome.Outcome], ...]] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None",
-    "compared": "property",
-    "difference": "method (self, *, outcome: str, key: str) -> tuple[rangekeeper.quantity.Quantity, ...]",
-    "differences": "property",
-    "pairs": "method (self, *, outcome: str) -> tuple[rangekeeper.execution.comparison.Pair, ...]",
-    "select": "method (self, *keys: str) -> Comparison",
-    "summary": "method (self) -> rangekeeper.shared.table.Table",
-    "values": "property",
-    "where": "method (self, **values: object) -> Comparison"
-   },
-   "module": "rangekeeper.execution.comparison",
-   "signature": "(outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: tuple[str, ...], baseline: str | None = None, members: collections.abc.Mapping[str, tuple[tuple[int | None, rangekeeper.execution.outcome.Outcome], ...]] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
-  },
   "DecisionResult": {
    "kind": "enum",
    "members": [
@@ -751,10 +739,24 @@
   "Pair": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, case: int | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
+    "__init__": "method (self, case: str | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
    },
    "module": "rangekeeper.execution.comparison",
-   "signature": "(case: int | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
+   "signature": "(case: str | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
+  },
+  "Paired": {
+   "kind": "class",
+   "members": {
+    "compared": "property",
+    "difference": "method (self, *, outcome: str, key: str) -> tuple[rangekeeper.quantity.Quantity, ...]",
+    "differences": "property",
+    "pairs": "method (self, *, outcome: str) -> tuple[rangekeeper.execution.comparison.Pair, ...]",
+    "select": "method (self, *keys: str) -> Paired",
+    "summary": "method (self) -> rangekeeper.shared.table.Table",
+    "where": "method (self, **values: object) -> Paired"
+   },
+   "module": "rangekeeper.execution.comparison",
+   "signature": "()"
   },
   "Relation": {
    "kind": "enum",
@@ -772,6 +774,15 @@
    },
    "module": "rangekeeper.execution.compiler",
    "signature": "(assertion: rangekeeper.execution.preparation.Assertion, relation: rangekeeper.execution.compiler.Relation, residual: rangekeeper.execution.compiler.Affine) -> None"
+  },
+  "SideBySide": {
+   "kind": "class",
+   "members": {
+    "select": "method (self, *keys: str) -> SideBySide",
+    "values": "property"
+   },
+   "module": "rangekeeper.execution.comparison",
+   "signature": "()"
   },
   "Status": {
    "kind": "enum",
@@ -833,7 +844,7 @@
   "compare": {
    "kind": "function",
    "module": "rangekeeper.execution.comparison",
-   "signature": "(*, outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: collections.abc.Sequence[str], baseline: str | None = None) -> Comparison"
+   "signature": "(*, outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: collections.abc.Sequence[str], baseline: str | None = None) -> SideBySide | Paired"
   },
   "execute": {
    "kind": "function",
