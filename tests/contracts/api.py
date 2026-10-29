@@ -64,10 +64,11 @@ def public_names(module: ModuleType) -> list[str]:
 
 def default(value) -> str:
     """Write a default without memory addresses or environment details."""
-    if value is None or isinstance(value, (bool, int, float, str)):
-        return repr(value)
+    # A StrEnum member is also a str, so test for an enum first.
     if isinstance(value, enum.Enum):
         return f"{type(value).__name__}.{value.name}"
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return repr(value)
     if isinstance(value, (tuple, list, frozenset)):
         items = ", ".join(default(item) for item in value)
         return f"{type(value).__name__}({items})"

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum, unique
+from enum import StrEnum, unique
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 @unique
-class MissingValueHandling(Enum):
+class MissingValueHandling(StrEnum):
     """Treatment of unresolved magnitudes: raise, propagate None, skip or use zero."""
 
     ERROR = "error"
@@ -21,7 +21,7 @@ class MissingValueHandling(Enum):
 
 
 @unique
-class AlignmentJoin(Enum):
+class AlignmentJoin(StrEnum):
     """Select which coordinates an alignment keeps when the Flows differ."""
 
     EXACT = "exact"
@@ -30,7 +30,7 @@ class AlignmentJoin(Enum):
 
 
 @unique
-class AggregationMethod(Enum):
+class AggregationMethod(StrEnum):
     """Select how aligned Flows combine at each coordinate."""
 
     SUM = "sum"
@@ -39,7 +39,7 @@ class AggregationMethod(Enum):
 
 
 @unique
-class ResampleMethod(Enum):
+class ResampleMethod(StrEnum):
     """Select how movements in one period reduce to one value, or split into shorter ones.
 
     ``SPLIT`` divides each amount equally over the shorter Periods inside its
@@ -56,7 +56,7 @@ class ResampleMethod(Enum):
 
 
 @unique
-class MeanWeighting(Enum):
+class MeanWeighting(StrEnum):
     """Select the weight of each movement in a resampled mean."""
 
     OBSERVATIONS = "observations"
