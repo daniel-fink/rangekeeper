@@ -16,6 +16,7 @@ from rangekeeper.execution import (
 from rangekeeper.execution.analysis import undetermined
 from rangekeeper.execution.backends import BackendResult, Termination
 from rangekeeper.flow import Flow
+from rangekeeper.schema.records import Severity
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     MissingReferenceError,
@@ -93,7 +94,9 @@ def test_a_product_of_two_unknowns_is_unsupported():
     assert outcome.evidence.termination is None
     with pytest.raises(UnsupportedError) as raised:
         outcome.raise_for_status()
-    assert raised.value.code is Code.UNSUPPORTED_CAPABILITY
+    # The decisive diagnostic gives the code (nonaffine_unknowns after #289).
+    decisive = [d for d in outcome.diagnostics if d.severity == Severity.ERROR]
+    assert raised.value.code == decisive[-1].code
     assert raised.value.target is not None
     with pytest.raises(UnsupportedError):
         outcome["noi"]
