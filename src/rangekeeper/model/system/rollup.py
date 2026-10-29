@@ -18,8 +18,10 @@ from rangekeeper.model import Entity, Measure, Model, Value, ValueKind
 from rangekeeper.model.system import _reducers
 from rangekeeper.model.system.errors import AggregationError
 from rangekeeper.model.system.hierarchy import Hierarchy
+from rangekeeper.model.system.matching import _prepare
 from rangekeeper.model.system.selection import _local_value, _recorded_quantity
 from rangekeeper.quantity import Quantity, UnitSystem
+from rangekeeper.schema.records import Filter
 from rangekeeper.shared.arguments import require_text, require_uuid
 
 if TYPE_CHECKING:
@@ -70,7 +72,7 @@ _QUANTITY_REDUCERS = {
 
 @unique
 class CoverageStatus(Enum):
-    """Coverage state: no selected contributors, all measured, or some missing."""
+    """Coverage state: no contributors, all measured, or some missing or undecided."""
 
     EMPTY = "empty"
     COMPLETE = "complete"
@@ -79,14 +81,21 @@ class CoverageStatus(Enum):
 
 @dataclass(frozen=True)
 class Coverage:
-    """Selected, measured and missing owner UUIDs; not population certification."""
+    """Selected, measured, missing and undecided owner UUIDs.
+
+    ``measured`` and ``missing`` partition ``selected``. ``undecided`` holds the
+    owners that a ``Filter`` could not decide, because a tested value is
+    missing: they are not selected, and their contribution is unknown. Coverage
+    does not certify a physical population.
+    """
 
     selected: tuple[UUID, ...]
     measured: tuple[UUID, ...]
     missing: tuple[UUID, ...]
+    undecided: tuple[UUID, ...] = ()
 
     def __post_init__(self) -> None:
-        for name in ("selected", "measured", "missing"):
+        for name in ("selected", "measured", "missing", "undecided"):
             items = tuple(getattr(self, name))
             if any(not isinstance(id, UUID) for id in items) or len(set(items)) != len(
                 items
@@ -99,18 +108,20 @@ class Coverage:
             raise AggregationError(
                 "measured and missing must partition selected contributors"
             )
+        if set(self.undecided) & set(self.selected):
+            raise AggregationError("an undecided contributor cannot be selected")
 
     @property
     def complete(self) -> bool:
-        """Whether a nonempty selected population is fully measured."""
-        return bool(self.selected) and not self.missing
+        """Whether a nonempty selected population is fully measured and decided."""
+        return bool(self.selected) and not self.missing and not self.undecided
 
     @property
     def status(self) -> CoverageStatus:
         """Classify this coverage as empty, complete or incomplete."""
         return (
             CoverageStatus.EMPTY
-            if not self.selected
+            if not self.selected and not self.undecided
             else CoverageStatus.COMPLETE
             if self.complete
             else CoverageStatus.INCOMPLETE
@@ -180,7 +191,7 @@ class RollupResult:
             if any(
                 owner not in positions
                 or not positions[uid] <= positions[owner] < ends[uid]
-                for owner in entry.coverage.selected
+                for owner in (*entry.coverage.selected, *entry.coverage.undecided)
             ):
                 raise AggregationError(
                     "coverage must belong to its corresponding subtree"
@@ -307,12 +318,27 @@ def _collect_quantities(
     )
 
 
-def _combine_coverage(parts: tuple[Coverage, ...]) -> Coverage:
-    return Coverage(
-        tuple(uid for part in parts for uid in part.selected),
-        tuple(uid for part in parts for uid in part.measured),
-        tuple(uid for part in parts for uid in part.missing),
-    )
+class _Decision:
+    """An internal three-valued contributor rule: True, False or None.
+
+    None means that a Filter could not decide the Entity, because a tested value
+    is missing. Pivots build these rules; users pass a ``Filter``.
+    """
+
+    __slots__ = ("test",)
+
+    def __init__(self, test: Callable[[Entity], bool | None]) -> None:
+        self.test = test
+
+    def __call__(self, entity: Entity) -> bool | None:
+        return self.test(entity)
+
+
+def _decision(contributors, model: Model):
+    """Return a Filter's three-valued test; other rules stay as they are."""
+    if isinstance(contributors, Filter):
+        return _Decision(_prepare(model, contributors))
+    return contributors
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -323,7 +349,7 @@ class _Rollup:
     reducer: Reducer = Reducer.SUM
     units: str | None = None
     measure: UUID | None = None
-    contributors: Contributor | Callable[[Entity], bool] = Contributor.LEAVES
+    contributors: Contributor | Filter | Callable[[Entity], bool] = Contributor.LEAVES
     require_complete: bool = True
 
     _kind = ValueKind.MEASUREMENT
@@ -334,10 +360,10 @@ class _Rollup:
             require_uuid(self.measure, "measure")
         if not isinstance(self.reducer, Reducer):
             raise TypeError("reducer must be a Reducer")
-        if not isinstance(self.contributors, Contributor) and not callable(
+        if not isinstance(self.contributors, (Contributor, Filter)) and not callable(
             self.contributors
         ):
-            raise TypeError("contributors must be a Contributor or callable")
+            raise TypeError("contributors must be a Contributor, Filter or callable")
         if type(self.require_complete) is not bool:
             raise TypeError("require_complete must be a bool")
         if self.units is not None:
@@ -383,14 +409,15 @@ class _Rollup:
             label=label,
         )
 
-    def _eligible(self, entity: Entity, *, leaf: bool) -> bool:
-        eligible = (
-            leaf
-            if self.contributors is Contributor.LEAVES
-            else True
-            if self.contributors is Contributor.ALL
-            else self.contributors(entity)
-        )
+    @staticmethod
+    def _eligible(rule, entity: Entity, *, leaf: bool) -> bool | None:
+        if rule is Contributor.LEAVES:
+            return leaf
+        if rule is Contributor.ALL:
+            return True
+        if isinstance(rule, _Decision):
+            return rule(entity)
+        eligible = rule(entity)
         if type(eligible) is not bool:
             raise TypeError("contributors must return bool")
         return eligible
@@ -402,26 +429,34 @@ class _Rollup:
         return selected
 
     def _population(self, hierarchy: Hierarchy):
-        """Select each eligible owner's Value once; list each subtree's owners."""
+        """Select each eligible owner's Value once; list each subtree's owners.
+
+        Also list each subtree's undecided owners: those that a Filter could not
+        decide because a tested value is missing.
+        """
         if not isinstance(hierarchy, Hierarchy):
             raise TypeError("hierarchy must be a Hierarchy")
         model = hierarchy.view.model
         if self.measure is not None:
             # A supplied Measure must exist even when no owner has the key.
             model._index.get(self.measure, Measure)
+        rule = _decision(self.contributors, model)
         selected: dict[UUID, Value | None] = {}
         populations: dict[UUID, tuple[UUID, ...]] = {}
+        undecided: dict[UUID, tuple[UUID, ...]] = {}
         for identity in hierarchy.postorder():
             entity = hierarchy.view.entity(identity)
             children = hierarchy.children(identity)
-            own: tuple[UUID, ...] = ()
-            if self._eligible(entity, leaf=not children):
+            eligible = self._eligible(rule, entity, leaf=not children)
+            if eligible:
                 selected[identity] = self._selection(model, entity)
-                own = (identity,)
-            populations[identity] = own + tuple(
+            populations[identity] = (() if not eligible else (identity,)) + tuple(
                 owner for child in children for owner in populations[child]
             )
-        return selected, populations
+            undecided[identity] = (() if eligible is not None else (identity,)) + tuple(
+                owner for child in children for owner in undecided[child]
+            )
+        return selected, populations, undecided
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -460,7 +495,7 @@ class QuantityRollup(_Rollup):
         Raw contributors are combined at each subtree, so means stay correctly
         weighted. Missing keys and unresolved quantities count as missing.
         """
-        selected, populations = self._population(hierarchy)
+        selected, populations, undecided = self._population(hierarchy)
         unit_system = (
             hierarchy.view.model.unit_system
             if self.unit_system is None
@@ -488,7 +523,7 @@ class QuantityRollup(_Rollup):
                     else unit_system.convert(result, to=self.units)
                 )
             entries[node] = RollupEntry(
-                available, Coverage(population, measured, missing)
+                available, Coverage(population, measured, missing, undecided[node])
             )
         value_ids = {
             owner: value.id for owner, value in selected.items() if value is not None
@@ -516,7 +551,8 @@ class FlowRollup(_Rollup):
     Movements and coordinates that only some Flows have. ``units`` converts the
     results; without it the Flows keep their own units. Contributors default to
     the leaves, as for ``QuantityRollup``. A contributor without a Flow counts as
-    missing.
+    missing. ``MissingValueHandling.ZERO`` is refused: a rollup never reads a
+    missing Movement or coordinate as zero.
     """
 
     periods: "Sequence[Period] | None" = None
@@ -554,6 +590,11 @@ class FlowRollup(_Rollup):
             join, AlignmentJoin
         ):
             raise TypeError("missing and join require their enum types")
+        if missing is MissingValueHandling.ZERO:
+            raise ValueError(
+                "a Flow rollup never treats a missing value as zero; "
+                "use ERROR, PROPAGATE or SKIP"
+            )
         object.__setattr__(
             self,
             "_rule",
@@ -575,7 +616,7 @@ class FlowRollup(_Rollup):
         """
         from rangekeeper.flow import Stream
 
-        selected, populations = self._population(hierarchy)
+        selected, populations, undecided = self._population(hierarchy)
         available = {
             owner: value
             for owner, value in selected.items()
@@ -624,7 +665,7 @@ class FlowRollup(_Rollup):
             result = results.get(node)
             entries[node] = RollupEntry(
                 None if result is None else result.flow,
-                Coverage(population, measured, missing),
+                Coverage(population, measured, missing, undecided[node]),
                 () if result is None else result.coverage,
             )
         return RollupResult(hierarchy, entries, value_ids, self.require_complete)
@@ -645,7 +686,7 @@ class FlowRollup(_Rollup):
             raise ValueError(
                 "symbolic selection requires Contributor.LEAVES or ALL; select a structural View explicitly"
             )
-        selected, populations = self._population(hierarchy)
+        selected, populations, _ = self._population(hierarchy)
         return formulate(
             hierarchy,
             id=id,

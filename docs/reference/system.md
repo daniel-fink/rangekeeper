@@ -188,7 +188,7 @@ and both return a `RollupResult`:
 | `reducer` | A `Reducer`: `SUM`, `MEAN`, `MIN`, `MAX` or `COUNT` | `Reducer.SUM` |
 | `units` | Units of the results | required for a `QuantityRollup`, except `COUNT` |
 | `measure` | Measure UUID that each selected Value must use | none |
-| `contributors` | `Contributor.LEAVES`, `Contributor.ALL` or a callable that returns bool | `Contributor.LEAVES` |
+| `contributors` | `Contributor.LEAVES`, `Contributor.ALL`, a `Filter`, or a callable that returns bool | `Contributor.LEAVES` |
 | `require_complete` | Whether `value` needs complete coverage | `True` |
 
 Both rollups select leaf contributors by default, so a parent that records a total
@@ -197,6 +197,37 @@ Assemblies; select it only when parent Values are independent contributions. A
 callable contributor rule selects any node for which it returns True. The library
 does not infer which amounts are additive or certify physical population
 completeness.
+
+### Filter contributors
+
+A [declarative `Filter`](#declarative-filters) selects the nodes that pass it, at
+any depth:
+
+```python
+from rangekeeper.model import Filter, ValueRelation, ValueTest
+
+large_floors = Filter(
+    classification=floor_id,
+    tests=(
+        ValueTest(
+            key="gfa",
+            relation=ValueRelation.GREATER_OR_EQUAL,
+            quantity=Quantity(text="1500 m^2"),
+        ),
+    ),
+)
+nla = QuantityRollup(key="nla", units="m^2", contributors=large_floors)
+result = nla.execute(hierarchy)
+result.coverage(building_id).undecided  # floors with no recorded gfa
+```
+
+A node that the Filter cannot decide, because a tested value is missing, is
+**undecided**. It is not a contributor, but its contribution is unknown, so
+`Coverage.undecided` lists it and the coverage is incomplete
+([ADR-016](../decisions/016-safety-defaults.md#missing-values)). A missing gfa
+never passes `gfa < 100 m^2` as if it were zero. A node that fails the Filter is
+decided: it is simply not a contributor. Pivot columns keep the undecided nodes
+of their rows; a node outside a column is not undecided in that column.
 
 ### Quantity rollups
 
@@ -248,8 +279,11 @@ Unclassified Entities never match. The UUID must exist in the Model.
 `RollupResult` exposes:
 
 - `value(id)` / `result[id]`, and `root_value`: the result under the coverage policy.
-- `coverage(id)`: selected, measured and missing owner UUIDs, with a
-  `CoverageStatus` member: `EMPTY`, `COMPLETE` or `INCOMPLETE`.
+- `coverage(id)`: a `Coverage(selected, measured, missing, undecided)` of owner
+  UUIDs. `measured` and `missing` partition `selected`; `undecided` holds the
+  owners that a Filter could not decide. `complete` needs a nonempty selection
+  with no missing and no undecided owner. `status` is a `CoverageStatus`:
+  `EMPTY` (nothing selected or undecided), `COMPLETE` or `INCOMPLETE`.
 - `available_value(id)`: the result over measured contributors despite missing
   values, for every reducer.
 - `entries`: one immutable `RollupEntry(available, coverage, period_coverage)`
@@ -259,7 +293,9 @@ Unclassified Entities never match. The UUID must exist in the Model.
 - `hierarchy`: the selection/revision that produced the derived results.
 
 Missing keys and unresolved quantities count as missing; zero counts as measured.
-A fully missing population has no available result. These operations do not revise a Model,
+No reducer reads a missing value as zero: a sum or a count leaves it out, a mean
+divides by the measured contributors only, and the coverage is incomplete. A
+fully missing population has no available result. These operations do not revise a Model,
 create provenance claims, assign solve roles, add governing mathematics, invoke a
 solver or persist anything. Use `Model.revise` explicitly for authoring and the
 scalar executor for mathematical investigation.
@@ -395,7 +431,9 @@ A `FlowRollup` takes `Reducer.SUM` (the default), `MIN` or `MAX`; `MEAN` and
 `QuantityRollup` does. `periods` and `resampling` go together: each Flow is
 resampled before the rollup, with an optional `weighting`. `units` converts the
 results; without it the Flows keep their units. Contributors without a Flow appear
-as missing in owner coverage.
+as missing in owner coverage. `missing=MissingValueHandling.ZERO` raises
+`ValueError`: a rollup never reads a missing Movement or coordinate as zero. Use
+`ERROR` (the default), `PROPAGATE` or `SKIP`.
 
 A Flow rollup selects owner-local Values once, prepares/resamples the collection
 once, and batches all subtree results over original contributors. Unknown

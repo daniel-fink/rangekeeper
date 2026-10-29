@@ -2023,12 +2023,12 @@
   "Coverage": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, selected: tuple[uuid.UUID, ...], measured: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...]) -> None",
+    "__init__": "method (self, selected: tuple[uuid.UUID, ...], measured: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...] = tuple()) -> None",
     "complete": "property",
     "status": "property"
    },
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(selected: tuple[uuid.UUID, ...], measured: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...]) -> None"
+   "signature": "(selected: tuple[uuid.UUID, ...], measured: tuple[uuid.UUID, ...], missing: tuple[uuid.UUID, ...], undecided: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "CoverageStatus": {
    "kind": "enum",
@@ -2042,13 +2042,13 @@
   "FlowRollup": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, weighting: MeanWeighting | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None",
+    "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, weighting: MeanWeighting | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.rollup.RollupResult",
     "formulate": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, id: uuid.UUID, aggregates: collections.abc.Mapping[uuid.UUID, uuid.UUID])",
     "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
    },
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, weighting: MeanWeighting | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None"
+   "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, periods: Sequence[Period] | None = None, resampling: ResampleMethod | None = None, weighting: MeanWeighting | None = None, missing: MissingValueHandling | None = None, join: AlignmentJoin | None = None) -> None"
   },
   "Hierarchy": {
    "kind": "class",
@@ -2125,12 +2125,12 @@
   "QuantityRollup": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None) -> None",
+    "__init__": "method (self, *, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None) -> None",
     "execute": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy) -> rangekeeper.model.system.rollup.RollupResult",
     "pivot": "method (self, hierarchy: rangekeeper.model.system.hierarchy.Hierarchy, *, by: uuid.UUID | None = None, depth: int = 1, only: uuid.UUID | None = None, exclusive: bool = False, label: str | None = None) -> Pivot"
    },
    "module": "rangekeeper.model.system.rollup",
-   "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None) -> None"
+   "signature": "(*, key: str, reducer: rangekeeper.model.system.rollup.Reducer = Reducer.SUM, units: str | None = None, measure: uuid.UUID | None = None, contributors: rangekeeper.model.system.rollup.Contributor | rangekeeper.schema.records.Filter | collections.abc.Callable[[rangekeeper.schema.records.Entity], bool] = Contributor.LEAVES, require_complete: bool = True, unit_system: rangekeeper.quantity.UnitSystem | None = None) -> None"
   },
   "Reducer": {
    "kind": "enum",
