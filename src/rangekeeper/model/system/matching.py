@@ -98,7 +98,7 @@ def _value_test(model: Model, test: ValueTest, unit_system: UnitSystem) -> Test:
         unit_system.validate_units(operand.units)
 
     def number(quantity: Quantity, units: str) -> float:
-        return unit_system.convert(quantity, to=units).number
+        return unit_system.convert(quantity=quantity, to=units).number
 
     def own(quantity: Quantity) -> float:
         return _number(quantity.magnitude)

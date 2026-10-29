@@ -70,7 +70,7 @@ def test_datetimes_are_not_flow_coordinates(value):
     for operation in (
         lambda: Flow.from_events([value], [1], units="m"),
         lambda: Period(start=value, end=date(2026, 2, 1)),
-        lambda: offset(value, frequency=Frequency.DAY),
+        lambda: offset(value=value, frequency=Frequency.DAY),
         lambda: Movement(id=uuid4(), key="event", date=value),
         lambda: Period(start=value, end=date(2026, 2, 1)),
     ):

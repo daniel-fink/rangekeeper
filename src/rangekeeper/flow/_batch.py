@@ -353,10 +353,10 @@ class Batch:
                     conversions[source] = (1.0, 0.0)
                 else:
                     zero = default_units.convert(
-                        Quantity(magnitude=0, units=source), to=unit
+                        quantity=Quantity(magnitude=0, units=source), to=unit
                     ).number
                     one = default_units.convert(
-                        Quantity(magnitude=1, units=source), to=unit
+                        quantity=Quantity(magnitude=1, units=source), to=unit
                     ).number
                     conversions[source] = (one - zero, zero)
             factor, offset = conversions[source]

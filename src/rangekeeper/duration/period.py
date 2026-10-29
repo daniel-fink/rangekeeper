@@ -145,7 +145,7 @@ class Span(records.Span, Period):
             raise TypeError("give end or length, not both")
         if length is not None:
             frequency, count = steps(length)
-            end = offset(require_date(start), frequency=frequency, count=count)
+            end = offset(value=require_date(start), frequency=frequency, count=count)
         assert end is not None
         super().__init__(name=name, start=start, end=end)
 
@@ -158,7 +158,7 @@ class Span(records.Span, Period):
         return Span(
             name=UNSET if name is None else name,
             start=self.start,
-            end=offset(self.end, frequency=frequency, count=count),
+            end=offset(value=self.end, frequency=frequency, count=count),
         )
 
     def periods(
@@ -211,7 +211,7 @@ class _Steps:
     def boundary(self, index: int) -> date:
         """Return the date ``index`` steps from the anchor."""
         return offset(
-            self.anchor,
+            value=self.anchor,
             frequency=self.frequency,
             count=index,
             month_roll=self.month_roll,
@@ -223,7 +223,7 @@ class _Steps:
         return tuple(Period(start=a, end=b) for a, b in pairwise(boundaries))
 
 
-@dataclass(frozen=True, slots=True, init=False, eq=False, repr=False)
+@dataclass(frozen=True, slots=True, init=False, eq=False, repr=False, kw_only=True)
 class Periods(Sequence[Period]):
     """An ordered, gap-free sequence of Periods with one frequency.
 
@@ -382,7 +382,7 @@ class Periods(Sequence[Period]):
         )
 
 
-def cover(periods: Sequence[Period], *, name: str | None = None) -> Span:
+def cover(*, periods: Sequence[Period], name: str | None = None) -> Span:
     """Return a Span covering all intervals, including gaps between them."""
     if not periods:
         raise ContractError("cover takes at least one Period", values={"count": 0})

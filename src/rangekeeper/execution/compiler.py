@@ -121,10 +121,10 @@ class Compiler:
     def convert(self, value: Affine, units: str) -> Affine:
         """Convert a whole affine expression; offset units are outside this slice."""
         zero = self.binding.units.convert(
-            Quantity(magnitude=0, units=value.units), to=units
+            quantity=Quantity(magnitude=0, units=value.units), to=units
         )
         one = self.binding.units.convert(
-            Quantity(magnitude=1, units=value.units), to=units
+            quantity=Quantity(magnitude=1, units=value.units), to=units
         )
         if zero.number != 0:
             raise UnsupportedError("offset unit arithmetic is not supported")
@@ -283,7 +283,7 @@ class Compiler:
                     units=self.binding.units,
                 )
                 right = self.binding.units.convert(
-                    numerical(
+                    quantity=numerical(
                         node.operands[1],
                         self.binding.assignments,
                         units=self.binding.units,

@@ -136,7 +136,7 @@ def containing_period(*, on: date, grid: Grid) -> Period:
     if not isinstance(grid, Grid):
         raise TypeError("grid must be a DayGrid, WeekGrid, MonthGrid or MultiYearGrid")
     first = grid._first(require_date(on))
-    return Period(start=first, end=offset(first, frequency=grid.frequency))
+    return Period(start=first, end=offset(value=first, frequency=grid.frequency))
 
 
 def _require_step(

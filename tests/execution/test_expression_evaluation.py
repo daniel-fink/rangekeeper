@@ -51,7 +51,9 @@ def test_arithmetic_and_converted_units_have_independent_expected_values(
     expression = binary(operator, left, right)
     for evaluate in (numerical, predicate):
         result = evaluate(expression, {}, units=default_units)
-        assert default_units.convert(result, to=units).number == pytest.approx(expected)
+        assert default_units.convert(quantity=result, to=units).number == pytest.approx(
+            expected
+        )
 
 
 def test_reference_and_negation_use_only_supplied_values():

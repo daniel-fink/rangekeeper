@@ -54,7 +54,7 @@ def evaluate(
     left, right = (evaluate(child, values, units=units) for child in node.operands)
     a, b = left.number, right.number
     if node.operator in (Operator.ADD, Operator.SUBTRACT):
-        b = units.convert(right, to=left.units).number
+        b = units.convert(quantity=right, to=left.units).number
         return finite_quantity(
             a + b if node.operator is Operator.ADD else a - b, left.units
         )
@@ -62,7 +62,7 @@ def evaluate(
         return finite_quantity(a * b, f"({left.units}) * ({right.units})")
     if node.operator is Operator.DIVIDE:
         return finite_quantity(a / b, f"({left.units}) / ({right.units})")
-    b = units.convert(right, to="dimensionless").number
+    b = units.convert(quantity=right, to="dimensionless").number
     return finite_quantity(a**b, f"({left.units}) ** {b}")
 
 

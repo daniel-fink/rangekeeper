@@ -117,7 +117,7 @@ def validate_records(
                 else lambda actual, requested: (
                     actual
                     == units.convert(
-                        Quantity.from_data(requested), to=actual["units"]
+                        quantity=Quantity.from_data(requested), to=actual["units"]
                     ).to_data()
                 )
             ),

@@ -62,4 +62,4 @@ def test_counts_slices_and_cover_raise_contract_errors():
         YEARS[::2]
     assert error.value.values == {"step": 2}
     with pytest.raises(ContractError, match="at least one"):
-        cover(())
+        cover(periods=())

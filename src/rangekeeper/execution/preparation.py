@@ -186,7 +186,7 @@ def bind_roles(
     value_units = {token: target_units(model, ref) for token, ref in references.items()}
     assignments = {
         item.target.target: units.convert(
-            item.quantity, to=value_units[item.target.target]
+            quantity=item.quantity, to=value_units[item.target.target]
         )
         for item in (*(requirements.assignments or ()), *rule_assignments)
     }
