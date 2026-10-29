@@ -2142,12 +2142,12 @@ class Expression(Record):
 
     @property
     def date(self) -> Date | None:
-        'Calendar date literal of a date Expression.'
+        'Calendar date of a date Expression; it excludes never.'
         return cast('Date | None', _decode_date(self._data.get('date')))
 
     @property
     def never(self) -> Never | None:
-        'The NEVER literal of a never Expression; the event does not happen.'
+        'Records that the event of a date Expression does not happen; it excludes date.'
         return cast('Never | None', _decode_enum(self._data.get('never'), Never))
 
     @property

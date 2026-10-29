@@ -97,7 +97,6 @@ class ExpressionKind(Enum):
     QUANTITY = 'quantity'
     BOOLEAN = 'boolean'
     DATE = 'date'
-    NEVER = 'never'
     REFERENCE = 'reference'
     UNARY = 'unary'
     BINARY = 'binary'

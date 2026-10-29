@@ -1,9 +1,9 @@
 {
   "artifacts": {
-    "checks.py": "85497a6e050a09bacae9e2394e7ec2db55d739557a194181d5212da34bbca51f",
-    "enums.py": "658b88eddc9507e88c4a46999cb0bfaa24e22516649850b9678bafa30e4d8397",
-    "records.py": "fe39401735bdf8f47da72ea99a678238c7ff733125e86c9423541fb5cc78df07",
-    "schema.json": "61148dc05d1335694c017e42a10c5fe812f2439288900691ed52a8e69fc60e8e",
+    "checks.py": "005688ed3cfc1e834f658f7c82de8bc1ce0509299f63eb47d9c0404cc5675978",
+    "enums.py": "669350ff3b26912db66c8302bd85ec07eff9c4f39c0ee7316879a95df33f045e",
+    "records.py": "ef81b4046e314732c97d692d53beaedba290dff9de616ade02a110b2e81149d3",
+    "schema.json": "1100a079e5cf6e741a225003601f3b07ae48564c1b5593ac675f86908e9dea42",
     "slots.json": "4f2bac26b857f86774c0593c4b4d45292c886553f2ed45c4b51c5c61ad722056"
   },
   "classes": [
@@ -114,7 +114,7 @@
     "schema/distribution.yaml": "c24b50fc3836b60aebfbb8ad7c24cf11f9228deac79ef1a363a092cd1e44d203",
     "schema/duration.yaml": "e4d947b8b9d4e37b147e4a6c0963a0e07851f8537cd2535f2eda6dbfe367e9c2",
     "schema/entity.yaml": "956f005a80a6bcaa58bfd32896cb8e41e4c696dfa3ae02626b949a78a8dde7ae",
-    "schema/expression.yaml": "613a972f6faa55d1a512cede8bf3d7743c7b8a7f43b343a9d53c4c1c088a0374",
+    "schema/expression.yaml": "c440fdf2bbdeb873812a869f8c8f6197289ffdd0ea29ddeeda360eed521d87c8",
     "schema/flow.yaml": "445b1b8fea26c26a145de32a70c7b4c312cf419090d3077c1c4251b3fedeaf95",
     "schema/formulation.yaml": "659f4380df7cafae81c21af6830b9f100cb64b2cd47b1d6789ae3aa67f4e95d4",
     "schema/function.yaml": "b430d868c3d1973fea8abd272ff796987deb894f1218f4bd0838a5e95ba94c0d",
