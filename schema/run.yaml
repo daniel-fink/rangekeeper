@@ -109,11 +109,11 @@ classes:
     attributes:
       status:
         description: Required execution and mathematical outcome.
-        range: Status
+        range: RunStatus
         inlined: true
         required: true
         all_of:
-        - range: Status
+        - range: RunStatus
           inlined: true
       runtime:
         description: Actual runtime when known; may be absent for a skipped or pre-execution failure.
@@ -142,8 +142,8 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: true
-  Status:
-    description: Execution completion and mathematical conclusion, recorded independently.
+  RunStatus:
+    description: Execution completion and mathematical conclusion of a Run, recorded independently.
     notes:
     - For a non-batch Run, completed permits feasible, infeasible, or unknown; limited permits feasible
       or unknown, or not_assessed when preparation exhausts the execution budget before numerical assessment;

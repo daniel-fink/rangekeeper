@@ -33,7 +33,7 @@ from rangekeeper.execution.comparison import Comparison, Pair, compare
 from rangekeeper.execution.compiler import AffineProblem, Relation, Row, build_problem
 from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.errors import OutcomeError
-from rangekeeper.execution.outcome import Evidence, Outcome, Status
+from rangekeeper.execution.outcome import Evidence, Outcome
 from rangekeeper.execution.pipeline import execute, solve
 from rangekeeper.execution.planning import Cases, resolve_cases
 from rangekeeper.execution.preparation import (
@@ -46,6 +46,7 @@ from rangekeeper.execution.preparation import (
 from rangekeeper.execution.publication import make_candidate
 from rangekeeper.execution.rule.result import DecisionResult
 from rangekeeper.execution.settings import Limits
+from rangekeeper.execution.status import Status
 
 __all__ = [
     "AffineProblem",

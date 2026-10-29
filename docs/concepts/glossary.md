@@ -86,8 +86,10 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Execute | Solve and then publish to a store | `execution` | `execution.execute` |
 | Affine problem | The linear problem that a backend receives | `execution` | `AffineProblem`: variables, rows with relations, bounds and the rank analysis |
 | Backend | A registered solver implementation | `execution` | — |
-| Termination | How a backend finished: feasible candidate, proven infeasible, limit, error or unknown | `execution` | `execution.backends.Termination`, in a `BackendResult` |
+| Termination | How a backend finished: a feasible candidate, proven infeasible, limited, failed or unknown. It uses the words of Status for the same ideas | `execution` | `execution.backends.Termination`, in a `BackendResult` |
 | Verification | Independent check of a candidate against the original equations | `execution` | `execution.verify`, which returns a `Verification` |
+| Status | What an Outcome found, in one word: feasible, underdetermined, infeasible, unsupported, invalid, limited or failed | `execution` | `rk.execution.Status`, from `Outcome.status` |
+| Run status | The completion and the solution that a Run report records, each in its own enum. It is a record, not a Status | `run` | `rk.run.RunStatus`, at `run.report.status` |
 | Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | `Outcome`: `outcome["key"]`, `status`, `raise_for_status()`, `free_unknowns`, `evidence`, `run`, `outputs` and `cases` |
 | Underdetermined | A result with free unknowns that the equations do not fix | `execution` | Feasible with a warning |
 | Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | — |

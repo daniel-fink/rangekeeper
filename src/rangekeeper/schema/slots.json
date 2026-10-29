@@ -3340,7 +3340,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "Status"
+          "kind": "RunStatus"
         }
       ],
       "ordered": false,
@@ -3615,6 +3615,36 @@
         {
           "category": "uuid",
           "kind": "Metadata"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
+  "RunStatus": {
+    "completion": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "enum",
+          "kind": "CompletionStatus"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "solution": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "enum",
+          "kind": "SolutionStatus"
         }
       ],
       "ordered": false,
@@ -4359,36 +4389,6 @@
       ],
       "ordered": false,
       "required": false
-    }
-  },
-  "Status": {
-    "completion": {
-      "lineage": false,
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "enum",
-          "kind": "CompletionStatus"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "solution": {
-      "lineage": false,
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "enum",
-          "kind": "SolutionStatus"
-        }
-      ],
-      "ordered": false,
-      "required": true
     }
   },
   "Step": {

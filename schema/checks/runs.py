@@ -45,7 +45,7 @@ validators = {}
 for cls in (
     "Run",
     "Report",
-    "Status",
+    "RunStatus",
     "Runtime",
     "Implementation",
     "Diagnostic",

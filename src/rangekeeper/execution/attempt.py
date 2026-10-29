@@ -34,11 +34,11 @@ from rangekeeper.schema.records import (
     Implementation,
     Reference,
     Report,
+    RunStatus,
     Runtime,
     Settings,
     Severity,
     SolutionStatus,
-    Status,
     Step,
 )
 from rangekeeper.schema.runtime import UNSET, JSONValue, Unset
@@ -400,7 +400,7 @@ class Attempt:
             f"Elapsed monotonic time before persistence: {time.monotonic() - self.clock:.9f} seconds.",
         )
         report = Report(
-            status=Status(completion=self.completion, solution=self.solution),
+            status=RunStatus(completion=self.completion, solution=self.solution),
             runtime=Runtime(
                 started_at=self.started,
                 finished_at=_now(),

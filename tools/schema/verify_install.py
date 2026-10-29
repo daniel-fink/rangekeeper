@@ -248,7 +248,7 @@ print('Installed wheel: public Model lookup/revision and Specification compositi
 assert rangekeeper.Model is DomainModel and rangekeeper.Specification is Specification
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from rangekeeper.run import Run, RunRecord, Report, Status, Diagnostic, CompletionStatus, SolutionStatus, Severity
+from rangekeeper.run import Run, RunRecord, Report, RunStatus, Diagnostic, CompletionStatus, SolutionStatus, Severity
 from rangekeeper.io import json, yaml, MemoryStore, DirectoryStore
 assert rangekeeper.Run is Run
 try:
@@ -258,7 +258,7 @@ except ImportError as error:
 else:
     raise AssertionError('YAML should be absent in the base environment')
 failed = Run(RunRecord(metadata=Metadata(id=uuid4(), schema_version='1.0.0'),
-    specification=spec.id, report=Report(status=Status(completion=CompletionStatus.FAILED, solution=SolutionStatus.NOT_ASSESSED),
+    specification=spec.id, report=Report(status=RunStatus(completion=CompletionStatus.FAILED, solution=SolutionStatus.NOT_ASSESSED),
     diagnostics=(Diagnostic(severity=Severity.ERROR, code='unsupported', message='Fixture-only failed attempt'),))))
 with TemporaryDirectory() as directory:
     for store in (MemoryStore(), DirectoryStore(Path(directory) / 'records')):

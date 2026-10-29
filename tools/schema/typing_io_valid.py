@@ -11,9 +11,9 @@ from rangekeeper.run import (
     Diagnostic,
     Report,
     RunRecord,
+    RunStatus,
     Severity,
     SolutionStatus,
-    Status,
     validate,
 )
 from rangekeeper.shared.references import DocumentResolver, SpecificationResolver
@@ -34,7 +34,7 @@ run = rk.Run(
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         specification=spec.id,
         report=Report(
-            status=Status(
+            status=RunStatus(
                 completion=CompletionStatus.FAILED, solution=SolutionStatus.NOT_ASSESSED
             ),
             diagnostics=(

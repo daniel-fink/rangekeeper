@@ -2,14 +2,16 @@
 
 ``Status`` and ``Code`` change together here: each row of ``FAILURES`` gives
 the completion, solution, ``Status`` and diagnostic code of one expected error.
+``Status`` itself lives in the leaf module ``execution.status``.
 """
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from enum import IntEnum, StrEnum
+from enum import IntEnum
 from types import MappingProxyType
 
 from rangekeeper.execution.backends.base import Termination
+from rangekeeper.execution.status import Status
 from rangekeeper.schema.records import CompletionStatus, Severity, SolutionStatus
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
@@ -20,29 +22,6 @@ from rangekeeper.shared.errors import (
     UnsupportedError,
     ValidationError,
 )
-
-
-class Status(StrEnum):
-    """What an Outcome found, in one word.
-
-    The status follows from the Run report: its completion, its solution and
-    the code of its decisive diagnostic.
-    """
-
-    FEASIBLE = "feasible"
-    """An accepted candidate, and the equations determine each unknown."""
-    UNDERDETERMINED = "underdetermined"
-    """An accepted candidate, but the equations leave some unknowns free."""
-    INFEASIBLE = "infeasible"
-    """The backend proved that no candidate satisfies the equations."""
-    UNSUPPORTED = "unsupported"
-    """The problem is outside the supported mathematics or limits."""
-    INVALID = "invalid"
-    """The Specification is not valid against its Model."""
-    LIMITED = "limited"
-    """A time or iteration limit stopped the attempt before a candidate."""
-    FAILED = "failed"
-    """A numerical, backend or verification failure."""
 
 
 class Reached(IntEnum):
@@ -197,7 +176,7 @@ TERMINATIONS: dict[Termination, Ending] = {
     Termination.INFEASIBLE: Ending(
         CompletionStatus.COMPLETED, SolutionStatus.INFEASIBLE, False
     ),
-    Termination.LIMIT: Ending(CompletionStatus.LIMITED, UNKNOWN, True),
-    Termination.ERROR: Ending(FAILED, UNKNOWN, False),
+    Termination.LIMITED: Ending(CompletionStatus.LIMITED, UNKNOWN, True),
+    Termination.FAILED: Ending(FAILED, UNKNOWN, False),
     Termination.UNKNOWN: Ending(CompletionStatus.COMPLETED, UNKNOWN, True),
 }

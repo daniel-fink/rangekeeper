@@ -561,7 +561,7 @@ def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
 
 
 @pytest.mark.parametrize(
-    "termination", [Termination.ERROR, Termination.UNKNOWN, Termination.LIMIT]
+    "termination", [Termination.FAILED, Termination.UNKNOWN, Termination.LIMITED]
 )
 def test_backend_statuses_do_not_overclaim(termination):
     class Backend:
@@ -576,10 +576,10 @@ def test_backend_statuses_do_not_overclaim(termination):
     assert not run.record.outputs
     assert run.report.status.completion == (
         CompletionStatus.FAILED
-        if termination is Termination.ERROR
+        if termination is Termination.FAILED
         else (
             CompletionStatus.LIMITED
-            if termination is Termination.LIMIT
+            if termination is Termination.LIMITED
             else CompletionStatus.COMPLETED
         )
     )
@@ -754,7 +754,7 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
     evidence = next(
         d.values for d in run.report.diagnostics if d.code == Code.SOLVER_TERMINATION
     )
-    assert evidence["termination"] == "limit"
+    assert evidence["termination"] == "limited"
     assert evidence["termination_condition"] == "iterationLimit"
     assert evidence["simplex_iterations"] == 1
 

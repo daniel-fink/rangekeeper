@@ -578,6 +578,21 @@ symbols:
     status: agreed
     source: "ADR-017, #307 (D26)"
     note: A fixed word that rangekeeper defines is an enum with one public path.
+  - module: rangekeeper.run
+    name: Status
+    new_name: RunStatus
+    status: agreed
+    source: "#379"
+    note: >-
+      The record at `run.report.status`, with `completion` and `solution`.
+      `rk.execution.Status` is the Status of an Outcome, a different type.
+  - module: rangekeeper.schema.records
+    name: Status
+    new_name: RunStatus
+    status: agreed
+    source: "#379"
+    requires: [schema]
+    note: The generated record; the LinkML class is `RunStatus`. Stored Runs do not change.
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it

@@ -1834,9 +1834,9 @@ public sealed class Report : WireRecord
         init => WriteOptional("runtime", value);
     }
     /// <summary>Wire field status; missing and null remain distinct.</summary>
-    public Status Status
+    public RunStatus Status
     {
-        get => Read<Status>("status");
+        get => Read<RunStatus>("status");
         init => Write("status", value);
     }
     /// <summary>Wire field trace; missing and null remain distinct.</summary>
@@ -1984,6 +1984,26 @@ public sealed class Run : WireRecord
     {
         get => Read<Guid>("specification");
         init => Write("specification", value);
+    }
+}
+
+/// <summary>Schema-derived RunStatus wire record. Exports and nested reads are detached.</summary>
+public sealed class RunStatus : WireRecord
+{
+    public RunStatus() { }
+    public RunStatus(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field completion; missing and null remain distinct.</summary>
+    public string Completion
+    {
+        get => Read<string>("completion");
+        init => Write("completion", value);
+    }
+    /// <summary>Wire field solution; missing and null remain distinct.</summary>
+    public string Solution
+    {
+        get => Read<string>("solution");
+        init => Write("solution", value);
     }
 }
 
@@ -2362,26 +2382,6 @@ public sealed class Specification : WireRecord
     {
         get => ReadOptional<IReadOnlyList<Reference>>("unknowns");
         init => WriteOptional("unknowns", value);
-    }
-}
-
-/// <summary>Schema-derived Status wire record. Exports and nested reads are detached.</summary>
-public sealed class Status : WireRecord
-{
-    public Status() { }
-    public Status(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field completion; missing and null remain distinct.</summary>
-    public string Completion
-    {
-        get => Read<string>("completion");
-        init => Write("completion", value);
-    }
-    /// <summary>Wire field solution; missing and null remain distinct.</summary>
-    public string Solution
-    {
-        get => Read<string>("solution");
-        init => Write("solution", value);
     }
 }
 

@@ -124,8 +124,8 @@ def test_the_attempt_has_one_except_arm():
             SolutionStatus.INFEASIBLE,
             False,
         ),
-        (Termination.LIMIT, LIMITED, UNKNOWN, True),
-        (Termination.ERROR, FAILED, UNKNOWN, False),
+        (Termination.LIMITED, LIMITED, UNKNOWN, True),
+        (Termination.FAILED, FAILED, UNKNOWN, False),
         (Termination.UNKNOWN, CompletionStatus.COMPLETED, UNKNOWN, True),
     ],
 )

@@ -281,6 +281,8 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.flow.ResamplingMethod` | `ResampleMethod` | agreed | The enum also gains SPLIT, which divides each amount over shorter Periods. |
 | `rangekeeper.model.expression.Criterion` | `rangekeeper.model.Criterion` | agreed | `rangekeeper.model` exports the query Filter with its Criterion and ValueTest records. |
 | `rangekeeper.model.expression.Direction` | `rangekeeper.model.Direction` | agreed | A fixed word that rangekeeper defines is an enum with one public path. |
+| `rangekeeper.run.Status` | `RunStatus` | agreed | The record at `run.report.status`, with `completion` and `solution`. `rk.execution.Status` is the Status of an Outcome, a different type. |
+| `rangekeeper.schema.records.Status` | `RunStatus` | agreed (needs schema) | The generated record; the LinkML class is `RunStatus`. Stored Runs do not change. |
 | `rangekeeper.execution.compiler.Compiled.prepared` | `binding` | agreed |  |
 | `rangekeeper.model.system.view.View.aggregate` | `rollup` | agreed | Each use needs review. `view.aggregate(reduction)` becomes `view.rollup(definition=rollup)`. |
 | `rangekeeper.model.system.pivot.PivotColumn.aggregation` | `result` | agreed | Each use needs review. |

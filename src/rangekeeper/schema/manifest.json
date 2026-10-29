@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "de05ad39fc281ab25990aa25a8e241af81a617bff45546889bd3afce476f30f4",
+    "checks.py": "36dc04d49c60f2028f2193837b8280d15f4c943275838a2474bf503eb62da9c8",
     "enums.py": "2641d761acdb5bafb454839cd93b8b23a78c73b1c09296aa5b7361c4f4537f5c",
-    "records.py": "0140fe20d558c75f8a002618f6781195d6a26bbf54e23a5d66a67984e1d70469",
-    "schema.json": "905971192a8b4647d2ff24af16c101a026915dffc7f65e5f40601b2e63ae1c26",
-    "slots.json": "2962ecf66f6474e1006bd90fe8b9c810a78a772a39975ea5c8a6fd7b86971f8d"
+    "records.py": "f6f79ef770789ac2f157cc8358af5c9926a788057cc9c216965213531ea152a4",
+    "schema.json": "ce5dd4c65e0b1b0f0f7d48b489217725798e690c4f851e540b3279abdaf94835",
+    "slots.json": "4f2bac26b857f86774c0593c4b4d45292c886553f2ed45c4b51c5c61ad722056"
   },
   "classes": [
     "Action",
@@ -69,6 +69,7 @@
     "RuleEvidence",
     "RuleSet",
     "Run",
+    "RunStatus",
     "Runtime",
     "ScenarioParameter",
     "ScenarioPlan",
@@ -78,7 +79,6 @@
     "Source",
     "Span",
     "Specification",
-    "Status",
     "Step",
     "System",
     "Taxonomy",
@@ -126,7 +126,7 @@
     "schema/reference.yaml": "2e554658a7d03b849bddf72a1014317b1144eec9b3bd34fe63874b4059400ced",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
     "schema/rule.yaml": "184d6e3c08d2d5e3c93f7c454c3e47bc66d4161cda6357d200ae410a6c67be89",
-    "schema/run.yaml": "5d2b0f629797c227de8c57e094235ad8bd0cafa4fb65c0fdfabdb778308dae41",
+    "schema/run.yaml": "06f4d3fa86c6b68ebf5cca6ce99b2c8e8ba05afa290d324e8851cb119d50d303",
     "schema/scenario.yaml": "2952d83a42d3b8b72a317cf32b392ea877cc3cbb254de4a1276ff6928b1f6726",
     "schema/settings.yaml": "33b976592d1f15197791e08f1b4c6fa418738a60e77ecc13b955ac94a8396248",
     "schema/specification.yaml": "e4e0ccd074b6f610543a1253b4590cae9b92cddd93060377fa101c9b0b1f229b",

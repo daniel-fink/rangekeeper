@@ -224,7 +224,8 @@ time limit has passed. The stages call it between steps.
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and one `except` arm for the expected failures. It stores nothing. |
-| `execution/statuses.py` | `Status`. `FAILURES`: one row for each expected error, with its completion, solution, `Status` and diagnostic code. `TERMINATIONS`: one row for each `Termination`. |
+| `execution/status.py` | `Status`, in a module that imports nothing from `execution`. |
+| `execution/statuses.py` | `FAILURES`: one row for each expected error, with its completion, solution, `Status` and diagnostic code. `TERMINATIONS`: one row for each `Termination`. |
 | `execution/pipeline.py` | `solve`: the stages for each case of a batch, in order. `execute`: `solve`, then output-before-Run publication. |
 | `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
 
@@ -331,8 +332,8 @@ Generic code reads only the backend's `Termination`:
 | --- | --- | --- | --- |
 | `FEASIBLE` | completed | `feasible` when verification accepts the candidate | `convergenceCriteriaSatisfied` |
 | `INFEASIBLE` | completed | `infeasible`, for the compiled affine problem | `provenInfeasible` |
-| `LIMIT` | limited | `feasible` only for an accepted candidate, else `unknown` | `maxTimeLimit`, `iterationLimit`, `objectiveLimit`, a killed worker |
-| `ERROR` | failed | `unknown` | `error`, `interrupted` |
+| `LIMITED` | limited | `feasible` only for an accepted candidate, else `unknown` | `maxTimeLimit`, `iterationLimit`, `objectiveLimit`, a killed worker |
+| `FAILED` | failed | `unknown` | `error`, `interrupted` |
 | `UNKNOWN` | completed | `feasible` only for an accepted candidate, else `unknown` | any other condition |
 
 `execution.statuses.TERMINATIONS` holds this table. The `solver_termination`

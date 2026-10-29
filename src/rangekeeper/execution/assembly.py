@@ -14,7 +14,7 @@ from rangekeeper.schema.records import (
     Diagnostic,
     Metadata,
     Report,
-    Status,
+    RunStatus,
 )
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.codes import Code
@@ -114,7 +114,7 @@ def assemble_batch(
             spawns=tuple(case.run.id for case in cases),
             outputs=tuple(outputs),
             report=Report(
-                status=Status(
+                status=RunStatus(
                     completion=completion,
                     solution=SolutionStatus.NOT_APPLICABLE,
                 ),

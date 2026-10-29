@@ -9,7 +9,7 @@ from uuid import UUID
 from rangekeeper.execution import statuses
 from rangekeeper.execution.backends.base import Termination
 from rangekeeper.execution.errors import OutcomeError
-from rangekeeper.execution.statuses import Status
+from rangekeeper.execution.status import Status
 from rangekeeper.flow import Flow, Stream
 from rangekeeper.model import Model
 from rangekeeper.model.targets import recorded_scalar, target_value
@@ -41,6 +41,8 @@ from rangekeeper.shared.errors import (
 from rangekeeper.shared.table import Table
 
 _FREE = (Code.UNDERDETERMINED.value, Code.UNIQUENESS_NOT_ASSESSED.value)
+# The Termination words that Runs recorded before 1.0.0b1 (#379).
+_OLDER_WORDS = {"limit": Termination.LIMITED, "error": Termination.FAILED}
 
 
 def status_of(report: Report) -> Status:
@@ -74,7 +76,8 @@ class Evidence:
     """The typed solver evidence of one leaf Outcome.
 
     - ``termination`` is the backend's ``Termination``, or None when no
-      backend ran.
+      backend ran. The words ``limit`` and ``error`` of an older Run read as
+      ``LIMITED`` and ``FAILED``.
     - ``backend`` is the backend's own evidence, such as its status words and
       iteration count. Generic code does not read it.
     - ``equality_rank`` and ``unknown_count`` come from the rank analysis of
@@ -168,7 +171,7 @@ class Outcome:
                 dict(item.values) if isinstance(item.values, Mapping) else {}
             )
             if item.code == Code.SOLVER_TERMINATION.value:
-                termination = Termination(str(values.pop("termination")))
+                termination = _termination(str(values.pop("termination")))
                 backend = values
             elif item.code in _FREE:
                 rank = _integer(values.get("equality_rank"))
@@ -432,6 +435,11 @@ def _key(model: Model, value: Value) -> str:
     owner = model.owner_of(value.id)
     assert owner is not None  # an output Value has an owner
     return f"{model._path(owner)}.{value.key}"
+
+
+def _termination(word: str) -> Termination:
+    """Return the Termination of a recorded word, also a word of an older Run."""
+    return _OLDER_WORDS.get(word) or Termination(word)
 
 
 def _integer(value: object) -> int | None:

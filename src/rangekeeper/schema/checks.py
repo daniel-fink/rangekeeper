@@ -1823,6 +1823,27 @@ def check_Run(d, fields=None):
     return issues
 
 
+def check_RunStatus(d, fields=None):
+    """Check the fields and rules of one RunStatus node."""
+    issues = []
+    if 'completion' not in d:
+        issues.append(('structure.required', 'completion is required', ''))
+    if 'solution' not in d:
+        issues.append(('structure.required', 'solution is required', ''))
+    for name in d:
+        if name not in ('completion', 'solution'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'completion' in d and (fields is None or 'completion' in fields):
+        v = d['completion']
+        if not ((v in ('completed', 'limited', 'partial', 'failed', 'cancelled', 'skipped') and (type(v) is str))):
+            issues.append(('structure.value', 'invalid completion', '/completion'))
+    if 'solution' in d and (fields is None or 'solution' in fields):
+        v = d['solution']
+        if not ((v in ('feasible', 'infeasible', 'unknown', 'not_assessed', 'not_applicable') and (type(v) is str))):
+            issues.append(('structure.value', 'invalid solution', '/solution'))
+    return issues
+
+
 def check_Runtime(d, fields=None):
     """Check the fields and rules of one Runtime node."""
     issues = []
@@ -2158,27 +2179,6 @@ def check_Specification(d, fields=None):
     return issues
 
 
-def check_Status(d, fields=None):
-    """Check the fields and rules of one Status node."""
-    issues = []
-    if 'completion' not in d:
-        issues.append(('structure.required', 'completion is required', ''))
-    if 'solution' not in d:
-        issues.append(('structure.required', 'solution is required', ''))
-    for name in d:
-        if name not in ('completion', 'solution'):
-            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
-    if 'completion' in d and (fields is None or 'completion' in fields):
-        v = d['completion']
-        if not ((v in ('completed', 'limited', 'partial', 'failed', 'cancelled', 'skipped') and (type(v) is str))):
-            issues.append(('structure.value', 'invalid completion', '/completion'))
-    if 'solution' in d and (fields is None or 'solution' in fields):
-        v = d['solution']
-        if not ((v in ('feasible', 'infeasible', 'unknown', 'not_assessed', 'not_applicable') and (type(v) is str))):
-            issues.append(('structure.value', 'invalid solution', '/solution'))
-    return issues
-
-
 def check_Step(d, fields=None):
     """Check the fields and rules of one Step node."""
     issues = []
@@ -2460,6 +2460,7 @@ CHECKS = {
     'RuleEvidence': check_RuleEvidence,
     'RuleSet': check_RuleSet,
     'Run': check_Run,
+    'RunStatus': check_RunStatus,
     'Runtime': check_Runtime,
     'ScenarioParameter': check_ScenarioParameter,
     'ScenarioPlan': check_ScenarioPlan,
@@ -2469,7 +2470,6 @@ CHECKS = {
     'Source': check_Source,
     'Span': check_Span,
     'Specification': check_Specification,
-    'Status': check_Status,
     'Step': check_Step,
     'System': check_System,
     'Taxonomy': check_Taxonomy,

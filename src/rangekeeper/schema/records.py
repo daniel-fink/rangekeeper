@@ -5278,7 +5278,7 @@ class Report(Record):
     __slots__ = ()
     _kind = 'Report'
     _SLOTS = _freeze(
-        {'status': {'options': [{'kind': 'Status', 'category': 'record'}],
+        {'status': {'options': [{'kind': 'RunStatus', 'category': 'record'}],
                     'required': True,
                     'many': False,
                     'mapping': False,
@@ -5316,14 +5316,14 @@ class Report(Record):
     )
 
     def __init__(self, *,
-        status: Status,
+        status: RunStatus,
         runtime: Runtime | Unset = UNSET,
         diagnostics: tuple[Diagnostic, ...] | None | Unset = UNSET,
         trace: tuple[Step, ...] | None | Unset = UNSET,
         rule_evidence: tuple[RuleEvidence, ...] | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
-        data['status'] = _encode_record(status, Status, 'status')
+        data['status'] = _encode_record(status, RunStatus, 'status')
         if runtime is not UNSET:
             data['runtime'] = _encode_record(runtime, Runtime, 'runtime')
         if diagnostics is not UNSET:
@@ -5335,7 +5335,7 @@ class Report(Record):
         self._set_checked(data)
 
     def replace(self, *,
-        status: Status | Unset = UNSET,
+        status: RunStatus | Unset = UNSET,
         runtime: Runtime | Unset | Omit = UNSET,
         diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = UNSET,
         trace: tuple[Step, ...] | None | Unset | Omit = UNSET,
@@ -5344,7 +5344,7 @@ class Report(Record):
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if status is not UNSET:
-            changes['status'] = _encode_record(status, Status, 'status')
+            changes['status'] = _encode_record(status, RunStatus, 'status')
         if runtime is OMIT:
             changes['runtime'] = OMIT
         elif runtime is not UNSET:
@@ -5364,9 +5364,9 @@ class Report(Record):
         return self._replace(changes)
 
     @property
-    def status(self) -> Status:
+    def status(self) -> RunStatus:
         'Required execution and mathematical outcome.'
-        return cast('Status', self._child('status', Status, False))
+        return cast('RunStatus', self._child('status', RunStatus, False))
 
     @property
     def runtime(self) -> Runtime | None:
@@ -5783,6 +5783,59 @@ class Run(Record):
     def report(self) -> Report:
         'Execution outcome and supporting evidence.'
         return cast('Report', self._child('report', Report, False))
+
+
+class RunStatus(Record):
+    'Execution completion and mathematical conclusion of a Run, recorded independently.'
+    __slots__ = ()
+    _kind = 'RunStatus'
+    _SLOTS = _freeze(
+        {'completion': {'options': [{'kind': 'CompletionStatus', 'category': 'enum'}],
+                        'required': True,
+                        'many': False,
+                        'mapping': False,
+                        'nullable': False,
+                        'ordered': False,
+                        'lineage': False},
+         'solution': {'options': [{'kind': 'SolutionStatus', 'category': 'enum'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False,
+                      'lineage': False}}
+    )
+
+    def __init__(self, *,
+        completion: CompletionStatus,
+        solution: SolutionStatus,
+    ) -> None:
+        data: dict[str, object] = {}
+        data['completion'] = _encode_enum(completion, CompletionStatus, 'completion')
+        data['solution'] = _encode_enum(solution, SolutionStatus, 'solution')
+        self._set_checked(data)
+
+    def replace(self, *,
+        completion: CompletionStatus | Unset = UNSET,
+        solution: SolutionStatus | Unset = UNSET,
+    ) -> Self:
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
+        changes: dict[str, object] = {}
+        if completion is not UNSET:
+            changes['completion'] = _encode_enum(completion, CompletionStatus, 'completion')
+        if solution is not UNSET:
+            changes['solution'] = _encode_enum(solution, SolutionStatus, 'solution')
+        return self._replace(changes)
+
+    @property
+    def completion(self) -> CompletionStatus:
+        'How this attempt ended, or the aggregate completion of a batch.'
+        return cast('CompletionStatus', _decode_enum(self._data.get('completion'), CompletionStatus))
+
+    @property
+    def solution(self) -> SolutionStatus:
+        'Mathematical conclusion; batches use not_applicable.'
+        return cast('SolutionStatus', _decode_enum(self._data.get('solution'), SolutionStatus))
 
 
 class Runtime(Record):
@@ -6911,59 +6964,6 @@ class Specification(Record):
         return cast('RuleSet | None', self._child('rules', RuleSet, False))
 
 
-class Status(Record):
-    'Execution completion and mathematical conclusion, recorded independently.'
-    __slots__ = ()
-    _kind = 'Status'
-    _SLOTS = _freeze(
-        {'completion': {'options': [{'kind': 'CompletionStatus', 'category': 'enum'}],
-                        'required': True,
-                        'many': False,
-                        'mapping': False,
-                        'nullable': False,
-                        'ordered': False,
-                        'lineage': False},
-         'solution': {'options': [{'kind': 'SolutionStatus', 'category': 'enum'}],
-                      'required': True,
-                      'many': False,
-                      'mapping': False,
-                      'nullable': False,
-                      'ordered': False,
-                      'lineage': False}}
-    )
-
-    def __init__(self, *,
-        completion: CompletionStatus,
-        solution: SolutionStatus,
-    ) -> None:
-        data: dict[str, object] = {}
-        data['completion'] = _encode_enum(completion, CompletionStatus, 'completion')
-        data['solution'] = _encode_enum(solution, SolutionStatus, 'solution')
-        self._set_checked(data)
-
-    def replace(self, *,
-        completion: CompletionStatus | Unset = UNSET,
-        solution: SolutionStatus | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if completion is not UNSET:
-            changes['completion'] = _encode_enum(completion, CompletionStatus, 'completion')
-        if solution is not UNSET:
-            changes['solution'] = _encode_enum(solution, SolutionStatus, 'solution')
-        return self._replace(changes)
-
-    @property
-    def completion(self) -> CompletionStatus:
-        'How this attempt ended, or the aggregate completion of a batch.'
-        return cast('CompletionStatus', _decode_enum(self._data.get('completion'), CompletionStatus))
-
-    @property
-    def solution(self) -> SolutionStatus:
-        'Mathematical conclusion; batches use not_applicable.'
-        return cast('SolutionStatus', _decode_enum(self._data.get('solution'), SolutionStatus))
-
-
 class Step(Record):
     'One ordered record of execution activity, without prescribing scheduling or rule logic.'
     __slots__ = ()
@@ -7761,6 +7761,7 @@ _TYPES = {
     'RuleEvidence': RuleEvidence,
     'RuleSet': RuleSet,
     'Run': Run,
+    'RunStatus': RunStatus,
     'Runtime': Runtime,
     'ScenarioParameter': ScenarioParameter,
     'ScenarioPlan': ScenarioPlan,
@@ -7770,7 +7771,6 @@ _TYPES = {
     'Source': Source,
     'Span': Span,
     'Specification': Specification,
-    'Status': Status,
     'Step': Step,
     'System': System,
     'Taxonomy': Taxonomy,
@@ -7840,6 +7840,7 @@ _SLOTS = {
     'RuleEvidence': RuleEvidence._SLOTS,
     'RuleSet': RuleSet._SLOTS,
     'Run': Run._SLOTS,
+    'RunStatus': RunStatus._SLOTS,
     'Runtime': Runtime._SLOTS,
     'ScenarioParameter': ScenarioParameter._SLOTS,
     'ScenarioPlan': ScenarioPlan._SLOTS,
@@ -7849,7 +7850,6 @@ _SLOTS = {
     'Source': Source._SLOTS,
     'Span': Span._SLOTS,
     'Specification': Specification._SLOTS,
-    'Status': Status._SLOTS,
     'Step': Step._SLOTS,
     'System': System._SLOTS,
     'Taxonomy': Taxonomy._SLOTS,
@@ -7867,4 +7867,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'RunStatus', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']

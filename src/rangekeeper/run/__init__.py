@@ -6,8 +6,8 @@ from rangekeeper.schema.records import (
     Diagnostic,
     Implementation,
     Report,
+    RunStatus,
     Runtime,
-    Status,
     Step,
 )
 from rangekeeper.schema.records import (
@@ -19,7 +19,7 @@ __all__ = [
     "Run",
     "RunRecord",
     "Report",
-    "Status",
+    "RunStatus",
     "Runtime",
     "Implementation",
     "Diagnostic",

@@ -35,7 +35,7 @@ from rangekeeper.specification import SpecificationRecord
 from rangekeeper.run import (
     RunRecord,
     Report,
-    Status,
+    RunStatus,
     Diagnostic,
     CompletionStatus,
     SolutionStatus,
@@ -56,7 +56,7 @@ run = rk.Run(
         metadata=Metadata(id=uuid4(), schema_version="1.0.0", name="Synthetic example"),
         specification=specification.id,
         report=Report(
-            status=Status(
+            status=RunStatus(
                 completion=CompletionStatus.FAILED, solution=SolutionStatus.NOT_ASSESSED
             ),
             diagnostics=(

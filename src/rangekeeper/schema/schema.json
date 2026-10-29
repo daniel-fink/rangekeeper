@@ -3333,10 +3333,10 @@
           "description": "Actual runtime when known; may be absent for a skipped or pre-execution failure."
         },
         "status": {
-          "$ref": "#/$defs/Status",
+          "$ref": "#/$defs/RunStatus",
           "allOf": [
             {
-              "$ref": "#/$defs/Status"
+              "$ref": "#/$defs/RunStatus"
             }
           ],
           "description": "Required execution and mathematical outcome."
@@ -3551,6 +3551,26 @@
         "report"
       ],
       "title": "Run",
+      "type": "object"
+    },
+    "RunStatus": {
+      "additionalProperties": false,
+      "description": "Execution completion and mathematical conclusion of a Run, recorded independently.",
+      "properties": {
+        "completion": {
+          "$ref": "#/$defs/CompletionStatus",
+          "description": "How this attempt ended, or the aggregate completion of a batch."
+        },
+        "solution": {
+          "$ref": "#/$defs/SolutionStatus",
+          "description": "Mathematical conclusion; batches use not_applicable."
+        }
+      },
+      "required": [
+        "completion",
+        "solution"
+      ],
+      "title": "RunStatus",
       "type": "object"
     },
     "Runtime": {
@@ -4179,26 +4199,6 @@
         "metadata"
       ],
       "title": "Specification",
-      "type": "object"
-    },
-    "Status": {
-      "additionalProperties": false,
-      "description": "Execution completion and mathematical conclusion, recorded independently.",
-      "properties": {
-        "completion": {
-          "$ref": "#/$defs/CompletionStatus",
-          "description": "How this attempt ended, or the aggregate completion of a batch."
-        },
-        "solution": {
-          "$ref": "#/$defs/SolutionStatus",
-          "description": "Mathematical conclusion; batches use not_applicable."
-        }
-      },
-      "required": [
-        "completion",
-        "solution"
-      ],
-      "title": "Status",
       "type": "object"
     },
     "Step": {
