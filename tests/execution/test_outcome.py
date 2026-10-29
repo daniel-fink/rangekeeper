@@ -42,7 +42,7 @@ def test_a_value_is_read_by_key_or_dotted_path(back_outcome):
     assert isinstance(land, rk.Quantity)
     assert land.units == "AUD"
     assert back_outcome["project.land_cost"] == land
-    value = MODEL._value_at("land_cost")
+    value = MODEL.value(key="land_cost")
     assert back_outcome.quantity(value.id) == land
     assert back_outcome.model is back_outcome.outputs[0]
     with pytest.raises(MissingReferenceError):

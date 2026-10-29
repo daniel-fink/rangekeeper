@@ -115,7 +115,7 @@ def test_stage_calls_the_backend_only_for_rows_that_need_it():
     binding = binding_of(front())
     staged = stage(binding, solve=recorded)
     assert len(calls) == 1 and staged.stage_count == 1
-    reference = MODEL._value_at("reference_income").id
+    reference = MODEL.value(key="reference_income").id
     assert reference in staged.determined
     assert reference not in staged.problem.variables
     assert set(staged.problem.variables) | set(staged.determined) == set(

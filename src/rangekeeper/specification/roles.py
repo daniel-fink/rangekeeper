@@ -113,15 +113,15 @@ def role_table(
     if record.rules is not None:
         for reference in record.rules.targets:
             roles[reference.target] = (Role.DECIDED, None)
-    keys = _key_counts(model)
     rows = []
     for identity in in_model_order(model, roles):
         role, quantity = roles[identity]
-        key, movement = _name(model, identity, keys)
+        target = model._index.records.get(identity)
+        movement = identity if isinstance(target, Movement) else None
         rows.append(
             Row(
                 {
-                    "key": key,
+                    "key": _key(model, identity),
                     "movement": movement,
                     "role": role,
                     "quantity": quantity,
@@ -132,34 +132,16 @@ def role_table(
     return Table(ROLE_COLUMNS, rows)
 
 
-def target_key(model: "Model", identity: UUID) -> str:
-    """Return the key that ``fix`` takes for a Value, or for a Movement's Value."""
-    return _name(model, identity, _key_counts(model))[0]
+def _key(model: "Model", identity: UUID) -> str:
+    """Return the key that ``fix`` takes for a target, or its UUID text.
 
-
-def _key_counts(model: "Model") -> dict[str, int]:
-    """Return the number of Values with each key."""
-    keys: dict[str, int] = {}
-    for item in model._index.records.values():
-        if isinstance(item, Value):
-            keys[item.key] = keys.get(item.key, 0) + 1
-    return keys
-
-
-def _name(model: "Model", identity: UUID, keys) -> tuple[str, UUID | None]:
-    """Return the key that ``fix`` takes for a target, and its Movement UUID."""
-    item = model._index.records.get(identity)
-    movement = None
-    if isinstance(item, Movement):
-        movement = item.id
-        owner = model.owner_of(item.id)
-        item = model._index.records.get(owner) if owner is not None else None
-    if not isinstance(item, Value):
-        return str(identity), movement
-    if keys.get(item.key, 0) == 1:
-        return item.key, movement
-    owner = model.owner_of(item.id)
-    return (f"{model._path(owner)}.{item.key}" if owner else item.key), movement
+    The key is ``model.key_of``: for a Movement, the key of its Flow Value. A
+    target that ``model`` does not declare gives its UUID text.
+    """
+    try:
+        return model.key_of(identity)
+    except LookupError:
+        return str(identity)
 
 
 __all__ = ["Role"]
