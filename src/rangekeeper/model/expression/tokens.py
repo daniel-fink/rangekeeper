@@ -24,7 +24,7 @@ class TokenKind(Enum):
     END = "end"
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Token:
     """One token: ``text[start:end]`` of the equation text is ``text``."""
 
@@ -87,10 +87,15 @@ def tokenize(text: str) -> tuple[Token, ...]:
                 end=position + 1,
             )
         tokens.append(
-            Token(TokenKind(match.lastgroup), match.group(), position, match.end())
+            Token(
+                kind=TokenKind(match.lastgroup),
+                text=match.group(),
+                start=position,
+                end=match.end(),
+            )
         )
         position = _skip_space(text, match.end())
-    tokens.append(Token(TokenKind.END, "", len(text), len(text)))
+    tokens.append(Token(kind=TokenKind.END, text="", start=len(text), end=len(text)))
     return tuple(tokens)
 
 

@@ -123,7 +123,7 @@ def codes(view):
 def test_descendants_follow_parents_in_declaration_order():
     model, kinds, _ = unit_model()
     expected = tuple(kinds[code] for code in ("2B", "2B+S", "2B-C", "3B"))
-    assert descendants(model.definitions, kinds["apartment"].id) == expected
+    assert descendants(items=model.definitions, id=kinds["apartment"].id) == expected
     assert model.descendants(kinds["apartment"].id) == expected
     assert model.descendants(kinds["2B"].id) == (kinds["2B+S"], kinds["2B-C"])
     assert model.descendants(kinds["2B+S"].id) == ()
@@ -135,14 +135,14 @@ def test_descendants_reject_unknown_and_wrong_kind_uuids():
     with pytest.raises(MissingReferenceError):
         model.descendants(uuid4())
     with pytest.raises(MissingReferenceError):
-        descendants(model.definitions, uuid4())
+        descendants(items=model.definitions, id=uuid4())
     with pytest.raises(ReferenceTypeError):
         model.descendants(model.definitions.measures[0].id)
 
 
 def test_view_filter_includes_sub_types_by_default():
     model, kinds, _ = unit_model()
-    view = View(model)
+    view = View(model=model)
     assert codes(view.filter(entity_classification=kinds["2B"].id)) == (
         "u1",
         "u2",
@@ -165,7 +165,7 @@ def test_view_filter_includes_sub_types_by_default():
 
 def test_exclusive_view_filter_matches_only_that_classification():
     model, kinds, _ = unit_model()
-    view = View(model)
+    view = View(model=model)
     assert codes(view.filter(entity_classification=kinds["2B"].id, exclusive=True)) == (
         "u1",
     )
@@ -180,9 +180,9 @@ def test_exclusive_view_filter_matches_only_that_classification():
 def test_unknown_classification_is_rejected_by_filters_and_rules():
     model, _, _ = unit_model()
     with pytest.raises(MissingReferenceError):
-        View(model).filter(entity_classification=uuid4())
+        View(model=model).filter(entity_classification=uuid4())
     with pytest.raises(MissingReferenceError):
-        View(model).filter(entity_classification=uuid4(), exclusive=True)
+        View(model=model).filter(entity_classification=uuid4(), exclusive=True)
     with pytest.raises(MissingReferenceError):
         classified(model=model, classification=uuid4())
     with pytest.raises(TypeError):
@@ -192,7 +192,7 @@ def test_unknown_classification_is_rejected_by_filters_and_rules():
 def test_classified_contributor_rule_selects_sub_types_unless_exclusive():
     model, kinds, entities = unit_model()
     building = model.find_entities(code="building")[0]
-    tree = Hierarchy.from_membership(View(model), root=building.id)
+    tree = Hierarchy.from_membership(view=View(model=model), root=building.id)
 
     def total(rule):
         reduction = QuantityRollup(
@@ -255,9 +255,13 @@ def test_deep_taxonomy_descendants_do_not_use_the_call_stack():
         system=System(entities=(leaf, other)),
     )
     assert len(model.descendants(chain["c0"].id)) == depth - 1
-    assert codes(View(model).filter(entity_classification=chain["c0"].id)) == (
+    assert codes(View(model=model).filter(entity_classification=chain["c0"].id)) == (
         "leaf",
         "other",
     )
-    assert codes(View(model).filter(entity_classification=chain["c1"].id)) == ("leaf",)
-    assert classified(model=model, classification=chain["c1"].id)(model.entity(leaf.id))
+    assert codes(View(model=model).filter(entity_classification=chain["c1"].id)) == (
+        "leaf",
+    )
+    assert classified(model=model, classification=chain["c1"].id)(
+        model.entity(id=leaf.id)
+    )

@@ -71,7 +71,7 @@ _PREFIX = "Design financial / "
 
 def classification_id(model: Model, code: str) -> UUID:
     """Resolve one authoring code to UUID; absent or ambiguous codes fail."""
-    matches = find_classifications(model.definitions, code=code)
+    matches = find_classifications(items=model.definitions, code=code)
     if len(matches) != 1:
         raise ValueError(f"expected exactly one classification for {code!r}")
     return matches[0].id
@@ -83,7 +83,7 @@ def select_contributors(model: Model, *, root: UUID) -> tuple[UUID, ...]:
     Shared membership and repeated paths do not duplicate contribution. Cycles
     and unrelated membership do not expand the reviewed calculation scope.
     """
-    model.entity(root)
+    model.entity(id=root)
     spatial = classification_id(model, "spatiallyContains")
     kinds = {classification_id(model, "floor"), classification_id(model, "utilities")}
     assert model.system is not None
@@ -109,7 +109,7 @@ def select_contributors(model: Model, *, root: UUID) -> tuple[UUID, ...]:
 
 def _local_value(model: Model, owner: UUID, key: str) -> Value | None:
     """Return the Entity's Value with this key, or None when it has none."""
-    model.entity(owner)  # A missing Entity raises; only a missing key is None.
+    model.entity(id=owner)  # A missing Entity raises; only a missing key is None.
     try:
         return model.value(owner=owner, key=key)
     except MissingReferenceError:
@@ -188,7 +188,7 @@ def author(
         raise ValueError("design requires at least one contributor")
     floor_kind = classification_id(model, "floor")
     utilities = {
-        uid for uid in selected if model.entity(uid).classification != floor_kind
+        uid for uid in selected if model.entity(id=uid).classification != floor_kind
     }
     if set(utility_kinds) != utilities or set(utility_kinds.values()) - {
         "plant",
@@ -242,7 +242,7 @@ def author(
     for uid in selected:
         owner = uuid5(namespace, str(uid))
         items = []
-        if model.entity(uid).classification == floor_kind:
+        if model.entity(id=uid).classification == floor_kind:
             use = _use(model, uid)
             for key, unit, magnitude in [
                 ("efficiency", "dimensionless", EFFICIENCY[use]),
@@ -345,7 +345,7 @@ def formulate(model: Model) -> Model:
     floor_kind = classification_id(model, "floor")
     for uid in contributors:
         v = values(model, uid)
-        floor = model.entity(uid).classification == floor_kind
+        floor = model.entity(id=uid).classification == floor_kind
         if floor:
             area = _source(model, uid, "gfa")
             put(

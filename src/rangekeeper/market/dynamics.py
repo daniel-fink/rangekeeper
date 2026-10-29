@@ -71,8 +71,8 @@ def calculate_cycle(
 
 
 def calculate_autoregression(
-    innovations: Sequence[float],
     *,
+    innovations: Sequence[float],
     parameter: float,
 ) -> tuple[float, ...]:
     """Add each innovation to the parameter times the previous value (AR(1))."""
@@ -85,9 +85,9 @@ def calculate_autoregression(
 
 
 def accumulate_volatility(
+    *,
     trend: Sequence[float],
     returns: Sequence[float],
-    *,
     growth_rate: float,
     mean_reversion: float,
 ) -> tuple[float, ...]:
@@ -112,8 +112,8 @@ def accumulate_volatility(
 
 
 def calculate_shock(
-    events: Sequence[float],
     *,
+    events: Sequence[float],
     likelihood: float,
     dissipation: float,
     impact: float = 1,

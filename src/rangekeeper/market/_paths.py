@@ -42,9 +42,14 @@ def construct_paths(method, parameters, draws):
         cap_rate=p["cap_rate"],
         initial_value=p["initial_value"],
     )
-    ar = calculate_autoregression(draws["innovations"], parameter=p["autoregression"])
+    ar = calculate_autoregression(
+        innovations=draws["innovations"], parameter=p["autoregression"]
+    )
     volatility = accumulate_volatility(
-        trend, ar, growth_rate=p["growth_rate"], mean_reversion=p["mean_reversion"]
+        trend=trend,
+        returns=ar,
+        growth_rate=p["growth_rate"],
+        mean_reversion=p["mean_reversion"],
     )
     space_cycle = calculate_cycle(
         count=count,
@@ -69,7 +74,7 @@ def construct_paths(method, parameters, draws):
     true = tuple(s / a for s, a in zip(space, asset, strict=True))
     noise = draws["noise"]
     shock = calculate_shock(
-        draws["events"],
+        events=draws["events"],
         likelihood=p["shock_likelihood"],
         dissipation=p["shock_dissipation"],
         impact=p["shock_impact"],

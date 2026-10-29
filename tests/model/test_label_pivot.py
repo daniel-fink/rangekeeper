@@ -123,7 +123,7 @@ def project():
     )
     ids.update({name: item.id for name, item in buildings.items()})
     ids["site"] = site.id
-    return model, Hierarchy.from_membership(View(model), root=site.id), ids
+    return model, Hierarchy.from_membership(view=View(model=model), root=site.id), ids
 
 
 GFA = QuantityRollup(key="gfa", units="m^2", require_complete=False)
@@ -136,7 +136,7 @@ def number(pivot, row, column=None):
 
 def test_a_label_key_splits_the_columns_by_its_taxonomy():
     model, rows, ids = project()
-    pivot = GFA.pivot(rows, label="use", by=USE["use"])
+    pivot = GFA.pivot(hierarchy=rows, label="use", by=USE["use"])
     assert pivot.label == "use"
     assert [(c.classification, c.parent, c.depth) for c in pivot.columns] == [
         (None, None, 0),
@@ -161,10 +161,10 @@ def test_a_label_key_splits_the_columns_by_its_taxonomy():
 
 def test_by_chooses_the_column_parent_and_depth_goes_deeper():
     model, rows, ids = project()
-    pivot = GFA.pivot(rows, label="use", by=USE["residential"])
+    pivot = GFA.pivot(hierarchy=rows, label="use", by=USE["residential"])
     assert [c.classification for c in pivot.columns] == [None, USE["apartment"]]
     assert number(pivot, ids["site"], USE["apartment"]) == 200
-    deep = GFA.pivot(rows, label="use", by=USE["use"], depth=2)
+    deep = GFA.pivot(hierarchy=rows, label="use", by=USE["use"], depth=2)
     assert (USE["apartment"], USE["residential"], 2) in [
         (c.classification, c.parent, c.depth) for c in deep.columns
     ]
@@ -172,7 +172,7 @@ def test_by_chooses_the_column_parent_and_depth_goes_deeper():
 
 def test_coverage_reports_overlap_uncovered_and_outside():
     model, rows, ids = project()
-    pivot = GFA.pivot(rows, label="use", by=USE["use"])
+    pivot = GFA.pivot(hierarchy=rows, label="use", by=USE["use"])
     a = pivot.partition(row=ids["A"])
     # a3 is both hotel and retail; a4 has no use label.
     assert a.overlap == (ids["a3"],)
@@ -181,7 +181,7 @@ def test_coverage_reports_overlap_uncovered_and_outside():
     b = pivot.partition(row=ids["B"])
     # b3's label is from another Taxonomy, so no use column holds it.
     assert b.uncovered == (ids["b3"],) and b.overlap == ()
-    exact = GFA.pivot(rows, label="use", by=USE["use"], exclusive=True)
+    exact = GFA.pivot(hierarchy=rows, label="use", by=USE["use"], exclusive=True)
     # With exclusive columns, apartment is in no column.
     assert exact.partition(row=ids["A"]).uncovered == (ids["a2"], ids["a4"])
 
@@ -189,7 +189,7 @@ def test_coverage_reports_overlap_uncovered_and_outside():
 def test_missing_values_stay_visible_in_label_columns():
     model, rows, ids = project()
     pivot = QuantityRollup(key="gfa", units="m^2").pivot(
-        rows, label="use", by=USE["use"]
+        hierarchy=rows, label="use", by=USE["use"]
     )
     coverage = pivot.coverage(row=ids["B"], column=USE["retail"])
     assert coverage.missing == (ids["b2"],)
@@ -201,14 +201,14 @@ def test_missing_values_stay_visible_in_label_columns():
 
 def test_only_narrows_the_label_columns_by_entity_classification():
     model, rows, ids = project()
-    pivot = GFA.pivot(rows, label="use", by=USE["use"], only=USE["hotel"])
+    pivot = GFA.pivot(hierarchy=rows, label="use", by=USE["use"], only=USE["hotel"])
     # No floor has the hotel Classification itself; only labels name it.
     assert pivot.coverage(row=ids["site"]).status is CoverageStatus.EMPTY
 
 
 def test_a_label_without_any_values_gives_the_all_column_alone():
     model, rows, ids = project()
-    pivot = GFA.pivot(rows, label="tenure")
+    pivot = GFA.pivot(hierarchy=rows, label="tenure")
     assert [c.classification for c in pivot.columns] == [None]
     assert pivot.column().result == GFA.execute(rows)
 
@@ -217,9 +217,10 @@ def test_without_by_the_columns_come_from_the_labels_taxonomy():
     model, _, ids = project()
     floors = [ids[code] for code, at, _, _ in FLOORS if at == "A"]
     rows = Hierarchy.from_membership(
-        View(model, entities=(ids["A"], *floors), relationships=()), root=ids["A"]
+        view=View(model=model, entities=(ids["A"], *floors), relationships=()),
+        root=ids["A"],
     )
-    pivot = GFA.pivot(rows, label="use")
+    pivot = GFA.pivot(hierarchy=rows, label="use")
     assert [c.classification for c in pivot.columns] == [
         None,
         USE["residential"],
@@ -232,12 +233,12 @@ def test_without_by_the_labels_need_one_taxonomy():
     model, rows, ids = project()
     # b3's use label names a Classification of another Taxonomy.
     with pytest.raises(RollupError, match="by="):
-        GFA.pivot(rows, label="use")
+        GFA.pivot(hierarchy=rows, label="use")
 
 
 def test_label_arguments_are_checked():
     model, rows, ids = project()
     with pytest.raises(ValueError):
-        GFA.pivot(rows, label=" ")
+        GFA.pivot(hierarchy=rows, label=" ")
     with pytest.raises(MissingReferenceError):
-        GFA.pivot(rows, label="use", by=uuid4())
+        GFA.pivot(hierarchy=rows, label="use", by=uuid4())

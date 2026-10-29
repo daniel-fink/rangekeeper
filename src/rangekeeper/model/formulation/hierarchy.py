@@ -14,7 +14,7 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError
 
 
-def formulate(hierarchy, *, id, aggregates, selected, populations, rule):
+def formulate(*, hierarchy, id, aggregates, selected, populations, rule):
     """Declare one sum equation per aggregate movement over its selected contributors."""
     model = hierarchy.view.model
     if not aggregates:

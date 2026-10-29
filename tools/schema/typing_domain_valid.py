@@ -14,7 +14,7 @@ model = Model.create(
     metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
     system=System(entities=(entity,)),
 )
-identity: UUID = model.entity(entity.id).id
+identity: UUID = model.entity(id=entity.id).id
 location: RecordLocation = model.record_at("/system/entities/0")
 record: Record = model.record_by_id(entity.id).record
 owner: UUID | None = location.owner_id

@@ -228,7 +228,7 @@ from rangekeeper.model import Model as DomainModel, Entity, System, Update
 from rangekeeper.specification import Specification, SpecificationRecord
 entity = Entity(id=uuid4(), code='A')
 domain = DomainModel.create(metadata=Metadata(id=uuid4(), schema_version='1.0.0'), system=System(entities=(entity,)))
-assert domain.entity(entity.id).code == 'A'
+assert domain.entity(id=entity.id).code == 'A'
 revised = domain.revise(Update(system=System()))
 assert revised.metadata.previous == domain.id
 spec = Specification(record=SpecificationRecord(metadata=Metadata(id=uuid4(), schema_version='1.0.0'), model=domain.id))
@@ -270,15 +270,15 @@ for prefix in ('yaml', 'pint', 'pandas', 'numpy', 'networkx', 'matplotlib', 'spe
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: all public roots, JSON and both revision stores passed without optional imports')
 from rangekeeper.model.system import View, Hierarchy
-view = View(domain)
-assert view.entity(entity.id) is domain.entity(entity.id)
+view = View(model=domain)
+assert view.entity(entity.id) is domain.entity(id=entity.id)
 assert Hierarchy.from_relationships(view).preorder() == (entity.id,)
 for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 from rangekeeper.model.system.table import to_table
 from rangekeeper.shared.table import Table
-assert to_table(view).column('model_id') == (domain.id,)
-assert to_table(Hierarchy.from_relationships(view)).column('parent_id') == (None,)
+assert to_table(source=view).column('model_id') == (domain.id,)
+assert to_table(source=Hierarchy.from_relationships(view)).column('parent_id') == (None,)
 for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: Model graph, tables and projections passed without legacy or numerical imports')
@@ -342,7 +342,7 @@ value = Value(id=uuid4(), key='net', kind=ValueKind.MEASUREMENT, measure=measure
 entity = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
 group = Assembly(id=uuid4(), entities=(entity.id,))
 model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version='1.0.0'), definitions=Definitions(measures=(measure,)), system=System(entities=(entity,), assemblies=(group,)))
-hierarchy = Hierarchy.from_membership(View(model, assembly=group.id), root=group.id)
+hierarchy = Hierarchy.from_membership(view=View(model=model, assembly=group.id), root=group.id)
 result = QuantityRollup(key='net', units='centimeter ** 2', contributors=lambda item: item.id == entity.id).execute(hierarchy)
 assert result.root_value.magnitude == 120000 and result.coverage(group.id).complete
 assert result.value_ids[entity.id] == value.id
@@ -412,13 +412,13 @@ for name in ('specification-common', 'specification-composed-forward', 'specific
 forward = execute(specification=yaml.read(path=Path('examples/specification-composed-forward.yaml'), kind=rk.Specification), store=store).run
 assert forward.report.status.solution is SolutionStatus.FEASIBLE, forward.report
 first = store.load_model(forward.record.outputs[0])
-assert abs(first.value(UUID('a947d40b-d9b0-54cb-a2a4-f8f598405ac2')).quantity.magnitude - 11000000) < 1e-6
+assert abs(first.value(id=UUID('a947d40b-d9b0-54cb-a2a4-f8f598405ac2')).quantity.magnitude - 11000000) < 1e-6
 data = yaml.read(path=Path('examples/specification-inverse.yaml'), kind=rk.Specification).to_data()
 data['metadata']['id'] = str(uuid4())
 data['model'] = str(first.id)
 inverse = execute(specification=rk.Specification.from_data(data), store=store).run
 second = store.load_model(inverse.record.outputs[0])
-assert abs(second.value(UUID('e3fb1434-5371-5bcb-b0b8-e3af2bf65022')).quantity.magnitude - 27500) < 1e-6
+assert abs(second.value(id=UUID('e3fb1434-5371-5bcb-b0b8-e3af2bf65022')).quantity.magnitude - 27500) < 1e-6
 assert second.metadata.previous == first.id
 assert validate(run=inverse, resolver=store).valid
 for prefix in ('pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction', 'linkml', 'linkml_runtime'):
@@ -488,7 +488,7 @@ print('Installed wheel: native Polars Flow/Stream display, projection verbs, Pol
         )
         check = "import runpy; example=runpy.run_path('flux_example.py'); assert example['collection']().sum().movements[0].number == 960"
         if args.execution_python:
-            check += "; result,ids=example['solve_example'](); assert result.value(ids['portfolio']).flow.movements[0].number == 2880"
+            check += "; result,ids=example['solve_example'](); assert result.value(id=ids['portfolio']).flow.movements[0].number == 2880"
         subprocess.run([str(python), "-I", "-c", check], cwd=temp, check=True)
         print("Installed wheel: Stream and acausal hierarchy acceptance example passed")
     # Report the installed candidate's dependency versions, not the build environment.

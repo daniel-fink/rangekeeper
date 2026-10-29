@@ -17,8 +17,8 @@ from rangekeeper.schema.records import Formulation, Reference
 
 
 def compound(
-    model: Model,
     *,
+    model: Model,
     id: UUID,
     initial: Reference,
     rate: Reference,
@@ -49,8 +49,8 @@ def compound(
 
 
 def linear(
-    model: Model,
     *,
+    model: Model,
     id: UUID,
     initial: Reference,
     increment: Reference,

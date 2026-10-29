@@ -31,7 +31,7 @@ collections and iterative traversal; no NetworkX dependency is needed for this s
 from rangekeeper.model.system import View, Hierarchy
 from rangekeeper.model.system.membership import entities_in, containing_assemblies
 
-view = View(model, assembly=assembly_id)
+view = View(model=model, assembly=assembly_id)
 children = view.successors(parent_id)  # selected Relationships only
 members = entities_in(model=model, assembly=assembly_id, recursive=True)
 parents = containing_assemblies(model=model, entity=entity_id, recursive=True)
@@ -41,11 +41,11 @@ exactly = view.filter(entity_classification=two_bed_id, exclusive=True)
 relationship_tree = Hierarchy.from_relationships(view)
 
 membership_view = View(
-    model,
+    model=model,
     entities=(assembly_id, *(entity.id for entity in members)),
     relationships=(),
 )
-membership_tree = Hierarchy.from_membership(membership_view, root=assembly_id)
+membership_tree = Hierarchy.from_membership(view=membership_view, root=assembly_id)
 ```
 
 These are two different edge meanings. A general View may have cycles, parallel
@@ -56,7 +56,7 @@ Overlapping Assemblies remain valid Model content, but may not form a tree in a
 particular selection. Membership hierarchy construction restricts membership to
 selected nodes; explicitly include transitive members when that is intended.
 
-`View(model, *, entities=None, relationships=None, assembly=None)` supports:
+`View(*, model, entities=None, relationships=None, assembly=None)` supports:
 
 - Neither explicit selector: every canonical Entity/Assembly and Relationship.
 - Entity IDs only: the induced relationships between selected endpoints.
@@ -87,7 +87,7 @@ order follows Model entity encounter order (Entities then Assemblies), and Syste
 Relationship order. Selector/set order does not determine output order. This is a
 presentation convention, not additional schema or mathematical ordering.
 
-`Hierarchy.from_relationships(view)` and `Hierarchy.from_membership(view, root=id)`
+`Hierarchy.from_relationships(view)` and `Hierarchy.from_membership(view=, root=)`
 produce a pinned immutable tree with `root`, `kind` (`HierarchyKind`), `children(id)`, `parent(id)`,
 `preorder()` and `postorder()`. `HierarchyError` carries a code and relevant UUIDs:
 `empty`, `disconnected`, `cycle`, `multiple_parents`, `parallel_edges` or `root_mismatch`.
@@ -308,7 +308,7 @@ Unclassified Entities never match. The UUID must exist in the Model.
 - `value_ids`: immutable owner-to-selected-Value IDs, including unresolved Values.
 - `hierarchy`: the selection/revision that produced the derived results.
 
-`View.quantities(key, units=, measure=None)` collects the same population without
+`View.quantities(key=, units=, measure=None)` collects the same population without
 a reducer: a `QuantityPopulation` with `quantities` (the recorded Quantities of
 the measured contributors, converted to `units`), `coverage` (a `Coverage`) and
 `value_ids` (each contributor's selected Value UUID).
@@ -327,7 +327,7 @@ scalar executor for mathematical investigation.
 from rangekeeper.model.system import QuantityRollup
 
 launch_price = QuantityRollup(key="launch_price", units="AUD")
-pivot = launch_price.pivot(levels, by=apartment_id, depth=1, only=None)
+pivot = launch_price.pivot(hierarchy=levels, by=apartment_id, depth=1, only=None)
 
 pivot.value(row=level_id)  # the "All" column
 pivot.value(row=level_id, column=two_bed_id)  # 2B, with its sub-types
@@ -336,7 +336,7 @@ pivot.partition(row=level_id)  # do the 2B, 3B ... columns add up to All?
 pivot.display()
 ```
 
-`QuantityRollup.pivot(hierarchy, *, by=None, depth=1, only=None, exclusive=False)`,
+`QuantityRollup.pivot(*, hierarchy, by=None, depth=1, only=None, exclusive=False)`,
 and `FlowRollup.pivot` with the same arguments, return a detached `Pivot` from
 `rangekeeper.model.system.pivot`. It runs the rollup's `execute` once per column,
 so every cell is a `RollupEntry` and the
@@ -364,7 +364,7 @@ Classification ([ADR-017](../decisions/017-api-and-formats.md)):
 
 ```python
 gfa = QuantityRollup(key="gfa", units="m^2")
-by_use = gfa.pivot(buildings, label="use")  # columns: residential, hotel, retail
+by_use = gfa.pivot(hierarchy=buildings, label="use")  # columns: residential, hotel, retail
 by_use.value(row=building_a_id, column=hotel_id)
 by_use.partition(row=building_a_id)  # overlap, uncovered, outside
 ```
@@ -415,7 +415,7 @@ A `Pivot` exposes:
 
 ## Table projection
 
-`model.system.table.to_table(source, columns=...)` accepts a `View` or `Hierarchy`.
+`model.system.table.to_table(source=, columns=...)` accepts a `View` or `Hierarchy`.
 A View keeps its entity order. A Hierarchy emits preorder rows and a reserved
 `parent_id` column. `FieldColumn` takes an `EntityField` enum member. Column names,
 units and optional Measure declarations are checked once before any cells are read,
@@ -467,7 +467,7 @@ Movements and missing coordinates follow `missing=` and `join=`.
 coordinate. This is separate from selected/measured/missing owner coverage.
 `value_ids` records the chosen source Values.
 
-`cashflow.formulate(hierarchy, id=..., aggregates={entity_id: flow_value_id})`
+`cashflow.formulate(hierarchy=..., id=..., aggregates={entity_id: flow_value_id})`
 returns passive equations for `Reducer.SUM`. It supports `SUM`, `MEAN`,
 `ELAPSED_MEAN`, `FIRST` and `LAST` resampling over original Movement references. Every selected source needs a shape,
 but its amounts can be unknown. Aggregate Values must be owned by their named

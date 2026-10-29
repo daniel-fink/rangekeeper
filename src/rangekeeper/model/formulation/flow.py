@@ -31,7 +31,7 @@ from rangekeeper.shared.errors import ContractError, UnsupportedError
 
 def shape(*, model: Model, value: UUID) -> Flow:
     """Return the declared Flow shape of a Flow Value."""
-    record = model.value(value)
+    record = model.value(id=value)
     if record.kind is not ValueKind.FLOW or record.flow is None:
         raise ContractError(
             f"Value {record.key} has no declared Flow shape", targets=(value,)
@@ -57,8 +57,8 @@ def aligned(
 
 
 def sum(
-    model: Model,
     *,
+    model: Model,
     id: UUID,
     summands: Stream | Sequence[UUID],
     total: UUID,
@@ -114,8 +114,8 @@ def sum(
 
 
 def scale(
-    model: Model,
     *,
+    model: Model,
     id: UUID,
     multiplicand: UUID,
     multiplier: Reference | UUID,
@@ -166,8 +166,8 @@ def scale(
 
 
 def accumulate(
-    model: Model,
     *,
+    model: Model,
     id: UUID,
     increments: UUID,
     initial: Reference,
@@ -252,8 +252,8 @@ def _resampled_terms(sequence: Flow, periods, *, method, missing):
 
 
 def resample(
-    model: Model,
     *,
+    model: Model,
     id: UUID,
     sequence: UUID,
     resampled: UUID,

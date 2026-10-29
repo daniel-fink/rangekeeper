@@ -60,6 +60,7 @@ the store-protocol methods, the Python protocol methods, an error constructor
 | `profile` | `SCurve(distribution)` | `SCurve(distribution=)` |
 | `finance` | `financial.calculate_pv(flow, rate=)`, and the same for `calculate_xnpv` and `calculate_irr` | `financial.calculate_pv(flow=, rate=)`, `calculate_xnpv(flow=, ...)`, `calculate_irr(flow=)` |
 | `finance` | `IrrResult(rate, residual, guess)` | `IrrResult(rate=, residual=, guess=)` |
+| `market` | `dynamics.calculate_autoregression(innovations, parameter=)`, `accumulate_volatility(trend, returns, ...)`, `calculate_shock(events, ...)` | `calculate_autoregression(innovations=, parameter=)`, `accumulate_volatility(trend=, returns=, ...)`, `calculate_shock(events=, ...)` |
 | `model` | `pivot.value(row, column)`, and the same for `available_value`, `cell`, `coverage` and `partition` | `pivot.value(row=, column=)`; `column` stays optional |
 | `model` | `Pivot(rows, columns, label=)` | `Pivot(rows=, columns=, label=)` |
 | `model` | `system.classified(model, classification, exclusive=)` | `classified(model=, classification=, exclusive=)` |
@@ -67,6 +68,15 @@ the store-protocol methods, the Python protocol methods, an error constructor
 | `model` | `formulation.declare(id, name, equations, values)` | `declare(id=, name=, equations=, values=)` |
 | `model` | `formulation.flow.shape(model, value)`, `aligned(model, members, reference)` | `shape(model=, value=)`, `aligned(model=, members=, reference=)` |
 | `model` | `Coverage`, `RollupEntry`, `RollupResult`, `Match`, `PivotColumn`, `Partition`, and the table columns `FieldColumn`, `ValueColumn`, `LabelColumn`, `PropertyColumn` | The same records, by keyword: `ValueColumn(name="net_area", key="net", units="meter**2")` |
+| `model` | `model.entity(id)`, `model.value(id)`, `model.label(id)`, `draft.entity(id)` | `model.entity(id=)`, `model.value(id=)`, `model.label(id=)`, `draft.entity(id=)`; `code=`, `name=`, `owner=` and `key=` do not change |
+| `model` | `Model.from_data(data, units=)` | `Model.from_data(data=, units=)` |
+| `model` | `system.View(model, assembly=)`, `view.quantities(key, units=)` | `View(model=, assembly=)`, `view.quantities(key=, units=)` |
+| `model` | `Hierarchy(view, membership_root=)`, `Hierarchy.from_membership(view, root=)` | `Hierarchy(view=, membership_root=)`, `Hierarchy.from_membership(view=, root=)` |
+| `model` | `rollup.pivot(hierarchy, by=)`, `flow_rollup.formulate(hierarchy, id=, aggregates=)` | `pivot(hierarchy=, by=)`, `formulate(hierarchy=, id=, aggregates=)` |
+| `model` | `system.selection.select_value(key, measure=)`, `system.table.to_table(source, columns=)`, `system.matching.match(model, entities, condition)` | `select_value(key=, measure=)`, `to_table(source=, columns=)`, `match(model=, entities=, condition=)` |
+| `model` | The `formulation.financial`, `flow` and `growth` builders and `formulation.hierarchy.formulate`: `flow.sum(model, id=, summands=, total=)` | `flow.sum(model=, id=, summands=, total=)`, and the same for `discount`, `pv`, `interest`, `scale`, `accumulate`, `resample`, `compound`, `linear` and `formulate(hierarchy=, ...)` |
+| `model` | `definitions.measure(items, id)`, and the same for `taxonomy`, `classification`, `descendants`, `function`, `find_measures` and `find_classifications`; `provenance.fact_for(model, target)`, `locations(model, claim_id)`; `expression.text.parse(text, names=)`, `render(expression, name=)` | `measure(items=, id=)`, `fact_for(model=, target=)`, `locations(model=, claim_id=)`, `parse(text=, names=)`, `render(expression=, name=)` |
+| `model` | `expression.tokens.Token(kind, text, start, end)`, `expression.syntax.Spelling(symbol, operator, precedence)` | `Token(kind=, text=, start=, end=)`, `Spelling(symbol=, operator=, precedence=)` |
 | `specification` | `Specification(record, model=, resolver=)` | `Specification(record=, model=, resolver=)` |
 | `run` | `rk.run.validate(run, resolver=, units=)` | `rk.run.validate(run=, resolver=, units=)` |
 | `execution` | `resolve_cases(specification, resolver=)`, `validate(composition, resolver=, units=)`, `bind_roles(validation)`, `build_problem(binding, limits=)` | `resolve_cases(specification=, resolver=)`, `validate(composition=, resolver=, units=)`, `bind_roles(validation=)`, `build_problem(binding=, limits=)` |

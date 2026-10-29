@@ -52,7 +52,7 @@ def store(request, tmp_path):
 def test_every_fixture_roundtrips_without_storage_envelopes(path, codec):
     kind = getattr(rk, path.stem.split("-")[0].capitalize())
     data = pyyaml.safe_load(path.read_text())
-    document = kind.from_data(data)
+    document = kind.from_data(data=data)
     text = codec.dumps(document)
     assert codec.loads(text=text, kind=kind).to_data() == document.to_data()
     assert "document" not in pyyaml.safe_load(text)  # report references remain nested
@@ -111,7 +111,7 @@ def test_yaml_preserves_json_scalar_meaning_inside_opaque_claims():
         "on": "on",
     }
     data["provenance"]["claims"][0]["content"] = opaque
-    document = rk.Model.from_data(data)
+    document = rk.Model.from_data(data=data)
     restored = yaml.loads(text=yaml.dumps(document), kind=rk.Model)
     assert stdjson.dumps(restored.to_data()) == stdjson.dumps(document.to_data())
     assert restored.to_data()["provenance"]["claims"][0]["content"] == opaque
@@ -167,7 +167,7 @@ def test_conflicting_content_and_kind_do_not_replace_a_revision(store):
     data = document.to_data()
     data["metadata"]["name"] = "different"
     with pytest.raises(RevisionConflictError):
-        store.put(rk.Model.from_data(data))
+        store.put(rk.Model.from_data(data=data))
     spec = rk.Specification.from_data(
         {"metadata": {"id": str(document.id), "schema_version": "1.0.0"}}
     )
@@ -184,11 +184,11 @@ def test_unordered_equivalence_keeps_first_encounter_order(store):
             {"id": str(uuid4()), "code": "B"},
         ]
     }
-    original = rk.Model.from_data(data)
+    original = rk.Model.from_data(data=data)
     store.put(original)
     data["system"]["entities"].reverse()
     data["metadata"]["id"] = data["metadata"]["id"].upper()
-    store.put(rk.Model.from_data(data))
+    store.put(rk.Model.from_data(data=data))
     assert store.load_model(original.id).to_data() == original.to_data()
 
 
@@ -205,7 +205,7 @@ def test_revision_equivalence_preserves_opaque_representations(store, change):
             }
         ]
     }
-    first = rk.Model.from_data(data)
+    first = rk.Model.from_data(data=data)
     store.put(first)
     content = data["provenance"]["claims"][0]["content"]
     if change == "number":
@@ -217,7 +217,7 @@ def test_revision_equivalence_preserves_opaque_representations(store, change):
     else:
         content["extra"] = None
     with pytest.raises(RevisionConflictError):
-        store.put(rk.Model.from_data(data))
+        store.put(rk.Model.from_data(data=data))
 
 
 def test_model_mathematical_order_is_not_canonicalized_away(store):
@@ -243,11 +243,11 @@ def test_model_mathematical_order_is_not_canonicalized_away(store):
             ],
         }
     )
-    original = rk.Model.from_data(data)
+    original = rk.Model.from_data(data=data)
     store.put(original)
     data["system"]["formulations"][-1]["expressions"][0]["operands"].reverse()
     with pytest.raises(RevisionConflictError):
-        store.put(rk.Model.from_data(data))
+        store.put(rk.Model.from_data(data=data))
 
 
 def test_directory_construction_and_invalid_put_do_not_create_storage(tmp_path):
@@ -310,7 +310,7 @@ def test_concurrent_directory_puts_are_idempotent_or_conflicting(
     data = first.to_data()
     if not same:
         data["metadata"]["name"] = "competitor"
-    second = rk.Model.from_data(data)
+    second = rk.Model.from_data(data=data)
 
     def publish(document):
         try:

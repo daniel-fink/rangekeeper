@@ -84,7 +84,7 @@ def records(value):
 
 def setup(store=None, model_data=None):
     store = MemoryStore() if store is None else store
-    model = Model.from_data(data("model") if model_data is None else model_data)
+    model = Model.from_data(data=data("model") if model_data is None else model_data)
     store.put(model)
     for name in (
         "specification-common",
@@ -137,8 +137,8 @@ def test_declared_forward_then_inverse_on_genuine_output(tmp_path, disk):
         ),
     )
     first = output(store, forward)
-    assert first.value(NOI).quantity.number == pytest.approx(550000)
-    assert first.value(CAPITAL).quantity.number == pytest.approx(11000000)
+    assert first.value(id=NOI).quantity.number == pytest.approx(550000)
+    assert first.value(id=CAPITAL).quantity.number == pytest.approx(11000000)
     assert first.metadata.previous == original.id
     common = store.load_specification(
         UUID(data("specification-common")["metadata"]["id"])
@@ -155,10 +155,10 @@ def test_declared_forward_then_inverse_on_genuine_output(tmp_path, disk):
     inverse2 = inverse.revise(SpecificationRecord.from_data(changed))
     run2 = execute(store, inverse2)
     second = output(store, run2)
-    assert second.value(RENT).quantity.number == pytest.approx(27500)
-    assert second.value(NOI).quantity.number == pytest.approx(500000)
+    assert second.value(id=RENT).quantity.number == pytest.approx(27500)
+    assert second.value(id=NOI).quantity.number == pytest.approx(500000)
     assert second.metadata.previous == first.id
-    assert first.value(RENT).quantity.magnitude == 30000
+    assert first.value(id=RENT).quantity.magnitude == 30000
     assert original.to_data() == before
     assert (
         first.definitions.to_data()
@@ -168,9 +168,9 @@ def test_declared_forward_then_inverse_on_genuine_output(tmp_path, disk):
     assert declarations(first) == declarations(second) == declarations(original)
     area = UUID("9d86011c-1658-5c10-87c1-94d281b74e96")
     assert (
-        first.value(area).quantity
-        == second.value(area).quantity
-        == original.value(area).quantity
+        first.value(id=area).quantity
+        == second.value(id=area).quantity
+        == original.value(id=area).quantity
     )
     assert {claim.id for claim in first.provenance.claims} <= {
         claim.id for claim in second.provenance.claims
@@ -214,7 +214,7 @@ def test_inputs_and_declared_equations_drive_results(change, expected):
             "quantity"
         ]["magnitude"] = 32000
     assert output(store, execute(store, Specification.from_data(payload))).value(
-        CAPITAL
+        id=CAPITAL
     ).quantity.number == pytest.approx(expected)
 
 
@@ -228,9 +228,9 @@ def test_assignment_unit_conversion_is_checked_and_published_canonically():
         "units": "AUD/dwelling/month",
     }
     result = output(store, execute(store, Specification.from_data(payload)))
-    assert result.value(RENT).quantity.units == "AUD/dwelling/year"
-    assert result.value(RENT).quantity.number == pytest.approx(30000)
-    assert result.value(CAPITAL).quantity.number == pytest.approx(11000000)
+    assert result.value(id=RENT).quantity.units == "AUD/dwelling/year"
+    assert result.value(id=RENT).quantity.number == pytest.approx(30000)
+    assert result.value(id=CAPITAL).quantity.number == pytest.approx(11000000)
 
 
 def literal(value, units="AUD"):
@@ -461,7 +461,7 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     next(node for node in records(changed["system"]) if node.get("id") == str(RENT))[
         "quantity"
     ]["magnitude"] = 30001
-    assert not verify(binding=binding, candidate=Model.from_data(changed)).passed
+    assert not verify(binding=binding, candidate=Model.from_data(data=changed)).passed
 
 
 def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
@@ -599,7 +599,7 @@ def test_backend_statuses_do_not_overclaim(termination):
 
 def test_missing_references_and_invalid_batch_graph_raise_before_execution():
     store, _ = setup()
-    missing = spec(model=Model.from_data(fresh(data("model"))))
+    missing = spec(model=Model.from_data(data=fresh(data("model"))))
     with pytest.raises(MissingReferenceError):
         execute_specification(specification=missing, store=store)
     id1, id2 = uuid4(), uuid4()
@@ -663,7 +663,7 @@ def test_unconstrained_unknown_has_explicit_choice_evidence():
         }
     )
     run = execute(store, investigation)
-    assert output(store, run).value(area).quantity.magnitude == 0
+    assert output(store, run).value(id=area).quantity.magnitude == 0
     assert any(
         d.code == Code.UNDERDETERMINED
         and area in {reference.target for reference in d.references or ()}
@@ -754,7 +754,7 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
             )
         )
     model = Model.from_data(
-        {
+        data={
             "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
             "definitions": {
                 "measures": [
@@ -902,7 +902,7 @@ def test_scalar_execution_retains_unrelated_rich_content():
     )
     store, model = setup(model_data=payload)
     run = execute(store, spec(model=model))
-    assert output(store, run).value(identity).content == encode("retained")
+    assert output(store, run).value(id=identity).content == encode("retained")
 
 
 def test_scalar_preparation_reuses_the_composed_requirements(monkeypatch):

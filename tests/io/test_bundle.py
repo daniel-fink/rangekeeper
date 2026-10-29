@@ -31,7 +31,7 @@ def test_record_query_filters_in_parquet_without_arrow_materialization(
     import pyarrow.parquet as pq
 
     model = Model.from_data(
-        dict(
+        data=dict(
             metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"),
             system=dict(
                 entities=[
@@ -69,14 +69,14 @@ def test_lineage_slots_are_not_model_references():
 
     data = yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
     data["metadata"]["previous"] = str(UUID(int=1))
-    _, _, references = _shred(Model.from_data(data))
+    _, _, references = _shred(Model.from_data(data=data))
     assert references
     assert not [r for r in references if r["path"] == "/metadata"]
 
 
 def test_records_page_in_numeric_path_order(tmp_path):
     model = Model.from_data(
-        dict(
+        data=dict(
             metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"),
             system=dict(
                 entities=[
@@ -102,15 +102,15 @@ def test_records_page_in_numeric_path_order(tmp_path):
 
 def test_opening_validates_each_retained_document_once(tmp_path, monkeypatch):
     model = Model.from_data(
-        yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
+        data=yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
     )
     write(root=tmp_path / "bundle", model=model)
     original = Model.from_data.__func__
     calls = []
 
-    def counted(cls, data, **kwargs):
+    def counted(cls, *, data, **kwargs):
         calls.append(data["metadata"]["id"])
-        return original(cls, data, **kwargs)
+        return original(cls, data=data, **kwargs)
 
     monkeypatch.setattr(Model, "from_data", classmethod(counted))
     reader = Reader(root=tmp_path / "bundle")
@@ -126,7 +126,7 @@ def test_index_check_rejects_a_rehashed_index_unless_it_is_skipped(tmp_path):
     from rangekeeper.io.bundle import inventory
 
     model = Model.from_data(
-        yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
+        data=yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
     )
     root = tmp_path / "bundle"
     write(root=root, model=model)
@@ -156,7 +156,7 @@ def test_index_check_rejects_a_rehashed_index_unless_it_is_skipped(tmp_path):
 )
 def test_complete_model_reconstruction_from_schema_tables(tmp_path, filename):
     model = Model.from_data(
-        yaml.safe_load((ROOT / "examples/schema" / filename).read_text())
+        data=yaml.safe_load((ROOT / "examples/schema" / filename).read_text())
     )
     write(root=tmp_path / "bundle", model=model)
     reconstructed = Reader(root=tmp_path / "bundle").model()
@@ -166,7 +166,7 @@ def test_complete_model_reconstruction_from_schema_tables(tmp_path, filename):
 
 def test_presence_scalar_types_and_collection_order(tmp_path):
     data = yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
-    model = Model.from_data(data)
+    model = Model.from_data(data=data)
     before = model.to_data()
     write(
         root=tmp_path / "bundle", model=model, parquet=ParquetOptions(row_group_size=1)
@@ -176,14 +176,14 @@ def test_presence_scalar_types_and_collection_order(tmp_path):
     for name in ("entities", "relationships", "assemblies"):
         if name in reordered.get("system", {}):
             reordered["system"][name].reverse()
-    assert model_digest(Model.from_data(reordered)) == model_digest(model)
+    assert model_digest(Model.from_data(data=reordered)) == model_digest(model)
 
 
 def test_unknown_format_unsafe_inventory_and_limits(tmp_path):
     import json
 
     model = Model.from_data(
-        dict(metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"))
+        data=dict(metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"))
     )
     write(root=tmp_path / "bundle", model=model)
     path = tmp_path / "bundle/manifest.json"
@@ -221,7 +221,7 @@ def test_options_reject_a_wrong_type_or_value(make, error):
 
 def test_the_index_check_is_an_index_check(tmp_path):
     model = Model.from_data(
-        dict(metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"))
+        data=dict(metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"))
     )
     write(root=tmp_path / "bundle", model=model)
     with pytest.raises(TypeError, match="IndexCheck"):
@@ -259,7 +259,7 @@ def _spatial_model(source):
         files=files,
     )
     return Model.from_data(
-        dict(
+        data=dict(
             metadata=dict(id=str(UUID(int=1)), schema_version="1.0.0"),
             geometry=dict(pin=pin),
         )

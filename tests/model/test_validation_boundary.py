@@ -205,7 +205,7 @@ def test_public_mapping_and_constructor_outcomes_agree(name):
         fault(data, name)
     before = wire(data)
     report = outcome(lambda: validation.validate(data))
-    built = outcome(lambda: Model.from_data(data))
+    built = outcome(lambda: Model.from_data(data=data))
     assert report[0] == "report"
     assert (built[0] == "model") is report[1]
     assert wire(data) == before
@@ -358,7 +358,7 @@ def scenario_data():
     from rangekeeper.market import generation as market
 
     base = Model.from_data(
-        {"metadata": {"id": str(UUID(int=910)), "schema_version": "1.0.0"}}
+        data={"metadata": {"id": str(UUID(int=910)), "schema_version": "1.0.0"}}
     )
     plan = market.make_plan(
         id=UUID(int=911),
@@ -404,14 +404,14 @@ def test_optional_section_presence_is_not_collapsed(section, presence):
         before = wire(data)
         actual = (
             outcome(lambda: validation.validate(data)),
-            outcome(lambda: Model.from_data(data)),
+            outcome(lambda: Model.from_data(data=data)),
         )
         assert actual[0][0:2] == ("report", False)
         assert actual[1][0:2] == ("error", ValidationError)
         assert wire(data) == before
         return
     compare_record(data, valid=True)
-    assert wire(Model.from_data(data).to_data()) == wire(data)
+    assert wire(Model.from_data(data=data).to_data()) == wire(data)
 
 
 def geometry_model():
@@ -526,7 +526,7 @@ def test_public_facade_and_exports_stay_detached_after_borrowing():
     data = flow_model()
     fault(data, "opaque_content")
     original = wire(data)
-    model = Model.from_data(data)
+    model = Model.from_data(data=data)
     assert validation.validate(model).issues == ()
     exported = model.to_data()
     exported["system"]["entities"].clear()

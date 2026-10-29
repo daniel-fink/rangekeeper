@@ -545,8 +545,8 @@ class ModelDraft:
 
     def entity(
         self,
-        id: UUID | None = None,
         *,
+        id: UUID | None = None,
         code: str | None = None,
         name: str | None = None,
     ) -> EntityHandle:
@@ -941,7 +941,7 @@ def _find(records, selector, *, kind: str, where: str, by: str = "code"):
 def _equation(item: str | Expression, *, names: _Names) -> Expression:
     """Return the record of one equation: its text parsed, or the record given."""
     if isinstance(item, str):
-        record = equation_text.parse(item, names=names)
+        record = equation_text.parse(text=item, names=names)
         if not _relation(record):
             raise EquationError(
                 "an equation must be Boolean, such as an equality or a bound",

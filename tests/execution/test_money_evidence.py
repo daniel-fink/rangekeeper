@@ -42,7 +42,7 @@ def test_an_assigned_amount_is_copied_without_change():
     assert assigned.magnitude == Decimal("10000000")
     run = execute(store, specification)
     assert run.report.status.solution == SolutionStatus.FEASIBLE
-    published = output(store, run).value(CAPITAL).quantity
+    published = output(store, run).value(id=CAPITAL).quantity
     assert published.to_data() == assigned.to_data()
 
 

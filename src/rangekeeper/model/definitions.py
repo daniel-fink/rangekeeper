@@ -22,29 +22,29 @@ def _lookup(items, identity, kind):
     return RecordIndex.build(items or Definitions()).get(identity, kind)
 
 
-def measure(items: Definitions | None, id: UUID) -> Measure:
+def measure(*, items: Definitions | None, id: UUID) -> Measure:
     """Resolve one Measure UUID; missing and wrong-kind catalogue entries differ."""
     return _lookup(items, id, Measure)
 
 
-def taxonomy(items: Definitions | None, id: UUID) -> Taxonomy:
+def taxonomy(*, items: Definitions | None, id: UUID) -> Taxonomy:
     """Resolve one Taxonomy UUID without guessing from its code."""
     return _lookup(items, id, Taxonomy)
 
 
-def classification(items: Definitions | None, id: UUID) -> Classification:
+def classification(*, items: Definitions | None, id: UUID) -> Classification:
     """Resolve a Classification across the declared Taxonomies by UUID."""
     return _lookup(items, id, Classification)
 
 
-def descendants(items: Definitions | None, id: UUID) -> tuple[Classification, ...]:
+def descendants(*, items: Definitions | None, id: UUID) -> tuple[Classification, ...]:
     """Return a Classification's sub-types in its Taxonomy, in declaration order.
 
     The result follows each Classification's ``parent`` to any depth and excludes
     the Classification itself. A leaf Classification has no descendants. A missing
     or wrong-kind UUID raises, as for ``classification``.
     """
-    classification(items, id)
+    classification(items=items, id=id)
     return _descendants(items, id)
 
 
@@ -72,18 +72,18 @@ def _classes(items, id, *, exclusive):
     """UUIDs that match a classification selector, with sub-types unless exclusive."""
     if type(exclusive) is not bool:
         raise TypeError("exclusive must be bool")
-    classification(items, id)
+    classification(items=items, id=id)
     if exclusive:
         return frozenset((id,))
     return frozenset((id, *(item.id for item in _descendants(items, id))))
 
 
-def function(items: Definitions | None, id: UUID) -> Function:
+def function(*, items: Definitions | None, id: UUID) -> Function:
     """Resolve a declared Function signature, not an executable callback."""
     return _lookup(items, id, Function)
 
 
-def find_measures(items: Definitions | None, *, code: str) -> tuple[Measure, ...]:
+def find_measures(*, items: Definitions | None, code: str) -> tuple[Measure, ...]:
     """Search exact case-sensitive codes in declaration order; no match is empty."""
     require_text(code, "code")
     return (
@@ -94,8 +94,8 @@ def find_measures(items: Definitions | None, *, code: str) -> tuple[Measure, ...
 
 
 def find_classifications(
-    items: Definitions | None,
     *,
+    items: Definitions | None,
     code: str,
 ) -> tuple[Classification, ...]:
     """Search across Taxonomies; the same local code can yield several matches."""

@@ -61,7 +61,7 @@ def money_model() -> Model:
     data["system"]["entities"].append(
         {"id": str(uuid4()), "name": "Money", "characteristics": {"values": values}}
     )
-    return Model.from_data(data)
+    return Model.from_data(data=data)
 
 
 def find(data, key):
@@ -120,7 +120,7 @@ def test_codecs_round_trip_amounts_rates_and_geometry_exactly(codec):
     model = money_model()
     restored = codec.loads(text=codec.dumps(model), kind=Model)
     assert exact_equal(restored.to_data(), model.to_data())
-    price = restored.value(UUID(find(model.to_data(), "price")["id"]))
+    price = restored.value(id=UUID(find(model.to_data(), "price")["id"]))
     assert price.quantity.magnitude == Decimal("1250000.5")
 
 

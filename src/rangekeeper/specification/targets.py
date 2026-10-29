@@ -24,7 +24,7 @@ def _select(
     Movement of the Flow raises MissingReferenceError; a UUID given twice raises
     ContractError with the code ``UNIQUE``.
     """
-    item = model.value(value)
+    item = model.value(id=value)
     if item.kind is not ValueKind.FLOW or item.flow is None:
         raise ContractError(
             f"Value {item.key} has no declared Flow shape",

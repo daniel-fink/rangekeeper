@@ -127,7 +127,7 @@ def test_execute_puts_nothing_when_solving_raises():
     store = Recording()
     _, model = setup(store)
     store.puts.clear()
-    missing = spec(model=Model.from_data(fresh(model.to_data())))
+    missing = spec(model=Model.from_data(data=fresh(model.to_data())))
     with pytest.raises(MissingReferenceError):
         execute(specification=missing, store=store, config=CONFIG)
     assert store.puts == []

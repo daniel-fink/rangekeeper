@@ -165,7 +165,7 @@ class Stream:
                 "Stream cannot count the same Value twice",
                 targets=tuple(dict.fromkeys(i for i in ids if ids.count(i) > 1)),
             )
-        values = tuple(model.value(i) for i in ids)
+        values = tuple(model.value(id=i) for i in ids)
         others = tuple(v.id for v in values if v.kind is not ValueKind.FLOW)
         if others:
             raise ContractError(
@@ -197,7 +197,7 @@ class Stream:
         return (
             ()
             if self.model is None
-            else tuple(self.model.value(i) for i in self.value_ids)
+            else tuple(self.model.value(id=i) for i in self.value_ids)
         )
 
     @property

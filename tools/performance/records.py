@@ -44,7 +44,7 @@ def run(movements, repeat):
     flow = Flow.from_periods(periods=periods, magnitudes=magnitudes, units="AUD")
     data = flow.to_data()
     model = yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
-    loaded = Model.from_data(model)
+    loaded = Model.from_data(data=model)
     return dict(
         movements=movements,
         flow_construct=median(
@@ -66,7 +66,7 @@ def run(movements, repeat):
         movement_fields=median(
             lambda: [(m.id, m.period, m.magnitude) for m in flow.movements], repeat
         ),
-        model_from_data=median(lambda: Model.from_data(model), repeat),
+        model_from_data=median(lambda: Model.from_data(data=model), repeat),
         model_to_data=median(loaded.to_data, repeat),
     )
 

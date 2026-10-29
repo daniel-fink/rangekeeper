@@ -21,12 +21,12 @@ def metadata(kind):
 
 def publication(model_data, output_data, *, rules=None, decisions=None):
     """Construct reported evidence without invoking an evaluator or solver."""
-    model = Model.from_data(model_data)
+    model = Model.from_data(data=model_data)
     output_data["metadata"] = {
         **metadata("Model"),
         "previous": str(model.id),
     }
-    output = Model.from_data(output_data)
+    output = Model.from_data(data=output_data)
     spec_data = {"metadata": metadata("Specification"), "model": str(model.id)}
     if rules is not None:
         spec_data["rules"] = rules
@@ -148,7 +148,7 @@ def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidenc
         ],
     }
     with pytest.raises(RuleCapabilityError, match="earlier decision"):
-        evaluate(rules=RuleSet.from_data(rules), model=Model.from_data(data))
+        evaluate(rules=RuleSet.from_data(rules), model=Model.from_data(data=data))
     forged = {
         "decision": point,
         "at": at,

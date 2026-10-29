@@ -174,7 +174,7 @@ model = Model.create(
     definitions=Definitions(measures=(area,)),
     system=System(entities=(entity,)),
 )
-assert model.value(gross.id).quantity.magnitude == 100
+assert model.value(id=gross.id).quantity.magnitude == 100
 assert model.owner_of(net.id) == entity.id
 assert model.value(owner=entity.id, key="net").quantity is None
 
@@ -183,7 +183,7 @@ renamed = Entity(
 )
 revised = model.revise(Update(system=System(entities=(renamed,))))
 assert revised.metadata.previous == model.id
-assert model.entity(entity.id).code == "A"
+assert model.entity(id=entity.id).code == "A"
 assert entity.id in between(model, revised).modified
 ```
 
@@ -216,7 +216,7 @@ Label of an Entity, Assembly, Relationship or (for a Value) Formulation by its
 exact, case-sensitive key. Generated records are plain data, so the Model reads
 them ([ADR-011](../decisions/011-records-and-validation.md)). A missing key
 raises `MissingReferenceError` with the owner in `where` and the nearest keys in
-`candidates`; `Model.value(id)` and `Model.label(id)` still look up by UUID.
+`candidates`; `Model.value(id=)` and `Model.label(id=)` still look up by UUID.
 
 `Model.value(key=)` alone reads a Value by the key that names it in the whole
 revision, and `Model.key_of(id)` is its inverse: `model.value(key=model.key_of(id))`

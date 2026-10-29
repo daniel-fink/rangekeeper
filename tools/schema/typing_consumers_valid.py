@@ -10,11 +10,11 @@ from rangekeeper.shared.table import Table
 
 
 def consume(model: Model) -> Table:
-    view = View(model)
+    view = View(model=model)
     table = to_table(
-        view, columns=(ValueColumn(name="Area", key="net", units="meter**2"),)
+        source=view, columns=(ValueColumn(name="Area", key="net", units="meter**2"),)
     )
-    tree = to_table(Hierarchy.from_relationships(view))
+    tree = to_table(source=Hierarchy.from_relationships(view))
     return table
 
 

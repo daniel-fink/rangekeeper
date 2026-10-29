@@ -117,7 +117,7 @@ def test_replay_unavailable_does_not_prevent_current_model_reading():
         "scenario-calculation/v99:future"
     )
     changed = result.model.revise(Update(provenance=Provenance.from_data(provenance)))
-    assert Model.from_data(changed.to_data()).to_data() == changed.to_data()
+    assert Model.from_data(data=changed.to_data()).to_data() == changed.to_data()
     with pytest.raises(ReplayUnavailableError, match="unavailable"):
         replay(changed)
     provenance["scenarios"][0].pop("calculation")
@@ -240,7 +240,7 @@ def test_capture_and_model_loading_reject_draws_outside_support(
     for movement, value in zip(target["flow"]["movements"], values, strict=True):
         movement["magnitude"] = value
     with pytest.raises(ValueError, match=message):
-        Model.from_data(wire)
+        Model.from_data(data=wire)
 
 
 def test_calculation_identity_includes_the_actual_currency_catalogue(monkeypatch):

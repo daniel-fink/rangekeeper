@@ -31,8 +31,8 @@ def condition(model: Model) -> Filter:
 
 def passed(model: Model) -> set[str]:
     """Return the codes of the Entities that pass the sample's Filter."""
-    match = View(model).match(condition=condition(model))
-    return {model.entity(identity).code for identity in match.passed}
+    match = View(model=model).match(condition=condition(model))
+    return {model.entity(id=identity).code for identity in match.passed}
 
 
 def test_the_sample_is_a_1_0_0_document_with_an_exact_filter() -> None:
@@ -42,12 +42,12 @@ def test_the_sample_is_a_1_0_0_document_with_an_exact_filter() -> None:
     query = formulation["expressions"][0]["query"]
     assert set(query["filter"]) == {"classification", "labels"}
     # The current meaning also matches the sub-types podium and suite.
-    assert passed(Model.from_data(data)) == {"site", "level_1", "level_2"}
+    assert passed(Model.from_data(data=data)) == {"site", "level_1", "level_2"}
 
 
 def test_conversion_keeps_the_exact_match_of_1_0_0a2() -> None:
     data = load()
-    model = Model.from_data(convert(data, release="1.0.0a2"))
+    model = Model.from_data(data=convert(data, release="1.0.0a2"))
     found = condition(model)
     assert found.exclusive is True
     assert found.labels[0].exclusive is True
@@ -76,7 +76,7 @@ def test_the_command_converts_documents_from_1_0_0a2(tmp_path: Path) -> None:
     arguments = ["documents", "--from", "1.0.0a2", str(SAMPLES / "model.json")]
     assert main([*arguments, "--output", str(tmp_path)]) == 0
     written = json.loads((tmp_path / "model.json").read_text())
-    assert passed(Model.from_data(written)) == {"site", "level_1"}
+    assert passed(Model.from_data(data=written)) == {"site", "level_1"}
     assert main(["documents", str(SAMPLES / "model.json"), "--output", "x"]) == 1
 
 
@@ -88,7 +88,7 @@ def test_a_1_0_0a2_bundle_converts_to_a_bundle_the_reader_opens(tmp_path: Path) 
     arguments = ["bundle", "--from", "1.0.0a2", str(SAMPLES / "bundle")]
     assert main([*arguments, str(destination)]) == 0
     restored = Reader(root=destination).model()
-    expected = Model.from_data(convert(load(), release="1.0.0a2"))
+    expected = Model.from_data(data=convert(load(), release="1.0.0a2"))
     assert exact_equal(restored.to_data(), expected.to_data())
     # The 0.x release refuses the 1.0.0a2 pin.
     assert main(["bundle", str(SAMPLES / "bundle"), str(tmp_path / "other")]) == 1

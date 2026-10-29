@@ -25,8 +25,8 @@ from rangekeeper.shared.errors import ContractError, UnsupportedError
 
 
 def discount(
-    model: Model,
     *,
+    model: Model,
     id: UUID,
     series: UUID,
     rate: Reference,
@@ -68,7 +68,7 @@ def discount(
     )
 
 
-def pv(model: Model, *, id: UUID, sequence: UUID, value: Reference) -> Formulation:
+def pv(*, model: Model, id: UUID, sequence: UUID, value: Reference) -> Formulation:
     """Relate sequence (a discounted Flow Value UUID) to value (a scalar Reference).
 
     Both have compatible amount units. This builder sums; it does not discount.
@@ -91,8 +91,8 @@ def pv(model: Model, *, id: UUID, sequence: UUID, value: Reference) -> Formulati
 
 
 def interest(
-    model: Model,
     *,
+    model: Model,
     id: UUID,
     principal: UUID,
     rate: Reference,

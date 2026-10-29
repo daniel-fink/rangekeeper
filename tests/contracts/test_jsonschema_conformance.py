@@ -201,7 +201,7 @@ def test_non_json_inputs_and_duplicate_keys_still_fail_at_public_boundaries():
 
 def outcome(data):
     try:
-        model = Model.from_data(data)
+        model = Model.from_data(data=data)
     except (ValueError, TypeError, LookupError) as error:
         report = getattr(error, "report", None)
         return type(error), str(error), report.issues if report else None

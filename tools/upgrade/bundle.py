@@ -132,7 +132,7 @@ def upgrade(source: Path, destination: Path, *, release: str) -> dict[str, Any]:
     manifest = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
     store = MemoryStore()
     documents = [
-        KINDS[kind].from_data(convert(data, kind, release=release))
+        KINDS[kind].from_data(data=convert(data, kind, release=release))
         for kind, data in read(source, release=release)
     ]
     # A store checks references, so a Run follows its Specification and Models.

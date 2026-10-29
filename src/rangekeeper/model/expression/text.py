@@ -69,7 +69,7 @@ class Names(Protocol):
         ...
 
 
-def parse(text: str, *, names: Names) -> Expression:
+def parse(*, text: str, names: Names) -> Expression:
     """Return the Expression records of equation text, with a new UUID for each node.
 
     Each name becomes a reference to the Value that ``names`` gives, and each
@@ -80,7 +80,7 @@ def parse(text: str, *, names: Names) -> Expression:
     return _Reader(text, names).build(syntax.parse(text))
 
 
-def render(expression: Expression, *, name: Callable[[Reference], str]) -> str:
+def render(*, expression: Expression, name: Callable[[Reference], str]) -> str:
     """Return the text of ``expression``, with ``name`` for each reference.
 
     The text has the fewest brackets that keep its meaning. Calls, selections

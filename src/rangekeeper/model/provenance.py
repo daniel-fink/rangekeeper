@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from rangekeeper.model.model import Model
 
 
-def fact_for(model: "Model", target: UUID) -> Fact | None:
+def fact_for(*, model: "Model", target: UUID) -> Fact | None:
     """Return a target's recorded Fact, or None for a known declaration without one."""
     model.owner_of(target)  # Validate UUID existence without crossing revision scopes.
     return (
@@ -46,7 +46,7 @@ def fact_for(model: "Model", target: UUID) -> Fact | None:
     )
 
 
-def locations(model: "Model", claim_id: UUID) -> tuple[Location, ...]:
+def locations(*, model: "Model", claim_id: UUID) -> tuple[Location, ...]:
     """Traverse upstream Claims once, preserving support order and unique Locations.
 
     Validated Models already prohibit cycles. Claim UUIDs are checked explicitly;

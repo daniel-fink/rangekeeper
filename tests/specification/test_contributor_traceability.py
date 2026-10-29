@@ -44,7 +44,7 @@ def validate_specification(root, model, contributions, *, raw):
 
 @pytest.mark.parametrize("raw", [False, True])
 def test_included_predecessor_remains_a_valid_contributor(raw):
-    model = Model.from_data(dict(metadata=metadata("Model")))
+    model = Model.from_data(data=dict(metadata=metadata("Model")))
     base = Specification.from_data(dict(metadata=metadata(), model=str(model.id)))
     root = Specification.from_data(
         dict(metadata=metadata(previous=str(base.id)), includes=[str(base.id)])
@@ -55,7 +55,7 @@ def test_included_predecessor_remains_a_valid_contributor(raw):
 
 @pytest.mark.parametrize("included", [False, True])
 def test_batch_revision_cannot_alias_a_leaf_formulation(included):
-    model = Model.from_data(dict(metadata=metadata("Model")))
+    model = Model.from_data(data=dict(metadata=metadata("Model")))
     batch_id = str(uuid4())
     contribution = dict(metadata=metadata(), formulations=[dict(id=batch_id)])
     leaf = dict(metadata=metadata(), model=str(model.id))
@@ -76,7 +76,7 @@ def test_batch_revision_cannot_alias_a_leaf_formulation(included):
 
 
 def test_batch_siblings_keep_separate_formulation_identity_scopes():
-    model = Model.from_data(dict(metadata=metadata("Model")))
+    model = Model.from_data(data=dict(metadata=metadata("Model")))
     formulation_id = str(uuid4())
     leaves = [
         dict(
@@ -97,7 +97,7 @@ def test_batch_siblings_keep_separate_formulation_identity_scopes():
 
 @pytest.mark.parametrize("raw", [False, True])
 def test_local_wrong_reference_kind_is_a_structured_semantic_failure(raw):
-    model = Model.from_data(dict(metadata=metadata("Model")))
+    model = Model.from_data(data=dict(metadata=metadata("Model")))
     identity = str(uuid4())
     data = dict(
         metadata=metadata(),
@@ -149,7 +149,7 @@ def test_local_naming_checks_each_collection_from_one_shot_iterables(nested, one
 @pytest.mark.parametrize("raw", [False, True])
 @pytest.mark.parametrize("nested", [False, True])
 def test_binding_failure_retains_the_included_document_and_field(raw, nested):
-    model = Model.from_data(dict(metadata=metadata("Model")))
+    model = Model.from_data(data=dict(metadata=metadata("Model")))
     formulation = dict(
         id=str(uuid4()), bindings=[dict(name="missing", value=str(uuid4()))]
     )
@@ -181,7 +181,7 @@ def test_model_binding_failure_retains_its_system_field_path():
         ),
     )
     with pytest.raises(ValidationError) as failure:
-        Model.from_data(data)
+        Model.from_data(data=data)
     issue = failure.value.report.issues[0]
     assert issue.document_id == UUID(data["metadata"]["id"])
     assert issue.path == "/system/formulations/0/bindings/0/value"
@@ -189,7 +189,7 @@ def test_model_binding_failure_retains_its_system_field_path():
 
 @pytest.mark.parametrize("failure_kind", ["binding", "units"])
 def test_source_translation_uses_original_positions_once(failure_kind):
-    model = Model.from_data(dict(metadata=metadata("Model")))
+    model = Model.from_data(data=dict(metadata=metadata("Model")))
     declaration = dict(id=str(uuid4()))
     if failure_kind == "binding":
         declaration["bindings"] = [dict(name="missing", value=str(uuid4()))]
@@ -224,7 +224,7 @@ def test_source_translation_uses_original_positions_once(failure_kind):
 
 
 def test_raw_local_reference_failure_retains_its_contributor():
-    model = Model.from_data(dict(metadata=metadata("Model")))
+    model = Model.from_data(data=dict(metadata=metadata("Model")))
     identity = str(uuid4())
     child = dict(
         metadata=metadata(),

@@ -38,7 +38,7 @@ def graph_html(
     )
     for entity in view.entities:
         classification = (
-            find_classification(view.model.definitions, entity.classification)
+            find_classification(items=view.model.definitions, id=entity.classification)
             if entity.classification
             else None
         )
@@ -64,10 +64,10 @@ def graph_html(
             str(relationship.source),
             str(relationship.target),
             label=find_classification(
-                view.model.definitions, relationship.classification
+                items=view.model.definitions, id=relationship.classification
             ).code,
             title=find_classification(
-                view.model.definitions, relationship.classification
+                items=view.model.definitions, id=relationship.classification
             ).name,
         )
     if options is not None:

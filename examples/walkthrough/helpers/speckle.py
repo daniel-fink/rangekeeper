@@ -45,7 +45,7 @@ def validate_associations(model: Model, associations: object) -> list[dict]:
         try:
             if UUID(item["model_revision"]) != model.id:
                 raise ValueError("association refers to another Model revision")
-            model.entity(UUID(item["domain_id"]))
+            model.entity(id=UUID(item["domain_id"]))
             if "rhino_id" in item:
                 UUID(item["rhino_id"])
             for key in ("application_id", "content_id"):

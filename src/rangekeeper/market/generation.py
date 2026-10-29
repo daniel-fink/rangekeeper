@@ -328,7 +328,7 @@ def captured_inputs(draws: Model, plan: ScenarioPlan):
     record = matches[0]
     parameters, arrays = {}, {}
     for binding in record.inputs:
-        value = draws.value(binding.value)
+        value = draws.value(id=binding.value)
         if value.quantity is not None:
             parameters[binding.name] = value.quantity.magnitude
         else:
@@ -354,7 +354,7 @@ def _realize(model, plan, *, draws):
     if draws.metadata.previous != model.id:
         raise ValueError("draw document must derive from the supplied base Model")
     paths, delays = construct_paths(plan.method, parameters, arrays)
-    measure_id = draws.value(record.inputs[0].value).measure
+    measure_id = draws.value(id=record.inputs[0].value).measure
     values = tuple(
         Value(
             id=uuid5(record.id, "output/" + name),
@@ -418,7 +418,7 @@ def _realize(model, plan, *, draws):
 def _worker(payload):
     """Process boundary accepts and returns only detached dictionaries and strings."""
     model_data, plan_data, key = payload
-    model, plan = Model.from_data(model_data), ScenarioPlan.from_data(plan_data)
+    model, plan = Model.from_data(data=model_data), ScenarioPlan.from_data(plan_data)
     check_scenario_plan(plan)
     result = _generate_one(model, plan, key)
     return result.model.to_data(), result.realization.to_data()
@@ -449,7 +449,7 @@ def generate(
         max_workers=workers, mp_context=multiprocessing.get_context("spawn")
     ) as pool:
         return tuple(
-            Market(Model.from_data(m), ScenarioRealization.from_data(r))
+            Market(Model.from_data(data=m), ScenarioRealization.from_data(r))
             for m, r in pool.map(_worker, payloads)
         )
 

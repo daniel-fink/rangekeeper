@@ -23,7 +23,7 @@ if a.mode == "prepare":
     utilities = {
         u: "cores"
         for u in design.select_contributors(model, root=root)
-        if model.entity(u).name == "cores"
+        if model.entity(id=u).name == "cores"
     }
     model = design.formulate(design.author(model, root=root, utility_kinds=utilities))
     data = model.system.to_data()

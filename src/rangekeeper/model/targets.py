@@ -21,7 +21,7 @@ def _target(model: "Model", target: Reference) -> tuple[Value, Movement | None]:
     if isinstance(record, Movement):
         owner = model.owner_of(record.id)
         assert owner is not None  # a Movement's owner is its Value
-        return model.value(owner), record
+        return model.value(id=owner), record
     return record, None
 
 

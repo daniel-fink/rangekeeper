@@ -57,7 +57,7 @@ class Resolver:
 
 def fixture_model():
     path = Path(__file__).resolve().parents[2] / "examples/schema/model.yaml"
-    return Model.from_data(yaml.safe_load(path.read_text()))
+    return Model.from_data(data=yaml.safe_load(path.read_text()))
 
 
 def specification(**fields):
@@ -114,7 +114,7 @@ def test_index_retains_paths_and_rejects_duplicate_catalogue_identity():
     assert index.paths[identity] == "/measures/0"
     assert index.get(identity, Measure) == definition
     with pytest.raises(IdentityConflictError):
-        measure(Definitions(measures=(definition, definition)), uuid4())
+        measure(items=Definitions(measures=(definition, definition)), id=uuid4())
 
 
 def test_schema_mapping_locations_escape_json_pointer_segments():
@@ -135,7 +135,7 @@ def test_assembly_lookup_is_typed_and_preserves_entity_lookup():
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(entities=(ordinary,), assemblies=(assembly,)),
     )
-    assert model.assembly(assembly.id) == model.entity(assembly.id)
+    assert model.assembly(assembly.id) == model.entity(id=assembly.id)
     with pytest.raises(ReferenceTypeError):
         model.assembly(ordinary.id)
 
@@ -280,14 +280,14 @@ def test_query_domain_acceptance_at_actual_consumer_boundaries(kinds, consumer):
     )
     if consumer == "predicate" or consumer == "function" and kinds != ("measurement",):
         with pytest.raises(ValidationError) as failure:
-            Model.from_data(data)
+            Model.from_data(data=data)
         assert (
             "Boolean" in str(failure.value)
             if consumer == "predicate"
             else "argument domain" in str(failure.value)
         )
         return
-    model = Model.from_data(data)
+    model = Model.from_data(data=data)
     resolver = Resolver(model)
     if consumer == "objective":
         from rangekeeper.specification import Objective, ObjectiveKind
@@ -593,7 +593,7 @@ def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
             ],
         )
     )
-    model = Model.from_data(data)
+    model = Model.from_data(data=data)
     result = evaluate(rules=rules, model=model, units=units)
     assert result.evidence[0].rule == UUID(rule)
     assert len(conversions) >= 2
@@ -626,7 +626,7 @@ def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
             id=str(uuid4()), previous=str(model.id), schema_version="1.0.0"
         )
         output["system"]["formulations"][0]["values"][1]["quantity"] = amount
-        output_model = Model.from_data(output)
+        output_model = Model.from_data(data=output)
         store.put(output_model)
         raw["outputs"] = [str(output_model.id)]
     else:

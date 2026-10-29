@@ -200,10 +200,10 @@ def _prepare(
 
 
 def match(
+    *,
     model: Model,
     entities: Iterable[Entity],
     condition: Filter,
-    *,
     unit_system: UnitSystem | None = None,
 ) -> Match:
     """Test ``entities`` of ``model`` against ``condition``; see ``Match``."""
@@ -212,7 +212,7 @@ def match(
     failed: list[UUID] = []
     undecided: list[UUID] = []
     for entity in entities:
-        result = test(model.entity(entity.id))
+        result = test(model.entity(id=entity.id))
         (passed if result else failed if result is False else undecided).append(
             entity.id
         )

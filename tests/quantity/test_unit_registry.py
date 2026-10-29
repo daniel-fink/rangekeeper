@@ -364,7 +364,7 @@ def test_model_unit_system_is_public_and_kept_by_revisions():
     )
     assert revised.unit_system is storeys
     assert (
-        Model.from_data(model_with(default_units, unit="m").to_data()).unit_system
+        Model.from_data(data=model_with(default_units, unit="m").to_data()).unit_system
         == default_units
     )
     with pytest.raises((UnitError, ValidationError)):
@@ -374,18 +374,18 @@ def test_model_unit_system_is_public_and_kept_by_revisions():
 def test_derived_operations_default_to_the_model_unit_system():
     storeys = default_units.register(name="storey").alias(alias="level", unit="storey")
     model = model_with(storeys)
-    view = View(model)
-    population = view.quantities("levels", units="level")
+    view = View(model=model)
+    population = view.quantities(key="levels", units="level")
     assert [q.magnitude for q in population.quantities] == [12]
     table = to_table(
-        view, columns=(ValueColumn(name="levels", key="levels", units="level"),)
+        source=view, columns=(ValueColumn(name="levels", key="levels", units="level"),)
     )
     assert table.rows[0].values["levels"] == 12
     result = view.rollup(definition=QuantityRollup(key="levels", units="level"))
     assert result[model.find_entities(code="A")[0].id].magnitude == 12
     with pytest.raises(UnitError):
         to_table(
-            view,
+            source=view,
             columns=(ValueColumn(name="levels", key="levels", units="level"),),
             units=default_units,
         )

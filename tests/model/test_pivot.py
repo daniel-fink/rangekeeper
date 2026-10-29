@@ -132,7 +132,7 @@ def project(*, missing=()):
     )
     ids.update({level: item.id for level, item in levels.items()})
     ids["building"] = building.id
-    rows = Hierarchy.from_membership(View(model), root=building.id)
+    rows = Hierarchy.from_membership(view=View(model=model), root=building.id)
     return model, rows, kinds, ids
 
 
@@ -159,7 +159,10 @@ def test_single_column_pivot_is_the_same_as_execute():
     model, rows, kinds, ids = project()
     reduction = price()
     expected = reduction.execute(rows)
-    for pivot in (reduction.pivot(rows), reduction.pivot(rows, by=kinds["2B+S"])):
+    for pivot in (
+        reduction.pivot(hierarchy=rows),
+        reduction.pivot(hierarchy=rows, by=kinds["2B+S"]),
+    ):
         assert [column.classification for column in pivot.columns] == [None]
         assert pivot.column().result == expected
         for id in rows.preorder():
@@ -170,7 +173,7 @@ def test_single_column_pivot_is_the_same_as_execute():
 
 def test_columns_include_sub_types_with_subtotals_through_the_tree():
     model, rows, kinds, ids = project()
-    pivot = price().pivot(rows, by=kinds["apartment"])
+    pivot = price().pivot(hierarchy=rows, by=kinds["apartment"])
     assert [(c.classification, c.parent, c.depth) for c in pivot.columns] == [
         (None, None, 0),
         (kinds["2B"], None, 1),
@@ -190,7 +193,7 @@ def test_columns_include_sub_types_with_subtotals_through_the_tree():
 
 def test_deeper_columns_name_their_parent_column():
     model, rows, kinds, ids = project()
-    pivot = price().pivot(rows, by=kinds["apartment"], depth=2)
+    pivot = price().pivot(hierarchy=rows, by=kinds["apartment"], depth=2)
     assert [(c.classification, c.parent, c.depth) for c in pivot.columns] == [
         (None, None, 0),
         (kinds["2B"], None, 1),
@@ -211,7 +214,9 @@ def test_deeper_columns_name_their_parent_column():
 
 def test_exclusive_columns_match_only_their_own_class():
     model, rows, kinds, ids = project()
-    pivot = price().pivot(rows, by=kinds["apartment"], depth=2, exclusive=True)
+    pivot = price().pivot(
+        hierarchy=rows, by=kinds["apartment"], depth=2, exclusive=True
+    )
     assert magnitude(pivot, ids["building"], kinds["2B"]) == 100
     split = pivot.partition(row=ids["building"], column=kinds["2B"])
     assert split.uncovered == records(ids, "u1")
@@ -252,7 +257,7 @@ def test_overlapping_sibling_columns_are_reported():
 
 def test_unclassified_records_are_uncovered():
     model, rows, kinds, ids = project()
-    pivot = price().pivot(rows, by=kinds["unit"])
+    pivot = price().pivot(hierarchy=rows, by=kinds["unit"])
     assert [c.classification for c in pivot.columns] == [
         None,
         kinds["apartment"],
@@ -263,7 +268,7 @@ def test_unclassified_records_are_uncovered():
     assert not split.complete
     assert pivot.partition(row=ids["L1"]).uncovered == records(ids, "u5")
     # Restricted to the Taxonomy, the columns add up to All.
-    scoped = price().pivot(rows, by=kinds["unit"], only=kinds["unit"])
+    scoped = price().pivot(hierarchy=rows, by=kinds["unit"], only=kinds["unit"])
     assert scoped.partition(row=ids["building"]).complete
     assert magnitude(scoped, ids["building"]) == magnitude(
         scoped, ids["building"], kinds["apartment"]
@@ -272,7 +277,7 @@ def test_unclassified_records_are_uncovered():
 
 def test_incomplete_coverage_stays_visible_per_cell():
     model, rows, kinds, ids = project(missing=("u7",))
-    pivot = price().pivot(rows, by=kinds["apartment"])
+    pivot = price().pivot(hierarchy=rows, by=kinds["apartment"])
     assert pivot.value(row=ids["building"], column=kinds["3B"]) is None
     assert (
         pivot.available_value(row=ids["building"], column=kinds["3B"]).magnitude == 400
@@ -291,7 +296,7 @@ def test_incomplete_coverage_stays_visible_per_cell():
 
 def test_means_use_raw_contributors_in_every_cell():
     model, rows, kinds, ids = project()
-    pivot = price(Reducer.MEAN).pivot(rows, by=kinds["apartment"])
+    pivot = price(Reducer.MEAN).pivot(hierarchy=rows, by=kinds["apartment"])
     prices = {code: amount for code, _, _, amount in UNITS}
     level_means = [magnitude(pivot, ids[level]) for level in ("L1", "L2")]
     assert magnitude(pivot, ids["building"]) == pytest.approx(fmean(prices.values()))
@@ -304,7 +309,7 @@ def test_means_use_raw_contributors_in_every_cell():
 
 def test_only_narrows_every_column_including_a_different_taxonomy():
     model, rows, kinds, ids = project()
-    same = price().pivot(rows, by=kinds["apartment"], only=kinds["2B"])
+    same = price().pivot(hierarchy=rows, by=kinds["apartment"], only=kinds["2B"])
     assert magnitude(same, ids["building"]) == 850
     assert magnitude(same, ids["building"], kinds["2B"]) == 850
     assert (
@@ -313,7 +318,7 @@ def test_only_narrows_every_column_including_a_different_taxonomy():
     )
     assert same.partition(row=ids["building"]).complete
     # An Entity has one Classification, so no record is both 2B and north.
-    other = price().pivot(rows, by=kinds["aspect"], only=kinds["2B"])
+    other = price().pivot(hierarchy=rows, by=kinds["aspect"], only=kinds["2B"])
     assert [c.classification for c in other.columns] == [
         None,
         kinds["north"],
@@ -326,7 +331,7 @@ def test_only_narrows_every_column_including_a_different_taxonomy():
         ids, "u1", "u2", "u6", "u8"
     )
     # Without only, the north column holds the north record.
-    aspect = price().pivot(rows, by=kinds["aspect"])
+    aspect = price().pivot(hierarchy=rows, by=kinds["aspect"])
     assert magnitude(aspect, ids["building"], kinds["north"]) == 70
 
 
@@ -337,7 +342,7 @@ def test_count_pivot_counts_each_column():
         reducer=Reducer.COUNT,
         units=None,
         contributors=Contributor.LEAVES,
-    ).pivot(rows, by=kinds["apartment"])
+    ).pivot(hierarchy=rows, by=kinds["apartment"])
     assert pivot.value(row=ids["building"]) == Quantity(
         magnitude=9, units="dimensionless"
     )
@@ -347,7 +352,7 @@ def test_count_pivot_counts_each_column():
 
 def test_table_and_display_show_rows_in_preorder():
     model, rows, kinds, ids = project(missing=("u7",))
-    pivot = price().pivot(rows, by=kinds["apartment"])
+    pivot = price().pivot(hierarchy=rows, by=kinds["apartment"])
     table = pivot.to_table()
     assert table.columns == ("name", "parent_id", "All", "2B", "3B")
     assert tuple(row.id for row in table.rows) == rows.preorder()
@@ -364,15 +369,15 @@ def test_pivot_validates_its_arguments_and_columns():
     model, rows, kinds, ids = project()
     reduction = price()
     with pytest.raises(MissingReferenceError):
-        reduction.pivot(rows, by=uuid4())
+        reduction.pivot(hierarchy=rows, by=uuid4())
     with pytest.raises(MissingReferenceError):
-        reduction.pivot(rows, only=uuid4())
+        reduction.pivot(hierarchy=rows, only=uuid4())
     with pytest.raises(RollupError):
-        reduction.pivot(rows, by=kinds["unit"], depth=0)
+        reduction.pivot(hierarchy=rows, by=kinds["unit"], depth=0)
     with pytest.raises(TypeError):
-        reduction.pivot(rows, exclusive=None)
+        reduction.pivot(hierarchy=rows, exclusive=None)
     with pytest.raises(TypeError):
-        reduction.pivot(View(model))
+        reduction.pivot(hierarchy=View(model=model))
     whole = reduction.execute(rows)
     with pytest.raises(RollupError):
         Pivot(rows=rows, columns=())
@@ -392,7 +397,10 @@ def test_pivot_validates_its_arguments_and_columns():
             ),
         )
     other = Hierarchy.from_membership(
-        View(model, entities=(ids["L1"], *records(ids, "u1", "u2", "u3", "u4", "u5"))),
+        view=View(
+            model=model,
+            entities=(ids["L1"], *records(ids, "u1", "u2", "u3", "u4", "u5")),
+        ),
         root=ids["L1"],
     )
     with pytest.raises(RollupError):
@@ -407,7 +415,7 @@ def test_pivot_validates_its_arguments_and_columns():
                 ),
             ),
         )
-    pivot = reduction.pivot(rows, by=kinds["apartment"])
+    pivot = reduction.pivot(hierarchy=rows, by=kinds["apartment"])
     with pytest.raises(MissingReferenceError) as error:
         pivot.value(row=ids["building"], column=kinds["retail"])
     assert (error.value.kind, error.value.requested) == ("PivotColumn", kinds["retail"])

@@ -89,7 +89,7 @@ def test_fixed_strict_predicate_failures_become_stored_runs(unsupported):
     predicate = binary("less_than", left, literal(1))
     constraint_id = identity()
     model = Model.from_data(
-        {
+        data={
             "metadata": metadata(),
             "definitions": {"functions": functions},
             "system": {
@@ -131,7 +131,7 @@ def test_incomplete_selected_rule_trace_uses_capability_failure_boundary():
     measure, target = identity(), identity()
     reference = {"target": target}
     model = Model.from_data(
-        {
+        data={
             "metadata": metadata(),
             "definitions": {
                 "measures": [

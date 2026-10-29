@@ -34,7 +34,7 @@ def converted():
         ("specification.yaml", Specification),
         ("run.json", Run),
     ):
-        result[name] = kind.from_data(convert(load(name), release="0.x"))
+        result[name] = kind.from_data(data=convert(load(name), release="0.x"))
         store.put(result[name])
     return store, result
 

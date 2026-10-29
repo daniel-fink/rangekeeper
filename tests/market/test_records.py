@@ -86,7 +86,7 @@ def test_market_view_is_revision_pinned_and_has_named_values():
     assert result.space_market_price_factors == result.resolve_output(
         "space_market_price_factors"
     )
-    assert result.asset_true_value == result.model.value(result.asset_true_value.id)
+    assert result.asset_true_value == result.model.value(id=result.asset_true_value.id)
     assert result.implied_reversion_cap_rates.flow.units == "dimensionless"
     assert result.cumulative_volatility != result.resolve_input("volatility_per_period")
     with pytest.raises(AttributeError):

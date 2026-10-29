@@ -170,8 +170,8 @@ class Model:
     @classmethod
     def from_data(
         cls,
-        data: Mapping[str, object],
         *,
+        data: Mapping[str, object],
         units: UnitSystem = default_units,
     ) -> "Model":
         """Copy, structurally and semantically validate, then freeze one revision.
@@ -313,8 +313,8 @@ class Model:
 
     def entity(
         self,
-        id: UUID | None = None,
         *,
+        id: UUID | None = None,
         code: str | None = None,
         name: str | None = None,
     ) -> Entity:
@@ -365,8 +365,8 @@ class Model:
 
     def value(
         self,
-        id: UUID | None = None,
         *,
+        id: UUID | None = None,
         owner: UUID | None = None,
         key: str | None = None,
     ) -> Value:
@@ -420,8 +420,8 @@ class Model:
 
     def label(
         self,
-        id: UUID | None = None,
         *,
+        id: UUID | None = None,
         owner: UUID | None = None,
         key: str | None = None,
     ) -> Label:

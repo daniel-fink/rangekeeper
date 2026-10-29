@@ -66,7 +66,7 @@ def hierarchy_case(legacy):
         definitions=Definitions(measures=(measure,)),
         system=System(entities=entities, assemblies=(*buildings, root)),
     )
-    hierarchy = Hierarchy(View(model), membership_root=root.id)
+    hierarchy = Hierarchy(view=View(model=model), membership_root=root.id)
     construction = time.perf_counter() - start
     start = time.perf_counter()
     if legacy:
