@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
+from functools import cache
 from itertools import pairwise
 from typing import overload
 
@@ -37,13 +38,18 @@ _LENGTH_UNITS = (
 )
 
 
+@cache
+def _length_table() -> dict[str, Frequency]:
+    """Return the Frequency of each calendar length unit, by its canonical text."""
+    return {
+        default_units.canonical(units=name): frequency
+        for name, frequency in _LENGTH_UNITS
+    }
+
+
 def length_frequency(units: str) -> Frequency | None:
     """Return the Frequency of calendar length units, such as ``"years"``, or None."""
-    parsed = default_units._parse(units)
-    for name, frequency in _LENGTH_UNITS:
-        if parsed == default_units._parse(name):
-            return frequency
-    return None
+    return _length_table().get(default_units.canonical(units=units))
 
 
 def signed_steps(length: Quantity | str) -> tuple[Frequency, int]:

@@ -601,6 +601,16 @@ class UnitSystem:
         """Require valid unit text without comparing it with a second expression."""
         self._parse(text)
 
+    def canonical(self, *, units: str) -> str:
+        """Return the canonical text of unit text: one name for each unit, in a fixed order.
+
+        Two spellings of the same units have the same canonical text: ``"years"``
+        and ``"yr"`` both give ``"year"``, and ``"m * sqm"`` and ``"sqm * m"``
+        both give ``"meter * square_meter"``. Unknown or malformed units raise
+        UnitError. Use ``compatible`` to compare dimensions instead.
+        """
+        return str(self._parse(units))
+
     def multiply(self, left: str, right: str) -> str:
         """Return product units without removing dimensions or changing magnitudes."""
         return str(self._parse(left) * self._parse(right))

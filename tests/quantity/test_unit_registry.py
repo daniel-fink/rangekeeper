@@ -158,6 +158,32 @@ def test_per_annum_is_per_year_not_picoyear():
     assert not default_units.compatible("AUD pa", "AUD")
 
 
+@pytest.mark.parametrize(
+    ("units", "canonical"),
+    [
+        ("years", "year"),
+        ("yr", "year"),
+        ("d", "day"),
+        ("quarters", "quarter"),
+        ("m * sqm", "meter * square_meter"),
+        ("sqm * m", "meter * square_meter"),
+        ("per year", "1 / year"),
+    ],
+)
+def test_canonical_gives_one_text_for_each_spelling(units, canonical):
+    assert default_units.canonical(units=units) == canonical
+
+
+def test_canonical_names_its_argument_and_rejects_unknown_units():
+    with pytest.raises(TypeError):
+        default_units.canonical("year")  # type: ignore[misc]
+    with pytest.raises(UnitError):
+        default_units.canonical(units="kyr")
+    assert default_units.canonical(units="month") != default_units.canonical(
+        units="quarter"
+    )
+
+
 def test_per_is_division():
     rent = default_units.parse_quantity("750 AUD per sqm pa")
     assert rent.magnitude == 750
