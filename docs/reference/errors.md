@@ -31,7 +31,7 @@ contract: a Run that is read back has the same code text.
 | Batches | `batch.*` | `BATCH_MODEL` |
 | Hierarchies | `hierarchy.*` | `HIERARCHY_CYCLE`, `HIERARCHY_MULTIPLE_PARENTS` |
 | Other errors | Bare words | `DECODE`, `ENCODING`, `REVISION_CONFLICT`, `UNSUPPORTED_VERSION` |
-| Execution | Bare words in Run diagnostics | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED` |
+| Execution | Bare words in Run diagnostics | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED` |
 
 `CONTRACT` is the general code of a semantic rule. Rules that callers must tell
 apart have their own codes.
@@ -68,6 +68,9 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | `solver_termination` | `termination`: the `Termination` value (`feasible`, `infeasible`, `limit`, `error` or `unknown`). The other names are the backend evidence; for `pyomo-highs`, `termination_condition` (the Pyomo condition), `solution_status`, `simplex_iterations` and `solver_options` |
 | `solver_scaling` | `rows`: for each row, its `constraint`, `divisor` and `residual_units`. The `pyomo-highs` backend records it |
 | `underdetermined`, `uniqueness_not_assessed` | `equality_rank` and `unknown_count`, from the analysis of the affine problem |
+| `nonaffine_unknowns` | `equation`: the text of the Constraint, for example `"noi = coverage * debt_service"`. `unknowns`: the keys of the unknowns in the term that is not affine |
+| A failure from `UnsupportedError` | `equation`, when the failure is in one Constraint |
+| `constraint_residual` | `equation`: the text of the Constraint that was checked. `target` is the Constraint |
 
 ```python
 for diagnostic in run.report.diagnostics:
@@ -96,7 +99,7 @@ except rk.errors.ValidationError as error:
 | --- | --- | --- |
 | `ValidationError` | `ValueError` | The code of the first issue in `report` |
 | `ContractError` | `ValueError` | Given by the rule; `CONTRACT` by default |
-| `UnsupportedError` | `ValueError` | Given by the failure; `UNSUPPORTED_CAPABILITY` by default. `document` and `target` locate the declaration |
+| `UnsupportedError` | `ValueError` | Given by the failure; `UNSUPPORTED_CAPABILITY` by default. `document` and `target` locate the declaration, and `equation` gives its text. With `NONAFFINE_UNKNOWNS`, `unknowns` gives the keys of the unknowns in the term that is not affine |
 | `model.system`: `HierarchyError` | `ValueError` | A `hierarchy.*` code. `ids` names the offending Entities |
 | `MissingReferenceError` | `LookupError` | `REFERENCE_MISSING`. `requested`, `by`, `kind`, `where` and `candidates` say what was requested and where ([lookups](#lookups)) |
 | `AmbiguousReferenceError` | `LookupError` | `REFERENCE_AMBIGUOUS`. A lookup for one item found several; `candidates` names each match |

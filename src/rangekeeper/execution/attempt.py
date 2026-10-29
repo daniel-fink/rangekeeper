@@ -161,12 +161,21 @@ class Attempt:
             # A row without a code is for an error that carries its own.
             assert isinstance(error, RangekeeperError)
             code = error.code
+        # The error's structured fields, so that a reader needs no message text.
+        values: dict[str, JSONValue] = {}
+        equation = getattr(error, "equation", None)
+        if equation is not None:
+            values["equation"] = equation
+        unknowns = getattr(error, "unknowns", ())
+        if unknowns:
+            values["unknowns"] = list(unknowns)
         self.diagnose(
             code,
             str(error),
             severity=status.severity,
             document=getattr(error, "document", None) or UNSET,
             target=getattr(error, "target", None) or UNSET,
+            values=values or UNSET,
         )
 
     def prepare(self) -> staging.Staged:

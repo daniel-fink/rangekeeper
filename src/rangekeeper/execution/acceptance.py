@@ -140,6 +140,7 @@ def verify(
                         and node.kind is ExpressionKind.REFERENCE
                         and node.target is not None
                     ),
+                    values={"equation": binding.text(assertion.predicate)},
                     residual=Quantity(magnitude=residual, units=left.units),
                     tolerance=Quantity(magnitude=tolerance, units=left.units),
                 )

@@ -262,7 +262,9 @@ Canonical units come from each scalar Value's Measure or Flow units; conversion 
 equations must compare compatible dimensions. Multiplicative arithmetic that would
 require unsupported offset-unit handling is rejected.
 
-After staging, the adapter explicitly rejects nonlinear unknown products/divisors/powers, strict
+After staging, the adapter explicitly rejects nonlinear unknown products/divisors/powers
+with a `nonaffine_unknowns` diagnostic. Its `values` give the `equation` text and
+the keys of the `unknowns` in the term that is not affine. It also rejects strict
 comparisons involving unknowns, disjunctions, function calls, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
 Values and market path generation follow the [temporal contract](market-paths-and-rules.md).
@@ -328,10 +330,17 @@ An expected error ends an attempt with a failed Run, not an exception.
 | --- | --- | --- | --- |
 | `AttemptDeadlineError` | limited | `not_assessed` | `attempt_deadline` (warning) |
 | `ValidationError` | failed | `not_assessed`; `unknown` once bound | `specification_invalid`; `numerical_rejection` once bound |
-| `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | The error's own code, for example `symbol_limit` |
+| `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | The error's own code, for example `nonaffine_unknowns` or `symbol_limit` |
 | `UnitError` | failed | `not_assessed`; `unknown` once solved | `unsupported_capability` |
 | `BackendUnavailableError` | failed | `not_assessed` | `backend_unavailable` |
-| `NumericalError`, `ArithmeticError` | failed | `unknown` | `numerical_failure` | Limits, ambiguous termination and solver failure do not
+| `NumericalError`, `ArithmeticError` | failed | `unknown` | `numerical_failure` |
+
+`Attempt.fail` builds the diagnostic of each expected failure. It copies the
+error's structured fields into the diagnostic's `values`: the `equation` and
+`unknowns` of an `UnsupportedError`
+([Run diagnostics](errors.md#run-diagnostics)).
+
+Limits, ambiguous termination and solver failure do not
 prove infeasibility. A zero-objective feasibility solve establishes no preference
 optimum. `build_problem` computes the equality rank and the free variables in
 pure Python, for every backend: Gaussian elimination on rows divided by their

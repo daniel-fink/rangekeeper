@@ -2,6 +2,7 @@
 
 import importlib
 import inspect
+import pickle
 import pkgutil
 from uuid import uuid4
 
@@ -103,6 +104,25 @@ def test_instance_codes_are_codes():
             errors.UnsupportedError,
             HierarchyError,
         }
+    )
+
+
+def test_unsupported_error_keeps_its_fields_through_pickle():
+    target = uuid4()
+    error = errors.UnsupportedError(
+        "text",
+        code=Code.NONAFFINE_UNKNOWNS,
+        target=target,
+        equation="noi = coverage * debt_service",
+        unknowns=["coverage", "debt_service"],
+    )
+    copy = pickle.loads(pickle.dumps(error))
+    assert (str(copy), copy.code, copy.target, copy.equation, copy.unknowns) == (
+        "text",
+        Code.NONAFFINE_UNKNOWNS,
+        target,
+        "noi = coverage * debt_service",
+        ("coverage", "debt_service"),
     )
 
 

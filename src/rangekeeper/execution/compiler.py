@@ -102,6 +102,17 @@ class Compiler:
         self.binding = binding
         self.checkpoint = checkpoint
 
+    def nonaffine(self, operation: str, *values: Affine) -> UnsupportedError:
+        """Return the error for an operation on unknowns that is not affine."""
+        ids = dict.fromkeys(id for value in values for id in value.coefficients)
+        keys = tuple(self.binding.key(self.binding.references[id]) for id in ids)
+        noun = "the unknown" if len(keys) == 1 else "the unknowns"
+        return UnsupportedError(
+            f"{operation} {noun} {', '.join(keys)} is nonlinear",
+            code=Code.NONAFFINE_UNKNOWNS,
+            unknowns=keys,
+        )
+
     def convert(self, value: Affine, units: str) -> Affine:
         """Convert a whole affine expression; offset units are outside this slice."""
         zero = self.binding.units.convert(
@@ -194,9 +205,7 @@ class Compiler:
             return self.add(left, right, 1 if node.operator == Operator.ADD else -1)
         if node.operator == Operator.MULTIPLY:
             if left.coefficients and right.coefficients:
-                raise UnsupportedError(
-                    "multiplication of two unknown expressions is nonlinear"
-                )
+                raise self.nonaffine("multiplication of", left, right)
             unit = f"({left.units}) * ({right.units})"
             return (
                 self.scale(left, right.constant, unit)
@@ -205,7 +214,7 @@ class Compiler:
             )
         if node.operator == Operator.DIVIDE:
             if right.coefficients:
-                raise UnsupportedError("division by an unknown expression is nonlinear")
+                raise self.nonaffine("division by", right)
             if right.constant == 0:
                 raise NumericalError("division by zero in declared expression")
             return self.scale(
@@ -213,13 +222,13 @@ class Compiler:
             )
         right = self.convert(right, "dimensionless")
         if right.coefficients:
-            raise UnsupportedError("an unknown exponent is outside affine execution")
+            raise self.nonaffine("an exponent of", right)
         if right.constant == 1:
             return left
         if right.constant == 0:
             return _affine(1, {}, "dimensionless")
         if left.coefficients:
-            raise UnsupportedError("a nontrivial power of an unknown is nonlinear")
+            raise self.nonaffine("a power of", left)
         try:
             magnitude = float(left.constant**right.constant)
         except (ValueError, TypeError, OverflowError, ZeroDivisionError) as error:
@@ -305,9 +314,11 @@ def build_problem(
 ) -> AffineProblem:
     """Lower each assertion of ``binding`` to immutable affine rows, and analyse them.
 
-    Raise UnsupportedError, scoped to the original declaration, when a row is
-    outside the affine slice, or with a ``symbol_limit`` or ``constraint_limit``
-    code when the problem is larger than ``limits`` allows.
+    Raise UnsupportedError, scoped to the original declaration and with its
+    ``equation`` text, when a row is outside the affine slice: its code is
+    ``nonaffine_unknowns`` for a product, quotient or power of unknowns. Raise it
+    with a ``symbol_limit`` or ``constraint_limit`` code when the problem is
+    larger than ``limits`` allows.
     """
     limits = Limits() if limits is None else limits
     if len(binding.references) > limits.symbol_limit:
@@ -327,11 +338,14 @@ def build_problem(
                     code=Code.CONSTRAINT_LIMIT,
                 )
         except UnsupportedError as error:
+            equation = binding.text(item.predicate)
             raise UnsupportedError(
-                str(error),
+                f'{error} in "{equation}"',
                 code=error.code,
                 document=item.document,
                 target=item.constraint.id,
+                equation=equation,
+                unknowns=error.unknowns,
             ) from error
     variables = tuple(binding.unknowns)
     constrained = {key for row in rows for key in row.residual.coefficients}
