@@ -142,7 +142,12 @@ except rk.errors.MissingReferenceError as error:
     print(error.requested, error.where, error.candidates)
 ```
 
-Argument guards raise plain `TypeError` and `ValueError` for a wrong Python
-argument. An optional dependency that is not installed raises `ImportError`.
+An argument of the wrong Python type raises `TypeError`. Every other failure on
+a public path raises a `RangekeeperError` subclass with a `Code`: a wrong value,
+a lookup that finds nothing, data or state that is not valid. Some lower-layer
+paths still raise a plain `ValueError` or `KeyError`;
+[#407](https://github.com/daniel-fink/rangekeeper/issues/407) changes them
+before 1.0.0b1. An optional dependency that is not installed raises
+`ImportError`.
 `ValidationError` has the same name as an error in jsonschema, which the
 library uses inside; import it from `rangekeeper.errors`.

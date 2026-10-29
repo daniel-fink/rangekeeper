@@ -1,8 +1,10 @@
 # Contributor instructions
 
 Read [the documentation index](docs/README.md),
-[architecture](docs/concepts/architecture.md) and
-[contributing guide](docs/contributing/README.md) before changing this repository.
+[architecture](docs/concepts/architecture.md),
+[contributing guide](docs/contributing/README.md) and
+[coding conventions](docs/contributing/coding-conventions.md) before changing
+this repository.
 Apply [documentation upkeep](docs/contributing/documentation.md) with each change.
 Follow ASD-STE100 principles, with exceptions for clarity and technical accuracy.
 
