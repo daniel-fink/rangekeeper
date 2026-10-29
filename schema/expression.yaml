@@ -383,6 +383,7 @@ classes:
               value_presence: ABSENT
 enums:
   ExpressionKind:
+    description: The form of an Expression; it decides which content field is present.
     permissible_values:
       quantity:
         description: A numerical literal with explicit magnitude and units.
@@ -403,6 +404,7 @@ enums:
       query:
         description: A query returning a collection of symbolic references.
   Operator:
+    description: The operator of a unary or binary Expression.
     permissible_values:
       add:
         description: First operand plus second operand.
@@ -435,6 +437,7 @@ enums:
       logical_or:
         description: Boolean disjunction, evaluated left to right with short-circuiting.
   SelectionKind:
+    description: Whether a selection reads a declared member or an indexed element.
     permissible_values:
       member:
         description: Select one declared member.

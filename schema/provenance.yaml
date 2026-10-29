@@ -249,6 +249,7 @@ classes:
         inlined: true
 enums:
   ClaimKind:
+    description: How a Claim obtained its content.
     permissible_values:
       sourced:
         description: Content obtained at a source location.
@@ -257,6 +258,7 @@ enums:
       derived:
         description: Content derived from upstream Claims through a named method.
   ReconciliationStatus:
+    description: Whether a reconciled selection is provisional or confirmed.
     permissible_values:
       provisional:
         description: The selection remains provisional.

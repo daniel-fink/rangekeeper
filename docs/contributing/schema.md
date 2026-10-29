@@ -10,9 +10,13 @@ it must not redeclare persistent fields. Read the
 
 Keep schema modules divided by domain responsibility. Change YAML descriptions
 at their source so generated record/property docstrings change with the contract.
-Every class and every slot needs a description: one sentence that states the
-meaning, and the units or presence rules when they matter. The generator stops
-on a missing description; it does not write a placeholder docstring.
+Every class, slot, enum and enum value needs a description: one sentence that
+states the meaning, and the units or presence rules when they matter. The
+generator stops on a missing description; it does not write a placeholder
+docstring. Each enum becomes a `StrEnum`, so a member equals its stored word
+(D26); its description is the class docstring, and each value description is
+the docstring of its member. Hand-written public enums are `StrEnum` too, and
+`tests/contracts/test_fixed_words.py` checks every public enum.
 Generated records contain data only. The owner of a value type adds behaviour
 with a subclass that it registers in `rangekeeper.schema.kinds`; the subclass
 declares no fields. `OWNERS` in the generator names the owner module of each

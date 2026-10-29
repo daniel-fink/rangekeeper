@@ -204,10 +204,10 @@
   "MonthGrid": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, frequency: Frequency, year_starts: Month = calendar.JANUARY) -> None"
+    "__init__": "method (self, *, frequency: Frequency, year_starts: Month = Month.JANUARY) -> None"
    },
    "module": "rangekeeper.duration.grid",
-   "signature": "(*, frequency: Frequency, year_starts: Month = calendar.JANUARY) -> None"
+   "signature": "(*, frequency: Frequency, year_starts: Month = Month.JANUARY) -> None"
   },
   "MonthRoll": {
    "kind": "enum",
@@ -294,11 +294,11 @@
   "WeekGrid": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, starts: Day = calendar.MONDAY) -> None",
+    "__init__": "method (self, *, starts: Day = Day.MONDAY) -> None",
     "frequency": "property"
    },
    "module": "rangekeeper.duration.grid",
-   "signature": "(*, starts: Day = calendar.MONDAY) -> None"
+   "signature": "(*, starts: Day = Day.MONDAY) -> None"
   },
   "containing_period": {
    "kind": "function",

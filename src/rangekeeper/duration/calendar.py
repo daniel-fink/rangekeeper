@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import calendar
 from datetime import date, timedelta
-from enum import Enum, unique
+from enum import StrEnum, unique
 
 from rangekeeper.shared.errors import ContractError
 
 
 @unique
-class Frequency(Enum):
+class Frequency(StrEnum):
     """Select the calendar step of a date grid, from one day to one decade."""
 
     DAY = "day"
@@ -43,7 +43,7 @@ _STEPS: dict[Frequency, tuple[int, int]] = {
 
 
 @unique
-class MonthRoll(Enum):
+class MonthRoll(StrEnum):
     """Select how a month step treats a day that the target month does not have."""
 
     PRESERVE_END = "preserve_end"
@@ -51,7 +51,7 @@ class MonthRoll(Enum):
 
 
 @unique
-class PeriodTiming(Enum):
+class PeriodTiming(StrEnum):
     """Select the date that represents a Period: first day, last day or end boundary."""
 
     FIRST = "first"
@@ -60,7 +60,7 @@ class PeriodTiming(Enum):
 
 
 @unique
-class DayCount(Enum):
+class DayCount(StrEnum):
     """Select the day-count convention of a year fraction."""
 
     ACTUAL_365 = "actual/365"

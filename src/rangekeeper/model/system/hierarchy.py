@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from enum import Enum, unique
+from enum import StrEnum, unique
 from types import MappingProxyType
 from uuid import UUID
 
@@ -14,7 +14,7 @@ from rangekeeper.shared.codes import Code
 
 
 @unique
-class HierarchyKind(Enum):
+class HierarchyKind(StrEnum):
     """Edge meaning of a Hierarchy: Relationship edges or Assembly membership."""
 
     RELATIONSHIPS = "relationships"

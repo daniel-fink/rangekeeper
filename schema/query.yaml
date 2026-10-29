@@ -394,42 +394,49 @@ classes:
         required: true
 enums:
   TraversalKind:
+    description: Whether a traversal step follows Relationships or Assembly membership.
     permissible_values:
       relationship:
         description: Traverse classified domain Relationships.
       membership:
         description: Traverse Assembly entity membership.
   Depth:
+    description: How many edges a traversal step follows.
     permissible_values:
       direct:
         description: Exactly one edge.
       transitive:
         description: One or more edges along finite simple paths.
   Direction:
+    description: The direction in which a traversal step follows a Relationship.
     permissible_values:
       outgoing:
         description: Follow source to target.
       incoming:
         description: Follow target to source.
   ProjectionKind:
+    description: Whether a Query returns Entity identities or their Values.
     permissible_values:
       entity:
         description: Return matching Entity identities.
       value:
         description: Return identified Values selected from matching Entities.
   Cardinality:
+    description: How many Values a projection permits for each Entity.
     permissible_values:
       one:
         description: At most one Value per Entity; multiple matches are an error.
       many:
         description: All matching Values per Entity.
   MissingHandling:
+    description: What a value projection does with an Entity that has no matching Value.
     permissible_values:
       error:
         description: Reject an Entity with no matching Value.
       omit:
         description: Explicitly omit an Entity with no matching Value.
   ValueRelation:
+    description: How a ValueTest relates the recorded Value to its operands. The comparisons use the words of Operator.
     permissible_values:
       equal:
         description: The value equals quantity, within a relative tolerance of 1e-9.
@@ -450,6 +457,7 @@ enums:
       missing:
         description: The Entity has no Value with this key, or the Value has no recorded content.
   DuplicateHandling:
+    description: Whether a Query keeps or removes repeated projected identities.
     permissible_values:
       distinct:
         description: Return each projected UUID once.

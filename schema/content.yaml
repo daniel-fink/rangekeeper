@@ -58,20 +58,37 @@ classes:
         inlined: true
 enums:
   ContentKind:
+    description: The type of a piece of property content; it decides how text and the other fields are read.
     permissible_values:
       'null':
+        description: The null value; no text.
       boolean:
+        description: true or false.
       integer:
+        description: A whole number, as decimal text.
       float:
+        description: A binary floating-point number, as its exact text, including negative zero.
       string:
+        description: Text.
       uuid:
+        description: A UUID, in hyphenated hexadecimal form.
       date:
+        description: A calendar date, as ISO text.
       datetime:
+        description: A date and time, as ISO text, with an optional zone and fold.
       time:
+        description: A time of day, as ISO text, with an optional zone and fold.
       duration:
+        description: A length of time, in microseconds.
       list:
+        description: Ordered items.
       tuple:
+        description: Ordered items of a fixed sequence.
       set:
+        description: Distinct items, in a canonical order.
       frozenset:
+        description: Distinct items of an immutable set, in a canonical order.
       mapping:
+        description: Entries with unique keys.
       mapping_proxy:
+        description: Entries with unique keys, of a read-only mapping.

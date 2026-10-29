@@ -8,7 +8,7 @@ quantities into Models.
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from enum import Enum, unique
+from enum import StrEnum, unique
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 
 @unique
-class Contributor(Enum):
+class Contributor(StrEnum):
     """Hierarchy nodes whose Values a rollup selects: leaves only, or all nodes."""
 
     LEAVES = "leaves"
@@ -45,7 +45,7 @@ class Contributor(Enum):
 
 
 @unique
-class Reducer(Enum):
+class Reducer(StrEnum):
     """How a rollup combines the Values of its contributors.
 
     ``SUM``, ``MIN`` and ``MAX`` apply to Quantities and Flows. ``MEAN`` and
@@ -71,7 +71,7 @@ _QUANTITY_REDUCERS = {
 
 
 @unique
-class CoverageStatus(Enum):
+class CoverageStatus(StrEnum):
     """Coverage state: no contributors, all measured, or some missing or undecided."""
 
     EMPTY = "empty"
