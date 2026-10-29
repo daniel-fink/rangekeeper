@@ -74,6 +74,11 @@ class Code(StrEnum):
     # Batches of cases.
     BATCH_MODEL = "batch.model"
 
+    # Periods that do not align: a Period crosses the bounds of a selection, or
+    # Periods end with a partial Period.
+    ALIGNMENT_CROSSES = "alignment.crosses"
+    ALIGNMENT_PARTIAL = "alignment.partial"
+
     # References between records and documents.
     REFERENCE_AMBIGUOUS = "reference.ambiguous"
     REFERENCE_IDENTITY = "reference.identity"

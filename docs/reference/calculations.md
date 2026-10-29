@@ -300,7 +300,7 @@ A `Span` is a named half-open range of time. Give its end, or a length: a whole
 number of days, weeks, months, quarters or years, as a Quantity or its text.
 `extend(by=)` returns a Span with the same start, a later end and no name.
 
-`Span.periods(frequency=, include_partial=False, month_roll=None)` returns a
+`Span.periods(frequency=, include_partial=False, month_roll=PRESERVE_END)` returns a
 `Periods`: an ordered, gap-free sequence of Periods with one `Frequency`. Make
 one directly with `Periods(start=, frequency=, count=, month_roll=PRESERVE_END)`.
 
@@ -323,6 +323,15 @@ frequency and the same Periods. Each Period is a calendar step from the first
 anchor, so `extend` keeps a month-end anchor. Only a Span partition with
 `include_partial=True` ends with a partial Period, and it cannot extend.
 `containing(on=)` raises `MissingReferenceError` for a date outside.
+
+`rk.duration.AlignmentError` is a `ContractError` for Periods that do not
+align. `trim` raises it with `Code.ALIGNMENT_CROSSES` when the Span crosses a
+Period; `Span.periods` without `include_partial=True` and `extend` after a
+partial Period raise it with `Code.ALIGNMENT_PARTIAL`. Its `values` give the
+Periods as ISO intervals, such as `"2026-01-01/2027-01-01"`. A negative count,
+a slice with a step and an empty `cover` raise `ContractError`; a count that is
+not an `int` raises `TypeError`. A step outside the years 1 to 9999 raises
+`ContractError`.
 
 ## Calendar grids
 

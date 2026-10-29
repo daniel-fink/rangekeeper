@@ -58,7 +58,12 @@ Good: `Frequency.step` in `duration/calendar.py` reads its value from one
 table:
 
 ```python
-_STEPS = dict(zip(Frequency, ((1, 0), (7, 0), (0, 1), (0, 3), ...), strict=True))
+_STEPS: dict[Frequency, tuple[int, int]] = {
+    Frequency.DAY: (1, 0),
+    Frequency.WEEK: (7, 0),
+    Frequency.MONTH: (0, 1),
+    ...
+}
 
 @property
 def step(self) -> tuple[int, int]:
@@ -70,10 +75,6 @@ def step(self) -> tuple[int, int]:
 Check all inputs first, in one named routine. Then compute. A computation does
 not check its inputs again halfway through, and a check does not run a
 computation only for its errors.
-
-Bad: `make_periods` in `duration/period.py` calls
-`offset(start, frequency=frequency, count=0, month_roll=month_roll)` only to
-check its arguments, then checks `count`, then computes.
 
 Good: `ExecutionConfig.__post_init__` in `execution/config.py` checks each
 field once, when the value is made. `solve` then uses the value with no
@@ -118,25 +119,25 @@ An argument does not switch the function between jobs, and it does not apply
 only to some values of another argument. Use a separate function, an enum, an
 options object or a small type, so that an invalid combination cannot be built.
 
-Bad: `containing_period` in `duration/period.py` takes `week_start`,
-`year_start_month` and `origin`. `week_start` applies only to week grids,
-`year_start_month` only to month-based grids, and `origin` only to multi-year
-grids. Half of the body rejects the combinations that do not apply:
-
-```python
-if frequency is Frequency.DAY:
-    if origin is not None or week_start != 0:
-        raise ValueError("day alignment needs no origin or weekday")
-```
-
-An enum member must not change the job either. `ResampleMethod.SPLIT` makes
-`resample` split amounts where the other members reduce them, so `missing=`
-does not apply to it.
+An enum member must not change the job either. Bad: `ResampleMethod.SPLIT`
+makes `resample` split amounts where the other members reduce them, so
+`missing=` does not apply to it.
 [#405](https://github.com/daniel-fink/rangekeeper/issues/405) moves it to
 `Flow.split` and `Stream.split`.
 
 A result type has one mode too. When a method of a result raises because of
 how the result was made, make two result types.
+
+Good: the calendar grids in `duration/grid.py`. A week grid takes a weekday
+and a multi-year grid takes an origin, so a week grid with an origin cannot be
+built:
+
+```python
+rk.duration.containing_period(on=day, grid=WeekGrid(starts=Day.SUNDAY))
+rk.duration.containing_period(
+    on=day, grid=MultiYearGrid(frequency=Frequency.DECADE, origin=date(2021, 7, 1))
+)
+```
 
 Good: `ExecutionConfig` groups the options of one solve in one frozen value:
 
@@ -174,10 +175,10 @@ every other field by keyword, with the same field names in each error class
 ([#408](https://github.com/daniel-fink/rangekeeper/issues/408)). See
 [errors and diagnostics](../reference/errors.md).
 
-Bad, from `containing_period`:
+Bad, from `Stream.select` in `flow/__init__.py`:
 
 ```python
-raise ValueError("week_start must be an integer from zero to six")
+raise KeyError("selection contains a member outside this Stream")
 ```
 
 Good, from `model/draft.py`:

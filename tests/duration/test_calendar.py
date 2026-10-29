@@ -16,6 +16,7 @@ from rangekeeper.duration import (
     count_steps,
     offset,
 )
+from rangekeeper.errors import ContractError
 from rangekeeper.flow import Flow
 
 
@@ -87,7 +88,7 @@ def test_empty_requests_validate_configuration_eagerly():
             month.periods(**kwargs)
     with pytest.raises(TypeError, match="Boolean"):
         month.periods(frequency=Frequency.MONTH, include_partial=1)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError, match="integer"):
         Periods(start=date(2026, 1, 1), frequency=Frequency.MONTH, count=True)
     with pytest.raises(TypeError):
         offset(datetime(2026, 1, 1), frequency=Frequency.MONTH)
@@ -153,8 +154,15 @@ def test_date_range_boundaries_and_anchor_preserving_extension():
     assert offset(date.max, frequency=Frequency.MONTH, count=0) == date.max
     assert len(Periods(start=date.max, frequency=Frequency.MONTH, count=0)) == 0
     for day, count in ((date.min, -1), (date.max, 1)):
-        with pytest.raises((OverflowError, ValueError)):
+        with pytest.raises(ContractError, match="outside the calendar"):
             offset(day, frequency=Frequency.DAY, count=count)
+    with pytest.raises(ContractError) as error:
+        offset(date(9999, 12, 1), frequency=Frequency.MONTH)
+    assert error.value.values == {
+        "date": "9999-12-01",
+        "frequency": "month",
+        "count": 1,
+    }
     remainder = Span(start=date(9999, 12, 30), end=date.max).periods(
         frequency=Frequency.MONTH, include_partial=True
     )
