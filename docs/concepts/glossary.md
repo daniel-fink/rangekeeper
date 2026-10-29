@@ -35,7 +35,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Relationship | A typed, classified link between two Entities | `model` | — |
 | Direction | Which way a traversal follows a Relationship: `rk.model.Direction.OUTGOING` or `INCOMING`. Each Relationship has one name; the other direction is `INCOMING`, not a second name | `model` | — |
 | Characteristics | The Values, Labels and properties that an Entity owns | `model` | — |
-| Value | One owned datum: a Measurement, a Flow or Content | `model` | — |
+| Value | One owned datum: a Measurement, a Flow, a date or Content | `model` | The `Value` record; its `kind` is a `ValueKind` (`MEASUREMENT`, `FLOW`, `DATE` or `PROPERTY` for Content) |
 | Key | The name of a Value, unique within its owner | `model` | — |
 | Code | A catalogue identifier, such as a Classification code. Not `rk.errors.Code`; see [words with one meaning only](#words-with-one-meaning-only) | `model` | — |
 | Label | A Classification attached to an Entity in addition to its main Classification | `model` | — |
@@ -71,7 +71,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
-| Role | What a Specification says about a value: fixed, free, decided, estimate or bound. `Specification.roles` lists them | `specification` | `Specification.roles`, `rk.specification.Role` |
+| Role | What a Specification says about a value: fixed, free or decided. `Specification.roles` lists the role of each value. Estimates and bounds are not roles: an estimate is a starting value and a bound is an equation | `specification` | `Specification.roles`, `rk.specification.Role` (`FIXED`, `FREE`, `DECIDED`) |
 | Fix | Supply a known value for an investigation (an Assignment) | `specification` | `Specification.fix` |
 | Free | Make a value an unknown that the solve finds. A value that is not fixed is free | `specification` | `Specification.free` |
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |
@@ -128,7 +128,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Word | Use only for |
 | --- | --- |
-| Target | `Reference.target`, the UUID of a referenced Value or Movement |
+| Target | The record that a reference, a diagnostic or an error is about, by its UUID: `Reference.target` (a Value or Movement), `Diagnostic.target`, and the `targets` of an `Issue` or a `RangekeeperError` (for example a Constraint or an Entity). Not the goal of a solve |
 | Code | A catalogue identifier, such as a Classification or Entity code. `rk.errors.Code` is a different thing: the enum of diagnostic and error codes on a `Diagnostic` or a `RangekeeperError`. Say "error code" or "diagnostic code" for it |
 | Accept, acceptance | Not a term for result checks. Use "verify" for the independent check of a solved candidate. The plain sense, such as "a reader accepts a format", is permitted |
 | Projection | Not used. Use "profile" (growth or distribution) for time shapes and "table" for exports |
