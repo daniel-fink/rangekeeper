@@ -113,6 +113,7 @@ def test_an_error_without_a_class_code_takes_one():
 # The keywords that some errors need besides the common fields.
 REQUIRED = {
     errors.PublishedFileError: {"file": Path("published.json")},
+    errors.EquationError: {"text": "a = b c", "start": 6, "end": 7},
     OutcomeError: {"status": Status.INFEASIBLE},
 }
 
