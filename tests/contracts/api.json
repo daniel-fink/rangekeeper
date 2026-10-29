@@ -337,22 +337,26 @@
   "AmbiguousReferenceError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "AttemptDeadlineError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "BackendUnavailableError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "Code": {
    "kind": "enum",
@@ -454,20 +458,30 @@
   "ContractError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code = <Code.CONTRACT: 'semantic.contract'>, path: str = '', document_id: uuid.UUID | None = None, targets: collections.abc.Iterable[uuid.UUID] = tuple(), values: collections.abc.Mapping[str, typing.Any] | None = None, evidence: collections.abc.Mapping[str, typing.Any] | None = None) -> None",
+    "__init__": "method (self, message: str, *, values: collections.abc.Mapping[str, typing.Any] | None = None, evidence: collections.abc.Mapping[str, typing.Any] | None = None, **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None",
     "at": "method (self, path: str) -> ContractError",
-    "from_issue": "classmethod (cls, issue) -> ContractError"
+    "from_issue": "classmethod (cls, issue: Issue) -> ContractError"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code = <Code.CONTRACT: 'semantic.contract'>, path: str = '', document_id: uuid.UUID | None = None, targets: collections.abc.Iterable[uuid.UUID] = tuple(), values: collections.abc.Mapping[str, typing.Any] | None = None, evidence: collections.abc.Mapping[str, typing.Any] | None = None) -> None"
+   "signature": "(message: str, *, values: collections.abc.Mapping[str, typing.Any] | None = None, evidence: collections.abc.Mapping[str, typing.Any] | None = None, **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "DecodeError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "EncodingError": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
+   "module": "rangekeeper.shared.errors",
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+  },
+  "ErrorFields": {
    "kind": "class",
    "members": {},
    "module": "rangekeeper.shared.errors",
@@ -475,99 +489,115 @@
   },
   "ExtensionConflictError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "IdentityConflictError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "MissingReferenceError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple()) -> None"
+   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "NumericalError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "PublishedFileError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, path: pathlib.Path, error: OSError)"
+    "__init__": "method (self, message: str, *, file: pathlib.Path, **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(path: pathlib.Path, error: OSError)"
+   "signature": "(message: str, *, file: pathlib.Path, **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "RangekeeperError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "ReferenceTypeError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "RevisionConflictError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "TableError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "UnitError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, message: str, *, suggestions: tuple[str, ...] = tuple()) -> None"
+    "__init__": "method (self, message: str, *, suggestions: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(message: str, *, suggestions: tuple[str, ...] = tuple()) -> None"
+   "signature": "(message: str, *, suggestions: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "UnknownExtensionError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, message: str, *, suggestions: tuple[str, ...] = tuple()) -> None"
+    "__init__": "method (self, message: str, *, suggestions: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(message: str, *, suggestions: tuple[str, ...] = tuple()) -> None"
+   "signature": "(message: str, *, suggestions: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "UnsupportedError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code = <Code.UNSUPPORTED_CAPABILITY: 'unsupported_capability'>, document: uuid.UUID | None = None, target: uuid.UUID | None = None, equation: str | None = None, unknowns: collections.abc.Iterable[str] = tuple()) -> None"
+    "__init__": "method (self, message: str, *, equation: str | None = None, unknowns: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code = <Code.UNSUPPORTED_CAPABILITY: 'unsupported_capability'>, document: uuid.UUID | None = None, target: uuid.UUID | None = None, equation: str | None = None, unknowns: collections.abc.Iterable[str] = tuple()) -> None"
+   "signature": "(message: str, *, equation: str | None = None, unknowns: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "UnsupportedVersionError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.shared.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "ValidationError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, report)"
+    "__init__": "method (self, report: ValidationReport) -> None"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(report)"
+   "signature": "(report: ValidationReport) -> None"
   }
  },
  "rangekeeper.execution": {
@@ -692,10 +722,10 @@
   "OutcomeError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, message: str, *, status: enum.StrEnum, code: rangekeeper.shared.codes.Code | None = None, document: uuid.UUID | None = None, target: uuid.UUID | None = None) -> None"
+    "__init__": "method (self, message: str, *, status: rangekeeper.execution.status.Status, **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
    },
    "module": "rangekeeper.execution.errors",
-   "signature": "(message: str, *, status: enum.StrEnum, code: rangekeeper.shared.codes.Code | None = None, document: uuid.UUID | None = None, target: uuid.UUID | None = None) -> None"
+   "signature": "(message: str, *, status: rangekeeper.execution.status.Status, **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "Pair": {
    "kind": "class",
@@ -869,9 +899,11 @@
   },
   "RuleCapabilityError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.execution.rule.observation",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "RuleResult": {
    "kind": "class",
@@ -1223,9 +1255,11 @@
   },
   "ReplayUnavailableError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.market._replay",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "ScenarioParameter": {
    "kind": "class",
@@ -2157,9 +2191,11 @@
  "rangekeeper.model.system": {
   "AggregationError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.model.system.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "Contributor": {
    "kind": "enum",
@@ -2216,10 +2252,10 @@
   "HierarchyError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, code: rangekeeper.shared.codes.Code, message: str, *, ids: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
    },
    "module": "rangekeeper.model.system.errors",
-   "signature": "(code: rangekeeper.shared.codes.Code, message: str, *, ids: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "HierarchyKind": {
    "kind": "enum",
@@ -2315,9 +2351,11 @@
   },
   "SelectionError": {
    "kind": "class",
-   "members": {},
+   "members": {
+    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
+   },
    "module": "rangekeeper.model.system.errors",
-   "signature": null
+   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
   },
   "View": {
    "kind": "class",

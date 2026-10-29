@@ -70,6 +70,8 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | `underdetermined`, `uniqueness_not_assessed` | `equality_rank` and `unknown_count`, from the analysis of the affine problem |
 | `nonaffine_unknowns` | `equation`: the text of the Constraint, for example `"noi = coverage * debt_service"`. `unknowns`: the keys of the unknowns in the term that is not affine |
 | A failure from `UnsupportedError` | `equation`, when the failure is in one Constraint |
+| `specification_invalid` | `issues`: each validation issue of the attempt, with its `code`, `message`, `document`, `path`, `targets`, `values` and `evidence` |
+| A failure from another error | `path`, when the error has one; `targets`, when it names more than one record. One target is the diagnostic's `target` |
 | `constraint_residual` | `equation`: the text of the Constraint that was checked. `target` is the Constraint |
 
 ```python
@@ -95,12 +97,27 @@ except rk.errors.ValidationError as error:
     print(error.code, [issue.code for issue in error.report.issues])
 ```
 
+Every error takes its message first and each field by keyword. These fields
+(`rk.errors.ErrorFields`) are common to all errors, with the meaning that they
+have in an `Issue`:
+
+| Field | Contents |
+| --- | --- |
+| `code` | A `Code` member. An error class without its own code takes one |
+| `document_id` | The document that contains the failure, when known |
+| `path` | The JSON Pointer of the failure in that document |
+| `targets` | The UUIDs of the records that the failure is about |
+
+An error class adds its own fields after these, also by keyword. An error keeps
+all of its fields through `pickle`.
+
 | Error | Built-in base | Code |
 | --- | --- | --- |
-| `ValidationError` | `ValueError` | The code of the first issue in `report` |
-| `ContractError` | `ValueError` | Given by the rule; `CONTRACT` by default |
-| `UnsupportedError` | `ValueError` | Given by the failure; `UNSUPPORTED_CAPABILITY` by default. `document` and `target` locate the declaration, and `equation` gives its text. With `NONAFFINE_UNKNOWNS`, `unknowns` gives the keys of the unknowns in the term that is not affine |
-| `model.system`: `HierarchyError` | `ValueError` | A `hierarchy.*` code. `ids` names the offending Entities |
+| `ValidationError` | `ValueError` | The code of the first issue in `report`. `ValidationError(report)` takes the report; the common fields are those of its first issue |
+| `ContractError` | `ValueError` | Given by the rule; `CONTRACT` by default. `values` and `evidence` are the named inputs and measured results |
+| `UnsupportedError` | `ValueError` | Given by the failure; `UNSUPPORTED_CAPABILITY` by default. `document_id` and `targets` locate the declaration (the Constraint), and `equation` gives its text. With `NONAFFINE_UNKNOWNS`, `unknowns` gives the keys of the unknowns in the term that is not affine |
+| `execution`: `OutcomeError` | `ValueError` | The code of the diagnostic that gives the reason; `SOLVER_TERMINATION` by default. `status` is the Outcome's `Status`. `Outcome.raise_for_status()` raises it when no other error applies ([execution](execution.md#settings-limits-and-conclusions)) |
+| `model.system`: `HierarchyError` | `ValueError` | A `hierarchy.*` code, given by keyword. `targets` names the offending Entities |
 | `MissingReferenceError` | `LookupError` | `REFERENCE_MISSING`. `requested`, `by`, `kind`, `where` and `candidates` say what was requested and where ([lookups](#lookups)) |
 | `AmbiguousReferenceError` | `LookupError` | `REFERENCE_AMBIGUOUS`. A lookup for one item found several; `candidates` names each match |
 | `ReferenceTypeError` | `TypeError` | `REFERENCE_KIND` |
@@ -115,9 +132,9 @@ except rk.errors.ValidationError as error:
 | `model.system`: `SelectionError`, `AggregationError` | `ValueError` | `SELECTION`, `AGGREGATION` |
 | `market`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
 | `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
-| `NumericalError` | `ValueError` | `NUMERICAL_FAILURE` |
+| `NumericalError` | `ValueError` | `NUMERICAL_FAILURE`, or `NUMERICAL_REJECTION` when verification rejected a candidate |
 | `BackendUnavailableError`, `AttemptDeadlineError` | `RuntimeError` | `BACKEND_UNAVAILABLE`, `ATTEMPT_DEADLINE` |
-| `PublishedFileError` | `OSError` | `PUBLISHED_FILE` |
+| `PublishedFileError` | `OSError` | `PUBLISHED_FILE`. `file` is the published file; the `OSError` that stopped the confirmation is the cause |
 
 ### Lookups
 

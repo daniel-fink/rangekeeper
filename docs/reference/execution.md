@@ -99,12 +99,15 @@ outcome["project.land_cost"]  # the same value, by its dotted path
 | `FEASIBLE` | Solution `feasible`, and no `underdetermined` diagnostic | Nothing |
 | `UNDERDETERMINED` | Solution `feasible`, with an `underdetermined` diagnostic | `OutcomeError`, code `underdetermined` |
 | `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination` |
-| `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError` |
-| `INVALID` | Failed, with `specification_invalid` | `ValidationError` |
-| `FAILED` | Failed, with `numerical_failure`, `numerical_rejection` or `backend_unavailable`, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
-| `UNSUPPORTED` | Failed, with any other error diagnostic: the code of an `UnsupportedError`, such as `nonaffine_unknowns`, `unsupported_capability` or `symbol_limit` | `UnsupportedError` with that code, `document`, `target`, `equation` and `unknowns` |
+| `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError`, code `solver_termination` |
+| `INVALID` | Failed, with `specification_invalid` | `ValidationError`, with the validation issues of the attempt |
+| `FAILED` | Failed, with `numerical_failure`, `numerical_rejection`, `backend_unavailable` or another error diagnostic, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
+| `UNSUPPORTED` | Failed, with the code of an `UnsupportedError`: `unsupported_capability`, `nonaffine_unknowns`, `symbol_limit` or `constraint_limit` | `UnsupportedError` with that code, `document_id`, `targets`, `equation` and `unknowns` |
 
-Each error carries the code of the diagnostic that gives the reason.
+The error class comes from the same `FAILURES` row as the status. Each error
+carries the code of the diagnostic that gives the reason, and the fields that
+the attempt wrote into that diagnostic's `values`: a `ValidationError` has
+every issue of the attempt, with its code, path, targets and values.
 `OutcomeError` also has `status`. In an underdetermined Outcome, `outcome["key"]`
 still reads every value; a free unknown holds one candidate value.
 
@@ -342,22 +345,27 @@ evidence keeps the backend's own condition as `termination_condition`.
 An expected error ends an attempt with a failed Run, not an exception.
 `execution.statuses.FAILURES` maps each one; any other error raises to the caller.
 "Bound" means that `bind_roles` returned; "solved" means that the backend returned.
-The `Status` and the diagnostic code of a failure change together in this one
-table: `Outcome.status` reads the `Status` of a failed attempt's decisive code
-from it.
+The `Status`, the diagnostic code and the raised error of a failure change
+together in this one table: `Outcome.status` reads the `Status` of a failed
+attempt's decisive code from it, and `raise_for_status()` reads the error class.
+The decisive diagnostic is the last one with a code of this table, whatever its
+severity, or else the last error. A code that the table does not name gives
+`FAILED`.
 
-| Error | Completion | Solution | `Status` | Diagnostic code |
-| --- | --- | --- | --- | --- |
-| `AttemptDeadlineError` | limited | `not_assessed` | `LIMITED` | `attempt_deadline` (warning) |
-| `ValidationError` | failed | `not_assessed`; `unknown` once bound | `INVALID`; `FAILED` once bound | `specification_invalid`; `numerical_rejection` once bound |
-| `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | The error's own code, for example `nonaffine_unknowns` or `symbol_limit` |
-| `UnitError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | `unsupported_capability` |
-| `BackendUnavailableError` | failed | `not_assessed` | `FAILED` | `backend_unavailable` |
-| `NumericalError`, `ArithmeticError` | failed | `unknown` | `FAILED` | `numerical_failure` |
+| Error | Completion | Solution | `Status` | Diagnostic code | `raise_for_status()` raises |
+| --- | --- | --- | --- | --- | --- |
+| `AttemptDeadlineError` | limited | `not_assessed` | `LIMITED` | `attempt_deadline` (warning) | `AttemptDeadlineError` |
+| `ValidationError` | failed | `not_assessed`; `unknown` once bound | `INVALID`; `FAILED` once bound | `specification_invalid`; `numerical_rejection` once bound | `ValidationError`; `NumericalError` once bound |
+| `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | The error's own code: `unsupported_capability`, `nonaffine_unknowns`, `symbol_limit` or `constraint_limit` | `UnsupportedError` |
+| `UnitError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | `unsupported_capability` | `UnsupportedError` |
+| `BackendUnavailableError` | failed | `not_assessed` | `FAILED` | `backend_unavailable` | `BackendUnavailableError` |
+| `NumericalError`, `ArithmeticError` | failed | `unknown` | `FAILED` | `numerical_failure` | `NumericalError` |
 
-`Attempt.fail` builds the diagnostic of each expected failure. It copies the
-error's structured fields into the diagnostic's `values`: the `equation` and
-`unknowns` of an `UnsupportedError`
+`Attempt.fail` builds the diagnostic of each expected failure.
+`statuses.diagnosed` copies the error's structured fields into the diagnostic's
+`values`: the `equation` and `unknowns` of an `UnsupportedError`, and each
+issue of a `ValidationError`. `statuses.rebuilt` reads them back into the
+error that `raise_for_status()` raises
 ([Run diagnostics](errors.md#run-diagnostics)).
 
 Limits, ambiguous termination and solver failure do not

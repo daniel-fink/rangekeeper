@@ -272,8 +272,9 @@ def test_nested_membership_deduplicates_but_hierarchy_rejects_shared_child():
     view = View(model, entities=(outer.id, *(x.id for x in members)), relationships=())
     with pytest.raises(HierarchyError) as error:
         Hierarchy.from_membership(view, root=outer.id)
-    assert error.value.code is Code.HIERARCHY_MULTIPLE_PARENTS and error.value.ids == (
-        b.id,
+    assert (
+        error.value.code is Code.HIERARCHY_MULTIPLE_PARENTS
+        and error.value.targets == (b.id,)
     )
     selected = View(
         model, entities=(outer.id, root.id, a.id, b.id, c.id), relationships=()

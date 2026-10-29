@@ -9,6 +9,7 @@ from rangekeeper import Specification
 from rangekeeper.execution import (
     Evidence,
     ExecutionConfig,
+    Limits,
     OutcomeError,
     Status,
     solve,
@@ -19,6 +20,7 @@ from rangekeeper.flow import Flow
 from rangekeeper.schema.records import Severity
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
+    AttemptDeadlineError,
     MissingReferenceError,
     NumericalError,
     UnsupportedError,
@@ -118,7 +120,7 @@ def test_a_product_of_two_unknowns_is_unsupported():
     decisive = [d for d in outcome.diagnostics if d.severity == Severity.ERROR]
     assert raised.value.code == decisive[-1].code == Code.NONAFFINE_UNKNOWNS
     assert raised.value.equation == decisive[-1].values["equation"]
-    assert raised.value.target is not None
+    assert len(raised.value.targets) == 1
     with pytest.raises(UnsupportedError):
         outcome["noi"]
 
@@ -129,9 +131,25 @@ def test_an_invalid_specification_raises_a_validation_error():
     missing = Specification(fixed.record.replace(unknowns=()), model=MODEL)
     outcome = solve(missing, store())
     assert outcome.status is Status.INVALID
+    (decisive,) = (
+        item for item in outcome.diagnostics if item.code == Code.SPECIFICATION_INVALID
+    )
     with pytest.raises(ValidationError) as raised:
         outcome.raise_for_status()
-    assert raised.value.code is Code.SPECIFICATION_INVALID
+    # The error has the validation issues, with their codes and fields.
+    issue = raised.value.report.issues[0]
+    assert raised.value.code is issue.code is Code.ROLE_MISSING
+    assert issue.targets and issue.values
+    assert str(raised.value) == decisive.message
+
+
+def test_a_deadline_raises_the_attempt_deadline_error():
+    tiny = ExecutionConfig(limits=Limits(time_limit=1e-7))
+    outcome = solve(back(), store(), config=tiny)
+    assert outcome.status is Status.LIMITED
+    with pytest.raises(AttemptDeadlineError) as raised:
+        outcome.raise_for_status()
+    assert raised.value.code is Code.ATTEMPT_DEADLINE
 
 
 class Ends:

@@ -49,19 +49,29 @@ class Issue:
         prefix: str = "",
     ) -> "Issue":
         """Return the Issue of a ContractError, with a fallback document."""
-        return cls(
-            error.code,
-            str(error),
-            error.document_id or document_id,
-            prefix + error.path,
-            error.targets,
-            error.values,
-            error.evidence,
+        fields = error._fields()
+        fields.update(
+            code=error.code,
+            document_id=error.document_id or document_id,
+            path=prefix + error.path,
         )
+        return cls(message=str(error), **fields)
 
     def replace(self, **changes: Any) -> "Issue":
         """Return a copy of this Issue with some fields changed."""
         return dataclasses.replace(self, **changes)
+
+    def __reduce__(self) -> tuple[type["Issue"], tuple[Any, ...]]:
+        # A read-only mapping does not pickle; its copy does.
+        return type(self), (
+            self.code,
+            self.message,
+            self.document_id,
+            self.path,
+            self.targets,
+            dict(self.values or {}),
+            dict(self.evidence or {}),
+        )
 
 
 @dataclass(frozen=True)

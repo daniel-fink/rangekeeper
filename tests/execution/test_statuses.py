@@ -3,6 +3,7 @@
 import ast
 import inspect
 import textwrap
+from uuid import uuid4
 
 import pytest
 
@@ -10,7 +11,7 @@ from rangekeeper.errors import Code
 from rangekeeper.execution import attempt, statuses
 from rangekeeper.execution.backends import Termination
 from rangekeeper.execution.statuses import Reached
-from rangekeeper.run import CompletionStatus, Severity, SolutionStatus
+from rangekeeper.run import CompletionStatus, Diagnostic, Severity, SolutionStatus
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     AttemptDeadlineError,
@@ -151,13 +152,80 @@ def test_every_termination_has_a_row():
         (Code.BACKEND_UNAVAILABLE, statuses.Status.FAILED),
         (Code.UNSUPPORTED_CAPABILITY, statuses.Status.UNSUPPORTED),
         (Code.ATTEMPT_DEADLINE, statuses.Status.LIMITED),
-        # An error's own code, which no row names.
+        # The codes that an UnsupportedError carries itself.
         (Code.NONAFFINE_UNKNOWNS, statuses.Status.UNSUPPORTED),
         (Code.SYMBOL_LIMIT, statuses.Status.UNSUPPORTED),
+        (Code.CONSTRAINT_LIMIT, statuses.Status.UNSUPPORTED),
+        # A code that no row names is a failure, not UNSUPPORTED.
+        (Code.CONSTRAINT_RESIDUAL, statuses.Status.FAILED),
+        (Code.SOLVER_TERMINATION, statuses.Status.FAILED),
     ],
 )
 def test_failed_reads_the_status_of_a_code_from_the_failures_table(code, status):
     assert statuses.failed(code.value) is status
+
+
+@pytest.mark.parametrize(
+    "code,error",
+    [
+        (Code.ATTEMPT_DEADLINE, AttemptDeadlineError),
+        (Code.SPECIFICATION_INVALID, ValidationError),
+        (Code.NUMERICAL_REJECTION, NumericalError),
+        (Code.NUMERICAL_FAILURE, NumericalError),
+        (Code.BACKEND_UNAVAILABLE, BackendUnavailableError),
+        (Code.UNSUPPORTED_CAPABILITY, UnsupportedError),
+        (Code.NONAFFINE_UNKNOWNS, UnsupportedError),
+    ],
+)
+def test_each_failure_code_names_the_error_that_raise_for_status_raises(code, error):
+    assert statuses.BY_CODE[code.value].raises is error
+
+
+def test_an_expected_error_keeps_its_fields_in_its_diagnostic():
+    document, constraint = uuid4(), uuid4()
+    error = UnsupportedError(
+        "noi is nonlinear",
+        code=Code.NONAFFINE_UNKNOWNS,
+        document_id=document,
+        targets=(constraint,),
+        equation="noi = coverage * debt_service",
+        unknowns=("coverage", "debt_service"),
+    )
+    values = statuses.diagnosed(error)
+    diagnostic = Diagnostic(
+        severity=Severity.ERROR,
+        code=error.code.value,
+        message=str(error),
+        document=document,
+        target=constraint,
+        values=values,
+    )
+    again = statuses.rebuilt(
+        diagnostic, message=str(error), status=statuses.Status.UNSUPPORTED
+    )
+    assert type(again) is UnsupportedError
+    assert again._fields() == error._fields()
+
+
+def test_a_validation_error_keeps_each_issue_in_its_diagnostic():
+    target = uuid4()
+    report = ValidationReport(
+        (
+            Issue(Code.ROLE_MISSING, "no role", targets=(target,), values={"k": 1}),
+            Issue(Code.UNITS, "bad units", path="/assignments/0"),
+        )
+    )
+    diagnostic = Diagnostic(
+        severity=Severity.ERROR,
+        code=Code.SPECIFICATION_INVALID.value,
+        message="invalid",
+        values=statuses.diagnosed(ValidationError(report)),
+    )
+    again = statuses.rebuilt(
+        diagnostic, message="invalid", status=statuses.Status.INVALID
+    )
+    assert isinstance(again, ValidationError)
+    assert again.report == report
 
 
 def test_each_failure_row_gives_a_status():

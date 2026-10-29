@@ -184,4 +184,4 @@ def test_the_highs_scaling_range_lives_in_the_backend(monkeypatch):
     problem = build_problem(binding)  # rk accepts the row
     with pytest.raises(UnsupportedError, match="HiGHS") as error:
         PyomoHighs().solve(problem, limits=Limits(), remaining=1, options={})
-    assert error.value.document == specification.id
+    assert error.value.document_id == specification.id

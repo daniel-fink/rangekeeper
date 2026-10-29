@@ -33,7 +33,7 @@ from rangekeeper.shared.amounts import (
     to_number,
 )
 from rangekeeper.shared.codes import Code
-from rangekeeper.shared.errors import UnitError
+from rangekeeper.shared.errors import ContractError, UnitError
 
 CURRENCIES = tuple(currency.code for currency in list_all_currencies())
 # The version of the numerical convention that each Run records as the
@@ -98,13 +98,6 @@ def minor_unit(code: str) -> int | None:
     return _MINOR_UNITS[code]
 
 
-def _broken(message: str, code: Code) -> ValueError:
-    """Return the ValueError of a record rule; the record reports its code."""
-    error = ValueError(message)
-    error.code = code  # type: ignore[attr-defined]
-    return error
-
-
 def _encoded(value: object) -> object:
     """Return the canonical text of a magnitude in currency units.
 
@@ -122,7 +115,7 @@ def _encoded(value: object) -> object:
 
 
 def _require(value: object, units: str, currency: bool) -> None:
-    """Raise ValueError when a serialized magnitude does not match its units.
+    """Raise ContractError when a serialized magnitude does not match its units.
 
     ``currency`` is ``is_currency(units)``; a Flow computes it once.
     """
@@ -130,26 +123,26 @@ def _require(value: object, units: str, currency: bool) -> None:
         return
     if type(value) is str:
         if not currency:
-            raise _broken(
+            raise ContractError(
                 f"a magnitude in {units!r} is a number, not decimal text "
                 f"{value!r}; only ISO 4217 currency units take an amount",
-                Code.CURRENCY_AMOUNT,
+                code=Code.CURRENCY_AMOUNT,
             )
         # Record checks run first, so the text is canonical.
         count = text_digits(value)
         if count > DIGITS:
-            raise _broken(
+            raise ContractError(
                 f"currency amount {value} has {count} significant digits; "
                 f"the limit is {DIGITS}",
-                Code.AMOUNT_DIGITS,
+                code=Code.AMOUNT_DIGITS,
             )
     elif currency:
         suggestion = _encoded(value)
         hint = f"; use {suggestion!r}" if type(suggestion) is str else ""
-        raise _broken(
+        raise ContractError(
             f"a magnitude in {units} is a currency amount and must be decimal "
             f"text, not {value!r}{hint}",
-            Code.CURRENCY_AMOUNT,
+            code=Code.CURRENCY_AMOUNT,
         )
 
 
