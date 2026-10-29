@@ -1,7 +1,9 @@
 """Bounded finalized-Run checks; synthetic fixtures are not solver evidence."""
 
-from collections.abc import Mapping
-from typing import TYPE_CHECKING
+import weakref
+from collections.abc import Callable, Iterable, Mapping
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from rangekeeper.model._scope import resolve_reference
@@ -39,6 +41,21 @@ from rangekeeper.specification.validation import check_specification
 if TYPE_CHECKING:
     from rangekeeper.run.run import Run
     from rangekeeper.shared.references import DocumentResolver
+    from rangekeeper.specification.composition import Composition
+
+
+@dataclass(frozen=True)
+class Prerequisites:
+    """Checks that a caller already ran on the same immutable revisions.
+
+    ``compositions`` maps a leaf Specification UUID to its composition, and
+    ``scopes`` maps it to the scope that its Specification check returned. Run
+    validation uses them instead of composing and checking that Specification
+    again. An execution passes its own; other callers pass nothing.
+    """
+
+    compositions: Mapping[UUID, "Composition"] = field(default_factory=dict)
+    scopes: Mapping[UUID, Any] = field(default_factory=dict)
 
 
 def validate_records(
@@ -48,11 +65,14 @@ def validate_records(
     specifications: Mapping[str, Record | Mapping[str, object]],
     models: Mapping[str, Record | Mapping[str, object]],
     units: UnitSystem | None = None,
+    prerequisites: Prerequisites | None = None,
 ) -> ValidationReport:
     """Check a revision-keyed tree; opt into assignment conversion with ``units``.
 
     Raw conformance defaults remain strict. The public facade validator supplies
     its UnitSystem so physically equivalent assigned/output quantities can match.
+    ``prerequisites`` replace the composition and Specification checks of the
+    leaves that they name.
     """
 
     def compatible(left, right):
@@ -90,6 +110,7 @@ def validate_records(
             document_version("Model"),
             units=units or default_units,
             units_compatible=None if units is None else compatible,
+            prerequisites=prerequisites,
             quantities_equal=(
                 None
                 if units is None
@@ -124,6 +145,7 @@ def validate(
     *,
     resolver: "DocumentResolver",
     units: UnitSystem | None = None,
+    prerequisites: Prerequisites | None = None,
 ) -> ValidationReport:
     """Check a finalized tree and published outputs against exact resolved revisions.
 
@@ -136,6 +158,8 @@ def validate(
     outcomes with the required diagnostic. No solver or scheduler is invoked.
     Assignments are compared after explicit conversion to output Measure units;
     this does not evaluate equations or certify a solver's numerical claims.
+    ``prerequisites`` are checks that the caller already ran on the same
+    revisions; validation does not repeat them.
     """
     from rangekeeper.run.run import Run
     from rangekeeper.shared.errors import (
@@ -157,6 +181,7 @@ def validate(
             specifications=specifications,
             models=models,
             units=units,
+            prerequisites=prerequisites,
         )
     except (MissingReferenceError, ReferenceTypeError, IdentityConflictError) as error:
         return ValidationReport((Issue(error.code, str(error), run.id),))
@@ -283,6 +308,7 @@ class _RunValidation:
         units=default_units,
         units_compatible=None,
         quantities_equal=None,
+        prerequisites=None,
     ):
         self.catalogue = dict(runs)
         self.root_id = root["metadata"]["id"]
@@ -317,6 +343,13 @@ class _RunValidation:
         self.quantities_equal = quantities_equal
         self.input_ids, self.output_ids, self.producers = set(), set(), {}
         self.compositions, self.pins, self.prepared_scopes = {}, {}, {}
+        if prerequisites is not None:
+            self.compositions.update(
+                (str(key), value) for key, value in prerequisites.compositions.items()
+            )
+            self.prepared_scopes.update(
+                (str(key), value) for key, value in prerequisites.scopes.items()
+            )
 
     def resolve(self, ref, kind):
         require(ref in self.typed, f"unresolved {kind} reference")
@@ -579,3 +612,31 @@ class _RunValidation:
                 not internal & doc_ids, "document identity collides with declaration"
             )
         return self.visited
+
+
+def mark_validated(run: "Run", store: object, documents: Iterable[UUID]) -> None:
+    """Record that ``run`` passed validation against ``store``.
+
+    ``documents`` are the revisions that the validation read from elsewhere than
+    ``store``: the unstored outputs, Runs and Specifications laid over it. A
+    store skips its own validation of ``run`` while each of them is in the store
+    (``validated_in``). Revisions are immutable, so the result still holds.
+    """
+    try:
+        reference = weakref.ref(store)
+    except TypeError:
+        return  # a store that cannot be weakly referenced validates again
+    object.__setattr__(run, "_validated", (reference, frozenset(documents)))
+
+
+def validated_in(run: "Run", store: object, contains: Callable[[UUID], bool]) -> bool:
+    """Return whether ``run`` passed validation against ``store``.
+
+    ``contains`` tells whether the store holds a revision. The documents that
+    the validation read from elsewhere must all be in the store now.
+    """
+    marker = getattr(run, "_validated", None)
+    if marker is None:
+        return False
+    reference, documents = marker
+    return reference() is store and all(contains(id) for id in documents)

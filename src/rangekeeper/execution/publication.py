@@ -9,9 +9,8 @@ from rangekeeper.execution.errors import NumericalError
 from rangekeeper.execution.preparation import Binding
 from rangekeeper.model import Model
 from rangekeeper.model.targets import target_value
-from rangekeeper.model.update import Update
 from rangekeeper.schema.index import walk_data
-from rangekeeper.schema.records import Provenance, System
+from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.runtime import copy_json
 
 
@@ -97,13 +96,14 @@ def make_candidate(
     if not quantities:
         claim(dict(model=str(binding.model.id)), "rangekeeper.feasibility")
     provenance["facts"] = facts
-    result = binding.model.revise(
-        Update(
-            system=System.from_data(data.get("system", {})),
-            provenance=Provenance.from_data(provenance),
-        )
+    data["metadata"] = dict(
+        data["metadata"], id=str(uuid4()), previous=str(binding.model.id)
     )
     # Round-trip through strict JSON, as the codecs do, so the candidate holds
-    # only what a stored revision can hold.
-    text = json.dumps(result.to_data(), ensure_ascii=False, allow_nan=False)
-    return Model.from_data(copy_json(json.loads(text)), units=result.unit_system)
+    # only what a stored revision can hold. Then build and check it once.
+    text = json.dumps(data, ensure_ascii=False, allow_nan=False)
+    candidate = Model.from_data(
+        copy_json(json.loads(text)), units=binding.model.unit_system
+    )
+    check_revision(binding.model._record, candidate._record)
+    return candidate

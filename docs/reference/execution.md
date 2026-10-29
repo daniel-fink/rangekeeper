@@ -37,9 +37,22 @@ case. `walk()` yields each case before its batch. The reading API (`outcome["key
 `.status`, `.raise_for_status()`) follows in
 [#127](https://github.com/daniel-fink/rangekeeper/issues/127).
 
-Each Run is validated once. `solve` validates it with the unstored outputs and
-case Runs laid over `resolver`. `execute` does not: `RecordStore.put` is its one
-validation of each Run.
+Each execution validates once ([#132](https://github.com/daniel-fink/rangekeeper/issues/132)):
+
+| Check | When it runs |
+| --- | --- |
+| Batch graph | Once, in `resolve_cases` |
+| Composition | Once for each leaf, in `resolve_cases` |
+| Specification against its Model | Once for each leaf, in `validate` |
+| Candidate Model | Once for each candidate, when `make_candidate` builds it |
+| Run tree | Once for each execution: one `rangekeeper.run.validate` of the root Run, with the unstored outputs and case Runs laid over the resolver. It reuses the compositions and Specification checks above (`run.Prerequisites`) |
+
+`execute` runs this validation against `store` before it puts anything, with the
+unit system of the input Model as a store does. It marks each Run as validated
+against that store, so `store.put` does not validate it again; another store
+validates it in full. Run validation still checks the input Model and each output
+Model for the publication rules; a Model does not keep the result of its
+construction check.
 
 Use the [examples guide](../guides/examples.md) for the complete valuation procedure and
 [its source](../../examples/execution/valuation.py). It executes forward, revises the
@@ -220,11 +233,11 @@ Claims describing the accepted assignment/solution and its Run/Specification. Th
 uses existing schema fields and does not introduce a typed cross-document provenance
 contract. Constant-only feasible revisions record a fresh feasibility Claim.
 
-`execute` stores each output first, then its finalized Run; `RecordStore.put`
-validates the Run. A rejected candidate is never an output, so it is never
-published. As with the stores, there is no multi-document transaction: IO failure,
-or a Run that fails validation at `put`, can leave a complete accepted output or
-completed child Run. Every direct batch case has its own
+`execute` validates the Run tree before it stores anything, then stores each
+output first, then its finalized Run. A rejected candidate is never an output, so
+it is never published. As with the stores, there is no multi-document
+transaction: IO failure can leave a complete accepted output or completed child
+Run. Every direct batch case has its own
 Run, including failures; parent outputs are exactly the unique union of child outputs.
 
 ## Related boundaries

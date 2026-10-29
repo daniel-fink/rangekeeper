@@ -34,7 +34,8 @@ class Run:
     execution is another Run; this facade deliberately has no revise operation.
     """
 
-    __slots__ = ("_record",)
+    # ``_validated`` is set by run.validation.mark_validated; it is not a field.
+    __slots__ = ("_record", "_validated")
     _record: RunRecord
 
     def __init__(self, record: RunRecord) -> None:
@@ -45,6 +46,7 @@ class Run:
             raise UnsupportedVersionError(record.metadata.schema_version)
         _validate_local(record).raise_if_invalid()
         object.__setattr__(self, "_record", record)
+        object.__setattr__(self, "_validated", None)
 
     @classmethod
     def from_data(cls, data: Mapping[str, object]) -> "Run":

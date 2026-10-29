@@ -14,6 +14,7 @@ from rangekeeper.io._document import (
     trusted,
 )
 from rangekeeper.run.validation import validate as validate_run
+from rangekeeper.run.validation import validated_in
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import MissingReferenceError
 
@@ -29,7 +30,9 @@ class MemoryStore:
         """Resolve Run dependencies, then publish or reject a conflict.
 
         The document was validated when it was built; put does not validate it
-        again.
+        again. A Run is validated against this store, unless it already passed
+        that validation (``run.validation.mark_validated``) and every revision
+        that the validation read from elsewhere is now in this store.
 
         The lock covers checking and publication. Identical writes retain the first
         stored representation; validation failure leaves the store unchanged.
@@ -38,7 +41,9 @@ class MemoryStore:
         with self._lock:
             if candidate.id in self._documents:
                 require_same(self._documents[candidate.id], candidate)
-            if isinstance(candidate, Run):
+            if isinstance(candidate, Run) and not validated_in(
+                candidate, self, lambda id: id in self._documents
+            ):
                 validate_run(candidate, resolver=self).raise_if_invalid()
             self._documents.setdefault(candidate.id, candidate)
         return candidate.id

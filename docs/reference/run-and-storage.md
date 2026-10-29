@@ -102,7 +102,7 @@ must establish that it really is a batch. External references are not loaded dur
 construction or codec reads.
 
 `run.validate(resolver=...)`, `run.check(resolver=...)` and
-`rangekeeper.run.validate(run, resolver=...)` resolve the attempted Specification,
+`rangekeeper.run.validate(run, resolver=..., prerequisites=None)` resolve the attempted Specification,
 its includes/cases/Model pins, spawned Runs, output Models, and scoped report documents.
 Successful resolutions are cached. Report references carry no kind discriminator;
 resolving a previously unseen report document can require up to three typed lookups.
@@ -117,6 +117,12 @@ may reference an incomplete or mathematically invalid saved Specification when t
 report `not_assessed` with a `specification_invalid` diagnostic. Declared external
 references must still resolve before store publication. Local Specification validity
 is still required for every saved contribution.
+
+`prerequisites` is a `rangekeeper.run.Prerequisites` with the compositions and the
+Specification check scopes that the caller already computed for leaf
+Specifications of the tree, by UUID. Validation uses them instead of composing and
+checking those Specifications again. Execution passes its own; other callers
+need not.
 
 These checks **do not prove equation satisfaction, optimality, numerical reproduction,
 or that execution happened**. The public Run validator now converts physically
@@ -179,7 +185,11 @@ through `from_data`. Partial Specifications may be stored
 before their external references exist. A Run additionally undergoes resolved validation
 against the store; its attempted Specification, referenced contributions/Models, children,
 outputs and report documents must be available first. Even an identical Run put is
-rechecked against current stored references. A failed validation publishes nothing.
+rechecked against current stored references, except when execution already
+validated that Run against the same store instance and every revision that the
+validation read from elsewhere is now in the store: execution marks such a Run,
+and `MemoryStore` and `DirectoryStore` then skip the repeat. A failed validation
+publishes nothing.
 
 A UUID identifies one immutable revision and kind. Identical content is idempotent;
 a different kind or changed content raises `RevisionConflictError`. Equivalence uses

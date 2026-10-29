@@ -98,6 +98,7 @@ class Attempt:
             ),
         ]
         self.limits: settings.Limits | None = None
+        self.validation: preparation.Validation | None = None
         self.binding: preparation.Binding | None = None
         self.result: BackendResult | None = None
         self.output: Model | None = None
@@ -215,11 +216,13 @@ class Attempt:
             self.view.requirements.settings, defaults=self.config.limits
         )
         self.findings.extend(adjustments)
-        validation = preparation.validate(
+        self.validation = preparation.validate(
             self.view, resolver=self.resolver, units=self.units
         )
         self.checkpoint()
-        self.binding = preparation.bind_roles(validation, checkpoint=self.checkpoint)
+        self.binding = preparation.bind_roles(
+            self.validation, checkpoint=self.checkpoint
+        )
         self.checkpoint()
         self.trace.append(
             Step(
