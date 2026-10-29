@@ -13,6 +13,7 @@ from rangekeeper.schema.records import (
     Specification as SpecificationRecord,
 )
 from rangekeeper.specification.composition import Composition as Composition
+from rangekeeper.specification.roles import Role as Role
 from rangekeeper.specification.specification import Specification as Specification
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     "Objective",
     "Settings",
     "Composition",
+    "Role",
 ]
 
 from rangekeeper.schema.enums import ObjectiveKind
