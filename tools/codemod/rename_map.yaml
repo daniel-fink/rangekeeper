@@ -690,6 +690,25 @@ attributes:
     apply: review
     status: draft
     source: ADR-012
+  - owner: rangekeeper.model.system.errors.HierarchyError
+    name: ids
+    new_name: targets
+    apply: review
+    status: agreed
+    source: "#408"
+    note: >-
+      Every error has `targets`. `HierarchyError(code, message, ids=)` becomes
+      `HierarchyError(message, code=, targets=)`: the message comes first and
+      each field is a keyword.
+  - owner: rangekeeper.shared.errors.PublishedFileError
+    name: path
+    new_name: file
+    apply: review
+    status: agreed
+    source: "#408"
+    note: >-
+      `path` of every error is a JSON Pointer. `PublishedFileError(path, error)`
+      becomes `PublishedFileError(message, file=)`; the OSError is the cause.
 
 # Renames of keyword parameters. `callable: "*"` applies to every function and
 # call in scope; use it only for names that are unique to the concept.

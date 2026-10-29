@@ -4,60 +4,137 @@ Every error subclasses ``RangekeeperError`` and carries a ``code`` from
 ``rangekeeper.errors.Code``. Most also subclass the built-in type that callers
 caught before, for example ``ValueError``. Owner packages re-export the errors
 that their operations raise; ``rangekeeper.errors`` exports all of them.
+
+Every error takes its message first and each field by keyword. The fields of
+``ErrorFields`` are common to all errors; a subclass adds its own keywords.
 """
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, TypedDict, Unpack
 from uuid import UUID
 
 from rangekeeper.shared.codes import Code
+
+if TYPE_CHECKING:
+    # diagnostics imports this module; the annotations only name its types.
+    from rangekeeper.shared.diagnostics import Issue, ValidationReport
+
+
+class ErrorFields(TypedDict, total=False):
+    """The keyword fields that every ``RangekeeperError`` takes.
+
+    - ``code``: the ``Code`` of this failure, when the error class has no code
+      or another code applies;
+    - ``document_id``: the UUID of the document that contains the failure;
+    - ``path``: the JSON Pointer of the failure in that document;
+    - ``targets``: the UUIDs of the records that the failure is about.
+
+    ``Issue`` has the same fields, so an error and the Issue that a validation
+    report makes from it say the same thing.
+    """
+
+    code: Code | None
+    document_id: UUID | None
+    path: str
+    targets: Iterable[UUID]
 
 
 class RangekeeperError(Exception):
     """The base of every error that Rangekeeper raises.
 
     ``code`` identifies the failure. Read the code and the error's fields, not
-    its message.
+    its message. ``document_id``, ``path`` and ``targets`` locate the failure
+    when they are known (``ErrorFields``). A class without its own ``code``
+    takes one by keyword.
     """
 
     code: Code
-
-
-class ContractError(RangekeeperError, ValueError):
-    """A semantic rule failed, with its code, JSON Pointer and structured fields.
-
-    The message remains the exception text. Validation entrypoints convert this
-    failure into an ``Issue`` with the same code, targets, values and evidence.
-    """
 
     def __init__(
         self,
         message: str,
         *,
-        code: Code = Code.CONTRACT,
-        path: str = "",
+        code: Code | None = None,
         document_id: UUID | None = None,
+        path: str = "",
         targets: Iterable[UUID] = (),
-        values: Mapping[str, Any] | None = None,
-        evidence: Mapping[str, Any] | None = None,
     ) -> None:
         super().__init__(message)
-        self.code = Code(code)
-        self.path = path
+        if code is not None:
+            self.code = Code(code)
+        elif not hasattr(self, "code"):
+            raise TypeError(f"{type(self).__name__} takes a code")
         self.document_id = document_id
+        self.path = path
         self.targets = tuple(targets)
+
+    def _arguments(self) -> tuple[Any, ...]:
+        """Return the positional arguments that make this error again."""
+        return (str(self),)
+
+    def _fields(self) -> dict[str, Any]:
+        """Return the keyword fields that make this error again.
+
+        A subclass adds its own fields to these. A code that the class gives
+        is not repeated.
+        """
+        return {
+            "code": vars(self).get("code"),
+            "document_id": self.document_id,
+            "path": self.path,
+            "targets": self.targets,
+        }
+
+    def __reduce__(
+        self,
+    ) -> tuple[Callable[..., "RangekeeperError"], tuple[Any, ...]]:
+        # One reducer for every error: pickling keeps each field.
+        return _rebuild, (type(self), self._arguments(), self._fields())
+
+
+def _rebuild(
+    cls: type[RangekeeperError],
+    arguments: tuple[Any, ...],
+    fields: Mapping[str, Any],
+) -> RangekeeperError:
+    """Make an error again from its arguments and fields, after pickling."""
+    return cls(*arguments, **fields)
+
+
+class ContractError(RangekeeperError, ValueError):
+    """A semantic rule failed, with its code, JSON Pointer and structured fields.
+
+    ``values`` are the named inputs of the failure and ``evidence`` its
+    measured results. Validation entrypoints convert this failure into an
+    ``Issue`` with the same code and fields.
+    """
+
+    code = Code.CONTRACT
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        values: Mapping[str, Any] | None = None,
+        evidence: Mapping[str, Any] | None = None,
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        super().__init__(message, **fields)
         self.values = dict(values or {})
         self.evidence = dict(evidence or {})
 
+    def _fields(self) -> dict[str, Any]:
+        return {**super()._fields(), "values": self.values, "evidence": self.evidence}
+
     @classmethod
-    def from_issue(cls, issue) -> "ContractError":
+    def from_issue(cls, issue: "Issue") -> "ContractError":
         """Return a ContractError with the code, message and fields of an Issue."""
         return cls(
             issue.message,
             code=issue.code,
-            path=issue.path,
             document_id=issue.document_id,
+            path=issue.path,
             targets=issue.targets,
             values=issue.values,
             evidence=issue.evidence,
@@ -65,31 +142,35 @@ class ContractError(RangekeeperError, ValueError):
 
     def at(self, path: str) -> "ContractError":
         """Return a copy of this error at another JSON Pointer."""
-        return ContractError(
-            str(self),
-            code=self.code,
-            path=path,
-            document_id=self.document_id,
-            targets=self.targets,
-            values=self.values,
-            evidence=self.evidence,
-        )
+        return ContractError(str(self), **{**self._fields(), "path": path})
 
 
 class ValidationError(RangekeeperError, ValueError):
     """A document or record failed validation; ``report`` retains diagnostics.
 
-    ``code`` is the code of the first issue.
+    ``code``, ``document_id``, ``path`` and ``targets`` are those of the first
+    issue. Read the other issues from ``report``.
     """
 
-    def __init__(self, report):
+    def __init__(self, report: "ValidationReport") -> None:
         self.report = report
-        self.code = report.issues[0].code if report.issues else Code.CONTRACT
+        first = report.issues[0] if report.issues else None
         super().__init__(
             "; ".join(
                 f"{issue.path or '/'}: {issue.message}" for issue in report.issues
-            )
+            ),
+            code=Code.CONTRACT if first is None else first.code,
+            document_id=None if first is None else first.document_id,
+            path="" if first is None else first.path,
+            targets=() if first is None else first.targets,
         )
+
+    def _arguments(self) -> tuple[Any, ...]:
+        return (self.report,)
+
+    def _fields(self) -> dict[str, Any]:
+        # The report gives every field.
+        return {}
 
 
 class UnsupportedVersionError(RangekeeperError, ValueError):
@@ -98,8 +179,8 @@ class UnsupportedVersionError(RangekeeperError, ValueError):
     code = Code.UNSUPPORTED_VERSION
 
 
-class _ReferenceFields:
-    """The fields and message of a failed lookup; not an exception by itself."""
+class _LookupFields(RangekeeperError):
+    """The fields and message of a failed lookup; the base of the lookup errors."""
 
     _verb: str
     _label: str
@@ -112,6 +193,7 @@ class _ReferenceFields:
         by: str = "id",
         where: str | None = None,
         candidates: Iterable[str] = (),
+        **fields: Unpack[ErrorFields],
     ) -> None:
         self.requested = requested
         self.kind = kind
@@ -123,21 +205,22 @@ class _ReferenceFields:
         message = f"{subject} {self._verb}" + (f" in {where}" if where else "")
         if self.candidates:
             message += f"; {self._label}: " + ", ".join(self.candidates)
-        # The exception base after this mixin in the MRO takes the message.
-        super().__init__(message)  # type: ignore[call-arg]
+        super().__init__(message, **fields)
 
-    def __reduce__(self):
-        fields = dict(
-            kind=self.kind, by=self.by, where=self.where, candidates=self.candidates
-        )
-        return _rebuild, (type(self), self.requested, fields)
+    def _arguments(self) -> tuple[Any, ...]:
+        return (self.requested,)
+
+    def _fields(self) -> dict[str, Any]:
+        return {
+            **super()._fields(),
+            "kind": self.kind,
+            "by": self.by,
+            "where": self.where,
+            "candidates": self.candidates,
+        }
 
 
-def _rebuild(cls, requested, fields):
-    return cls(requested, **fields)
-
-
-class MissingReferenceError(_ReferenceFields, RangekeeperError, LookupError):
+class MissingReferenceError(_LookupFields, LookupError):
     """A lookup by UUID, code, name, key or path found no item.
 
     ``requested`` is the value that the caller gave and ``by`` says what it is:
@@ -151,7 +234,7 @@ class MissingReferenceError(_ReferenceFields, RangekeeperError, LookupError):
     _label = "nearest"
 
 
-class AmbiguousReferenceError(_ReferenceFields, RangekeeperError, LookupError):
+class AmbiguousReferenceError(_LookupFields, LookupError):
     """A lookup for one item by code or name found several items.
 
     The fields are those of ``MissingReferenceError``. ``candidates`` gives the
@@ -189,9 +272,18 @@ class UnitError(RangekeeperError, ValueError):
 
     code = Code.UNITS
 
-    def __init__(self, message: str, *, suggestions: tuple[str, ...] = ()) -> None:
-        super().__init__(message)
+    def __init__(
+        self,
+        message: str,
+        *,
+        suggestions: Iterable[str] = (),
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        super().__init__(message, **fields)
         self.suggestions = tuple(suggestions)
+
+    def _fields(self) -> dict[str, Any]:
+        return {**super()._fields(), "suggestions": self.suggestions}
 
 
 class DecodeError(RangekeeperError, ValueError):
@@ -213,60 +305,69 @@ class TableError(RangekeeperError, ValueError):
 
 
 class PublishedFileError(RangekeeperError, OSError):
-    """The complete file is visible, but its durability was not confirmed."""
+    """The complete file is visible, but its durability was not confirmed.
+
+    ``file`` is the published file; ``filename`` gives it as text, as for any
+    ``OSError``. The ``OSError`` that stopped the confirmation is the cause
+    (``__cause__``).
+    """
 
     code = Code.PUBLISHED_FILE
     published = True
-
-    def __init__(self, path: Path, error: OSError):
-        self.path = path
-        self.error = error
-        super().__init__(
-            error.errno,
-            f"File published; durability was not confirmed: {error}",
-            str(path),
-        )
-
-
-class UnsupportedError(RangekeeperError, ValueError):
-    """A declared problem or expression is outside the supported capability.
-
-    ``document`` and ``target`` locate the declaration when they are known.
-    ``equation`` is the text of that declaration, for example
-    ``"noi = coverage * debt_service"``. With the code ``nonaffine_unknowns``,
-    ``unknowns`` gives the keys of the unknowns in the term that is not affine.
-    """
 
     def __init__(
         self,
         message: str,
         *,
-        code: Code = Code.UNSUPPORTED_CAPABILITY,
-        document: UUID | None = None,
-        target: UUID | None = None,
+        file: Path,
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        super().__init__(message, **fields)
+        self.file = file
+        self.filename = str(file)
+
+    def _fields(self) -> dict[str, Any]:
+        return {**super()._fields(), "file": self.file}
+
+
+class UnsupportedError(RangekeeperError, ValueError):
+    """A declared problem or expression is outside the supported capability.
+
+    ``document_id`` and ``targets`` locate the declaration when they are known:
+    the document and the Constraint. ``equation`` is the text of that
+    declaration, for example ``"noi = coverage * debt_service"``. With the code
+    ``nonaffine_unknowns``, ``unknowns`` gives the keys of the unknowns in the
+    term that is not affine.
+    """
+
+    code = Code.UNSUPPORTED_CAPABILITY
+
+    def __init__(
+        self,
+        message: str,
+        *,
         equation: str | None = None,
         unknowns: Iterable[str] = (),
+        **fields: Unpack[ErrorFields],
     ) -> None:
-        super().__init__(message)
-        self.code = Code(code)
-        self.document = document
-        self.target = target
+        super().__init__(message, **fields)
         self.equation = equation
         self.unknowns = tuple(unknowns)
 
-    def __reduce__(self):
-        fields = dict(
-            code=self.code,
-            document=self.document,
-            target=self.target,
-            equation=self.equation,
-            unknowns=self.unknowns,
-        )
-        return _rebuild, (type(self), str(self), fields)
+    def _fields(self) -> dict[str, Any]:
+        return {
+            **super()._fields(),
+            "equation": self.equation,
+            "unknowns": self.unknowns,
+        }
 
 
 class NumericalError(RangekeeperError, ValueError):
-    """Arithmetic or a backend candidate cannot support numerical acceptance."""
+    """Arithmetic or a backend candidate cannot support numerical acceptance.
+
+    The code is ``numerical_failure``, or ``numerical_rejection`` when
+    verification rejected a candidate.
+    """
 
     code = Code.NUMERICAL_FAILURE
 
@@ -291,9 +392,18 @@ class UnknownExtensionError(RangekeeperError, LookupError):
 
     code = Code.EXTENSION_UNKNOWN
 
-    def __init__(self, message: str, *, suggestions: tuple[str, ...] = ()) -> None:
-        super().__init__(message)
+    def __init__(
+        self,
+        message: str,
+        *,
+        suggestions: Iterable[str] = (),
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        super().__init__(message, **fields)
         self.suggestions = tuple(suggestions)
+
+    def _fields(self) -> dict[str, Any]:
+        return {**super()._fields(), "suggestions": self.suggestions}
 
 
 class ExtensionConflictError(RangekeeperError, ValueError):

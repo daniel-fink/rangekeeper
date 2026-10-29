@@ -27,16 +27,10 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.runtime import FrozenJSONValue
 from rangekeeper.shared.codes import Code
-from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
-    AttemptDeadlineError,
-    BackendUnavailableError,
     ContractError,
     MissingReferenceError,
-    NumericalError,
     RangekeeperError,
-    UnsupportedError,
-    ValidationError,
 )
 from rangekeeper.shared.table import Table
 
@@ -64,11 +58,17 @@ def status_of(report: Report) -> Status:
 
 
 def _decisive(report: Report) -> Diagnostic | None:
-    """Return the last error diagnostic: the one that ended the attempt."""
-    errors = [
-        item for item in report.diagnostics or () if item.severity == Severity.ERROR
+    """Return the diagnostic that ended a failed attempt, or None.
+
+    It is the last diagnostic of an expected failure, whatever its severity
+    (the attempt deadline is a warning), or else the last error.
+    """
+    ending = [
+        item
+        for item in report.diagnostics or ()
+        if item.code in statuses.BY_CODE or item.severity == Severity.ERROR
     ]
-    return errors[-1] if errors else None
+    return ending[-1] if ending else None
 
 
 @dataclass(frozen=True)
@@ -352,77 +352,24 @@ def _error(outcome: Outcome) -> RangekeeperError | None:
     status = outcome.status
     if status is Status.FEASIBLE:
         return None
-    report = outcome.run.report
-    decisive = _decisive(report)
-    if status is Status.UNDERDETERMINED:
-        decisive = next(
-            item
-            for item in report.diagnostics or ()
-            if item.code == Code.UNDERDETERMINED
-        )
-    elif status is Status.INFEASIBLE or decisive is None:
-        decisive = next(
-            (
-                item
-                for item in report.diagnostics or ()
-                if item.code == Code.SOLVER_TERMINATION
-            ),
-            None,
-        )
+    reason = _reason(outcome.run.report, status)
     message = f"the solve is {status.value}"
-    if decisive is not None:
-        message += f": {decisive.message}"
-    code = None if decisive is None else Code(decisive.code)
-    document = None if decisive is None else decisive.document
-    target = None if decisive is None else decisive.target
-    if status is Status.UNSUPPORTED:
-        assert code is not None
-        values = {} if decisive is None else decisive.values
-        if not isinstance(values, Mapping):
-            values = {}
-        equation = values.get("equation")
-        unknowns = values.get("unknowns")
-        return UnsupportedError(
-            message,
-            code=code,
-            document=document,
-            target=target,
-            equation=equation if isinstance(equation, str) else None,
-            unknowns=(
-                tuple(str(key) for key in unknowns)
-                if isinstance(unknowns, (list, tuple))
-                else ()
-            ),
-        )
-    if status is Status.INVALID:
-        assert code is not None
-        return ValidationError(
-            ValidationReport(
-                (
-                    Issue(
-                        code,
-                        message,
-                        document,
-                        targets=() if target is None else (target,),
-                    ),
-                )
-            )
-        )
-    if code is Code.ATTEMPT_DEADLINE:
-        return AttemptDeadlineError(message)
-    if code in (Code.NUMERICAL_FAILURE, Code.NUMERICAL_REJECTION):
-        error = NumericalError(message)
-        error.code = code
-        return error
-    if code is Code.BACKEND_UNAVAILABLE:
-        return BackendUnavailableError(message)
-    return OutcomeError(
-        message,
-        status=status,
-        code=code,
-        document=document,
-        target=target,
+    if reason is None:
+        return OutcomeError(message, status=status)
+    return statuses.rebuilt(
+        reason, message=f"{message}: {reason.message}", status=status
     )
+
+
+def _reason(report: Report, status: Status) -> Diagnostic | None:
+    """Return the diagnostic that says why an Outcome has its status."""
+    codes = report.diagnostics or ()
+    if status is Status.UNDERDETERMINED:
+        return next(item for item in codes if item.code in _FREE)
+    decisive = None if status is Status.INFEASIBLE else _decisive(report)
+    if decisive is not None:
+        return decisive
+    return next((item for item in codes if item.code == Code.SOLVER_TERMINATION), None)
 
 
 def _key(model: Model, value: Value) -> str:

@@ -200,7 +200,7 @@ def test_build_problem_lowers_assertions_and_checks_limits():
     with pytest.raises(UnsupportedError) as rows:
         build_problem(binding, limits=Limits(constraint_limit=1))
     assert rows.value.code == Code.CONSTRAINT_LIMIT
-    assert rows.value.target is not None
+    assert len(rows.value.targets) == 1
 
 
 def test_build_problem_names_the_declaration_outside_the_affine_slice():
@@ -222,9 +222,9 @@ def test_build_problem_names_the_declaration_outside_the_affine_slice():
     assert error.value.equation == "capital_value = NOI * capital_value"
     assert error.value.unknowns == ("NOI", "capital_value")
     assert error.value.equation in str(error.value)
-    assert error.value.document == specification.id
-    assert error.value.target == UUID(
-        payload["formulations"][0]["constraints"][0]["id"]
+    assert error.value.document_id == specification.id
+    assert error.value.targets == (
+        UUID(payload["formulations"][0]["constraints"][0]["id"]),
     )
 
 

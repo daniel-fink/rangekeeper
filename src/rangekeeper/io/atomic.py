@@ -48,7 +48,9 @@ def write_new(path: Path, text: str) -> Path:
         _sync_directory(path.parent)
     except OSError as error:
         if published:
-            raise PublishedFileError(path, error) from error
+            raise PublishedFileError(
+                f"File published; durability was not confirmed: {error}", file=path
+            ) from error
         raise
     except KeyboardInterrupt as error:
         if published:

@@ -1,8 +1,5 @@
 """Errors raised by Model selection, hierarchy building and value reduction."""
 
-from collections.abc import Iterable
-from uuid import UUID
-
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import RangekeeperError
 
@@ -14,12 +11,11 @@ class SelectionError(RangekeeperError, ValueError):
 
 
 class HierarchyError(RangekeeperError, ValueError):
-    """A selected graph is not one rooted tree; IDs identify the offending scope."""
+    """A selected graph is not one rooted tree.
 
-    def __init__(self, code: Code, message: str, *, ids: Iterable[UUID] = ()) -> None:
-        self.code = Code(code)
-        self.ids = tuple(ids)
-        super().__init__(f"{message}; ids={self.ids}")
+    ``code`` is a ``hierarchy.*`` code, given by keyword. ``targets`` are the
+    Entities of the offending scope.
+    """
 
 
 class AggregationError(RangekeeperError, ValueError):

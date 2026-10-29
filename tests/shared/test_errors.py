@@ -4,6 +4,7 @@ import importlib
 import inspect
 import pickle
 import pkgutil
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -11,6 +12,7 @@ import pytest
 import rangekeeper
 from rangekeeper import errors
 from rangekeeper.errors import Code, RangekeeperError
+from rangekeeper.execution import OutcomeError, Status
 from rangekeeper.model.system import HierarchyError
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from tests.contracts import api
@@ -60,10 +62,13 @@ def defined_exceptions():
 
 
 def test_every_defined_error_is_public():
-    assert set(defined_exceptions()) <= set(ERRORS)
-    assert {getattr(errors, name) for name in errors.__all__ if name != "Code"} <= set(
-        ERRORS
-    )
+    defined = {error for error in defined_exceptions() if error.__name__[0] != "_"}
+    assert defined <= set(ERRORS)
+    exported = {getattr(errors, name) for name in errors.__all__}
+    assert {item for item in exported if inspect.isclass(item)} - {
+        Code,
+        errors.ErrorFields,
+    } <= set(ERRORS)
 
 
 @pytest.mark.parametrize("error", ERRORS, ids=lambda error: error.__name__)
@@ -90,21 +95,72 @@ def test_instance_codes_are_codes():
     assert (
         errors.UnsupportedError("text", code="symbol_limit").code is Code.SYMBOL_LIMIT
     )
-    hierarchy = HierarchyError("hierarchy.cycle", "text", ids=(uuid4(),))
+    hierarchy = HierarchyError("text", code="hierarchy.cycle", targets=(uuid4(),))
     assert hierarchy.code is Code.HIERARCHY_CYCLE
     # Every other error has a class code.
     assert all(
         isinstance(getattr(error, "code", None), Code)
         for error in ERRORS
-        if error
-        not in {
-            RangekeeperError,
-            errors.ValidationError,
-            errors.ContractError,
-            errors.UnsupportedError,
-            HierarchyError,
-        }
+        if error not in {RangekeeperError, errors.ValidationError, HierarchyError}
     )
+
+
+def test_an_error_without_a_class_code_takes_one():
+    with pytest.raises(TypeError, match="code"):
+        HierarchyError("text")
+
+
+# The keywords that some errors need besides the common fields.
+REQUIRED = {
+    errors.PublishedFileError: {"file": Path("published.json")},
+    OutcomeError: {"status": Status.INFEASIBLE},
+}
+
+
+def made(error):
+    """Return an instance of an error class with every common field set."""
+    first = uuid4() if issubclass(error, errors.MissingReferenceError) else "text"
+    if issubclass(error, errors.AmbiguousReferenceError):
+        first = "building_c"
+    return error(
+        first,
+        code=Code.CONTRACT,
+        document_id=uuid4(),
+        path="/values/0",
+        targets=(uuid4(), uuid4()),
+        **REQUIRED.get(error, {}),
+    )
+
+
+@pytest.mark.parametrize(
+    "error",
+    [error for error in ERRORS if error is not errors.ValidationError],
+    ids=lambda error: error.__name__,
+)
+def test_each_error_takes_the_common_fields_by_keyword(error):
+    instance = made(error)
+    assert instance.code is Code.CONTRACT
+    assert instance.path == "/values/0"
+    assert len(instance.targets) == 2
+    assert instance.document_id is not None
+
+
+@pytest.mark.parametrize("error", ERRORS, ids=lambda error: error.__name__)
+def test_each_error_keeps_its_fields_through_pickle(error):
+    if error is errors.ValidationError:
+        instance = error(ValidationReport((Issue(Code.UNIQUE, "duplicate"),)))
+    else:
+        instance = made(error)
+    copy = pickle.loads(pickle.dumps(instance))
+    assert type(copy) is error
+    assert str(copy) == str(instance)
+    assert copy._fields() == instance._fields()
+    assert copy.code is instance.code
+
+
+def test_the_common_fields_are_the_keywords_of_the_base():
+    keywords = inspect.signature(RangekeeperError).parameters
+    assert set(errors.ErrorFields.__annotations__) == set(keywords) - {"message"}
 
 
 def test_unsupported_error_keeps_its_fields_through_pickle():
@@ -112,15 +168,15 @@ def test_unsupported_error_keeps_its_fields_through_pickle():
     error = errors.UnsupportedError(
         "text",
         code=Code.NONAFFINE_UNKNOWNS,
-        target=target,
+        targets=(target,),
         equation="noi = coverage * debt_service",
         unknowns=["coverage", "debt_service"],
     )
     copy = pickle.loads(pickle.dumps(error))
-    assert (str(copy), copy.code, copy.target, copy.equation, copy.unknowns) == (
+    assert (str(copy), copy.code, copy.targets, copy.equation, copy.unknowns) == (
         "text",
         Code.NONAFFINE_UNKNOWNS,
-        target,
+        (target,),
         "noi = coverage * debt_service",
         ("coverage", "debt_service"),
     )

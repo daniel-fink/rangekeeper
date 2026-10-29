@@ -161,20 +161,20 @@ class Attempt:
             # A row without a code is for an error that carries its own.
             assert isinstance(error, RangekeeperError)
             code = error.code
+        # The diagnostic locates the error; a ValidationError's issues keep
+        # their own documents and targets in values.
+        located = error if isinstance(error, RangekeeperError) else None
+        if isinstance(error, ValidationError):
+            located = None
+        targets = () if located is None else located.targets
         # The error's structured fields, so that a reader needs no message text.
-        values: dict[str, JSONValue] = {}
-        equation = getattr(error, "equation", None)
-        if equation is not None:
-            values["equation"] = equation
-        unknowns = getattr(error, "unknowns", ())
-        if unknowns:
-            values["unknowns"] = list(unknowns)
+        values = statuses.diagnosed(error)
         self.diagnose(
             code,
             str(error),
             severity=conclusion.severity,
-            document=getattr(error, "document", None) or UNSET,
-            target=getattr(error, "target", None) or UNSET,
+            document=UNSET if located is None else located.document_id or UNSET,
+            target=targets[0] if len(targets) == 1 else UNSET,
             values=values or UNSET,
         )
 

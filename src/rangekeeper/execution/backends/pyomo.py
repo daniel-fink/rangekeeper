@@ -213,7 +213,7 @@ class PyomoHighs:
         ):
             raise UnsupportedError(
                 "affine row exceeds the supported HiGHS numerical scaling range",
-                document=row.assertion.document,
-                target=row.assertion.constraint.id,
+                document_id=row.assertion.document,
+                targets=(row.assertion.constraint.id,),
             )
         return scale

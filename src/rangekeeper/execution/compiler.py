@@ -342,8 +342,8 @@ def build_problem(
             raise UnsupportedError(
                 f'{error} in "{equation}"',
                 code=error.code,
-                document=item.document,
-                target=item.constraint.id,
+                document_id=item.document,
+                targets=(item.constraint.id,),
                 equation=equation,
                 unknowns=error.unknowns,
             ) from error

@@ -85,7 +85,7 @@ def test_a_product_of_two_undetermined_unknowns_stays_unsupported():
     with pytest.raises(UnsupportedError) as raised:
         outcome.raise_for_status()
     # The stages determine the NOI; the row that still fails is its equation.
-    constraint = MODEL.record_by_id(raised.value.target).record
+    constraint = MODEL.record_by_id(raised.value.targets[0]).record
     assert constraint.predicate == EQUATIONS["noi"]
 
 

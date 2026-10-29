@@ -1,12 +1,13 @@
 """Expected execution failures, separate from document and storage errors."""
 
-from enum import StrEnum
-from uuid import UUID
+from typing import Any, Unpack
 
+from rangekeeper.execution.status import Status
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     AttemptDeadlineError,
     BackendUnavailableError,
+    ErrorFields,
     NumericalError,
     RangekeeperError,
     UnsupportedError,
@@ -20,7 +21,7 @@ class OutcomeError(RangekeeperError, ValueError):
     infeasible solve, and for a limit or failure that no other error names.
     ``status`` is the Outcome's ``Status``; ``code`` is the code of the
     diagnostic that gives the reason, by default ``solver_termination``.
-    ``document`` and ``target`` locate it when they are known.
+    ``document_id`` and ``targets`` locate it when they are known.
     """
 
     code = Code.SOLVER_TERMINATION
@@ -29,17 +30,14 @@ class OutcomeError(RangekeeperError, ValueError):
         self,
         message: str,
         *,
-        status: StrEnum,
-        code: Code | None = None,
-        document: UUID | None = None,
-        target: UUID | None = None,
+        status: Status,
+        **fields: Unpack[ErrorFields],
     ) -> None:
-        super().__init__(message)
-        self.status = status
-        if code is not None:
-            self.code = Code(code)
-        self.document = document
-        self.target = target
+        super().__init__(message, **fields)
+        self.status = Status(status)
+
+    def _fields(self) -> dict[str, Any]:
+        return {**super()._fields(), "status": self.status}
 
 
 __all__ = [

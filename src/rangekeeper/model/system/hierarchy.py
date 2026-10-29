@@ -54,7 +54,7 @@ class Hierarchy:
         ids = tuple(entity.id for entity in view.entities)
         if not ids:
             raise HierarchyError(
-                Code.HIERARCHY_EMPTY, "a hierarchy requires at least one Entity"
+                "a hierarchy requires at least one Entity", code=Code.HIERARCHY_EMPTY
             )
         members = set(ids)
         if membership_root is None:
@@ -73,15 +73,15 @@ class Hierarchy:
         for source, target in edges:
             if target in unordered[source]:
                 raise HierarchyError(
-                    Code.HIERARCHY_PARALLEL_EDGES,
                     "two edges identify the same parent/child pair",
-                    ids=(source, target),
+                    code=Code.HIERARCHY_PARALLEL_EDGES,
+                    targets=(source, target),
                 )
             if parents[target] is not None:
                 raise HierarchyError(
-                    Code.HIERARCHY_MULTIPLE_PARENTS,
                     "a selected node has more than one parent",
-                    ids=(target,),
+                    code=Code.HIERARCHY_MULTIPLE_PARENTS,
+                    targets=(target,),
                 )
             parents[target] = source
             unordered[source].add(target)
@@ -100,20 +100,22 @@ class Hierarchy:
             pending.extend(children[node])
         if len(reached) != len(ids):
             raise HierarchyError(
-                Code.HIERARCHY_CYCLE,
                 "selected edges contain a cycle",
-                ids=(id for id in ids if id not in reached),
+                code=Code.HIERARCHY_CYCLE,
+                targets=(id for id in ids if id not in reached),
             )
         if len(roots) != 1:
             raise HierarchyError(
-                Code.HIERARCHY_DISCONNECTED, "expected exactly one root", ids=roots
+                "expected exactly one root",
+                code=Code.HIERARCHY_DISCONNECTED,
+                targets=roots,
             )
         root = roots[0]
         if membership_root is not None and root != membership_root:
             raise HierarchyError(
-                Code.HIERARCHY_ROOT_MISMATCH,
                 "requested membership root is not the selected root",
-                ids=(membership_root, root),
+                code=Code.HIERARCHY_ROOT_MISMATCH,
+                targets=(membership_root, root),
             )
         preorder, postorder = [], []
         stack = [(root, False)]
