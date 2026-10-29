@@ -8,7 +8,7 @@ import pytest
 
 import rangekeeper as rk
 from rangekeeper.model.expression.authoring import add, equal, reference
-from rangekeeper.schema.records import Reference
+from rangekeeper.schema.records import Assignment, Reference
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
     MissingReferenceError,
@@ -186,3 +186,28 @@ def test_a_chained_specification_solves():
         "50e6"
     )
     assert results["back"].value(owner=project, key="land_cost").quantity == aud("30e6")
+
+
+def with_estimate(specification, key, quantity):
+    """Return a revision of ``specification`` with an estimate for ``key``."""
+    model = specification.model
+    value = model.value(owner=model.entity(code="project").id, key=key)
+    estimate = Assignment(target=Reference(target=value.id), quantity=quantity)
+    metadata = specification.metadata.replace(id=uuid4(), previous=specification.id)
+    return specification.revise(
+        specification.record.replace(metadata=metadata, estimates=(estimate,))
+    )
+
+
+def test_free_keeps_an_estimate_and_fix_replaces_it():
+    model = costs()
+    spec = with_estimate(model.specify(), "land_cost", aud("20e6"))
+    assert spec.record.estimates
+    # A free of a free value changes no role: the same Specification.
+    assert spec.free("land_cost") is spec
+    other = spec.fix(works_cost=aud("30e6"))
+    assert other.record.estimates == spec.record.estimates
+    assert other.free("works_cost").record.estimates == spec.record.estimates
+    fixed = spec.fix(land_cost=aud("25e6"))
+    assert not fixed.record.estimates
+    assert not fixed.free("land_cost").record.estimates

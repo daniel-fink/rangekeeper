@@ -1,12 +1,12 @@
 """Specification.on moves a Specification to another Model revision."""
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 
 import rangekeeper as rk
 from rangekeeper.model.expression.authoring import add, equal, reference
-from rangekeeper.schema.records import Reference
+from rangekeeper.schema.records import Assignment, Reference
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError, UnitError
 from rangekeeper.specification import Role
@@ -70,6 +70,27 @@ def test_on_refuses_a_fixed_value_that_the_revision_lacks():
     assert "operating_cost" not in roles(moved)
     assert roles(moved)["land_cost"] is Role.FIXED
     assert len(moved.record.unknowns) == 6
+
+
+def test_on_keeps_only_the_estimates_of_free_values():
+    model = lesson_02_model(namespace=NAMESPACE)
+    project = model.entity(code="project").id
+    spec = model.specify()
+    estimates = tuple(
+        Assignment(
+            target=Reference(target=model.value(owner=project, key=key).id),
+            quantity=rk.Quantity(text=text),
+        )
+        for key, text in (("land_cost", "1e6 AUD"), ("operating_cost", "1e5 AUD pa"))
+    )
+    metadata = spec.metadata.replace(id=uuid4(), previous=spec.id)
+    spec = spec.revise(spec.record.replace(metadata=metadata, estimates=estimates))
+    assert spec.on(model=with_fees(model)).record.estimates == estimates
+    lean = lesson_02_model(
+        name="No operating cost", namespace=NAMESPACE, operating_cost=False
+    )
+    # The revision does not declare operating_cost: on drops its estimate.
+    assert spec.on(model=lean).record.estimates == estimates[:1]
 
 
 def test_on_checks_its_arguments_and_units():

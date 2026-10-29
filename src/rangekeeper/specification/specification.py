@@ -438,12 +438,14 @@ class Specification:
     def on(self, *, model: "Model") -> "Specification":
         """Return a new Specification of another Model revision, with the same roles.
 
-        Each fix, estimate and rule target must be a Value or Movement that
-        ``model`` declares, with units that its Quantity converts to. A fixed
-        value that ``model`` does not declare raises ContractError with the code
+        Each fix and rule target must be a Value or Movement that ``model``
+        declares, with units that its Quantity converts to. A fixed value that
+        ``model`` does not declare raises ContractError with the code
         ``REFERENCE_MISSING`` and its keys: free it first, then call ``on``. The
         free values are those that the equations of ``model`` use and that
-        nothing controls; an estimate of another value is dropped.
+        nothing controls. An estimate stays only when its target is free in
+        ``model``, and its Quantity must convert to the units of the target;
+        ``on`` drops the estimate of any other value.
 
         A Specification with includes, or a batch, raises ValueError. When
         ``model`` is the pinned revision, ``on`` returns this Specification.
@@ -486,11 +488,6 @@ class Specification:
             model.unit_system.convert(
                 assignment.quantity, to=target_units(model, assignment.target)
             )
-        for estimate in record.estimates or ():
-            if estimate.target.target in declared:
-                model.unit_system.convert(
-                    estimate.quantity, to=target_units(model, estimate.target)
-                )
         taken = {ref.target for ref in controlled}
         unknowns = tuple(
             Reference(target=identity)
@@ -498,13 +495,12 @@ class Specification:
             if identity not in taken
         )
         free = {ref.target for ref in unknowns}
-        return self._derive(
-            model=model,
-            unknowns=unknowns,
-            estimates=tuple(
-                e for e in record.estimates or () if e.target.target in free
-            ),
-        )
+        estimates = tuple(e for e in record.estimates or () if e.target.target in free)
+        for estimate in estimates:
+            model.unit_system.convert(
+                estimate.quantity, to=target_units(model, estimate.target)
+            )
+        return self._derive(model=model, unknowns=unknowns, estimates=estimates)
 
     def _key(self, identity: UUID) -> str:
         """Name a target by its key in the pinned Model, or by its UUID."""
@@ -575,8 +571,11 @@ class Specification:
         )
         if assignments is None:
             local_unknowns += tuple(refs)
+        # A fix replaces the estimate of its target; a free keeps it.
         estimates = tuple(
-            e for e in self.record.estimates or () if e.target.target not in targets
+            e
+            for e in self.record.estimates or ()
+            if assignments is None or e.target.target not in targets
         )
         # A value that the equations use and that nothing controls is free.
         controlled = {a.target.target for a in local_assignments}
