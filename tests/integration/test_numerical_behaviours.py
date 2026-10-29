@@ -146,7 +146,7 @@ def test_stream_selection_and_mixed_frequency_totals():
         for total, freq, count in (
             (100, "year", 3),
             (-50, "week", 53),
-            (-50, "biweek", 53),
+            (-50, "month", 25),
         )
     ]
     values = tuple(

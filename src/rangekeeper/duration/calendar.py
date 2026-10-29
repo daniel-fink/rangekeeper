@@ -13,7 +13,6 @@ class Frequency(Enum):
 
     DAY = "day"
     WEEK = "week"
-    BIWEEK = "biweek"
     MONTH = "month"
     QUARTER = "quarter"
     HALFYEAR = "halfyear"
@@ -34,7 +33,6 @@ _STEPS = dict(
         (
             (1, 0),
             (7, 0),
-            (14, 0),
             (0, 1),
             (0, 3),
             (0, 6),

@@ -304,6 +304,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 
 | Current | Use instead | Status |
 | --- | --- | --- |
+| `rangekeeper.duration.Frequency.BIWEEK` | `offset(..., frequency=Frequency.WEEK, count=2)` for a 14-day step, or explicit 14-day Periods for a grid. There is no fortnight frequency | agreed |
 | `rangekeeper.model.system.reducers` | The `rangekeeper.model.system.Reducer` enum: `SUM`, `MEAN`, `MIN`, `MAX` and `COUNT`, passed as `reducer=` to `QuantityRollup` or `FlowRollup` | agreed |
 | `rangekeeper.calculations.account` | Compose the funding with Flows: a balance is `cumulative()`. Interest is the Model equation `rangekeeper.model.formulation.financial.interest`; `rx.finance.interest` in equation text follows (#255 D2, D23, #278). A how-to recipe follows (#194) | agreed |
 | `rangekeeper.model.formulation.account.schedule` | Equations over Flows, such as `funding_need = -(net_cash_flow + loan_interest).cumulative()`. A Model declares no account (#255 D2) | agreed |

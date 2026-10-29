@@ -69,27 +69,6 @@ def test_fiscal_alignment_and_explicit_month_end_selection():
     )
 
 
-def test_fortnight_origins_define_opposite_continuous_grids():
-    first = containing_period(
-        date(2026, 1, 12), frequency=Frequency.BIWEEK, origin=date(2026, 1, 5)
-    )
-    second = containing_period(
-        date(2026, 1, 12), frequency=Frequency.BIWEEK, origin=date(2026, 1, 12)
-    )
-    assert (first.first, first.end) == (date(2026, 1, 5), date(2026, 1, 19))
-    assert (second.first, second.end) == (date(2026, 1, 12), date(2026, 1, 26))
-    before = containing_period(
-        date(2025, 12, 31), frequency=Frequency.BIWEEK, origin=date(2026, 1, 5)
-    )
-    assert (before.first, before.end) == (date(2025, 12, 22), date(2026, 1, 5))
-    with pytest.raises(ValueError, match="origin"):
-        containing_period(date(2026, 1, 1), frequency=Frequency.BIWEEK)
-    with pytest.raises(ValueError, match="conflicts"):
-        containing_period(
-            date(2026, 1, 1), frequency=Frequency.BIWEEK, origin=date(2026, 1, 6)
-        )
-
-
 @pytest.mark.parametrize(
     "frequency,first,end",
     [
@@ -127,8 +106,7 @@ def test_complete_step_measurement_is_sign_symmetric():
     assert count_steps(a, date(2026, 3, 30), frequency=Frequency.MONTH) == 2
     assert count_steps(a, a, frequency=Frequency.MONTH) == 0
     assert (
-        count_steps(date(2026, 1, 1), date(2026, 1, 14), frequency=Frequency.BIWEEK)
-        == 0
+        count_steps(date(2026, 1, 1), date(2026, 1, 7), frequency=Frequency.WEEK) == 0
     )
     # Clamping a signed offset is deliberately not always inverted by measurement.
     later = date(2026, 3, 30)
@@ -195,7 +173,6 @@ def test_derived_period_dates_do_not_become_stored_fields():
     [
         (Frequency.DAY, date(2025, 12, 31), date(2026, 1, 2)),
         (Frequency.WEEK, date(2025, 12, 25), date(2026, 1, 8)),
-        (Frequency.BIWEEK, date(2025, 12, 18), date(2026, 1, 15)),
         (Frequency.MONTH, date(2025, 12, 1), date(2026, 2, 1)),
         (Frequency.QUARTER, date(2025, 10, 1), date(2026, 4, 1)),
         (Frequency.HALFYEAR, date(2025, 7, 1), date(2026, 7, 1)),

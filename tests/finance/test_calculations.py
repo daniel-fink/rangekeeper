@@ -183,7 +183,6 @@ def test_model_flow_content_store_and_stream():
     [
         ("day", 2, date(2020, 1, 3)),
         ("week", 2, date(2020, 1, 15)),
-        ("biweek", 2, date(2020, 1, 29)),
         ("month", 2, date(2020, 3, 1)),
         ("quarter", 2, date(2020, 7, 1)),
         ("halfyear", 2, date(2021, 1, 1)),

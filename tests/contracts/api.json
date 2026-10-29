@@ -164,7 +164,6 @@
    "members": [
     "DAY",
     "WEEK",
-    "BIWEEK",
     "MONTH",
     "QUARTER",
     "HALFYEAR",
