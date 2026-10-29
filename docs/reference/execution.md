@@ -114,6 +114,41 @@ values, so all seven are named; fixing any one of them determines the rest. Boun
 backend's own `backend` evidence, `equality_rank` and `unknown_count` from the
 rank analysis of an underdetermined solve, and the Run's `implementations`.
 
+## Compare Outcomes
+
+`rk.execution.compare(outcomes=, keys=, baseline=None)` compares two or more
+named Outcomes on some scalar keys with one call (D30). It returns a
+`Comparison`, which displays as a table with the `calculations` extra:
+
+```python
+rk.execution.compare(
+    outcomes={"Front door": front_outcome, "Back door": back_outcome},
+    keys=["land_cost", "rent_factor", "noi", "mortgage"],
+)
+```
+
+Without `baseline`, `values` is a `Table` with a `key` column and one column
+for each Outcome; each Outcome must be a leaf. With `baseline`, the name of one
+of the Outcomes, each other Outcome is paired with it:
+
+| Member | Result |
+| --- | --- |
+| `pairs(outcome=)` | The `Pair`s of one Outcome: each `member`, the `baseline` member it pairs with, and its `case` position (None for a leaf) |
+| `difference(outcome=, key=)` | The paired differences, value less baseline, in the baseline's units |
+| `differences` | A `Table`: `outcome`, `key`, `case`, `value`, `baseline` and `difference` for each pair |
+| `summary()` | A `Table`: `outcome`, `key`, `count`, `mean`, `minimum`, `maximum` and `share_above_zero` of the paired differences |
+| `select(*keys)` | The same Comparison on some of its keys |
+| `where(**values)` | The Comparison of the pairs whose compared member has these values; a list means any of them, and Quantities compare after unit conversion |
+
+Each member is one leaf case, in `walk()` order. Batches pair case by case, by
+position, and must have the same number of cases; a leaf pairs with every case
+of the other side. A key that names no value raises `MissingReferenceError`; a
+Flow value raises `TypeError`. Pairing by path key, `by`, `by_case` and
+`distribution(outcome=, key=)` follow with cases and paths
+([#292](https://github.com/daniel-fink/rangekeeper/issues/292),
+[#296](https://github.com/daniel-fink/rangekeeper/issues/296),
+[#310](https://github.com/daniel-fink/rangekeeper/issues/310)).
+
 ## Configuration
 
 `ExecutionConfig` is the one public configuration of an execution, and the one
@@ -167,6 +202,7 @@ time limit has passed. The stages call it between steps.
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
+| `execution/comparison.py` | `compare` and `Comparison`: values side by side, or paired differences from a baseline, with `summary`, `select` and `where`. |
 | `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `Status`, `raise_for_status()`, `free_unknowns` and `Evidence`. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |

@@ -78,7 +78,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | A target of the `RuleSet` |
 | Window | The dates on which a rule may act: by default, each date on which a value that its condition reads becomes known, or the first day of each of its `Periods`; between optional `earliest` and `latest` bounds | `specification` | None (planned, #300). Now each `Decision` record has one date (`at`) |
 | Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | None (planned, #302) |
-| Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | None (planned, #297) |
+| Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | `execution.compare(outcomes=, keys=, baseline=)`; pairing by path follows with paths (#138, #292) |
 | Availability | The earliest date at which a value can be observed | `specification` | — |
 | Solve | Calculate an `Outcome` without writing to a store | `execution` | `execution.solve` |
 | Execute | Solve and then publish to a store | `execution` | `execution.execute` |
