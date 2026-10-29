@@ -130,9 +130,8 @@ stream = rk.flow.Stream(flows={"PGI": pgi, "OPEX": opex}).with_flows(
     flows={"NOI": noi}
 )  # G04
 stream.select("PGI", "OPEX").sum(), stream.trim(span=span), stream.display()
-flow.resample(
-    frequency=rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT
-)  # #103
+flow.split(frequency=rk.duration.Frequency.QUARTER)  # #103, #405
+flow.resample(frequency=yearly, method=rk.flow.ResampleMethod.SUM)  # #103
 growth = rk.profile.Compounding(rate="2 % pa")  # G70
 pgi = rk.flow.Flow.from_profile(
     profile=growth, periods=years, initial="100 USD", base=None, start=None, every=None

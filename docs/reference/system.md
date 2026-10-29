@@ -439,7 +439,7 @@ result.display()
 A `FlowRollup` takes `Reducer.SUM` (the default), `MIN` or `MAX`; `MEAN` and
 `COUNT` raise `ValueError`. It selects leaf contributors by default, as a
 `QuantityRollup` does. `periods` and `resampling` go together: each Flow is
-resampled before the rollup, with an optional `weighting`. `units` converts the
+resampled before the rollup with one `ResampleMethod`. `units` converts the
 results; without it the Flows keep their units. Contributors without a Flow appear
 as missing in owner coverage. `missing=MissingValueHandling.ZERO` raises
 `ValueError`: a rollup never reads a missing Movement or coordinate as zero. Use
@@ -453,8 +453,8 @@ coordinate. This is separate from selected/measured/missing owner coverage.
 `value_ids` records the chosen source Values.
 
 `cashflow.formulate(hierarchy, id=..., aggregates={entity_id: flow_value_id})`
-returns passive equations for `Reducer.SUM`. It supports fixed SUM/MEAN/FIRST/LAST
-resampling over original Movement references. Every selected source needs a shape,
+returns passive equations for `Reducer.SUM`. It supports `SUM`, `MEAN`,
+`ELAPSED_MEAN`, `FIRST` and `LAST` resampling over original Movement references. Every selected source needs a shape,
 but its amounts can be unknown. Aggregate Values must be owned by their named
 entities. Self-contributions, incomplete source selection, callable symbolic
 selection and unsupported methods fail explicitly. Results never mutate a Model.

@@ -29,10 +29,11 @@ assert flow.scale(2).total().magnitude == 200
 ```
 
 A Flow owns conversion, scaling, negation, totals, `at(on=)`, `shift(by=)`,
-`trim(span=)`, `resample(periods= or frequency=, method=, ...)`, `integrate`,
-`multiply`, differences, collapse and extent. A Stream owns the operations on
-several Flows: `align`, `trim`, `resample`, `aggregate`, `sum`, `min` and `max`.
-`trim` and `resample` take the same arguments on Flow and Stream.
+`trim(span=)`, `resample(periods= or frequency=, method=, ...)`,
+`split(periods= or frequency=)`, `integrate`, `multiply`, differences, collapse
+and extent. A Stream owns the operations on several Flows: `align`, `trim`,
+`resample`, `split`, `aggregate`, `sum`, `min` and `max`. `trim`, `resample` and
+`split` take the same arguments on Flow and Stream.
 `FlowAggregate` returns the reduced Flow with its coverage. Join and
 missing-data policies are explicit. A coordinate absent from one input is
 distinct from a movement whose magnitude is unresolved. A requested absent zero
@@ -85,17 +86,20 @@ UUIDs. Currency amounts use float64 inside and `to_amount` for each result
 unresolved. Amounts that move past the ends are left out. The Periods must be
 gap-free; a dated Flow does not shift. `trim(span=)` takes a Period or a Span.
 
-`resample(frequency=, method=)` makes the target Periods from the start of the
-first Period to the end of the last; they must fit exactly. `periods=` gives the
-target Periods directly. `ResampleMethod.SPLIT` divides each amount equally over
-the shorter Periods inside its Period, and the last part takes the remainder, so
-the parts add up to the amount. `SUM`, `FIRST`, `LAST`, `MEAN`, `MIN` and `MAX`
-reduce the movements inside each longer Period.
+`split(frequency=)` and `resample(frequency=, method=)` make the target Periods
+from the start of the first Period to the end of the last; they must fit
+exactly. `periods=` gives the target Periods directly.
+
+`split` divides each amount equally over the shorter Periods inside its Period,
+and the last part takes the remainder, so the parts add up to the amount. The
+target Periods must partition each Period. `resample` reduces the movements
+inside each longer Period with one `ResampleMethod`: `SUM`, `FIRST`, `LAST`,
+`MIN`, `MAX`, `MEAN` or `ELAPSED_MEAN`. `MEAN` gives each movement the same
+weight; `ELAPSED_MEAN` weights each movement by the days of its Period.
+`missing=` treats a target Period with no amount or with an unresolved amount.
 
 ```python
-quarters = pgi.resample(
-    frequency=rk.duration.Frequency.QUARTER, method=rk.flow.ResampleMethod.SPLIT
-)
+quarters = pgi.split(frequency=rk.duration.Frequency.QUARTER)
 assert quarters.resample(
     frequency=rk.duration.Frequency.YEAR, method=rk.flow.ResampleMethod.SUM
 ) == pgi
@@ -154,9 +158,9 @@ line does not have adds nothing; only an unresolved amount follows `missing`.
 When the lines mix dated and period Flows, each period amount is dated at its
 recorded date, or else by `timing`: by default the end of its Period, the
 convention of `rk.finance`. `trim(span=)` keeps whole periods.
-Resampling accepts one method or a complete label-to-method mapping. Means require
-`MeanWeighting.OBSERVATIONS` or `ELAPSED`; a weighting mapping covers exactly the
-mean lines. `stream.coverage` describes the last resampling step; aggregation
+`resample` accepts one method for every line, or a mapping from each name to its
+method. `split` divides the amounts of every line. `stream.coverage` describes
+the last resampling step; aggregation
 coverage is a separate result. Source records remain unchanged.
 
 The private backend prepares compact coordinate and line columns once, retains

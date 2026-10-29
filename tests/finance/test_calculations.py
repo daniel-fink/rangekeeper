@@ -23,7 +23,6 @@ from rangekeeper.flow import (
     AggregationMethod,
     AlignmentJoin,
     Flow,
-    MeanWeighting,
     MissingValueHandling,
     ResampleMethod,
     Stream,
@@ -426,18 +425,10 @@ def test_weighted_rates_and_partial_period_helpers():
     periods = Periods(start=date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
     rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
     target = (Period(start=date(2020, 1, 1), end=date(2020, 3, 1)),)
-    with pytest.raises(ValueError, match="weighting"):
-        rates.resample(periods=target, method=ResampleMethod.MEAN)
-    result = rates.resample(
-        periods=target, method=ResampleMethod.MEAN, weighting=MeanWeighting.ELAPSED
-    )
+    result = rates.resample(periods=target, method=ResampleMethod.ELAPSED_MEAN)
     assert result.movements[0].number == pytest.approx((31 * 10 + 29 * 20) / 60)
     assert (
-        rates.resample(
-            periods=target,
-            method=ResampleMethod.MEAN,
-            weighting=MeanWeighting.OBSERVATIONS,
-        )
+        rates.resample(periods=target, method=ResampleMethod.MEAN)
         .movements[0]
         .magnitude
         == 15

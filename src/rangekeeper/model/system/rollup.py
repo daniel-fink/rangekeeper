@@ -30,7 +30,6 @@ if TYPE_CHECKING:
     from rangekeeper.flow._options import (
         AggregationMethod,
         AlignmentJoin,
-        MeanWeighting,
         ResampleMethod,
     )
     from rangekeeper.model.system.pivot import Pivot
@@ -549,7 +548,6 @@ class _FlowRule:
     periods: "tuple[Period, ...] | None"
     resampling: "ResampleMethod | None"
     aggregation: "AggregationMethod"
-    weighting: "MeanWeighting | None"
     missing: "MissingValueHandling"
     join: "AlignmentJoin"
 
@@ -570,7 +568,6 @@ class FlowRollup(_Rollup):
 
     periods: "Sequence[Period] | None" = None
     resampling: "ResampleMethod | None" = None
-    weighting: "MeanWeighting | None" = None
     missing: "MissingValueHandling | None" = None
     join: "AlignmentJoin | None" = None
     _rule: _FlowRule = field(init=False, repr=False, compare=False)
@@ -582,7 +579,6 @@ class FlowRollup(_Rollup):
         from rangekeeper.flow._options import (
             AggregationMethod,
             AlignmentJoin,
-            MeanWeighting,
             ResampleMethod,
         )
 
@@ -595,8 +591,6 @@ class FlowRollup(_Rollup):
             self.resampling, ResampleMethod
         ):
             raise TypeError("resampling must be a ResampleMethod")
-        if self.weighting is not None and not isinstance(self.weighting, MeanWeighting):
-            raise TypeError("weighting must be a MeanWeighting")
         missing = MissingValueHandling.ERROR if self.missing is None else self.missing
         join = AlignmentJoin.EXACT if self.join is None else self.join
         if not isinstance(missing, MissingValueHandling) or not isinstance(
@@ -615,7 +609,6 @@ class FlowRollup(_Rollup):
                 None if self.periods is None else tuple(self.periods),
                 self.resampling,
                 AggregationMethod(self.reducer.value),
-                self.weighting,
                 missing,
                 join,
             ),
@@ -654,7 +647,6 @@ class FlowRollup(_Rollup):
                 stream = stream.resample(
                     periods=rule.periods,
                     method=rule.resampling,
-                    weighting=rule.weighting,
                     missing=rule.missing,
                 )
             nodes = tuple(node for node, group in groups.items() if group)

@@ -36,7 +36,6 @@ if TYPE_CHECKING:
     from rangekeeper.duration import Frequency, Period
     from rangekeeper.duration.calendar import DayCount
     from rangekeeper.duration.period import PeriodTiming
-    from rangekeeper.flow._options import MeanWeighting
     from rangekeeper.flow._table import StreamTable
     from rangekeeper.profile import Profile
     from rangekeeper.quantity import UnitSystem
@@ -818,35 +817,38 @@ class Flow(records.Flow):
         periods: Sequence[Period] | None = None,
         frequency: Frequency | None = None,
         method: ResampleMethod,
-        weighting: MeanWeighting | None = None,
         missing: MissingValueHandling = MissingValueHandling.ERROR,
     ) -> Flow:
-        """Put the amounts on other Periods: explicit ``periods``, or a ``frequency``.
+        """Reduce the amounts onto longer Periods: explicit ``periods``, or a ``frequency``.
 
         A frequency makes the Periods from the start of the first Period to the
-        end of the last one; they must fit exactly. ``SPLIT`` divides each
-        amount equally over the shorter Periods inside its Period. The other
-        methods group whole movements onto longer Periods; a mean needs an
-        explicit weighting. ``Stream.resample`` takes the same arguments and
-        also reports coverage.
+        end of the last one; they must fit exactly. ``method`` reduces the
+        whole movements inside each target Period to one amount, and
+        ``missing`` treats a Period with no amount or an unresolved amount.
+        ``split`` divides amounts over shorter Periods. ``Stream.resample``
+        takes the same arguments and also reports coverage.
         """
-        flow = self
-        periods = _target(flow.movements, periods=periods, frequency=frequency)
-        if method is ResampleMethod.SPLIT:
-            if weighting is not None:
-                raise ValueError("weighting applies only to means")
-            return _split(flow, periods)
-        from rangekeeper.flow._batch import Batch
+        from rangekeeper.flow._batch import Batch  # noqa: PLC0415 - _batch imports this module
 
-        return (
-            Batch.prepare((flow,))
-            .resample(
-                periods=periods,
-                methods=(method,),
-                weightings=(weighting,),
-                missing=missing,
-            )
-            .flows()[0]
+        periods = _target(self.movements, periods=periods, frequency=frequency)
+        batch = Batch.prepare((self,))
+        return batch.resample(periods, methods=(method,), missing=missing).flows()[0]
+
+    def split(
+        self,
+        *,
+        periods: Sequence[Period] | None = None,
+        frequency: Frequency | None = None,
+    ) -> Flow:
+        """Divide each amount equally over shorter Periods: explicit ``periods``, or a ``frequency``.
+
+        The target Periods must partition the Period of each movement. The last
+        part takes the remainder, so the parts add up to the amount. An
+        unresolved amount gives unresolved parts. A frequency makes the Periods
+        from the start of the first Period to the end of the last one.
+        """
+        return _split(
+            self, _target(self.movements, periods=periods, frequency=frequency)
         )
 
     def integrate(
@@ -1094,7 +1096,7 @@ def _split(flow: Flow, periods: Sequence[Period]) -> Flow:
     position = 0
     for movement in flow.movements:
         if movement.period is None:
-            raise ValueError("SPLIT needs period movements")
+            raise ValueError("split needs period movements")
         while (
             position < len(targets) and targets[position].end <= movement.period.start
         ):

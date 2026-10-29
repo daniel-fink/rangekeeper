@@ -2,13 +2,15 @@
 
 import math
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from rangekeeper.flow._options import MeanWeighting, ResampleMethod
 from uuid import UUID
 
-from rangekeeper.flow import Flow, MissingValueHandling, Movement, Stream
+from rangekeeper.flow import (
+    Flow,
+    MissingValueHandling,
+    Movement,
+    ResampleMethod,
+    Stream,
+)
 from rangekeeper.model import Model
 from rangekeeper.model.expression.authoring import (
     add,
@@ -182,10 +184,9 @@ def accumulate(
     )
 
 
-def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
+def _resampled_terms(sequence: Flow, periods, *, method, missing):
     """Use fixed structural membership, never known-only numerical masks."""
-    from rangekeeper.flow._mapping import period_indices, weights
-    from rangekeeper.flow._options import MeanWeighting, ResampleMethod
+    from rangekeeper.flow._mapping import MEANS, period_indices, weights
     from rangekeeper.model.expression.authoring import literal
 
     if not isinstance(method, ResampleMethod):
@@ -198,16 +199,10 @@ def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
         raise ValueError(
             "passive resampling permits ERROR or explicit empty-group ZERO; unknown symbols cannot be skipped"
         )
-    if weighting is not None and not isinstance(weighting, MeanWeighting):
-        raise TypeError("weighting must be a MeanWeighting")
-    if (method is ResampleMethod.MEAN) != (weighting is not None):
-        raise ValueError(
-            "means require explicit weighting; weighting applies only to means"
-        )
     coordinates = tuple(sequence.coordinate_index())
     groups: list[list[tuple[Movement, float]]] = [[] for _ in periods]
     indices = period_indices(coordinates, periods)
-    fixed = weights(coordinates, elapsed=weighting is MeanWeighting.ELAPSED)
+    fixed = weights(coordinates, method=method)
     for movement, group_index, weight in zip(
         sequence.movements, indices, fixed, strict=True
     ):
@@ -227,7 +222,7 @@ def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
         terms = []
         for movement, weight in group:
             term = reference(Reference(target=movement.id))
-            if method is ResampleMethod.MEAN:
+            if method in MEANS:
                 term = multiply(term, literal(weight / denominator))
             terms.append(term)
         expressions.append(expression_sum(terms))
@@ -240,14 +235,14 @@ def resample(
     id: UUID,
     sequence: UUID,
     resampled: UUID,
-    method: "ResampleMethod",
-    weighting: "MeanWeighting | None" = None,
+    method: ResampleMethod,
     missing: MissingValueHandling = MissingValueHandling.ERROR,
 ) -> Formulation:
     """Relate a sequence to a declared period grid in compatible units.
 
-    All declared source Movements participate even with null amounts. SUM, fixed
-    MEAN and FIRST/LAST are supported. No roles, allocation or amounts are inferred.
+    All declared source Movements participate even with null amounts. SUM, the
+    two fixed means (MEAN and ELAPSED_MEAN), FIRST and LAST are supported. No
+    roles, allocation or amounts are inferred.
     """
     source, grouped = shape(model, sequence), shape(model, resampled)
     if any(m.period is None for m in grouped.movements):
@@ -256,7 +251,6 @@ def resample(
         source,
         tuple(m.period for m in grouped.movements),
         method=method,
-        weighting=weighting,
         missing=missing,
     )
     equations = [

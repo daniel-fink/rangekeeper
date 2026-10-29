@@ -570,8 +570,8 @@ symbols:
     name: ResamplingMethod
     new_name: ResampleMethod
     status: agreed
-    source: "#255 (lesson 01 cell 15), #273"
-    note: The enum also gains SPLIT, which divides each amount over shorter Periods.
+    source: "#255 (lesson 01 cell 15), #273, #405"
+    note: "`Flow.split` and `Stream.split` divide amounts over shorter Periods; `ResampleMethod` has no SPLIT member (#405)."
   - module: rangekeeper.model.expression
     name: Criterion
     new_module: rangekeeper.model
@@ -756,6 +756,17 @@ parameters:
 # uses; it lists them with the replacement. Entries with `requires: [refactor]`
 # are removed by later work; the codemod lists them only with `--with refactor`.
 removed:
+  - name: rangekeeper.flow.MeanWeighting
+    replacement: >-
+      `ResampleMethod.MEAN` for `MeanWeighting.OBSERVATIONS` and
+      `ResampleMethod.ELAPSED_MEAN` for `MeanWeighting.ELAPSED`. `resample`,
+      `FlowRollup` and `formulation.flow.resample` take no `weighting=`
+    status: agreed
+    source: "#399, #405"
+  - name: rangekeeper.flow.ResampleMethod.SPLIT
+    replacement: "`flow.split(periods=)` or `flow.split(frequency=)`, and `Stream.split`"
+    status: agreed
+    source: "#399, #405"
   - name: rangekeeper.duration.Frequency.BIWEEK
     replacement: >-
       `offset(..., frequency=Frequency.WEEK, count=2)` for a 14-day step, or
@@ -946,6 +957,14 @@ notes:
       `execute(specification, store, config=ExecutionConfig(backend=, units=,
       tolerances=))`. `ExecutionConfig` also holds the default `limits` and
       the `backend_options`.
+  - topic: Resample options
+    status: agreed
+    source: "#399, #405"
+    note: >-
+      `resample(method=)` takes one `ResampleMethod` for each line, and the
+      weighting of a mean is part of the method: `MEAN` or `ELAPSED_MEAN`.
+      `split(periods=)` or `split(frequency=)` divides amounts over shorter
+      Periods and takes no `method=` or `missing=`.
   - topic: Keyword-only arguments
     status: agreed
     source: "#255 D14"
