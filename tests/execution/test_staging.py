@@ -111,10 +111,10 @@ def test_stage_calls_the_backend_only_for_rows_that_need_it():
         return PyomoHighs().solve(problem, limits=_limits(), remaining=30.0, options={})
 
     staged = stage(binding_of(back()), solve=recorded)
-    assert calls == [] and staged.stages == () and staged.determined == {}
+    assert calls == [] and staged.stage_count == 0 and staged.determined == {}
     binding = binding_of(front())
     staged = stage(binding, solve=recorded)
-    assert len(calls) == 1 and len(staged.stages) == 1
+    assert len(calls) == 1 and staged.stage_count == 1
     reference = MODEL._value_at("reference_income").id
     assert reference in staged.determined
     assert reference not in staged.problem.variables

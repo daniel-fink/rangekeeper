@@ -56,7 +56,7 @@ def test_build_problem_analyses_rank_free_variables_and_bounds():
     _, binding = bound()
     problem = build_problem(binding)
     assert problem.variables == binding.unknowns
-    assert problem.analysis == Analysis(rank=2, unknown_count=2, free=())
+    assert problem.analysis == Analysis(equality_rank=2, unknown_count=2)
     assert not problem.analysis.underdetermined
     assert problem.equalities == problem.rows and problem.bounds == ()
     assert all(isinstance(row.relation, Relation) for row in problem.rows)
@@ -73,7 +73,7 @@ def test_a_free_variable_and_a_bound_are_in_the_analysis():
     # The rows determine every unknown, so the bound restricts none.
     assert problem.analysis.bounded == ()
     assert len(problem.bounds) == 1
-    assert problem.analysis.free == ()
+    assert problem.analysis.undetermined == ()
 
 
 def spec_from(payload):
@@ -134,7 +134,7 @@ def test_underdetermined_analysis_comes_from_rk_not_the_backend():
     _, binding = bound(spec_from(payload))
     analysis = build_problem(binding).analysis
     assert analysis.underdetermined
-    assert (analysis.rank, analysis.unknown_count, analysis.free) == (2, 3, ())
+    assert (analysis.equality_rank, analysis.unknown_count) == (2, 3)
 
 
 def no_process(monkeypatch):

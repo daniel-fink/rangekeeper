@@ -49,7 +49,7 @@ def batch_of(model, *leaves):
 
 
 def count_validations(monkeypatch):
-    from rangekeeper.execution import assembly, pipeline
+    from rangekeeper.execution import pipeline
     from rangekeeper.io import memory
 
     counts: Counter = Counter()
@@ -61,8 +61,9 @@ def count_validations(monkeypatch):
 
         return validate
 
-    monkeypatch.setattr(assembly, "validate_run", counted(assembly.validate_run))
-    monkeypatch.setattr(pipeline, "validate_run", counted(pipeline.validate_run))
+    monkeypatch.setattr(
+        pipeline, "validate_executed", counted(pipeline.validate_executed)
+    )
     monkeypatch.setattr(memory, "validate_run", counted(memory.validate_run))
     return counts
 

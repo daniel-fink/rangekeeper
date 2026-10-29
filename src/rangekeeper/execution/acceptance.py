@@ -50,9 +50,13 @@ class Tolerances:
 
 @dataclass(frozen=True)
 class Verification:
-    """Numerical outcome with evidence; no storage side effects."""
+    """Whether a candidate passed verification, with the residual diagnostics.
 
-    accepted: bool
+    ``passed`` is true when every assignment, equality and bound holds within
+    the tolerances. Verification has no storage side effects.
+    """
+
+    passed: bool
     diagnostics: tuple[Diagnostic, ...]
 
 
@@ -73,10 +77,10 @@ def verify(
             raise NumericalError(f"candidate has no quantity for {id}")
         values[id] = binding.units.convert(value, to=binding.value_units[id])
     diagnostics = []
-    accepted = True
+    passed = True
     for id, assigned in binding.assignments.items():
         if values[id].to_data() != assigned.to_data():
-            accepted = False
+            passed = False
             diagnostics.append(
                 Diagnostic(
                     severity=Severity.ERROR,
@@ -120,7 +124,7 @@ def verify(
                     )
                 )
             )
-            accepted &= valid
+            passed &= valid
             diagnostics.append(
                 Diagnostic(
                     severity=Severity.INFO if valid else Severity.ERROR,
@@ -145,7 +149,7 @@ def verify(
                     tolerance=Quantity(magnitude=tolerance, units=left.units),
                 )
             )
-    return Verification(accepted, tuple(diagnostics))
+    return Verification(passed, tuple(diagnostics))
 
 
 def _comparisons(

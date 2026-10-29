@@ -5,9 +5,7 @@ from uuid import UUID, uuid4
 
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.model import Model
-from rangekeeper.quantity import UnitSystem
 from rangekeeper.run import Run, RunRecord, Severity, SolutionStatus
-from rangekeeper.run import validate as validate_run
 from rangekeeper.run.report import completion_for
 from rangekeeper.schema.records import (
     CompletionStatus,
@@ -23,10 +21,12 @@ from rangekeeper.specification import Specification
 
 
 class Overlay:
-    """Resolve unstored outputs and Runs first, then read from ``resolver``.
+    """A resolver that returns unstored outputs and Runs, then reads ``resolver``.
 
-    Final Run validation uses an Overlay, so that nothing is stored before the
-    Run is valid.
+    Validate the Run of an Outcome before anything is stored with
+    ``rk.run.validate(outcome.run, resolver=Overlay(store,
+    models=outcome.outputs))``. For a batch, give every output and case Run of
+    ``outcome.walk()``. ``execute`` validates its Runs this way.
     """
 
     def __init__(
@@ -61,17 +61,12 @@ def assemble(
     *,
     id: UUID,
     output: Model | None,
-    resolver: DocumentResolver,
-    units: UnitSystem | None = None,
-    validate: bool = True,
 ) -> Outcome:
     """Make the Outcome of one leaf case, with its finalized Run.
 
-    With ``validate``, the Run is validated once against ``resolver`` with
-    ``output`` laid over it, so the output need not be stored first, and an
-    invalid Run raises ValidationError. Pass ``validate=False`` only when a
-    later commit point validates the Run, such as ``RecordStore.put``.
-    Without ``units``, validation uses the unit system of the input Model.
+    Nothing is resolved or validated. Validate the Run as its own step, with
+    ``rk.run.validate(outcome.run, resolver=Overlay(resolver,
+    models=outcome.outputs))``, or let a store validate it on ``put``.
     """
     run = Run(
         RunRecord(
@@ -81,26 +76,16 @@ def assemble(
             report=report,
         )
     )
-    outputs = () if output is None else (output,)
-    if validate:
-        overlay = Overlay(resolver, models=outputs)
-        validate_run(run, resolver=overlay, units=units).raise_if_invalid()
-    return Outcome(run, outputs)
+    return Outcome(run, () if output is None else (output,))
 
 
-def assemble_batch(
-    specification: Specification,
-    cases: Sequence[Outcome],
-    *,
-    resolver: DocumentResolver,
-    validate: bool = True,
-) -> Outcome:
+def assemble_batch(specification: Specification, cases: Sequence[Outcome]) -> Outcome:
     """Make the Outcome of a batch from the Outcomes of its direct cases.
 
     The batch Run spawns each case Run. Its outputs are the unique union of
-    the case outputs, and its completion follows from theirs. ``validate``
-    has the same meaning as for ``assemble``; the overlay holds every Run and
-    output of the cases.
+    the case outputs, and its completion follows from theirs. Nothing is
+    resolved or validated, as for ``assemble``; an Overlay for validation
+    holds every Run and output of the cases.
     """
     outputs: dict[UUID, Model] = {}
     for case in cases:
@@ -132,12 +117,4 @@ def assemble_batch(
             ),
         )
     )
-    if validate:
-        tree = [item for case in cases for item in case.walk()]
-        overlay = Overlay(
-            resolver,
-            models=(model for item in tree for model in item.outputs),
-            runs=(item.run for item in tree),
-        )
-        validate_run(run, resolver=overlay).raise_if_invalid()
     return Outcome(run, tuple(outputs.values()), tuple(cases))

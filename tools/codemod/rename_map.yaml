@@ -907,7 +907,7 @@ removed:
     status: agreed
     source: "ADR-013, #126"
   - name: rangekeeper.execution.publication.CandidateResolver
-    replacement: "`rangekeeper.execution.assembly.Overlay(resolver, models=, runs=)`"
+    replacement: "`rangekeeper.execution.Overlay(resolver, models=, runs=)`"
     status: agreed
     source: "ADR-013, #126"
   - name: rangekeeper.execution.planning.Plan

@@ -12,7 +12,8 @@ to no store:
 6. ``make_candidate`` writes the solved values into a candidate Model.
 7. ``verify`` checks the candidate against the original mathematics.
 8. ``assemble`` makes the ``Outcome`` of a leaf, and ``assemble_batch`` the
-   Outcome of a batch.
+   Outcome of a batch. Neither validates: ``rk.run.validate`` with an
+   ``Overlay`` of the unstored outputs and Runs validates the Run.
 
 An ``Outcome`` reads its result by key, ``outcome["land_cost"]``. Its
 ``status`` is a ``Status``, and ``raise_for_status()`` raises when the solve
@@ -28,7 +29,7 @@ result of one check of a decision rule.
 
 from rangekeeper.execution.acceptance import Tolerances, Verification, verify
 from rangekeeper.execution.analysis import Analysis
-from rangekeeper.execution.assembly import assemble, assemble_batch
+from rangekeeper.execution.assembly import Overlay, assemble, assemble_batch
 from rangekeeper.execution.comparison import Comparison, Pair, compare
 from rangekeeper.execution.compiler import AffineProblem, Relation, Row, build_problem
 from rangekeeper.execution.config import ExecutionConfig
@@ -61,6 +62,7 @@ __all__ = [
     "Limits",
     "Outcome",
     "OutcomeError",
+    "Overlay",
     "Pair",
     "Relation",
     "Row",

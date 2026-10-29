@@ -10,25 +10,24 @@ from uuid import UUID
 class Analysis:
     """What the rows of an affine problem fix, independent of any backend.
 
-    ``rank`` is the numerical rank of the equality rows over ``unknown_count``
-    unknowns. ``free`` names the unknowns that no row constrains, in unknown
-    order. ``undetermined`` names the unknowns that the equality rows do not
-    fix, in unknown order: each free unknown, and each unknown whose value
-    changes along a direction that the rows leave free. ``bounded`` names the
+    ``equality_rank`` is the numerical rank of the equality rows over
+    ``unknown_count`` unknowns. ``undetermined`` names the unknowns that the
+    equality rows do not fix, in unknown order: each unknown that no row
+    reads, and each unknown whose value changes along a direction that the
+    rows leave free. ``bounded`` names the
     undetermined unknowns that an inequality row reads, in unknown order: a
     bound can restrict them, but the rank analysis does not say how far.
     """
 
-    rank: int
+    equality_rank: int
     unknown_count: int
-    free: tuple[UUID, ...]
     undetermined: tuple[UUID, ...] = ()
     bounded: tuple[UUID, ...] = ()
 
     @property
     def underdetermined(self) -> bool:
         """Return whether the equality rank is below the number of unknowns."""
-        return self.rank < self.unknown_count
+        return self.equality_rank < self.unknown_count
 
 
 def equality_rank(rows: Sequence[Mapping[UUID, float]], unknown_count: int) -> int:
