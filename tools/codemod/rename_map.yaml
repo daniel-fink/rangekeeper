@@ -709,6 +709,12 @@ parameters:
 # uses; it lists them with the replacement. Entries with `requires: [refactor]`
 # are removed by later work; the codemod lists them only with `--with refactor`.
 removed:
+  - name: rangekeeper.duration.Frequency.BIWEEK
+    replacement: >-
+      `offset(..., frequency=Frequency.WEEK, count=2)` for a 14-day step, or
+      explicit 14-day Periods for a grid. There is no fortnight frequency
+    status: agreed
+    source: "#399, #402"
   - name: rangekeeper.model.system.reducers
     replacement: >-
       The `rangekeeper.model.system.Reducer` enum: `SUM`, `MEAN`, `MIN`, `MAX`

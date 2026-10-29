@@ -432,10 +432,10 @@ def containing_period(
     year_start_month: int = 1,
     origin: date | None = None,
 ) -> Period:
-    """Return the containing calendar period; fortnight and multi-year grids need an origin.
+    """Return the containing calendar period; multi-year grids need an origin.
 
-    Weekday zero means Monday. An origin must match the selected weekday or
-    fiscal boundary. It defines a continuous grid on both sides of that date.
+    Weekday zero means Monday. An origin must match the fiscal boundary. It
+    defines a continuous grid on both sides of that date.
     """
     offset(value, frequency=frequency, count=0)
     if type(week_start) is not int or not 0 <= week_start <= 6:
@@ -455,12 +455,7 @@ def containing_period(
         else:
             if origin is not None and origin.weekday() != week_start:
                 raise ValueError("origin conflicts with week_start")
-            if frequency is Frequency.BIWEEK:
-                if origin is None:
-                    raise ValueError("biweek alignment requires an explicit origin")
-                start = origin + timedelta(days=((value - origin).days // days) * days)
-            else:
-                start = value - timedelta(days=(value.weekday() - week_start) % 7)
+            start = value - timedelta(days=(value.weekday() - week_start) % 7)
         return make_period(start, start + timedelta(days=days))
     if week_start != 0:
         raise ValueError("week_start applies only to week grids")
@@ -472,7 +467,7 @@ def containing_period(
         anchor = origin.year * 12 + origin.month - 1
     else:
         if origin is not None:
-            raise ValueError("origin applies only to fortnight or multi-year grids")
+            raise ValueError("origin applies only to multi-year grids")
         if frequency is Frequency.MONTH and year_start_month != 1:
             raise ValueError("month alignment needs no fiscal year start")
         anchor = year_start_month - 1

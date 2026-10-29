@@ -354,7 +354,9 @@ the same rules ([expressions](expressions.md#dates-and-never)).
 
 ## Calendar choices
 
-`Frequency` owns the ten supported steps. `duration.offset`, `measure`, `align`,
+`Frequency` owns the nine supported steps, from a day to a decade. There is no
+fortnight step: offset by `Frequency.WEEK` with `count=2`, or give 14-day
+Periods explicitly. `duration.offset`, `count_steps`, `containing_period`,
 `cover`, `make_period`, `make_periods` and `periods_between` use native dates.
 Month offsets default to `MonthRoll.PRESERVE_END`; `CLAMP` is explicit. These rules
 are independent of the Period wire-field migration. `DayCount` owns supported
