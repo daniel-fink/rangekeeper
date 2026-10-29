@@ -86,7 +86,9 @@ stored as an opaque JSON fallback.
 ## Public optional IO
 
 Install `rangekeeper[bundle]`. Domain imports still require neither Arrow nor DuckDB.
-Use the explicit `rangekeeper.io.bundle` module:
+Use the explicit `rangekeeper.io.bundle` module. Its public names are `write`,
+`Reader` and their option types `GeometrySources`, `ParquetOptions`,
+`ReadLimits` and `IndexCheck`; the API snapshot freezes them at 1.0.0b1.
 
 ```python
 from rangekeeper.io.bundle import write, Reader
@@ -112,14 +114,34 @@ dependency cycles fail. Run validation uses the complete retained resolver.
 The writer checks round trips and publishes the manifest last. Existing destinations
 are never overwritten; a failed write can leave an unpublished directory.
 
-For the main Model, `geometry=` and `provider=` remain convenient single-source
-arguments. `geometries={model_uuid: directory}` supplies native directories;
-`providers={(provider, format, format_version): adapter}` supplies trusted decoders.
-When neither argument supplies an adapter for a pin, the writer and
+`write(root, model, *, documents=(), resolver=None, geometry=GeometrySources(),
+parquet=ParquetOptions())` takes each option by keyword:
+
+```python
+from rangekeeper.io.bundle import GeometrySources, ParquetOptions
+
+write(
+    new_directory,
+    model,
+    geometry=GeometrySources(
+        directories={model.id: native_directory},
+        providers={("example", "example-format", "1"): adapter},
+    ),
+    parquet=ParquetOptions(compression="zstd", row_group_size=8192),
+)
+```
+
+`GeometrySources.directories` maps a Model UUID to its native directory;
+`providers` maps a pin's `(provider, format, format_version)` to a trusted
+adapter. When `providers` has no adapter for a pin, the writer and
 `verify_geometry()` use the provider registered under the pin's provider name in
 `rangekeeper.io.geometry_providers` ([extension points](extensions.md)).
 A source for one Model can serve another with the same complete pin. Unknown or
-undeclared sources fail. `geometry_path(model_uuid)` locates its retained dataset.
+undeclared sources fail. `ParquetOptions` sets the Parquet codec (`none`,
+`snappy`, `gzip`, `brotli`, `lz4` or `zstd`) and the most rows in a row group;
+neither changes the Bundle identity. `Reader(root, *, providers=, limits=,
+index=)` takes the same `providers` mapping for `verify_geometry()`.
+`geometry_path(model_uuid)` locates a retained dataset.
 `verify_geometry()` checks every distinct pin, including supporting Models when the
 main Model has no Geometry. Ordinary canonical reads do not decode Geometry blobs.
 
@@ -133,15 +155,18 @@ predicate/limit pushdown and 128 MB working memory; no full Arrow index copy pre
 the query. Opening still reconstructs and verifies all retained documents. It
 validates each document once; caller-owned documents given to `write` are
 validated again as detached snapshots.
-`Reader(path, check_index=False)` skips comparing the derived record and
+`Reader(path, index=IndexCheck.SCHEMA)` skips comparing the derived record and
 reference index with the reconstructed documents; it still checks their schemas
-and file hashes. Use it only for a Bundle whose index a full open already
-verified, with files unchanged since.
+and file hashes. Use it only for a Bundle whose index a full open
+(`IndexCheck.FULL`, the default) already verified, with files unchanged since.
 Offsets are scoped to that root and query. Limits are 1–1,000 rows.
-The reader limits the Bundle to 1,000 documents, 10,000 files, 4 GiB retained bytes,
-256 MiB compressed canonical tables, 512 MiB declared expanded table bytes and one
-million physical canonical/index rows by default. These are proof bounds, not
-validated production capacity or a hard native-call deadline.
+`ReadLimits(documents=1000, bytes=4 GiB, rows=1_000_000)` limits the documents,
+the retained bytes and the physical canonical/index rows of the Bundle; pass
+another value as `Reader(path, limits=ReadLimits(rows=...))`. The reader also
+limits the Bundle to 10,000 files, 256 MiB compressed canonical tables and
+512 MiB declared expanded table bytes. These are proof bounds, not validated
+production capacity or a hard native-call deadline. A count that is not an `int`
+raises `TypeError`, and a count below 1 raises `ContractError`.
 
 `copy_to(store)` preflights identity conflicts and publication order, then publishes
 complete records before dependent Runs. A cyclic Run publication dependency fails

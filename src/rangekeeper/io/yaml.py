@@ -1,20 +1,23 @@
 """Optional safe YAML codec for the same JSON-compatible domain content."""
 
 from pathlib import Path
+from typing import Any
 
 from rangekeeper.io._amounts import amounts, detach, lenient, numbers
+from rangekeeper.io._atomic import write_new
 from rangekeeper.io._document import D, Document, require_kind, restore, trusted
-from rangekeeper.io.atomic import write_new
 from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.errors import DecodeError
 from rangekeeper.shared.optional import requires
 from rangekeeper.shared.yaml import decode
 
+__all__ = ["dumps", "loads", "read", "write"]
 
-def _implementation():
+
+def _implementation() -> Any:
     """Import the optional dependency only when a YAML operation is requested."""
     with requires("yaml"):
-        import yaml
+        import yaml  # noqa: PLC0415 - optional dependency
     return yaml
 
 

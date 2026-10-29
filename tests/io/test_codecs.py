@@ -296,7 +296,7 @@ def test_directory_reads_verify_envelope_identity_kind_and_version(
 def test_concurrent_directory_puts_are_idempotent_or_conflicting(
     tmp_path, monkeypatch, same
 ):
-    from rangekeeper.io import atomic as _atomic
+    from rangekeeper.io import _atomic
 
     barrier = Barrier(2)
     real_link = os.link
@@ -326,7 +326,7 @@ def test_concurrent_directory_puts_are_idempotent_or_conflicting(
 
 
 def test_interrupted_publication_exposes_no_partial_final_file(tmp_path, monkeypatch):
-    from rangekeeper.io import atomic as _atomic
+    from rangekeeper.io import _atomic
 
     real_link = os.link
 
@@ -351,8 +351,8 @@ from pathlib import Path
 from uuid import UUID
 from rangekeeper import Model
 from rangekeeper.model import Metadata
-from rangekeeper.io import DirectoryStore, atomic
-atomic.os.link = lambda *args: os._exit(23)
+from rangekeeper.io import DirectoryStore, _atomic
+_atomic.os.link = lambda *args: os._exit(23)
 DirectoryStore(Path(sys.argv[1])).put(Model.create(metadata=Metadata(id=UUID(sys.argv[2]), schema_version="1.0.0")))
 """
     identity = uuid4()
@@ -412,7 +412,7 @@ def test_store_preserves_trace_order_and_optional_presence(store):
 
 
 def test_codec_preserves_permission_errors(tmp_path, monkeypatch):
-    from rangekeeper.io import atomic as _atomic
+    from rangekeeper.io import _atomic
 
     def denied(*args, **kwargs):
         raise PermissionError("permission denied")

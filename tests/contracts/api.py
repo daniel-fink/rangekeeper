@@ -43,6 +43,10 @@ PACKAGES = (
     "rangekeeper.execution.backends",
     "rangekeeper.execution.rule",
     "rangekeeper.io",
+    "rangekeeper.io.bundle",
+    "rangekeeper.io.json",
+    "rangekeeper.io.polars",
+    "rangekeeper.io.yaml",
     "rangekeeper.errors",
 )
 
