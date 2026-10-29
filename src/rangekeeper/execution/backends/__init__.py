@@ -8,14 +8,6 @@ installed distribution can add a backend in the entry point group
 
 from rangekeeper.execution.backends.base import Backend, BackendResult, Termination
 from rangekeeper.execution.backends.pyomo import PyomoHighs
-from rangekeeper.shared.registry import Registry
-
-registry: Registry[Backend] = Registry("backends", Backend)
-# The worker runs as a module in a child process, so no import reaches it.
-registry.register(
-    "pyomo-highs",
-    PyomoHighs(),
-    modules=("rangekeeper.execution.backends._worker",),
-)
+from rangekeeper.execution.backends.registry import registry
 
 __all__ = ["Backend", "BackendResult", "PyomoHighs", "Termination", "registry"]
