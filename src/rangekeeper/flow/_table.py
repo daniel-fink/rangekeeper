@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from datetime import date
 
 from rangekeeper.flow._batch import polars
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError
 
 
 def stream_projection(stream):
@@ -16,8 +18,12 @@ def stream_projection(stream):
     batch = stream._prepared()
     try:
         grid = batch.grid(stream.join)
-    except ValueError as error:
-        raise ValueError(f"{error}; lines: {', '.join(stream.names)}") from error
+    except ContractError as error:
+        raise type(error)(
+            f"{error}; lines: {', '.join(stream.names)}",
+            code=error.code,
+            values={**error.values, "lines": list(stream.names)},
+        ) from error
     amounts = {}
     present = set()
     for line, coordinate, magnitude in batch.frame.select(
@@ -37,8 +43,10 @@ def stream_frame(stream):
     batch, grid, amounts, _ = stream_projection(stream)
     reserved = {"date", "period_start", "period_end", "key"}
     if reserved & set(stream.names):
-        raise ValueError(
-            "line names conflict with coordinate column names; select explicit names"
+        raise ContractError(
+            "line names conflict with coordinate column names; select explicit names",
+            code=Code.UNIQUE,
+            values={"names": sorted(reserved & set(stream.names))},
         )
     coordinates = [batch.coordinates[i] for i in grid]
     frame = pl.DataFrame(
@@ -144,8 +152,13 @@ class StreamTable:
     def __post_init__(self):
         if type(self.transpose) is not bool:
             raise TypeError("transpose must be bool")
-        if type(self.precision) is not int or not 0 <= self.precision <= 12:
-            raise ValueError("precision must be an integer from 0 to 12")
+        if type(self.precision) is not int:
+            raise TypeError("precision must be an int")
+        if not 0 <= self.precision <= 12:
+            raise ContractError(
+                "precision must be an integer from 0 to 12",
+                values={"precision": self.precision},
+            )
 
     def _cells(self):
         batch, grid, amounts, present = stream_projection(self.stream)

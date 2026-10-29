@@ -20,6 +20,14 @@ from rangekeeper.flow._options import (
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.records import Value
 from rangekeeper.schema.runtime import OMIT
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import (
+    ContractError,
+    IdentityConflictError,
+    MissingReferenceError,
+    NumericalError,
+    RevisionConflictError,
+)
 
 if TYPE_CHECKING:
     from polars import DataFrame
@@ -95,8 +103,10 @@ class Stream:
         if any(
             not isinstance(label, str) or not label.strip() for label in names
         ) or len(set(names)) != len(names):
-            raise ValueError(
-                "Stream names must be nonempty and unique; supply explicit names"
+            raise ContractError(
+                "Stream names must be nonempty and unique; supply explicit names",
+                code=Code.UNIQUE,
+                values={"names": [str(label) for label in names]},
             )
         if not isinstance(missing, MissingValueHandling) or not isinstance(
             join, AlignmentJoin
@@ -131,13 +141,24 @@ class Stream:
         """Pin original Values; duplicate identities or ambiguous names are errors."""
         ids = tuple(value_ids)
         if len(set(ids)) != len(ids):
-            raise ValueError("Stream cannot count the same Value twice")
+            raise IdentityConflictError(
+                "Stream cannot count the same Value twice",
+                targets=tuple(dict.fromkeys(i for i in ids if ids.count(i) > 1)),
+            )
         values = tuple(model.value(i) for i in ids)
-        if any(v.kind is not ValueKind.FLOW for v in values):
-            raise ValueError("Stream target is not a Flow Value")
+        others = tuple(v.id for v in values if v.kind is not ValueKind.FLOW)
+        if others:
+            raise ContractError(
+                "Stream target is not a Flow Value",
+                code=Code.REFERENCE_KIND,
+                targets=others,
+            )
         names = tuple(names) if names is not None else tuple(v.key for v in values)
         if len(names) != len(ids):
-            raise ValueError("one label is required per Value")
+            raise ContractError(
+                "one label is required per Value",
+                values={"names": len(names), "values": len(ids)},
+            )
         result = object.__new__(cls)
         result._initialize(
             names,
@@ -164,8 +185,9 @@ class Stream:
     def values(self) -> tuple[Value, ...]:
         """Original canonical Values of an untransformed symbolic selection."""
         if not self._symbolic:
-            raise ValueError(
-                "derived Stream has no canonical Values; inspect source_values or declare intermediate Flow Values"
+            raise ContractError(
+                "derived Stream has no canonical Values; inspect source_values or "
+                "declare intermediate Flow Values"
             )
         return self.source_values
 
@@ -177,8 +199,13 @@ class Stream:
             object.__setattr__(self, "_flows", self._batch.flows())
         assert self._flows is not None
         if any(f is None for f in self._flows):
-            raise ValueError(
-                "Stream contains an unresolved Flow Value without a declared shape"
+            raise NumericalError(
+                "Stream contains an unresolved Flow Value without a declared shape",
+                targets=tuple(
+                    i
+                    for i, f in zip(self.value_ids, self._flows, strict=False)
+                    if f is None
+                ),
             )
         return cast(tuple[Flow, ...], self._flows)
 
@@ -264,11 +291,23 @@ class Stream:
     def _select(self, available: tuple, requested: tuple) -> Stream:
         """Select the lines whose names or Value IDs are ``requested``."""
         if not requested:
-            raise ValueError("select at least one line")
+            raise ContractError("select at least one line")
         if len(set(requested)) != len(requested):
-            raise ValueError("duplicate selection")
-        if any(i not in available for i in requested):
-            raise KeyError("selection contains a member outside this Stream")
+            raise ContractError(
+                "duplicate selection",
+                code=Code.UNIQUE,
+                values={"requested": [str(i) for i in requested]},
+            )
+        absent = [i for i in requested if i not in available]
+        if absent:
+            names = [str(i) for i in available]
+            raise MissingReferenceError(
+                str(absent[0]),
+                kind="Flow",
+                by="name" if available is self.names else "id",
+                where="Stream",
+                candidates=difflib.get_close_matches(str(absent[0]), names),
+            )
         indices = tuple(available.index(i) for i in requested)
         return self._derive(
             names=tuple(self.names[i] for i in indices),
@@ -284,18 +323,27 @@ class Stream:
         if not isinstance(other, Stream):
             raise TypeError("other must be a Stream")
         if self.missing is not other.missing or self.join is not other.join:
-            raise ValueError("Stream policies must agree")
+            raise ContractError(
+                "Stream policies must agree",
+                values={
+                    "missing": [str(self.missing), str(other.missing)],
+                    "join": [str(self.join), str(other.join)],
+                },
+            )
         if self.model is not other.model and (
             self.model is None
             or other.model is None
             or self.model.id != other.model.id
             or self.model._record != other.model._record
         ):
-            raise ValueError("Streams must pin the same Model revision and content")
+            raise RevisionConflictError(
+                "Streams must pin the same Model revision and content"
+            )
         if not self._symbolic or not other._symbolic:
             if self.model is not None:
-                raise ValueError(
-                    "merge transformed model selections only after explicit materialization as labelled flows"
+                raise ContractError(
+                    "merge transformed model selections only after explicit "
+                    "materialization as labelled flows"
                 )
         names = list(self.names)
         flows = list(self._flows if self._flows is not None else self.flows)
@@ -305,14 +353,15 @@ class Stream:
             if ids and other.value_ids[i] in ids:
                 position = ids.index(other.value_ids[i])
                 if names[position] != label or flows[position] != other_flows[i]:
-                    raise ValueError(
-                        "duplicate Value has conflicting label or selection"
+                    raise IdentityConflictError(
+                        "duplicate Value has conflicting label or selection",
+                        targets=(other.value_ids[i],),
                     )
                 continue
             if label in names:
                 if self.model is None and flows[names.index(label)] == other_flows[i]:
                     continue
-                raise ValueError(f"conflicting Stream label: {label}")
+                raise IdentityConflictError(f"conflicting Stream label: {label}")
             names.append(label)
             flows.append(other_flows[i])
             if other.value_ids:
@@ -385,7 +434,13 @@ class Stream:
         if not isinstance(method, Mapping):
             return (method,) * len(self.names)
         if set(method) != set(self.names):
-            raise ValueError("method mapping must cover every label exactly")
+            raise ContractError(
+                "method mapping must cover every label exactly",
+                values={
+                    "missing": sorted(set(self.names) - set(method)),
+                    "unknown": sorted(map(str, set(method) - set(self.names))),
+                },
+            )
         return tuple(method[name] for name in self.names)
 
     def _target(

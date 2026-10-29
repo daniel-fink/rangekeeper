@@ -31,7 +31,7 @@ contract: a Run that is read back has the same code text.
 | Batches | `batch.*` | `BATCH_MODEL`; `BATCH_REQUIRED` (the call reads the cases of a batch, and the Specification or Outcome has none) and `BATCH_UNSUPPORTED` (the call takes one concrete Specification or one leaf Outcome, not a batch) |
 | Hierarchies | `hierarchy.*` | `HIERARCHY_CYCLE`, `HIERARCHY_MULTIPLE_PARENTS` |
 | Equation text | `equation.*` | `EQUATION_SYNTAX` (text that does not parse), `EQUATION_FUNCTION` (a function, method or member that equation text cannot use) |
-| Alignment | `alignment.*` for Periods that do not align | `ALIGNMENT_CROSSES`, `ALIGNMENT_PARTIAL` |
+| Alignment | `alignment.*` for Periods and Flow coordinates that do not align | `ALIGNMENT_CROSSES`, `ALIGNMENT_PARTIAL`, `ALIGNMENT_MIXED`, `ALIGNMENT_DIFFER`, `ALIGNMENT_DUPLICATE`, `ALIGNMENT_GAP` |
 | Comparisons | `comparison.*`, from `rk.execution.compare` | `COMPARISON_CASES`, `COMPARISON_SCALAR`, `COMPARISON_BATCH`, `COMPARISON_EMPTY` |
 | Other errors | Bare words | `DECODE`, `ENCODING`, `REVISION_CONFLICT`, `UNSUPPORTED_VERSION` |
 | Execution | Bare words in Run diagnostics | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED` |
@@ -121,7 +121,7 @@ all of its fields through `pickle`.
 | `UnsupportedError` | `ValueError` | Given by the failure; `UNSUPPORTED_CAPABILITY` by default. `document_id` and `targets` locate the declaration (the Constraint), and `equation` gives its text. With `NONAFFINE_UNKNOWNS`, `unknowns` gives the keys of the unknowns in the term that is not affine |
 | `execution`: `OutcomeError` | `ValueError` | The code of the diagnostic that gives the reason; `SOLVER_TERMINATION` by default. `status` is the Outcome's `Status`. `Outcome.raise_for_status()` raises it when no other error applies ([execution](execution.md#settings-limits-and-conclusions)) |
 | `model.system`: `HierarchyError` | `ValueError` | A `hierarchy.*` code, given by keyword. `targets` names the offending Entities |
-| `duration`: `AlignmentError` | `ValueError` | A `ContractError` with an `alignment.*` code, given by keyword: `ALIGNMENT_CROSSES` when a Period crosses the bounds of a selection, `ALIGNMENT_PARTIAL` when Periods end with a partial Period. `values` gives the Periods as ISO intervals ([Spans and Periods](calculations.md#spans-and-periods)) |
+| `duration`: `AlignmentError` | `ValueError` | A `ContractError` with an `alignment.*` code, given by keyword: `ALIGNMENT_CROSSES` when a Period crosses the bounds of a selection, `ALIGNMENT_PARTIAL` when Periods end with a partial Period, `ALIGNMENT_MIXED` when Flows mix dated and period amounts, `ALIGNMENT_DIFFER` when Flows that must match have other coordinates, `ALIGNMENT_DUPLICATE` when a Flow repeats a coordinate, and `ALIGNMENT_GAP` when Periods leave a gap. `values` gives the Periods as ISO intervals ([Spans and Periods](calculations.md#spans-and-periods)). `duration` and `flow` raise it |
 | `MissingReferenceError` | `LookupError` | `REFERENCE_MISSING`. `requested`, `by`, `kind`, `where` and `candidates` say what was requested and where ([lookups](#lookups)) |
 | `AmbiguousReferenceError` | `LookupError` | `REFERENCE_AMBIGUOUS`. A lookup for one item found several; `candidates` names each match |
 | `ReferenceTypeError` | `TypeError` | `REFERENCE_KIND` |
@@ -167,15 +167,17 @@ except rk.errors.MissingReferenceError as error:
 An argument of the wrong Python type raises `TypeError`. Every other failure on
 a public path raises a `RangekeeperError` subclass with a `Code`: a wrong value,
 a lookup that finds nothing, data or state that is not valid. `shared`,
-`schema`, `money`, `duration`, `finance` (`pv`, `npv`, `irr` and `payment`),
-`market.dynamics`, `model`, `specification` and the `Outcome` and comparisons of
-`execution` follow this rule: for example, `Table.column` and
+`schema`, `money`, `duration`, `flow`, `finance` (`pv`, `npv`, `irr` and
+`payment`), `market.dynamics`, `model`, `specification` and the `Outcome` and
+comparisons of `execution` follow this rule: for example, `Table.column` and
 `Record.has_field` raise `MissingReferenceError`, and `Record.from_data` raises
-`ValidationError` with `structure.json` for data that is not JSON. Some paths in
-`flow` still raise a plain `ValueError` or `KeyError`;
-[#407](https://github.com/daniel-fink/rangekeeper/issues/407) changes them
-before 1.0.0b1. The older `finance.financial` functions and the other internal
-`market` modules also raise plain errors; their replacements
+`ValidationError` with `structure.json` for data that is not JSON. In `flow`, an
+unresolved or non-finite amount raises `NumericalError`, incompatible units
+raise `UnitError`, coordinates that do not align raise `AlignmentError`, a
+missing line raises `MissingReferenceError`, and conflicting names or revisions
+in `Stream.merge` raise `IdentityConflictError` or `RevisionConflictError`. The
+older `finance.financial` functions and the other internal `market` modules
+still raise plain errors; their replacements
 ([#167](https://github.com/daniel-fink/rangekeeper/issues/167),
 [#298](https://github.com/daniel-fink/rangekeeper/issues/298)) follow the rule.
 An optional dependency that is not installed raises
