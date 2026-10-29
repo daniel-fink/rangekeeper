@@ -44,7 +44,8 @@ def status_of(report: Report) -> Status:
     solution = report.status.solution
     codes = {item.code for item in report.diagnostics or ()}
     if solution == SolutionStatus.FEASIBLE:
-        if Code.UNDERDETERMINED.value in codes:
+        # Bounds or not, the equations leave these unknowns free.
+        if codes.intersection(_FREE):
             return Status.UNDERDETERMINED
         return Status.FEASIBLE
     if solution == SolutionStatus.INFEASIBLE:
@@ -195,8 +196,9 @@ class Outcome:
         that can change while every equality still holds (D7). Fixing as many
         of them as the equations lack makes the solve determined. A dotted
         path names a value whose key is not unique in the Model. The tuple is
-        empty when the equations determine every unknown. When bounds exist,
-        they can still restrict these values.
+        empty exactly when the equations determine every unknown. A
+        bound can still restrict these values: the diagnostic is then
+        ``uniqueness_not_assessed``.
         """
         self._require_leaf("free_unknowns")
         if not self.outputs:

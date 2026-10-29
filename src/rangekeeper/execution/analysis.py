@@ -14,16 +14,16 @@ class Analysis:
     unknowns. ``free`` names the unknowns that no row constrains, in unknown
     order. ``undetermined`` names the unknowns that the equality rows do not
     fix, in unknown order: each free unknown, and each unknown whose value
-    changes along a direction that the rows leave free. ``has_bounds`` is true
-    when an inequality row exists; bounds can restrict directions that the
-    equality rank leaves free.
+    changes along a direction that the rows leave free. ``bounded`` names the
+    undetermined unknowns that an inequality row reads, in unknown order: a
+    bound can restrict them, but the rank analysis does not say how far.
     """
 
     rank: int
     unknown_count: int
     free: tuple[UUID, ...]
-    has_bounds: bool
     undetermined: tuple[UUID, ...] = ()
+    bounded: tuple[UUID, ...] = ()
 
     @property
     def underdetermined(self) -> bool:

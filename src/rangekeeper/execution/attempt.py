@@ -17,6 +17,7 @@ from rangekeeper.execution import (
     staging,
     statuses,
 )
+from rangekeeper.execution.analysis import Analysis
 from rangekeeper.execution.backends import Backend, registry
 from rangekeeper.execution.backends.base import BackendResult
 from rangekeeper.execution.config import ExecutionConfig
@@ -326,31 +327,7 @@ class Attempt:
                     Code.FEASIBLE_CANDIDATE,
                     "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made.",
                 )
-                analysis = problem.analysis
-                if analysis.underdetermined:
-                    free = [self.binding.references[id] for id in analysis.undetermined]
-                    self.diagnose(
-                        (
-                            Code.UNIQUENESS_NOT_ASSESSED
-                            if analysis.has_bounds
-                            else Code.UNDERDETERMINED
-                        ),
-                        f"Numerical equality rank {analysis.rank} for {analysis.unknown_count} unknowns. Bounds may restrict freedom; this is one accepted candidate, not a uniqueness proof."
-                        + (
-                            " The equations do not determine these free unknowns; the candidate holds one value for each: "
-                            + ", ".join(str(ref.target) for ref in free)
-                            + "."
-                            if free
-                            else ""
-                        ),
-                        severity=Severity.WARNING,
-                        document=self.binding.model.id if free else UNSET,
-                        references=tuple(free) if free else UNSET,
-                        values={
-                            "equality_rank": analysis.rank,
-                            "unknown_count": analysis.unknown_count,
-                        },
-                    )
+                self.diagnose_freedom(problem.analysis)
             else:
                 self.completion = CompletionStatus.FAILED
                 self.diagnose(
@@ -358,6 +335,38 @@ class Attempt:
                     "Serialized candidate failed independent acceptance; no output was published.",
                     severity=Severity.ERROR,
                 )
+
+    def diagnose_freedom(self, analysis: Analysis) -> None:
+        """Name the unknowns that the equality rows of an accepted solve leave free.
+
+        The code is ``uniqueness_not_assessed`` when a bound reads one of
+        them, and ``underdetermined`` otherwise. Either way the Outcome is
+        ``UNDERDETERMINED``: the equations do not determine these values.
+        """
+        if not analysis.underdetermined:
+            return
+        assert self.binding is not None
+        free = [self.binding.references[id] for id in analysis.undetermined]
+        bounded = (
+            " Bounds read some of them and may restrict them; no uniqueness check ran."
+            if analysis.bounded
+            else ""
+        )
+        self.diagnose(
+            Code.UNIQUENESS_NOT_ASSESSED if analysis.bounded else Code.UNDERDETERMINED,
+            f"Numerical equality rank {analysis.rank} for {analysis.unknown_count} unknowns."
+            " The equations do not determine these free unknowns; the candidate holds one value for each: "
+            + ", ".join(str(ref.target) for ref in free)
+            + "."
+            + bounded,
+            severity=Severity.WARNING,
+            document=self.binding.model.id,
+            references=tuple(free),
+            values={
+                "equality_rank": analysis.rank,
+                "unknown_count": analysis.unknown_count,
+            },
+        )
 
     def finish(self) -> Outcome:
         """Assemble the Outcome; validate its Run unless a later commit point will."""
