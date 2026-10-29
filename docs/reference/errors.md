@@ -71,7 +71,7 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | `solver_termination` | `termination`: the `Termination` value (`feasible`, `infeasible`, `limited`, `failed` or `unknown`; a Run written before 1.0.0b1 can hold `limit` or `error`, which `Outcome.evidence` reads as `limited` and `failed`; a Run of 1.0.0a1 holds a backend word, and a Run that `tools/upgrade` converted has no `values`: `Outcome.evidence` reads both as `unknown`). The other names are the backend evidence; for `pyomo-highs`, `termination_condition` (the Pyomo condition), `solution_status`, `simplex_iterations` and `solver_options` |
 | `solver_scaling` | `rows`: for each row, its `constraint`, `divisor` and `residual_units`. The `pyomo-highs` backend records it |
 | `underdetermined`, `uniqueness_not_assessed` | `equality_rank` and `unknown_count`, from the analysis of the affine problem |
-| `nonaffine_unknowns` | `equation`: the text of the Constraint, for example `"noi = coverage * debt_service"`. `unknowns`: the keys of the unknowns in the term that is not affine |
+| `nonaffine_unknowns` | `equation`: the text of the Constraint, for example `"noi = coverage * debt_service"`. `unknowns`: the keys of the unknowns in the term that is not affine, as `Model.key_of` gives them. The diagnostic's `references` are those unknowns, as for `underdetermined` |
 | A failure from `UnsupportedError` | `equation`, when the failure is in one Constraint |
 | `specification_invalid` | `issues`: each validation issue of the attempt, with its `code`, `message`, `document`, `path`, `targets`, `values` and `evidence` |
 | A failure from another error | `path`, when the error has one; `targets`, when it names more than one record. One target is the diagnostic's `target` |
@@ -152,7 +152,7 @@ fields:
 | Field | Contents |
 | --- | --- |
 | `requested` | The value that the caller gave: a UUID, code, name, key or JSON Pointer |
-| `by` | What `requested` is: `"id"`, `"code"`, `"name"`, `"key"` or `"path"`. A dotted path such as `"building_a.income"` is a `"path"`, and `requested` is the whole path |
+| `by` | What `requested` is: `"id"`, `"code"`, `"name"`, `"key"` or `"path"`. A dotted key such as `"building_a.income"` is a `"path"`, and `requested` is the whole dotted key |
 | `kind` | The kind of item: a record or class name, such as `"Entity"`, `"Value"`, `"Movement"`, `"Specification"` or `"Outcome"`, or `"document"` for a store |
 | `where` | The document, store or owner that was searched: its kind, then its code, name or UUID when it has one, for example `"Model <uuid>"`, `"Entity building_a"`, `"Specification Front door"` or `"ModelDraft"` |
 | `candidates` | For a missing item, the nearest codes or names that exist; for an ambiguous one, the code of each match |

@@ -67,14 +67,15 @@ in for execution results.
 
 ## Read an Outcome
 
-Read a solved value by its key or dotted path. A scalar value gives a
+Read a solved value by its key, its dotted key, or the text of its Value UUID:
+each key that `Model.value(key=)` takes. A scalar value gives a
 `Quantity`; a Flow value gives its `Flow`:
 
 ```python
 outcome = rk.execution.solve(back, store)
 outcome.raise_for_status()
 outcome["land_cost"]  # a Quantity in AUD
-outcome["project.land_cost"]  # the same value, by its dotted path
+outcome["project.land_cost"]  # the same value, by its dotted key
 ```
 
 | Member | Leaf | Batch |

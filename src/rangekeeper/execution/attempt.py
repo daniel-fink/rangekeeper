@@ -169,12 +169,14 @@ class Attempt:
         targets = () if located is None else located.targets
         # The error's structured fields, so that a reader needs no message text.
         values = statuses.diagnosed(error)
+        references = statuses.referenced(error)
         self.diagnose(
             code,
             str(error),
             severity=conclusion.severity,
             document=UNSET if located is None else located.document_id or UNSET,
             target=targets[0] if len(targets) == 1 else UNSET,
+            references=references or UNSET,
             values=values or UNSET,
         )
 

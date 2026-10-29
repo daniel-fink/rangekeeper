@@ -12,7 +12,7 @@ from rangekeeper.execution.errors import OutcomeError
 from rangekeeper.execution.status import Status
 from rangekeeper.flow import Flow, Stream
 from rangekeeper.model import Model
-from rangekeeper.model.targets import recorded_scalar, target_value
+from rangekeeper.model.targets import recorded_scalar
 from rangekeeper.quantity import Quantity
 from rangekeeper.run import Run
 from rangekeeper.schema.records import (
@@ -23,7 +23,6 @@ from rangekeeper.schema.records import (
     Report,
     Severity,
     SolutionStatus,
-    Value,
 )
 from rangekeeper.schema.runtime import FrozenJSONValue
 from rangekeeper.shared.codes import Code
@@ -209,11 +208,12 @@ class Outcome:
 
         These are every undetermined unknown, in unknown order: each value
         that can change while every equality still holds (D7). Fixing as many
-        of them as the equations lack makes the solve determined. A dotted
-        path names a value whose key is not unique in the Model. The tuple is
-        empty exactly when the equations determine every unknown. A
-        bound can still restrict these values: the diagnostic is then
-        ``uniqueness_not_assessed``.
+        of them as the equations lack makes the solve determined. Each key is
+        the one that ``Model.key_of`` gives, so ``fix`` and ``outcome[key]``
+        take it: a dotted key names a value whose key is not unique in the
+        Model. The tuple is empty exactly when the equations determine every
+        unknown. A bound can still restrict these values: the diagnostic is
+        then ``uniqueness_not_assessed``.
         """
         self._require_leaf("free_unknowns")
         if not self.outputs:
@@ -222,7 +222,7 @@ class Outcome:
         for item in self.diagnostics:
             if item.code in _FREE:
                 for reference in item.references or ():
-                    key = _key(self.model, target_value(self.model, reference))
+                    key = self.model.key_of(reference.target)
                     if key not in keys:
                         keys.append(key)
         return tuple(keys)
@@ -240,14 +240,16 @@ class Outcome:
         return self.outputs[0]
 
     def __getitem__(self, key: str) -> Quantity | Flow:
-        """Return the solved value at a key or a dotted path.
+        """Return the solved value at a key, as ``Model.value(key=)`` takes it.
+
+        The key is a bare key, a dotted key such as ``building_a.income``, or
+        the text of a Value UUID.
 
         A scalar value gives its Quantity; a Flow value gives its Flow. An
         Outcome without an output raises the error of ``raise_for_status()``.
         In an underdetermined Outcome, a free unknown holds one candidate value.
         """
-        model = self.model
-        value = model._value_at(key)
+        value = self.model.value(key=key)
         if value.flow is not None:
             return value.flow
         if value.quantity is None:
@@ -401,18 +403,6 @@ def _reason(report: Report, status: Status) -> Diagnostic | None:
     if decisive is not None:
         return decisive
     return next((item for item in codes if item.code == Code.SOLVER_TERMINATION), None)
-
-
-def _key(model: Model, value: Value) -> str:
-    """Return the key of a Value, or its dotted path when the key is not unique."""
-    try:
-        if model._value_at(value.key).id == value.id:
-            return value.key
-    except LookupError:
-        pass
-    owner = model.owner_of(value.id)
-    assert owner is not None  # an output Value has an owner
-    return f"{model._path(owner)}.{value.key}"
 
 
 def _termination(values: dict[str, FrozenJSONValue]) -> Termination:
