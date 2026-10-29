@@ -2,13 +2,14 @@
 
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
-from enum import StrEnum
 from types import MappingProxyType
 from typing import Self
 from uuid import UUID
 
+from rangekeeper.execution import statuses
 from rangekeeper.execution.backends.base import Termination
 from rangekeeper.execution.errors import OutcomeError
+from rangekeeper.execution.statuses import Status
 from rangekeeper.flow import Flow
 from rangekeeper.model import Model
 from rangekeeper.model.targets import recorded_scalar, target_value
@@ -37,41 +38,6 @@ from rangekeeper.shared.errors import (
     ValidationError,
 )
 
-
-class Status(StrEnum):
-    """What an Outcome found, in one word.
-
-    The status follows from the Run report: its completion, its solution and
-    the code of its decisive diagnostic.
-    """
-
-    FEASIBLE = "feasible"
-    """An accepted candidate, and the equations determine each unknown."""
-    UNDERDETERMINED = "underdetermined"
-    """An accepted candidate, but the equations leave some unknowns free."""
-    INFEASIBLE = "infeasible"
-    """The backend proved that no candidate satisfies the equations."""
-    UNSUPPORTED = "unsupported"
-    """The problem is outside the supported mathematics or limits."""
-    INVALID = "invalid"
-    """The Specification is not valid against its Model."""
-    LIMITED = "limited"
-    """A time or iteration limit stopped the attempt before a candidate."""
-    FAILED = "failed"
-    """A numerical, backend or verification failure."""
-
-
-# The status of a failed attempt, by the code of its decisive diagnostic. Any
-# other code of an error diagnostic is an UnsupportedError's own code.
-_FAILURES: Mapping[str, Status] = MappingProxyType(
-    {
-        Code.SPECIFICATION_INVALID.value: Status.INVALID,
-        Code.NUMERICAL_FAILURE.value: Status.FAILED,
-        Code.NUMERICAL_REJECTION.value: Status.FAILED,
-        Code.BACKEND_UNAVAILABLE.value: Status.FAILED,
-    }
-)
-
 _FREE = (Code.UNDERDETERMINED.value, Code.UNIQUENESS_NOT_ASSESSED.value)
 
 
@@ -90,7 +56,7 @@ def status_of(report: Report) -> Status:
     decisive = _decisive(report)
     if decisive is None:
         return Status.FAILED
-    return _FAILURES.get(decisive.code, Status.UNSUPPORTED)
+    return statuses.failed(decisive.code)
 
 
 def _decisive(report: Report) -> Diagnostic | None:

@@ -33,6 +33,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Entity | One thing in the project, such as a floor or a building | `model` | — |
 | Assembly | An Entity that groups member Entities | `model` | — |
 | Relationship | A typed, classified link between two Entities | `model` | — |
+| Direction | Which way a traversal follows a Relationship: `rk.model.Direction.OUTGOING` or `INCOMING`. Each Relationship has one name; the other direction is `INCOMING`, not a second name | `model` | — |
 | Characteristics | The Values, Labels and properties that an Entity owns | `model` | — |
 | Value | One owned datum: a Measurement, a Flow or Content | `model` | — |
 | Key | The name of a Value, unique within its owner | `model` | — |
@@ -77,6 +78,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Rule | A query that fixes one value during the solve: the first date in a `Window` when a condition holds, or a default, written `window.where(condition=...).first(otherwise=...)` and fixed by key ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word "policy" is not used | `specification` | `RuleSet`, with `Decision`, `Rule` and `Action` records, in `specification.rule` |
 | Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | A target of the `RuleSet` |
 | Window | The dates on which a rule may act: by default, each date on which a value that its condition reads becomes known, or the first day of each of its `Periods`; between optional `earliest` and `latest` bounds | `specification` | None (planned, #300). Now each `Decision` record has one date (`at`) |
+| Decision result | The result of one check of a rule: `rk.execution.DecisionResult` (`DECIDED`, `NOT_MET`, `SKIPPED` or `OTHERWISE`). `DecisionResult.of(evidence)` reads it from recorded rule evidence | `execution` | Checks on each window date: none (planned, #300) |
 | Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | None (planned, #302) |
 | Paired comparison | The difference between two Outcomes on the same MarketPaths, path by path | `execution` | `execution.compare(outcomes=, keys=, baseline=)`; pairing by path follows with paths (#138, #292) |
 | Availability | The earliest date at which a value can be observed | `specification` | — |

@@ -140,3 +140,28 @@ def test_each_termination_has_one_row(termination, completion, solution, verify)
 
 def test_every_termination_has_a_row():
     assert set(statuses.TERMINATIONS) == set(Termination)
+
+
+@pytest.mark.parametrize(
+    "code,status",
+    [
+        (Code.SPECIFICATION_INVALID, statuses.Status.INVALID),
+        (Code.NUMERICAL_REJECTION, statuses.Status.FAILED),
+        (Code.NUMERICAL_FAILURE, statuses.Status.FAILED),
+        (Code.BACKEND_UNAVAILABLE, statuses.Status.FAILED),
+        (Code.UNSUPPORTED_CAPABILITY, statuses.Status.UNSUPPORTED),
+        (Code.ATTEMPT_DEADLINE, statuses.Status.LIMITED),
+        # An error's own code, which no row names.
+        (Code.NONAFFINE_UNKNOWNS, statuses.Status.UNSUPPORTED),
+        (Code.SYMBOL_LIMIT, statuses.Status.UNSUPPORTED),
+    ],
+)
+def test_failed_reads_the_status_of_a_code_from_the_failures_table(code, status):
+    assert statuses.failed(code.value) is status
+
+
+def test_each_failure_row_gives_a_status():
+    for item in statuses.FAILURES:
+        for conclusion in (item.before, item.after):
+            if conclusion is not None:
+                assert isinstance(conclusion.status, statuses.Status)

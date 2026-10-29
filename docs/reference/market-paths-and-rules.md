@@ -130,7 +130,12 @@ control value cannot substitute for an earlier decision. Declared availability c
 delay access, but cannot advance coordinate or provenance requirements.
 
 `RuleResult.evidence` is an immutable tuple. Its assignments are derived from
-that evidence. Independent stored-evidence validation checks dates, observed
+that evidence. `rk.execution.DecisionResult` names the result of one check:
+`DECIDED`, `NOT_MET`, `SKIPPED` or `OTHERWISE`. `DecisionResult.of(evidence)`
+reads it from one `RuleEvidence` record: `DECIDED` when a rule matched, else
+`OTHERWISE`. The checks on each window date, which also give `NOT_MET` and
+`SKIPPED`, come with the rule queries
+([#300](https://github.com/daniel-fink/rangekeeper/issues/300)). Independent stored-evidence validation checks dates, observed
 quantities, first-match choice, actions, termination, complete trace and exactly-once
 control coverage. It applies to Runs with and without published outputs. Runtime
 and stored checks use the caller's unit context. Neither certifies numerical
