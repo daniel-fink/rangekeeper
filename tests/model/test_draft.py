@@ -8,8 +8,16 @@ import pytest
 
 import rangekeeper as rk
 from rangekeeper.model import EntityHandle, ModelDraft, ValueHandle, ValueKind
-from rangekeeper.model.expression.authoring import add, equal, literal, reference
+from rangekeeper.model.expression.authoring import (
+    add,
+    binary,
+    date_literal,
+    equal,
+    literal,
+    reference,
+)
 from rangekeeper.quantity import default_units
+from rangekeeper.schema.enums import Operator
 from rangekeeper.schema.records import Reference
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
@@ -355,3 +363,87 @@ def test_a_committed_model_solves():
     assert run.report.status.solution == SolutionStatus.FEASIBLE
     solved = store.load_model(run.record.outputs[0])
     assert solved.value(total).quantity == rk.Quantity(text="50e6 AUD")
+
+
+def test_dates_have_no_units_and_no_recorded_content():
+    draft = rk.Model(name="Dates").edit()
+    project = draft.add_entity(code="project", classification="project")
+    start = project.date(key="start_date", description="The site is bought")
+    assert (start.key, start.owner, start.units) == ("start_date", project.id, None)
+    assert project.ref(key="start_date") == start
+    model = draft.commit()
+    value = model.value(start.id)
+    assert (value.kind, value.measure, value.date, value.never) == (
+        ValueKind.DATE,
+        None,
+        None,
+        None,
+    )
+    assert value.description == "The site is bought"
+    assert model.definitions is None or not model.definitions.measures
+    assert model.edit().entity(code="project").ref(key="start_date").units is None
+
+
+def test_date_keys_follow_the_value_rules():
+    draft = rk.Model(name="Dates").edit()
+    project = draft.add_entity(code="project")
+    project.date(key="start_date")
+    with pytest.raises(ContractError) as error:
+        project.date(key="start_date")
+    assert error.value.code == Code.UNIQUE
+    with pytest.raises(ContractError):
+        project.value(key="start_date", units="AUD")
+    for key in ("start date", "NEVER", "rk", "class"):
+        with pytest.raises(ValueError, match="identifier"):
+            project.date(key=key)
+    with pytest.raises(TypeError):
+        project.date(key="sale_date", units="day")  # type: ignore[call-arg]
+
+
+def test_lesson_03_cell_5_dates_and_their_equations():
+    # Cell 03·5 declares the plan's dates and relates them. Equation text and
+    # add_formulation come later (#145, #305); these are the same equations as
+    # Expression records on the entity's default Formulation.
+    model = rk.Model(name="Mixed-use base plan")
+    draft = model.edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.date(key="base_date")
+    project.date(key="sale_date")
+    start = project.date(key="start_date")
+    b_start = project.date(key="b_start")
+    shared_start = project.date(key="shared_start")
+    a_start = project.date(key="a_start")
+    a_open = project.date(key="a_open")
+    b_open = project.date(key="b_open")
+    project.equations(
+        equal(ref(shared_start), ref(start)),
+        equal(ref(a_start), add(ref(shared_start), literal(1, "year"))),
+        equal(ref(a_open), add(ref(a_start), literal(2, "years"))),
+        equal(ref(b_open), add(ref(b_start), literal(2, "years"))),
+        binary(
+            Operator.GREATER_THAN_OR_EQUAL,
+            ref(b_start),
+            add(ref(shared_start), literal(1, "year")),
+        ),
+        binary(Operator.NOT_EQUAL, ref(start), date_literal(rk.duration.NEVER)),
+    )
+    model = draft.commit()
+    values = model.entity(code="project").characteristics.values
+    assert [value.key for value in values][:4] == [
+        "base_date",
+        "sale_date",
+        "start_date",
+        "b_start",
+    ]
+    assert {value.kind for value in values} == {ValueKind.DATE}
+    assert len(model.formulation(model.system.formulations[0].id).constraints) == 6
+
+
+def test_a_date_equation_needs_dates_and_calendar_lengths():
+    draft = rk.Model(name="Dates").edit()
+    project = draft.add_entity(code="project")
+    start = project.date(key="start_date")
+    land = project.value(key="land_cost", units="AUD")
+    project.equations(equal(ref(land), add(ref(start), literal(1, "AUD"))))
+    with pytest.raises(rk.errors.ValidationError, match="date length"):
+        draft.commit()
