@@ -324,7 +324,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.scenario.market.generate` | Path generators and the MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.model.scenario.view.Market` | The MarketPaths document | agreed (needs refactor) |
 | `rangekeeper.execution.compiler.Row.scale` | Rows are unscaled. `PyomoHighs.scale(row)` gives the divisor of the `pyomo-highs` backend | agreed |
-| `rangekeeper.execution.executor.Executor` | `rangekeeper.execution.execute(specification, store, config=)`, which returns an `Outcome`; read the Run as `outcome.run`. Use `rangekeeper.execution.solve(specification, resolver, config=)` to write nothing | agreed |
+| `rangekeeper.execution.executor.Executor` | `rangekeeper.execution.execute(specification, store, config=)`, which returns an `Outcome`; read the Run as `outcome.run`. Use `rangekeeper.execution.solve(specification, config=)` to write nothing | agreed |
 | `rangekeeper.execution.publication.CandidateResolver` | `rangekeeper.execution.assembly.Overlay(resolver, models=, runs=)` | agreed |
 | `rangekeeper.execution.planning.Plan` | `rangekeeper.execution.resolve_cases(specification, resolver=)`. It returns `Cases`, which is also a resolver | agreed |
 | `rangekeeper.execution.preparation.prepare` | `rangekeeper.execution.validate(composition, resolver=, units=)`, then `rangekeeper.execution.bind_roles(validation)` | agreed |

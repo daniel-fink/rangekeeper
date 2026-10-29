@@ -8,9 +8,11 @@ from rangekeeper.execution.backends import Backend, registry
 from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.execution.planning import Cases, resolve_cases
-from rangekeeper.run import Prerequisites
+from rangekeeper.model import Model
+from rangekeeper.run import Prerequisites, Run
 from rangekeeper.run import validate as validate_run
 from rangekeeper.run.validation import mark_validated
+from rangekeeper.shared.errors import MissingReferenceError
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.shared.store import RecordStore
 from rangekeeper.specification import Composition, Specification
@@ -18,24 +20,80 @@ from rangekeeper.specification import Composition, Specification
 
 def solve(
     specification: Specification,
-    resolver: DocumentResolver,
+    resolver: DocumentResolver | None = None,
     *,
     config: ExecutionConfig | None = None,
 ) -> Outcome:
     """Run every stage for each case of ``specification``; write nothing.
 
-    ``resolver`` supplies the exact revisions that the Specification names.
+    Without ``resolver``, the solve resolves the documents that made the
+    Specification: the Model that ``model.specify()`` pinned, the
+    Specification itself, and what its own resolver supplies. A Specification
+    read from data has none of them; pass ``resolver`` for it. ``resolver``
+    supplies the exact revisions that the Specification names.
+
     Each leaf case gives a finalized Run, even when it fails; repeated cases
     are separate attempts. Each Run is validated once, in one validation of
-    the whole tree with the unstored outputs and case Runs laid over
-    ``resolver``. Without ``config``, the defaults of ExecutionConfig apply.
+    the whole tree with the unstored outputs and case Runs laid over the
+    resolver. Without ``config``, the defaults of ExecutionConfig apply.
 
     Missing references, invalid batch graphs and programming errors raise.
     Expected formulation and numerical failures are evidence in the Run. A
     feasible Run certifies only the documented scalar slice and its independent
     verification, not uniqueness or optimality.
     """
+    if resolver is None:
+        resolver = Pinned(specification)
     return _run(specification, resolver, config, store=None)
+
+
+class Pinned:
+    """Resolve the documents that made a Specification, without a store.
+
+    It returns the Specification itself and the Model revision that the
+    Specification keeps from ``model.specify()``. It reads other identities
+    from the Specification's own resolver, when it has one. Any other identity
+    raises MissingReferenceError.
+    """
+
+    def __init__(self, specification: Specification) -> None:
+        if not isinstance(specification, Specification):
+            raise TypeError("specification must be a Specification")
+        self.specification = specification
+        # The facade keeps these for chained calls; they are not saved.
+        self.model = specification._model
+        self.resolver = specification._resolver
+
+    def load_model(self, id: UUID) -> Model:
+        """Return the pinned Model, else load it from the Specification's resolver."""
+        if self.model is not None and self.model.id == id:
+            return self.model
+        if self.resolver is not None:
+            return self.resolver.load_model(id)
+        raise self._missing(id, "Model")
+
+    def load_specification(self, id: UUID) -> Specification:
+        """Return the Specification itself, else load it from its resolver."""
+        if id == self.specification.id:
+            return self.specification
+        if self.resolver is not None:
+            return self.resolver.load_specification(id)
+        raise self._missing(id, "Specification")
+
+    def load_run(self, id: UUID) -> Run:
+        """Load a Run from the Specification's resolver, when it can load Runs."""
+        load_run = getattr(self.resolver, "load_run", None)
+        if load_run is None:
+            raise self._missing(id, "Run")
+        return load_run(id)
+
+    @staticmethod
+    def _missing(id: UUID, kind: str) -> MissingReferenceError:
+        return MissingReferenceError(
+            id,
+            kind=kind,
+            where="the documents that made the Specification; pass resolver=",
+        )
 
 
 def execute(

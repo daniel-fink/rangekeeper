@@ -697,7 +697,7 @@
   "solve": {
    "kind": "function",
    "module": "rangekeeper.execution.pipeline",
-   "signature": "(specification: rangekeeper.specification.specification.Specification, resolver: rangekeeper.shared.references.DocumentResolver, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> rangekeeper.execution.outcome.Outcome"
+   "signature": "(specification: rangekeeper.specification.specification.Specification, resolver: rangekeeper.shared.references.DocumentResolver | None = None, *, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> rangekeeper.execution.outcome.Outcome"
   },
   "validate": {
    "kind": "function",
