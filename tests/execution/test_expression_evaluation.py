@@ -102,7 +102,7 @@ def test_rule_comparisons_remain_exact(operator, expected):
 def test_near_equality_is_exact_for_rules_but_has_an_acceptance_residual():
     expression = binary(Operator.EQUAL, literal(1), literal(1 + 1e-10))
     assert predicate(expression, {}, units=default_units) is False
-    relation, left, right, exact = next(
+    relation, left, right, exact, _ = next(
         _comparisons(expression, {}, units=default_units)
     )
     residual = left.magnitude - right.magnitude
@@ -185,7 +185,7 @@ def test_conjunction_diagnostics_preserve_expression_order():
     results = tuple(_comparisons(expression, {}, units=default_units))
     assert [
         (relation, left.magnitude - right.magnitude)
-        for relation, left, right, _ in results
+        for relation, left, right, _, _ in results
     ] == [("equal", 1), ("less_than_or_equal", -2)]
     with pytest.raises(UnsupportedError):
         tuple(_comparisons(literal(1), {}, units=default_units))

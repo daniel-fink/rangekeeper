@@ -395,7 +395,7 @@ def _check_concrete(
                 "query dependency resolution requires a graph adapter",
             )
             if node.get("kind") == "reference":
-                required.add(reference_key(node["target"]))
+                required.update(_role_targets(scope, reference_key(node["target"])))
     missing = sorted(required - (assigned | unknowns | controlled), key=str)
     require(
         not missing,
@@ -605,6 +605,19 @@ def prepare(
             composition,
             model,
         )
+
+
+def _role_targets(scope: Scope, identity: UUID) -> tuple[UUID, ...]:
+    """Return the targets that need a role for a reference: a Flow's Movements.
+
+    A reference to a whole Flow Value, in a Flow-valued equation (#279), needs a
+    role for each of its Movements; another reference needs its own.
+    """
+    value, movement = scope.targets.get(identity, ({}, None))
+    movements = (value.get("flow") or {}).get("movements") or []
+    if movement is None and value.get("kind") == "flow" and movements:
+        return tuple(UUID(item["id"]) for item in movements)
+    return (identity,)
 
 
 def _key(scope: Scope, identity: UUID) -> str | None:

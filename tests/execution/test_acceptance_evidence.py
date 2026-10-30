@@ -235,14 +235,14 @@ def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancel
         operands=(ref, tiny),
     )
     values = {target: Quantity(magnitude=0, units="dimensionless")}
-    relation, left, right, exact = next(
+    relation, left, right, exact, _ = next(
         _comparisons(predicate, values, units=default_units, fixed={target})
     )
     assert relation == "less_than" and exact and left.magnitude < right.magnitude
     cancelled = predicate.replace(operands=(ref, ref.replace(id=uuid4())))
     with pytest.raises(UnsupportedError, match="fixed"):
         tuple(_comparisons(cancelled, values, units=default_units))
-    relation, left, right, exact = next(
+    relation, left, right, exact, _ = next(
         _comparisons(cancelled, values, units=default_units, fixed={target})
     )
     assert exact and not left.magnitude < right.magnitude
