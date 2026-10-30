@@ -14,6 +14,7 @@ from typing import Self
 from uuid import UUID, uuid4
 
 from rangekeeper.duration.dates import NEVER, Never
+from rangekeeper.flow import Flow
 from rangekeeper.model.formulation.validation import check_formulation_names
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.index import RecordIndex
@@ -327,9 +328,9 @@ class Specification:
 
     def fix(
         self,
-        targets: "Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]] | None" = None,
+        targets: "Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]] | None" = None,
         /,
-        **values: "Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]",
+        **values: "Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]",
     ) -> "Specification":
         """Return a new Specification that fixes values, by key.
 
@@ -341,7 +342,10 @@ class Specification:
         bare number for a ratio (``coverage=1.25``). Its units must be
         compatible with the units of the value. One value fixes a scalar
         value, or each Movement of a Flow; a mapping from Movement UUIDs to
-        values fixes those Movements only. A fix replaces an earlier fix or
+        values fixes those Movements only. A Flow fixes a Flow value: each
+        Movement takes the amount over the same Period, or on the same date,
+        such as ``fix(rent_index=paths.mean(name="rent_index"))``; a Flow
+        with other Periods raises ContractError. A fix replaces an earlier fix or
         free of the same target. When no role changes, ``fix`` returns this
         Specification.
         """
@@ -359,7 +363,12 @@ class Specification:
         model = self._require_model()
         refs: list[Reference] = []
         assignments = []
-        for target, quantity in items.items():
+        for target, value in items.items():
+            quantity = (
+                self._by_movement(model, target, value)
+                if isinstance(value, Flow)
+                else value
+            )
             ids = tuple(quantity) if isinstance(quantity, Mapping) else None
             selected = self._targets(model, target, ids=ids)
             for ref in selected:
@@ -555,6 +564,21 @@ class Specification:
                 code=Code.BATCH_UNSUPPORTED,
                 document_id=self.id,
             )
+
+    @staticmethod
+    def _by_movement(
+        model: "Model", target: "str | UUID | Reference", flow: Flow
+    ) -> "dict[UUID, Quantity]":
+        """Return the amount of ``flow`` for each Movement of the Flow ``target``."""
+        from rangekeeper.specification.targets import flow_amounts
+
+        if isinstance(target, str):
+            identity = model.value(key=target).id
+        elif isinstance(target, Reference):
+            identity = target.target
+        else:
+            identity = target
+        return flow_amounts(model, identity, flow=flow)
 
     @staticmethod
     def _targets(model, target, *, ids=None) -> "tuple[Reference, ...]":

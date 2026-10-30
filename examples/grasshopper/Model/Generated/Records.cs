@@ -1211,6 +1211,26 @@ public sealed class Location : WireRecord
     }
 }
 
+/// <summary>Schema-derived MarketPath wire record. Exports and nested reads are detached.</summary>
+public sealed class MarketPath : WireRecord
+{
+    public MarketPath() { }
+    public MarketPath(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field amounts; missing and null remain distinct.</summary>
+    public IReadOnlyList<PathAmounts> Amounts
+    {
+        get => Read<IReadOnlyList<PathAmounts>>("amounts");
+        init => Write("amounts", value);
+    }
+    /// <summary>Wire field key; missing and null remain distinct.</summary>
+    public string Key
+    {
+        get => Read<string>("key");
+        init => Write("key", value);
+    }
+}
+
 /// <summary>Schema-derived Measure wire record. Exports and nested reads are detached.</summary>
 public sealed class Measure : WireRecord
 {
@@ -1528,6 +1548,178 @@ public sealed class Parameter : WireRecord
     {
         get => Read<bool>("required");
         init => Write("required", value);
+    }
+}
+
+/// <summary>Schema-derived PathAmounts wire record. Exports and nested reads are detached.</summary>
+public sealed class PathAmounts : WireRecord
+{
+    public PathAmounts() { }
+    public PathAmounts(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field magnitudes; missing and null remain distinct.</summary>
+    public IReadOnlyList<double> Magnitudes
+    {
+        get => Read<IReadOnlyList<double>>("magnitudes");
+        init => Write("magnitudes", value);
+    }
+    /// <summary>Wire field series; missing and null remain distinct.</summary>
+    public string Series
+    {
+        get => Read<string>("series");
+        init => Write("series", value);
+    }
+}
+
+/// <summary>Schema-derived PathCapture wire record. Exports and nested reads are detached.</summary>
+public sealed class PathCapture : WireRecord
+{
+    public PathCapture() { }
+    public PathCapture(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field algorithm; missing and null remain distinct.</summary>
+    public Optional<string> Algorithm
+    {
+        get => ReadOptional<string>("algorithm");
+        init => WriteOptional("algorithm", value);
+    }
+    /// <summary>Wire field count; missing and null remain distinct.</summary>
+    public global::System.Numerics.BigInteger Count
+    {
+        get => Read<global::System.Numerics.BigInteger>("count");
+        init => Write("count", value);
+    }
+    /// <summary>Wire field fingerprint; missing and null remain distinct.</summary>
+    public Optional<string> Fingerprint
+    {
+        get => ReadOptional<string>("fingerprint");
+        init => WriteOptional("fingerprint", value);
+    }
+    /// <summary>Wire field generator; missing and null remain distinct.</summary>
+    public Optional<string> Generator
+    {
+        get => ReadOptional<string>("generator");
+        init => WriteOptional("generator", value);
+    }
+    /// <summary>Wire field parameters; missing and null remain distinct.</summary>
+    public IReadOnlyList<PathParameter> Parameters
+    {
+        get => Read<IReadOnlyList<PathParameter>>("parameters");
+        init => Write("parameters", value);
+    }
+    /// <summary>Wire field seed; missing and null remain distinct.</summary>
+    public Optional<global::System.Numerics.BigInteger> Seed
+    {
+        get => ReadOptional<global::System.Numerics.BigInteger>("seed");
+        init => WriteOptional("seed", value);
+    }
+    /// <summary>Wire field streams; missing and null remain distinct.</summary>
+    public IReadOnlyList<RandomStream> Streams
+    {
+        get => Read<IReadOnlyList<RandomStream>>("streams");
+        init => Write("streams", value);
+    }
+    /// <summary>Wire field versions; missing and null remain distinct.</summary>
+    public IReadOnlyList<LibraryVersion> Versions
+    {
+        get => Read<IReadOnlyList<LibraryVersion>>("versions");
+        init => Write("versions", value);
+    }
+}
+
+/// <summary>Schema-derived PathParameter wire record. Exports and nested reads are detached.</summary>
+public sealed class PathParameter : WireRecord
+{
+    public PathParameter() { }
+    public PathParameter(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field distribution; missing and null remain distinct.</summary>
+    public Optional<Distribution> Distribution
+    {
+        get => ReadOptional<Distribution>("distribution");
+        init => WriteOptional("distribution", value);
+    }
+    /// <summary>Wire field name; missing and null remain distinct.</summary>
+    public string Name
+    {
+        get => Read<string>("name");
+        init => Write("name", value);
+    }
+    /// <summary>Wire field quantity; missing and null remain distinct.</summary>
+    public Optional<Quantity> Quantity
+    {
+        get => ReadOptional<Quantity>("quantity");
+        init => WriteOptional("quantity", value);
+    }
+    /// <summary>Wire field series; missing and null remain distinct.</summary>
+    public string Series
+    {
+        get => Read<string>("series");
+        init => Write("series", value);
+    }
+}
+
+/// <summary>Schema-derived PathSeries wire record. Exports and nested reads are detached.</summary>
+public sealed class PathSeries : WireRecord
+{
+    public PathSeries() { }
+    public PathSeries(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field lag; missing and null remain distinct.</summary>
+    public Quantity Lag
+    {
+        get => Read<Quantity>("lag");
+        init => Write("lag", value);
+    }
+    /// <summary>Wire field name; missing and null remain distinct.</summary>
+    public string Name
+    {
+        get => Read<string>("name");
+        init => Write("name", value);
+    }
+    /// <summary>Wire field units; missing and null remain distinct.</summary>
+    public string Units
+    {
+        get => Read<string>("units");
+        init => Write("units", value);
+    }
+}
+
+/// <summary>Schema-derived Paths wire record. Exports and nested reads are detached.</summary>
+public sealed class Paths : WireRecord
+{
+    public Paths() { }
+    public Paths(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field capture; missing and null remain distinct.</summary>
+    public PathCapture Capture
+    {
+        get => Read<PathCapture>("capture");
+        init => Write("capture", value);
+    }
+    /// <summary>Wire field members; missing and null remain distinct.</summary>
+    public IReadOnlyList<MarketPath> Members
+    {
+        get => Read<IReadOnlyList<MarketPath>>("members");
+        init => Write("members", value);
+    }
+    /// <summary>Wire field metadata; missing and null remain distinct.</summary>
+    public Metadata Metadata
+    {
+        get => Read<Metadata>("metadata");
+        init => Write("metadata", value);
+    }
+    /// <summary>Wire field periods; missing and null remain distinct.</summary>
+    public IReadOnlyList<Period> Periods
+    {
+        get => Read<IReadOnlyList<Period>>("periods");
+        init => Write("periods", value);
+    }
+    /// <summary>Wire field series; missing and null remain distinct.</summary>
+    public IReadOnlyList<PathSeries> Series
+    {
+        get => Read<IReadOnlyList<PathSeries>>("series");
+        init => Write("series", value);
     }
 }
 

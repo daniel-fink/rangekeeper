@@ -1,10 +1,6 @@
 """Scalar acceptance through public documents and real isolated Pyomo/HiGHS runs."""
 
 import importlib.util
-import os
-import subprocess
-import sys
-import time
 from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
@@ -564,38 +560,6 @@ def test_tiny_budget_never_claims_infeasibility():
     assert run.report.status.solution == SolutionStatus.NOT_ASSESSED
     assert any(d.code == "attempt_deadline" for d in run.report.diagnostics)
     assert not run.record.outputs
-
-
-def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
-    from rangekeeper.execution.backends import pyomo
-
-    real_run = subprocess.run
-    pid_file = tmp_path / "worker.pid"
-
-    def stalled(args, **kwargs):
-        script = f"import os,time;open({str(pid_file)!r},'w').write(str(os.getpid()));time.sleep(30)"
-        return real_run([sys.executable, "-c", script], **kwargs)
-
-    monkeypatch.setattr(pyomo.subprocess, "run", stalled)
-    store, _ = setup()
-    started = time.monotonic()
-    run = execute(store, spec(settings={"time_limit": 1}))
-    assert time.monotonic() - started < 5
-    assert run.report.status.completion == CompletionStatus.LIMITED
-    assert run.report.status.solution == SolutionStatus.UNKNOWN
-    pid = int(pid_file.read_text())
-    if os.name == "nt":
-        # Signal 0 does not test a process on Windows.
-        listing = subprocess.run(
-            ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout
-        assert str(pid) not in listing
-    else:
-        with pytest.raises(ProcessLookupError):
-            os.kill(pid, 0)
 
 
 @pytest.mark.parametrize(

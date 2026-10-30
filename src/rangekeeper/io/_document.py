@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from typing import TypeAlias, TypeVar, cast
 from uuid import UUID
 
+from rangekeeper.market.paths import Paths
 from rangekeeper.model.model import Model
 from rangekeeper.run.run import Run
 from rangekeeper.shared.errors import (
@@ -14,18 +15,19 @@ from rangekeeper.shared.errors import (
 )
 from rangekeeper.specification.specification import Specification
 
-Document: TypeAlias = Model | Specification | Run
+Document: TypeAlias = Model | Specification | Run | Paths
 D = TypeVar("D", bound=Document)
 
+# Each document facade has the name of its generated record.
 KINDS: dict[str, type[Document]] = {
-    kind.__name__: kind for kind in (Model, Specification, Run)
+    kind.__name__: kind for kind in (Model, Specification, Run, Paths)
 }
 
 
 def require_kind(kind: object) -> None:
     """Accept an explicit public root facade, excluding derived views and raw records."""
-    if kind not in (Model, Specification, Run):
-        raise TypeError("kind must be Model, Specification, or Run")
+    if kind not in KINDS.values():
+        raise TypeError("kind must be Model, Specification, Run or Paths")
 
 
 def restore(data: object, kind: type[D]) -> D:
@@ -37,7 +39,7 @@ def restore(data: object, kind: type[D]) -> D:
 def trusted(document: Document) -> Document:
     """Return a document that IO writes without validating it again (ADR-011).
 
-    An exact Model, Specification or Run instance was validated when it was
+    An exact Model, Specification, Run or Paths instance was validated when it was
     built, and it is immutable, so stores and codecs trust it. Data and other
     types are not accepted here; decode data with ``restore``.
     """

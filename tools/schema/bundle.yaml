@@ -4,5 +4,6 @@ imports:
 - model
 - specification
 - run
+- market
 prefixes:
   linkml: https://w3id.org/linkml/

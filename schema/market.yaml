@@ -1,0 +1,199 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/market
+name: rangekeeper_market
+title: Rangekeeper market paths
+version: 1.0.0
+description: Captured, replayable market paths, with the record of how they were made.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- common
+- duration
+- measure
+- distribution
+default_prefix: rk
+default_range: string
+classes:
+  Paths:
+    tree_root: true
+    description: A captured, replayable set of market paths over one sequence of Periods, with its capture
+      record. A path is one possible history of external conditions.
+    notes:
+    - Metadata.id identifies this immutable revision. A content change requires a new UUID. Specifications
+      and Runs pin the document by this UUID.
+    - Each member is one path, with one amount of each declared series in each Period. A use of the paths
+      reads the stored amounts and draws no random numbers.
+    - The capture record says how the paths were made. With a generator, the same generator, parameters,
+      Periods, count and seed make the same paths again.
+    attributes:
+      metadata:
+        description: Identity and schema version of this revision, with an optional name and description.
+        range: Metadata
+        required: true
+        inlined: true
+        all_of:
+        - range: Metadata
+          inlined: true
+      periods:
+        description: The Periods of every series, in order; they do not overlap.
+        range: Period
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      series:
+        description: The declaration of each series that every member holds, in order; the names are unique.
+        range: PathSeries
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      members:
+        description: The paths, in order; the keys are unique.
+        range: MarketPath
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      capture:
+        description: How the paths were made.
+        range: PathCapture
+        required: true
+        inlined: true
+  PathSeries:
+    description: The declaration of one named series of market paths, such as a rent index.
+    attributes:
+      name:
+        description: Name of the series, unique in its document. A Model value with the same key takes the series.
+        range: Code
+        required: true
+      units:
+        description: Units of every amount of the series.
+        range: string
+        required: true
+        pattern: \S
+      lag:
+        description: Whole length of time, such as 0 days or 1 month, after which an amount is known. An amount
+          is known at the end of its Period plus the lag.
+        range: Quantity
+        required: true
+        inlined: true
+  MarketPath:
+    description: One path, the member of a Paths document with its key.
+    attributes:
+      key:
+        description: Key of the path, unique in its document.
+        range: Code
+        required: true
+      amounts:
+        description: The amounts of each declared series, in the order of the declarations.
+        range: PathAmounts
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  PathAmounts:
+    description: The amounts of one series in one path, one in each Period of the document.
+    attributes:
+      series:
+        description: Name of the declared series.
+        range: Code
+        required: true
+      magnitudes:
+        description: Finite amount in each Period, in the units of the series and in the order of the Periods.
+        range: double
+        required: true
+        multivalued: true
+        list_elements_ordered: true
+  PathCapture:
+    description: How a set of market paths was made. Paths made from data have no generator, parameters, seed
+      or random streams.
+    attributes:
+      generator:
+        description: Registered name of the path generator, such as dynamics; absent for paths made from data.
+        range: Code
+      fingerprint:
+        description: Fingerprint of the generator implementation; present exactly when the generator is.
+        range: string
+      seed:
+        description: Nonnegative seed of the random streams; absent when nothing is random.
+        range: integer
+        minimum_value: 0
+      count:
+        description: Number of paths that were made.
+        range: integer
+        required: true
+        minimum_value: 1
+      parameters:
+        description: The parameters of the generator for each series, in order.
+        range: PathParameter
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      algorithm:
+        description: Random generation algorithm, such as numpy.SeedSequence/PCG64; absent when nothing is random.
+        range: string
+      streams:
+        description: The random streams of the generator, in order; empty when nothing is random.
+        range: RandomStream
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      versions:
+        description: Versions of the libraries that made the paths.
+        range: LibraryVersion
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  PathParameter:
+    description: One parameter of a path generator for one series, a constant or a distribution.
+    attributes:
+      series:
+        description: Name of the series that the parameter applies to.
+        range: Code
+        required: true
+      name:
+        description: Name of the parameter, unique for its series.
+        range: Code
+        required: true
+      quantity:
+        description: Constant value of the parameter; give this or distribution, not both.
+        range: Quantity
+        inlined: true
+      distribution:
+        description: Distribution that each path draws the parameter from; give this or quantity, not both.
+        range: Distribution
+        inlined: true
+  RandomStream:
+    description: Stable identity of one random stream of a generator, independent of process and dispatch order.
+    attributes:
+      name:
+        description: Name of the component or parameter that the stream draws for.
+        range: Code
+        required: true
+      identifier:
+        description: SHA-256 hexadecimal digest of the names that identify the stream; with the seed, it seeds
+          the stream.
+        range: string
+        required: true
+  LibraryVersion:
+    description: Recorded implementation dependency version.
+    attributes:
+      name:
+        description: Name of the dependency, such as python.
+        range: string
+        required: true
+      version:
+        description: Version of the dependency.
+        range: string
+        required: true

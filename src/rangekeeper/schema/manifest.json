@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "b8cbc290df1ce90716215a4f1000c80c0a6288d227fe9f898e6da3ceb6010e14",
+    "checks.py": "7d647d3cbb15f447e03b6edaf19a74e7ec90011f2518c0e9aa18c05c4dd57f91",
     "enums.py": "d3accef130020fb6f1a96cf2350b22f26865659a6b5bac694ee8a60a0e5148a2",
-    "records.py": "df6930823e9e027560869ec887177f7100b1e3dcd06b63e3c1828c935f2fcf49",
-    "schema.json": "8e624328b7dd79ef9f0741a3489942381379b6022c9b187b03da3aeaa754040d",
-    "slots.json": "6e68e78f1f7dcd2c5798ee61fcdee0c7d1147dd6f7dd2bbc70a980e96e582eca"
+    "records.py": "da3452aac4989a0a961b65ed7d0fd8ec2f42f86e08ae36b2d2f5d488be65a4f9",
+    "schema.json": "e6029d963d551fd7905470e7594e8acbeb8d9d76310c260896b7f672cc2be00b",
+    "slots.json": "2d4d8c6334c4d421f976f0632800c6140d3d4a9385daaa0dc5c80c6ff69753b4"
   },
   "classes": [
     "Action",
@@ -44,6 +44,7 @@
     "Label",
     "LibraryVersion",
     "Location",
+    "MarketPath",
     "Measure",
     "Metadata",
     "Method",
@@ -54,6 +55,11 @@
     "ObservationBinding",
     "ObservedQuantity",
     "Parameter",
+    "PathAmounts",
+    "PathCapture",
+    "PathParameter",
+    "PathSeries",
+    "Paths",
     "Period",
     "Projection",
     "PropertyContent",
@@ -94,6 +100,7 @@
   },
   "document_versions": {
     "Model": "1.0.0",
+    "Paths": "1.0.0",
     "Run": "1.0.0",
     "Specification": "1.0.0"
   },
@@ -119,6 +126,7 @@
     "schema/formulation.yaml": "659f4380df7cafae81c21af6830b9f100cb64b2cd47b1d6789ae3aa67f4e95d4",
     "schema/function.yaml": "b302be94bc43e29d1e4cc532a801f8e5a65718a207dc3c66c3988d522cc307a8",
     "schema/geometry.yaml": "62777dfce41c862ee851fe7e6f5f044220dc857a7a08a573a51f96ddcc8c98e2",
+    "schema/market.yaml": "f41f04d249500d354afea5789f9cc2739dea08bbaa72253158faab449ee4cb8f",
     "schema/measure.yaml": "8af2081c45a4dc123c436441d557d36934648e60598953faa10f89b240138bbf",
     "schema/model.yaml": "d998afd2fc7010b15863b358defb9c178d1aacd982aa93877fd1bab479f2aef7",
     "schema/provenance.yaml": "ab4ddf472dad4dc8a43e54c3fd3d14c699ceb1dde275011232aebee9a291a6d5",
@@ -127,11 +135,11 @@
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
     "schema/rule.yaml": "c8c85bcb173b90946556b54335cc59d7ea7b627000f7df61d313c3769b42ea67",
     "schema/run.yaml": "c2b9fa623bab2ec76ff0d693fe1f31e3e530fa7a7e8da51923e9a99701d84a7b",
-    "schema/scenario.yaml": "2952d83a42d3b8b72a317cf32b392ea877cc3cbb254de4a1276ff6928b1f6726",
+    "schema/scenario.yaml": "d466bd9a698fe92e685c1bf4e1cff320a118dfef8663cc97ddec7f99670041df",
     "schema/settings.yaml": "33b976592d1f15197791e08f1b4c6fa418738a60e77ecc13b955ac94a8396248",
     "schema/specification.yaml": "4030d7a99e7fb92e2895893e77ea88decb8479ad942bce7abbd95748898a433c",
-    "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "d92575d4dff59bb64aa77f003441903f747822a3a4b5e3b0721ba4bab71ddadd",
+    "tools/schema/bundle.yaml": "b40e8c01d8367d9bc274d2512ab462f056170c06a7f7ad62e3cfac01902afc4d",
+    "tools/schema/generate.py": "53bafe1468ae417da4cdcd728fcbe4390d5ca944950ec498550e6449b9270955",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"
   }
 }

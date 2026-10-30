@@ -15,7 +15,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Model | Project knowledge: definitions, system, provenance and an optional geometry pin | `model` | — |
 | Specification | An investigation of one Model revision: fixed and free values, estimates, bounds, objectives, rules, includes and cases | `specification` | — |
 | Run | Finalized evidence of one attempt or batch: status, report, output Models and child Runs | `run` | — |
-| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record | `market` | `rk.market.Paths`: none (planned, #298). Now `ScenarioPlan` and `ScenarioRealization`, inside Model provenance |
+| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record; the document kind `Paths` | `market` | `rangekeeper.market.Paths`. `ScenarioPlan` and `ScenarioRealization`, inside Model provenance, remain until #140 |
 | Bundle | A delivered set of documents with their exact dependencies | `io` | — |
 | Revision | One immutable version of a document, identified by its Metadata UUID | `schema` | — |
 
@@ -87,18 +87,22 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Window | The dates on which a rule may act: by default, each date on which a value that its condition reads becomes known, or the first day of each of its `Periods`; between optional `earliest` and `latest` bounds | `specification` | None (planned, #300). Now each `Decision` record has one date (`at`) |
 | Decision result | The result of one check of a rule: `rk.execution.DecisionResult` (`DECIDED`, `NOT_MET`, `SKIPPED` or `OTHERWISE`). `DecisionResult.of(evidence)` reads it from recorded rule evidence | `execution` | Checks on each window date: none (planned, #300) |
 | Alternative, choice key | A design option as a Model revision; the Specification value that selects one ([ADR-022](../decisions/022-design-alternatives.md)) | `specification` | None (planned, #302) |
-| Paired comparison | The difference between two Outcomes on the same cases, case by case: on the same MarketPaths, path by path | `execution` | `execution.compare(outcomes=, keys=, baseline=)` returns a `Paired`, which pairs cases by case key; without `baseline`, a `SideBySide`. Pairing by path follows with paths (#138) |
+| Paired comparison | The difference between two Outcomes on the same cases, case by case: on the same MarketPaths, path by path | `execution` | `execution.compare(outcomes=, keys=, baseline=)` returns a `Paired`, which pairs cases by case key; without `baseline`, a `SideBySide`. `distribution(outcome=, key=)` gives one Outcome's differences; `by(key=)` and `by_case` give `Groups` of pairs. Pairing by path key follows with `across` (#306) |
 | Availability | The earliest date at which a value can be observed | `specification` | — |
 | Solve | Calculate an `Outcome` without writing to a store | `execution` | `execution.solve` |
 | Execute | Solve and then publish to a store | `execution` | `execution.execute` |
 | Affine problem | The linear problem that a backend receives | `execution` | `AffineProblem`: variables, rows with relations, bounds and the rank analysis |
 | Piecewise equation, active side | An equation with an `rx.max` or `rx.min` call that reads a free value. The active side is the operand that the call selects; with one active side for each call, the equation is affine. The solve picks the sides, solves and checks them at its solution, and reports sides that do not hold | `execution` | Calls of `rx.max` and `rx.min`; the `active_side` code |
 | Backend | A registered solver implementation | `execution` | — |
+| Solve worker | The isolated process in which the `pyomo-highs` backend solves. The solves of a session reuse one worker | `execution` | Private to `execution.backends`; see the [solve worker](../reference/execution.md#solve-worker) |
 | Termination | How a backend finished: a feasible candidate, proven infeasible, limited, failed or unknown. It uses the words of Status for the same ideas | `execution` | `execution.backends.Termination`, in a `BackendResult` |
 | Verification | Independent check of a candidate against the original equations | `execution` | `execution.verify`, which returns a `Verification` |
 | Status | What an Outcome found, in one word: feasible, underdetermined, infeasible, unsupported, invalid, limited or failed | `execution` | `rk.execution.Status`, from `Outcome.status` |
 | Run status | The completion and the solution that a Run report records, each in its own enum. It is a record, not a Status | `run` | `rk.run.RunStatus`, at `run.report.status` |
-| Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | `Outcome`: `outcome["key"]`, `status`, `raise_for_status()`, `free_unknowns`, `evidence`, `run`, `outputs` and `cases` |
+| Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | `Outcome`: `outcome["key"]`, `status`, `raise_for_status()`, `free_unknowns`, `evidence`, `run`, `outputs` and `cases`; for a batch, `distribution(key=)` and `mean()` |
+| Distribution | The spread of a quantity's possible values. `rk.model.Distribution` declares one for a parameter (uniform, triangular or PERT). The distribution of a solved value holds its value in each case of a batch, each case with the same weight, with its statistics | `profile`, `execution` | `rk.model.Distribution`; `outcome.distribution(key=)` returns an `execution.Distribution`, or a `DateDistribution` for a date value |
+| Quantile | The value at a share of a distribution: the smallest value whose share of cases at or below it is at least the level. The 5 % quantile of an NPV is its value at risk. It is the value of one case | `execution` | `Distribution.quantile(level=)`, and `case(quantile=)` for its case |
+| Mean of a batch | The mean of each scalar value across the cases of a batch, each case with the same weight. It is not the result of a solve, and not the result on the mean inputs | `execution` | `Outcome.mean()` returns a `Mean`; `compare` takes it as one leaf Outcome |
 | Underdetermined | A result with free unknowns that the equations do not fix, with or without bounds. It has no output unless the caller asks for one | `execution` | `Status.UNDERDETERMINED`, with `Outcome.free_unknowns`; the Run's solution `underdetermined`; `ExecutionConfig(allow_underdetermined=True)` publishes the candidate |
 | Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | — |
 | Diagnostic | One coded finding with structured fields | `shared` | Also `findings` and `issues` |
@@ -118,8 +122,8 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Coverage | Which contributors had a value, and which did not | `model`, `flow` | Four different types |
 | Pivot | A cross-tab of rollup results by rows and columns | `model` | — |
 | Filter | A declarative selection by classification, labels, number comparisons and presence | `model` | — |
-| Path | One possible history of external conditions: named Flows with availability | `market` | Scenario |
-| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `ScenarioPlan` method; the kernels in `market.dynamics` |
+| Path | One possible history of external conditions: named Flows with availability | `market` | `rangekeeper.market.MarketPath`, from `paths[key]` |
+| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `rangekeeper.market.PathGenerator` and the `generators` registry; `rk.market.Dynamics`: none (planned, #299) |
 
 ## Authoring
 

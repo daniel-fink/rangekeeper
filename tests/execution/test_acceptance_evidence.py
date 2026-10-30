@@ -212,6 +212,31 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
         fingerprint("evaluator", package=tmp_path)
 
 
+def test_the_cached_closure_follows_a_changed_import(tmp_path):
+    """ADR-013: each process caches the closure; a changed file calculates it again."""
+    import shutil
+    from pathlib import Path
+
+    import rangekeeper
+    from rangekeeper.execution.implementation import fingerprint, sources
+
+    source = Path(rangekeeper.__file__).parent
+    shutil.copytree(
+        source, tmp_path, dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.pyc")
+    )
+    before = sources("compiler", package=tmp_path)
+    original = fingerprint("compiler", package=tmp_path)
+    assert sources("compiler", package=tmp_path) == before
+    assert fingerprint("compiler", package=tmp_path) == original
+    assert "io/json.py" not in before
+    compiler = tmp_path / "execution/compiler.py"
+    compiler.write_text(
+        compiler.read_text() + "\nfrom rangekeeper.io import json as _json\n"
+    )
+    assert "io/json.py" in sources("compiler", package=tmp_path)
+    assert fingerprint("compiler", package=tmp_path) != original
+
+
 def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancellation():
     from rangekeeper.execution.acceptance import _comparisons
     from rangekeeper.execution.errors import UnsupportedError

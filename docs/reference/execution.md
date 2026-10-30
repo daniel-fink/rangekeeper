@@ -11,10 +11,10 @@ finalized Runs. LinkML remains the field authority.
 
 Install the `execution` extra; YAML fixtures also need the `yaml` extra. See the
 [installation guide](../guides/installation.md). Importing `rangekeeper` or
-`rangekeeper.execution` does not load Pyomo or HiGHS. They load in the solve
-worker. `pyproject.toml` declares the supported version ranges. The worker does
-not refuse other versions; the Run evidence records the Pyomo and HiGHS versions
-that it found.
+`rangekeeper.execution` does not load Pyomo or HiGHS. They load in the
+[solve worker](#solve-worker). `pyproject.toml` declares the supported version
+ranges. The worker does not refuse other versions; the Run evidence records the
+Pyomo and HiGHS versions that it found.
 
 | Function | Writes | Returns |
 | --- | --- | --- |
@@ -91,6 +91,8 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 | `key` | The name of the solved Specification: for a case, its case key. None when it has no name | The same |
 | `case(key=)` | `ContractError`, `batch.required` | The Outcome of the direct case with that key. No such case raises `MissingReferenceError` (`kind="Outcome"`, `by="key"`) with the keys that exist |
 | `table(*keys)` | One row | One row for each leaf case, in `walk()` order |
+| `distribution(key=)` | `ContractError`, `batch.required` | The [distribution](#distributions-of-a-batch) of one value across the leaf cases: a `Distribution` of a scalar value, a `DateDistribution` of a date value |
+| `mean()` | `ContractError`, `batch.required` | The `Mean` of the batch's scalar values, which `compare` takes as one leaf Outcome |
 | `stream(*keys)` | A `Stream` of the solved Flows, named by key. A scalar value raises `ContractError` | `ContractError`, `batch.unsupported`: read a case |
 
 `rk.execution.Status` has one member for each result:
@@ -158,6 +160,63 @@ reads stored and converted Runs too: `limit` and `error` from a Run before
 `tools/upgrade` converted, or a backend word of a 1.0.0a1 Run is `UNKNOWN`, and
 `backend` keeps that word.
 
+## Distributions of a batch
+
+`outcome.distribution(key=)` gives the distribution of one solved value across
+the leaf cases of a batch, in `walk()` order, for example the NPV across market
+paths. Each case has the same weight. The statistics are those of the cases
+themselves: a quantile is the value of one case, and there is no interpolation.
+
+```python
+npv = cases_outcome.distribution(key="unlevered_npv")
+npv.summary()  # count, mean, standard deviation, 5 % and 95 % quantiles
+npv.probability(below="0 AUD")  # the share of cases with a loss
+worst = npv.case(quantile=0.05)  # the case Outcome at the 5 % quantile
+cases_outcome.mean()["unlevered_npv"] == npv.mean()
+```
+
+A scalar value gives a `Distribution`:
+
+| Member | Result |
+| --- | --- |
+| `key`, `units` | The key, and the units of the values: the units of the first case |
+| `values` | The value of each case, in case order, in `units` |
+| `mean()` | The mean of the values |
+| `standard_deviation()` | The standard deviation of the values: it divides by the number of cases, not by one less |
+| `quantile(level=)` | The smallest value whose share of cases at or below it is at least `level`, from 0 to 1: the inverse of the empirical distribution function. `level=0` gives the minimum and `level=1` the maximum |
+| `case(quantile=)` | The leaf Outcome whose value is `quantile(level=quantile)`; of equal values, the first in case order |
+| `probability(below=, above=)` | The share of cases strictly below `below`, strictly above `above`, or strictly between them. Each bound is a Quantity or Quantity text, in units that convert to `units`. Give one bound or both |
+| `counts()` | A `Table`: each distinct `value`, in ascending order, with its `count` and `share` of the cases |
+| `summary()` | A `Table` with one row: `key`, `count`, `mean`, `standard_deviation`, `minimum`, `quantile_05`, `quantile_95` and `maximum` |
+
+A date value gives a `DateDistribution`. Its `values` hold the date of each
+case, or `NEVER`, in case order. Dates have no mean: `counts()` gives each
+distinct date in order, `NEVER` last, with its `count` and `share`. Each type
+displays as a table: a `Distribution` as its `summary()`, a `DateDistribution`
+as its `counts()`.
+
+`outcome.mean()` gives the `Mean` of a batch. `mean["key"]` is
+`outcome.distribution(key=).mean()`. The Mean is not the result of a solve: it has
+no Run, status or output. `compare` takes it as one leaf Outcome, so the mean
+of the results can be compared with the result of a solve on the mean inputs:
+
+```python
+rk.execution.compare(
+    outcomes={"Average path": average_outcome, "Mean of paths": paths_outcome.mean()},
+    keys=["unlevered_npv", "equity_npv"],
+    baseline="Average path",
+)
+```
+
+| Failure | Error |
+| --- | --- |
+| A leaf Outcome | `ContractError`, `batch.required` |
+| A Flow value, or the mean of a date value | `ContractError`, `distribution.value`, with the `key` in `values` |
+| A case without an output | The error of that case's `raise_for_status()` |
+| A level outside 0 to 1 | `ContractError` |
+| `probability()` without a bound; a level or a bound of a wrong type | `TypeError` |
+| A bound in units that do not convert | `UnitError` |
+
 ## Compare Outcomes
 
 `rk.execution.compare(outcomes=, keys=, baseline=None)` compares two or more
@@ -184,30 +243,52 @@ A `Paired` pairs each other Outcome with the baseline:
 | `pairs(outcome=)` | The `Pair`s of one Outcome: each `member`, the `baseline` member it pairs with, and its `case` key (None when both are leaves) |
 | `difference(outcome=, key=)` | The paired differences, value less baseline, in the baseline's units |
 | `differences` | A `Table`: `outcome`, `key`, `case`, `value`, `baseline` and `difference` for each pair |
-| `summary()` | A `Table`: `outcome`, `key`, `count`, `mean`, `minimum`, `maximum` and `share_above_zero` of the paired differences |
+| `distribution(outcome=, key=)` | The [`Distribution`](#distributions-of-a-batch) of one Outcome's paired differences on one key, each pair with the same weight. Its `case(quantile=)` returns the `Pair` at a quantile |
+| `summary()` | A `Table`: `outcome`, then the `summary()` columns of each distribution of differences (`key`, `count`, `mean`, `standard_deviation`, `minimum`, `quantile_05`, `quantile_95` and `maximum`), and `share_above_zero`: the share of pairs whose difference is above zero |
+| `by(key=)` | The pairs of each compared Outcome in `Groups`, by its member's value at `key`: a scalar or a date value, which need not be compared. The groups are in ascending order, `NEVER` after every date |
+| `by_case` | The pairs of each compared Outcome in `Groups`, by case: one group for each direct case of a batch, with the pairs of its leaf cases. A leaf Outcome is one group with its key, and a `Mean` one group without a key |
 | `select(*keys)` | The same comparison on some of its keys |
 | `where(**values)` | The comparison of the pairs whose compared member has these values; a list means any of them, and Quantities compare after unit conversion |
+
+`Groups` has the `paired` comparison that it groups and its group `column`:
+the key, or `case`. `summary()` gives one row for each compared Outcome, group
+and compared key: `outcome`, the group column, then the columns of
+`Paired.summary()` from `key`. It displays as its summary.
+
+```python
+difference = rk.execution.compare(
+    outcomes={"Strategy": strategy_outcome, "Fixed plan": fixed_outcome},
+    keys=["equity_npv"],
+    baseline="Fixed plan",
+)
+difference.distribution(outcome="Strategy", key="equity_npv").quantile(level=0.05)
+difference.by(key="start_date").summary()  # where waiting gains, and where it costs
+```
 
 Each member is one leaf case, in `walk()` order. The cases of two batches pair
 by case key, the `case` column of `Outcome.table`: the keys of nested batches
 joined by `/`, or the position of a case without a key. A leaf pairs with every
-case of the other side. Neither type has a public constructor: make them with
+case of the other side. The [`Mean`](#distributions-of-a-batch) of a batch
+compares as one leaf. Neither type has a public constructor: make them with
 `compare`.
 
 | Failure | Error |
 | --- | --- |
 | A key that names no value of an Outcome, or that the comparison does not have | `MissingReferenceError` (`kind="Value"`, `by="key"`) |
 | A baseline or outcome name that is not compared | `MissingReferenceError` (`kind="Outcome"`, `by="name"`) |
-| A Flow value | `ContractError`, `comparison.scalar` |
+| A Flow value, also as the key of `by` | `ContractError`, `comparison.scalar` |
 | A batch without `baseline` | `ContractError`, `comparison.batch` |
 | Batches with different case keys, or a key that two cases share | `ContractError`, `comparison.cases`, with `missing` and `extra`, or `repeated`, in `values` |
 | `where` keeps no case of an Outcome | `ContractError`, `comparison.empty` |
 | Fewer than two Outcomes, or a repeated key | `ContractError` |
 | A wrong Python type, such as one string for `keys` | `TypeError` |
 
-`by`, `by_case` and `distribution(outcome=, key=)` follow with paths
-([#296](https://github.com/daniel-fink/rangekeeper/issues/296),
-[#310](https://github.com/daniel-fink/rangekeeper/issues/310)).
+Pairing by path key follows with `across`
+([#306](https://github.com/daniel-fink/rangekeeper/issues/306)): the cases of
+a batch of cases across paths pair with the cases of a batch across the same
+paths. The query operations of `by_case`, such as `where(condition=)`,
+`order_by` and `max`, follow with
+[#310](https://github.com/daniel-fink/rangekeeper/issues/310).
 
 ## Configuration
 
@@ -275,12 +356,13 @@ time limit has passed. The stages call it between steps.
 | `execution/piecewise.py` | Piecewise equations: find the Model's `rx.max` and `rx.min` Functions, read the active side of each call at given values, and write the equations of a set of sides and the bounds that keep them active. It solves nothing. |
 | `execution/analysis.py` | Rank and free-variable analysis of the rows, in pure Python. |
 | `execution/backends/base.py` | Stage 5: the narrow problem and result protocol; a backend candidate is a claim that waits for verification. |
-| `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
+| `execution/backends/pyomo.py`, `_process.py`, `_worker.py` | The parent deadline, the [solve worker](#solve-worker) of the session and its private protocol of sparse rows; the worker builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
-| `execution/comparison.py` | `compare`, `SideBySide` and `Paired`: values side by side, or paired differences from a baseline by case key, with `summary`, `select` and `where`. |
-| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns` and `Evidence`. |
+| `execution/comparison.py` | `compare`, `SideBySide`, `Paired` and `Groups`: values side by side, or paired differences from a baseline by case key, with `distribution`, `summary`, `by`, `by_case`, `select` and `where`. |
+| `execution/distribution.py` | `Distribution`, `DateDistribution` and `Mean`: the values of one key across the cases of a batch, their statistics and counts, and the mean of a batch. |
+| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns`, `Evidence`, and a batch's `distribution` and `mean`. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and one `except` arm for the expected failures. It stores nothing. |
@@ -482,6 +564,35 @@ and each equation over dates again, exactly. `outcome["a_open"]` gives a date, o
 starts on a date Value, needs the equation functions in the solve
 ([#276](https://github.com/daniel-fink/rangekeeper/issues/276)).
 
+## Solve worker
+
+The `pyomo-highs` backend solves in a worker process, so that a stalled or
+failed native solver cannot stop the caller
+([ADR-013](../decisions/013-execution-and-extensions.md#worker-process)).
+
+- **One worker for each session.** The solves of one Python process reuse one
+  worker. It starts at the first solve and closes at interpreter exit. Each
+  `PyomoHighs` uses it. Each solve builds a new Pyomo model and a new HiGHS
+  solver in it. So the evidence and the result of a solve are the same from a
+  new or a reused worker, and they do not depend on the solves before it. Only
+  the timings change. Solves from two threads at the same time use two
+  workers; one of them stays for the next solve.
+- **Isolated mode.** The worker runs as `python -I` with the caller's
+  interpreter. It reads no `PYTHON*` environment variable. A module in the
+  current folder or on `PYTHONPATH` cannot replace one of its imports. It reads
+  the user site directory only when the caller reads it. Install the `execution`
+  extra in the environment of that interpreter.
+- **Sparse rows.** Only numbers cross the process boundary: the size of the
+  problem and, for each scaled row, the index and value of each nonzero
+  coefficient, the constant and the relation. The candidate comes back as one
+  value for each variable.
+- **Failures.** A solve that passes its deadline kills and reaps its worker; it
+  is `LIMITED`, with `termination_condition: worker_deadline` in its evidence. A
+  worker that ends without a response gives a `numerical_failure` diagnostic
+  with its exit code and the end of its stderr. After any failure or
+  interruption of a solve, the next solve starts a new worker. A worker that
+  ended while it waited is replaced, and the next solve does not fail.
+
 ## Settings, limits and conclusions
 
 - Default limits are **30 seconds**, **100,000 simplex iterations**, **10,000 symbols**
@@ -492,9 +603,9 @@ starts on a date Value, needs the equation functions in the solve
   are separate. The `pyomo-highs` backend clamps a request above HiGHS's integer
   maximum, 2147483647, with a `settings_adjusted` diagnostic, and records the
   clamped value in the effective Runtime Settings.
-- `time_limit` supplies the scalar-attempt preparation/solver budget. The child
+- `time_limit` supplies the scalar-attempt preparation/solver budget. The worker
   receives the remaining time after preparation; the parent kills and reaps a worker
-  that exceeds it, including worker startup/imports. Reference preflight, document
+  that exceeds it, including the startup and imports of a new worker. Reference preflight, document
   construction/validation, independent acceptance and persistence are synchronous;
   there is no hard deadline on the complete API call. Large expression trees can
   make structural validation expensive before a worker starts.
@@ -623,7 +734,10 @@ contracts. See [verification](../contributing/verification.md) for current check
 Each manifest includes its semantic Python sources, packaged schema resources,
 and relevant library versions. The sources are the static import closure of the
 role's entry modules in `rangekeeper`: `shared.fingerprints.import_closure` reads
-the import statements with `ast` and does not import the modules. Shared
+the import statements with `ast` and does not import the modules. Each process
+caches the closure of each role: a change to the size or the modification time
+of one of its files calculates it again. Each attempt reads the sources again,
+so its fingerprint follows each change to the code. Shared
 arithmetic changes alter both identities. Comments and docstrings do not. A
 missing entry or imported module fails explicitly.
 Each Run with a Runtime also records the numerical convention for currency
