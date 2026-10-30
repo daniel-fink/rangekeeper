@@ -172,6 +172,18 @@ per unit of time now raises `UnitError`: give the total as an amount. Code that
 read such a Flow as amounts per year reads it as the amount of each Period. See
 [amounts per year](../reference/calculations.md#amounts-per-year).
 
+### Solve worker
+
+The `pyomo-highs` backend keeps one worker process for the solves of a Python
+session, and starts it in isolated mode, `python -I`
+([#130](https://github.com/daniel-fink/rangekeeper/issues/130)). The worker
+reads no `PYTHONPATH` or other `PYTHON*` variable, and not the current folder.
+If Pyomo or highspy reached the worker only through `PYTHONPATH`, install the
+`execution` extra in the environment of the interpreter. A missing Pyomo now
+gives the installation hint in the `backend_unavailable` diagnostic. Evidence
+and results do not change. See the
+[solve worker](../reference/execution.md#solve-worker).
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names

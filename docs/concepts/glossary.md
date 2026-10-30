@@ -93,6 +93,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Affine problem | The linear problem that a backend receives | `execution` | `AffineProblem`: variables, rows with relations, bounds and the rank analysis |
 | Piecewise equation, active side | An equation with an `rx.max` or `rx.min` call that reads a free value. The active side is the operand that the call selects; with one active side for each call, the equation is affine. The solve picks the sides, solves and checks them at its solution, and reports sides that do not hold | `execution` | Calls of `rx.max` and `rx.min`; the `active_side` code |
 | Backend | A registered solver implementation | `execution` | — |
+| Solve worker | The isolated process in which the `pyomo-highs` backend solves. The solves of a session reuse one worker | `execution` | Private to `execution.backends`; see the [solve worker](../reference/execution.md#solve-worker) |
 | Termination | How a backend finished: a feasible candidate, proven infeasible, limited, failed or unknown. It uses the words of Status for the same ideas | `execution` | `execution.backends.Termination`, in a `BackendResult` |
 | Verification | Independent check of a candidate against the original equations | `execution` | `execution.verify`, which returns a `Verification` |
 | Status | What an Outcome found, in one word: feasible, underdetermined, infeasible, unsupported, invalid, limited or failed | `execution` | `rk.execution.Status`, from `Outcome.status` |

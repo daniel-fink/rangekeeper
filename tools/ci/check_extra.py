@@ -75,22 +75,24 @@ def check_calculations() -> None:
 
 
 def check_execution() -> None:
-    """Solve one equation in the isolated Pyomo/HiGHS worker."""
+    """Solve one equation in the isolated Pyomo/HiGHS worker, as the backend does."""
+    from rangekeeper.execution.backends import pyomo
+
     request = {
-        "unknowns": ["x"],
-        "rows": [{"coefficients": [1.0], "constant": -2.0, "relation": "equal"}],
+        "size": 1,
+        "rows": [{"terms": [[0, 1.0]], "constant": -2.0, "relation": "equal"}],
         "iteration_limit": 100,
         "remaining": 30.0,
     }
     output = subprocess.run(
-        [sys.executable, "-m", "rangekeeper.execution.backends._worker"],
-        input=json.dumps(request),
+        pyomo._command(),
+        input=json.dumps(request) + "\n",
         capture_output=True,
         text=True,
         check=True,
     ).stdout
     response = json.loads(output)
-    assert response.get("candidate") == {"x": 2.0}, response
+    assert response.get("candidate") == [2.0], response
 
 
 def check_yaml() -> None:
