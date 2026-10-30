@@ -16,6 +16,7 @@ from rangekeeper.model.expression.evaluation import (
 from rangekeeper.model.targets import recorded_scalar
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.run import Severity
+from rangekeeper.run._rule.predicate import evaluate as truth
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
     Diagnostic,
@@ -197,6 +198,41 @@ def _active(
     return pieces.reduce(node, sides)
 
 
+# The predicates other than strict comparisons that fixed values decide
+# exactly. Verification keeps its own list: it does not read the compiler.
+_DECIDED = frozenset({Operator.NOT_EQUAL, Operator.LOGICAL_OR, Operator.LOGICAL_NOT})
+
+
+def _decided(node: Expression) -> bool:
+    """Return whether ``node`` is a ``!=``, ``or`` or ``not`` predicate."""
+    return (
+        node.kind in (ExpressionKind.BINARY, ExpressionKind.UNARY)
+        and node.operator in _DECIDED
+    )
+
+
+def _truth(
+    node: Expression,
+    values: Mapping[UUID, Quantity],
+    *,
+    units: UnitSystem,
+    fixed: Set[UUID],
+) -> bool:
+    """Decide a ``!=``, ``or`` or ``not`` predicate exactly from its fixed values."""
+    if any(
+        child.target.target not in fixed
+        for child, _, _ in walk(node)
+        if isinstance(child, Expression)
+        and child.kind is ExpressionKind.REFERENCE
+        and child.target is not None
+    ):
+        raise UnsupportedError(
+            "strict comparisons, !=, or and not require only fixed assigned or"
+            " literal operands"
+        )
+    return bool(truth(node, values, units=units))
+
+
 def _comparisons(
     node: Expression,
     values: Mapping[UUID, Quantity],
@@ -204,12 +240,21 @@ def _comparisons(
     units: UnitSystem,
     fixed: Set[UUID] = frozenset(),
 ) -> Iterator[tuple[str, Quantity, Quantity, bool]]:
-    """Retain conjunction order; fixed strict predicates use exact comparison."""
+    """Retain conjunction order; fixed strict predicates use exact comparison.
+
+    A ``!=``, ``or`` or ``not`` predicate of fixed values is decided exactly,
+    as a Boolean constant.
+    """
     try:
-        if node.kind is ExpressionKind.BOOLEAN:
+        if node.kind is ExpressionKind.BOOLEAN or _decided(node):
+            holds = (
+                node.boolean
+                if node.kind is ExpressionKind.BOOLEAN
+                else _truth(node, values, units=units, fixed=fixed)
+            )
             yield (
                 "equal",
-                finite_quantity(0 if node.boolean else 1, "dimensionless"),
+                finite_quantity(0 if holds else 1, "dimensionless"),
                 finite_quantity(0, "dimensionless"),
                 True,
             )

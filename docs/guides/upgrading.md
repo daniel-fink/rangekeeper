@@ -104,6 +104,16 @@ that it dates is a new Movement with a fresh ID. Code that found a dated
 Movement by the ID of its period Movement must match it by coordinate. See
 [the rule](../reference/identity.md#one-rule-for-transforms).
 
+### False fixed predicates
+
+A predicate whose values are all fixed and that is false, such as `a > b` with
+`a` and `b` fixed and `a` the smaller, now makes the solve `INFEASIBLE`, as a
+false constraint does (ADR-016,
+[#153](https://github.com/daniel-fink/rangekeeper/issues/153)). In 1.0.0a2 a
+false fixed strict comparison was `UNSUPPORTED`. A fixed `!=`, `or` or `not`
+predicate, which 1.0.0a2 refused, is now decided too. Code that read
+`UNSUPPORTED` for a false fixed predicate reads `INFEASIBLE`.
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names
