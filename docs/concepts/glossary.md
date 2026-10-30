@@ -69,6 +69,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Stream | A set of named Flows that operations treat together | `flow` | — |
 | Resample | Reduce the Movements inside each longer Period to one amount with a `ResampleMethod`: `SUM`, `FIRST`, `LAST`, `MIN`, `MAX`, `MEAN` (equal weights) or `ELAPSED_MEAN` (weights by the days of each Period). `flow.resample(periods=, method=)` | `flow` | — |
 | Split | Divide each amount equally over shorter Periods that partition its Period. `flow.split(periods=)`. A split is not a resample | `flow` | — |
+| Running total | The sum of a Flow's amounts up to each Movement: `flow.cumulative()`. A balance is a running total; `diff()` gives each change and reverses it | `flow` | — |
 
 ## Investigation and evidence
 

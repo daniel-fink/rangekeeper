@@ -742,6 +742,17 @@ attributes:
     note: >-
       `path` of every error is a JSON Pointer. `PublishedFileError(path, error)`
       becomes `PublishedFileError(message, file=)`; the OSError is the cause.
+  - owner: rangekeeper.flow.flow.Flow
+    name: difference
+    new_name: diff
+    apply: review
+    status: agreed
+    source: "#255 D2, D21, #275"
+    note: >-
+      `flow.diff()` takes no `initial=`: the first Movement is its amount less
+      zero, not unresolved, so `flow.cumulative().diff() == flow`. For another
+      opening value, subtract it in the first Period:
+      `flow.diff() - rk.flow.Flow(amounts={first_period: opening}, units=)`.
 
 # Renames of keyword parameters. `callable: "*"` applies to every function and
 # call in scope; use it only for names that are unique to the concept.
