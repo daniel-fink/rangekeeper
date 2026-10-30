@@ -29,8 +29,9 @@ read 0.x documents; see [upgrading](../guides/upgrading.md).
 
 ## Investigation contents and dependency closure
 
-A Bundle has one main Model and may select additional Models, Specifications and
-finalized Runs. The reader retains the exact input Models, included/case
+A Bundle has one main Model and may select additional Models, Specifications,
+finalized Runs and market paths (`rk.market.Paths`); `Reader.load_paths(id)`
+returns a selected Paths document. The reader retains the exact input Models, included/case
 Specifications, child Runs, outputs and scoped report documents needed to interpret
 those selections. Historical predecessors are not followed automatically. A root
 may select earlier history explicitly. Unrelated extra records are rejected.

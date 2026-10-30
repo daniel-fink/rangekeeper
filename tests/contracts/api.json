@@ -82,7 +82,7 @@
     "cases": "method (self, *, cases: Mapping[str, Mapping[str | UUID | Reference, object]]) -> Specification",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
-    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
+    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
     "free": "method (self, *targets: str | UUID | Reference) -> Specification",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Specification",
     "id": "property",
@@ -1386,9 +1386,10 @@
    "members": {
     "__init__": "method (self, root: pathlib.Path) -> None",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
+    "load_paths": "method (self, id: uuid.UUID) -> rangekeeper.market.paths.Paths",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
     "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification",
-    "put": "method (self, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run) -> uuid.UUID",
+    "put": "method (self, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths) -> uuid.UUID",
     "root": "property"
    },
    "module": "rangekeeper.io.directory",
@@ -1396,7 +1397,7 @@
   },
   "Document": {
    "kind": "alias",
-   "value": "rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run"
+   "value": "rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths"
   },
   "GeometryProvider": {
    "kind": "class",
@@ -1412,9 +1413,10 @@
    "members": {
     "__init__": "method (self) -> None",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
+    "load_paths": "method (self, id: uuid.UUID) -> rangekeeper.market.paths.Paths",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
     "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification",
-    "put": "method (self, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run) -> uuid.UUID"
+    "put": "method (self, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths) -> uuid.UUID"
    },
    "module": "rangekeeper.io.memory",
    "signature": "() -> None"
@@ -1424,9 +1426,10 @@
    "members": {
     "__init__": "method (self, *args, **kwargs)",
     "load_model": "method (self, id: uuid.UUID) -> Model",
+    "load_paths": "method (self, id: uuid.UUID) -> Paths",
     "load_run": "method (self, id: uuid.UUID) -> Run",
     "load_specification": "method (self, id: uuid.UUID) -> Specification",
-    "put": "method (self, document: Model | Specification | Run) -> uuid.UUID"
+    "put": "method (self, document: Model | Specification | Run | Paths) -> uuid.UUID"
    },
    "module": "rangekeeper.shared.store",
    "signature": "(*args, **kwargs)"
@@ -1482,9 +1485,10 @@
    "members": {
     "__init__": "method (self, *, root: pathlib.Path, providers: collections.abc.Mapping[tuple[str, str, str], rangekeeper.io.geometry.GeometryProvider] = <mappingproxy>, limits: rangekeeper.io.bundle.ReadLimits = <ReadLimits>, index: rangekeeper.io.bundle.IndexCheck = IndexCheck.FULL) -> None",
     "copy_to": "method (self, store: rangekeeper.shared.store.RecordStore) -> tuple[dict[str, str], ...]",
-    "documents": "method (self) -> tuple[rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run, ...]",
+    "documents": "method (self) -> tuple[rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths, ...]",
     "geometry_path": "method (self, id: uuid.UUID | None = None) -> pathlib.Path | None",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
+    "load_paths": "method (self, id: uuid.UUID) -> rangekeeper.market.paths.Paths",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
     "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification",
     "model": "method (self, id: uuid.UUID | None = None) -> rangekeeper.model.model.Model",
@@ -1497,14 +1501,14 @@
   "write": {
    "kind": "function",
    "module": "rangekeeper.io.bundle",
-   "signature": "(*, root: pathlib.Path, model: rangekeeper.model.model.Model, documents: collections.abc.Iterable[rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run] = tuple(), resolver: rangekeeper.shared.references.DocumentResolver | None = None, geometry: rangekeeper.io.bundle.GeometrySources = <GeometrySources>, parquet: rangekeeper.io.bundle.ParquetOptions = <ParquetOptions>) -> dict[str, typing.Any]"
+   "signature": "(*, root: pathlib.Path, model: rangekeeper.model.model.Model, documents: collections.abc.Iterable[rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths] = tuple(), resolver: rangekeeper.shared.references.DocumentResolver | None = None, geometry: rangekeeper.io.bundle.GeometrySources = <GeometrySources>, parquet: rangekeeper.io.bundle.ParquetOptions = <ParquetOptions>) -> dict[str, typing.Any]"
   }
  },
  "rangekeeper.io.json": {
   "dumps": {
    "kind": "function",
    "module": "rangekeeper.io.json",
-   "signature": "(document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run) -> str"
+   "signature": "(document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths) -> str"
   },
   "loads": {
    "kind": "function",
@@ -1519,7 +1523,7 @@
   "write": {
    "kind": "function",
    "module": "rangekeeper.io.json",
-   "signature": "(*, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run, path: pathlib.Path) -> pathlib.Path"
+   "signature": "(*, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths, path: pathlib.Path) -> pathlib.Path"
   }
  },
  "rangekeeper.io.polars": {
@@ -1553,7 +1557,7 @@
   "dumps": {
    "kind": "function",
    "module": "rangekeeper.io.yaml",
-   "signature": "(document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run) -> str"
+   "signature": "(document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths) -> str"
   },
   "loads": {
    "kind": "function",
@@ -1568,7 +1572,7 @@
   "write": {
    "kind": "function",
    "module": "rangekeeper.io.yaml",
-   "signature": "(*, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run, path: pathlib.Path) -> pathlib.Path"
+   "signature": "(*, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths, path: pathlib.Path) -> pathlib.Path"
   }
  },
  "rangekeeper.market": {
@@ -1621,6 +1625,16 @@
    "module": "rangekeeper.market.view",
    "signature": "(model: rangekeeper.model.model.Model, realization: rangekeeper.schema.records.ScenarioRealization) -> None"
   },
+  "MarketPath": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, paths: Paths, record: rangekeeper.schema.records.MarketPath) -> None",
+    "key": "property",
+    "names": "property"
+   },
+   "module": "rangekeeper.market.paths",
+   "signature": "(paths: Paths, record: rangekeeper.schema.records.MarketPath) -> None"
+  },
   "ObservationAvailability": {
    "kind": "class",
    "members": {
@@ -1631,6 +1645,93 @@
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, target: Reference, available_at: Date) -> None"
+  },
+  "PathAmounts": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, series: str, magnitudes: tuple[int | float, ...]) -> None",
+    "magnitudes": "property",
+    "replace": "method (self, *, series: str | Unset = <Unset>, magnitudes: tuple[int | float, ...] | Unset = <Unset>) -> Self",
+    "series": "property"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, series: str, magnitudes: tuple[int | float, ...]) -> None"
+  },
+  "PathCapture": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, generator: str | None | Unset = <Unset>, fingerprint: str | None | Unset = <Unset>, seed: int | None | Unset = <Unset>, count: int, parameters: tuple[PathParameter, ...], algorithm: str | None | Unset = <Unset>, streams: tuple[RandomStream, ...], versions: tuple[LibraryVersion, ...]) -> None",
+    "algorithm": "property",
+    "count": "property",
+    "fingerprint": "property",
+    "generator": "property",
+    "parameters": "property",
+    "replace": "method (self, *, generator: str | None | Unset | Omit = <Unset>, fingerprint: str | None | Unset | Omit = <Unset>, seed: int | None | Unset | Omit = <Unset>, count: int | Unset = <Unset>, parameters: tuple[PathParameter, ...] | Unset = <Unset>, algorithm: str | None | Unset | Omit = <Unset>, streams: tuple[RandomStream, ...] | Unset = <Unset>, versions: tuple[LibraryVersion, ...] | Unset = <Unset>) -> Self",
+    "seed": "property",
+    "streams": "property",
+    "versions": "property"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, generator: str | None | Unset = <Unset>, fingerprint: str | None | Unset = <Unset>, seed: int | None | Unset = <Unset>, count: int, parameters: tuple[PathParameter, ...], algorithm: str | None | Unset = <Unset>, streams: tuple[RandomStream, ...], versions: tuple[LibraryVersion, ...]) -> None"
+  },
+  "PathGenerator": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *args, **kwargs)",
+    "generate": "method (self, *, parameters: collections.abc.Sequence[rangekeeper.schema.records.PathParameter], periods: collections.abc.Sequence[rangekeeper.duration.period.Period], seed: int | None, count: int) -> Paths"
+   },
+   "module": "rangekeeper.market.generator",
+   "signature": "(*args, **kwargs)"
+  },
+  "PathParameter": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, series: str, name: str, quantity: Quantity | None | Unset = <Unset>, distribution: Distribution | None | Unset = <Unset>) -> None",
+    "distribution": "property",
+    "name": "property",
+    "quantity": "property",
+    "replace": "method (self, *, series: str | Unset = <Unset>, name: str | Unset = <Unset>, quantity: Quantity | None | Unset | Omit = <Unset>, distribution: Distribution | None | Unset | Omit = <Unset>) -> Self",
+    "series": "property"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, series: str, name: str, quantity: Quantity | None | Unset = <Unset>, distribution: Distribution | None | Unset = <Unset>) -> None"
+  },
+  "PathSeries": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, name: str, units: str, lag: Quantity) -> None",
+    "lag": "property",
+    "name": "property",
+    "replace": "method (self, *, name: str | Unset = <Unset>, units: str | Unset = <Unset>, lag: Quantity | Unset = <Unset>) -> Self",
+    "units": "property"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, name: str, units: str, lag: Quantity) -> None"
+  },
+  "Paths": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, record: rangekeeper.schema.records.Paths) -> None",
+    "available": "method (self, *, name: str) -> tuple[datetime.date, ...]",
+    "capture": "property",
+    "check": "method (self, *, resolver: object | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
+    "create": "classmethod (cls, *, periods: collections.abc.Sequence[rangekeeper.duration.period.Period], series: collections.abc.Sequence[rangekeeper.schema.records.PathSeries], members: collections.abc.Sequence[rangekeeper.schema.records.MarketPath], capture: rangekeeper.schema.records.PathCapture, name: str | None = None, description: str | None = None) -> Paths",
+    "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Paths",
+    "from_flows": "classmethod (cls, *, flows: collections.abc.Mapping[str, collections.abc.Mapping[str, rangekeeper.flow.flow.Flow]], lag: rangekeeper.quantity.Quantity | str | collections.abc.Mapping[str, rangekeeper.quantity.Quantity | str] = '0 days', name: str | None = None, description: str | None = None) -> Paths",
+    "id": "property",
+    "keys": "property",
+    "mean": "method (self, *, name: str) -> rangekeeper.flow.flow.Flow",
+    "metadata": "property",
+    "names": "property",
+    "periods": "property",
+    "record": "property",
+    "regenerate": "method (self, *, seed: int) -> Paths",
+    "series": "method (self, *, name: str) -> rangekeeper.schema.records.PathSeries",
+    "to_data": "method (self) -> dict[str, object]",
+    "validate": "method (self, *, resolver: object | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
+   },
+   "module": "rangekeeper.market.paths",
+   "signature": "(record: rangekeeper.schema.records.Paths) -> None"
   },
   "RandomStream": {
    "kind": "class",
@@ -1703,6 +1804,10 @@
   "generation": {
    "kind": "module",
    "module": "rangekeeper.market.generation"
+  },
+  "generators": {
+   "kind": "value",
+   "type": "Registry"
   },
   "replay": {
    "kind": "function",
@@ -3270,7 +3375,7 @@
     "cases": "method (self, *, cases: Mapping[str, Mapping[str | UUID | Reference, object]]) -> Specification",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
-    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
+    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
     "free": "method (self, *targets: str | UUID | Reference) -> Specification",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Specification",
     "id": "property",

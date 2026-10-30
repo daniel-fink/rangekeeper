@@ -1,6 +1,7 @@
 """Explicit scalar/Movement references and deliberate reuse of recorded amounts."""
 
 from collections.abc import Sequence
+from datetime import date
 from uuid import UUID
 
 from rangekeeper.flow import Flow, Movement
@@ -73,6 +74,44 @@ def assign_flow(
         )
         for m in selected
     )
+
+
+def flow_amounts(model: Model, value: UUID, *, flow: Flow) -> dict[UUID, Quantity]:
+    """Return the amount of ``flow`` for each Movement of a Flow Value, by coordinate.
+
+    Each Movement of the Value takes the amount of the Movement of ``flow``
+    over the same Period, or on the same date when it has no Period. A Flow
+    with other coordinates raises ContractError with ``ALIGNMENT_DIFFER``; an
+    unresolved amount raises ContractError.
+    """
+    _, movements = _select(model, value, None)
+    given = {_coordinate(m): m for m in flow.movements}
+    wanted = [_coordinate(m) for m in movements]
+    if sorted(given, key=str) != sorted(wanted, key=str):
+        raise ContractError(
+            f"the Flow that fixes {model.key_of(value)} has other Periods or dates "
+            "than the Flow Value",
+            code=Code.ALIGNMENT_DIFFER,
+            targets=(value,),
+            values={"given": len(given), "declared": len(wanted)},
+        )
+    unresolved = tuple(m.id for m in flow.movements if m.magnitude is None)
+    if unresolved:
+        raise ContractError(
+            f"the Flow that fixes {model.key_of(value)} has an unresolved amount",
+            targets=(value,),
+        )
+    return {
+        m.id: Quantity(magnitude=given[key].magnitude, units=flow.units)
+        for m, key in zip(movements, wanted, strict=True)
+    }
+
+
+def _coordinate(movement: Movement) -> tuple[date, date] | date | None:
+    """Return the Period of a Movement as its bounds, or else its date."""
+    if movement.period is not None:
+        return (movement.period.start, movement.period.end)
+    return movement.date
 
 
 def unknown_flow(

@@ -11,11 +11,33 @@ if TYPE_CHECKING:
         ReplayUnavailableError as ReplayUnavailableError,
     )
     from rangekeeper.market._replay import replay as replay
+    from rangekeeper.market.generator import PathGenerator as PathGenerator
+    from rangekeeper.market.generator import generators as generators
+    from rangekeeper.market.paths import MarketPath as MarketPath
+    from rangekeeper.market.paths import Paths as Paths
     from rangekeeper.market.view import Market as Market
 
-_EXPORTS = {"Market": "view", "replay": "_replay", "ReplayUnavailableError": "_replay"}
+_EXPORTS = {
+    "Market": "view",
+    "replay": "_replay",
+    "ReplayUnavailableError": "_replay",
+    "Paths": "paths",
+    "MarketPath": "paths",
+    "PathGenerator": "generator",
+    "generators": "generator",
+}
 _MODULES = {"dynamics", "generation"}
-__all__ = ["dynamics", "generation", "Market", "replay", "ReplayUnavailableError"]
+__all__ = [
+    "dynamics",
+    "generation",
+    "Market",
+    "replay",
+    "ReplayUnavailableError",
+    "Paths",
+    "MarketPath",
+    "PathGenerator",
+    "generators",
+]
 __getattr__, __dir__ = _lazy(__name__, names=_EXPORTS, modules=_MODULES)
 
 
@@ -25,6 +47,10 @@ from rangekeeper.schema.records import (
     CalculationProvenance,
     LibraryVersion,
     ObservationAvailability,
+    PathAmounts,
+    PathCapture,
+    PathParameter,
+    PathSeries,
     RandomStream,
     ScenarioParameter,
     ScenarioPlan,
@@ -39,4 +65,8 @@ __all__ += [
     "RandomStream",
     "LibraryVersion",
     "ObservationAvailability",
+    "PathAmounts",
+    "PathCapture",
+    "PathParameter",
+    "PathSeries",
 ]

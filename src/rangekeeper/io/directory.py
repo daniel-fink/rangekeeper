@@ -8,6 +8,7 @@ from rangekeeper.io._atomic import write_new
 from rangekeeper.io._document import (
     Document,
     Model,
+    Paths,
     Run,
     Specification,
     envelope,
@@ -105,3 +106,7 @@ class DirectoryStore:
     def load_run(self, id: UUID) -> Run:
         """Read a locally valid finalized Run without recursively loading its tree."""
         return require_revision(self._read(id), id, Run)
+
+    def load_paths(self, id: UUID) -> Paths:
+        """Read and validate the exact market paths revision; never draw again."""
+        return require_revision(self._read(id), id, Paths)

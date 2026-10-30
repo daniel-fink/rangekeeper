@@ -36,6 +36,7 @@ from rangekeeper.io._document import (
 )
 from rangekeeper.io.geometry import GeometryProvider
 from rangekeeper.io.geometry import find as find_provider
+from rangekeeper.market.paths import Paths
 from rangekeeper.model.geometry import safe_path
 from rangekeeper.run.validation import validate as validate_run
 from rangekeeper.schema.records import Geometry
@@ -247,7 +248,7 @@ def identity(model, *, documents=(), roots=()):
     )
 
 
-KINDS = {k.__name__: k for k in (Model, Specification, Run)}
+KINDS = {k.__name__: k for k in (Model, Specification, Run, Paths)}
 
 
 def _dependencies(document):
@@ -303,6 +304,10 @@ class _Documents:
         """Return the retained Run with this UUID."""
         return self._load(id, Run)
 
+    def load_paths(self, id: UUID) -> Paths:
+        """Return the retained market paths with this UUID."""
+        return self._load(id, Paths)
+
     def documents(self) -> tuple[Document, ...]:
         """Exact immutable roots, ordered by UUID; no execution or mutable state."""
         return tuple(
@@ -315,7 +320,7 @@ def _resolve(resolver, identifier, kind):
         raise MissingReferenceError(
             identifier, kind=kind.__name__ if kind else "document", where="no resolver"
         )
-    for candidate in (kind,) if kind else (Model, Specification, Run):
+    for candidate in (kind,) if kind else tuple(KINDS.values()):
         try:
             document = getattr(resolver, "load_" + candidate.__name__.lower())(
                 identifier

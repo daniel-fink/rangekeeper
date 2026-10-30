@@ -175,6 +175,7 @@ Specification, with its estimates.
 | Text, `"20e6 AUD"` or `"65 %"` | The Quantity that the text gives; text without units raises `UnitError` |
 | A number, `coverage=1.25` | A ratio. A target with units that are not dimensionless raises `UnitError` |
 | A `datetime.date`, `start_date=date(2027, 1, 1)`, or `rk.duration.NEVER` | The date of a date Value, or NEVER: the event does not happen. A date for a target that is not a date Value, or a Quantity for a date Value, raises `ContractError` |
+| A Flow, `rent_index=paths.mean(name="rent_index")` | For a Flow Value: each Movement takes the amount of the Movement over the same Period, or on the same date when it has no Period. A Flow with other Periods or dates raises `ContractError` with `ALIGNMENT_DIFFER`, and an unresolved amount `ContractError`. Its units must convert to the units of the Value (`UnitError`) |
 
 A fix of a date Value is an Assignment with `date`, or with `never`, and no
 `quantity` ([#280](https://github.com/daniel-fink/rangekeeper/issues/280)). An
