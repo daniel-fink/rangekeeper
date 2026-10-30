@@ -97,7 +97,11 @@ with TemporaryDirectory() as directory:
 `Run(record)` and `Run.from_data(data)` check structure, supported schema version,
 local completion/solution/output combinations, duplicate/self references, required
 diagnostics/runtime, implementation uniqueness, finite settings/evidence, and timing
-consistency. `not_applicable` declares an aggregate locally; resolving its Specification
+consistency. A `feasible` conclusion has outputs. An `underdetermined` conclusion has an
+`underdetermined` or `uniqueness_not_assessed` diagnostic, and outputs only when the
+execution published its candidate on request
+([`allow_underdetermined`](execution.md#configuration)); other conclusions have none.
+`not_applicable` declares an aggregate locally; resolving its Specification
 must establish that it really is a batch. External references are not loaded during
 construction or codec reads.
 

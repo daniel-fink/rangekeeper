@@ -1851,7 +1851,7 @@ def check_RunStatus(d, fields=None):
             issues.append(('structure.value', 'invalid completion', '/completion'))
     if 'solution' in d and (fields is None or 'solution' in fields):
         v = d['solution']
-        if not ((v in ('feasible', 'infeasible', 'unknown', 'not_assessed', 'not_applicable') and (type(v) is str))):
+        if not ((v in ('feasible', 'underdetermined', 'infeasible', 'unknown', 'not_assessed', 'not_applicable') and (type(v) is str))):
             issues.append(('structure.value', 'invalid solution', '/solution'))
     return issues
 

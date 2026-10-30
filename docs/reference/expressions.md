@@ -83,6 +83,9 @@ changes ([ADR-015](../decisions/015-authoring.md),
 - A number followed by unit words is a quantity literal, with no quotes.
 - `NEVER` is the constant `rk.duration.NEVER`.
 
+A calendar date keeps its Python spelling, `date(2027, 1, 1)`: three whole
+numbers, the year, the month and the day. It is a date literal, not a function.
+
 The text becomes the Expression records of the [table above](#composition-and-identity),
 with a new UUID for each node. They are the records that the record constructors
 make: `"value = noi / cap_rate"` gives
@@ -94,6 +97,7 @@ make: `"value = noi / cap_rate"` gives
 | Dotted name | `building_a.income` | `reference` to the Value `income` of the entity with the code `building_a` |
 | Quantity literal | `0 AUD`, `2 years`, `7 % pa`, `750 AUD per sqm pa` | `quantity`: the Quantity that `rk.Quantity(text=...)` makes from the same text. A bare number, such as `1`, is `dimensionless` |
 | Constant | `True`, `False`, `NEVER` | `boolean`; `never` |
+| Date literal | `date(2027, 1, 1)` | `date` |
 | Negation, `not` | `-a`, `not a` | `unary` |
 | Arithmetic | `a + b`, `a - b`, `a * b`, `a / b`, `a ** b` | `binary` |
 | Comparison | `a = b`, `a != b`, `a < b`, `a <= b`, `a > b`, `a >= b` | `binary`, Boolean |
@@ -116,8 +120,10 @@ Operators bind as in Python. A higher level binds tighter:
 `rangekeeper.model.expression.text.render` writes records as equation text with
 the fewest brackets that keep the meaning. Text that an entity handle reads
 reads back to the same records. Diagnostics use the same text: an unsupported
-equation in a solve is `"noi = coverage * debt_service"`. A date literal has
-no text form yet; it is written `<date 2027-01-01>`.
+equation in a solve is `"noi = coverage * debt_service"`. A date literal is
+written `date(2027, 1, 1)` and NEVER is written `NEVER`, so both read back. A
+date that is not a calendar date, such as `date(2027, 13, 1)`, or another form,
+such as `date(2027, 1)`, raises `EquationError` with `EQUATION_SYNTAX`.
 
 **Quantity literals.** A literal is a number and the words of its units, joined
 by spaces: names, `%` and `per`. The literal ends at the first token that is not
@@ -239,6 +245,7 @@ project.equations(equation, rx.max(noi, "0 AUD pa") >= debt_service)
 | `(a >= b) & (c >= d)`, `x \| y`, `~x` | `a >= b and c >= d`, `x or y`, `not x` |
 | `"2 % pa"`, `rk.Quantity(text="2 % pa")`, `1` | `2 % pa`, `1` |
 | `rk.duration.NEVER` | `NEVER` |
+| `datetime.date(2027, 1, 1)` | `date(2027, 1, 1)` |
 | `rx.max(a, b)`, `x.at(on=d)` | The same |
 
 An operator or a function makes a `Term`. `term.text` is its equation text,
@@ -327,6 +334,10 @@ a literal is never unresolved, so it has one of them.
 means the event does not happen; it is not missing.
 A date Value with no recorded content is unresolved, not NEVER. In equation text
 NEVER is written `NEVER`; the word is reserved, so no Value key can be `NEVER`.
+A calendar date is written `date(2027, 1, 1)`, as in Python. The functions treat
+NEVER as "no Flow": `rx.flow.event(amount=, on=NEVER)` and `x.since(on=NEVER)`
+are zero in every period, `x.until(on=NEVER)` keeps every amount, and a profile
+with `start=NEVER` has no amounts.
 
 | Operation | Result |
 | --- | --- |

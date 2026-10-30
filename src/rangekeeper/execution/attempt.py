@@ -339,12 +339,11 @@ class Attempt:
             )
             self.findings.extend(checked.diagnostics)
             if checked.passed:
-                self.output, self.solution = candidate, SolutionStatus.FEASIBLE
                 self.diagnose(
                     Code.FEASIBLE_CANDIDATE,
                     "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made.",
                 )
-                self.diagnose_freedom(problem.analysis)
+                self.conclude(candidate, problem.analysis)
             else:
                 self.completion = CompletionStatus.FAILED
                 self.diagnose(
@@ -353,35 +352,58 @@ class Attempt:
                     severity=Severity.ERROR,
                 )
 
+    def conclude(self, candidate: Model, analysis: Analysis) -> None:
+        """Set the solution of a verified candidate, and publish it when it may.
+
+        A candidate whose equations determine every unknown is feasible and is
+        the output. Otherwise the solution is underdetermined, a diagnostic
+        names the free unknowns, and the candidate is the output only with
+        ``ExecutionConfig.allow_underdetermined`` (ADR-016).
+        """
+        if not analysis.underdetermined:
+            self.output, self.solution = candidate, SolutionStatus.FEASIBLE
+            return
+        self.solution = SolutionStatus.UNDERDETERMINED
+        if self.config.allow_underdetermined:
+            self.output = candidate
+        self.diagnose_freedom(analysis)
+
     def diagnose_freedom(self, analysis: Analysis) -> None:
         """Name the unknowns that the equality rows of an accepted solve leave free.
 
         The code is ``uniqueness_not_assessed`` when a bound reads one of
         them, and ``underdetermined`` otherwise. Either way the Outcome is
         ``UNDERDETERMINED``: the equations do not determine these values.
+        ``values.unknowns`` gives their keys, so that a reader needs no output.
         """
-        if not analysis.underdetermined:
-            return
         assert self.binding is not None
         free = [self.binding.references[id] for id in analysis.undetermined]
+        keys = [self.binding.key(ref) for ref in free]
         bounded = (
             " Bounds read some of them and may restrict them; no uniqueness check ran."
             if analysis.bounded
             else ""
         )
+        published = (
+            " The candidate holds one value for each; it is published on request."
+            if self.output is not None
+            else " No output is published."
+        )
         self.diagnose(
             Code.UNIQUENESS_NOT_ASSESSED if analysis.bounded else Code.UNDERDETERMINED,
             f"Numerical equality rank {analysis.equality_rank} for {analysis.unknown_count} unknowns."
-            " The equations do not determine these free unknowns; the candidate holds one value for each: "
-            + ", ".join(str(ref.target) for ref in free)
+            " The equations do not determine these free unknowns: "
+            + ", ".join(keys)
             + "."
-            + bounded,
+            + bounded
+            + published,
             severity=Severity.WARNING,
             document=self.binding.model.id,
             references=tuple(free),
             values={
                 "equality_rank": analysis.equality_rank,
                 "unknown_count": analysis.unknown_count,
+                "unknowns": list(keys),
             },
         )
 
