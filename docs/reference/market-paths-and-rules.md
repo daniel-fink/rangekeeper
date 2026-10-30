@@ -34,12 +34,14 @@ See [calendar contracts](calculations.md).
 | `model.formulation.flow` | `sum`, `scale`, `accumulate`, and symbolic shape/alignment helpers |
 | `model.formulation.growth` | `linear` and `compound` |
 | `model.formulation.financial` | `discount`, `pv`, `reversion` and explicit principal `interest` |
+| `market.series` | `Dynamics`, `generate` and `DynamicsGenerator`, the built-in path generator `dynamics` |
 | `market.paths` | `Paths`, the market paths document, and `MarketPath`, one path of it: access, construction from data, means, availability and `regenerate` |
 | `market.generator` | The `PathGenerator` Protocol and the `generators` registry |
+| `market._components` | The components of a series (trend, cycle, volatility, noise and shock), each a small object with its parameters per Period (internal) |
+| `market._kernels` | The deterministic trend, cycle, autoregression, volatility and shock kernels over supplied draws (internal) |
 | `market.validation` | The checks of a `Paths` document |
 | `market.contracts` | Immutable method, parameter, input and output inventories; captured-record conformance without random generation |
 | `market.generation` | `make_plan`, `validate`, `sample`, `capture`, `realize` and `generate` |
-| `market.dynamics` | Deterministic trend, cycle and shock kernels over supplied inputs |
 | `market.implementation` | Calculation provenance and its source/dependency manifest, from the import closure of the calculation |
 | `market.replay` | Check saved paths against captured inputs and the available calculation |
 | `specification.rule` | Generated declarations and evidence |
@@ -77,6 +79,70 @@ Discounting begins at exponent one by default; growth starts at the initial amou
 Rates are per declared step. Builders do not infer annualization. `growth.linear`
 takes an amount increment. [Scalar execution](execution.md) defines limits,
 independent acceptance, implementation fingerprints and publication.
+
+## Market dynamics and generated paths
+
+`rk.market.Dynamics` declares how one series moves
+([#299](https://github.com/daniel-fink/rangekeeper/issues/299), D29, D31), and
+`rk.market.generate(dynamics=, periods=, seed=None, count=)` makes `count` paths
+of each named series over `periods`, as a `Paths` document:
+
+```python
+trend = rk.market.Dynamics(trend="2 % pa")
+one_path = rk.market.generate(dynamics={"rent_index": trend}, periods=years, count=1)
+cycle = trend.replace(cycle_period="10 years", cycle_amplitude="10 %")
+dynamics = cycle.replace(
+    volatility="5 % pa", noise="2 %", shock_probability="2 % pa", shock_size="-25 %"
+)
+paths = rk.market.generate(
+    dynamics={"rent_index": dynamics}, periods=years, seed=1, count=500
+)
+```
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `trend` | Growth per year, `"2 % pa"` | `"0 % pa"` |
+| `cycle_period`, `cycle_amplitude` | The length of a sine cycle, `"10 years"`, and half its peak-to-trough height, `"10 %"`. Give both or neither | No cycle |
+| `volatility` | The standard deviation of the yearly returns, `"5 % pa"`. The returns follow an AR(1) process with coefficient 0.2, and in each Period the level reverts by 10 % of its distance from the trend | No volatility |
+| `noise` | The half-width of independent uniform noise in each Period, `"2 %"` | No noise |
+| `shock_probability`, `shock_size` | The chance per year of one rare shock, `"2 % pa"`, and its size, `"-25 %"`. Half of the remaining shock ends in each later year. Give both or neither | No shock |
+
+Each parameter is a Quantity, its text or a `rk.model.Distribution` that each
+path draws from once; a ratio can also be a number. Units that do not convert
+raise `UnitError`, a value outside its range `ContractError`, and a cycle or a
+shock with one parameter `ContractError` that names the other. `replace` returns
+new Dynamics with the given parameters changed. Dynamics are values: `==`
+compares their parameters.
+
+Each series starts at 1, in `ratio` units, with a lag of zero. The trend
+compounds; the volatility returns act on the level; the cycle, the noise and the
+shock each multiply it by one plus their value. Rates per year convert for the
+Periods: a growth `g` per year is `(1 + g) ** t - 1` in a Period of `t` years, a
+volatility is `volatility * sqrt(t)`, and a shock probability `p` is
+`1 - (1 - p) ** t`. The Periods must have one length (`ContractError`). On the
+same draws, the components give the results of the earlier `market` scenario
+method.
+
+The series are independent: `generate` has no correlation argument (D31). Compose
+markets that move together with Flow arithmetic, such as
+`path["market_index"] * path["hotel_factor"]`, or with a Model equation.
+
+Volatility, noise, shocks and distributed parameters are random, and `generate`
+needs `seed`, a whole number of zero or more. Without one, it raises
+`ContractError`; the message and `values["random"]` name the random components
+of each series. Fixed dynamics take no seed (`ContractError`). Each path of each
+series draws from its own streams, one for each random component and each
+distributed parameter: `numpy.SeedSequence/PCG64`, seeded by the seed, the index
+of the path and the stream identifier. The first paths are the same whatever the
+count, and adding a series changes no other series. The paths are keyed
+`path_1` to `path_<count>`, zero-padded to one width.
+
+The built-in generator `dynamics` (`rangekeeper.market.DynamicsGenerator`) is
+registered in `rangekeeper.market.generators`. The capture record keeps its name
+and fingerprint, the parameters of each series as `PathParameter` records, the
+seed, the algorithm, the streams and the Python and NumPy versions. So
+`paths.regenerate(seed=1) == paths`, and `paths.regenerate(seed=2)` gives the same
+generator, parameters, Periods and count with another seed.
 
 ## The market paths document
 
@@ -141,9 +207,10 @@ A path generator satisfies `rangekeeper.market.PathGenerator`:
 `PathParameter` records of each series, a constant `quantity` or a
 `distribution`. `seed` is None when nothing is random. The registry is
 `rangekeeper.market.generators`, the extension point `market`
-([extension points](extensions.md)). The capture record keeps the registered
-name, the fingerprint and the parameters, so `regenerate` finds the generator by
-its name; an unknown name raises `UnknownExtensionError`.
+([extension points](extensions.md)); the built-in is `dynamics`. The capture
+record keeps the registered name, the fingerprint and the parameters, so
+`regenerate` finds the generator by its name; an unknown name raises
+`UnknownExtensionError`.
 
 ### Storage
 
@@ -154,9 +221,8 @@ under its UUID and return it with `load_paths(id)`; the codecs read it with
 ## Captured market paths and replay
 
 The scenario plan and the realizations below are the earlier design. `Paths`,
-the path generators and `Specification.across` replace them
-([#299](https://github.com/daniel-fink/rangekeeper/issues/299),
-[#306](https://github.com/daniel-fink/rangekeeper/issues/306),
+`Dynamics` and `Specification.across` replace them
+([#306](https://github.com/daniel-fink/rangekeeper/issues/306),
 [#140](https://github.com/daniel-fink/rangekeeper/issues/140)).
 
 Use `from rangekeeper.market import generation as market`. Stable method codes are `market`,
@@ -310,7 +376,7 @@ is not a synonym. Amplitude remains half the peak-to-trough height. No formula,
 Flow semantic kind, or implicit assignment is introduced by these names.
 
 Black Swan is the walkthrough name for the once-per-scenario shock recipe. The
-general numerical function remains `calculate_shock`. `make_noise` declares the
+general numerical kernel is the private `market._kernels.shock`. `make_noise` declares the
 current method's uniform bounds; it does not claim support for arbitrary deal-noise
 distributions. Linked cycle estimates remain available through
 `market.estimates` and explicit plan parameters.

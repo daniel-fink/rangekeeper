@@ -124,7 +124,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Pivot | A cross-tab of rollup results by rows and columns | `model` | — |
 | Filter | A declarative selection by classification, labels, number comparisons and presence | `model` | — |
 | Path | One possible history of external conditions: named Flows with availability | `market` | `rangekeeper.market.MarketPath`, from `paths[key]` |
-| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `rangekeeper.market.PathGenerator` and the `generators` registry; `rk.market.Dynamics`: none (planned, #299) |
+| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `rangekeeper.market.PathGenerator`, the `generators` registry and the built-in `dynamics` (`rk.market.Dynamics`, `rk.market.generate`) |
 
 ## Authoring
 

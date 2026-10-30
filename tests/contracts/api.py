@@ -29,7 +29,6 @@ PACKAGES = (
     "rangekeeper.profile",
     "rangekeeper.flow",
     "rangekeeper.market",
-    "rangekeeper.market.dynamics",
     "rangekeeper.finance",
     "rangekeeper.finance.financial",
     "rangekeeper.model",

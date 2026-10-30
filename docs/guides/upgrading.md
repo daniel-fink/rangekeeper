@@ -213,6 +213,26 @@ positional form `DirectoryStore(folder)` and the `root` property do not change.
 store does not hold, before the Specification. Code that put the input Model
 before `execute` still works; it can stop.
 
+### Market kernels and modules
+
+`rangekeeper.market.dynamics` is removed
+([#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Its kernels,
+`calculate_trend`, `calculate_cycle`, `calculate_autoregression`,
+`accumulate_volatility` and `calculate_shock`, are private. Declare the
+dynamics of a series with `rk.market.Dynamics` and make paths with
+`rk.market.generate`:
+
+```python
+dynamics = rk.market.Dynamics(trend="2 % pa", volatility="5 % pa")
+paths = rk.market.generate(
+    dynamics={"rent_index": dynamics}, periods=years, seed=1, count=500
+)
+paths[paths.keys[0]]["rent_index"]  # one path of the series, as a Flow
+```
+
+`rangekeeper.market.generation` is no longer in `rangekeeper.market.__all__`;
+it stays importable until #140 removes the scenario plan.
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names

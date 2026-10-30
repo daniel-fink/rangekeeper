@@ -410,30 +410,6 @@ def test_adapter_exports_are_detached():
     assert flow.movements[0].period.start == date(2020, 1, 1)
 
 
-def test_dynamics_fixed_inputs():
-    from rangekeeper.market.dynamics import (
-        accumulate_volatility,
-        calculate_autoregression,
-        calculate_cycle,
-        calculate_shock,
-    )
-
-    assert calculate_cycle(count=4, period=4, phase=0, amplitude=2) == pytest.approx(
-        [0, 2, 0, -2]
-    )
-    assert calculate_autoregression(innovations=[1, 0, 0], parameter=0.5) == (
-        1,
-        0.5,
-        0.25,
-    )
-    assert accumulate_volatility(
-        trend=[100, 110, 121], returns=[0, 0.1, 0], growth_rate=0.1, mean_reversion=0.5
-    ) == pytest.approx([100, 120, 127])
-    assert calculate_shock(
-        events=[0.8, 0.1, 0.05, 0.2], likelihood=0.2, dissipation=0.5, impact=-0.4
-    ) == (0, -0.4, -0.2, -0.1)
-
-
 def test_weighted_rates_and_partial_period_helpers():
     from rangekeeper.duration import Span, cover
 

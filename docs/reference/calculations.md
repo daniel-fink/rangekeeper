@@ -250,7 +250,7 @@ sequence helper used by extrapolation and the market kernels. Profile classes an
 | `profile` | Grow a known Quantity, or distribute a total, over explicit periods |
 | `flow.Stream` | Align and combine several Flows with explicit policies |
 | `finance` | `pv`, `npv`, `irr`, `interest` and `payment` with units; `finance.financial` has the older PV, XNPV and IRR functions and the PyXIRR day counts |
-| `market.dynamics` | Deterministic kernels over supplied shocks or samples |
+| `market` | `Dynamics` and `generate`: market paths from a trend, a cycle, volatility, noise and shocks, with a seed for the random parts |
 | `model.formulation` | Build declared equations for forward and inverse investigations |
 
 Dates are calendar values, never implicit timestamps. Periods are half-open:
