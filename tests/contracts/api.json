@@ -2754,7 +2754,7 @@
   "isclose": {
    "kind": "function",
    "module": "rangekeeper.quantity",
-   "signature": "(*, actual: Quantity | Flow, expected: Quantity | Flow, tolerance: Quantity | str | None = None, relative: float = 1e-09) -> bool"
+   "signature": "(*, actual: Quantity | Flow | str, expected: Quantity | Flow | str, tolerance: Quantity | str | None = None, relative: float = 1e-09) -> bool"
   },
   "unit_systems": {
    "kind": "value",
