@@ -233,8 +233,16 @@ and adds two generated parts:
 - `walkthrough/`: each lesson, run from a fresh kernel in the locked
   [walkthrough environment](../guides/walkthroughs.md#explore-the-lessons), then
   [converted](../guides/walkthroughs.md#convert-for-the-docs-site);
-- `api/`: one mkdocstrings page for each public module in `rangekeeper.__all__`.
-  The docstrings are the content, so write them for readers.
+- `api/`: the mkdocstrings API reference. The docstrings are the content, so
+  write them for readers. Each public package of the
+  [API snapshot](../../tests/contracts/api.py) (`PACKAGES`) gets a page, without
+  `market`, which stays internal until
+  [#298](https://github.com/daniel-fink/rangekeeper/issues/298). A module with
+  its own `__all__` is public too, and so is a module that a public `__all__`
+  names. Each one gets a page when it exports a name that no snapshot package
+  shows; the page of its package shows the others. A page lists the names in
+  `__all__`, or, without `__all__`, the names that the module defines. A name
+  without a docstring does not show.
 
 A link from `docs/` to a lesson notebook goes to the lesson page. A link to
 another file outside `docs/` goes to the file on GitHub, at `develop` or at the
