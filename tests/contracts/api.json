@@ -466,6 +466,7 @@
     "COMPARISON_CASES",
     "COMPARISON_EMPTY",
     "COMPARISON_SCALAR",
+    "DISTRIBUTION_VALUE",
     "HIERARCHY_CYCLE",
     "HIERARCHY_DISCONNECTED",
     "HIERARCHY_EMPTY",
@@ -677,6 +678,14 @@
    "module": "rangekeeper.execution.planning",
    "signature": "(*, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
   },
+  "DateDistribution": {
+   "kind": "class",
+   "members": {
+    "counts": "method (self) -> rangekeeper.shared.table.Table"
+   },
+   "module": "rangekeeper.execution.distribution",
+   "signature": "()"
+  },
   "DecisionResult": {
    "kind": "enum",
    "members": [
@@ -686,6 +695,21 @@
     "OTHERWISE"
    ],
    "module": "rangekeeper.execution.rule.result"
+  },
+  "Distribution": {
+   "kind": "class",
+   "members": {
+    "case": "method (self, *, quantile: float) -> Case",
+    "counts": "method (self) -> rangekeeper.shared.table.Table",
+    "mean": "method (self) -> rangekeeper.quantity.Quantity",
+    "probability": "method (self, *, below: rangekeeper.quantity.Quantity | str | None = None, above: rangekeeper.quantity.Quantity | str | None = None) -> float",
+    "quantile": "method (self, *, level: float) -> rangekeeper.quantity.Quantity",
+    "standard_deviation": "method (self) -> rangekeeper.quantity.Quantity",
+    "summary": "method (self) -> rangekeeper.shared.table.Table",
+    "values": "property"
+   },
+   "module": "rangekeeper.execution.distribution",
+   "signature": "()"
   },
   "Evidence": {
    "kind": "class",
@@ -712,14 +736,22 @@
    "module": "rangekeeper.execution.settings",
    "signature": "(*, time_limit: float = 30, iteration_limit: int = 100000, symbol_limit: int = 10000, constraint_limit: int = 20000) -> None"
   },
+  "Mean": {
+   "kind": "class",
+   "members": {},
+   "module": "rangekeeper.execution.distribution",
+   "signature": "()"
+  },
   "Outcome": {
    "kind": "class",
    "members": {
     "__init__": "method (self, *, run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple(), key: str | None = None) -> None",
     "case": "method (self, *, key: str) -> Outcome",
     "diagnostics": "property",
+    "distribution": "method (self, *, key: str) -> Distribution[Outcome] | DateDistribution",
     "evidence": "property",
     "free_unknowns": "property",
+    "mean": "method (self) -> rangekeeper.execution.distribution.Mean",
     "model": "property",
     "quantity": "method (self, reference: rangekeeper.schema.records.Reference | uuid.UUID) -> rangekeeper.quantity.Quantity",
     "raise_for_status": "method (self) -> Self",
@@ -753,10 +785,10 @@
   "Pair": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, case: str | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
+    "__init__": "method (self, *, case: str | None, member: rangekeeper.execution.outcome.Outcome | rangekeeper.execution.distribution.Mean, baseline: rangekeeper.execution.outcome.Outcome | rangekeeper.execution.distribution.Mean) -> None"
    },
    "module": "rangekeeper.execution.comparison",
-   "signature": "(*, case: str | None, member: rangekeeper.execution.outcome.Outcome, baseline: rangekeeper.execution.outcome.Outcome) -> None"
+   "signature": "(*, case: str | None, member: rangekeeper.execution.outcome.Outcome | rangekeeper.execution.distribution.Mean, baseline: rangekeeper.execution.outcome.Outcome | rangekeeper.execution.distribution.Mean) -> None"
   },
   "Paired": {
    "kind": "class",
@@ -858,7 +890,7 @@
   "compare": {
    "kind": "function",
    "module": "rangekeeper.execution.comparison",
-   "signature": "(*, outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome], keys: collections.abc.Sequence[str], baseline: str | None = None) -> SideBySide | Paired"
+   "signature": "(*, outcomes: collections.abc.Mapping[str, rangekeeper.execution.outcome.Outcome | rangekeeper.execution.distribution.Mean], keys: collections.abc.Sequence[str], baseline: str | None = None) -> SideBySide | Paired"
   },
   "execute": {
    "kind": "function",
