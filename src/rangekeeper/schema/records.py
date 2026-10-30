@@ -4750,6 +4750,76 @@ class PathCapture(Record):
         return cast('tuple[LibraryVersion, ...]', self._child('versions', LibraryVersion, True))
 
 
+class PathCase(Record):
+    'A reference to one path of a Paths document, and the Movements that each of its series fixes.'
+    __slots__ = ()
+    _kind = 'PathCase'
+    _SLOTS = _freeze(
+        {'paths': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False,
+                   'lineage': False},
+         'key': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False,
+                 'lineage': False},
+         'series': {'options': [{'kind': 'SeriesBinding', 'category': 'record'}],
+                    'required': True,
+                    'many': True,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': True,
+                    'lineage': False}}
+    )
+
+    def __init__(self, *,
+        paths: UUID,
+        key: str,
+        series: tuple[SeriesBinding, ...],
+    ) -> None:
+        data: dict[str, object] = {}
+        data['paths'] = _encode_uuid(paths)
+        data['key'] = copy_json(key)
+        data['series'] = _encode_many(series, lambda v: _encode_record(v, SeriesBinding, 'series'))
+        self._set_checked(data)
+
+    def replace(self, *,
+        paths: UUID | Unset = UNSET,
+        key: str | Unset = UNSET,
+        series: tuple[SeriesBinding, ...] | Unset = UNSET,
+    ) -> Self:
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
+        changes: dict[str, object] = {}
+        if paths is not UNSET:
+            changes['paths'] = _encode_uuid(paths)
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if series is not UNSET:
+            changes['series'] = _encode_many(series, lambda v: _encode_record(v, SeriesBinding, 'series'))
+        return self._replace(changes)
+
+    @property
+    def paths(self) -> UUID:
+        'UUID of the Paths revision.'
+        return cast('UUID', _decode_uuid(self._data.get('paths')))
+
+    @property
+    def key(self) -> str:
+        'Key of the path in the Paths document.'
+        return cast('str', self._data.get('key'))
+
+    @property
+    def series(self) -> tuple[SeriesBinding, ...]:
+        'Each series of the path that fixes a Flow value, in order.'
+        return cast('tuple[SeriesBinding, ...]', self._child('series', SeriesBinding, True))
+
+
 class PathParameter(Record):
     'One parameter of a path generator for one series, a constant or a distribution.'
     __slots__ = ()
@@ -6291,6 +6361,13 @@ class Run(Record):
                      'nullable': True,
                      'ordered': False,
                      'lineage': False},
+         'paths': {'options': [{'kind': 'Metadata', 'category': 'uuid'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False,
+                   'lineage': False},
          'report': {'options': [{'kind': 'Report', 'category': 'record'}],
                     'required': True,
                     'many': False,
@@ -6305,6 +6382,7 @@ class Run(Record):
         specification: UUID,
         spawns: tuple[UUID, ...] | None | Unset = UNSET,
         outputs: tuple[UUID, ...] | None | Unset = UNSET,
+        paths: UUID | Unset = UNSET,
         report: Report,
     ) -> None:
         data: dict[str, object] = {}
@@ -6314,6 +6392,8 @@ class Run(Record):
             data['spawns'] = _encode_many(spawns, lambda v: _encode_uuid(v))
         if outputs is not UNSET:
             data['outputs'] = _encode_many(outputs, lambda v: _encode_uuid(v))
+        if paths is not UNSET:
+            data['paths'] = _encode_uuid(paths)
         data['report'] = _encode_record(report, Report, 'report')
         self._set_checked(data)
 
@@ -6322,6 +6402,7 @@ class Run(Record):
         specification: UUID | Unset = UNSET,
         spawns: tuple[UUID, ...] | None | Unset | Omit = UNSET,
         outputs: tuple[UUID, ...] | None | Unset | Omit = UNSET,
+        paths: UUID | Unset | Omit = UNSET,
         report: Report | Unset = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
@@ -6338,6 +6419,10 @@ class Run(Record):
             changes['outputs'] = OMIT
         elif outputs is not UNSET:
             changes['outputs'] = _encode_many(outputs, lambda v: _encode_uuid(v))
+        if paths is OMIT:
+            changes['paths'] = OMIT
+        elif paths is not UNSET:
+            changes['paths'] = _encode_uuid(paths)
         if report is not UNSET:
             changes['report'] = _encode_record(report, Report, 'report')
         return self._replace(changes)
@@ -6361,6 +6446,11 @@ class Run(Record):
     def outputs(self) -> tuple[UUID, ...] | None:
         'Unique accepted output Model revision references, or their union for a batch.'
         return cast('tuple[UUID, ...] | None', _decode_uuids(self._data.get('outputs', ())))
+
+    @property
+    def paths(self) -> UUID | None:
+        'UUID of the Paths revision whose series fix the cases of this Run; absent when no case takes a path.'
+        return cast('UUID | None', _decode_uuid(self._data.get('paths')))
 
     @property
     def report(self) -> Report:
@@ -6986,6 +7076,76 @@ class Selection(Record):
         return cast('Expression | None', self._child('index', Expression, False))
 
 
+class SeriesBinding(Record):
+    'One path series and the Flow Value whose Movements it fixes, one Movement for each Period of the paths.'
+    __slots__ = ()
+    _kind = 'SeriesBinding'
+    _SLOTS = _freeze(
+        {'series': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False,
+                    'lineage': False},
+         'value': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                   'required': True,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False,
+                   'lineage': False},
+         'movements': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                       'required': True,
+                       'many': True,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': True,
+                       'lineage': False}}
+    )
+
+    def __init__(self, *,
+        series: str,
+        value: Reference,
+        movements: tuple[Reference, ...],
+    ) -> None:
+        data: dict[str, object] = {}
+        data['series'] = copy_json(series)
+        data['value'] = _encode_record(value, Reference, 'value')
+        data['movements'] = _encode_many(movements, lambda v: _encode_record(v, Reference, 'movements'))
+        self._set_checked(data)
+
+    def replace(self, *,
+        series: str | Unset = UNSET,
+        value: Reference | Unset = UNSET,
+        movements: tuple[Reference, ...] | Unset = UNSET,
+    ) -> Self:
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
+        changes: dict[str, object] = {}
+        if series is not UNSET:
+            changes['series'] = copy_json(series)
+        if value is not UNSET:
+            changes['value'] = _encode_record(value, Reference, 'value')
+        if movements is not UNSET:
+            changes['movements'] = _encode_many(movements, lambda v: _encode_record(v, Reference, 'movements'))
+        return self._replace(changes)
+
+    @property
+    def series(self) -> str:
+        'Name of the path series.'
+        return cast('str', self._data.get('series'))
+
+    @property
+    def value(self) -> Reference:
+        'The Flow Value that the series fixes.'
+        return cast('Reference', self._child('value', Reference, False))
+
+    @property
+    def movements(self) -> tuple[Reference, ...]:
+        'The Movement of the Value that each Period of the paths fixes, in the order of the Periods.'
+        return cast('tuple[Reference, ...]', self._child('movements', Reference, True))
+
+
 class Settings(Record):
     'Numerical convergence and resource settings; the containing record distinguishes requested from effective values.'
     __slots__ = ()
@@ -7392,7 +7552,14 @@ class Specification(Record):
                    'mapping': False,
                    'nullable': True,
                    'ordered': False,
-                   'lineage': False}}
+                   'lineage': False},
+         'path': {'options': [{'kind': 'PathCase', 'category': 'record'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False,
+                  'lineage': False}}
     )
 
     def __init__(self, *,
@@ -7407,6 +7574,7 @@ class Specification(Record):
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
         settings: Settings | Unset = UNSET,
         rules: RuleSet | None | Unset = UNSET,
+        path: PathCase | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         data['metadata'] = _encode_record(metadata, Metadata, 'metadata')
@@ -7430,6 +7598,8 @@ class Specification(Record):
             data['settings'] = _encode_record(settings, Settings, 'settings')
         if rules is not UNSET:
             data['rules'] = _encode_record(rules, RuleSet, 'rules')
+        if path is not UNSET:
+            data['path'] = _encode_record(path, PathCase, 'path')
         self._set_checked(data)
 
     def replace(self, *,
@@ -7444,6 +7614,7 @@ class Specification(Record):
         objectives: tuple[Objective, ...] | None | Unset | Omit = UNSET,
         settings: Settings | Unset | Omit = UNSET,
         rules: RuleSet | None | Unset | Omit = UNSET,
+        path: PathCase | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -7489,6 +7660,10 @@ class Specification(Record):
             changes['rules'] = OMIT
         elif rules is not UNSET:
             changes['rules'] = _encode_record(rules, RuleSet, 'rules')
+        if path is OMIT:
+            changes['path'] = OMIT
+        elif path is not UNSET:
+            changes['path'] = _encode_record(path, PathCase, 'path')
         return self._replace(changes)
 
     @property
@@ -7545,6 +7720,11 @@ class Specification(Record):
     def rules(self) -> RuleSet | None:
         'Optional RuleSet with controlled targets and dated decisions.'
         return cast('RuleSet | None', self._child('rules', RuleSet, False))
+
+    @property
+    def path(self) -> PathCase | None:
+        'The market path whose series fix Flow values in this case. The resolve-cases stage expands it into assignments from the Paths document; the case does not copy the amounts.'
+        return cast('PathCase | None', self._child('path', PathCase, False))
 
 
 class Step(Record):
@@ -8352,6 +8532,7 @@ _TYPES = {
     'Parameter': Parameter,
     'PathAmounts': PathAmounts,
     'PathCapture': PathCapture,
+    'PathCase': PathCase,
     'PathParameter': PathParameter,
     'PathSeries': PathSeries,
     'Paths': Paths,
@@ -8376,6 +8557,7 @@ _TYPES = {
     'ScenarioPlan': ScenarioPlan,
     'ScenarioRealization': ScenarioRealization,
     'Selection': Selection,
+    'SeriesBinding': SeriesBinding,
     'Settings': Settings,
     'Source': Source,
     'Span': Span,
@@ -8437,6 +8619,7 @@ _SLOTS = {
     'Parameter': Parameter._SLOTS,
     'PathAmounts': PathAmounts._SLOTS,
     'PathCapture': PathCapture._SLOTS,
+    'PathCase': PathCase._SLOTS,
     'PathParameter': PathParameter._SLOTS,
     'PathSeries': PathSeries._SLOTS,
     'Paths': Paths._SLOTS,
@@ -8461,6 +8644,7 @@ _SLOTS = {
     'ScenarioPlan': ScenarioPlan._SLOTS,
     'ScenarioRealization': ScenarioRealization._SLOTS,
     'Selection': Selection._SLOTS,
+    'SeriesBinding': SeriesBinding._SLOTS,
     'Settings': Settings._SLOTS,
     'Source': Source._SLOTS,
     'Span': Span._SLOTS,
@@ -8482,4 +8666,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'RunStatus', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'RunStatus', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']

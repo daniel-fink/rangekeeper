@@ -69,6 +69,11 @@ class Run:
         return self._record
 
     @property
+    def paths(self) -> UUID | None:
+        """The UUID of the Paths whose series fix the cases of this Run, or None."""
+        return self._record.paths
+
+    @property
     def report(self) -> Report:
         """Recorded outcome and evidence; this is a declaration, not solver proof."""
         return self._record.report

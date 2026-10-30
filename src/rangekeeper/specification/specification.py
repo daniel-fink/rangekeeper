@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from rangekeeper.market.paths import Paths
     from rangekeeper.model import Model
     from rangekeeper.shared.table import Table
 from dataclasses import dataclass
@@ -39,10 +40,11 @@ from rangekeeper.shared.errors import (
 )
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.shared.validation import bounded, require
+from rangekeeper.specification import _paths
 from rangekeeper.specification.composition import (
     Composition,
     check_local_header,
-    check_roles,
+    check_path,
     check_settings,
 )
 from rangekeeper.specification.roles import equation_targets, in_model_order, role_table
@@ -66,7 +68,7 @@ def _validate_local(record: SpecificationRecord) -> ValidationReport:
             record.metadata.previous not in index.records,
             "Specification predecessor targets current scope",
         )
-        check_roles(data)
+        check_path(data)
         for field in ("includes", "cases"):
             require(
                 all(
@@ -104,12 +106,14 @@ class Specification:
     no fix or rule controls.
     """
 
-    __slots__ = ("_record", "_model", "_resolver", "_cases")
+    __slots__ = ("_record", "_model", "_resolver", "_cases", "_paths")
     _record: SpecificationRecord
     _model: "Model | None"
     _resolver: SpecificationResolver | None
     # The case Specifications that ``cases`` made, by UUID; not saved.
     _cases: "Mapping[UUID, Specification]"
+    # The Paths document of a case that ``across`` made; not saved.
+    _paths: "Paths | None"
 
     def __init__(
         self,
@@ -145,6 +149,7 @@ class Specification:
         object.__setattr__(self, "_model", model)
         object.__setattr__(self, "_resolver", resolver)
         object.__setattr__(self, "_cases", MappingProxyType({}))
+        object.__setattr__(self, "_paths", None)
 
     @classmethod
     def _start(
@@ -219,6 +224,9 @@ class Specification:
         record = self.record
         if record.includes:
             record = self.compose(resolver=self._require_resolver("roles")).requirements
+        elif record.path is not None:
+            # The path's assignments come from its Paths document.
+            record = self.compose(resolver=self._resolver).requirements  # type: ignore[arg-type]
         return role_table(model, record)
 
     @property
@@ -326,6 +334,89 @@ class Specification:
             object.__setattr__(revised, "_cases", MappingProxyType(dict(documents)))
         return revised
 
+    def across(
+        self,
+        *,
+        paths: "Paths",
+        series: "Mapping[str, str | Mapping[str, str]] | None" = None,
+    ) -> "Specification":
+        """Return a batch Specification with one case for each path of ``paths``.
+
+        Each case fixes each Model value from the path series with the same
+        key; ``series`` maps a Model key to a series whose name differs, such
+        as ``series={"rent_index": "market_index"}``. Each case is a new
+        revision of this Specification: its Metadata name is the path key, and
+        it refers to its path by the UUID of ``paths`` and the key, without
+        copying the amounts. Its composition expands the path into
+        assignments. The batch keeps the cases and ``paths``, so ``solve``
+        resolves them; ``execute`` puts ``paths`` in its store.
+
+        A series that fixes no value, a key of ``series`` that the paths lack,
+        a value with two series, and a value that this Specification fixes or
+        a rule decides raise ContractError, whose ``values`` list the path
+        series and the Model keys. A value must be a Flow over the Periods of
+        the paths (``ALIGNMENT_DIFFER``) in units that the series converts to
+        (UnitError).
+        """
+        from rangekeeper.market.paths import Paths
+
+        if not isinstance(paths, Paths):
+            raise TypeError("paths must be rk.market.Paths")
+        self._require_concrete("across", "call across on each case")
+        self._require_no_path("across")
+        model = self._require_model()
+        matches = _paths.match(model=model, paths=paths, series=series)
+        bindings = _paths.bindings(model=model, paths=paths, matches=matches)
+        fixed = {ref.target for binding in bindings for ref in binding.movements}
+        requirements = self._check_edit(model, []).requirements
+        taken = {a.target.target for a in requirements.assignments or ()}
+        if requirements.rules is not None:
+            taken.update(ref.target for ref in requirements.rules.targets)
+        clash = [
+            item.key
+            for item, binding in zip(matches, bindings, strict=True)
+            if {ref.target for ref in binding.movements} & taken
+        ]
+        if clash:
+            raise ContractError(
+                f"this Specification fixes or decides {', '.join(clash)}, which "
+                "the paths fix too; free it first, then call across",
+                document_id=self.id,
+                values={
+                    "keys": clash,
+                    "series": list(paths.names),
+                },
+            )
+        unknowns = tuple(
+            ref for ref in self.record.unknowns or () if ref.target not in fixed
+        )
+        estimates = tuple(
+            e for e in self.record.estimates or () if e.target.target not in fixed
+        )
+        made: dict[UUID, Specification] = {}
+        for key in paths.keys:
+            case = self._derive(
+                name=key,
+                path=_paths.path_case(paths=paths, key=key, series=bindings),
+                unknowns=unknowns,
+                estimates=estimates,
+            )
+            object.__setattr__(case, "_paths", paths)
+            made[case.id] = case
+        batch = self._derive(cases=made)
+        object.__setattr__(batch, "_paths", paths)
+        return batch
+
+    def _require_no_path(self, call: str) -> None:
+        """Raise ContractError when this Specification is a case that ``across`` made."""
+        if self.record.path is not None:
+            raise ContractError(
+                f"{call} takes a Specification without a path; this case takes its "
+                "values from a path: change the Specification that across was "
+                "called on, then call across again",
+                document_id=self.id,
+            )
+
     def fix(
         self,
         targets: "Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]] | None" = None,
@@ -356,6 +447,7 @@ class Specification:
             items[key] = quantity
         if not items:
             raise TypeError("fix takes at least one value")
+        self._require_no_path("fix")
         return self._fix(items)
 
     def _fix(self, items: Mapping, *, name: str | None = None) -> "Specification":
@@ -390,6 +482,7 @@ class Specification:
         """
         if not targets:
             raise TypeError("free takes at least one value")
+        self._require_no_path("free")
         model = self._require_model()
         refs = [ref for target in targets for ref in self._targets(model, target)]
         return self._edit_roles(refs, None)
@@ -410,6 +503,7 @@ class Specification:
         resolves them; ``execute`` puts them in its store.
         """
         self._require_concrete("cases", "make the cases from one case")
+        self._require_no_path("cases")
         if not isinstance(cases, Mapping) or not cases:
             raise TypeError("cases takes a mapping from case keys to values")
         made: dict[UUID, Specification] = {}
@@ -478,6 +572,7 @@ class Specification:
         if not isinstance(model, Model):
             raise TypeError("model must be a Model")
         self._require_concrete("on", "move each case")
+        self._require_no_path("on")
         if self.record.includes:
             raise ContractError(
                 "a Specification with includes cannot move to another Model; "

@@ -31,7 +31,9 @@ unidentified rows. A Table never invents IDs or derives them from current positi
 non-UUID and `MissingReferenceError` for an absent UUID. `Table.column(name)`
 preserves row order and raises `MissingReferenceError` with the nearest column
 names for an unknown column. `MissingReferenceError` is a `LookupError`, not a
-`KeyError`. Identity is metadata, never an implicit column.
+`KeyError`. `Table.head(count=5)` returns a Table of the first rows, with the same
+columns and Row IDs; a negative count raises `ContractError`. Identity is
+metadata, never an implicit column.
 
 Construction reuses a supplied Row when its columns already match in order.
 Otherwise it creates a Row in the Table's column order without changing the input.

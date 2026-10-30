@@ -169,6 +169,57 @@ classes:
         description: Optional RuleSet with controlled targets and dated decisions.
         range: RuleSet
         inlined: true
+      path:
+        description: The market path whose series fix Flow values in this case. The resolve-cases stage expands
+          it into assignments from the Paths document; the case does not copy the amounts.
+        range: PathCase
+        inlined: true
+  PathCase:
+    description: A reference to one path of a Paths document, and the Movements that each of its series fixes.
+    attributes:
+      paths:
+        description: UUID of the Paths revision.
+        range: Metadata
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      key:
+        description: Key of the path in the Paths document.
+        range: Code
+        required: true
+      series:
+        description: Each series of the path that fixes a Flow value, in order.
+        range: SeriesBinding
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  SeriesBinding:
+    description: One path series and the Flow Value whose Movements it fixes, one Movement for each Period of
+      the paths.
+    attributes:
+      series:
+        description: Name of the path series.
+        range: Code
+        required: true
+      value:
+        description: The Flow Value that the series fixes.
+        range: Reference
+        required: true
+        inlined: true
+      movements:
+        description: The Movement of the Value that each Period of the paths fixes, in the order of the Periods.
+        range: Reference
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
   Objective:
     description: A scalar numerical Expression and the sense in which its result is preferred.
     notes:

@@ -34,21 +34,20 @@ KINDS: tuple[type[Document], ...] = (Model, Specification, Run, Paths)
 def dependencies(document: Document) -> Iterator[tuple[UUID, type[Document] | None]]:
     """Yield the UUID and the kind of each document that ``document`` needs.
 
-    A Specification needs its Model, its includes and its cases. A Run needs
-    its Specification, its outputs, the Runs that it spawned and the
-    documents that its report names; their kind is not recorded, so it is
-    None. A Model and market paths need none. Historical predecessors are
-    not followed.
+    A Specification needs its Model, the market paths of its path, its
+    includes and its cases. A Run needs its Specification, the market paths
+    that it pins, its outputs, the Runs that it spawned and the documents
+    that its report names; their kind is not recorded, so it is None. A
+    Model and market paths need none. Historical predecessors are not
+    followed.
     """
     if isinstance(document, Specification):
-        record = document.record
-        if record.model is not None:
-            yield record.model, Model
-        for identity in (*(record.includes or ()), *(record.cases or ())):
-            yield identity, Specification
+        yield from _specification_dependencies(document)
     elif isinstance(document, Run):
         run = document.record
         yield run.specification, Specification
+        if run.paths is not None:
+            yield run.paths, Paths
         for identity in run.outputs or ():
             yield identity, Model
         for identity in run.spawns or ():
@@ -60,6 +59,19 @@ def dependencies(document: Document) -> Iterator[tuple[UUID, type[Document] | No
         for item in named:
             if item.document is not None:
                 yield item.document, None
+
+
+def _specification_dependencies(
+    document: Specification,
+) -> Iterator[tuple[UUID, type[Document]]]:
+    """Yield the Model, the market paths, the includes and the cases of one."""
+    record = document.record
+    if record.model is not None:
+        yield record.model, Model
+    if record.path is not None:
+        yield record.path.paths, Paths
+    for identity in (*(record.includes or ()), *(record.cases or ())):
+        yield identity, Specification
 
 
 def require_same(existing: Document, candidate: Document) -> None:

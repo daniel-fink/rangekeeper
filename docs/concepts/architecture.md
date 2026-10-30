@@ -188,9 +188,10 @@ show the target API in use.
   series moves and `rk.market.generate(dynamics=, periods=, seed=, count=)`
   makes a `Paths` document; `Paths.from_flows` makes one from data, and
   `regenerate(seed=)` makes the paths again. Stores and Bundles hold it. A
-  Flow fixes a Flow value, `fix(rent_index=paths.mean(name="rent_index"))`.
-  The package still has the scenario plan, its generation, `Market` access
-  and replay. See
+  Flow fixes a Flow value, `fix(rent_index=paths.mean(name="rent_index"))`,
+  and `Specification.across(paths=, series=)` makes one case for each path,
+  matched by key; the Runs pin the Paths. The package still has the scenario
+  plan, its generation, `Market` access and replay. See
   [market paths and rules](../reference/market-paths-and-rules.md).
 - 1.0 target:
   1. Choose a path generator (`rk.market.Dynamics`) and its parameters.

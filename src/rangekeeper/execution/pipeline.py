@@ -11,6 +11,7 @@ from rangekeeper.execution.backends import Backend, registry
 from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.execution.planning import Cases, resolve_cases
+from rangekeeper.market.paths import Paths
 from rangekeeper.model import Model
 from rangekeeper.run import Run
 from rangekeeper.run.validation import (
@@ -34,8 +35,9 @@ def solve(
 
     Without ``resolver``, the solve resolves the documents that made the
     Specification: the Model that ``model.specify()`` pinned, the
-    Specification itself, and what its own resolver supplies. A Specification
-    read from data has none of them; pass ``resolver`` for it. ``resolver``
+    Specification itself, the Paths of the cases that ``across`` made, and
+    what its own resolver supplies. A Specification read from data has none
+    of them; pass ``resolver`` for it. ``resolver``
     supplies the exact revisions that the Specification names.
 
     Each leaf case gives a finalized Run, even when it fails; repeated cases
@@ -116,6 +118,20 @@ class Pinned:
             source for source in (self.resolver, self.fallback) if source is not None
         ]
 
+    def load_paths(self, id: UUID) -> Paths:
+        """Return the Paths that ``across`` kept, else load them from the resolvers."""
+        kept = self.specification._paths
+        if kept is not None and kept.id == id:
+            return kept
+        sources = [
+            source for source in self._sources() if hasattr(source, "load_paths")
+        ]
+        return _first(
+            sources,
+            load=lambda source: source.load_paths(id),
+            missing=lambda: self._missing(id, "Paths"),
+        )
+
     @staticmethod
     def _missing(id: UUID, kind: str) -> MissingReferenceError:
         return MissingReferenceError(
@@ -156,7 +172,8 @@ def execute(
 
     The solve resolves the documents that made the Specification, as ``solve``
     does without a resolver, and then reads ``store``. Publication puts each
-    input Model, include and case Specification that ``store`` does not hold,
+    input Model, the Paths that the cases take their paths from, and each
+    include and case Specification that ``store`` does not hold,
     then the Specification, then for each case its outputs and then its Run,
     cases before their batch. So ``store`` can start empty, and it then holds
     everything that its Runs reference.
@@ -219,10 +236,12 @@ def _run(
 
 
 def _publish_inputs(store: RecordStore, cases: Cases) -> None:
-    """Put the inputs that ``store`` lacks: Models, then Specifications, then the root."""
+    """Put the inputs that ``store`` lacks: Models and Paths, then Specifications."""
     for model in cases.models.values():
         if not _holds(store.load_model, model.id):
             store.put(model)
+    for paths in cases.paths.values():
+        store.put(paths)
     for document in _inputs(cases.root, cases):
         if not _holds(store.load_specification, document.id):
             store.put(document)

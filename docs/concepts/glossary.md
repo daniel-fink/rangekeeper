@@ -82,7 +82,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Free | Make a value an unknown that the solve finds. A value that is not fixed is free | `specification` | `Specification.free` |
 | Estimate, bound, objective | A starting value, a limit, or a quantity to optimise | `specification` | — |
 | Composition | The effective investigation after included Specifications are combined | `specification` | — |
-| Case | One entry in a batch Specification, for example one market path. Its key is its Metadata name | `specification` | `Specification.cases`, `Specification.case`, `Outcome.case` |
+| Case | One entry in a batch Specification, for example one market path. Its key is its Metadata name | `specification` | `Specification.cases`, `Specification.across` (one case for each path), `Specification.case`, `Outcome.case` |
 | Rule | A query that fixes one value during the solve: the first date in a `Window` when a condition holds, or a default, written `window.where(condition=...).first(otherwise=...)` and fixed by key ([ADR-021](../decisions/021-sequential-decisions.md)). All of a Specification's rules are `spec.rules`; a Specification with rules is a strategy. The word "policy" is not used | `specification` | `RuleSet`, with `Decision`, `Rule` and `Action` records, in `specification.rule` |
 | Decided | A role beside fixed and free. A rule fixes the value on its decision date | `specification` | A target of the `RuleSet` |
 | Window | The dates on which a rule may act: by default, each date on which a value that its condition reads becomes known, or the first day of each of its `Periods`; between optional `earliest` and `latest` bounds | `specification` | None (planned, #300). Now each `Decision` record has one date (`at`) |

@@ -31,7 +31,8 @@ read 0.x documents; see [upgrading](../guides/upgrading.md).
 
 A Bundle has one main Model and may select additional Models, Specifications,
 finalized Runs and market paths (`rk.market.Paths`); `Reader.load_paths(id)`
-returns a selected Paths document. The reader retains the exact input Models, included/case
+returns a Paths document. A case that takes a path, and a Run that pins Paths,
+bring the Paths document with them. The reader retains the exact input Models, included/case
 Specifications, child Runs, outputs and scoped report documents needed to interpret
 those selections. Historical predecessors are not followed automatically. A root
 may select earlier history explicitly. Unrelated extra records are rejected.

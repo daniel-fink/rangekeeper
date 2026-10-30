@@ -1627,6 +1627,32 @@ public sealed class PathCapture : WireRecord
     }
 }
 
+/// <summary>Schema-derived PathCase wire record. Exports and nested reads are detached.</summary>
+public sealed class PathCase : WireRecord
+{
+    public PathCase() { }
+    public PathCase(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field key; missing and null remain distinct.</summary>
+    public string Key
+    {
+        get => Read<string>("key");
+        init => Write("key", value);
+    }
+    /// <summary>Wire field paths; missing and null remain distinct.</summary>
+    public Guid Paths
+    {
+        get => Read<Guid>("paths");
+        init => Write("paths", value);
+    }
+    /// <summary>Wire field series; missing and null remain distinct.</summary>
+    public IReadOnlyList<SeriesBinding> Series
+    {
+        get => Read<IReadOnlyList<SeriesBinding>>("series");
+        init => Write("series", value);
+    }
+}
+
 /// <summary>Schema-derived PathParameter wire record. Exports and nested reads are detached.</summary>
 public sealed class PathParameter : WireRecord
 {
@@ -2171,6 +2197,12 @@ public sealed class Run : WireRecord
         get => ReadOptional<IReadOnlyList<Guid>>("outputs");
         init => WriteOptional("outputs", value);
     }
+    /// <summary>Wire field paths; missing and null remain distinct.</summary>
+    public Optional<Guid> Paths
+    {
+        get => ReadOptional<Guid>("paths");
+        init => WriteOptional("paths", value);
+    }
     /// <summary>Wire field report; missing and null remain distinct.</summary>
     public Report Report
     {
@@ -2407,6 +2439,32 @@ public sealed class Selection : WireRecord
     }
 }
 
+/// <summary>Schema-derived SeriesBinding wire record. Exports and nested reads are detached.</summary>
+public sealed class SeriesBinding : WireRecord
+{
+    public SeriesBinding() { }
+    public SeriesBinding(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field movements; missing and null remain distinct.</summary>
+    public IReadOnlyList<Reference> Movements
+    {
+        get => Read<IReadOnlyList<Reference>>("movements");
+        init => Write("movements", value);
+    }
+    /// <summary>Wire field series; missing and null remain distinct.</summary>
+    public string Series
+    {
+        get => Read<string>("series");
+        init => Write("series", value);
+    }
+    /// <summary>Wire field value; missing and null remain distinct.</summary>
+    public Reference Value
+    {
+        get => Read<Reference>("value");
+        init => Write("value", value);
+    }
+}
+
 /// <summary>Schema-derived Settings wire record. Exports and nested reads are detached.</summary>
 public sealed class Settings : WireRecord
 {
@@ -2568,6 +2626,12 @@ public sealed class Specification : WireRecord
     {
         get => ReadOptional<IReadOnlyList<Objective>>("objectives");
         init => WriteOptional("objectives", value);
+    }
+    /// <summary>Wire field path; missing and null remain distinct.</summary>
+    public Optional<PathCase> Path
+    {
+        get => ReadOptional<PathCase>("path");
+        init => WriteOptional("path", value);
     }
     /// <summary>Wire field rules; missing and null remain distinct.</summary>
     public Optional<RuleSet> Rules
