@@ -102,7 +102,7 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 | `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination` |
 | `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError`, code `solver_termination` |
 | `INVALID` | Failed, with `specification_invalid` | `ValidationError`, with the validation issues of the attempt |
-| `FAILED` | Failed, with `numerical_failure`, `numerical_rejection`, `backend_unavailable` or another error diagnostic, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
+| `FAILED` | Failed, with `numerical_failure`, `numerical_rejection`, `active_side`, `backend_unavailable` or another error diagnostic, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
 | `UNSUPPORTED` | Failed, with the code of an `UnsupportedError`: `unsupported_capability`, `nonaffine_unknowns`, `symbol_limit` or `constraint_limit` | `UnsupportedError` with that code, `document_id`, `targets`, `equation` and `unknowns` |
 
 The error class comes from the same `FAILURES` row as the status. Each error
@@ -236,8 +236,9 @@ whole tree once this way.
 
 `solve` does not run stage 4 alone. When a row is not affine under the fixed
 values, it builds the problem in stages ([staged solve](#staged-solve)), and the
-Run's trace records each stage. The public stages give the problem of one
-stage.
+Run's trace records each stage. A `max` or `min` call that reads an unknown takes
+an active side first ([piecewise equations](#piecewise-equations)). The public
+stages give the problem of one stage.
 
 `checkpoint` is a callable that raises `AttemptDeadlineError` when the attempt's
 time limit has passed. The stages call it between steps.
@@ -249,7 +250,8 @@ time limit has passed. The stages call it between steps.
 | `execution/planning.py` | Stage 1: the case graph, the pinned Models and one composition for each leaf. |
 | `execution/preparation.py` | Stages 2 and 3: validate the composition against its exact Model, keep the contributor scope, collect imposed predicates and normalize assignments to Measure units. |
 | `execution/compiler.py` | Stage 4: derive affine coefficients after assignments; check arithmetic capability, dimensions and the symbol and constraint limits; keep the original Constraint identity. No backend dependency. |
-| `execution/staging.py` | The staged solve: build the affine rows' problem, read its rank analysis, solve it when it determines a deferred row's unknown, and fix the determined values for the next stage. |
+| `execution/staging.py` | The staged solve: build the affine rows' problem, read its rank analysis, solve it when it determines a deferred row's unknown, and fix the determined values for the next stage. The rounds that pick and check the active side of each `max` and `min` call. |
+| `execution/piecewise.py` | Piecewise equations: find the Model's `rx.max` and `rx.min` Functions, read the active side of each call at given values, and write the equations of a set of sides and the bounds that keep them active. It solves nothing. |
 | `execution/analysis.py` | Rank and free-variable analysis of the rows, in pure Python. |
 | `execution/backends/base.py` | Stage 5: the narrow problem and result protocol; a backend candidate is a claim that waits for verification. |
 | `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
@@ -277,7 +279,8 @@ Failed composition cases remain accountably visible within batch Runs.
 Execution supports Model-owned scalar Measurements and finite Flow Movements with explicit fixed and
 unknown roles, quantity literals, references, negation, addition, subtraction,
 multiplication with at least one fixed expression, division by a nonzero fixed
-expression, and powers that remain affine after assignment. Constraints support
+expression, powers that remain affine after assignment, and calls of `rx.max`
+and `rx.min` ([piecewise equations](#piecewise-equations)). Constraints support
 equality, nonstrict upper/lower bounds, conjunctions and Boolean constants. Strict
 comparisons are supported only when every referenced operand is explicitly fixed;
 this check precedes simplification and is repeated during acceptance.
@@ -309,6 +312,56 @@ result. Each earlier stage adds a `solve` step to the trace; only the last backe
 result gives the `solver_termination` evidence. A problem without such rows is
 one stage, unchanged.
 
+### Piecewise equations
+
+A call of `rx.max` is the largest of its operands, and a call of `rx.min` the
+smallest. Each is a call of a Function of the Model's definitions with the code
+`rx.max` or `rx.min`, with two or more positional operands. In lesson 03 the
+loan takes what the equity cannot cover:
+`loan_principal = rx.max(0 AUD, funding_need - equity)`
+([D2](../../examples/walkthrough/proposed/README.md#decisions)). The
+equation-function catalogue gives these Functions to equation text and `rx`
+([#309](https://github.com/daniel-fink/rangekeeper/issues/309),
+[#278](https://github.com/daniel-fink/rangekeeper/issues/278)); a Model that
+declares a Function with one of these codes can call it in its records.
+
+A call whose references are all fixed, or determined by an earlier stage, is a
+constant. A call that reads an unknown is affine once one of its operands is its
+**active side**. `solve` then works in rounds (`execution.staging`, internal)
+([#308](https://github.com/daniel-fink/rangekeeper/issues/308)):
+
+1. The first sides are the active sides where each unknown is zero.
+2. A round solves the affine problem of its sides, in stages, and reads the
+   active side of each call at that solution. A side that holds within a tie
+   tolerance (`1e-6` in the units of the call's first operand, plus `1e-9` times
+   the larger magnitude) stays.
+3. When the sides of the solution are the sides of the round, they hold. The
+   last problem is the problem of those sides with one bound for each other
+   operand: the side of a `max` is at least each other operand, and the side of
+   a `min` at most. The backend solves it, and verification checks every
+   original equation, with each call at the active side of the candidate's
+   values. Verification does not use the sides that the solve picked.
+4. Otherwise the next round tries the sides of the solution. After an
+   infeasible round, each call whose side reads no unknown, such as `0 AUD` in
+   `30 AUD = max(0 AUD, need - equity)`, takes its active side among the
+   operands that read one.
+
+A wrong side is reported, not hidden. When sides repeat, when 20 rounds give no
+sides that hold, or when an infeasible round has no side to change, the attempt
+fails with an `active_side` diagnostic and `Status.FAILED`;
+`raise_for_status()` raises `NumericalError` with the code `ACTIVE_SIDE`. Its
+`targets` are the Constraints whose sides disagree; after an infeasible round,
+each Constraint with a call that reads an unknown. This proves nothing about
+the equations: they can have a solution with other sides. The solve is
+`INFEASIBLE` only when the rows without such a call are infeasible on their own.
+
+Each round's solve adds a `solve` step to the trace, and the formulation step
+gives the number of calls and rounds. A determined result is determined at the
+sides that the solve found; the solve does not search the other sides. A bound
+that keeps a side active reads the unknowns of its operands, so an unknown that
+only such a bound restricts is underdetermined, with the code
+`uniqueness_not_assessed`.
+
 All Model and Specification Constraints are imposed. Unused reporting expressions
 remain passive, including the fixture's area query. No stored amount supplies a
 missing role. Estimates are reported as unused by this simplex feasibility method.
@@ -319,7 +372,8 @@ require unsupported offset-unit handling is rejected.
 After staging, the adapter explicitly rejects nonlinear unknown products/divisors/powers
 with a `nonaffine_unknowns` diagnostic. Its `values` give the `equation` text and
 the keys of the `unknowns` in the term that is not affine. It also rejects strict
-comparisons involving unknowns, disjunctions, function calls, selections, imposed queries, ordered
+comparisons involving unknowns, disjunctions, calls of Functions other than
+`rx.max` and `rx.min`, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
 Values and market path generation follow the [temporal contract](market-paths-and-rules.md).
 Structural interventions are unsupported. Execution never substitutes hard-coded
@@ -393,7 +447,8 @@ severity, or else the last error. A code that the table does not name gives
 | `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | The error's own code: `unsupported_capability`, `nonaffine_unknowns`, `symbol_limit` or `constraint_limit` | `UnsupportedError` |
 | `UnitError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | `unsupported_capability` | `UnsupportedError` |
 | `BackendUnavailableError` | failed | `not_assessed` | `FAILED` | `backend_unavailable` | `BackendUnavailableError` |
-| `NumericalError`, `ArithmeticError` | failed | `unknown` | `FAILED` | `numerical_failure` | `NumericalError` |
+| `NumericalError` | failed | `unknown` | `FAILED` | The error's own code: `numerical_failure`, or `active_side` when no active side of each `max` and `min` holds ([piecewise equations](#piecewise-equations)) | `NumericalError` |
+| `ArithmeticError` | failed | `unknown` | `FAILED` | `numerical_failure` | `NumericalError` |
 
 `Attempt.fail` builds the diagnostic of each expected failure.
 `statuses.diagnosed` copies the error's structured fields into the diagnostic's

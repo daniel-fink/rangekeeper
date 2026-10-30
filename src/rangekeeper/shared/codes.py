@@ -96,7 +96,9 @@ class Code(StrEnum):
     REFERENCE_MISSING = "reference.missing"
     REFERENCE_PREDICATE = "reference.predicate"
 
-    # Execution findings that a Run records.
+    # Execution findings that a Run records. ``ACTIVE_SIDE``: no active side
+    # of each max or min call held at the solution of its affine problem.
+    ACTIVE_SIDE = "active_side"
     ASSIGNMENT_REJECTED = "assignment_rejected"
     ATTEMPT_DEADLINE = "attempt_deadline"
     ATTEMPT_TIMING = "attempt_timing"

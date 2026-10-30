@@ -16,6 +16,7 @@ from uuid import UUID
 
 from rangekeeper.execution.analysis import Analysis, equality_rank, undetermined
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
+from rangekeeper.execution.piecewise import Pieces
 from rangekeeper.execution.preparation import Assertion, Binding
 from rangekeeper.execution.settings import Limits
 from rangekeeper.model.expression.evaluation import (
@@ -101,6 +102,7 @@ class Compiler:
     ) -> None:
         self.binding = binding
         self.checkpoint = checkpoint
+        self.pieces = Pieces.of(binding.model)
 
     def nonaffine(self, operation: str, *values: Affine) -> UnsupportedError:
         """Return the error for an operation on unknowns that is not affine.
@@ -151,8 +153,9 @@ class Compiler:
         """Evaluate an expression whose references are all fixed, else return None.
 
         A staged solve fixes the values that earlier stages determined, so a
-        function of them is a constant here. None means that an unknown
-        remains or that the evaluator does not support the expression.
+        function of them is a constant here. A ``max`` or ``min`` call takes
+        its active side at these values. None means that an unknown remains or
+        that the evaluator does not support the expression.
         """
         for child, _, _ in walk(node):
             if (
@@ -164,8 +167,10 @@ class Compiler:
                 )
             ):
                 return None
+        values, units = self.binding.assignments, self.binding.units
         try:
-            value = numerical(node, self.binding.assignments, units=self.binding.units)
+            sides = self.pieces.active(node, values=values, units=units)
+            value = numerical(self.pieces.reduce(node, sides), values, units=units)
         except (UnsupportedError, UnitError):
             return None
         except (ArithmeticError, TypeError, ValueError) as error:

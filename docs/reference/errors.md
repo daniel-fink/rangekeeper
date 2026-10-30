@@ -73,6 +73,7 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | `underdetermined`, `uniqueness_not_assessed` | `equality_rank` and `unknown_count`, from the analysis of the affine problem |
 | `nonaffine_unknowns` | `equation`: the text of the Constraint, for example `"noi = coverage * debt_service"`. `unknowns`: the keys of the unknowns in the term that is not affine, as `Model.key_of` gives them. The diagnostic's `references` are those unknowns, as for `underdetermined` |
 | A failure from `UnsupportedError` | `equation`, when the failure is in one Constraint |
+| `active_side` | No active side of each `max` and `min` held ([piecewise equations](execution.md#piecewise-equations)). `target` is the Constraint whose side disagrees; `targets` names several. The message gives the equations |
 | `specification_invalid` | `issues`: each validation issue of the attempt, with its `code`, `message`, `document`, `path`, `targets`, `values` and `evidence` |
 | A failure from another error | `path`, when the error has one; `targets`, when it names more than one record. One target is the diagnostic's `target` |
 | `constraint_residual` | `equation`: the text of the Constraint that was checked. `formulation`: the Formulation that groups an equation of the Model, by its name (such as `"Funding"`) or, for an entity's default Formulation, its code. `target` is the Constraint |

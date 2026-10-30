@@ -105,6 +105,9 @@ UNSUPPORTED_CODES = (
     Code.SYMBOL_LIMIT,
     Code.CONSTRAINT_LIMIT,
 )
+# The codes that a NumericalError carries: a failed calculation, or no active
+# side of each max or min that holds at its solution (#308).
+NUMERICAL_CODES = (Code.NUMERICAL_FAILURE, Code.ACTIVE_SIDE)
 
 # Each expected error, in matching order. Any other error raises to the caller.
 FAILURES: tuple[Failure, ...] = (
@@ -178,7 +181,16 @@ FAILURES: tuple[Failure, ...] = (
         ),
     ),
     Failure(
-        errors=(NumericalError, ArithmeticError),
+        errors=(NumericalError,),
+        before=Conclusion(
+            solution=UNKNOWN,
+            status=Status.FAILED,
+            codes=NUMERICAL_CODES,
+            raises=NumericalError,
+        ),
+    ),
+    Failure(
+        errors=(ArithmeticError,),
         before=Conclusion(
             solution=UNKNOWN,
             status=Status.FAILED,
