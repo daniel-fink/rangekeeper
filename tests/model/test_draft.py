@@ -484,10 +484,9 @@ def test_date_keys_follow_the_value_rules():
 
 
 def test_lesson_03_cell_5_dates_and_their_equations():
-    # Cell 03·5 declares the plan's dates and relates them, in equation text.
-    # add_formulation (#305) and the dates that equations define (#282) come
-    # later: these equations go to the default Formulation, and every date is
-    # declared.
+    # Cell 03·5 declares the plan's dates and relates them, in equation text,
+    # in the "Dates" Formulation. The dates that equations define (#282) come
+    # later: here every date is declared.
     model = rk.Model(name="Mixed-use base plan")
     draft = model.edit()
     project = draft.add_entity(code="project", classification="project")
@@ -499,14 +498,15 @@ def test_lesson_03_cell_5_dates_and_their_equations():
     project.date(key="a_start")
     project.date(key="a_open")
     project.date(key="b_open")
-    project.equations(
+    dates = project.add_formulation(name="Dates")
+    dates.equations(
         "shared_start = start_date",
         "a_start = shared_start + 1 year",
         "a_open = a_start + 2 years",
         "b_open = b_start + 2 years",
         "b_start >= shared_start + 1 year",
-        "start_date != NEVER",
     )
+    dates.equations("start_date != NEVER")
     model = draft.commit()
     values = model.entity(code="project").characteristics.values
     assert [value.key for value in values][:4] == [
@@ -516,7 +516,8 @@ def test_lesson_03_cell_5_dates_and_their_equations():
         "b_start",
     ]
     assert {value.kind for value in values} == {ValueKind.DATE}
-    formulation = model.formulation(model.system.formulations[0].id)
+    formulation = model.formulation(dates.id)
+    assert formulation.name == "Dates"
     assert len(formulation.constraints) == 6
     bound, never = formulation.expressions[4:]
     assert records(bound) == records(

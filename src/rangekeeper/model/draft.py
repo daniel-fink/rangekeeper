@@ -10,14 +10,16 @@ import keyword
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from difflib import get_close_matches
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 from uuid import UUID, uuid4
 
 from rangekeeper.duration import Period
 from rangekeeper.flow import Flow, Movement
+from rangekeeper.model._mathematics import Mathematics
 from rangekeeper.model.expression import text as equation_text
 from rangekeeper.model.expression.text import RESERVED
 from rangekeeper.model.formulation.authoring import identify
+from rangekeeper.model.formulation.handle import FormulationHandle
 from rangekeeper.model.update import Update
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.enums import ExpressionKind, Operator, ValueKind
@@ -25,11 +27,9 @@ from rangekeeper.schema.records import (
     Assembly,
     Characteristics,
     Classification,
-    Constraint,
     Definitions,
     Entity,
     Expression,
-    Formulation,
     Measure,
     Relationship,
     System,
@@ -95,6 +95,11 @@ class _Names:
             )
         return self.draft._ref(self.draft.entity(code=code).id, key).id
 
+
+# The records that ``_find`` selects by UUID, code or name.
+_Found = TypeVar("_Found", Entity, Classification)
+# The record kinds of the owners of values: Entity and Assembly.
+_Owned = TypeVar("_Owned", bound=Entity)
 
 # The word for each kind of Value in the display of a handle.
 _VALUE_WORDS = {
@@ -302,7 +307,56 @@ class EntityHandle:
         Formulation is the root Formulation whose code is the entity's code; the
         draft makes it when it is absent.
         """
-        self._draft._add_equations(self._id, equations)
+        draft = self._draft
+        records = draft._equations_of(self._id, equations)
+        formulation = draft._mathematics.default(draft._owner(self._id).path)
+        draft._mathematics.add(formulation=formulation, expressions=records)
+
+    def add_formulation(
+        self,
+        *,
+        name: str,
+        description: str | None = None,
+    ) -> FormulationHandle:
+        """Declare a named Formulation of the entity, and return its handle.
+
+        A Formulation groups equations, such as the "Funding" equations, for
+        displays and traces. It changes nothing in a solve, and the values stay
+        on the entity. ``equations(...)`` on the handle adds to it, as on the
+        entity. The named Formulation is a child of the entity's default
+        Formulation. A name that the entity's Formulations have raises
+        ContractError with the code UNIQUE; ``formulation(name=)`` finds it.
+        """
+        draft = self._draft
+        draft._require_open()
+        optional_text(description, "description")
+        owner = draft._owner(self._id)
+        identity = draft._mathematics.add_named(
+            path=owner.path,
+            name=require_text(name, "name"),
+            description=description,
+            where=owner.where,
+        )
+        return FormulationHandle._of(
+            draft, id=identity, name=name, owner=owner.record.id, entity=owner.label
+        )
+
+    def formulation(self, *, name: str) -> FormulationHandle:
+        """Return the handle of a named Formulation of the entity, made now or before.
+
+        A missing name raises MissingReferenceError with the nearest names.
+        """
+        owner = self._draft._owner(self._id)
+        identity = self._draft._mathematics.named(
+            path=owner.path, name=require_text(name, "name"), where=owner.where
+        )
+        return FormulationHandle._of(
+            self._draft,
+            id=identity,
+            name=name,
+            owner=owner.record.id,
+            entity=owner.label,
+        )
 
 
 class ModelDraft:
@@ -323,8 +377,7 @@ class ModelDraft:
         "_measures",
         "_owners",
         "_relationships",
-        "_formulations",
-        "_equations",
+        "_mathematics",
         "_changed",
         "_known",
         "_handles",
@@ -337,9 +390,8 @@ class ModelDraft:
     _measures: list[Measure]
     _owners: dict[UUID, _Owner]
     _relationships: list[Relationship]
-    _formulations: list[Formulation]
-    # Equations added to each root Formulation, by its UUID.
-    _equations: dict[UUID, list[tuple[Expression, Constraint]]]
+    # The Formulations, and the Formulations and equations that the draft adds.
+    _mathematics: Mathematics
     # The parts of the revision that the draft changed.
     _changed: set[str]
     # The UUIDs of the Values and Movements that equations can reference.
@@ -373,8 +425,9 @@ class ModelDraft:
             for record in (*(system.entities or ()), *(system.assemblies or ()))
         }
         draft._relationships = list(system.relationships or ())
-        draft._formulations = list(system.formulations or ())
-        draft._equations = {}
+        draft._mathematics = Mathematics(
+            roots=system.formulations or (), identify=draft._identify
+        )
         draft._changed = set()
         draft._known = {
             identity
@@ -481,10 +534,7 @@ class ModelDraft:
         """
         self._require_open()
         return self._add_owner(
-            Entity,
-            code=code,
-            classification=classification,
-            name=name,
+            self._new_owner(Entity, code=code, classification=classification, name=name)
         )
 
     def add_assembly(
@@ -503,13 +553,10 @@ class ModelDraft:
         """
         self._require_open()
         members = tuple(dict.fromkeys(self._entity_id(item) for item in entities))
-        return self._add_owner(
-            Assembly,
-            code=code,
-            classification=classification,
-            name=name,
-            entities=members or UNSET,
+        record = self._new_owner(
+            Assembly, code=code, classification=classification, name=name
         )
+        return self._add_owner(record.replace(entities=members) if members else record)
 
     def add_relationship(
         self,
@@ -585,14 +632,11 @@ class ModelDraft:
                 measures=tuple(self._measures) if self._measures else UNSET,
             )
         system: System | Unset = UNSET
-        if self._changed & {"owners", "relationships", "formulations"}:
+        if self._changed & {"owners", "relationships"} or self._mathematics.changed:
             owners = [_built(owner) for owner in self._owners.values()]
             entities = tuple(r for r in owners if not isinstance(r, Assembly))
             assemblies = tuple(r for r in owners if isinstance(r, Assembly))
-            formulations = tuple(
-                _equated(record, self._equations.get(record.id, ()))
-                for record in self._formulations
-            )
+            formulations = self._mathematics.formulations()
             system = (base.system or System()).replace(
                 entities=entities or UNSET,
                 assemblies=assemblies or UNSET,
@@ -651,20 +695,29 @@ class ModelDraft:
             return self._owner(item).record.id
         return self.entity(code=require_text(item, "entity")).id
 
-    def _add_owner(self, kind, *, code, classification, name, **fields):
+    def _new_owner(
+        self,
+        kind: type[_Owned],
+        *,
+        code: str,
+        classification: str | UUID | None,
+        name: str | None,
+    ) -> _Owned:
+        """Check the fields of a new Entity or Assembly, and return its record."""
         require_code(code, "code")
         optional_text(name, "name", empty=False)
         if any(owner.record.code == code for owner in self._owners.values()):
             raise _duplicate("Entity", "code", code)
-        record = kind(
+        return kind(
             id=self._identify("entity", code),
             code=code,
             name=UNSET if name is None else name,
             classification=UNSET
             if classification is None
             else self._classification(classification, ENTITY_TAXONOMY),
-            **fields,
         )
+
+    def _add_owner(self, record: Entity) -> EntityHandle:
         self._owners[record.id] = _Owner(record, [], changed=True)
         self._changed.add("owners")
         return self._handle(record.id)
@@ -741,11 +794,23 @@ class ModelDraft:
             )
         return ValueHandle._of(value, owner=owner, units=units)
 
-    def _add_equations(
+    def _add_to(
+        self,
+        formulation: UUID,
+        *,
+        owner: UUID,
+        equations: Sequence[str | Expression],
+    ) -> None:
+        """Add the equations of an entity to one of its Formulations."""
+        records = self._equations_of(owner, equations)
+        self._mathematics.add(formulation=formulation, expressions=records)
+
+    def _equations_of(
         self,
         owner_id: UUID,
         equations: Sequence[str | Expression],
-    ) -> None:
+    ) -> list[Expression]:
+        """Return the checked records of the equations of one entity; add nothing."""
         self._require_open()
         owner = self._owner(owner_id)
         if not equations:
@@ -756,29 +821,7 @@ class ModelDraft:
             for target in _targets(equation.to_data()):
                 if target not in self._known:
                     raise MissingReferenceError(target, kind="Value", where=owner.where)
-        formulation = self._default_formulation(owner)
-        pending = self._equations.setdefault(formulation, [])
-        for equation in records:
-            pending.append(
-                (
-                    equation,
-                    Constraint(
-                        id=self._identify("constraint", str(equation.id)),
-                        predicate=equation.id,
-                    ),
-                )
-            )
-        self._changed.add("formulations")
-
-    def _default_formulation(self, owner: _Owner) -> UUID:
-        for record in self._formulations:
-            if record.code == owner.path:
-                return record.id
-        record = Formulation(
-            id=self._identify("formulation", owner.path), code=owner.path
-        )
-        self._formulations.append(record)
-        return record.id
+        return records
 
     def _measure(self, units: str) -> Measure:
         for item in self._measures:
@@ -879,19 +922,6 @@ def _built(owner: _Owner) -> Entity:
     )
 
 
-def _equated(
-    record: Formulation,
-    equations: Sequence[tuple[Expression, Constraint]],
-) -> Formulation:
-    """Return a root Formulation with the equations that the draft added."""
-    if not equations:
-        return record
-    return record.replace(
-        expressions=(*(record.expressions or ()), *(e for e, _ in equations)),
-        constraints=(*(record.constraints or ()), *(c for _, c in equations)),
-    )
-
-
 def _require_key(key: object) -> None:
     text = require_text(key, "key")
     if not text.isidentifier() or keyword.iskeyword(text) or text in RESERVED:
@@ -902,7 +932,13 @@ def _require_key(key: object) -> None:
         )
 
 
-def _duplicate(kind: str, by: str, text: str, *, where: str = "ModelDraft"):
+def _duplicate(
+    kind: str,
+    by: str,
+    text: str,
+    *,
+    where: str = "ModelDraft",
+) -> ContractError:
     return ContractError(
         f"{kind} {by} {text!r} is already declared in {where}",
         code=Code.UNIQUE,
@@ -910,7 +946,14 @@ def _duplicate(kind: str, by: str, text: str, *, where: str = "ModelDraft"):
     )
 
 
-def _find(records, selector, *, kind: str, where: str, by: str = "code"):
+def _find(
+    records: Sequence[_Found],
+    selector: str | UUID,
+    *,
+    kind: str,
+    where: str,
+    by: str = "code",
+) -> _Found:
     """Return the one record with this UUID, or with this code or name."""
     if isinstance(selector, UUID):
         for record in records:

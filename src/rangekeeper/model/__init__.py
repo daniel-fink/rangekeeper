@@ -3,6 +3,7 @@
 from rangekeeper.model.draft import EntityHandle as EntityHandle
 from rangekeeper.model.draft import ModelDraft as ModelDraft
 from rangekeeper.model.draft import ValueHandle as ValueHandle
+from rangekeeper.model.formulation.handle import FormulationHandle as FormulationHandle
 from rangekeeper.model.model import Model as Model
 from rangekeeper.model.update import Update as Update
 from rangekeeper.profile import Distribution as Distribution
@@ -104,6 +105,7 @@ __all__ = [
     "Model",
     "ModelDraft",
     "EntityHandle",
+    "FormulationHandle",
     "ValueHandle",
     "Update",
     "Metadata",

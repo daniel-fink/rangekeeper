@@ -75,7 +75,7 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | A failure from `UnsupportedError` | `equation`, when the failure is in one Constraint |
 | `specification_invalid` | `issues`: each validation issue of the attempt, with its `code`, `message`, `document`, `path`, `targets`, `values` and `evidence` |
 | A failure from another error | `path`, when the error has one; `targets`, when it names more than one record. One target is the diagnostic's `target` |
-| `constraint_residual` | `equation`: the text of the Constraint that was checked. `target` is the Constraint |
+| `constraint_residual` | `equation`: the text of the Constraint that was checked. `formulation`: the Formulation that groups an equation of the Model, by its name (such as `"Funding"`) or, for an entity's default Formulation, its code. `target` is the Constraint |
 
 ```python
 for diagnostic in run.report.diagnostics:
