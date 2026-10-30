@@ -4,8 +4,8 @@ The worker session is private: ``pyomo._workers`` holds the idle worker of the
 process, and ``pyomo._WORKER`` is the script that each new worker runs. Process
 reuse, a stall and a crash are not visible through the public API, so these
 tests replace the session with a new one, and the script with a small script
-that writes the worker's process ID to a file before it runs the real worker,
-stalls or exits. The other tests solve through the public API.
+that makes a file named by the worker's process ID before it runs the real
+worker, stalls or exits. The other tests solve through the public API.
 """
 
 import importlib.util
@@ -34,19 +34,16 @@ REAL = highs._WORKER
 # The evidence of a solve that changes from one solve to the next.
 TIMINGS = frozenset({"highs_seconds", "worker_seconds", "solver_time_limit"})
 RECORD = """import os, runpy
-with open({log!r}, "a") as log:
-    log.write(f"{{os.getpid()}}\\n")
+open(os.path.join({log!r}, str(os.getpid())), "w").close()
 runpy.run_path({real!r}, run_name="__main__")
 """
 STALL = """import os, sys, time
-with open({log!r}, "a") as log:
-    log.write(f"{{os.getpid()}}\\n")
+open(os.path.join({log!r}, str(os.getpid())), "w").close()
 sys.stdin.readline()
 time.sleep(60)
 """
 EXIT = """import os, sys
-with open({log!r}, "a") as log:
-    log.write(f"{{os.getpid()}}\\n")
+open(os.path.join({log!r}, str(os.getpid())), "w").close()
 sys.stdin.readline()
 sys.stderr.write("worker failure evidence\\n")
 sys.stderr.flush()
@@ -71,20 +68,26 @@ def session(monkeypatch):
 
 @pytest.fixture
 def log(tmp_path):
-    """Return the file to which each new worker writes its process ID."""
-    return tmp_path / "workers.log"
+    """Return the folder in which each new worker makes a file named by its ID.
+
+    One file for each worker, because appends to one file from two processes
+    can overwrite each other on Windows.
+    """
+    folder = tmp_path / "workers"
+    folder.mkdir()
+    return folder
 
 
 def run_as(monkeypatch, *, script: str, log: Path) -> None:
     """Make each new worker of the session run ``script``."""
-    path = log.with_name(f"worker-{len(list(log.parent.glob('worker-*.py')))}.py")
+    path = log.parent / f"worker-{len(list(log.parent.glob('worker-*.py')))}.py"
     path.write_text(script.format(log=str(log), real=str(REAL)))
     monkeypatch.setattr(highs, "_WORKER", path)
 
 
 def started(log: Path) -> list[int]:
-    """Return the process ID of each worker that started, in order."""
-    return [int(line) for line in log.read_text().split()] if log.exists() else []
+    """Return the process ID of each worker that started."""
+    return sorted(int(path.name) for path in log.iterdir())
 
 
 def running(pid: int) -> bool:
