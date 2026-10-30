@@ -1,6 +1,7 @@
 """A saved investigation contribution, distinct from its derived composition."""
 
 from collections.abc import Mapping
+from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
@@ -12,6 +13,7 @@ from types import MappingProxyType
 from typing import Self
 from uuid import UUID, uuid4
 
+from rangekeeper.duration.dates import NEVER, Never
 from rangekeeper.model.formulation.validation import check_formulation_names
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.index import RecordIndex
@@ -325,9 +327,9 @@ class Specification:
 
     def fix(
         self,
-        targets: "Mapping[str | UUID | Reference, Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]] | None" = None,
+        targets: "Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]] | None" = None,
         /,
-        **values: "Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]",
+        **values: "Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]",
     ) -> "Specification":
         """Return a new Specification that fixes values, by key.
 
@@ -354,8 +356,6 @@ class Specification:
 
     def _fix(self, items: Mapping, *, name: str | None = None) -> "Specification":
         """Fix each target of ``items`` to its value; ``name`` renames the revision."""
-        from rangekeeper.model.targets import target_units
-
         model = self._require_model()
         refs: list[Reference] = []
         assignments = []
@@ -363,13 +363,10 @@ class Specification:
             ids = tuple(quantity) if isinstance(quantity, Mapping) else None
             selected = self._targets(model, target, ids=ids)
             for ref in selected:
-                q = _quantity(
-                    quantity[ref.target] if isinstance(quantity, Mapping) else quantity,
-                    target=target,
-                    units=target_units(model, ref),
-                    unit_system=model.unit_system,
+                given = (
+                    quantity[ref.target] if isinstance(quantity, Mapping) else quantity
                 )
-                assignments.append(Assignment(target=ref, quantity=q))
+                assignments.append(_assignment(model, ref, given, target=target))
             refs.extend(selected)
         return self._edit_roles(refs, tuple(assignments), name=name)
 
@@ -468,7 +465,6 @@ class Specification:
         ``model`` is the pinned revision, ``on`` returns this Specification.
         """
         from rangekeeper.model import Model
-        from rangekeeper.model.targets import target_units
 
         if not isinstance(model, Model):
             raise TypeError("model must be a Model")
@@ -502,9 +498,7 @@ class Specification:
                 values={"keys": keys},
             )
         for assignment in record.assignments or ():
-            model.unit_system.convert(
-                quantity=assignment.quantity, to=target_units(model, assignment.target)
-            )
+            _require_content(model, assignment)
         taken = {ref.target for ref in controlled}
         unknowns = tuple(
             Reference(target=identity)
@@ -514,9 +508,7 @@ class Specification:
         free = {ref.target for ref in unknowns}
         estimates = tuple(e for e in record.estimates or () if e.target.target in free)
         for estimate in estimates:
-            model.unit_system.convert(
-                quantity=estimate.quantity, to=target_units(model, estimate.target)
-            )
+            _require_content(model, estimate)
         return self._derive(model=model, unknowns=unknowns, estimates=estimates)
 
     def _key(self, identity: UUID) -> str:
@@ -714,6 +706,72 @@ def _check_owned(
             targets=inherited,
             values={"included": contribution.id},
         )
+
+
+def _require_content(model: "Model", assignment: Assignment) -> None:
+    """Check that an Assignment's content fits its target in ``model``.
+
+    A date Value takes a date or NEVER; another target takes a Quantity whose
+    units convert to the target's units.
+    """
+    from rangekeeper.model.targets import date_target, target_units
+
+    if date_target(model, assignment.target):
+        require(
+            assignment.quantity is None,
+            "a date Value takes a date or NEVER",
+            code=Code.CONTRACT,
+        )
+        return
+    require(
+        assignment.quantity is not None,
+        "a date or NEVER fixes a date Value only",
+        code=Code.CONTRACT,
+    )
+    assert assignment.quantity is not None
+    model.unit_system.convert(
+        quantity=assignment.quantity, to=target_units(model, assignment.target)
+    )
+
+
+def _assignment(
+    model: "Model", ref: Reference, value: object, *, target: object
+) -> Assignment:
+    """Return the Assignment that fixes one target to a value.
+
+    A date Value takes a ``datetime.date`` or ``rk.duration.NEVER``; another
+    target takes a Quantity, Quantity text or a number for a ratio. A value of
+    the other kind raises ContractError.
+    """
+    from rangekeeper.model.targets import date_target, target_units
+
+    dated = value is NEVER or (
+        isinstance(value, date) and not isinstance(value, datetime)
+    )
+    if date_target(model, ref):
+        if not dated:
+            raise ContractError(
+                f"{target} is a date Value: fix it to a date or NEVER",
+                targets=(ref.target,),
+                values={"key": str(target)},
+            )
+        if value is NEVER:
+            return Assignment(target=ref, never=NEVER)
+        assert isinstance(value, date)
+        return Assignment(target=ref, date=value)
+    if dated:
+        raise ContractError(
+            f"a date fixes a date Value, and {target} is not one",
+            targets=(ref.target,),
+            values={"key": str(target)},
+        )
+    quantity = _quantity(
+        value,
+        target=target,
+        units=target_units(model, ref),
+        unit_system=model.unit_system,
+    )
+    return Assignment(target=ref, quantity=quantity)
 
 
 def _quantity(

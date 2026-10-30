@@ -5,11 +5,12 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
+from rangekeeper.duration.dates import NEVER, DateValue
 from rangekeeper.execution.errors import UnsupportedError
 from rangekeeper.flow import Movement
 from rangekeeper.model import Model
 from rangekeeper.model.expression.text import render
-from rangekeeper.model.targets import target_units
+from rangekeeper.model.targets import date_target, target_units
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
@@ -53,7 +54,13 @@ class Validation:
 
 @dataclass(frozen=True, kw_only=True)
 class Binding:
-    """The bound roles of one composition; derived, never serialized."""
+    """The bound roles of one composition; derived, never serialized.
+
+    ``assignments`` and ``unknowns`` are the numerical roles, in Measure units.
+    ``dates`` are the fixed date Values, each a date or NEVER, and
+    ``date_unknowns`` the free ones; the date equations determine them before
+    the affine stages (#280).
+    """
 
     model: Model
     composition: Composition
@@ -64,6 +71,10 @@ class Binding:
     units: UnitSystem
     references: Mapping[UUID, Reference]
     rule_evidence: tuple[RuleEvidence, ...] = ()
+    dates: Mapping[UUID, DateValue] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    date_unknowns: tuple[UUID, ...] = ()
 
     def key(self, reference: Reference) -> str:
         """Return the key of a referenced Value or Movement, or else its UUID.
@@ -183,19 +194,32 @@ def bind_roles(
             "Specification-local Value publication requires a later adapter"
         )
     references = {ref.target: ref for ref in role_references}
-    value_units = {token: target_units(model, ref) for token, ref in references.items()}
+    dated = {token for token, ref in references.items() if date_target(model, ref)}
+    value_units = {
+        token: target_units(model, ref)
+        for token, ref in references.items()
+        if token not in dated
+    }
+    supplied = (*(requirements.assignments or ()), *rule_assignments)
     assignments = {
         item.target.target: units.convert(
             quantity=item.quantity, to=value_units[item.target.target]
         )
-        for item in (*(requirements.assignments or ()), *rule_assignments)
+        for item in supplied
+        if item.quantity is not None
     }
+    dates: dict[UUID, DateValue] = {}
+    for item in supplied:
+        found = _supplied_date(item)
+        if found is not None:
+            dates[item.target.target] = found
+    free = tuple(ref.target for ref in requirements.unknowns or ())
     return Binding(
         model=model,
         composition=composition,
         value_units=MappingProxyType(value_units),
         assignments=MappingProxyType(assignments),
-        unknowns=tuple(ref.target for ref in requirements.unknowns or ()),
+        unknowns=tuple(id for id in free if id not in dated),
         assertions=tuple(
             Assertion(
                 document=document,
@@ -207,4 +231,13 @@ def bind_roles(
         units=units,
         references=MappingProxyType(references),
         rule_evidence=rule_evidence,
+        dates=MappingProxyType(dates),
+        date_unknowns=tuple(id for id in free if id in dated),
     )
+
+
+def _supplied_date(item: Assignment) -> DateValue | None:
+    """Return the date or NEVER that an Assignment supplies, else None."""
+    if item.never is not None:
+        return NEVER
+    return item.date

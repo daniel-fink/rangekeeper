@@ -42,6 +42,12 @@ def target_value(model: "Model", target: Reference) -> Value:
     return _target(model, target)[0]
 
 
+def date_target(model: "Model", target: Reference) -> bool:
+    """Return whether the target is a date Value, which takes a date or NEVER."""
+    value, movement = _target(model, target)
+    return movement is None and value.kind == ValueKind.DATE
+
+
 def target_units(model: "Model", target: Reference) -> str:
     """Read declared scalar units without inferring a solve role."""
     value, movement = _target(model, target)

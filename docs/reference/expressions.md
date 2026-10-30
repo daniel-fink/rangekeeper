@@ -306,8 +306,9 @@ date: the difference of two dates, a date and a number or an amount, negation,
 multiplication and a comparison of a date with a Quantity.
 `rk.duration.shift(on=, by=)` applies the same arithmetic in Python, and
 `rangekeeper.model.expression.evaluation.evaluate_date` and `compare_dates`
-evaluate date Expressions from supplied values. The executor does not solve
-date equations yet.
+evaluate date Expressions from supplied values. A solve determines the dates
+that date equations give from fixed dates, and decides each equation over dates
+exactly ([date equations](execution.md#date-equations)).
 
 Comparisons produce Boolean expressions. A Constraint asserts that one must
 hold. Equality is not assignment. Boolean operators require Booleans, without

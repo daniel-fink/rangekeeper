@@ -147,25 +147,61 @@
     },
     "Assignment": {
       "additionalProperties": false,
-      "description": "An explicit scalar or Movement target and finite supplied Quantity; its collection determines assignment or estimate semantics.",
+      "description": "An explicit target and its supplied content, a finite Quantity for a scalar Value or a Movement, or a date or NEVER for a date Value; its collection determines assignment or estimate semantics.",
+      "oneOf": [
+        {
+          "properties": {
+            "quantity": {}
+          },
+          "required": [
+            "quantity"
+          ]
+        },
+        {
+          "properties": {
+            "date": {}
+          },
+          "required": [
+            "date"
+          ]
+        },
+        {
+          "properties": {
+            "never": {}
+          },
+          "required": [
+            "never"
+          ]
+        }
+      ],
       "properties": {
+        "date": {
+          "description": "The calendar date supplied to a date Value; it excludes quantity and never.",
+          "format": "date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "never": {
+          "$ref": "#/$defs/Never",
+          "description": "Supplies NEVER to a date Value, the event does not happen; it excludes quantity and date."
+        },
         "quantity": {
-          "$ref": "#/$defs/Quantity",
           "allOf": [
             {
               "$ref": "#/$defs/Quantity"
             }
           ],
-          "description": "Explicit finite magnitude and compatible units; omission or null is not a supplied amount."
+          "description": "Explicit finite magnitude and compatible units for a scalar Value or a Movement; omission or null is not a supplied amount."
         },
         "target": {
           "$ref": "#/$defs/Reference",
-          "description": "Value or Movement to which the quantity is supplied."
+          "description": "Value or Movement to which the content is supplied."
         }
       },
       "required": [
-        "target",
-        "quantity"
+        "target"
       ],
       "title": "Assignment",
       "type": "object"

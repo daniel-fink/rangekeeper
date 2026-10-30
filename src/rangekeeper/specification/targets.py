@@ -5,7 +5,7 @@ from uuid import UUID
 
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model import Model
-from rangekeeper.model.targets import target_units
+from rangekeeper.model.targets import date_target, target_units
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.records import Assignment, Reference, Value
@@ -104,5 +104,6 @@ def expand_targets(
             "Movement UUIDs select from a whole Flow Value only",
             targets=(ref.target,),
         )
-    target_units(model, ref)
+    if not date_target(model, ref):
+        target_units(model, ref)
     return (ref,)

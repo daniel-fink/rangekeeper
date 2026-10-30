@@ -13,7 +13,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
 
-from rangekeeper.model._scope import Scope, numerical_units, reference_key
+from rangekeeper.model._scope import (
+    Scope,
+    date_reference,
+    numerical_units,
+    reference_key,
+)
 from rangekeeper.model.expression.validation import ExpressionAnalysis
 from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.model.validation import check_model
@@ -310,6 +315,17 @@ def _check_concrete(
     def supplied(collection):
         for assignment in specification.get(collection) or []:
             target = assignment["target"]
+            if date_reference(target, scope.targets):
+                # A date Value takes a date or NEVER (#280).
+                require(
+                    "quantity" not in assignment,
+                    "a date Value takes a date or NEVER",
+                )
+                continue
+            require(
+                "quantity" in assignment,
+                "a date or NEVER supplies a date Value only",
+            )
             expected = eligible(target)
             quantity = assignment["quantity"]
             require(
@@ -341,7 +357,8 @@ def _check_concrete(
     supplied("assignments")
     references = specification.get("unknowns") or []
     for target in references:
-        eligible(target)
+        if not date_reference(target, scope.targets):
+            eligible(target)
     supplied("estimates")
     require(roles["estimates"] <= unknowns, "estimate target is not an unknown")
     if specification.get("rules"):
