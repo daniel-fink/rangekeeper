@@ -13,6 +13,7 @@ from rangekeeper.execution import (
     assembly,
     compiler,
     dates,
+    expansion,
     preparation,
     publication,
     settings,
@@ -207,12 +208,14 @@ class Attempt:
                 message="Validated additive composition, exact Model pin, scalar roles and recorded units.",
             )
         )
-        # The date equations determine dates first (#280). The candidate and
-        # verification keep every original assertion.
-        settled = dates.settle(self.binding)
-        self.binding = replace(settled, assertions=self.binding.assertions)
+        # The date equations determine dates first (#280); then each Flow
+        # equation and equation function is written period by period (#276).
+        # The candidate and verification keep every original assertion.
+        bound = self.binding
+        settled = dates.settle(bound)
+        self.binding = expansion.expand(replace(settled, assertions=bound.assertions))
         staged = staging.stage(
-            settled,
+            expansion.expand(settled),
             solve=self.solve_stage,
             limits=self.limits,
             checkpoint=self.checkpoint,

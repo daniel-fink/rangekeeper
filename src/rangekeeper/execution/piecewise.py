@@ -80,6 +80,9 @@ KINDS: Mapping[str, Kind] = MappingProxyType(
     {
         "rx.max": Kind(sign=1.0, bound=Operator.GREATER_THAN_OR_EQUAL),
         "rx.min": Kind(sign=-1.0, bound=Operator.LESS_THAN_OR_EQUAL),
+        # x.max() and x.min() over the periods of a Flow (execution.expansion).
+        "Flow.max": Kind(sign=1.0, bound=Operator.GREATER_THAN_OR_EQUAL),
+        "Flow.min": Kind(sign=-1.0, bound=Operator.LESS_THAN_OR_EQUAL),
     }
 )
 

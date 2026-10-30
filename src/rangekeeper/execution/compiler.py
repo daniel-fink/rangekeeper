@@ -15,6 +15,7 @@ from uuid import UUID
 
 from rangekeeper.execution.analysis import Analysis, equality_rank, undetermined
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
+from rangekeeper.execution.expansion import resolve
 from rangekeeper.execution.piecewise import Pieces
 from rangekeeper.execution.preparation import Assertion, Binding
 from rangekeeper.execution.settings import Limits
@@ -168,9 +169,12 @@ class Compiler:
             ):
                 return None
         values, units = self.binding.assignments, self.binding.units
+        resolved = resolve(node, values=values, binding=self.binding)
+        if resolved is None:
+            return None
         try:
-            sides = self.pieces.active(node, values=values, units=units)
-            value = numerical(self.pieces.reduce(node, sides), values, units=units)
+            sides = self.pieces.active(resolved, values=values, units=units)
+            value = numerical(self.pieces.reduce(resolved, sides), values, units=units)
         except (UnsupportedError, UnitError):
             return None
         except (ArithmeticError, TypeError, ValueError) as error:

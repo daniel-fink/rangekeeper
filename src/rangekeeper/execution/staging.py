@@ -37,7 +37,7 @@ from rangekeeper.execution.preparation import Assertion, Binding
 from rangekeeper.execution.settings import Limits
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.index import walk
-from rangekeeper.schema.records import Expression, ExpressionKind
+from rangekeeper.schema.records import Expression, ExpressionKind, Operator
 from rangekeeper.shared.codes import Code
 
 ROUNDS = 20
@@ -268,9 +268,16 @@ class _ActiveSides:
         )
 
     def round(self, current: Sides) -> _Round:
-        """Solve the affine problem of one set of sides, in stages."""
+        """Solve the affine problem of one set of sides, in stages.
+
+        A round leaves out each deferred equation that only reports a value,
+        such as ``equity_irr = rx.finance.irr(flow=cash)``: it defines an
+        unknown that no other equation reads, so it changes no other value
+        and no side. The last problem keeps it.
+        """
         self.checkpoint()
-        staged = self.stages(chosen(self.binding, pieces=self.pieces, sides=current))
+        reduced = chosen(self.binding, pieces=self.pieces, sides=current)
+        staged = self.stages(_without_reports(reduced, self.checkpoint))
         result = staged.ended or self.solve(staged.problem)
         return _Round(sides=current, staged=staged, result=result)
 
@@ -362,6 +369,44 @@ def _values(binding: Binding, solved: Mapping[UUID, float]) -> dict[UUID, Quanti
             magnitude=solved.get(id, 0.0), units=binding.value_units[id]
         )
     return values
+
+
+def _without_reports(binding: Binding, checkpoint: Callable[[], None]) -> Binding:
+    """Return ``binding`` without the deferred equations that only report a value.
+
+    Such an equation is ``x = e`` or ``e = x``, where ``x`` is an unknown
+    that no other assertion reads.
+    """
+    deferred = _deferred(binding, checkpoint)
+    if not deferred:
+        return binding
+    reads: dict[UUID, int] = {}
+    for item in binding.assertions:
+        for id in _references(item.predicate):
+            reads[id] = reads.get(id, 0) + 1
+    unknowns = set(binding.unknowns)
+
+    def reports(item: Assertion) -> bool:
+        node = item.predicate
+        if (
+            node.kind is not ExpressionKind.BINARY
+            or node.operator is not Operator.EQUAL
+        ):
+            return False
+        return any(
+            side.kind is ExpressionKind.REFERENCE
+            and side.target is not None
+            and side.target.target in unknowns
+            and reads[side.target.target] == 1
+            for side in node.operands or ()
+        )
+
+    kept = tuple(
+        item
+        for index, item in enumerate(binding.assertions)
+        if index not in deferred or not reports(item)
+    )
+    return replace(binding, assertions=kept)
 
 
 def _deferred(binding: Binding, checkpoint: Callable[[], None]) -> frozenset[int]:

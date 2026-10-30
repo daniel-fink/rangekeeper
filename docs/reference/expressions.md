@@ -279,9 +279,11 @@ and the table below are made from it.
   writes a Flow-valued equation as one scalar equation for each period, over
   the Movements of its Flows: a periodwise call becomes one call for each
   period, and `cumulative()`, `diff()`, `total()`, `first()` and `last()`
-  become sums and differences of Movements. Other calls need the staged solve
-  ([#276](https://github.com/daniel-fink/rangekeeper/issues/276)) and raise
-  `UnsupportedError`.
+  become sums and differences of Movements. Other calls raise
+  `UnsupportedError` there. A solve writes every call itself, with the
+  coefficients that its value function gives
+  ([Flow equations and equation functions](execution.md#flow-equations-and-equation-functions),
+  [#276](https://github.com/daniel-fink/rangekeeper/issues/276)).
 
 <!-- BEGIN GENERATED FUNCTIONS -->
 | Function | Meaning | Stage | Availability | Mirrors |
