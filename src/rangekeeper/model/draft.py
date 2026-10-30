@@ -16,7 +16,7 @@ from uuid import UUID, uuid4
 from rangekeeper.duration import Period
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model._mathematics import Mathematics
-from rangekeeper.model._undeclared import Undeclared, Unknown, known_values
+from rangekeeper.model._undeclared import Place, Undeclared, Unknown, known_values
 from rangekeeper.model.expression import terms
 from rangekeeper.model.expression import text as equation_text
 from rangekeeper.model.expression.catalogue import functions
@@ -876,8 +876,7 @@ class ModelDraft:
                 if target not in known:
                     raise MissingReferenceError(target, kind="Value", where=owner.where)
         self._undeclared.add(
-            owner=owner_id,
-            where=owner.where,
+            place=Place(id=owner_id, where=owner.where, path=owner.path),
             new=names.new,
             equations=records,
             texts=[item for item in equations if isinstance(item, str)],
@@ -925,6 +924,7 @@ class ModelDraft:
             ),
             measure=lambda units: _measure_in(measures, units, self._identify),
             known=[item.units for item in measures],
+            identify=self._identify,
         )
 
     def _add_functions(self, data: object) -> None:

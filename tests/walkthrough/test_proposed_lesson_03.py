@@ -12,9 +12,9 @@ takes the Periods of the Flow that it defines.
 
 ``run_as_written`` runs cells 5 to 8, 12 and 12b as written, with their
 named Formulations (#305). The cells leave the results that they do not rely
-on undeclared, for the draft to infer (#282); until it does, the test
-declares those results (``RESULTS``) before the first equation, and skips the
-one statement that shows the inferred units (``WAITING``).
+on undeclared, and the draft infers them, with the Periods of their Flows
+(#282): ``RESULTS`` gives the kind and units that it infers. The test skips
+the one statement that shows the inferred units (``WAITING``).
 """
 
 import ast
@@ -172,34 +172,15 @@ WAITING = ("model.entity(code='project').values",)
 
 
 def run_as_written(*keys: str) -> dict[str, object]:
-    """Run cells as written, statement by statement, from a fresh namespace.
-
-    The results of ``RESULTS`` are declared just before the first named
-    Formulation, because the draft does not infer them yet (#282).
-    """
+    """Run cells as written, statement by statement, from a fresh namespace."""
     numbered = cells()
     namespace: dict[str, object] = {"rk": rk, "date": date, "years": YEARS}
-    declared = False
     for key in keys:
         for statement in ast.parse(numbered[key]).body:
             code = ast.unparse(statement)
-            if code in WAITING:
-                continue
-            if not declared and "add_formulation" in code:
-                declare_results(namespace["project"])
-                declared = True
-            exec(code, namespace)
+            if code not in WAITING:
+                exec(code, namespace)
     return namespace
-
-
-def declare_results(project) -> None:
-    for key, (kind, units) in RESULTS.items():
-        if kind == "date":
-            project.date(key=key)
-        elif kind == "flow":
-            project.flow(key=key, units=units, periods=YEARS)
-        else:
-            project.value(key=key, units=units)
 
 
 def named(formulations) -> list[str]:
@@ -259,13 +240,7 @@ def test_cells_5_to_8_and_12_infer_the_results_that_they_do_not_declare():
     The draft works out the kind and units of each result in ``RESULTS`` from
     its equations. Only the statement of ``WAITING`` is skipped.
     """
-    numbered = cells()
-    namespace: dict[str, object] = {"rk": rk, "date": date, "years": YEARS}
-    for key in ("5", "5b", "5c", "6", "7", "7b", "8", "12", "12b"):
-        for statement in ast.parse(numbered[key]).body:
-            code = ast.unparse(statement)
-            if code not in WAITING:
-                exec(code, namespace)
+    namespace = run_as_written("5", "5b", "5c", "6", "7", "7b", "8", "12", "12b")
     model = namespace["model"]
     assert isinstance(model, rk.Model)
     words = {
@@ -279,4 +254,7 @@ def test_cells_5_to_8_and_12_infer_the_results_that_they_do_not_declare():
         measure = None if value.measure is None else model.record_by_id(value.measure)
         units = None if measure is None else measure.record.units
         inferred[key] = (words[value.kind], units)
+        if value.kind is rk.model.ValueKind.FLOW:
+            # A Flow takes the Periods of its operands, one Movement in each.
+            assert len(value.flow.movements) == len(YEARS)
     assert inferred == RESULTS

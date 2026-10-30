@@ -13,13 +13,14 @@ selection or a query, has unknown units; it is not checked, and it gives no
 units to a value.
 """
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from enum import Enum
 from uuid import UUID
 
+from rangekeeper.duration import Period
 from rangekeeper.model.expression.catalogue import functions
-from rangekeeper.model.expression.functions import Availability, EquationFunction
+from rangekeeper.model.expression.functions import EquationFunction
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.enums import DomainKind, ExpressionKind, Operator, ValueKind
 from rangekeeper.schema.records import Call, Expression, Function, Value
@@ -38,12 +39,14 @@ class Dimension:
     """What an expression gives: a quantity in units, a date or a Boolean.
 
     ``flow`` is True when the expression references a whole Flow Value, so that
-    it gives an amount for each Period.
+    it gives an amount for each Period; ``periods`` are those Periods, when the
+    declarations give them.
     """
 
     kind: Kind
     units: str | None = None
     flow: bool = False
+    periods: tuple[Period, ...] | None = None
 
 
 DATE = Dimension(kind=Kind.DATE)
@@ -146,14 +149,16 @@ class Analysis:
         left: Dimension | None,
         right: Dimension | None,
     ) -> Dimension | None:
-        """Return a sum or difference: the known units, or a date plus a length."""
+        """Return a sum or difference, or a date plus a length.
+
+        Its operands have the same units, so one known operand gives them. A
+        known Flow gives the shape too; a known scalar beside an unknown
+        operand does not, because that operand could be a Flow.
+        """
         if DATE.kind in (_kind(left), _kind(right)):
             return DATE
         self._check(node, left, right)
-        known = left if left is not None else right
-        if known is None:
-            return None
-        return replace(known, flow=_flow(left) or _flow(right))
+        return _shaped(left, right)
 
     def _product(
         self,
@@ -164,7 +169,7 @@ class Analysis:
         """Return a product or a quotient of quantities, or a power of a ratio."""
         if left.units is None or right.units is None:
             return None
-        flow = left.flow or right.flow
+        flow, periods = _shape(left, right)
         if operator is Operator.MULTIPLY:
             units = self._units.multiply(left.units, right.units)
         elif operator is Operator.DIVIDE:
@@ -174,7 +179,7 @@ class Analysis:
         else:
             # A power of a quantity with units depends on the exponent's value.
             return None
-        return Dimension(kind=Kind.QUANTITY, units=units, flow=flow)
+        return Dimension(kind=Kind.QUANTITY, units=units, flow=flow, periods=periods)
 
     def _check(
         self,
@@ -224,8 +229,11 @@ class Inference(Analysis):
     ) -> Dimension | None:
         """Return the result of an equation function from the units of its arguments.
 
-        It is a Flow when the entry gives a Flow, or when a periodwise function
-        takes a Flow.
+        It is a Flow when the entry gives a Flow, or when one of its periodwise
+        parameters takes a Flow. A Flow has the Periods of the argument that
+        ``periods_from`` names, or of its periodwise Flows; a Flow made from
+        amounts has the Periods of the Flow that it defines, which are not
+        known here.
         """
         names = [parameter.name for parameter in entry.parameters]
         given = [
@@ -244,11 +252,20 @@ class Inference(Analysis):
         )
         if units is None:
             return None
-        periodwise = entry.availability is Availability.PERIODWISE
-        flow = entry.result is DomainKind.FLOW or (
-            periodwise and any(_flow(item) for item in arguments.values())
-        )
-        return Dimension(kind=Kind.QUANTITY, units=units, flow=flow)
+        shaping = [
+            arguments.get(name)
+            for name in entry.periodwise
+            if name in given_names(given)
+        ]
+        if entry.periods_from is not None:
+            shaping = [arguments.get(entry.periods_from)]
+        lifted = [item for item in shaping if _flow(item)]
+        if not lifted and any(item is None for item in shaping):
+            # An unknown argument could be a Flow, so the shape is unknown.
+            return None
+        flow = entry.result is DomainKind.FLOW or bool(lifted)
+        _, periods = _shape(*lifted)
+        return Dimension(kind=Kind.QUANTITY, units=units, flow=flow, periods=periods)
 
 
 def of_value(value: Value, *, units: str | None) -> Dimension | None:
@@ -262,15 +279,50 @@ def of_value(value: Value, *, units: str | None) -> Dimension | None:
         return DATE
     if units is None or value.kind not in (ValueKind.MEASUREMENT, ValueKind.FLOW):
         return None
-    return Dimension(kind=Kind.QUANTITY, units=units, flow=value.kind is ValueKind.FLOW)
+    if value.kind is ValueKind.MEASUREMENT:
+        return Dimension(kind=Kind.QUANTITY, units=units)
+    movements = () if value.flow is None else value.flow.movements
+    periods = tuple(item.period for item in movements if item.period is not None)
+    return Dimension(
+        kind=Kind.QUANTITY,
+        units=units,
+        flow=True,
+        periods=periods if periods and len(periods) == len(movements) else None,
+    )
 
 
 def _kind(dimension: Dimension | None) -> Kind | None:
     return None if dimension is None else dimension.kind
 
 
+def _shaped(*operands: Dimension | None) -> Dimension | None:
+    """Return what operands with the same units give, when their shape is known.
+
+    The first known operand gives the units. A known Flow gives the shape; with
+    no known Flow, every operand must be known.
+    """
+    known = [item for item in operands if item is not None]
+    flows = [item for item in known if item.flow]
+    if not known or (not flows and len(known) < len(operands)):
+        return None
+    flow, periods = _shape(*known)
+    return replace(known[0], flow=flow, periods=periods)
+
+
+def given_names(given: Sequence[tuple[str, Expression]]) -> set[str]:
+    """Return the names of the parameters that a call gives."""
+    return {name for name, _ in given}
+
+
 def _flow(dimension: Dimension | None) -> bool:
     return dimension is not None and dimension.flow
+
+
+def _shape(*operands: Dimension | None) -> tuple[bool, tuple[Period, ...] | None]:
+    """Return whether operands give a Flow, and the first Periods that they give."""
+    flows = [item for item in operands if item is not None and item.flow]
+    periods = next((item.periods for item in flows if item.periods), None)
+    return bool(flows), periods
 
 
 _Visit = Callable[[Analysis, Expression], Dimension | None]

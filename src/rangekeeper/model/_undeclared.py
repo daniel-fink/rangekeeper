@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from difflib import get_close_matches
 from uuid import UUID
 
+from rangekeeper.flow import Flow, Movement
 from rangekeeper.model._dimensions import (
     Dimension,
     Inference,
@@ -26,6 +27,7 @@ from rangekeeper.model._dimensions import (
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.schema.enums import ExpressionKind, Operator, ValueKind
 from rangekeeper.schema.records import Expression, Measure, Value
+from rangekeeper.schema.runtime import UNSET, Unset
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
@@ -36,14 +38,23 @@ from rangekeeper.shared.errors import (
 
 
 @dataclass(frozen=True, slots=True)
+class Place:
+    """The entity that owns an undeclared value."""
+
+    id: UUID
+    # The entity in an error, such as "Entity project".
+    where: str
+    # The code path of the entity, for the identities of a Flow's Movements.
+    path: str
+
+
+@dataclass(frozen=True, slots=True)
 class Pending:
     """A value that an equation defines and no call declares: its owner, key and UUID."""
 
-    owner: UUID
+    place: Place
     key: str
     id: UUID
-    # The owner in an error, such as "Entity project".
-    where: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,8 +99,7 @@ class Undeclared:
     def add(
         self,
         *,
-        owner: UUID,
-        where: str,
+        place: Place,
         new: Mapping[str, UUID],
         equations: Sequence[Expression],
         texts: Sequence[str],
@@ -104,11 +114,9 @@ class Undeclared:
         names = [*candidates, *(key for key, id in new.items() if id in defined)]
         for key, identity in new.items():
             if identity not in defined:
-                raise _undefined(key, where=where, texts=texts, candidates=names)
+                raise _undefined(key, where=place.where, texts=texts, candidates=names)
         for key, identity in new.items():
-            self._pending[(owner, key)] = Pending(
-                owner=owner, key=key, id=identity, where=where
-            )
+            self._pending[(place.id, key)] = Pending(place=place, key=key, id=identity)
 
     def declare(self, owner: UUID, key: str) -> UUID | None:
         """Return the UUID of an undeclared value that a call now declares, or None.
@@ -127,13 +135,16 @@ class Undeclared:
         lookup: Lookup,
         measure: Callable[[str], Measure],
         known: Sequence[str],
+        identify: Callable[..., UUID],
     ) -> dict[UUID, list[Value]]:
         """Return a Value record for each undeclared value, by the UUID of its owner.
 
         ``measure`` gives the Measure of units text, and ``known`` the units
         texts in the order of their Measures; a quantity takes the first of
-        them that is compatible with its units. A value whose units cannot be
-        worked out raises ValidationError, with one issue for each such value.
+        them that is compatible with its units. A Flow with known Periods has
+        one unresolved Movement in each, with an identity from ``identify``. A
+        value whose units cannot be worked out raises ValidationError, with one
+        issue for each such value.
         """
         found = self.infer(equations=equations, units=units, lookup=lookup)
         added: dict[UUID, list[Value]] = {}
@@ -143,15 +154,15 @@ class Undeclared:
                 value = Value(id=item.id, key=item.key, kind=ValueKind.DATE)
             else:
                 assert dimension.units is not None  # a quantity has units
+                text = spelled(dimension.units, units=units, known=known)
                 value = Value(
                     id=item.id,
                     key=item.key,
                     kind=ValueKind.FLOW if dimension.flow else ValueKind.MEASUREMENT,
-                    measure=measure(
-                        spelled(dimension.units, units=units, known=known)
-                    ).id,
+                    measure=measure(text).id,
+                    flow=_shape(item, dimension, units=text, identify=identify),
                 )
-            added.setdefault(item.owner, []).append(value)
+            added.setdefault(item.place.id, []).append(value)
         return added
 
     def infer(
@@ -203,6 +214,30 @@ def _step(
             found[target] = dimension
             progress = True
     return progress
+
+
+def _shape(
+    item: Pending,
+    dimension: Dimension,
+    *,
+    units: str,
+    identify: Callable[..., UUID],
+) -> Flow | Unset:
+    """Return the Flow shape of an inferred Flow with known Periods, or UNSET."""
+    if not dimension.flow or not dimension.periods:
+        return UNSET
+    return Flow(
+        units=units,
+        movements=[
+            Movement(
+                id=identify(
+                    "movement", item.place.path, item.key, period.start.isoformat()
+                ),
+                period=period,
+            )
+            for period in dimension.periods
+        ],
+    )
 
 
 def definitions_in(equation: Expression) -> Iterator[tuple[UUID, Expression]]:
@@ -293,9 +328,9 @@ def _undefined(
 def _unknown(item: Pending) -> Issue:
     return Issue(
         Code.UNITS,
-        f"the units of {item.key!r} in {item.where} cannot be worked out from "
+        f"the units of {item.key!r} in {item.place.where} cannot be worked out from "
         f"its equations; declare it with its units, such as "
         f"value(key={item.key!r}, units=...)",
         targets=(item.id,),
-        values={"key": item.key, "where": item.where},
+        values={"key": item.key, "where": item.place.where},
     )
