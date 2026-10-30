@@ -3,7 +3,7 @@
 The grammar is Python's expression grammar, with the changes of ADR-015 (D32):
 ``=`` is equality, ``and``, ``or`` and ``not`` are the logical operators, a
 number followed by unit words is a quantity literal, and ``NEVER`` is a
-constant. ``parse`` makes a syntax tree in which each node has its position in
+constant. A date literal has its Python spelling, ``date(2027, 1, 1)``. ``parse`` makes a syntax tree in which each node has its position in
 the text. ``rangekeeper.model.expression.text`` makes Expression records from
 the tree, and writes records back as text with the same operator table.
 """
@@ -102,6 +102,8 @@ TRUE = "True"
 FALSE = "False"
 NEVER = "NEVER"
 CONSTANTS = frozenset({TRUE, FALSE, NEVER})
+# The Python spelling of a date literal: ``date(2027, 1, 1)``.
+DATE = "date"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

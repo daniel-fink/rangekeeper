@@ -2,8 +2,8 @@
 
 ``render`` writes the fewest brackets that keep the meaning. Calls of equation
 functions are written as ``rx.<name>(...)`` and Flow methods as
-``x.<name>(...)``, from the function registry. NEVER is written ``NEVER``; a
-date literal has no text form yet and is written ``<date 2027-01-01>``.
+``x.<name>(...)``, from the function registry. A date literal is written
+``date(2027, 1, 1)``, as in Python, and NEVER as ``NEVER``.
 """
 
 from collections.abc import Callable
@@ -55,7 +55,8 @@ def _write_date(node: Expression, name: _Namer) -> tuple[str, Precedence]:
     if node.never is not None:
         return syntax.NEVER, Precedence.ATOM
     assert node.date is not None
-    return f"<date {node.date.isoformat()}>", Precedence.ATOM
+    day = node.date
+    return f"{syntax.DATE}({day.year}, {day.month}, {day.day})", Precedence.ATOM
 
 
 def _write_reference(node: Expression, name: _Namer) -> tuple[str, Precedence]:
