@@ -44,3 +44,4 @@ for commands. [History](../history/README.md) explains the earlier sequencing.
 Add new dated evidence as a new folder with its own README. Do not rewrite
 archived evidence.
 | [Record runtime costs — 2026-10-28](record-runtime-2026-10-28/README.md) | Construction, replacement, decoding and field access of generated records, before and after each ADR-011 runtime change. |
+| [Docs site versions and lesson displays — 2026-10-30](docs-site-versions-2026-10-30/README.md) | `mike deploy`, `mike serve` and `mike set-default` on a scratch branch of a throwaway clone, the version selector, and the lesson displays from published copies under `/1.0/`. Nothing was published. |

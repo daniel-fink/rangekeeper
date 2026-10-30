@@ -12,7 +12,9 @@ source links (default ``develop``).
 ``stage`` copies ``docs/`` to ``_build/docs`` and adds the generated pages:
 
 - ``walkthrough/``: each lesson, executed from a fresh kernel in the locked
-  walkthrough environment and converted by ``notebooks.py``;
+  walkthrough environment and converted by ``notebooks.py``. Each display iframe
+  of the helpers shows a copy of its file, published at its path under
+  ``examples/``;
 - ``api/``: one mkdocstrings page for each public ``rangekeeper`` module: the
   packages of the API snapshot, without ``market``, and each other module with
   its own ``__all__`` that exports a name that no package page shows.
@@ -39,11 +41,12 @@ from pathlib import Path
 from types import ModuleType
 from urllib.parse import unquote, urlsplit
 
-from notebooks import NAME, convert
+from notebooks import NAME, ConversionError, convert
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
-LESSONS = ROOT / "examples" / "walkthrough"
+EXAMPLES = ROOT / "examples"
+LESSONS = EXAMPLES / "walkthrough"
 BUILD = ROOT / "_build"
 STAGE = BUILD / "docs"
 EXECUTED = BUILD / "lessons"
@@ -57,6 +60,12 @@ LINK = re.compile(
     re.MULTILINE,
 )
 FENCE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
+# The iframe of a lesson display: a file under examples/ that the walkthrough
+# helpers serve through LocalDisplay, on loopback behind a random prefix.
+DISPLAY = re.compile(
+    r"(?P<lead>src=[\"'])http://127\.0\.0\.1:\d+/[\w-]+/"
+    r"(?P<path>[^\"'?#]+)(?P<query>[?#][^\"']*)?(?P<end>[\"'])"
+)
 
 
 def location(source: Path, page: Path, url: str, *, ref: str, lessons: bool) -> str:
@@ -117,6 +126,65 @@ def execute(output: Path) -> None:
         print(output / lesson.name)
 
 
+def display_files(display: Path) -> list[Path]:
+    """Return a display and the files that it reads.
+
+    They are the display, the files beside it that are not HTML pages (the
+    shared Plotly bundle, the geometry viewer's script and settings), and the
+    data files that a geometry viewer's ``geometry.json`` names.
+    """
+    folder = display.parent
+    beside = (path for path in folder.iterdir() if path.suffix != ".html")
+    files = [display, *sorted(path for path in beside if path.is_file())]
+    settings = folder / "geometry.json"
+    if settings.is_file():
+        viewer = json.loads(settings.read_text())
+        files.extend(folder / viewer["data"] / name for name in viewer["files"])
+    return files
+
+
+def publish(display: Path, *, site: Path) -> Path:
+    """Copy a display under examples/ and the files that it reads to ``site``.
+
+    ``site`` stands for ``examples/``: each file keeps its path below it, so
+    the relative paths between the files still work. Return the display's copy.
+    """
+    for path in display_files(display):
+        source = path.resolve()
+        if not source.is_relative_to(EXAMPLES) or not source.is_file():
+            raise ConversionError(f"display file is not in examples/: {path}")
+        target = site / source.relative_to(EXAMPLES)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+    return site / display.resolve().relative_to(EXAMPLES)
+
+
+def publish_displays(lesson: Path, *, page: Path, site: Path) -> None:
+    """Point the display iframes of an executed lesson at copies in ``site``.
+
+    A static site has no LocalDisplay, so each display iframe of ``lesson``
+    shows a copy that is published with the pages. ``page`` is the lesson's
+    page in ``site``. The link is relative to the page file, as in Markdown;
+    Zensical adjusts it for the page's URL. The executed copy of the lesson
+    changes; the lesson does not.
+    """
+
+    def static(match: re.Match[str]) -> str:
+        copy = publish(EXAMPLES / unquote(match["path"]), site=site)
+        url = Path(os.path.relpath(copy, page.parent)).as_posix()
+        return f"{match['lead']}{url}{match['query'] or ''}{match['end']}"
+
+    notebook = json.loads(lesson.read_text())
+    for cell in notebook["cells"]:
+        for output in cell.get("outputs", ()):
+            data = output.get("data", {})
+            if "text/html" in data:
+                html = data["text/html"]
+                text = html if isinstance(html, str) else "".join(html)
+                data["text/html"] = DISPLAY.sub(static, text)
+    lesson.write_text(json.dumps(notebook, indent=1))
+
+
 def title(lesson: Path) -> str:
     """Return the first heading of a lesson."""
     for cell in json.loads(lesson.read_text())["cells"]:
@@ -141,6 +209,8 @@ def walkthrough(output: Path, *, ref: str, lessons: bool) -> None:
         ]
         subprocess.run(command, check=True, cwd=ROOT, env=environment)
         for executed in sorted(EXECUTED.glob("*.ipynb")):
+            page = output / f"{executed.stem}.md"
+            publish_displays(executed, page=page, site=output.parent)
             convert(executed, output)
     entries = []
     for lesson in sorted(LESSONS.glob("*.ipynb")):
