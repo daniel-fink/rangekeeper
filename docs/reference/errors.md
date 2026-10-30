@@ -33,7 +33,7 @@ contract: a Run that is read back has the same code text.
 | Hierarchies | `hierarchy.*` | `HIERARCHY_CYCLE`, `HIERARCHY_MULTIPLE_PARENTS` |
 | Equation text | `equation.*` | `EQUATION_SYNTAX` (text that does not parse), `EQUATION_FUNCTION` (a function, method or member that equation text cannot use) |
 | Alignment | `alignment.*` for Periods and Flow coordinates that do not align | `ALIGNMENT_CROSSES`, `ALIGNMENT_PARTIAL`, `ALIGNMENT_MIXED`, `ALIGNMENT_DIFFER`, `ALIGNMENT_DUPLICATE`, `ALIGNMENT_GAP` |
-| Comparisons | `comparison.*`, from `rk.execution.compare` | `COMPARISON_CASES`, `COMPARISON_SCALAR`, `COMPARISON_BATCH`, `COMPARISON_EMPTY` |
+| Comparisons | `comparison.*`, from `rk.execution.compare` | `COMPARISON_CASES`, `COMPARISON_PATHS` (batches across other market paths), `COMPARISON_SCALAR`, `COMPARISON_BATCH`, `COMPARISON_EMPTY` |
 | Distributions | `distribution.*`, from `Outcome.distribution` and `Outcome.mean` | `DISTRIBUTION_VALUE`: a Flow value has no distribution, and a date value has counts but no mean |
 | Other errors | Bare words | `DECODE`, `ENCODING`, `REVISION_CONFLICT`, `UNSUPPORTED_VERSION` |
 | Execution | Bare words in Run diagnostics, and in the diagnostics of a `Replay` | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED`; `REPLAY_MISMATCH` (a replay of a stored Run gives another result) |

@@ -149,6 +149,7 @@ class Code(StrEnum):
     COMPARISON_BATCH = "comparison.batch"
     COMPARISON_CASES = "comparison.cases"
     COMPARISON_EMPTY = "comparison.empty"
+    COMPARISON_PATHS = "comparison.paths"
     COMPARISON_SCALAR = "comparison.scalar"
 
     # A distribution of a batch's values that its kind of value does not have:

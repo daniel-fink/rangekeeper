@@ -270,12 +270,27 @@ difference.distribution(outcome="Strategy", key="equity_npv").quantile(level=0.0
 difference.by(key="start_date").summary()  # where waiting gains, and where it costs
 ```
 
-Each member is one leaf case, in `walk()` order. The cases of two batches pair
-by case key, the `case` column of `Outcome.table`: the keys of nested batches
-joined by `/`, or the position of a case without a key. A leaf pairs with every
-case of the other side. The [`Mean`](#distributions-of-a-batch) of a batch
-compares as one leaf. Neither type has a public constructor: make them with
-`compare`.
+Each member is one leaf case, in `walk()` order. When each case of two batches
+takes a market path (`Specification.across`), their cases pair by path: the
+Paths that each case's Run pins (`run.paths`) and the path key, which names
+the case. So a batch of cases, each across the paths, pairs with one batch
+across the same paths, case by case and path by path, and `by_case` gives the
+statistics of each case. Other batches pair by case key, the `case` column of
+`Outcome.table`: the keys of nested batches joined by `/`, or the position of a
+case without a key. A leaf pairs with every case of the other side. The
+[`Mean`](#distributions-of-a-batch) of a batch compares as one leaf. `Pair.case`
+is the case key of the compared member. Neither type has a public constructor:
+make them with `compare`.
+
+```python
+paths_outcome = rk.execution.solve(specification=base.across(paths=paths))
+strategy_outcome = rk.execution.solve(specification=strategy.across(paths=paths))
+rk.execution.compare(
+    outcomes={"Strategy": strategy_outcome, "Base": paths_outcome},
+    keys=["equity_npv"],
+    baseline="Base",
+).summary()  # paired path by path
+```
 
 | Failure | Error |
 | --- | --- |
@@ -283,16 +298,17 @@ compares as one leaf. Neither type has a public constructor: make them with
 | A baseline or outcome name that is not compared | `MissingReferenceError` (`kind="Outcome"`, `by="name"`) |
 | A Flow value, also as the key of `by` | `ContractError`, `comparison.scalar` |
 | A batch without `baseline` | `ContractError`, `comparison.batch` |
-| Batches with different case keys, or a key that two cases share | `ContractError`, `comparison.cases`, with `missing` and `extra`, or `repeated`, in `values` |
+| Batches across other Paths | `ContractError`, `comparison.paths`, with `paths` and `baseline_paths` in `values` |
+| Batches with different case keys or paths, or a key or a path that two baseline cases share | `ContractError`, `comparison.cases`, with `missing` and `extra`, or `repeated`, in `values` |
 | `where` keeps no case of an Outcome | `ContractError`, `comparison.empty` |
 | Fewer than two Outcomes, or a repeated key | `ContractError` |
 | A wrong Python type, such as one string for `keys` | `TypeError` |
 
-Pairing by path key follows with `across`
-([#306](https://github.com/daniel-fink/rangekeeper/issues/306)): the cases of
-a batch of cases across paths pair with the cases of a batch across the same
-paths. The query operations of `by_case`, such as `where(condition=)`,
-`order_by` and `max`, follow with
+`across` of a batch of cases, one case for each pair of a case and a path,
+follows with the rules of
+[#300](https://github.com/daniel-fink/rangekeeper/issues/300); until then a batch
+of the cases' batches pairs in the same way. The query operations of `by_case`,
+such as `where(condition=)`, `order_by` and `max`, follow with
 [#310](https://github.com/daniel-fink/rangekeeper/issues/310).
 
 ## Replay a stored Run

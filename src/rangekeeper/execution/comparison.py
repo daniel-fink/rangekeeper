@@ -2,7 +2,8 @@
 
 ``compare`` returns a ``SideBySide`` without a baseline and a ``Paired`` with
 one, so that each result has only the members that apply to it. The cases of
-two batches pair by case key. ``compare`` takes the ``Mean`` of a batch, from
+two batches across market paths pair by path; other cases pair by case key.
+``compare`` takes the ``Mean`` of a batch, from
 ``Outcome.mean()``, as one leaf Outcome. ``Paired.by(key=)`` and
 ``Paired.by_case`` put the pairs in ``Groups``, with the statistics of each
 group.
@@ -14,6 +15,7 @@ from datetime import date
 from itertools import groupby
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Self, overload
+from uuid import UUID
 
 from rangekeeper.duration.dates import DateValue, Never, order
 from rangekeeper.execution.distribution import SUMMARY, Distribution, Mean
@@ -28,6 +30,8 @@ Compared = Outcome | Mean
 """An Outcome, or the Mean of a batch, which compares as one leaf Outcome."""
 Member = tuple[str | None, Compared]
 """One leaf case of an Outcome with its case key, or a leaf Outcome with None."""
+PathKey = tuple[UUID, str | None]
+"""The path of a case across market paths: the Paths UUID and the path key."""
 _SUMMARY = ("key", *SUMMARY, "share_above_zero")
 """The columns of a paired summary after the labels of its rows."""
 
@@ -175,9 +179,11 @@ class Paired:
     ``by_case`` give the statistics of groups of pairs.
 
     Each member of an Outcome is one leaf case, in ``walk()`` order; a leaf
-    Outcome has one member. The members of two batches pair by case key, and
-    the batches must have the same case keys. A leaf pairs with every member
-    of the other side.
+    Outcome has one member. When every case of two batches takes a market
+    path, their members pair by path: the Paths that each case's Run pins and
+    the path key, so a batch of cases each across the paths pairs with one
+    batch across the same paths. Other batches pair by case key, and must
+    have the same case keys. A leaf pairs with every member of the other side.
 
     It displays as a table (with the ``calculations`` extra): the values and
     differences of leaf Outcomes, or the ``summary()`` of batches.
@@ -237,10 +243,13 @@ class Paired:
     def pairs(self, *, outcome: str) -> tuple[Pair, ...]:
         """Return the pairs of one compared Outcome with the baseline, in case order.
 
-        Members of two batches pair by case key; a leaf on either side pairs
-        with each member of the other. Batches with different case keys, or
-        with a key that two cases share, raise ContractError
-        (``comparison.cases``).
+        Members of two batches across market paths pair by path, and other
+        members of two batches by case key; a leaf on either side pairs with
+        each member of the other. ``Pair.case`` is the case key of the
+        compared member. Batches across other Paths raise ContractError
+        (``comparison.paths``). Batches with other paths or case keys, or
+        with a path or a key that two baseline cases share, raise
+        ContractError (``comparison.cases``).
         """
         members = self._members[self._compared(outcome)]
         bases = self._members[self.baseline]
@@ -253,6 +262,15 @@ class Paired:
             return tuple(
                 Pair(case=case, member=members[0][1], baseline=base)
                 for case, base in bases
+            )
+        if _across_paths(self.outcomes[outcome]) and _across_paths(
+            self.outcomes[self.baseline]
+        ):
+            self._require_same_paths(outcome)
+            by_path = {_path(base): base for _, base in bases}
+            return tuple(
+                Pair(case=case, member=member, baseline=by_path[_path(member)])
+                for case, member in members
             )
         self._require_same_cases(outcome)
         by_case = dict(bases)
@@ -409,6 +427,37 @@ class Paired:
                 candidates=self.compared,
             )
         return outcome
+
+    def _require_same_paths(self, outcome: str) -> None:
+        """Require two batches across the same Paths, with the same paths."""
+        paths = _paths_of(self.outcomes[outcome], outcome, unique=False)
+        bases = _paths_of(self.outcomes[self.baseline], self.baseline, unique=True)
+        documents = {item[0] for item in paths}
+        expected = {item[0] for item in bases}
+        if documents != expected:
+            raise ContractError(
+                f"{outcome} and {self.baseline} take their cases from other "
+                "Paths: paired differences need the same market paths",
+                code=Code.COMPARISON_PATHS,
+                values={
+                    "outcome": outcome,
+                    "baseline": self.baseline,
+                    "paths": sorted(str(item) for item in documents),
+                    "baseline_paths": sorted(str(item) for item in expected),
+                },
+            )
+        if paths != bases:
+            raise ContractError(
+                f"{outcome} and {self.baseline} have different paths: "
+                "paired differences need the same path keys",
+                code=Code.COMPARISON_CASES,
+                values={
+                    "outcome": outcome,
+                    "baseline": self.baseline,
+                    "missing": sorted((key for _, key in bases - paths), key=str),
+                    "extra": sorted((key for _, key in paths - bases), key=str),
+                },
+            )
 
     def _require_same_cases(self, outcome: str) -> None:
         cases = _case_keys(self.outcomes[outcome], outcome)
@@ -595,6 +644,40 @@ def _case_keys(outcome: Compared, name: str) -> set[str | None]:
             values={"outcome": name, "repeated": repeated},
         )
     return set(keys)
+
+
+def _across_paths(outcome: Compared) -> bool:
+    """Return whether each leaf case of a batch takes a market path."""
+    return all(_path(member) is not None for _, member in _case_members(outcome))
+
+
+def _path(member: Compared) -> PathKey | None:
+    """Return the Paths UUID and the path key of a case across market paths, or None.
+
+    The Run of a case across market paths pins its Paths, and ``across``
+    names the case by its path key.
+    """
+    if not isinstance(member, Outcome) or member.run.paths is None:
+        return None
+    return member.run.paths, member.key
+
+
+def _paths_of(outcome: Compared, name: str, *, unique: bool) -> set[PathKey]:
+    """Return the paths of a batch's cases; with ``unique``, two cases cannot share one."""
+    found = [
+        path
+        for path in (_path(member) for _, member in _case_members(outcome))
+        if path is not None
+    ]
+    repeated = sorted({item[1] for item in found if found.count(item) > 1}, key=str)
+    if unique and repeated:
+        raise ContractError(
+            f"{name} has more than one case on the path {repeated[0]!r}: "
+            "paired differences need one case for each path",
+            code=Code.COMPARISON_CASES,
+            values={"outcome": name, "repeated": repeated},
+        )
+    return set(found)
 
 
 def _scalar(outcome: Compared, key: str, name: str | None) -> Quantity:
