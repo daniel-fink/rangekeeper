@@ -122,7 +122,7 @@ Short signatures can stay on one line. When a signature spans multiple lines:
 def author(
     parameters: Mapping | None = None,
     *,
-    scenario: Market | None = None,
+    factors: Flow | None = None,
 ) -> Model:
     pass
 ```
@@ -238,9 +238,7 @@ and adds two generated parts:
   `data/mixed_use_property/`;
 - `api/`: the mkdocstrings API reference. The docstrings are the content, so
   write them for readers. Each public package of the
-  [API snapshot](../../tests/contracts/api.py) (`PACKAGES`) gets a page, without
-  `market`, which stays internal until
-  [#298](https://github.com/daniel-fink/rangekeeper/issues/298). A module with
+  [API snapshot](../../tests/contracts/api.py) (`PACKAGES`) gets a page. A module with
   its own `__all__` is public too, and so is a module that a public `__all__`
   names. Each one gets a page when it exports a name that no snapshot package
   shows; the page of its package shows the others. A page lists the names in

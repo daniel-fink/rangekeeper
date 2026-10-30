@@ -76,11 +76,13 @@ source addresses; dataframe and viewer projections are detached from this eviden
 
 ## Market paths and rules
 
-A captured market path records a realization, generator identity, versions and
-availability. Replay uses captured values. A rule observes only information
+Captured market paths (`rk.market.Paths`) record their amounts, the generator
+identity and fingerprint, the parameters, the seed and the versions, with the
+lag after which each series is known. A case across the paths refers to its path
+and uses the captured values; it draws no random numbers. A rule observes only information
 available at the decision date, selects a declared action, and records its reason.
-Financial observation formulas belong to the application's rules; generic replay
-owns causal availability and termination.
+Financial observation formulas belong to the application's rules; generic rule
+evaluation owns causal availability and termination.
 
 These contracts support comparing fixed strategies and adaptive choices on the same
 captured futures. They do not promise general stochastic optimization, endogenous

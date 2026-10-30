@@ -1,8 +1,8 @@
 """The private market kernels over supplied draws (#299).
 
 ``rk.market.Dynamics`` composes these kernels; ``test_series`` tests it. These
-tests pin each kernel on known inputs, because the earlier scenario method
-also uses them until #140 removes it.
+tests pin each kernel on known inputs, where a failure is easier to read than
+through a generated path.
 """
 
 import math
@@ -21,10 +21,9 @@ from rangekeeper.market._kernels import (
 from rangekeeper.model import Distribution, DistributionFamily
 
 
-def test_trend_compounds_from_its_initial_value():
+def test_trend_compounds_from_one():
     growth = -0.002537905
-    values = trend(count=25, rate=growth, initial=0.050747414)
-    assert values == tuple(0.050747414 * (1 + growth) ** i for i in range(25))
+    assert trend(count=25, rate=growth) == tuple((1 + growth) ** i for i in range(25))
     assert trend(count=2, rate=0.5) == (1.0, 1.5)
 
 

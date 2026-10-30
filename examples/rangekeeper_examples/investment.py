@@ -13,7 +13,6 @@ from uuid import UUID, uuid4
 from rangekeeper.duration import Frequency, Periods, PeriodTiming, offset
 from rangekeeper.finance import financial
 from rangekeeper.flow import Flow, Movement
-from rangekeeper.market.view import Market
 from rangekeeper.model import (
     Definitions,
     Formulation,
@@ -95,13 +94,20 @@ def values(model: Model) -> dict[str, Value]:
 
 
 def author(
-    parameters: Mapping | None = None, *, scenario: Market | None = None
+    parameters: Mapping | None = None,
+    *,
+    factors: Flow | None = None,
+    cap_rates: Flow | None = None,
 ) -> Model:
     """Declare parameters and unresolved result shapes; all periods are annual.
 
     Operating year one follows the acquisition year. The final extra operating
-    period supplies next-period income for reversion. A supplied scenario must
-    cover exactly these N+1 periods. Factors are dimensionless, not currency.
+    period supplies next-period income for reversion. ``factors`` records the
+    space market price factors of one market path, such as
+    ``paths[key]["space_market_price_factors"]``; without it, each factor is 1.
+    ``cap_rates`` records a path of capitalization rates that replaces the
+    scalar cap rate in the reversion. Each covers exactly these N+1 periods.
+    Factors and rates are dimensionless, not currency.
     """
     p = {**_DEFAULTS, **(parameters or {})}
     if set(p) - set(_DEFAULTS):
@@ -121,13 +127,7 @@ def author(
         frequency=Frequency.YEAR,
         count=p["num_periods"] + 1,
     )
-    base = (
-        scenario.model
-        if scenario
-        else Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
-    )
-    if scenario and tuple(scenario.realization.plan.periods) != tuple(periods):
-        raise ValueError("scenario periods must match the complete investment horizon")
+    base = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
     money, ratio = uuid4(), uuid4()
     records = []
     for name in (
@@ -174,16 +174,19 @@ def author(
     records.append(
         Value(id=uuid4(), key="pv", kind=ValueKind.MEASUREMENT, measure=money)
     )
-    # Keep a canonical local factor input when no realized scenario is supplied.
-    if scenario is None:
+    paths = {"space_market_price_factors": factors, "reversion_cap_rates": cap_rates}
+    for key, path in paths.items():
+        if path is None and key == "reversion_cap_rates":
+            continue
+        amounts = (1,) * len(periods) if path is None else _path_amounts(path, periods)
         records.append(
             Value(
                 id=uuid4(),
-                key="space_market_price_factors",
+                key=key,
                 kind=ValueKind.FLOW,
                 measure=ratio,
                 flow=_paid_at_last_day(
-                    periods, (1,) * len(periods), units="dimensionless", prefix="p"
+                    periods, amounts, units="dimensionless", prefix="p"
                 ),
             )
         )
@@ -220,26 +223,22 @@ def author(
     )
 
 
+def _path_amounts(path: Flow, periods: Periods) -> tuple[float, ...]:
+    """Return the amounts of a market path Flow over the investment periods."""
+    if [m.period for m in path.movements] != list(periods):
+        raise ValueError("a market path must cover the complete investment horizon")
+    return tuple(m.number for m in path.movements)
+
+
 def _inputs(model):
     own = values(model)
-    if "space_market_price_factors" in own:
-        return own, own["space_market_price_factors"], None
-    realizations = model.provenance.scenarios if model.provenance else ()
-    if not realizations or len(realizations) != 1:
-        raise ValueError("select one scenario for this investment example")
-    result = Market(model, realizations[0])
-    cap_name = (
-        "implied_reversion_cap_rates"
-        if realizations[0].plan.method == "market"
-        else "asset_market"
-    )
-    return own, result.space_market_price_factors, result.value(cap_name)
+    return own, own["space_market_price_factors"], own.get("reversion_cap_rates")
 
 
 def formulate(model: Model) -> Model:
     """Declare growth, operating, reversion, control and discount equations only.
 
-    Reversion uses next-period NCF. A scenario's explicit capitalization path can
+    Reversion uses next-period NCF. A recorded path of capitalization rates can
     replace the scalar rate. The controls include the sale period's operating
     income. No recorded magnitudes are substituted into the mathematics.
     """
@@ -329,7 +328,8 @@ def formulate(model: Model) -> Model:
         id=uuid4(),
         name="Investment equations",
         equations=equations,
-        values=[x.id for x in v.values()] + [factors.id] + ([caps.id] if caps else []),
+        # The market path inputs are own Values of the example.
+        values=[x.id for x in v.values()],
     )
     assert model.system is not None
     data = cast(dict[str, Any], model.system.to_data())

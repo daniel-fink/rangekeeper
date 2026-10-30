@@ -2,8 +2,9 @@
 
 from rangekeeper import Model
 from rangekeeper.execution.rule import RuleResult
-from rangekeeper.market import Market
-from rangekeeper.model import Distribution, Value
+from rangekeeper.flow import Flow
+from rangekeeper.market import Paths
+from rangekeeper.model import Distribution
 from rangekeeper.model.system import Hierarchy, View
 from rangekeeper.model.system.table import ValueColumn, to_table
 from rangekeeper.shared.table import Table
@@ -18,10 +19,10 @@ def consume(model: Model) -> Table:
     return table
 
 
-def consume_market(market: "Market", distribution: "Distribution") -> "Value":
-    """Named Market access and calculations share the generated public record types."""
+def consume_market(paths: "Paths", distribution: "Distribution") -> "Flow":
+    """Market paths give Flows; calculations share the generated public record types."""
     distribution.check()
-    value: Value = market.space_market_price_factors
-    rates: Value = market.implied_reversion_cap_rates
+    index: Flow = paths[paths.keys[0]]["rent_index"]
+    mean: Flow = paths.mean(name="rent_index")
     result: RuleResult = RuleResult(evidence=())
-    return value
+    return index

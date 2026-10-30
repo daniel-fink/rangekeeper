@@ -19,16 +19,12 @@ __all__ = [
     "trend",
 ]
 
-# The bisection tolerance of an asymmetric cycle: the root is exact to within it.
-_TOLERANCE = 1e-10
-_STEPS = math.ceil(math.log2(2 / _TOLERANCE)) + 1
 
-
-def trend(*, count: int, rate: float, initial: float = 1.0) -> tuple[float, ...]:
-    """Return ``initial`` compounded at ``rate`` for each Period: ``initial * (1 + rate) ** i``."""
+def trend(*, count: int, rate: float) -> tuple[float, ...]:
+    """Return 1 compounded at ``rate`` for each Period: ``(1 + rate) ** i``."""
     _require_count(count)
-    _require_finite(rate=rate, initial=initial)
-    values = tuple(initial * (1 + rate) ** i for i in range(count))
+    _require_finite(rate=rate)
+    values = tuple((1 + rate) ** i for i in range(count))
     _require_result(values, "trend")
     return values
 
@@ -39,41 +35,21 @@ def cycle(
     period: float,
     phase: float,
     amplitude: float,
-    asymmetry: float = 0,
 ) -> tuple[float, ...]:
     """Return a sine of ``amplitude`` with ``period`` and ``phase`` in Periods.
 
-    ``amplitude`` is half the peak-to-trough height. A nonzero ``asymmetry``,
-    in (-1, 1), shears the sine: ``y = sin(angle - asymmetry * y)``, found by
-    bisection. Zero asymmetry is exactly the sine.
+    ``amplitude`` is half the peak-to-trough height.
     """
     _require_count(count)
-    _require_finite(
-        period=period, phase=phase, amplitude=amplitude, asymmetry=asymmetry
-    )
-    if period <= 0 or not -1 < asymmetry < 1:
+    _require_finite(period=period, phase=phase, amplitude=amplitude)
+    if period <= 0:
         raise ContractError(
-            "a cycle needs a positive period and an asymmetry between -1 and 1",
-            values={"period": period, "asymmetry": asymmetry},
+            f"a cycle needs a positive period, not {period}",
+            values={"period": period},
         )
     return tuple(
-        amplitude * _sheared((i - phase) * 2 * math.pi / period, asymmetry)
-        for i in range(count)
+        amplitude * math.sin((i - phase) * 2 * math.pi / period) for i in range(count)
     )
-
-
-def _sheared(angle: float, asymmetry: float) -> float:
-    """Return y with ``y = sin(angle - asymmetry * y)``; ``sin(angle)`` at zero asymmetry."""
-    if asymmetry == 0:
-        return math.sin(angle)
-    low, high = -1.0, 1.0
-    for _ in range(_STEPS):
-        middle = (low + high) / 2
-        if middle - math.sin(angle - asymmetry * middle) < 0:
-            low = middle
-        else:
-            high = middle
-    return (low + high) / 2
 
 
 def autoregression(

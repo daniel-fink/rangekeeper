@@ -90,10 +90,6 @@ __all__ += ["ClaimKind", "ReconciliationStatus"]
 
 def check_provenance(provenance, *, scope, targets, paths):
     """Check captured evidence relationships without evaluating Claim content."""
-    from rangekeeper.market.contracts import check_realizations
-
-    check_realizations(provenance, scope)
-
     sources = {r["id"]: r for r in provenance.get("sources") or []}
     claims = {r["id"]: r for r in provenance.get("claims") or []}
     for value in scope.values.values():

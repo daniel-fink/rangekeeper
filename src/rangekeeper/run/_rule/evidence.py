@@ -10,18 +10,17 @@ from uuid import UUID
 
 from rangekeeper.model._scope import recorded_quantity, reference_key, resolve_reference
 from rangekeeper.quantity import Quantity, default_units
-from rangekeeper.run._rule.availability import available_on, evidence_dates
+from rangekeeper.run._rule.availability import available_on
 from rangekeeper.run._rule.predicate import evaluate
 from rangekeeper.schema.records import Expression
 from rangekeeper.shared.validation import require
 
 
-def validate_evidence(rules, outcomes, *, scope, provenance=None, units=default_units):
+def validate_evidence(rules, outcomes, *, scope, units=default_units):
     """Independently check ordered outcome evidence against declarations and inputs."""
     require(bool(outcomes), "rules require decision evidence")
     require(len(outcomes) <= len(rules["decisions"]), "too much rule evidence")
     controlled = {reference_key(target) for target in rules["targets"]}
-    evidence = evidence_dates(provenance or {})
     assignments, prior = [], {}
     terminated = False
     for decision, outcome in zip(rules["decisions"], outcomes, strict=False):
@@ -72,7 +71,6 @@ def validate_evidence(rules, outcomes, *, scope, provenance=None, units=default_
                         if movement and movement.get("period")
                         else None
                     ),
-                    scenario_dates=((evidence[token],) if token in evidence else ()),
                     declared=declared,
                 )
                 actual = recorded_quantity(

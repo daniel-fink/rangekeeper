@@ -200,9 +200,7 @@ def test_availability_combines_dates_without_runtime_imports():
         movement_date=date(2027, 1, 2), period_end=date(2027, 2, 1)
     ) == date(2027, 1, 2)
     assert available_on(
-        movement_date=date(2027, 1, 2),
-        scenario_dates=(date(2027, 1, 3), date(2027, 1, 4)),
-        declared=date(2027, 1, 5),
+        movement_date=date(2027, 1, 2), declared=date(2027, 1, 5)
     ) == date(2027, 1, 5)
     for imports in (
         "import rangekeeper.specification.validation; import rangekeeper.run._rule.availability",

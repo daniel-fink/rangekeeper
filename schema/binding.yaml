@@ -17,7 +17,7 @@ classes:
     - Names are unique within the containing bindings collection. Multiple distinct names may refer to the
       same Value. Names are not an alternative Expression reference syntax.
     - Bindings have no independent identity. Expressions reference Value UUIDs directly. Targets may
-      belong to an Entity, Relationship, or Formulation. The containing Formulation or scenario defines the revision and name scope.
+      belong to an Entity, Relationship, or Formulation. The containing Formulation defines the revision and name scope.
     attributes:
       name:
         description: Case-sensitive local interface name; not reference identity.
