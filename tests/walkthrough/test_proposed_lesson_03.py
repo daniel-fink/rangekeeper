@@ -36,8 +36,8 @@ EQUATION_CELLS = ("5", "6", "7", "7b", "8", "12", "12b")
 YEARS = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
     frequency=rk.duration.Frequency.YEAR
 )
-# The results that the cells leave to the draft to infer (#282), with the
-# kind and units that their equations give.
+# The results that the cells leave undeclared, with the kind and units that the
+# draft infers from their equations (#282, D44).
 RESULTS = {
     "shared_start": ("date", None),
     "a_start": ("date", None),
@@ -101,25 +101,26 @@ def draft():
 
 @pytest.fixture
 def project(draft):
-    """Return the project of cells 5 to 5c, 8 and 12, with the results of RESULTS."""
+    """Return the project of cells 5 to 5c, 8 and 12, with their declarations only."""
     numbered = cells()
     project = draft.add_entity(code="project", classification="project")
     namespace = {"rk": rk, "date": date, "project": project, "years": YEARS}
     for key in ("5", "5b", "5c", "8", "12"):
         exec(declarations(numbered[key]), namespace)
-    for key, (kind, units) in RESULTS.items():
-        if kind == "date":
-            project.date(key=key)
-        elif kind == "flow":
-            project.flow(key=key, units=units, periods=YEARS)
-        else:
-            project.value(key=key, units=units)
     return project
 
 
 @pytest.mark.parametrize("cell", EQUATION_CELLS)
 def test_the_equations_of_the_cell_parse_as_written(project, cell):
-    texts = equations(cells()[cell])
+    """Each cell's equations parse after those of the cells before it.
+
+    A later cell names the results that an earlier cell defines, such as
+    ``shared_start``, so the earlier cells' equations come first.
+    """
+    numbered = cells()
+    for earlier in EQUATION_CELLS[: EQUATION_CELLS.index(cell)]:
+        project.equations(*equations(numbered[earlier]))
+    texts = equations(numbered[cell])
     assert texts
     project.equations(*texts)
 
@@ -136,12 +137,18 @@ class Names:
         return self.project.ref(key=".".join(path))
 
 
-def test_each_equation_reads_back_to_its_text(project):
-    """The canonical text of each equation's records is the text of the cell."""
+def test_each_equation_reads_back_to_its_text(draft, project):
+    """The canonical text of each equation's records is the text of the cell.
+
+    The equations are committed first, so that each result that they define
+    is a Value of the next revision, as ``Names`` reads it.
+    """
     numbered = cells()
-    for cell in EQUATION_CELLS:
-        for source in equations(numbered[cell]):
-            assert read(text=source, names=Names(project)).text == source
+    texts = [text for cell in EQUATION_CELLS for text in equations(numbered[cell])]
+    project.equations(*texts)
+    committed = draft.commit().edit().entity(code="project")
+    for source in texts:
+        assert read(text=source, names=Names(committed)).text == source
 
 
 def test_the_equations_of_the_cells_commit(draft, project):

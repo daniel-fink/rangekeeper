@@ -57,8 +57,10 @@ issue.values == {
 }
 ```
 
-A part whose units are unknown, such as a call of an equation function, is not
-checked. Specification validation checks each quantity that fixes a value
+A call of an equation function has the units that its registry entry gives,
+such as the units of the Flow for `operating.at(on=sale_date)`, and a growth
+profile of an amount per year has the units of each Period's amount. A part
+whose units are unknown, such as a selection or a query, is not checked. Specification validation checks each quantity that fixes a value
 against the value's units: the issue has `key`, `units` and `expected`, and
 `fix()` raises `UnitError` with the code `INCOMPATIBLE_UNITS`. A conversion
 between incompatible units raises the same `UnitError`. Execution reports units
