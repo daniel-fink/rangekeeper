@@ -36,6 +36,7 @@ PACKAGES = (
     "rangekeeper.model.expression",
     "rangekeeper.model.formulation",
     "rangekeeper.model.system",
+    "rangekeeper.expressions",
     "rangekeeper.specification",
     "rangekeeper.specification.rule",
     "rangekeeper.run",

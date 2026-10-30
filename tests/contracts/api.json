@@ -112,6 +112,10 @@
    "kind": "module",
    "module": "rangekeeper.execution"
   },
+  "expressions": {
+   "kind": "module",
+   "module": "rangekeeper.expressions"
+  },
   "finance": {
    "kind": "module",
    "module": "rangekeeper.finance"
@@ -964,6 +968,86 @@
    "signature": "(*, model: rangekeeper.model.model.Model, at: datetime.date, bindings: collections.abc.Sequence[rangekeeper.schema.records.ObservationBinding]) -> rangekeeper.execution.rule.result.Observation"
   }
  },
+ "rangekeeper.expressions": {
+  "Availability": {
+   "kind": "enum",
+   "members": [
+    "PERIODWISE",
+    "RUNNING",
+    "SHIFTED",
+    "COMPLETE"
+   ],
+   "module": "rangekeeper.model.expression.functions"
+  },
+  "EquationFunction": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, version: str = '1') -> None",
+    "code": "property",
+    "evaluate": "method (self, *, arguments: collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], periods: collections.abc.Sequence[rangekeeper.duration.period.Period] | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool",
+    "id": "property",
+    "lifts": "property",
+    "parameter": "method (self, *, name: str) -> rangekeeper.model.expression.functions.FunctionParameter",
+    "record": "method (self) -> rangekeeper.schema.records.Function",
+    "spelling": "property"
+   },
+   "module": "rangekeeper.model.expression.functions",
+   "signature": "(*, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, version: str = '1') -> None"
+  },
+  "EvaluationStage": {
+   "kind": "enum",
+   "members": [
+    "AFFINE",
+    "AFTER_AFFINE"
+   ],
+   "module": "rangekeeper.model.expression.functions"
+  },
+  "Form": {
+   "kind": "enum",
+   "members": [
+    "FUNCTION",
+    "METHOD"
+   ],
+   "module": "rangekeeper.model.expression.functions"
+  },
+  "FunctionParameter": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, name: str, kind: rangekeeper.schema.enums.DomainKind, description: str, units: str | None = None, required: bool = True, call: rangekeeper.schema.enums.ParameterKind = ParameterKind.NAMED_ONLY) -> None",
+    "record": "method (self) -> rangekeeper.schema.records.Parameter"
+   },
+   "module": "rangekeeper.model.expression.functions",
+   "signature": "(*, name: str, kind: rangekeeper.schema.enums.DomainKind, description: str, units: str | None = None, required: bool = True, call: rangekeeper.schema.enums.ParameterKind = ParameterKind.NAMED_ONLY) -> None"
+  },
+  "Operand": {
+   "kind": "alias",
+   "value": "rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never"
+  },
+  "Term": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self) -> None",
+    "at": "method (self, *, on: Operand) -> Term",
+    "kind": "property",
+    "shift": "method (self, *, by: Operand) -> Term",
+    "text": "property",
+    "to_expression": "method (self) -> rangekeeper.schema.records.Expression",
+    "total": "method (self) -> Term",
+    "units": "property"
+   },
+   "module": "rangekeeper.model.expression.terms",
+   "signature": "() -> None"
+  },
+  "functions": {
+   "kind": "value",
+   "type": "EquationFunctions"
+  },
+  "max": {
+   "kind": "function",
+   "module": "rangekeeper.expressions",
+   "signature": "(left: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, right: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
+  }
+ },
  "rangekeeper.finance": {
   "financial": {
    "kind": "module",
@@ -1715,7 +1799,7 @@
     "add_formulation": "method (self, *, name: str, description: str | None = None) -> rangekeeper.model.formulation.handle.FormulationHandle",
     "code": "property",
     "date": "method (self, *, key: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
-    "equations": "method (self, *equations: str | rangekeeper.schema.records.Expression) -> None",
+    "equations": "method (self, *equations: str | rangekeeper.model.expression.terms.Term | rangekeeper.schema.records.Expression) -> None",
     "flow": "method (self, *, key: str, units: str, periods: collections.abc.Iterable[rangekeeper.duration.period.Period] | None = None, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
     "formulation": "method (self, *, name: str) -> rangekeeper.model.formulation.handle.FormulationHandle",
     "id": "property",
@@ -1794,7 +1878,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self) -> None",
-    "equations": "method (self, *equations: str | rangekeeper.schema.records.Expression) -> None"
+    "equations": "method (self, *equations: str | rangekeeper.model.expression.terms.Term | rangekeeper.schema.records.Expression) -> None"
    },
    "module": "rangekeeper.model.formulation.handle",
    "signature": "() -> None"
@@ -2097,7 +2181,10 @@
   "ValueHandle": {
    "kind": "class",
    "members": {
-    "__init__": "method (self) -> None"
+    "__init__": "method (self) -> None",
+    "at": "method (self, *, on: Operand) -> Term",
+    "shift": "method (self, *, by: Operand) -> Term",
+    "total": "method (self) -> Term"
    },
    "module": "rangekeeper.model.draft",
    "signature": "() -> None"

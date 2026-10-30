@@ -1,4 +1,8 @@
-"""Small constructors for ordered declarations; none reads or calculates Values."""
+"""Small constructors for ordered declarations; none reads or calculates Values.
+
+This module is provisional, not part of the 1.0 API (#309): write equations as
+text on an entity handle, or in Python with ``rangekeeper.expressions`` (``rx``).
+"""
 
 from collections.abc import Sequence
 from datetime import date
@@ -83,11 +87,26 @@ def equal(left: Expression, right: Expression, *, id: UUID | None = None) -> Exp
     return binary(Operator.EQUAL, left, right, id=id)
 
 
-def sum(summands: Sequence[Expression]) -> Expression:
+def add_all(summands: Sequence[Expression]) -> Expression:
     """Declare a left-associated sum in supplied order; reject an empty sequence."""
     if not summands:
-        raise ContractError("sum takes at least one expression")
+        raise ContractError("add_all takes at least one expression")
     result = summands[0]
     for item in summands[1:]:
         result = add(result, item)
     return result
+
+
+__all__ = [
+    "add",
+    "add_all",
+    "binary",
+    "date_literal",
+    "divide",
+    "equal",
+    "literal",
+    "multiply",
+    "power",
+    "reference",
+    "subtract",
+]

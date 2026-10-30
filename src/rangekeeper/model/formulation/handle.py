@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from rangekeeper.model.expression.terms import Term
 from rangekeeper.schema.records import Expression
 
 if TYPE_CHECKING:
@@ -66,7 +67,7 @@ class FormulationHandle:
     def __repr__(self) -> str:
         return f"<formulation {self.name!r} on {self._entity}>"
 
-    def equations(self, *equations: str | Expression) -> None:
+    def equations(self, *equations: str | Term | Expression) -> None:
         """Add one equation or several to this Formulation.
 
         The equations follow the rules of ``equations`` on the entity handle:

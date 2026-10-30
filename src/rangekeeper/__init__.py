@@ -21,6 +21,7 @@ _LAZY_MODULES = frozenset(
         "duration",
         "errors",
         "execution",
+        "expressions",
         "flow",
         "quantity",
         "money",

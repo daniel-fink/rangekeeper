@@ -5,6 +5,7 @@ from uuid import UUID
 from rangekeeper.model import Model
 from rangekeeper.model.expression.authoring import (
     add,
+    add_all,
     binary,
     divide,
     equal,
@@ -12,9 +13,6 @@ from rangekeeper.model.expression.authoring import (
     multiply,
     power,
     reference,
-)
-from rangekeeper.model.expression.authoring import (
-    sum as expression_sum,
 )
 from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.formulation.flow import aligned, shape
@@ -75,7 +73,7 @@ def pv(*, model: Model, id: UUID, sequence: UUID, value: Reference) -> Formulati
     """
     equation = equal(
         reference(value),
-        expression_sum(
+        add_all(
             [
                 reference(Reference(target=m.id))
                 for m in shape(model=model, value=sequence).movements

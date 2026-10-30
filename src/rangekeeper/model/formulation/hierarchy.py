@@ -1,11 +1,9 @@
 """Passive hierarchy equations over structurally selected original Flow Values."""
 
 from rangekeeper.model.expression.authoring import (
+    add_all,
     equal,
     reference,
-)
-from rangekeeper.model.expression.authoring import (
-    sum as expression_sum,
 )
 from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.formulation.flow import _resampled_terms, shape
@@ -94,7 +92,7 @@ def formulate(*, hierarchy, id, aggregates, selected, populations, rule):
                     str(movement.id),
                     equal(
                         reference(Reference(target=movement.id)),
-                        expression_sum([column[i] for column in terms]),
+                        add_all([column[i] for column in terms]),
                     ),
                 )
             )
