@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.errors import Code
-from rangekeeper.execution import attempt, statuses
+from rangekeeper.execution import Status, attempt, statuses
 from rangekeeper.execution.backends import Termination
 from rangekeeper.execution.statuses import Reached
 from rangekeeper.run import CompletionStatus, Diagnostic, Severity, SolutionStatus
@@ -70,13 +70,8 @@ INVALID = ValidationError(ValidationReport((Issue(Code.CONTRACT, "invalid"),)))
             NOT_ASSESSED,
             Code.BACKEND_UNAVAILABLE,
         ),
-        (
-            NumericalError("nan"),
-            Reached.NOTHING,
-            FAILED,
-            UNKNOWN,
-            Code.NUMERICAL_FAILURE,
-        ),
+        # A NumericalError carries its own code: numerical_failure or active_side.
+        (NumericalError("nan"), Reached.NOTHING, FAILED, UNKNOWN, None),
         (
             ZeroDivisionError("zero"),
             Reached.SOLVED,
@@ -93,6 +88,14 @@ def test_each_expected_failure_has_one_row(error, reached, completion, solution,
         solution,
         code,
     )
+
+
+def test_numerical_codes_are_failed_and_raise_numerical_errors():
+    conclusion = statuses.failure(NumericalError("nan"), Reached.SOLVED)
+    assert conclusion.names == (Code.NUMERICAL_FAILURE, Code.ACTIVE_SIDE)
+    for code in conclusion.names:
+        assert statuses.BY_CODE[code.value].raises is NumericalError
+        assert statuses.failed(code.value) is Status.FAILED
 
 
 def test_a_deadline_is_a_warning_and_other_failures_are_errors():

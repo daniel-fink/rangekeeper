@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
-from rangekeeper.execution.preparation import Binding
+from rangekeeper.execution.piecewise import Pieces
+from rangekeeper.execution.preparation import Assertion, Binding
 from rangekeeper.model import Model
 from rangekeeper.model.expression.evaluation import (
     evaluate,
@@ -81,6 +82,7 @@ def verify(
         values[id] = binding.units.convert(quantity=value, to=binding.value_units[id])
     diagnostics = []
     passed = True
+    pieces = Pieces.of(binding.model)
     for id, assigned in binding.assignments.items():
         if values[id].to_data() != assigned.to_data():
             passed = False
@@ -96,7 +98,7 @@ def verify(
             )
     for assertion in binding.assertions:
         for relation, left, right, boolean in _comparisons(
-            assertion.predicate,
+            _active(assertion.predicate, pieces=pieces, values=values, binding=binding),
             values,
             units=binding.units,
             fixed=binding.assignments.keys(),
@@ -147,12 +149,52 @@ def verify(
                         and node.kind is ExpressionKind.REFERENCE
                         and node.target is not None
                     ),
-                    values={"equation": binding.text(assertion.predicate)},
+                    values=_equation_values(binding, assertion),
                     residual=Quantity(magnitude=residual, units=left.units),
                     tolerance=Quantity(magnitude=tolerance, units=left.units),
                 )
             )
     return Verification(passed=passed, diagnostics=tuple(diagnostics))
+
+
+def _equation_values(binding: Binding, assertion: Assertion) -> dict[str, str]:
+    """Return the text of an equation and, for a Model equation, its Formulation.
+
+    The Formulation is named by its name, such as ``"Funding"``, or by its
+    code for the default Formulation of an entity.
+    """
+    values = {"equation": binding.text(assertion.predicate)}
+    model = binding.model
+    if assertion.document != model.id:
+        return values
+    owner = model.owner_of(assertion.constraint.id)
+    if owner is not None:
+        formulation = model.formulation(owner)
+        group = formulation.name or formulation.code
+        if group is not None:
+            values["formulation"] = group
+    return values
+
+
+def _active(
+    node: Expression,
+    *,
+    pieces: Pieces,
+    values: Mapping[UUID, Quantity],
+    binding: Binding,
+) -> Expression:
+    """Return ``node`` with each ``max`` and ``min`` call at its active side.
+
+    The side is read from the candidate's values, not from the solve, so the
+    check of the original equation does not depend on the sides it picked.
+    """
+    try:
+        sides = pieces.active(node, values=values, units=binding.units)
+    except UnsupportedError:
+        raise
+    except (ArithmeticError, ValueError, TypeError) as error:
+        raise NumericalError(str(error)) from error
+    return pieces.reduce(node, sides)
 
 
 def _comparisons(

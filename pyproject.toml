@@ -103,6 +103,9 @@ layers = [
     "execution",
     "run",
     "specification",
+    # rx, the Python form of equations, sits in the model layer, above
+    # model (ADR-010).
+    "expressions",
     "model",
     "finance",
     "market",
@@ -240,7 +243,6 @@ known-first-party = ["rangekeeper", "rangekeeper_examples"]
 "src/rangekeeper/model/definitions.py" = ["PLC0415", "ANN001", "ANN202"]
 "src/rangekeeper/model/diff.py" = ["ANN001", "ANN202"]
 "src/rangekeeper/model/display.py" = ["PLC0415", "ANN202", "ANN204"]
-"src/rangekeeper/model/draft.py" = ["ANN001", "ANN003", "ANN202"]
 "src/rangekeeper/model/expression/domains.py" = ["C901", "PLR0911", "ANN001", "ANN201"]
 "src/rangekeeper/model/expression/evaluation.py" = ["C901", "PLR0911"]
 "src/rangekeeper/model/expression/validation.py" = ["C901", "PLR0911", "PLC0415", "ANN001", "ANN201", "ANN202"]
@@ -261,7 +263,7 @@ known-first-party = ["rangekeeper", "rangekeeper_examples"]
 "src/rangekeeper/model/system/validation.py" = ["ANN001", "ANN202"]
 "src/rangekeeper/model/system/view.py" = ["PLC0415"]
 "src/rangekeeper/model/validation.py" = ["PLC0415", "ANN001", "ANN201"]
-"src/rangekeeper/quantity.py" = ["C901", "PLC0415", "ANN001", "ANN202"]
+"src/rangekeeper/quantity.py" = ["PLC0415", "ANN001", "ANN202"]
 "src/rangekeeper/run/_rule/evidence.py" = ["ANN001", "ANN202"]
 "src/rangekeeper/run/_rule/predicate.py" = ["C901", "PLR0911", "PLR0912", "ANN001", "ANN202"]
 "src/rangekeeper/run/outputs.py" = ["C901", "PLR0913", "PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202"]

@@ -480,11 +480,14 @@ class Flow(records.Flow):
     ) -> Flow:
         """Make a Flow over Periods from a profile and an amount.
 
-        A growth profile takes ``initial=``: the first Period holds it, and
-        each Period holds it times the profile's factor. A distribution
-        profile takes ``total=`` and divides it over the Periods; the last
-        Period takes the remainder, so the amounts add up to the total. The
-        amount is a Quantity or its text, and gives the Flow its units.
+        A growth profile takes ``initial=``: each Period holds it times the
+        profile's factor, so with no ``base`` or ``start`` the first Period
+        holds it. A
+        distribution profile takes ``total=`` and divides it over the Periods
+        of its window; the last Period with a share takes the remainder, so
+        the amounts add up to the total. A profile with no share, such as one
+        that starts on ``NEVER``, gives zero everywhere. The amount is a
+        Quantity or its text, and gives the Flow its units.
         """
         if not isinstance(profile, Profile):
             raise TypeError("profile must be a rangekeeper.profile Profile")
@@ -507,7 +510,7 @@ class Flow(records.Flow):
             )
         values = [quantity.number * factor for factor in factors]
         if profile.takes == "total":
-            values[-1] = quantity.number - math.fsum(values[:-1])
+            _take_remainder(values, total=quantity.number, factors=factors)
         if any(not math.isfinite(value) for value in values):
             raise NumericalError("the profile produced a non-finite amount")
         return cls.from_periods(
@@ -1261,6 +1264,16 @@ def _after(movement: Movement, day: DateValue) -> bool:
     if movement.period is not None:
         return movement.period.start > day
     return movement.resolve() > day
+
+
+def _take_remainder(
+    values: list[float], *, total: float, factors: Sequence[float]
+) -> None:
+    """Give the last Period with a share the remainder, so the values add up to the total."""
+    shared = [i for i, factor in enumerate(factors) if factor != 0]
+    if shared:
+        last = shared[-1]
+        values[last] = total - math.fsum(v for i, v in enumerate(values) if i != last)
 
 
 def _total_known(missing: MissingValueHandling, values: list[float]) -> bool:

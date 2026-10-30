@@ -62,16 +62,20 @@ contracts enforce the rule.
 | 5 | `flow` | Movement, Flow, Stream, their options and table display, and the private engine |
 | 6 | `market` | Path generators (`Dynamics`) and the market paths document (`Paths`) |
 | 7 | `finance` | Calculations on known values: PV, NPV, IRR, payments and interest |
-| 8 | `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry |
+| 8 | `model` | The Model document, definitions, the system graph and rollups, equations, the equation-function registry, provenance and geometry |
+| 8 | `expressions` | `rx`, the Python form of equations; above the `model` package in the same layer |
 | 9 | `specification` | The Specification document, composition, roles and rule declarations |
 | 10 | `run` | The Run document and evidence validation, with the rule trace check |
 | 11 | `execution` | Case resolution, role binding, problem building, backends, verification, rule evaluation and publication |
 | 12 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
 `quantity` and `money` sit between `schema` and `duration`; `money` is below
-`quantity`. Users import from `rangekeeper` and from the namespaces in
+`quantity`. `expressions` (`rx`, the Python form of equations) is in the `model`
+layer, above the `model` package: it imports `model`, and `model` does not
+import it. Users import from `rangekeeper` and from the namespaces in
 `rangekeeper.__all__`: `quantity`, `money`, `duration`, `profile`, `flow`,
-`finance`, `model`, `specification`, `run`, `execution`, `io` and `errors`.
+`finance`, `model`, `expressions`, `specification`, `run`, `execution`, `io` and
+`errors`.
 `schema` and `shared` are internal. `market` is internal now; it becomes public
 with its 1.0.0b1 API
 ([#298](https://github.com/daniel-fink/rangekeeper/issues/298),
@@ -106,15 +110,21 @@ show the target API in use.
      handle, which declares values, Flows and dates with `value(key=, units=)`,
      `flow(key=, units=, periods=)` and `date(key=)`. `equations(...)` takes
      equation text, such as `"total_cost = land_cost + works_cost"`, with
-     quantity literals, `NEVER` and date arithmetic; or Expression records.
+     quantity literals, `NEVER`, date arithmetic and the functions of the
+     equation-function registry; equations in Python with `rx`
+     (`rangekeeper.expressions`), such as `noi == coverage * debt_service`; or
+     Expression records.
+     `add_formulation(name=)` makes a named Formulation, such as "Funding",
+     whose handle takes `equations(...)` too; `formulation(name=)` finds it in
+     a later draft.
   3. `commit()` validates the revision once and returns it.
   4. Put the revision into an append-only store.
 
   `Model.create(...)` and `Model.from_data(...)` still take complete records,
   and `model.revise(Update(...))` replaces complete sections. See the
   [Model reference](../reference/model.md).
-- 1.0 target: equations in `rx`, equation functions and Flow equations in text,
-  Formulation handles, equation keys and edits of existing declarations.
+- 1.0 target: the function catalogue and Flow equations in text and `rx`,
+  equation keys and edits of existing declarations.
 
   Gap issues: [#142](https://github.com/daniel-fink/rangekeeper/issues/142),
   [#145](https://github.com/daniel-fink/rangekeeper/issues/145),
@@ -122,8 +132,8 @@ show the target API in use.
   [#280](https://github.com/daniel-fink/rangekeeper/issues/280),
   [#283](https://github.com/daniel-fink/rangekeeper/issues/283),
   [#284](https://github.com/daniel-fink/rangekeeper/issues/284),
-  [#305](https://github.com/daniel-fink/rangekeeper/issues/305),
-  [#309](https://github.com/daniel-fink/rangekeeper/issues/309).
+  [#278](https://github.com/daniel-fink/rangekeeper/issues/278),
+  [#279](https://github.com/daniel-fink/rangekeeper/issues/279).
 
 **Calculate with known data**
 1. Make Flows and Streams from dates, periods and amounts.
@@ -208,7 +218,8 @@ contents are not yet in their 1.0 owner:
 | `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
 | `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#298](https://github.com/daniel-fink/rangekeeper/issues/298), [#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Generation, `Market` and replay still import `model`, above `market` |
 | `finance` | Financial valuation: `pv`, `npv`, `irr` and `payment`; the older `financial` module with PV, XNPV, IRR and day counts | `pv`, `npv` and `irr` replace `financial.calculate_*` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
-| `model` | The Model document, definitions, the system graph and rollups, equations, provenance and geometry | — |
+| `model` | The Model document, definitions, the system graph and rollups, equations, the equation-function registry, provenance and geometry | — |
+| `expressions` | `rx`, the Python form of equations, written from the equation-function registry | — |
 | `specification` | The Specification document, composition, roles, and rule declarations and their validation | Rule queries over a `Window` replace the rule records ([#300](https://github.com/daniel-fink/rangekeeper/issues/300), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
 | `run` | The Run document, its report and outputs, and evidence validation. The internal `run._rule` has the rule trace check, with the exact condition truth and the availability rule that rule evaluation also uses | — |
 | `execution` | The typed stages (case resolution, validation, role binding, problem building, candidates, verification and assembly), backends, the executor and rule evaluation (`execution.rule`) | Sequential rule evaluation replaces `execution.rule.evaluate` ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |

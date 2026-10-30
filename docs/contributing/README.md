@@ -271,7 +271,8 @@ versioned publication.
 [architecture](../concepts/architecture.md#layers)). `money` and `quantity` sit
 between `schema` and `duration`; `money` is below `quantity`. A module imports
 only from its own layer or a lower layer. The import-linter contract in
-`pyproject.toml` lists all 14 packages in this order. Run it from the repository
+`pyproject.toml` lists all 15 packages in this order, with `expressions`
+directly above `model`. Run it from the repository
 root:
 
 ```sh

@@ -1,27 +1,38 @@
 """Profiles: how an amount develops over Periods.
 
 A growth profile (``Constant``, ``Linear``, ``Compounding``) gives a multiple
-of an initial amount for each Period; the first Period holds the initial
-amount. A distribution profile (``Uniform``, ``SCurve``) gives each Period's
-share of a total. ``rangekeeper.flow.Flow.from_profile`` makes the Flow, with
-``initial=`` for a growth profile and ``total=`` for a distribution profile.
-Profiles register in ``profiles`` (ADR-013).
+of an initial amount for each Period. The amount grows from ``base``, the
+date of the initial amount; it is zero before ``start``; and with ``every``
+it occurs once in each such length of time from ``start``. A distribution
+profile (``Uniform``, ``SCurve``) gives each Period's share of a total, over
+the Periods from ``start`` for a ``length`` of time.
+``rangekeeper.flow.Flow.from_profile`` makes the Flow, with ``initial=`` for
+a growth profile and ``total=`` for a distribution profile. Profiles register
+in ``profiles`` (ADR-013).
 """
 
 from __future__ import annotations
 
 import math
+from bisect import bisect_right
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import date
 from enum import Enum, unique
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, runtime_checkable
 
-from rangekeeper.duration import Period
+from rangekeeper.duration import NEVER, DateValue, Period
+from rangekeeper.duration.calendar import offset, require_date
+from rangekeeper.duration.dates import require_date_value
+from rangekeeper.duration.errors import AlignmentError
+from rangekeeper.duration.period import steps
 from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.schema import records
 from rangekeeper.schema.enums import DistributionFamily
 from rangekeeper.schema.kinds import register
+from rangekeeper.shared.codes import Code
+from rangekeeper.shared.errors import ContractError
 from rangekeeper.shared.optional import requires
 from rangekeeper.shared.registry import Registry
 
@@ -47,7 +58,9 @@ class Profile(Protocol):
     ``takes`` names the amount that the profile needs: ``"initial"`` for a
     growth profile, ``"total"`` for a distribution profile. ``factors``
     returns one number for each Period: a multiple of the initial amount, or
-    a share of the total. The shares of a distribution profile add up to one.
+    a share of the total. The shares of a distribution profile add up to one,
+    or are all zero when the profile places no share, as with a ``start`` of
+    ``NEVER``.
     """
 
     takes: ClassVar[Literal["initial", "total"]]
@@ -64,91 +77,322 @@ def _rate(rate: Quantity | str) -> float:
         raise TypeError("rate must be a Quantity or its text, such as '2 % pa'")
     value = default_units.convert(quantity=quantity, to="pa").number
     if not math.isfinite(value) or value <= -1:
-        raise ValueError("a growth rate must be greater than -100 % pa")
+        raise ContractError(
+            "a growth rate must be greater than -100 % pa",
+            values={"rate": f"{quantity.magnitude} {quantity.units}"},
+        )
     return value
 
 
-def _years(periods: Sequence[Period]) -> tuple[float, ...]:
-    """Return the years from the start of the first Period to the start of each.
+def _base(base: date | None) -> date | None:
+    """Require the date of the initial amount, when one is given."""
+    return None if base is None else require_date(base)
 
-    A start on the same day of the month as the first counts whole months, so
-    twelve months are one year. Other starts count days, at 365.25 days a year.
+
+def _start(start: DateValue | None) -> DateValue | None:
+    """Require a date value, or NEVER, for the first date of a profile."""
+    return None if start is None else require_date_value(start)
+
+
+def _length(length: Quantity | str | None, *, name: str) -> Quantity | None:
+    """Return a positive whole length, such as ``"5 years"``, as a Quantity."""
+    if length is None:
+        return None
+    quantity = Quantity(text=length) if isinstance(length, str) else length
+    if not isinstance(quantity, records.Quantity):
+        raise TypeError(f"{name} must be a Quantity or its text, such as '5 years'")
+    steps(quantity)  # Raises UnitError for a length that is not whole steps.
+    return Quantity(magnitude=quantity.magnitude, units=quantity.units)
+
+
+def _require_periods(periods: Sequence[Period]) -> None:
+    """Require at least one Period for a distribution."""
+    if not periods:
+        raise ContractError(
+            "a distribution needs at least one Period", values={"periods": 0}
+        )
+
+
+def _elapsed_years(origin: date, day: date) -> float:
+    """Return the years from ``origin`` to ``day``.
+
+    A day on the same day of the month as the origin counts whole months, so
+    twelve months are one year. Other days count days, at 365.25 days a year.
     """
+    if day.day == origin.day:
+        return ((day.year - origin.year) * 12 + day.month - origin.month) / 12
+    return (day - origin).days / 365.25
+
+
+def _years(periods: Sequence[Period], *, base: date | None) -> tuple[float, ...]:
+    """Return the years from ``base``, or the first Period, to the start of each."""
     if not periods:
         return ()
-    first = periods[0].start
-    return tuple(
-        ((p.start.year - first.year) * 12 + p.start.month - first.month) / 12
-        if p.start.day == first.day
-        else (p.start - first).days / 365.25
-        for p in periods
-    )
+    origin = periods[0].start if base is None else base
+    return tuple(_elapsed_years(origin, period.start) for period in periods)
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
+def _occurrences(
+    periods: Sequence[Period], *, start: DateValue | None, every: Quantity | None
+) -> tuple[int, ...]:
+    """Return how many times a growth profile's amount occurs in each Period.
+
+    Without ``every``, the amount occurs once in each Period that does not
+    end on or before ``start``. With ``every``, it occurs on ``start`` (by
+    default the start of the first Period) and once each ``every`` after it,
+    in the Period that contains each date. ``NEVER`` gives no occurrence.
+    """
+    if start is NEVER or not periods:
+        return (0,) * len(periods)
+    if every is None:
+        return tuple(
+            0 if start is not None and period.end <= start else 1 for period in periods
+        )
+    anchor = periods[0].start if start is None else start
+    assert isinstance(anchor, date)
+    return _repeats(periods, anchor=anchor, every=every)
+
+
+def _repeats(
+    periods: Sequence[Period], *, anchor: date, every: Quantity
+) -> tuple[int, ...]:
+    """Return how many of the dates ``anchor + k * every`` fall in each Period."""
+    frequency, count = steps(every)
+    counts = [0] * len(periods)
+    starts = [period.start for period in periods]
+    step = 0
+    while (day := offset(value=anchor, frequency=frequency, count=step * count)) < (
+        periods[-1].end
+    ):
+        index = bisect_right(starts, day) - 1
+        if index >= 0 and day < periods[index].end:
+            counts[index] += 1
+        step += 1
+    return tuple(counts)
+
+
+def _growth(
+    periods: Sequence[Period],
+    *,
+    start: DateValue | None,
+    every: Quantity | None,
+    factors: Sequence[float],
+) -> tuple[float, ...]:
+    """Return each Period's growth factor times the occurrences in it."""
+    counts = _occurrences(periods, start=start, every=every)
+    return tuple(n * factor for n, factor in zip(counts, factors, strict=True))
+
+
+def _window(
+    periods: Sequence[Period], *, start: DateValue | None, length: Quantity | None
+) -> range:
+    """Return the indices of the Periods inside ``[start, start + length)``.
+
+    The window starts at ``start``, by default the start of the first Period,
+    and ends ``length`` later, by default at the end of the last Period. It
+    must lie inside the Periods and cover whole Periods; otherwise
+    AlignmentError. A ``start`` of ``NEVER`` gives no Period.
+    """
+    if start is NEVER:
+        return range(0)
+    first = periods[0].start if start is None else start
+    assert isinstance(first, date)
+    if length is None:
+        end = periods[-1].end
+    else:
+        frequency, count = steps(length)
+        end = offset(value=first, frequency=frequency, count=count)
+    window = Period(start=first, end=end)
+    _require_inside(periods, window=window)
+    inside = [
+        i for i, p in enumerate(periods) if p.start < window.end and p.end > first
+    ]
+    for i in inside:
+        if periods[i].start < first or periods[i].end > window.end:
+            raise AlignmentError(
+                f"the profile window {_interval(window)} crosses the Period "
+                f"{_interval(periods[i])}; choose whole Periods",
+                code=Code.ALIGNMENT_CROSSES,
+                values={"window": _interval(window), "period": _interval(periods[i])},
+            )
+    return range(inside[0], inside[-1] + 1) if inside else range(0)
+
+
+def _require_inside(periods: Sequence[Period], *, window: Period) -> None:
+    """Require a profile window inside the Periods, so no share is lost."""
+    covered = Period(start=periods[0].start, end=periods[-1].end)
+    if window.start < covered.start or window.end > covered.end:
+        raise AlignmentError(
+            f"the profile window {_interval(window)} runs past the Periods "
+            f"{_interval(covered)}; give Periods that cover it",
+            code=Code.ALIGNMENT_PARTIAL,
+            values={"window": _interval(window), "periods": _interval(covered)},
+        )
+
+
+def _interval(period: Period) -> str:
+    """Return a Period as an ISO 8601 interval, such as ``2026-01-01/2027-01-01``."""
+    return f"{period.start.isoformat()}/{period.end.isoformat()}"
+
+
+def _shares(
+    periods: Sequence[Period], *, window: range, shares: Sequence[float]
+) -> tuple[float, ...]:
+    """Return the shares on the Periods of the window, and zero elsewhere."""
+    result = [0.0] * len(periods)
+    for index, share in zip(window, shares, strict=True):
+        result[index] = share
+    return tuple(result)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True, init=False)
 class Constant:
-    """Growth profile: the initial amount in every Period."""
+    """Growth profile: the initial amount in every Period.
 
+    ``start`` gives zero before a date: each Period that ends on or before it
+    holds zero, and the Period that contains it holds the amount. ``every``
+    gives the amount once in each length of time from ``start``, such as
+    ``"5 years"``, in the Period that contains each date; without ``start``,
+    from the start of the first Period. A ``start`` of ``NEVER`` gives zero.
+    """
+
+    start: DateValue | None
+    every: Quantity | None
     takes: ClassVar[Literal["initial", "total"]] = "initial"
 
+    def __init__(
+        self,
+        *,
+        start: DateValue | None = None,
+        every: Quantity | str | None = None,
+    ) -> None:
+        object.__setattr__(self, "start", _start(start))
+        object.__setattr__(self, "every", _length(every, name="every"))
+
     def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
-        """Return one for each Period."""
-        return (1.0,) * len(periods)
+        """Return one for each occurrence of the amount in each Period."""
+        return _growth(
+            periods,
+            start=self.start,
+            every=self.every,
+            factors=(1.0,) * len(periods),
+        )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, init=False)
 class Linear:
     """Growth profile: the initial amount grows by ``rate`` of itself each year.
 
-    The factor of a Period that starts ``t`` years after the first is
-    ``1 + rate * t``.
+    The factor of a Period that starts ``t`` years after ``base`` is
+    ``1 + rate * t``. ``base`` is the date of the initial amount, by default
+    the start of the first Period. ``start`` and ``every`` are those of
+    ``Constant``.
     """
 
     rate: float
+    base: date | None
+    start: DateValue | None
+    every: Quantity | None
     takes: ClassVar[Literal["initial", "total"]] = "initial"
 
-    def __init__(self, *, rate: Quantity | str) -> None:
+    def __init__(
+        self,
+        *,
+        rate: Quantity | str,
+        base: date | None = None,
+        start: DateValue | None = None,
+        every: Quantity | str | None = None,
+    ) -> None:
         object.__setattr__(self, "rate", _rate(rate))
+        object.__setattr__(self, "base", _base(base))
+        object.__setattr__(self, "start", _start(start))
+        object.__setattr__(self, "every", _length(every, name="every"))
 
     def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
-        """Return ``1 + rate * t`` for each Period."""
-        return tuple(1 + self.rate * t for t in _years(periods))
+        """Return ``1 + rate * t`` for each occurrence of the amount in each Period."""
+        return _growth(
+            periods,
+            start=self.start,
+            every=self.every,
+            factors=[1 + self.rate * t for t in _years(periods, base=self.base)],
+        )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, init=False)
 class Compounding:
     """Growth profile: the initial amount compounds at ``rate`` per year.
 
-    The factor of a Period that starts ``t`` years after the first is
+    The factor of a Period that starts ``t`` years after ``base`` is
     ``(1 + rate) ** t``, so yearly Periods at ``"2 % pa"`` give 1, 1.02,
-    1.0404 and so on.
+    1.0404 and so on. ``base`` is the date of the initial amount, by default
+    the start of the first Period. ``start`` and ``every`` are those of
+    ``Constant``: ``Compounding(rate="3 % pa", start=opening)`` grows on one
+    calendar from the first Period, and is zero before the opening.
     """
 
     rate: float
+    base: date | None
+    start: DateValue | None
+    every: Quantity | None
     takes: ClassVar[Literal["initial", "total"]] = "initial"
 
-    def __init__(self, *, rate: Quantity | str) -> None:
+    def __init__(
+        self,
+        *,
+        rate: Quantity | str,
+        base: date | None = None,
+        start: DateValue | None = None,
+        every: Quantity | str | None = None,
+    ) -> None:
         object.__setattr__(self, "rate", _rate(rate))
+        object.__setattr__(self, "base", _base(base))
+        object.__setattr__(self, "start", _start(start))
+        object.__setattr__(self, "every", _length(every, name="every"))
 
     def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
-        """Return ``(1 + rate) ** t`` for each Period."""
-        return tuple((1 + self.rate) ** t for t in _years(periods))
+        """Return ``(1 + rate) ** t`` for each occurrence of the amount in each Period."""
+        return _growth(
+            periods,
+            start=self.start,
+            every=self.every,
+            factors=[(1 + self.rate) ** t for t in _years(periods, base=self.base)],
+        )
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
+@dataclass(frozen=True, slots=True, kw_only=True, init=False)
 class Uniform:
-    """Distribution profile: an equal share of the total in each Period."""
+    """Distribution profile: an equal share of the total in each Period.
 
+    ``start`` and ``length`` give the window of the shares, such as
+    ``Uniform(start=date(2028, 1, 1), length="2 years")``; the Periods
+    outside it hold zero. By default the window starts with the first Period
+    and ends with the last. The window must cover whole Periods inside the
+    Periods; otherwise AlignmentError. A ``start`` of ``NEVER`` gives zero
+    shares, because the payments do not happen.
+    """
+
+    start: DateValue | None
+    length: Quantity | None
     takes: ClassVar[Literal["initial", "total"]] = "total"
 
+    def __init__(
+        self,
+        *,
+        start: DateValue | None = None,
+        length: Quantity | str | None = None,
+    ) -> None:
+        object.__setattr__(self, "start", _start(start))
+        object.__setattr__(self, "length", _length(length, name="length"))
+
     def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
-        """Return ``1 / n`` for each of ``n`` Periods."""
-        if not periods:
-            raise ValueError("a distribution needs at least one Period")
-        return (1 / len(periods),) * len(periods)
+        """Return ``1 / n`` for each of the ``n`` Periods of the window."""
+        _require_periods(periods)
+        window = _window(periods, start=self.start, length=self.length)
+        shares = (1 / len(window),) * len(window) if window else ()
+        return _shares(periods, window=window, shares=shares)
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
+@dataclass(frozen=True, slots=True, kw_only=True, init=False)
 class SCurve:
     """Distribution profile: shares that rise, then fall, along an S-shaped total.
 
@@ -156,23 +400,42 @@ class SCurve:
     equal part of the Periods. The default is ``3x² - 2x³``, the cumulative
     distribution of Beta(2, 2). ``distribution`` gives another one, such as
     ``rangekeeper.model.Distribution.pert()``, in units of the fraction of the
-    Periods.
+    Periods. ``start`` and ``length`` give the window of the shares, as for
+    ``Uniform``.
     """
 
-    distribution: Distribution | None = None
+    distribution: Distribution | None
+    start: DateValue | None
+    length: Quantity | None
     takes: ClassVar[Literal["initial", "total"]] = "total"
+
+    def __init__(
+        self,
+        *,
+        distribution: Distribution | None = None,
+        start: DateValue | None = None,
+        length: Quantity | str | None = None,
+    ) -> None:
+        object.__setattr__(self, "distribution", distribution)
+        object.__setattr__(self, "start", _start(start))
+        object.__setattr__(self, "length", _length(length, name="length"))
 
     def factors(self, *, periods: Sequence[Period]) -> tuple[float, ...]:
         """Return the increase of the cumulative distribution over each Period."""
-        if not periods:
-            raise ValueError("a distribution needs at least one Period")
-        bounds = [i / len(periods) for i in range(len(periods) + 1)]
+        _require_periods(periods)
+        window = _window(periods, start=self.start, length=self.length)
+        shares = self._curve(len(window)) if window else ()
+        return _shares(periods, window=window, shares=shares)
+
+    def _curve(self, count: int) -> tuple[float, ...]:
+        """Return the shares of ``count`` equal parts of the S-curve."""
+        bounds = [i / count for i in range(count + 1)]
         if self.distribution is None:
             cumulative = [x * x * (3 - 2 * x) for x in bounds]
             return tuple(b - a for a, b in pairwise(cumulative))
         low, high = self.distribution.lower, self.distribution.upper
         if low == high:
-            return (1.0,) + (0.0,) * (len(periods) - 1)
+            return (1.0,) + (0.0,) * (count - 1)
         return self.distribution.mass([low + (high - low) * x for x in bounds])
 
 

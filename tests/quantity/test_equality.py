@@ -1,18 +1,24 @@
 """Value equality of Quantities and Flows, and rk.quantity.isclose (G06)."""
 
+import re
 from datetime import date
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
 import rangekeeper as rk
 from rangekeeper.duration import Periods
 from rangekeeper.duration.calendar import Frequency
-from rangekeeper.errors import UnitError
+from rangekeeper.errors import ContractError, UnitError
 from rangekeeper.flow import Flow
 from rangekeeper.quantity import Quantity, isclose
 
 YEARS = Periods(start=date(2001, 1, 1), frequency=Frequency.YEAR, count=3)
+LESSON_03 = (
+    Path(__file__).resolve().parents[2]
+    / "examples/walkthrough/proposed/03_cases_debt_equity.md"
+)
 
 
 def test_quantities_are_equal_by_value():
@@ -82,8 +88,42 @@ def test_isclose_quantities():
     )
     with pytest.raises(UnitError):
         isclose(actual=Quantity(text="1 AUD"), expected=Quantity(text="1 USD"))
-    with pytest.raises(ValueError):
+    with pytest.raises(ContractError):
         isclose(actual=Quantity(text="1 m"), expected=Quantity(text="1 m"), relative=-1)
+
+
+def test_isclose_reads_quantity_text():
+    assert isclose(actual=Quantity(text="0.4 AUD"), expected="0 AUD", tolerance="1 AUD")
+    assert isclose(actual="7 % pa", expected=Quantity(text="0.07 pa"))
+    assert not isclose(actual="2 AUD", expected="0 AUD", tolerance="1 AUD")
+    with pytest.raises(UnitError):
+        isclose(actual="1 AUD", expected="1 sqm")
+    with pytest.raises(UnitError):
+        isclose(actual="1 AUD", expected="1 AUD pr")
+    with pytest.raises(TypeError):
+        isclose(actual=1, expected="1 AUD")  # type: ignore[arg-type]
+    with pytest.raises(TypeError):
+        isclose(actual="1 AUD", expected="1 AUD", tolerance=1)  # type: ignore[arg-type]
+    flow = Flow.from_periods(periods=YEARS, magnitudes=[1, 2, 3], units="AUD")
+    with pytest.raises(TypeError):
+        isclose(actual=flow, expected="1 AUD")
+
+
+def test_lesson_03_cell_24_checks_a_target_npv_with_quantity_text():
+    # The NPV check of cell 24, as written. The solve gives the equity cash flow
+    # in the lesson; here it is a known Flow with a 15 % pa IRR.
+    (cell,) = re.findall(r"```python\n(# cell 24 .*?)```", LESSON_03.read_text(), re.S)
+    lines = [
+        line
+        for line in cell.splitlines()
+        if line.startswith(("cash =", "target_npv =", "assert rk.quantity.isclose"))
+    ]
+    assert len(lines) == 3
+    periods = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=2)
+    cash = Flow.from_periods(periods=periods, magnitudes=[-100e6, 115e6], units="AUD")
+    namespace = {"rk": rk, "date": date, "target_outcome": {"equity_cash_flow": cash}}
+    exec("\n".join(lines), namespace)
+    assert namespace["target_npv"].units == "AUD"
 
 
 def test_isclose_flows():

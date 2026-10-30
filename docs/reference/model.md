@@ -87,14 +87,39 @@ model = draft.commit()
 | `flow(key=, units=, periods=None, description=None)` | A Flow Value. With `periods`, it has one unresolved Movement in each Period; without, its Periods come from its equations |
 | `date(key=, description=None)` | A date Value with no units and no recorded date; returns its `ValueHandle` ([value kinds](#value-kinds)) |
 | `ref(key=)` | The handle of a Value of the entity, declared now or in an earlier revision |
-| `equations(*equations)` | Adds equations to the entity's default Formulation: [equation text](expressions.md#equation-text), such as `"total_cost = land_cost + works_cost"`, or Boolean Expression records |
+| `equations(*equations)` | Adds equations to the entity's default Formulation: [equation text](expressions.md#equation-text), such as `"total_cost = land_cost + works_cost"`, Boolean Terms of the [Python form](expressions.md#the-python-form-rx), such as `total == land + works`, or Boolean Expression records. It adds the Function record of each [equation function](expressions.md#equation-functions) that an equation calls to the Model's definitions |
+| `add_formulation(name=, description=None)` | A named Formulation of the entity, such as `"Funding"`; returns its `FormulationHandle` |
+| `formulation(name=)` | The handle of a named Formulation of the entity, made in the draft or in an earlier revision |
+
+A Formulation groups equations for displays and traces; it changes nothing in a
+solve, and the values stay on the entity. Its handle's `equations(*equations)`
+adds to it, with the rules of `equations` on the entity handle:
+
+```python
+draft = model.edit()
+project = draft.entity(code="project")
+project.value(key="loan", units="AUD")
+project.value(key="loan_limit", units="AUD")
+funding = project.add_formulation(name="Funding")
+funding.equations("loan <= loan_limit")
+model = draft.commit()
+
+draft = model.edit()
+funding = draft.entity(code="project").formulation(name="Funding")
+funding.equations("loan <= total_cost")
+```
 
 A `ValueHandle` has the Value's `id`, `key`, `kind` (a `ValueKind`), `owner`
-(the UUID of its entity) and declared `units`, or `None` for a date. Only a draft
-makes handles: `ValueHandle(...)` and `EntityHandle(...)` raise `TypeError`. A
-handle displays its kind, key, units and entity without UUIDs, such as
-`<value land_cost [AUD] on project>` or `<entity project 'Project'>`, so a
-notebook cell that ends with a declaration shows a short line.
+(the UUID of its entity) and declared `units`, or `None` for a date. A
+`FormulationHandle` has the Formulation's `id`, `name` and `owner`; two handles
+of one Formulation are equal. Only a draft makes handles: `ValueHandle(...)`,
+`EntityHandle(...)` and `FormulationHandle(...)` raise `TypeError`. A handle
+displays its kind, key, units and entity without UUIDs, such as
+`<value land_cost [AUD] on project>`, `<entity project 'Project'>` or
+`<formulation 'Funding' on project>`, so a notebook cell that ends with a
+declaration shows a short line. A `ValueHandle` is a value in the Python form of
+equations: Python's operators and the `rx` functions build equations from it,
+and `==` makes an equation, so compare two value handles by their `id`.
 
 **Rules that each call checks.**
 
@@ -119,7 +144,12 @@ notebook cell that ends with a declaration shows a short line.
   ([equation text](expressions.md#equation-text)).
 - The default Formulation of an entity is the root Formulation whose code is the
   entity's code (or its UUID when it has no code). The draft makes it when the
-  entity's first equation is added.
+  entity's first equation or named Formulation is added.
+- A named Formulation is a child of the entity's default Formulation, with the
+  name as its `name`. Names are unique among the named Formulations of one
+  entity: a second `add_formulation` with a name raises `ContractError` with
+  code `UNIQUE`. `formulation(name=)` raises `MissingReferenceError` with the
+  nearest names when the entity has no Formulation with that name.
 
 A missing entity or key raises `MissingReferenceError` with the nearest codes or
 keys. Its `where` names the owner that was searched, such as `"Entity project"`,
@@ -130,7 +160,7 @@ leaves the draft open to correct; after a commit, the draft and its handles rais
 
 With a `namespace` UUID, the Model UUID and every UUID that its drafts make
 (entities, values, Movements, Measures, Classifications, Taxonomies,
-Relationships, default Formulations and Constraints) are derived from the
+Relationships, default and named Formulations and Constraints) are derived from the
 namespace and the object's code path (UUID version 5), so the same calls make the
 same records. Revision UUIDs and the UUIDs inside Expression records are not
 derived yet. A revision keeps the namespace of the object it was made from; a

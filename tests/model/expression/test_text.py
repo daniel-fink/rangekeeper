@@ -27,7 +27,7 @@ from rangekeeper.model.expression.authoring import (
 )
 from rangekeeper.model.expression.text import parse, render
 from rangekeeper.quantity import UnitSystem, default_units
-from rangekeeper.schema.enums import ExpressionKind, Operator
+from rangekeeper.schema.enums import ExpressionKind, Operator, ValueKind
 from rangekeeper.schema.records import Expression, Reference
 
 KEYS = (
@@ -39,6 +39,16 @@ KEYS = (
     "total_cost",
     "b_start",
 )
+
+
+@dataclass(frozen=True)
+class Symbol:
+    """A Value that a name in the text refers to."""
+
+    id: UUID
+    key: str
+    kind: ValueKind = ValueKind.MEASUREMENT
+    units: str | None = None
 
 
 @dataclass
@@ -55,7 +65,7 @@ class Names:
     def units(self) -> UnitSystem:
         return default_units
 
-    def value(self, path: tuple[str, ...]) -> UUID:
+    def value(self, path: tuple[str, ...]) -> Symbol:
         if path[0] in self.duplicates:
             raise AmbiguousReferenceError(path[0], kind="Value", by="key")
         keys = self.keys if len(path) == 1 else self.others.get(path[0], {})
@@ -63,7 +73,7 @@ class Names:
             raise MissingReferenceError(
                 path[-1], kind="Value", by="key", candidates=sorted(keys)[:2]
             )
-        return keys[path[-1]]
+        return Symbol(id=keys[path[-1]], key=path[-1])
 
     def key(self, target: Reference) -> str:
         found = {identity: key for key, identity in self.keys.items()}
@@ -330,18 +340,22 @@ def test_invalid_units_name_the_unit_words():
     [
         ("value = rk.max(noi, cap_rate)", 8, 14, ("rx.max",)),
         ("value = rk", 8, 10, ()),
-        ("value = rx.max(noi, cap_rate)", 8, 14, ()),
-        ("value = rx.finance.npv(flow=noi, rate=cap_rate, on=b_start)", 8, 22, ()),
+        ("value = rx.mux(noi, cap_rate)", 8, 14, ("rx.max",)),
+        ("value = rx.max", 8, 14, ()),
         ("value = rx", 8, 10, ()),
+        ("value = rx()", 8, 10, ()),
         ("value = max(noi, cap_rate)", 8, 11, ("rx.max",)),
-        ("value = noi.cumulative()", 8, 22, ()),
-        ("value = (noi + cap_rate).total()", 9, 30, ()),
+        ("value = noi.cumulatve()", 8, 21, ()),
+        ("value = noi.totl()", 8, 16, ("total",)),
         ("value = (noi + cap_rate)(1)", 9, 23, ()),
         ("value = noi.a.b", 8, 15, ()),
         ("value = (noi + cap_rate).total", 9, 30, ()),
+        ("value = rx.max(noi)", 8, 19, ("right=",)),
+        ("value = rx.max(noi, cap_rate, noi)", 8, 34, ()),
+        ("value = rx.max(noi, left=cap_rate)", 20, 33, ()),
     ],
 )
-def test_functions_methods_and_members_are_not_available(
+def test_calls_that_are_not_valid_name_the_part_that_fails(
     source, start, end, suggestions
 ):
     error = failure(source)

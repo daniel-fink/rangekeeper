@@ -94,6 +94,16 @@ opening value, subtract it in the first Period:
 `flow.diff() - rk.flow.Flow(amounts={first_period: opening}, units="AUD")`. See
 [running totals](../reference/calculations.md#running-totals-date-masks-and-extremes).
 
+### Movement identity
+
+One rule gives Movement IDs for every transform
+([#162](https://github.com/daniel-fink/rangekeeper/issues/162)): a transform keeps
+the ID of each Movement that it selects or converts, and gives a fresh ID to each
+Movement that it calculates. `Stream.dated()` follows it now: each period amount
+that it dates is a new Movement with a fresh ID. Code that found a dated
+Movement by the ID of its period Movement must match it by coordinate. See
+[the rule](../reference/identity.md#one-rule-for-transforms).
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names
@@ -378,6 +388,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.expression.Direction` | `rangekeeper.model.Direction` | agreed | A fixed word that rangekeeper defines is an enum with one public path. |
 | `rangekeeper.run.Status` | `RunStatus` | agreed | The record at `run.report.status`, with `completion` and `solution`. `rk.execution.Status` is the Status of an Outcome, a different type. |
 | `rangekeeper.schema.records.Status` | `RunStatus` | agreed (needs schema) | The generated record; the LinkML class is `RunStatus`. Stored Runs do not change. |
+| `rangekeeper.model.expression.authoring.sum` | `add_all` | agreed | The name shadowed a builtin. `authoring` is provisional, not 1.0 API (#309): write equations as text, or with `rangekeeper.expressions` (`rx`) on entity handles (#255 D32). |
 | `rangekeeper.execution.compiler.Compiled.prepared` | `binding` | agreed |  |
 | `rangekeeper.model.system.view.View.aggregate` | `rollup` | agreed | Each use needs review. `view.aggregate(reduction)` becomes `view.rollup(definition=rollup)`. |
 | `rangekeeper.model.system.pivot.PivotColumn.aggregation` | `result` | agreed | Each use needs review. |
@@ -415,7 +426,6 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.system.reducers` | The `rangekeeper.model.system.Reducer` enum: `SUM`, `MEAN`, `MIN`, `MAX` and `COUNT`, passed as `reducer=` to `QuantityRollup` or `FlowRollup` | agreed |
 | `rangekeeper.calculations.account` | Compose the funding with Flows: a balance is `cumulative()`. Interest is the Model equation `rangekeeper.model.formulation.financial.interest`; `rx.finance.interest` in equation text follows (#255 D2, D23, #278). A how-to recipe follows (#194) | agreed |
 | `rangekeeper.model.formulation.account.schedule` | Equations over Flows, such as `funding_need = -(net_cash_flow + loan_interest).cumulative()`. A Model declares no account (#255 D2) | agreed |
-| `rangekeeper.model.expression.authoring.sum` | Equation text or `rangekeeper.expressions` on entity handles (#255 D6, D18, D32). ADR-012 forbids public names that shadow builtins | agreed (needs refactor) |
 | `rangekeeper.model.formulation.authoring.declare` | `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=, units=)`, `flow(...)`, `date(...)` and `equations(...)` (#255 D6, D16) | agreed (needs refactor) |
 | `rangekeeper.calculations.series.align` | Stream(flows, join=, missing=).align() | agreed |
 | `rangekeeper.calculations.series.multiply` | Flow.multiply(*others) | agreed |

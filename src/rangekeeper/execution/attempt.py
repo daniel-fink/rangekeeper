@@ -219,7 +219,12 @@ class Attempt:
                 message=f"Expanded {len(self.binding.references)} scalar/Movement symbols and {len(problem.rows)} affine constraints; limits {self.limits.symbol_limit}/{self.limits.constraint_limit}."
                 + (
                     f" {staged.stage_count} earlier stages determined {len(staged.determined)} values."
-                    if staged.stage_count
+                    if staged.determined
+                    else ""
+                )
+                + (
+                    f" Picked the active sides of {len(staged.sides)} max and min calls in {staged.rounds} rounds."
+                    if staged.sides
                     else ""
                 ),
             )
