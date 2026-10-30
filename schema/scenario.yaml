@@ -9,6 +9,7 @@ imports:
 - reference
 - binding
 - distribution
+- market
 default_prefix: rk
 default_range: string
 classes:
@@ -60,29 +61,6 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: true
-  RandomStream:
-    description: Stable component stream identity derived from seed, scenario key and component name.
-    attributes:
-      name:
-        description: Name of the parameter or input that the stream samples.
-        range: Code
-        required: true
-      identifier:
-        description: SHA-256 hexadecimal digest of the scenario key and stream component; with the plan seed,
-          it seeds the stream.
-        range: string
-        required: true
-  LibraryVersion:
-    description: Recorded implementation dependency version.
-    attributes:
-      name:
-        description: Name of the dependency, such as python.
-        range: string
-        required: true
-      version:
-        description: Version of the dependency.
-        range: string
-        required: true
   ObservationAvailability:
     description: Earliest date a recorded Value or Movement may be supplied to a rule.
     attributes:

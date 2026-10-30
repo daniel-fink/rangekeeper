@@ -15,7 +15,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Model | Project knowledge: definitions, system, provenance and an optional geometry pin | `model` | — |
 | Specification | An investigation of one Model revision: fixed and free values, estimates, bounds, objectives, rules, includes and cases | `specification` | — |
 | Run | Finalized evidence of one attempt or batch: status, report, output Models and child Runs | `run` | — |
-| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record | `market` | `rk.market.Paths`: none (planned, #298). Now `ScenarioPlan` and `ScenarioRealization`, inside Model provenance |
+| Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record; the document kind `Paths` | `market` | `rangekeeper.market.Paths`. `ScenarioPlan` and `ScenarioRealization`, inside Model provenance, remain until #140 |
 | Bundle | A delivered set of documents with their exact dependencies | `io` | — |
 | Revision | One immutable version of a document, identified by its Metadata UUID | `schema` | — |
 
@@ -117,8 +117,8 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Coverage | Which contributors had a value, and which did not | `model`, `flow` | Four different types |
 | Pivot | A cross-tab of rollup results by rows and columns | `model` | — |
 | Filter | A declarative selection by classification, labels, number comparisons and presence | `model` | — |
-| Path | One possible history of external conditions: named Flows with availability | `market` | Scenario |
-| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `ScenarioPlan` method; the kernels in `market.dynamics` |
+| Path | One possible history of external conditions: named Flows with availability | `market` | `rangekeeper.market.MarketPath`, from `paths[key]` |
+| Path generator | A registered method that makes market paths from parameters, and a seed when the dynamics are random (`rk.market.Dynamics`) | `market` | `rangekeeper.market.PathGenerator` and the `generators` registry; `rk.market.Dynamics`: none (planned, #299) |
 
 ## Authoring
 

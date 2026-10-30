@@ -2406,6 +2406,30 @@
       "title": "Location",
       "type": "object"
     },
+    "MarketPath": {
+      "additionalProperties": false,
+      "description": "One path, the member of a Paths document with its key.",
+      "properties": {
+        "amounts": {
+          "description": "The amounts of each declared series, in the order of the declarations.",
+          "items": {
+            "$ref": "#/$defs/PathAmounts"
+          },
+          "type": "array"
+        },
+        "key": {
+          "description": "Key of the path, unique in its document.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "amounts"
+      ],
+      "title": "MarketPath",
+      "type": "object"
+    },
     "Measure": {
       "additionalProperties": false,
       "description": "An identified definition of a measurable characteristic and its canonical units.",
@@ -2872,6 +2896,220 @@
       "title": "ParameterKind",
       "type": "string"
     },
+    "PathAmounts": {
+      "additionalProperties": false,
+      "description": "The amounts of one series in one path, one in each Period of the document.",
+      "properties": {
+        "magnitudes": {
+          "description": "Finite amount in each Period, in the units of the series and in the order of the Periods.",
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "series": {
+          "description": "Name of the declared series.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        }
+      },
+      "required": [
+        "series",
+        "magnitudes"
+      ],
+      "title": "PathAmounts",
+      "type": "object"
+    },
+    "PathCapture": {
+      "additionalProperties": false,
+      "description": "How a set of market paths was made. Paths made from data have no generator, parameters, seed or random streams.",
+      "properties": {
+        "algorithm": {
+          "description": "Random generation algorithm, such as numpy.SeedSequence/PCG64; absent when nothing is random.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "count": {
+          "description": "Number of paths that were made.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "fingerprint": {
+          "description": "Fingerprint of the generator implementation; present exactly when the generator is.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "generator": {
+          "description": "Registered name of the path generator, such as dynamics; absent for paths made from data.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "parameters": {
+          "description": "The parameters of the generator for each series, in order.",
+          "items": {
+            "$ref": "#/$defs/PathParameter"
+          },
+          "type": "array"
+        },
+        "seed": {
+          "description": "Nonnegative seed of the random streams; absent when nothing is random.",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "streams": {
+          "description": "The random streams of the generator, in order; empty when nothing is random.",
+          "items": {
+            "$ref": "#/$defs/RandomStream"
+          },
+          "type": "array"
+        },
+        "versions": {
+          "description": "Versions of the libraries that made the paths.",
+          "items": {
+            "$ref": "#/$defs/LibraryVersion"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "count",
+        "parameters",
+        "streams",
+        "versions"
+      ],
+      "title": "PathCapture",
+      "type": "object"
+    },
+    "PathParameter": {
+      "additionalProperties": false,
+      "description": "One parameter of a path generator for one series, a constant or a distribution.",
+      "properties": {
+        "distribution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Distribution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Distribution that each path draws the parameter from; give this or quantity, not both."
+        },
+        "name": {
+          "description": "Name of the parameter, unique for its series.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Constant value of the parameter; give this or distribution, not both."
+        },
+        "series": {
+          "description": "Name of the series that the parameter applies to.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        }
+      },
+      "required": [
+        "series",
+        "name"
+      ],
+      "title": "PathParameter",
+      "type": "object"
+    },
+    "PathSeries": {
+      "additionalProperties": false,
+      "description": "The declaration of one named series of market paths, such as a rent index.",
+      "properties": {
+        "lag": {
+          "$ref": "#/$defs/Quantity",
+          "description": "Whole length of time, such as 0 days or 1 month, after which an amount is known. An amount is known at the end of its Period plus the lag."
+        },
+        "name": {
+          "description": "Name of the series, unique in its document. A Model value with the same key takes the series.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "units": {
+          "description": "Units of every amount of the series.",
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "units",
+        "lag"
+      ],
+      "title": "PathSeries",
+      "type": "object"
+    },
+    "Paths": {
+      "additionalProperties": false,
+      "description": "A captured, replayable set of market paths over one sequence of Periods, with its capture record. A path is one possible history of external conditions.",
+      "properties": {
+        "capture": {
+          "$ref": "#/$defs/PathCapture",
+          "description": "How the paths were made."
+        },
+        "members": {
+          "description": "The paths, in order; the keys are unique.",
+          "items": {
+            "$ref": "#/$defs/MarketPath"
+          },
+          "type": "array"
+        },
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Metadata"
+            }
+          ],
+          "description": "Identity and schema version of this revision, with an optional name and description."
+        },
+        "periods": {
+          "description": "The Periods of every series, in order; they do not overlap.",
+          "items": {
+            "$ref": "#/$defs/Period"
+          },
+          "type": "array"
+        },
+        "series": {
+          "description": "The declaration of each series that every member holds, in order; the names are unique.",
+          "items": {
+            "$ref": "#/$defs/PathSeries"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "metadata",
+        "periods",
+        "series",
+        "members",
+        "capture"
+      ],
+      "title": "Paths",
+      "type": "object"
+    },
     "Period": {
       "additionalProperties": false,
       "description": "Half-open interval [start, end), which includes start and excludes end. Date boundaries use the Gregorian calendar; start must precede end.",
@@ -3243,14 +3481,14 @@
     },
     "RandomStream": {
       "additionalProperties": false,
-      "description": "Stable component stream identity derived from seed, scenario key and component name.",
+      "description": "Stable identity of one random stream of a generator, independent of process and dispatch order.",
       "properties": {
         "identifier": {
-          "description": "SHA-256 hexadecimal digest of the scenario key and stream component; with the plan seed, it seeds the stream.",
+          "description": "SHA-256 hexadecimal digest of the names that identify the stream; with the seed, it seeds the stream.",
           "type": "string"
         },
         "name": {
-          "description": "Name of the parameter or input that the stream samples.",
+          "description": "Name of the component or parameter that the stream draws for.",
           "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
           "type": "string"
         }
