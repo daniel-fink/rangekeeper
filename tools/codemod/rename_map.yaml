@@ -619,6 +619,15 @@ symbols:
     source: "#379"
     requires: [schema]
     note: The generated record; the LinkML class is `RunStatus`. Stored Runs do not change.
+  - module: rangekeeper.model.expression.authoring
+    name: sum
+    new_name: add_all
+    status: agreed
+    source: "ADR-012, #309"
+    note: >-
+      The name shadowed a builtin. `authoring` is provisional, not 1.0 API
+      (#309): write equations as text, or with `rangekeeper.expressions` (`rx`)
+      on entity handles (#255 D32).
 
 # Renames of attributes, methods and fields on one class. `apply: all`
 # renames every attribute access with this name in the files in scope. Use it
@@ -849,13 +858,6 @@ removed:
       loan_interest).cumulative()`. A Model declares no account (#255 D2)
     status: agreed
     source: "#255 D2"
-  - name: rangekeeper.model.expression.authoring.sum
-    replacement: >-
-      Equation text or `rangekeeper.expressions` on entity handles (#255 D6,
-      D18, D32). ADR-012 forbids public names that shadow builtins
-    status: agreed
-    source: "ADR-012, #255 D18"
-    requires: [refactor]
   - name: rangekeeper.model.formulation.authoring.declare
     replacement: >-
       `rk.Model(name=)`, `model.edit()` and entity handles with `value(key=,

@@ -87,7 +87,7 @@ model = draft.commit()
 | `flow(key=, units=, periods=None, description=None)` | A Flow Value. With `periods`, it has one unresolved Movement in each Period; without, its Periods come from its equations |
 | `date(key=, description=None)` | A date Value with no units and no recorded date; returns its `ValueHandle` ([value kinds](#value-kinds)) |
 | `ref(key=)` | The handle of a Value of the entity, declared now or in an earlier revision |
-| `equations(*equations)` | Adds equations to the entity's default Formulation: [equation text](expressions.md#equation-text), such as `"total_cost = land_cost + works_cost"`, or Boolean Expression records |
+| `equations(*equations)` | Adds equations to the entity's default Formulation: [equation text](expressions.md#equation-text), such as `"total_cost = land_cost + works_cost"`, Boolean Terms of the [Python form](expressions.md#the-python-form-rx), such as `total == land + works`, or Boolean Expression records. It adds the Function record of each [equation function](expressions.md#equation-functions) that an equation calls to the Model's definitions |
 | `add_formulation(name=, description=None)` | A named Formulation of the entity, such as `"Funding"`; returns its `FormulationHandle` |
 | `formulation(name=)` | The handle of a named Formulation of the entity, made in the draft or in an earlier revision |
 
@@ -117,7 +117,9 @@ of one Formulation are equal. Only a draft makes handles: `ValueHandle(...)`,
 displays its kind, key, units and entity without UUIDs, such as
 `<value land_cost [AUD] on project>`, `<entity project 'Project'>` or
 `<formulation 'Funding' on project>`, so a notebook cell that ends with a
-declaration shows a short line.
+declaration shows a short line. A `ValueHandle` is a value in the Python form of
+equations: Python's operators and the `rx` functions build equations from it,
+and `==` makes an equation, so compare two value handles by their `id`.
 
 **Rules that each call checks.**
 

@@ -232,7 +232,7 @@ def test_flows_have_movements_only_when_declared_with_periods():
 def test_equations_are_checked_when_added():
     draft, project = costs()
     land = project.ref(key="land_cost")
-    with pytest.raises(TypeError, match="text or an Expression"):
+    with pytest.raises(TypeError, match="text, a Term or an Expression"):
         project.equations(42)  # type: ignore[arg-type]
     with pytest.raises(ContractError, match="Boolean") as error:
         project.equations(add(ref(land), literal(1, "AUD")))
@@ -453,7 +453,7 @@ def test_dates_have_no_units_and_no_recorded_content():
     project = draft.add_entity(code="project", classification="project")
     start = project.date(key="start_date", description="The site is bought")
     assert (start.key, start.owner, start.units) == ("start_date", project.id, None)
-    assert project.ref(key="start_date") == start
+    assert project.ref(key="start_date").id == start.id
     model = draft.commit()
     value = model.value(id=start.id)
     assert (value.kind, value.measure, value.date, value.never) == (

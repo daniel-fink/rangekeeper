@@ -5,13 +5,17 @@ checks enforce this contract. The [executor](execution.md) implements the
 documented affine subset; representation alone does not promise execution support.
 
 Write an equation as text on an entity handle:
-`project.equations("noi = coverage * debt_service")` ([equation text](#equation-text)).
+`project.equations("noi = coverage * debt_service")` ([equation text](#equation-text)),
+or in Python with `rx` ([the Python form](#the-python-form-rx)):
+`project.equations(noi == coverage * debt_service)`. Both make the same records
+from one [registry of equation functions](#equation-functions).
+
 `rangekeeper.model.expression.authoring` has passive literal, reference and
-operator constructors for records. It is provisional, not part of the 1.0 API:
-the Python form of equations is `rx`
-([#309](https://github.com/daniel-fink/rangekeeper/issues/309)).
-`rangekeeper.model.formulation` owns equation builders; these builders return
-declarations and do not read recorded amounts or solve them.
+operator constructors for records. It is provisional, not part of the 1.0 API
+([#309](https://github.com/daniel-fink/rangekeeper/issues/309)): write equations
+as text or with `rx` instead. `rangekeeper.model.formulation` owns equation
+builders; these builders return declarations and do not read recorded amounts
+or solve them.
 
 ## Composition and identity
 
@@ -131,16 +135,24 @@ own words `and`, `or`, `not`, `True` and `False`; another Python keyword, such a
 **Functions and methods.** A call parses with Python's rules for arguments:
 positional arguments first, then named arguments, each name once. Equation
 functions have names in the `rx.` namespace, such as `rx.max(a, b)`, and Flow
-methods are written on a value, such as `operating.at(on=sale_date)`. No
-equation function or method is available yet, so a call raises `EquationError`
-with the code `EQUATION_FUNCTION`. Text that writes `rk.` gets the suggestion
-`rx.`, because `rk.` computes on values now, and a function name without `rx.`
-gets `rx.<name>`. The function catalogue
-([#278](https://github.com/daniel-fink/rangekeeper/issues/278)) and its registry
-([#309](https://github.com/daniel-fink/rangekeeper/issues/309)) add the functions
-and methods. Flow-valued equations are
+methods are written on a value, such as `operating.at(on=sale_date)`. The
+[equation functions](#equation-functions) table lists them. Every argument is
+named (D14), except the arguments of `rx.max`, as of Python's built-in `max`.
+Text that writes `rk.` gets the suggestion `rx.`, because `rk.` computes on
+values now, and a function name without `rx.` gets `rx.<name>`. The function
+catalogue ([#278](https://github.com/daniel-fink/rangekeeper/issues/278)) adds
+the profile, Flow and finance functions. Flow-valued equations are
 [#279](https://github.com/daniel-fink/rangekeeper/issues/279), and keyed members
 such as `rent[use]` are [#284](https://github.com/daniel-fink/rangekeeper/issues/284).
+
+A call is a `call` Expression of the function's Function record
+([functions and domains](#functions-and-domains)). An argument that a call can
+give by position is a positional argument, in the order of the signature, and
+every other argument is a named argument, so `rx.max(a, b)` and
+`rx.max(left=a, right=b)` make the same records. A method's Flow is its first
+positional argument. The draft adds the Function record of each function that
+an equation calls to the Model's definitions; the record has the same UUID in
+every Model.
 
 **Errors.** The draft checks each equation when it is added. When one equation
 of a call fails, the call adds none. Text that does not make an equation raises
@@ -157,13 +169,85 @@ Value with key 'work_cost' not found in Entity project; nearest: works_cost, tot
 | --- | --- |
 | `EQUATION_SYNTAX` | The text does not parse: an unexpected or a missing token, a bracket that is not closed, a chained comparison, or a Python spelling such as `==`. `suggestions` gives the spelling of equation text |
 | `REFERENCE_MISSING`, `REFERENCE_AMBIGUOUS` | A name matches no Value, or several. `suggestions` gives the nearest keys or codes |
-| `UNITS` | The units of a literal are not valid. The error marks the unit words |
-| `EQUATION_FUNCTION` | A call, a method, or a member of a value |
+| `UNITS` | The units of a literal are not valid, or an argument has units of another dimension than its parameter, such as a rate in `AUD`. The error marks the unit words or the argument |
+| `EQUATION_FUNCTION` | An unknown function or method, or a member of a value. A call with an unknown or a missing argument, an argument given twice or by position where only a name is accepted, or an argument of the wrong kind, such as a Flow where a date is expected. The error marks the call or the argument; `suggestions` gives the nearest names |
 | `PREDICATE` | The text is not Boolean, for example `total_cost + 1 AUD` |
 
 `commit()` then validates the domains of every expression with the revision,
 for example a date compared with an amount. Dimensional checks of equations are
 [#151](https://github.com/daniel-fink/rangekeeper/issues/151).
+
+## The Python form: rx
+
+`rangekeeper.expressions`, imported as `rx`, writes equations in Python
+([ADR-015](../decisions/015-authoring.md#equations),
+[D32](../../examples/walkthrough/proposed/README.md#decisions)). A declaration on
+an entity handle returns a value handle, and `project.ref(key=)` finds the
+handle of a value declared earlier. Python's operators on handles build
+equations, and `project.equations(...)` adds them as it adds text:
+
+```python
+import rangekeeper.expressions as rx
+
+noi = project.ref(key="noi")
+coverage = project.ref(key="coverage")
+debt_service = project.ref(key="debt_service")
+equation = noi == coverage * debt_service
+assert equation.text == "noi = coverage * debt_service"
+project.equations(equation, rx.max(noi, "0 AUD") >= debt_service)
+```
+
+| Python | Equation text |
+| --- | --- |
+| `a == b`, `a != b`, `a < b`, `a <= b`, `a > b`, `a >= b` | `a = b`, `a != b`, `a < b`, `a <= b`, `a > b`, `a >= b` |
+| `a + b`, `a - b`, `a * b`, `a / b`, `a ** b`, `-a` | The same |
+| `(a >= b) & (c >= d)`, `x \| y`, `~x` | `a >= b and c >= d`, `x or y`, `not x` |
+| `"2 % pa"`, `rk.Quantity(text="2 % pa")`, `1` | `2 % pa`, `1` |
+| `rk.duration.NEVER` | `NEVER` |
+| `rx.max(a, b)`, `x.at(on=d)` | The same |
+
+An operator or a function makes a `Term`. `term.text` is its equation text,
+with each value written by its key; it reads back to the same records.
+`term.kind` and `term.units` give what it is, when the declarations give them.
+`==` on handles makes an equation, so compare handles by `id`; a Term has no
+truth value, so `if` on a Term raises `TypeError`. A call is checked when it is
+written, with the rules of equation text; an error is a `ContractError` with
+the code and the `suggestions` in `values`. `rk.` functions compute on values
+now; `rx.` functions build equations. `rk.finance.npv` and `rx.finance.npv`
+each have one job, and neither checks which kind of argument it has.
+
+## Equation functions
+
+One registry declares each equation function once
+(`rangekeeper.model.expression.catalogue`, ADR-015): its name, its parameters
+with their kinds and units, its result, its evaluation stage, its availability
+rule and the value function that it mirrors. The equation text parser, `rx`
+and the table below are made from it.
+[`tools/expressions/generate.py`](../../tools/expressions/generate.py) writes
+`rx` and this table; a test fails when they differ from the registry.
+
+- **Stage.** `affine`: the solve compiles the call into the affine problem.
+  `after_affine`: the solve evaluates it after the affine stage, from
+  determined values, and verification checks it (D4).
+- **Availability.** When a result is known, from when its arguments are known:
+  `periodwise` (each period from the same period), `running` (each period from
+  the periods up to it), `shifted` (from the period `by` periods away) or
+  `complete` (from every period). A rule reads only known values (G53).
+- **Periodwise functions** take a Flow where a parameter takes a value, and then
+  apply period by period: `rx.max(0 AUD, need)` is a Flow when `need` is one.
+
+<!-- BEGIN GENERATED FUNCTIONS -->
+| Function | Meaning | Stage | Availability | Mirrors |
+| --- | --- | --- | --- | --- |
+| `rx.max(left, right)` | The larger of two values, period by period for Flows. | `after_affine` | `periodwise` | Python's built-in max, period by period |
+| `x.at(on=)` | The amount of the period that contains a date. | `affine` | `complete` | `rangekeeper.flow.Flow.at` |
+| `x.shift(by=)` | Each period's amount from the period `by` periods away. | `affine` | `shifted` | `rangekeeper.flow.Flow.shift` |
+| `x.total()` | The sum of the amounts of a Flow. | `affine` | `complete` | `rangekeeper.flow.Flow.total` |
+<!-- END GENERATED FUNCTIONS -->
+
+The equivalence tests check each entry: text and `rx` make the same records
+and the same text, text reads back to the same records, and the call evaluated
+on fixed data equals its value function.
 
 ## Dates and NEVER
 
@@ -389,7 +473,7 @@ argument by name, also the Model: `flow.sum(model=, id=, summands=, total=)`
 
 | Builder | Quantity parameters |
 | --- | --- |
-| `expression.sum` | `summands` |
+| `expression.authoring.add_all` | `summands` |
 | `flow.sum` | `summands`, `total` |
 | `flow.scale` | `multiplicand`, `multiplier`, `product` |
 | `flow.accumulate` | `increments`, `initial`, `accumulation` |

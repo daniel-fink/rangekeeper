@@ -16,7 +16,10 @@ from uuid import UUID, uuid4
 from rangekeeper.duration import Period
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model._mathematics import Mathematics
+from rangekeeper.model.expression import terms
 from rangekeeper.model.expression import text as equation_text
+from rangekeeper.model.expression.catalogue import functions
+from rangekeeper.model.expression.terms import Symbolic, Term
 from rangekeeper.model.expression.text import RESERVED
 from rangekeeper.model.formulation.authoring import identify
 from rangekeeper.model.formulation.handle import FormulationHandle
@@ -30,6 +33,7 @@ from rangekeeper.schema.records import (
     Definitions,
     Entity,
     Expression,
+    Function,
     Measure,
     Relationship,
     System,
@@ -83,17 +87,17 @@ class _Names:
         """The unit system of the draft's Model."""
         return self.draft._base.unit_system
 
-    def value(self, path: tuple[str, ...]) -> UUID:
-        """Return the UUID of the Value of a key, or of an entity code and a key."""
+    def value(self, path: tuple[str, ...]) -> "ValueHandle":
+        """Return the handle of the Value of a key, or of an entity code and a key."""
         if len(path) == 1:
-            return self.draft._ref(self.owner, path[0]).id
+            return self.draft._ref(self.owner, path[0])
         code, key = path
         owner = self.draft._owner(self.owner)
         if code in owner.keys:
             raise MissingReferenceError(
                 ".".join(path), kind="Value", by="path", where=owner.where
             )
-        return self.draft._ref(self.draft.entity(code=code).id, key).id
+        return self.draft._ref(self.draft.entity(code=code).id, key)
 
 
 # The records that ``_find`` selects by UUID, code or name.
@@ -110,8 +114,8 @@ _VALUE_WORDS = {
 }
 
 
-@dataclass(frozen=True, slots=True, init=False)
-class ValueHandle:
+@dataclass(frozen=True, slots=True, init=False, eq=False)
+class ValueHandle(Symbolic):
     """A Value that a draft declared or found: its UUID, key, kind, owner and units.
 
     A draft makes handles: ``value``, ``flow``, ``date`` and ``ref`` on an
@@ -119,6 +123,11 @@ class ValueHandle:
     ``units`` are the declared units, or None for a Value with no Measure.
     The display names the kind, key, units and entity, for example
     ``<value land_cost [AUD] on project>``.
+
+    A handle is a value in the Python form of equations (D32): operators and
+    the ``rx`` functions build equations from it, such as
+    ``noi == coverage * debt_service``, and ``equations(...)`` takes them.
+    ``==`` makes an equation, so compare handles by ``id``.
     """
 
     id: UUID
@@ -152,6 +161,9 @@ class ValueHandle:
         units = "" if self.units is None else f" [{self.units}]"
         word = _VALUE_WORDS.get(self.kind, "value")
         return f"<{word} {self.key}{units} on {self._entity}>"
+
+    def _as_term(self) -> Term:
+        return terms.reference(self, name=self.key)
 
 
 @dataclass(slots=True, eq=False)
@@ -295,17 +307,20 @@ class EntityHandle:
         """
         return self._draft._ref(self._id, require_text(key, "key"))
 
-    def equations(self, *equations: str | Expression) -> None:
+    def equations(self, *equations: str | Term | Expression) -> None:
         """Add one equation or several to the entity's default Formulation.
 
         An equation is equation text, such as ``"noi = coverage * debt_service"``,
-        or a Boolean Expression record. It is an equality or a bound. Text names
-        the keys of this entity, and ``code.key`` names a key of another entity;
-        each name must be declared in the draft or in its Model. Text that does
-        not make an equation raises EquationError with the position of the part
-        that fails, and no equation of the call is added. The default
-        Formulation is the root Formulation whose code is the entity's code; the
-        draft makes it when it is absent.
+        a Boolean Term of the Python form, such as
+        ``noi == coverage * debt_service``, or a Boolean Expression record. It
+        is an equality or a bound. Text names the keys of this entity, and
+        ``code.key`` names a key of another entity; each name must be declared
+        in the draft or in its Model. Text that does not make an equation
+        raises EquationError with the position of the part that fails, and no
+        equation of the call is added. The default Formulation is the root
+        Formulation whose code is the entity's code; the draft makes it when it
+        is absent. The draft adds the Function record of each equation
+        function that an equation calls to the Model's definitions.
         """
         draft = self._draft
         records = draft._equations_of(self._id, equations)
@@ -375,6 +390,7 @@ class ModelDraft:
         "_description",
         "_taxonomies",
         "_measures",
+        "_functions",
         "_owners",
         "_relationships",
         "_mathematics",
@@ -388,6 +404,7 @@ class ModelDraft:
     _description: str | None
     _taxonomies: list[Taxonomy]
     _measures: list[Measure]
+    _functions: list[Function]
     _owners: dict[UUID, _Owner]
     _relationships: list[Relationship]
     # The Formulations, and the Formulations and equations that the draft adds.
@@ -420,6 +437,7 @@ class ModelDraft:
         draft._description = description
         draft._taxonomies = list(definitions.taxonomies or ())
         draft._measures = list(definitions.measures or ())
+        draft._functions = list(definitions.functions or ())
         draft._owners = {
             record.id: _Owner(record, list(_values(record)))
             for record in (*(system.entities or ()), *(system.assemblies or ()))
@@ -626,10 +644,11 @@ class ModelDraft:
         self._require_open()
         base = self._base
         definitions: Definitions | Unset = UNSET
-        if self._changed & {"taxonomies", "measures"}:
+        if self._changed & {"taxonomies", "measures", "functions"}:
             definitions = (base.definitions or Definitions()).replace(
                 taxonomies=tuple(self._taxonomies) if self._taxonomies else UNSET,
                 measures=tuple(self._measures) if self._measures else UNSET,
+                functions=tuple(self._functions) if self._functions else UNSET,
             )
         system: System | Unset = UNSET
         if self._changed & {"owners", "relationships"} or self._mathematics.changed:
@@ -799,7 +818,7 @@ class ModelDraft:
         formulation: UUID,
         *,
         owner: UUID,
-        equations: Sequence[str | Expression],
+        equations: Sequence[str | Term | Expression],
     ) -> None:
         """Add the equations of an entity to one of its Formulations."""
         records = self._equations_of(owner, equations)
@@ -808,9 +827,13 @@ class ModelDraft:
     def _equations_of(
         self,
         owner_id: UUID,
-        equations: Sequence[str | Expression],
+        equations: Sequence[str | Term | Expression],
     ) -> list[Expression]:
-        """Return the checked records of the equations of one entity; add nothing."""
+        """Return the checked records of the equations of one entity.
+
+        The draft adds the Function record of each equation function that they
+        call; it adds no equation.
+        """
         self._require_open()
         owner = self._owner(owner_id)
         if not equations:
@@ -821,7 +844,20 @@ class ModelDraft:
             for target in _targets(equation.to_data()):
                 if target not in self._known:
                     raise MissingReferenceError(target, kind="Value", where=owner.where)
+        for equation in records:
+            self._add_functions(equation.to_data())
         return records
+
+    def _add_functions(self, data: object) -> None:
+        """Add the Function record of each equation function that ``data`` calls."""
+        known = {record.id for record in self._functions}
+        for identity in _called(data):
+            function = functions.get(identity)
+            if identity in known or function is None:
+                continue
+            self._functions.append(function.record())
+            known.add(identity)
+            self._changed.add("functions")
 
     def _measure(self, units: str) -> Measure:
         for item in self._measures:
@@ -981,8 +1017,12 @@ def _find(
     )
 
 
-def _equation(item: str | Expression, *, names: _Names) -> Expression:
+def _equation(item: str | Term | Expression, *, names: _Names) -> Expression:
     """Return the record of one equation: its text parsed, or the record given."""
+    if isinstance(item, Term):
+        item = item.to_expression()
+    elif isinstance(item, Symbolic):
+        raise TypeError("an equation must be Boolean, such as a == b; not a handle")
     if isinstance(item, str):
         record = equation_text.parse(text=item, names=names)
         if not _relation(record):
@@ -995,7 +1035,9 @@ def _equation(item: str | Expression, *, names: _Names) -> Expression:
             )
         return record
     if not isinstance(item, Expression):
-        raise TypeError("each equation must be equation text or an Expression record")
+        raise TypeError(
+            "each equation must be equation text, a Term or an Expression record"
+        )
     if not _relation(item):
         raise ContractError(
             "an equation must be Boolean, such as an equality or a bound",
@@ -1010,6 +1052,18 @@ def _relation(expression: Expression) -> bool:
     if expression.kind in (ExpressionKind.BINARY, ExpressionKind.UNARY):
         return expression.operator in _RELATIONS
     return expression.kind in (ExpressionKind.BOOLEAN, ExpressionKind.CALL)
+
+
+def _called(data: object) -> Iterable[UUID]:
+    """Yield the Function UUID of each call in exported Expression data."""
+    if isinstance(data, dict):
+        if data.get("kind") == "call" and isinstance(data.get("call"), dict):
+            yield UUID(data["call"]["function"])
+        for child in data.values():
+            yield from _called(child)
+    elif isinstance(data, list):
+        for child in data:
+            yield from _called(child)
 
 
 def _targets(data: object) -> Iterable[UUID]:

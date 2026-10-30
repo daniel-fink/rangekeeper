@@ -67,6 +67,20 @@ def run(*keys: str) -> dict[str, object]:
     return namespace
 
 
+def aside() -> str:
+    """Return the code of the "Under the hood" aside about rx."""
+    quoted = LESSON.read_text().split("> ```python\n", 1)[1].split("> ```", 1)[0]
+    return "".join(
+        line.removeprefix("> ").removeprefix(">") for line in quoted.splitlines(True)
+    )
+
+
+def test_the_rx_aside_runs_as_written():
+    namespace = run(*MODEL_CELLS)
+    exec(aside(), namespace)
+    assert namespace["rx"].__name__ == "rangekeeper.expressions"
+
+
 def test_the_model_cells_declare_the_equations_in_text():
     namespace = run(*MODEL_CELLS)
     model = namespace["model"]

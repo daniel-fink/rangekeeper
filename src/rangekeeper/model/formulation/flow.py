@@ -14,12 +14,10 @@ from rangekeeper.flow import (
 from rangekeeper.model import Model
 from rangekeeper.model.expression.authoring import (
     add,
+    add_all,
     equal,
     multiply,
     reference,
-)
-from rangekeeper.model.expression.authoring import (
-    sum as expression_sum,
 )
 from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.targets import target_value
@@ -98,7 +96,7 @@ def sum(
             str(m.id),
             equal(
                 reference(Reference(target=m.id)),
-                expression_sum(
+                add_all(
                     [
                         reference(Reference(target=s.id))
                         for v, s in zip(summands, matches, strict=True)
@@ -247,7 +245,7 @@ def _resampled_terms(sequence: Flow, periods, *, method, missing):
             if method in MEANS:
                 term = multiply(term, literal(weight / denominator))
             terms.append(term)
-        expressions.append(expression_sum(terms))
+        expressions.append(add_all(terms))
     return expressions
 
 

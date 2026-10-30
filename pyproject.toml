@@ -103,6 +103,9 @@ layers = [
     "execution",
     "run",
     "specification",
+    # rx, the Python form of equations, sits in the model layer, above
+    # model (ADR-010).
+    "expressions",
     "model",
     "finance",
     "market",

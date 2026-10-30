@@ -16,10 +16,11 @@ form:
   The narrative says why.
 - Cell 9 is two cells, 9 and 9b. A notebook shows only the last expression of a
   cell, so `payment` in the middle of cell 9 showed nothing.
-- The "Under the hood" aside about `rx` is prose in the notebook, with no code.
-  `rangekeeper.expressions` and `project.ref(key=)` wait on
-  [#309](https://github.com/daniel-fink/rangekeeper/issues/309); the aside below
-  keeps the proposed code.
+- The "Under the hood" aside about `rx` is prose in the notebook, with no code:
+  the cell imports `rx` and does not use it, which the notebook lint rejects.
+  `rangekeeper.expressions` and `project.ref(key=)` are in
+  [#309](https://github.com/daniel-fink/rangekeeper/issues/309), and a test runs
+  the aside below as written.
 - Section 8 has a short narrative that explains the result of cell 17: with less
   leverage, the supportable land price rises.
 - Cell 18: `free_unknowns` gives every undetermined unknown in Model order (D7),
@@ -178,9 +179,8 @@ model = draft.commit()
 helpers.show_equations(of=model)  # a diagram with no input or output arrows
 ```
 
-> **Under the hood: the same equation in Python.** This aside waits on
-> [#309](https://github.com/daniel-fink/rangekeeper/issues/309). Until then, the
-> notebook gives it as prose, without the code. `rangekeeper.expressions`, imported
+> **Under the hood: the same equation in Python.** The notebook gives this aside as
+> prose, without the code. `rangekeeper.expressions`, imported
 > as `rx`, writes equations with Python operators. A declaration returns a handle, and
 > `project.ref(key=)` finds the handle of a value declared earlier. Text and Python make
 > the same records, and `.text` prints the text form. Both forms use the same
