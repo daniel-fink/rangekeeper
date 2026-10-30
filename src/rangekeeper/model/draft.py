@@ -7,7 +7,7 @@ equations on one entity.
 """
 
 import keyword
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
 from difflib import get_close_matches
 from typing import TYPE_CHECKING, TypeVar
@@ -16,6 +16,7 @@ from uuid import UUID, uuid4
 from rangekeeper.duration import Period
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model._mathematics import Mathematics
+from rangekeeper.model._undeclared import Undeclared, Unknown, known_values
 from rangekeeper.model.expression import terms
 from rangekeeper.model.expression import text as equation_text
 from rangekeeper.model.expression.catalogue import functions
@@ -81,23 +82,33 @@ class _Names:
 
     draft: "ModelDraft"
     owner: UUID
+    # The keys that the entity does not declare, with the UUIDs reserved for
+    # them; an equation of the call must define each one (D44).
+    new: dict[str, UUID] = field(default_factory=dict)
 
     @property
     def units(self) -> UnitSystem:
         """The unit system of the draft's Model."""
         return self.draft._base.unit_system
 
-    def value(self, path: tuple[str, ...]) -> "ValueHandle":
-        """Return the handle of the Value of a key, or of an entity code and a key."""
+    def value(self, path: tuple[str, ...]) -> "ValueHandle | Unknown":
+        """Return the handle of the Value of a key, or of an entity code and a key.
+
+        A key that the entity does not declare names a value that an equation
+        defines: one of an earlier call, or a new one, kept in ``new``.
+        """
+        draft = self.draft
         if len(path) == 1:
-            return self.draft._ref(self.owner, path[0])
+            return draft._named(self.owner, path[0], new=self.new)
         code, key = path
-        owner = self.draft._owner(self.owner)
+        owner = draft._owner(self.owner)
         if code in owner.keys:
             raise MissingReferenceError(
                 ".".join(path), kind="Value", by="path", where=owner.where
             )
-        return self.draft._ref(self.draft.entity(code=code).id, key)
+        entity = draft.entity(code=code).id
+        found = draft._undeclared.get(entity, key)
+        return draft._ref(entity, key) if found is None else Unknown(id=found, key=key)
 
 
 # The records that ``_find`` selects by UUID, code or name.
@@ -398,6 +409,7 @@ class ModelDraft:
         "_owners",
         "_relationships",
         "_mathematics",
+        "_undeclared",
         "_changed",
         "_known",
         "_handles",
@@ -413,6 +425,8 @@ class ModelDraft:
     _relationships: list[Relationship]
     # The Formulations, and the Formulations and equations that the draft adds.
     _mathematics: Mathematics
+    # The values that equations define and no call declares (D44).
+    _undeclared: Undeclared
     # The parts of the revision that the draft changed.
     _changed: set[str]
     # The UUIDs of the Values and Movements that equations can reference.
@@ -450,6 +464,7 @@ class ModelDraft:
         draft._mathematics = Mathematics(
             roots=system.formulations or (), identify=draft._identify
         )
+        draft._undeclared = Undeclared()
         draft._changed = set()
         draft._known = {
             identity
@@ -644,19 +659,29 @@ class ModelDraft:
         The new revision has a new UUID, and ``previous`` is the UUID of the
         draft's Model. A failure raises ValidationError, or RevisionConflictError
         for a draft with no change, and leaves the draft open to correct it.
+
+        A value that equations define and no call declares takes its kind and
+        units from its equations (D44); one whose units cannot be worked out
+        raises ValidationError with the code ``semantic.units``.
         """
         self._require_open()
         base = self._base
+        measures = list(self._measures)
+        inferred = self._inferred(measures)
         definitions: Definitions | Unset = UNSET
-        if self._changed & {"taxonomies", "measures", "functions"}:
+        added = len(measures) > len(self._measures)
+        if self._changed & {"taxonomies", "measures", "functions"} or added:
             definitions = (base.definitions or Definitions()).replace(
                 taxonomies=tuple(self._taxonomies) if self._taxonomies else UNSET,
-                measures=tuple(self._measures) if self._measures else UNSET,
+                measures=tuple(measures) if measures else UNSET,
                 functions=tuple(self._functions) if self._functions else UNSET,
             )
         system: System | Unset = UNSET
         if self._changed & {"owners", "relationships"} or self._mathematics.changed:
-            owners = [_built(owner) for owner in self._owners.values()]
+            owners = [
+                _built(owner, inferred.get(owner.record.id, ()))
+                for owner in self._owners.values()
+            ]
             entities = tuple(r for r in owners if not isinstance(r, Assembly))
             assemblies = tuple(r for r in owners if isinstance(r, Assembly))
             formulations = self._mathematics.formulations()
@@ -782,7 +807,8 @@ class ModelDraft:
                 ],
             )
         value = Value(
-            id=self._identify("value", owner.path, key),
+            id=self._undeclared.declare(owner_id, key)
+            or self._identify("value", owner.path, key),
             key=key,
             kind=kind,
             measure=UNSET if units is None else self._measure(units).id,
@@ -844,13 +870,62 @@ class ModelDraft:
             raise TypeError("equations takes at least one equation")
         names = _Names(self, owner_id)
         records = [_equation(item, names=names) for item in equations]
+        known = self._known | set(names.new.values())
         for equation in records:
             for target in _targets(equation.to_data()):
-                if target not in self._known:
+                if target not in known:
                     raise MissingReferenceError(target, kind="Value", where=owner.where)
+        self._undeclared.add(
+            owner=owner_id,
+            where=owner.where,
+            new=names.new,
+            equations=records,
+            texts=[item for item in equations if isinstance(item, str)],
+            candidates=[*owner.keys, *self._undeclared.keys(owner_id)],
+        )
+        self._known.update(names.new.values())
         for equation in records:
             self._add_functions(equation.to_data())
         return records
+
+    def _named(
+        self,
+        owner_id: UUID,
+        key: str,
+        *,
+        new: dict[str, UUID],
+    ) -> "ValueHandle | Unknown":
+        """Return what a key of equation text names on one entity.
+
+        A declared key names the handle of its Value, and an undeclared key the
+        value that an equation defines; another key gets a new UUID in ``new``.
+        """
+        owner = self._owner(owner_id)
+        if key in owner.keys:
+            return self._ref(owner_id, key)
+        found = self._undeclared.get(owner_id, key) or new.get(key)
+        if found is None:
+            found = new[key] = self._identify("value", owner.path, key)
+        return Unknown(id=found, key=key)
+
+    def _inferred(self, measures: list[Measure]) -> dict[UUID, list[Value]]:
+        """Return the Values that equations define without a declaration, by owner.
+
+        The Measures of their units are added to ``measures``, a copy of the
+        draft's, so that a failed commit changes nothing.
+        """
+        if not self._undeclared:
+            return {}
+        return self._undeclared.values(
+            equations=self._mathematics.expressions(),
+            units=self._base.unit_system,
+            lookup=known_values(
+                (value for owner in self._owners.values() for value in owner.values),
+                measures=measures,
+            ),
+            measure=lambda units: _measure_in(measures, units, self._identify),
+            known=[item.units for item in measures],
+        )
 
     def _add_functions(self, data: object) -> None:
         """Add the Function record of each equation function that ``data`` calls."""
@@ -864,19 +939,10 @@ class ModelDraft:
             self._changed.add("functions")
 
     def _measure(self, units: str) -> Measure:
-        for item in self._measures:
-            if item.units == units:
-                return item
-        codes = {item.code for item in self._measures}
-        code, number = units, 1
-        while code in codes:
-            number += 1
-            code = f"{units} {number}"
-        measure = Measure(
-            id=self._identify("measure", code), code=code, name=units, units=units
-        )
-        self._measures.append(measure)
-        self._changed.add("measures")
+        count = len(self._measures)
+        measure = _measure_in(self._measures, units, self._identify)
+        if len(self._measures) != count:
+            self._changed.add("measures")
         return measure
 
     def _taxonomy(self, code: str) -> int:
@@ -959,14 +1025,35 @@ def _values(record: Entity) -> tuple[Value, ...]:
     return () if characteristics is None else characteristics.values or ()
 
 
-def _built(owner: _Owner) -> Entity:
+def _built(owner: _Owner, inferred: Sequence[Value]) -> Entity:
     """Return the record of an owner, with the values that the draft added."""
-    if not owner.changed or not owner.values:
+    values = (*owner.values, *inferred)
+    if not (owner.changed or inferred) or not values:
         return owner.record
     characteristics = owner.record.characteristics or Characteristics()
-    return owner.record.replace(
-        characteristics=characteristics.replace(values=tuple(owner.values))
-    )
+    return owner.record.replace(characteristics=characteristics.replace(values=values))
+
+
+def _measure_in(
+    measures: list[Measure],
+    units: str,
+    identify: Callable[..., UUID],
+) -> Measure:
+    """Return the Measure with these units, and add one when ``measures`` has none.
+
+    A new Measure's code is the units, with a number when that code is in use.
+    """
+    for item in measures:
+        if item.units == units:
+            return item
+    codes = {item.code for item in measures}
+    code, number = units, 1
+    while code in codes:
+        number += 1
+        code = f"{units} {number}"
+    measure = Measure(id=identify("measure", code), code=code, name=units, units=units)
+    measures.append(measure)
+    return measure
 
 
 def _require_key(key: object) -> None:

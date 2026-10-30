@@ -52,8 +52,12 @@ class Symbol(Protocol):
         ...
 
     @property
-    def kind(self) -> ValueKind:
-        """The kind of the Value: a measurement, a Flow or a date."""
+    def kind(self) -> ValueKind | None:
+        """The kind of the Value: a measurement, a Flow or a date.
+
+        None for a value that an equation defines and no call declares: the
+        draft works out its kind when it commits (D44).
+        """
         ...
 
     @property
@@ -382,7 +386,7 @@ def reference(symbol: Symbol, *, name: str) -> Term:
             kind=ExpressionKind.REFERENCE,
             target=Reference(target=symbol.id),
         ),
-        kind=_REFERENCE_KINDS.get(symbol.kind),
+        kind=None if symbol.kind is None else _REFERENCE_KINDS.get(symbol.kind),
         units=symbol.units,
         names=MappingProxyType({symbol.id: name}),
         shape=(symbol.periods, False),

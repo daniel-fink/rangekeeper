@@ -93,7 +93,7 @@ make: `"value = noi / cap_rate"` gives
 
 | Form | Text | Records |
 | --- | --- | --- |
-| Name | `land_cost` | `reference` to the Value with this key on the same entity |
+| Name | `land_cost` | `reference` to the Value with this key on the same entity, or to the value that an equation defines ([values that equations define](model.md#values-that-equations-define)) |
 | Dotted name | `building_a.income` | `reference` to the Value `income` of the entity with the code `building_a` |
 | Quantity literal | `0 AUD`, `2 years`, `7 % pa`, `750 AUD per sqm pa` | `quantity`: the Quantity that `rk.Quantity(text=...)` makes from the same text. A bare number, such as `1`, is `dimensionless` |
 | Constant | `True`, `False`, `NEVER` | `boolean`; `never` |
