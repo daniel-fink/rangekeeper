@@ -33,7 +33,7 @@ from rangekeeper.money import (
     to_number,
 )
 from rangekeeper.money import round as _round
-from rangekeeper.profile import Profile
+from rangekeeper.profile import Profile, period_scales, period_units
 from rangekeeper.quantity import (
     Quantity,
     UnitSystem,
@@ -482,26 +482,18 @@ class Flow(records.Flow):
 
         A growth profile takes ``initial=``: each Period holds it times the
         profile's factor, so with no ``base`` or ``start`` the first Period
-        holds it. A
-        distribution profile takes ``total=`` and divides it over the Periods
-        of its window; the last Period with a share takes the remainder, so
-        the amounts add up to the total. A profile with no share, such as one
-        that starts on ``NEVER``, gives zero everywhere. The amount is a
-        Quantity or its text, and gives the Flow its units.
+        holds it. An initial amount per unit of time, such as ``"1e6 AUD
+        pa"``, gives each Period that amount times the Period's length: the
+        Flow is in ``AUD``, a yearly Period holds the year's amount and a
+        quarterly Period a quarter of it (``rangekeeper.profile.period_scales``).
+        A distribution profile takes ``total=`` and divides it over the
+        Periods of its window; the last Period with a share takes the
+        remainder, so the amounts add up to the total. A total is an amount,
+        so a total per unit of time raises UnitError. A profile with no
+        share, such as one that starts on ``NEVER``, gives zero everywhere.
+        The amount is a Quantity or its text.
         """
-        if not isinstance(profile, Profile):
-            raise TypeError("profile must be a rangekeeper.profile Profile")
-        given = {"initial": initial, "total": total}
-        supplied = [name for name, value in given.items() if value is not None]
-        if supplied != [profile.takes]:
-            other = "total" if profile.takes == "initial" else "initial"
-            raise TypeError(
-                f"{type(profile).__name__} takes {profile.takes}=, not {other}="
-            )
-        amount = given[profile.takes]
-        quantity = Quantity(text=amount) if isinstance(amount, str) else amount
-        if not isinstance(quantity, records.Quantity):
-            raise TypeError(f"{profile.takes} must be a Quantity or its text")
+        quantity = _profile_amount(profile, initial=initial, total=total)
         factors = profile.factors(periods=periods)
         if len(factors) != len(periods):
             raise ContractError(
@@ -511,10 +503,14 @@ class Flow(records.Flow):
         values = [quantity.number * factor for factor in factors]
         if profile.takes == "total":
             _take_remainder(values, total=quantity.number, factors=factors)
+        scales = period_scales(units=quantity.units, periods=periods)
+        values = [value * scale for value, scale in zip(values, scales, strict=True)]
         if any(not math.isfinite(value) for value in values):
             raise NumericalError("the profile produced a non-finite amount")
         return cls.from_periods(
-            periods=periods, magnitudes=values, units=quantity.units
+            periods=periods,
+            magnitudes=values,
+            units=period_units(units=quantity.units),
         )
 
     def clone(self) -> Flow:
@@ -1264,6 +1260,38 @@ def _after(movement: Movement, day: DateValue) -> bool:
     if movement.period is not None:
         return movement.period.start > day
     return movement.resolve() > day
+
+
+def _profile_amount(
+    profile: Profile, *, initial: Quantity | str | None, total: Quantity | str | None
+) -> Quantity:
+    """Return the one amount that a profile takes, as a Quantity.
+
+    A growth profile takes ``initial`` and a distribution profile ``total``;
+    the other keyword raises TypeError. A total per unit of time raises
+    UnitError: a distribution divides an amount.
+    """
+    if not isinstance(profile, Profile):
+        raise TypeError("profile must be a rangekeeper.profile Profile")
+    given = {"initial": initial, "total": total}
+    supplied = [name for name, value in given.items() if value is not None]
+    if supplied != [profile.takes]:
+        other = "total" if profile.takes == "initial" else "initial"
+        raise TypeError(
+            f"{type(profile).__name__} takes {profile.takes}=, not {other}="
+        )
+    amount = given[profile.takes]
+    quantity = Quantity(text=amount) if isinstance(amount, str) else amount
+    if not isinstance(quantity, records.Quantity):
+        raise TypeError(f"{profile.takes} must be a Quantity or its text")
+    if profile.takes == "total" and default_units.per_time(units=quantity.units):
+        raise UnitError(
+            f"a total of {quantity.magnitude} {quantity.units} is an amount per "
+            "unit of time; a distribution profile divides an amount, such as "
+            f"{period_units(units=quantity.units)!r}",
+            suggestions=(period_units(units=quantity.units),),
+        )
+    return quantity
 
 
 def _take_remainder(

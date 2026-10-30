@@ -150,7 +150,10 @@ makes a Flow from amounts, a profile or `rx.flow.event`, makes it over the
 Periods of the Flow that the equation defines, which is declared with its
 Periods. Each profile of `rangekeeper.profile`, also one that an extension
 registers, is an equation function under its name in lower case:
-`rk.profile.Compounding` is `rx.profile.compounding`. Keyed members such as
+`rk.profile.Compounding` is `rx.profile.compounding`. A growth profile of an
+amount per year, such as `a_income` in `AUD pa`, gives a Flow in `AUD`: each
+Period holds the amount times its length, as `Flow.from_profile` does
+([amounts per year](calculations.md#amounts-per-year)). Keyed members such as
 `rent[use]` are [#284](https://github.com/daniel-fink/rangekeeper/issues/284).
 
 **Flow-valued equations.** An equation between Flows applies period by period

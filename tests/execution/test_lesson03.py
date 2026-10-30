@@ -1,16 +1,12 @@
 """Lesson 03's solves, from the proposed cells (#276, #277, #280, #308).
 
 The cells come from ``examples/walkthrough/proposed/03_cases_debt_equity.md``
-and run statement by statement, as written, with three differences, each
+and run statement by statement, as written, with two differences, each
 waiting on another issue:
 
 - ``RESULTS``: the results that the cells leave for the draft to infer are
   declared first (#282), as ``tests/walkthrough/test_proposed_lesson_03.py``
   does, with the three Flows that cell 18 adds.
-- ``ANNUAL``: the incomes and operating costs are declared in AUD, not
-  ``AUD pa``. A growth profile of an amount in ``AUD pa`` gives a Flow in
-  ``AUD pa``, and cell 5c declares the rent Flows in AUD; the convention that
-  makes an annual amount an amount for each Period is not decided yet.
 - ``PLAN``: the plan's inputs stand in for ``helpers.load_base_plan()`` (G07),
   and the statements that call ``helpers`` are skipped.
 """
@@ -25,7 +21,6 @@ from rangekeeper.execution import Status
 from rangekeeper.quantity import isclose
 from tests.walkthrough.test_proposed_lesson_03 import RESULTS, cells
 
-ANNUAL = ("a_income", "b_income", "a_opex", "b_opex")
 FUNDING = ("equity_available", "loan_available", "shortfall")
 PLAN = {
     "base_date": date(2027, 1, 1),
@@ -36,10 +31,10 @@ PLAN = {
     "shared_cost": rk.Quantity(text="10e6 AUD"),
     "a_cost": rk.Quantity(text="60e6 AUD"),
     "b_cost": rk.Quantity(text="50e6 AUD"),
-    "a_income": rk.Quantity(text="6e6 AUD"),
-    "b_income": rk.Quantity(text="5e6 AUD"),
-    "a_opex": rk.Quantity(text="1.5e6 AUD"),
-    "b_opex": rk.Quantity(text="1.2e6 AUD"),
+    "a_income": rk.Quantity(text="6e6 AUD pa"),
+    "b_income": rk.Quantity(text="5e6 AUD pa"),
+    "a_opex": rk.Quantity(text="1.5e6 AUD pa"),
+    "b_opex": rk.Quantity(text="1.2e6 AUD pa"),
     "a_renewal": rk.Quantity(text="2e6 AUD"),
     "b_renewal": rk.Quantity(text="1.5e6 AUD"),
     "equity": rk.Quantity(text="50e6 AUD"),
@@ -59,10 +54,6 @@ def statements(key: str) -> list[str]:
         code = ast.unparse(statement)
         if "helpers" in code or code == WAITING:
             continue
-        for name in ANNUAL:
-            code = code.replace(
-                f"key='{name}', units='AUD pa'", f"key='{name}', units='AUD'"
-            )
         found.append(code)
     return found
 

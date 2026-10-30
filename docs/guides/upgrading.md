@@ -139,6 +139,20 @@ false fixed strict comparison was `UNSUPPORTED`. A fixed `!=`, `or` or `not`
 predicate, which 1.0.0a2 refused, is now decided too. Code that read
 `UNSUPPORTED` for a false fixed predicate reads `INFEASIBLE`.
 
+### Profiles of an amount per year
+
+A growth profile of an amount per unit of time gives each Period that amount
+times the Period's length
+([#500](https://github.com/daniel-fink/rangekeeper/issues/500)).
+`Flow.from_profile(profile=rk.profile.Constant(), periods=quarters,
+initial="1e6 AUD pa")` gave a Flow in `AUD pa` with `1e6` in each quarter; it now
+gives a Flow in `AUD` with `250e3` in each quarter, and over yearly Periods
+`1e6 AUD` in each year. `rx.profile.*` in equations gives the same units. A plain
+amount, such as `"100 USD"`, does not change. A distribution profile of a total
+per unit of time now raises `UnitError`: give the total as an amount. Code that
+read such a Flow as amounts per year reads it as the amount of each Period. See
+[amounts per year](../reference/calculations.md#amounts-per-year).
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names

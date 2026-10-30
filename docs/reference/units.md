@@ -118,6 +118,7 @@ to try instead, when the registry knows any. The message repeats them.
 | `validate_units(text)` | Parses one spelling. |
 | `compatible(left, right)` | Compares dimensions, not scale. Metres and feet are compatible. Different currencies are not. |
 | `canonical(*, units)` | Returns the canonical text of the units: one name for each unit, in a fixed order. `"years"` and `"yr"` both give `"year"`. Two spellings of the same units give the same text. |
+| `per_time(*, units)` | Returns whether the units divide by time once, such as `AUD pa`, `AUD per month` or `% pa`. `AUD`, `AUD year` and `AUD per year ** 2` are not. A growth profile of such an amount gives each Period the amount times its length ([profiles](calculations.md#amounts-per-year)). |
 | `multiply(left, right)`, `divide(numerator, denominator)` | Return the canonical text of the product or quotient. |
 | `convert(*, quantity, to)` | Returns a new finite Quantity. Incompatible units raise `UnitError`. Currencies never convert. |
 | `parse_quantity(text)` | Splits quantity text, such as `"7 % pa"` or `"20e6 AUD"`, into a Quantity. The units keep their spelling. |

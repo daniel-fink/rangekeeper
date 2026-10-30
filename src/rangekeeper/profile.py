@@ -23,7 +23,12 @@ from itertools import pairwise
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, runtime_checkable
 
 from rangekeeper.duration import NEVER, DateValue, Period
-from rangekeeper.duration.calendar import offset, require_date
+from rangekeeper.duration.calendar import (
+    Frequency,
+    count_steps,
+    offset,
+    require_date,
+)
 from rangekeeper.duration.dates import require_date_value
 from rangekeeper.duration.errors import AlignmentError
 from rangekeeper.duration.period import steps
@@ -47,6 +52,8 @@ __all__ = [
     "Profile",
     "SCurve",
     "Uniform",
+    "period_scales",
+    "period_units",
     "profiles",
 ]
 
@@ -130,6 +137,48 @@ def _years(periods: Sequence[Period], *, base: date | None) -> tuple[float, ...]
         return ()
     origin = periods[0].start if base is None else base
     return tuple(_elapsed_years(origin, period.start) for period in periods)
+
+
+def period_units(*, units: str) -> str:
+    """Return the units of each Period's amount, for an initial amount in ``units``.
+
+    An amount per unit of time, such as ``"AUD pa"``, gives each Period that
+    amount times the Period's length, so its Periods hold ``AUD``. Other
+    units, such as ``"USD"``, do not change. ``Flow.from_profile`` and the
+    equation functions ``rx.profile.*`` use this rule.
+    """
+    if not default_units.per_time(units=units):
+        return units
+    return _one_year(units).units
+
+
+def period_scales(*, units: str, periods: Sequence[Period]) -> tuple[float, ...]:
+    """Return the factor that gives each Period's amount of an amount in ``units``.
+
+    For an amount per unit of time, it is the Period's length: the amount of
+    one year times the Period's length in years. A whole number of calendar
+    months counts twelve to a year, so a quarter is a quarter of a year; other
+    lengths count days, at 365.25 a year. For other units it is one.
+    """
+    if not default_units.per_time(units=units):
+        return (1.0,) * len(periods)
+    year = _one_year(units).number
+    return tuple(year * _length_years(period) for period in periods)
+
+
+def _one_year(units: str) -> Quantity:
+    """Return one ``units`` for one year: the amount of a year, with its units."""
+    return Quantity(magnitude=1, units=units) * Quantity(magnitude=1, units="year")
+
+
+def _length_years(period: Period) -> float:
+    """Return the length of a Period in years: whole months in twelfths, else days."""
+    months = count_steps(period.start, period.end, frequency=Frequency.MONTH)
+    if months and offset(
+        value=period.start, frequency=Frequency.MONTH, count=months
+    ) == (period.end):
+        return months / 12
+    return (period.end - period.start).days / 365.25
 
 
 def _occurrences(

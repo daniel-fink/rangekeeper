@@ -124,8 +124,10 @@ class EquationFunction:
     is a Flow when ``need`` is a Flow. ``mirrors`` names the value function that gives the
     same result on fixed data, such as ``rangekeeper.finance.npv``.
     ``result_units`` are the units of every result, such as ``"% pa"``;
-    otherwise ``units_from`` names the parameter whose units the result has,
-    when it has them. A Flow result has the Periods of the parameter that
+    otherwise ``units_from`` names the parameter whose units give the result's
+    units, when it has them: the same units, or the units that ``units_of``
+    makes of them, such as ``AUD`` for each Period of a profile of an amount in
+    ``AUD pa``. ``units(arguments=)`` applies the rule. A Flow result has the Periods of the parameter that
     ``periods_from`` names, or of its periodwise Flows; a function with neither
     makes a Flow from amounts, over the Periods of the Flow that it defines.
     """
@@ -142,6 +144,9 @@ class EquationFunction:
     evaluator: Evaluator = field(repr=False, compare=False)
     result_units: str | None = None
     units_from: str | None = None
+    units_of: Callable[[str], str] | None = field(
+        default=None, repr=False, compare=False
+    )
     periods_from: str | None = None
     periodwise: tuple[str, ...] = ()
     version: str = "1"
@@ -194,6 +199,19 @@ class EquationFunction:
             semantics=f"{self.summary} Mirrors {self.mirrors}.",
             unit_rule=self.unit_rule,
         )
+
+    def units(self, *, arguments: Mapping[str, str | None]) -> str | None:
+        """Return the units of the result from the units of the arguments, or None.
+
+        ``arguments`` gives the units of each argument by parameter name, or
+        None when they are unknown.
+        """
+        if self.result_units is not None:
+            return self.result_units
+        source = None if self.units_from is None else arguments.get(self.units_from)
+        if source is None:
+            return None
+        return source if self.units_of is None else self.units_of(source)
 
     def evaluate(
         self,
