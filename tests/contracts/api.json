@@ -727,6 +727,14 @@
    "module": "rangekeeper.execution.config",
    "signature": "(*, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>, allow_underdetermined: bool = False) -> None"
   },
+  "Groups": {
+   "kind": "class",
+   "members": {
+    "summary": "method (self) -> rangekeeper.shared.table.Table"
+   },
+   "module": "rangekeeper.execution.comparison",
+   "signature": "()"
+  },
   "Limits": {
    "kind": "class",
    "members": {
@@ -793,9 +801,12 @@
   "Paired": {
    "kind": "class",
    "members": {
+    "by": "method (self, *, key: str) -> Groups",
+    "by_case": "property",
     "compared": "property",
     "difference": "method (self, *, outcome: str, key: str) -> tuple[rangekeeper.quantity.Quantity, ...]",
     "differences": "property",
+    "distribution": "method (self, *, outcome: str, key: str) -> rangekeeper.execution.distribution.Distribution[rangekeeper.execution.comparison.Pair]",
     "pairs": "method (self, *, outcome: str) -> tuple[rangekeeper.execution.comparison.Pair, ...]",
     "select": "method (self, *keys: str) -> Paired",
     "summary": "method (self) -> rangekeeper.shared.table.Table",

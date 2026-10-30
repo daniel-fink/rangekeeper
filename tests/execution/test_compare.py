@@ -1,5 +1,6 @@
 """One ``rk.execution.compare`` call for two or more Outcomes (#297)."""
 
+from datetime import date
 from uuid import uuid4
 
 import pytest
@@ -7,8 +8,29 @@ import pytest
 import rangekeeper as rk
 from rangekeeper import Specification
 from rangekeeper.errors import Code, ContractError, MissingReferenceError
-from rangekeeper.execution import Paired, SideBySide, compare, solve
+from rangekeeper.execution import (
+    Distribution,
+    Groups,
+    Pair,
+    Paired,
+    SideBySide,
+    compare,
+    solve,
+)
 from tests.execution.lesson02 import MODEL, back, q, store
+from tests.execution.test_outcome_cases import batch_outcome
+
+SUMMARY = (
+    "key",
+    "count",
+    "mean",
+    "standard_deviation",
+    "minimum",
+    "quantile_05",
+    "quantile_95",
+    "maximum",
+    "share_above_zero",
+)
 
 KEYS = ["land_cost", "rent_factor", "noi", "mortgage"]
 
@@ -226,3 +248,181 @@ def test_batches_of_equal_size_with_other_case_keys_do_not_pair():
     assert raised.value.code is Code.COMPARISON_CASES
     assert raised.value.values["missing"] == ["high", "low"]
     assert raised.value.values["extra"] == ["strong", "weak"]
+
+
+def test_the_differences_of_one_outcome_have_a_distribution(batches):
+    reference, stronger = batches
+    comparison = compare(
+        outcomes={"Reference": reference, "Stronger": stronger},
+        keys=["land_cost", "noi"],
+        baseline="Reference",
+    )
+    found = comparison.distribution(outcome="Stronger", key="land_cost")
+    assert isinstance(found, Distribution)
+    assert found.values == comparison.difference(outcome="Stronger", key="land_cost")
+    assert found.units == "AUD"
+    # The case at a quantile is the Pair whose difference is there.
+    lowest = found.case(quantile=0)
+    assert isinstance(lowest, Pair)
+    assert lowest.member["land_cost"] - lowest.baseline["land_cost"] == min(
+        found.values
+    )
+    with pytest.raises(MissingReferenceError):
+        comparison.distribution(outcome="Stronger", key="mortgage")
+    with pytest.raises(MissingReferenceError):
+        comparison.distribution(outcome="Reference", key="land_cost")
+
+
+def test_the_summary_has_the_statistics_of_each_distribution(batches):
+    reference, stronger = batches
+    comparison = compare(
+        outcomes={"Reference": reference, "Stronger": stronger},
+        keys=["land_cost", "noi"],
+        baseline="Reference",
+    )
+    summary = comparison.summary()
+    assert summary.columns == ("outcome", *SUMMARY)
+    for row in summary.rows:
+        found = comparison.distribution(outcome="Stronger", key=row.values["key"])
+        (statistics,) = found.summary().rows
+        assert row.values["outcome"] == "Stronger"
+        for column in statistics.values:
+            assert row.values[column] == statistics.values[column]
+        zero = q(f"0 {found.units}")
+        assert row.values["share_above_zero"] == found.probability(above=zero)
+
+
+def test_by_groups_the_pairs_by_a_value_of_the_member(batches):
+    reference, stronger = batches
+    comparison = compare(
+        outcomes={"Reference": reference, "Stronger": stronger},
+        keys=["land_cost"],
+        baseline="Reference",
+    )
+    groups = comparison.by(key="leverage")
+    assert isinstance(groups, Groups)
+    assert (groups.column, groups.paired) == ("leverage", comparison)
+    summary = groups.summary()
+    assert summary.columns == ("outcome", "leverage", *SUMMARY)
+    assert summary.column("leverage") == tuple(
+        q(f"{text} %").to(units="ratio") for text in ("50", "60", "70")
+    )
+    assert summary.column("count") == (1, 1, 1)
+    differences = comparison.difference(outcome="Stronger", key="land_cost")
+    assert summary.column("mean") == differences
+    # The back door's NOI does not depend on the leverage: one group.
+    (row,) = comparison.by(key="noi").summary().rows
+    assert row.values["count"] == 3
+    assert row.values["noi"] == stronger.case(key="50")["noi"]
+    assert "<table" in groups._repr_html_()
+    assert repr(groups) == "Groups(column='leverage', groups=3)"
+
+
+def test_a_flow_value_does_not_group_pairs():
+    _, outcome = batch_outcome()
+    comparison = compare(
+        outcomes={"One": outcome, "Other": outcome}, keys=["pv"], baseline="One"
+    )
+    with pytest.raises(ContractError, match="scalar or a date") as raised:
+        comparison.by(key="cash")
+    assert raised.value.code is Code.COMPARISON_SCALAR
+
+
+@pytest.fixture(scope="module")
+def dated():
+    """Return a batch whose cases start on dates, or never, and a leaf at no cost."""
+    draft = rk.Model(name="Dates").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.date(key="start")
+    project.value(key="cost", units="AUD")
+    plan = draft.commit().specify(name="Dates")
+    cases = {
+        "late": {"start": date(2031, 1, 1), "cost": q("3 AUD")},
+        "never": {"start": rk.duration.NEVER, "cost": q("1 AUD")},
+        "early": {"start": date(2029, 1, 1), "cost": q("2 AUD")},
+        "early again": {"start": date(2029, 1, 1), "cost": q("4 AUD")},
+    }
+    leaf = plan.fix(start=date(2029, 1, 1), cost=q("0 AUD"))
+    return (
+        solve(specification=plan.cases(cases=cases)).raise_for_status(),
+        solve(specification=leaf).raise_for_status(),
+    )
+
+
+def test_by_a_date_puts_never_after_every_date(dated):
+    batch, leaf = dated
+    comparison = compare(
+        outcomes={"Plan": leaf, "Cases": batch}, keys=["cost"], baseline="Plan"
+    )
+    summary = comparison.by(key="start").summary()
+    assert summary.column("start") == (
+        date(2029, 1, 1),
+        date(2031, 1, 1),
+        rk.duration.NEVER,
+    )
+    assert summary.column("count") == (2, 1, 1)
+    assert summary.column("mean") == (q("3 AUD"), q("3 AUD"), q("1 AUD"))
+    # The groups keep the pairs of equal values in case order.
+    kept = comparison.where(start=date(2029, 1, 1))
+    assert [pair.case for pair in kept.pairs(outcome="Cases")] == [
+        "early",
+        "early again",
+    ]
+
+
+def test_by_case_groups_the_pairs_of_each_case(batches):
+    reference, stronger = batches
+    comparison = compare(
+        outcomes={"Reference": reference, "Stronger": stronger},
+        keys=["land_cost"],
+        baseline="Reference",
+    )
+    groups = comparison.by_case
+    assert groups.column == "case"
+    summary = groups.summary()
+    assert summary.columns == ("outcome", "case", *SUMMARY)
+    assert summary.column("case") == ("50", "60", "70")
+    assert summary.column("mean") == comparison.difference(
+        outcome="Stronger", key="land_cost"
+    )
+    # A leaf Outcome, or the Mean of a batch, is one group.
+    leaf = solve(specification=back())
+    one = compare(
+        outcomes={"Batch": reference, "Leaf": leaf, "Mean": stronger.mean()},
+        keys=["land_cost"],
+        baseline="Batch",
+    ).by_case.summary()
+    assert one.column("outcome") == ("Leaf", "Mean")
+    assert one.column("case") == (leaf.key, None)
+    assert one.column("count") == (3, 3)
+
+
+def test_by_case_groups_the_leaves_of_each_direct_case():
+    weak_and_strong = back().cases(
+        cases={"Weak": {"rent_factor": q("0.9 ratio")}, "Strong": {}}
+    )
+    two = {text: LEVERAGES[text] for text in ("50", "60")}
+    batches = [
+        weak_and_strong.case(key=key).cases(cases=two) for key in ("Weak", "Strong")
+    ]
+    leaves = [batch.case(key=key) for batch in batches for key in two]
+    nested = batch_of(*batches)
+    outcome = solve(
+        specification=nested, resolver=store(*leaves, *batches, nested)
+    ).raise_for_status()
+    leaf = solve(specification=back()).raise_for_status()
+    comparison = compare(
+        outcomes={"Leaf": leaf, "Nested": outcome}, keys=["land_cost"], baseline="Leaf"
+    )
+    pairs = comparison.pairs(outcome="Nested")
+    assert [pair.case for pair in pairs] == [
+        "Weak/50",
+        "Weak/60",
+        "Strong/50",
+        "Strong/60",
+    ]
+    summary = comparison.by_case.summary()
+    assert summary.column("case") == ("Weak", "Strong")
+    assert summary.column("count") == (2, 2)
+    weak = comparison.difference(outcome="Nested", key="land_cost")[:2]
+    assert summary.rows[0].values["minimum"] == min(weak)
