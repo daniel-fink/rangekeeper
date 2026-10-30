@@ -13,11 +13,7 @@ import pytest
 
 import rangekeeper as rk
 from rangekeeper.model import ValueKind
-from rangekeeper.model._dimensions import Kind
-from rangekeeper.model._undeclared import Undeclared, definitions_in, known_values
-from rangekeeper.model.expression.authoring import add, equal, reference
 from rangekeeper.quantity import default_units
-from rangekeeper.schema.records import Reference, Value
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import EquationError, ValidationError
 
@@ -197,48 +193,91 @@ def test_a_namespace_derives_the_identities_of_defined_values():
     assert first.to_data()["definitions"] == second.to_data()["definitions"]
 
 
-def test_a_definition_that_references_a_whole_flow_gives_a_flow():
-    """Read the inference itself: Flow equations do not commit before #279.
+YEARS = rk.duration.Span(start=date(2027, 1, 1), end=date(2030, 1, 1)).periods(
+    frequency=rk.duration.Frequency.YEAR
+)
 
-    Model validation does not take arithmetic on whole Flows yet, so a draft
-    with ``works = a_works + b_works`` cannot commit. The inference gives
-    ``works`` the kind and units that its commit will use.
-    """
-    measure = rk.model.Measure(id=UUID(int=1), code="AUD", name="AUD", units="AUD")
-    flows = [
-        Value(
-            id=UUID(int=index),
-            key=key,
-            kind=ValueKind.FLOW,
-            measure=measure.id,
-        )
-        for index, key in ((2, "a_works"), (3, "b_works"))
-    ]
-    works = UUID(int=4)
-    equation = equal(
-        reference(Reference(target=works)),
-        add(*(reference(Reference(target=flow.id)) for flow in flows)),
+
+def works(model: rk.Model | None = None) -> rk.model.ModelDraft:
+    """Return a draft with two Flows of works over YEARS, and a date."""
+    draft = (model or rk.Model(name="Works")).edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.flow(key="a_works", units="AUD", periods=YEARS)
+    project.flow(key="b_works", units="AUD", periods=YEARS)
+    project.value(key="share", units="ratio")
+    project.date(key="sale_date")
+    return draft
+
+
+def test_a_definition_of_flows_gives_a_flow_over_their_periods():
+    draft = works()
+    draft.entity(code="project").equations(
+        "works = a_works + b_works",
+        "own_works = share * works",
+        "until_sale = works.until(on=sale_date)",
+        "running = works.cumulative()",
+        "larger = rx.max(0 AUD, a_works - b_works)",
     )
-    assert [target for target, _ in definitions_in(equation)] == [works]
-    undeclared = Undeclared()
-    undeclared.add(
-        owner=UUID(int=9),
-        where="Entity project",
-        new={"works": works},
-        equations=[equation],
-        texts=[],
-        candidates=[],
+    model = draft.commit()
+    for key in ("works", "own_works", "until_sale", "running", "larger"):
+        value = model.value(key=key)
+        assert units_of(model, key) == (ValueKind.FLOW, "AUD"), key
+        assert [item.period for item in value.flow.movements] == list(YEARS), key
+        assert all(item.magnitude is None for item in value.flow.movements)
+
+
+def test_a_scalar_method_of_a_flow_gives_a_value():
+    # Lesson 03 cell 21: max() of a Flow is one amount, so rx.max of it too.
+    draft = works()
+    draft.entity(code="project").equations(
+        "total = a_works.total()",
+        "peak = (a_works - b_works).max()",
+        "gap = rx.max(0 AUD, (a_works - b_works).max())",
     )
-    found = undeclared.infer(
-        equations=[equation],
-        units=default_units,
-        lookup=known_values(flows, measures=[measure]),
+    model = draft.commit()
+    for key in ("total", "peak", "gap"):
+        assert units_of(model, key) == (ValueKind.MEASUREMENT, "AUD"), key
+        assert model.value(key=key).flow is None
+
+
+def test_a_value_beside_a_scalar_waits_for_the_shape_of_its_definition():
+    # need is defined before later, a Flow: a scalar beside an unknown value
+    # gives no shape, so need waits for later instead of being a scalar.
+    draft = works()
+    project = draft.entity(code="project")
+    project.value(key="fee", units="AUD")
+    project.equations(
+        "need = later - fee",
+        "later = a_works + b_works",
+        "capped = rx.max(fee, need)",
     )
-    assert (found[works].kind, found[works].units, found[works].flow) == (
-        Kind.QUANTITY,
-        "AUD",
-        True,
-    )
+    model = draft.commit()
+    for key in ("need", "later", "capped"):
+        assert units_of(model, key) == (ValueKind.FLOW, "AUD"), key
+        assert len(model.value(key=key).flow.movements) == len(YEARS), key
+
+
+def test_a_flow_made_from_amounts_needs_declared_periods():
+    # D44: a Flow made by a profile or an event is declared with its Periods.
+    draft = works()
+    project = draft.entity(code="project")
+    project.value(key="cost", units="AUD")
+    with pytest.raises((EquationError, rk.errors.ContractError)):
+        project.equations("fees = rx.flow.event(amount=cost, on=sale_date)")
+
+
+def test_a_namespace_derives_the_movements_of_an_inferred_flow():
+    namespace = UUID("6b0f5d8e-6c43-4d5e-9a8b-1f2e3d4c5b6a")
+
+    def build() -> rk.Model:
+        draft = works(rk.Model(name="Works", namespace=namespace))
+        draft.entity(code="project").equations("works = a_works + b_works")
+        return draft.commit()
+
+    first, second = build(), build()
+    left = [item.id for item in first.value(key="works").flow.movements]
+    right = [item.id for item in second.value(key="works").flow.movements]
+    assert left == right
 
 
 @pytest.mark.skipif(not EXECUTION, reason="requires the optional execution extra")

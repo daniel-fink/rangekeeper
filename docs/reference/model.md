@@ -200,8 +200,12 @@ project.equations("income = rent * area")  # AUD pa, from AUD per sqm pa and sqm
   call of an equation function has the units that its registry entry gives:
   `operating.at(on=sale_date)` has the units of `operating`, and
   `rx.max(equity, need)` those of `equity`. A
-  definition that references a whole Flow gives a Flow, which takes its Periods
-  from its equations; another quantity gives a measurement value. The units are
+  definition that references a whole Flow gives a Flow over the Periods of its
+  Flow operands, with one unresolved Movement in each: `works = a_works +
+  b_works` has the Periods of `a_works`, and a Flow method such as
+  `works.until(on=sale_date)` keeps them. A Flow made from amounts, by a profile
+  or an event, is declared with its Periods. Another quantity gives a
+  measurement value. The units are
   those of the first Measure of the draft that is compatible with them, such as
   `AUD pa` for `AUD * per_annum`, or `ratio` for a ratio; otherwise their
   canonical text.

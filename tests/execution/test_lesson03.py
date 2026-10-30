@@ -1,12 +1,10 @@
 """Lesson 03's solves, from the proposed cells (#276, #277, #280, #308).
 
 The cells come from ``examples/walkthrough/proposed/03_cases_debt_equity.md``
-and run statement by statement, as written, with two differences, each
-waiting on another issue:
+and run statement by statement, as written. The draft infers the results that
+the cells do not declare, with the Periods of their Flows (#282). One difference
+waits on another issue:
 
-- ``RESULTS``: the results that the cells leave for the draft to infer are
-  declared first (#282), as ``tests/walkthrough/test_proposed_lesson_03.py``
-  does, with the three Flows that cell 18 adds.
 - ``PLAN``: the plan's inputs stand in for ``helpers.load_base_plan()`` (G07),
   and the statements that call ``helpers`` are skipped.
 """
@@ -19,9 +17,8 @@ import pytest
 import rangekeeper as rk
 from rangekeeper.execution import Status
 from rangekeeper.quantity import isclose
-from tests.walkthrough.test_proposed_lesson_03 import RESULTS, cells
+from tests.walkthrough.test_proposed_lesson_03 import cells
 
-FUNDING = ("equity_available", "loan_available", "shortfall")
 PLAN = {
     "base_date": date(2027, 1, 1),
     "sale_date": date(2036, 12, 31),
@@ -40,9 +37,6 @@ PLAN = {
     "equity": rk.Quantity(text="50e6 AUD"),
     "loan_limit": rk.Quantity(text="80e6 AUD"),
 }
-YEARS = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
-    frequency=rk.duration.Frequency.YEAR
-)
 # The statement of cell 8 that waits on #282: Entity.values (D44).
 WAITING = "model.entity(code='project').values"
 
@@ -58,26 +52,10 @@ def statements(key: str) -> list[str]:
     return found
 
 
-def declare(project, keys) -> None:
-    for key in keys:
-        kind, units = RESULTS.get(key, ("flow", "AUD"))
-        if kind == "date":
-            project.date(key=key)
-        elif kind == "flow":
-            project.flow(key=key, units=units, periods=YEARS)
-        else:
-            project.value(key=key, units=units)
-
-
 def run(namespace: dict, *keys: str) -> dict:
-    """Run cells as written, declaring the results of RESULTS and FUNDING first."""
+    """Run cells as written, statement by statement, from ``namespace``."""
     for key in keys:
         for code in statements(key):
-            if "add_formulation" in code and "declared" not in namespace:
-                declare(namespace["project"], RESULTS)
-                namespace["declared"] = True
-            if "formulation(name='Funding')" in code and key == "18":
-                declare(namespace["project"], FUNDING)
             exec(code, namespace)
     return namespace
 
