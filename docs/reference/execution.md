@@ -91,6 +91,8 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 | `key` | The name of the solved Specification: for a case, its case key. None when it has no name | The same |
 | `case(key=)` | `ContractError`, `batch.required` | The Outcome of the direct case with that key. No such case raises `MissingReferenceError` (`kind="Outcome"`, `by="key"`) with the keys that exist |
 | `table(*keys)` | One row | One row for each leaf case, in `walk()` order |
+| `distribution(key=)` | `ContractError`, `batch.required` | The [distribution](#distributions-of-a-batch) of one value across the leaf cases: a `Distribution` of a scalar value, a `DateDistribution` of a date value |
+| `mean()` | `ContractError`, `batch.required` | The `Mean` of the batch's scalar values, which `compare` takes as one leaf Outcome |
 | `stream(*keys)` | A `Stream` of the solved Flows, named by key. A scalar value raises `ContractError` | `ContractError`, `batch.unsupported`: read a case |
 
 `rk.execution.Status` has one member for each result:
@@ -158,6 +160,63 @@ reads stored and converted Runs too: `limit` and `error` from a Run before
 `tools/upgrade` converted, or a backend word of a 1.0.0a1 Run is `UNKNOWN`, and
 `backend` keeps that word.
 
+## Distributions of a batch
+
+`outcome.distribution(key=)` gives the distribution of one solved value across
+the leaf cases of a batch, in `walk()` order, for example the NPV across market
+paths. Each case has the same weight. The statistics are those of the cases
+themselves: a quantile is the value of one case, and there is no interpolation.
+
+```python
+npv = cases_outcome.distribution(key="unlevered_npv")
+npv.summary()  # count, mean, standard deviation, 5 % and 95 % quantiles
+npv.probability(below="0 AUD")  # the share of cases with a loss
+worst = npv.case(quantile=0.05)  # the case Outcome at the 5 % quantile
+cases_outcome.mean()["unlevered_npv"] == npv.mean()
+```
+
+A scalar value gives a `Distribution`:
+
+| Member | Result |
+| --- | --- |
+| `key`, `units` | The key, and the units of the values: the units of the first case |
+| `values` | The value of each case, in case order, in `units` |
+| `mean()` | The mean of the values |
+| `standard_deviation()` | The standard deviation of the values: it divides by the number of cases, not by one less |
+| `quantile(level=)` | The smallest value whose share of cases at or below it is at least `level`, from 0 to 1: the inverse of the empirical distribution function. `level=0` gives the minimum and `level=1` the maximum |
+| `case(quantile=)` | The leaf Outcome whose value is `quantile(level=quantile)`; of equal values, the first in case order |
+| `probability(below=, above=)` | The share of cases strictly below `below`, strictly above `above`, or strictly between them. Each bound is a Quantity or Quantity text, in units that convert to `units`. Give one bound or both |
+| `counts()` | A `Table`: each distinct `value`, in ascending order, with its `count` and `share` of the cases |
+| `summary()` | A `Table` with one row: `key`, `count`, `mean`, `standard_deviation`, `minimum`, `quantile_05`, `quantile_95` and `maximum` |
+
+A date value gives a `DateDistribution`. Its `values` hold the date of each
+case, or `NEVER`, in case order. Dates have no mean: `counts()` gives each
+distinct date in order, `NEVER` last, with its `count` and `share`. Each type
+displays as a table: a `Distribution` as its `summary()`, a `DateDistribution`
+as its `counts()`.
+
+`outcome.mean()` gives the `Mean` of a batch. `mean["key"]` is
+`outcome.distribution(key=).mean()`. The Mean is not the result of a solve: it has
+no Run, status or output. `compare` takes it as one leaf Outcome, so the mean
+of the results can be compared with the result of a solve on the mean inputs:
+
+```python
+rk.execution.compare(
+    outcomes={"Average path": average_outcome, "Mean of paths": paths_outcome.mean()},
+    keys=["unlevered_npv", "equity_npv"],
+    baseline="Average path",
+)
+```
+
+| Failure | Error |
+| --- | --- |
+| A leaf Outcome | `ContractError`, `batch.required` |
+| A Flow value, or the mean of a date value | `ContractError`, `distribution.value`, with the `key` in `values` |
+| A case without an output | The error of that case's `raise_for_status()` |
+| A level outside 0 to 1 | `ContractError` |
+| `probability()` without a bound; a level or a bound of a wrong type | `TypeError` |
+| A bound in units that do not convert | `UnitError` |
+
 ## Compare Outcomes
 
 `rk.execution.compare(outcomes=, keys=, baseline=None)` compares two or more
@@ -191,7 +250,8 @@ A `Paired` pairs each other Outcome with the baseline:
 Each member is one leaf case, in `walk()` order. The cases of two batches pair
 by case key, the `case` column of `Outcome.table`: the keys of nested batches
 joined by `/`, or the position of a case without a key. A leaf pairs with every
-case of the other side. Neither type has a public constructor: make them with
+case of the other side. The [`Mean`](#distributions-of-a-batch) of a batch
+compares as one leaf. Neither type has a public constructor: make them with
 `compare`.
 
 | Failure | Error |
@@ -280,7 +340,8 @@ time limit has passed. The stages call it between steps.
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
 | `execution/comparison.py` | `compare`, `SideBySide` and `Paired`: values side by side, or paired differences from a baseline by case key, with `summary`, `select` and `where`. |
-| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns` and `Evidence`. |
+| `execution/distribution.py` | `Distribution`, `DateDistribution` and `Mean`: the values of one key across the cases of a batch, their statistics and counts, and the mean of a batch. |
+| `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns`, `Evidence`, and a batch's `distribution` and `mean`. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and one `except` arm for the expected failures. It stores nothing. |

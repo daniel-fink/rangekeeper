@@ -160,6 +160,8 @@ show the target API in use.
   `outcome.status`; `outcome.raise_for_status()` raises when the solve found no
   determined result. A batch Outcome gives each case with `case(key=)` and one
   row for each case with `table(*keys)`; `stream(*keys)` gives a case's Flows.
+  `distribution(key=)` gives one value across the cases, with its summary,
+  quantiles, probabilities and counts, and `mean()` the mean of the batch.
   See the [execution reference](../reference/execution.md#stages).
 - 1.0 target:
   1. Write a Specification that pins one Model revision. Fix and free values,

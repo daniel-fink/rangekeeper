@@ -17,8 +17,11 @@ to no store:
 
 An ``Outcome`` reads its result by key, ``outcome["land_cost"]``. Its
 ``status`` is a ``Status``, and ``raise_for_status()`` raises when the solve
-found no determined result. ``compare`` compares two or more Outcomes: side by
-side (``SideBySide``), or paired with a baseline by case key (``Paired``).
+found no determined result. A batch Outcome gives the distribution of one value
+across its cases: a ``Distribution`` of a scalar value, or a
+``DateDistribution`` of a date value; ``mean()`` gives the ``Mean`` of its
+scalar values. ``compare`` compares two or more Outcomes: side by side
+(``SideBySide``), or paired with a baseline by case key (``Paired``).
 
 ``solve`` runs the stages for each case and writes nothing. ``execute`` solves,
 then publishes the outputs and the Runs to a store.
@@ -33,6 +36,7 @@ from rangekeeper.execution.assembly import Overlay, assemble, assemble_batch
 from rangekeeper.execution.comparison import Pair, Paired, SideBySide, compare
 from rangekeeper.execution.compiler import AffineProblem, Relation, Row, build_problem
 from rangekeeper.execution.config import ExecutionConfig
+from rangekeeper.execution.distribution import DateDistribution, Distribution, Mean
 from rangekeeper.execution.errors import OutcomeError
 from rangekeeper.execution.outcome import Evidence, Outcome
 from rangekeeper.execution.pipeline import execute, solve
@@ -55,10 +59,13 @@ __all__ = [
     "Assertion",
     "Binding",
     "Cases",
+    "DateDistribution",
     "DecisionResult",
+    "Distribution",
     "Evidence",
     "ExecutionConfig",
     "Limits",
+    "Mean",
     "Outcome",
     "OutcomeError",
     "Overlay",

@@ -2,7 +2,8 @@
 
 ``compare`` returns a ``SideBySide`` without a baseline and a ``Paired`` with
 one, so that each result has only the members that apply to it. The cases of
-two batches pair by case key.
+two batches pair by case key. ``compare`` takes the ``Mean`` of a batch, from
+``Outcome.mean()``, as one leaf Outcome.
 """
 
 from collections.abc import Mapping, Sequence
@@ -10,6 +11,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Self, overload
 
+from rangekeeper.execution.distribution import Mean
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.flow.table import render
 from rangekeeper.quantity import Quantity, isclose
@@ -17,14 +19,16 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError, MissingReferenceError
 from rangekeeper.shared.table import Table
 
-Member = tuple[str | None, Outcome]
+Compared = Outcome | Mean
+"""An Outcome, or the Mean of a batch, which compares as one leaf Outcome."""
+Member = tuple[str | None, Compared]
 """One leaf case of an Outcome with its case key, or a leaf Outcome with None."""
 
 
 @overload
 def compare(
     *,
-    outcomes: Mapping[str, Outcome],
+    outcomes: Mapping[str, Compared],
     keys: Sequence[str],
     baseline: None = None,
 ) -> "SideBySide": ...
@@ -33,7 +37,7 @@ def compare(
 @overload
 def compare(
     *,
-    outcomes: Mapping[str, Outcome],
+    outcomes: Mapping[str, Compared],
     keys: Sequence[str],
     baseline: str,
 ) -> "Paired": ...
@@ -41,7 +45,7 @@ def compare(
 
 def compare(
     *,
-    outcomes: Mapping[str, Outcome],
+    outcomes: Mapping[str, Compared],
     keys: Sequence[str],
     baseline: str | None = None,
 ) -> "SideBySide | Paired":
@@ -50,7 +54,8 @@ def compare(
     Without ``baseline``, return a ``SideBySide`` of the values. With
     ``baseline``, the name of one of the Outcomes, return a ``Paired``: each
     other Outcome's differences from the baseline, paired case by case. The
-    call is the same for two Outcomes and for more.
+    call is the same for two Outcomes and for more. The ``Mean`` of a batch,
+    ``outcome.mean()``, compares as one leaf Outcome.
     """
     named = _outcomes(outcomes)
     wanted = _keys(keys)
@@ -73,8 +78,8 @@ class Pair:
     """
 
     case: str | None
-    member: Outcome
-    baseline: Outcome
+    member: Outcome | Mean
+    baseline: Outcome | Mean
 
 
 @dataclass(frozen=True, kw_only=True, init=False)
@@ -86,13 +91,13 @@ class SideBySide:
     table (with the ``calculations`` extra).
     """
 
-    outcomes: Mapping[str, Outcome]
+    outcomes: Mapping[str, Compared]
     keys: tuple[str, ...]
 
     @classmethod
-    def _of(cls, outcomes: Mapping[str, Outcome], keys: tuple[str, ...]) -> Self:
+    def _of(cls, outcomes: Mapping[str, Compared], keys: tuple[str, ...]) -> Self:
         for name, outcome in outcomes.items():
-            if outcome.cases:
+            if _is_batch(outcome):
                 raise ContractError(
                     f"{name} is a batch: compare it with baseline=, "
                     "or compare one of its cases",
@@ -166,7 +171,7 @@ class Paired:
     differences of leaf Outcomes, or the ``summary()`` of batches.
     """
 
-    outcomes: Mapping[str, Outcome]
+    outcomes: Mapping[str, Compared]
     keys: tuple[str, ...]
     baseline: str
     _members: Mapping[str, tuple[Member, ...]] = field(repr=False, compare=False)
@@ -174,7 +179,7 @@ class Paired:
     @classmethod
     def _of(
         cls,
-        outcomes: Mapping[str, Outcome],
+        outcomes: Mapping[str, Compared],
         keys: tuple[str, ...],
         baseline: str,
     ) -> Self:
@@ -197,7 +202,7 @@ class Paired:
     def _with(
         cls,
         *,
-        outcomes: Mapping[str, Outcome],
+        outcomes: Mapping[str, Compared],
         keys: tuple[str, ...],
         baseline: str,
         members: Mapping[str, tuple[Member, ...]],
@@ -408,15 +413,15 @@ class Paired:
         return str(self)
 
 
-def _outcomes(outcomes: Mapping[str, Outcome]) -> Mapping[str, Outcome]:
+def _outcomes(outcomes: Mapping[str, Compared]) -> Mapping[str, Compared]:
     """Return the named Outcomes after checking their types and number."""
     if not isinstance(outcomes, Mapping):
         raise TypeError("outcomes must be a mapping from names to Outcomes")
     for name, outcome in outcomes.items():
         if not isinstance(name, str) or not name:
             raise TypeError("each Outcome name must be a non-empty string")
-        if not isinstance(outcome, Outcome):
-            raise TypeError(f"{name} must be an Outcome")
+        if not isinstance(outcome, (Outcome, Mean)):
+            raise TypeError(f"{name} must be an Outcome, or the Mean of one")
     if len(outcomes) < 2:
         raise ContractError(
             "compare takes two or more Outcomes",
@@ -458,14 +463,19 @@ def _require_key(keys: tuple[str, ...], key: str) -> None:
         )
 
 
-def _case_members(outcome: Outcome) -> tuple[Member, ...]:
+def _is_batch(outcome: Compared) -> bool:
+    """Return whether an Outcome is a batch; a Mean compares as a leaf."""
+    return isinstance(outcome, Outcome) and bool(outcome.cases)
+
+
+def _case_members(outcome: Compared) -> tuple[Member, ...]:
     """Return each leaf case with its case key, or the leaf itself with None."""
-    if not outcome.cases:
+    if not isinstance(outcome, Outcome) or not outcome.cases:
         return ((None, outcome),)
     return tuple(("/".join(path), leaf) for path, leaf in outcome._keyed_leaves(()))
 
 
-def _case_keys(outcome: Outcome, name: str) -> set[str | None]:
+def _case_keys(outcome: Compared, name: str) -> set[str | None]:
     """Return the case keys of a batch; two cases with one key cannot pair."""
     keys = [case for case, _ in _case_members(outcome)]
     repeated = sorted({key for key in keys if keys.count(key) > 1}, key=str)
@@ -479,7 +489,7 @@ def _case_keys(outcome: Outcome, name: str) -> set[str | None]:
     return set(keys)
 
 
-def _scalar(outcome: Outcome, key: str, name: str | None) -> Quantity:
+def _scalar(outcome: Compared, key: str, name: str | None) -> Quantity:
     value = outcome[key]
     if not isinstance(value, Quantity):
         raise ContractError(

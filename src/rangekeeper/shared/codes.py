@@ -148,6 +148,10 @@ class Code(StrEnum):
     COMPARISON_EMPTY = "comparison.empty"
     COMPARISON_SCALAR = "comparison.scalar"
 
+    # A distribution of a batch's values that its kind of value does not have:
+    # a Flow has no distribution, and a date has counts but no mean.
+    DISTRIBUTION_VALUE = "distribution.value"
+
     # A selected graph that is not one rooted tree.
     HIERARCHY_CYCLE = "hierarchy.cycle"
     HIERARCHY_DISCONNECTED = "hierarchy.disconnected"
