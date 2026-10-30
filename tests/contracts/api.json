@@ -2657,29 +2657,29 @@
   "Compounding": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, rate: Quantity | str) -> None",
+    "__init__": "method (self, *, rate: Quantity | str, base: date | None = None, start: DateValue | None = None, every: Quantity | str | None = None) -> None",
     "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
    },
    "module": "rangekeeper.profile",
-   "signature": "(*, rate: Quantity | str) -> None"
+   "signature": "(*, rate: Quantity | str, base: date | None = None, start: DateValue | None = None, every: Quantity | str | None = None) -> None"
   },
   "Constant": {
    "kind": "class",
    "members": {
-    "__init__": "method (self) -> None",
+    "__init__": "method (self, *, start: DateValue | None = None, every: Quantity | str | None = None) -> None",
     "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
    },
    "module": "rangekeeper.profile",
-   "signature": "() -> None"
+   "signature": "(*, start: DateValue | None = None, every: Quantity | str | None = None) -> None"
   },
   "Linear": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, rate: Quantity | str) -> None",
+    "__init__": "method (self, *, rate: Quantity | str, base: date | None = None, start: DateValue | None = None, every: Quantity | str | None = None) -> None",
     "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
    },
    "module": "rangekeeper.profile",
-   "signature": "(*, rate: Quantity | str) -> None"
+   "signature": "(*, rate: Quantity | str, base: date | None = None, start: DateValue | None = None, every: Quantity | str | None = None) -> None"
   },
   "Profile": {
    "kind": "class",
@@ -2693,20 +2693,20 @@
   "SCurve": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, distribution: Distribution | None = None) -> None",
+    "__init__": "method (self, *, distribution: Distribution | None = None, start: DateValue | None = None, length: Quantity | str | None = None) -> None",
     "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
    },
    "module": "rangekeeper.profile",
-   "signature": "(*, distribution: Distribution | None = None) -> None"
+   "signature": "(*, distribution: Distribution | None = None, start: DateValue | None = None, length: Quantity | str | None = None) -> None"
   },
   "Uniform": {
    "kind": "class",
    "members": {
-    "__init__": "method (self) -> None",
+    "__init__": "method (self, *, start: DateValue | None = None, length: Quantity | str | None = None) -> None",
     "factors": "method (self, *, periods: Sequence[Period]) -> tuple[float, ...]"
    },
    "module": "rangekeeper.profile",
-   "signature": "() -> None"
+   "signature": "(*, start: DateValue | None = None, length: Quantity | str | None = None) -> None"
   },
   "profiles": {
    "kind": "value",
