@@ -84,6 +84,16 @@ the store-protocol methods, the Python protocol methods, an error constructor
 | `execution` | `rule.evaluate(rules, model=)`, `rule.observe(model, at=, bindings=)` | `evaluate(rules=, model=)`, `observe(model=, at=, bindings=)` |
 | `execution` | A backend: `def solve(self, problem, *, limits, remaining, options)` | `def solve(self, *, problem, limits, remaining, options)`; Rangekeeper calls `solve(problem=, ...)` |
 
+### Flow differences
+
+`Flow.difference(initial=None)` is now `Flow.diff()`, the reverse of
+`Flow.cumulative()` (D2, D21,
+[#275](https://github.com/daniel-fink/rangekeeper/issues/275)). The first
+Movement is its amount less zero; `difference()` made it unresolved. For another
+opening value, subtract it in the first Period:
+`flow.diff() - rk.flow.Flow(amounts={first_period: opening}, units="AUD")`. See
+[running totals](../reference/calculations.md#running-totals-date-masks-and-extremes).
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names
@@ -384,6 +394,7 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `issues` | `diagnostics` | draft | Each use needs review. |
 | `rangekeeper.model.system.errors.HierarchyError.ids` | `targets` | agreed | Each use needs review. Every error has `targets`. `HierarchyError(code, message, ids=)` becomes `HierarchyError(message, code=, targets=)`: the message comes first and each field is a keyword. |
 | `rangekeeper.shared.errors.PublishedFileError.path` | `file` | agreed | Each use needs review. `path` of every error is a JSON Pointer. `PublishedFileError(path, error)` becomes `PublishedFileError(message, file=)`; the OSError is the cause. |
+| `rangekeeper.flow.flow.Flow.difference` | `diff` | agreed | Each use needs review. `flow.diff()` takes no `initial=`: the first Movement is its amount less zero, not unresolved, so `flow.cumulative().diff() == flow`. For another opening value, subtract it in the first Period: `flow.diff() - rk.flow.Flow(amounts={first_period: opening}, units=)`. |
 | Any call: `start_inclusive=` | `start=` | agreed |  |
 | Any call: `end_exclusive=` | `end=` | agreed |  |
 | `rangekeeper.specification.policy.evaluation.evaluate`: `policy=` | `rules=` | agreed |  |
