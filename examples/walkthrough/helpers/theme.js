@@ -32,6 +32,10 @@
     if (body.hasAttribute('data-jp-theme-light')) {
       return body.getAttribute('data-jp-theme-light') === 'false' ? 'dark' : 'light';
     }
+    // The docs site (Zensical) names its scheme on the body.
+    if (body.hasAttribute('data-md-color-scheme')) {
+      return body.getAttribute('data-md-color-scheme') === 'slate' ? 'dark' : 'light';
+    }
     const declared = root.getAttribute('data-theme') || root.getAttribute('data-bs-theme');
     if (declared === 'dark' || declared === 'light') return declared;
     if (root.classList.contains('dark')) return 'dark';
@@ -43,7 +47,8 @@
   function update() {
     const colors = modes[mode()];
     const article = host.document.querySelector('article.content');
-    const content = article || host.document.querySelector('.jp-RenderedHTMLCommon') || host.document.body;
+    const content = article || host.document.querySelector('.jp-RenderedHTMLCommon')
+      || host.document.querySelector('.md-typeset') || host.document.body;
     const hostStyle = host.getComputedStyle(content);
     const background = host.getComputedStyle(host.document.body).backgroundColor;
     const embedded = host !== window;
@@ -108,7 +113,9 @@
   for (const element of [host.document.documentElement, host.document.body]) {
     observer.observe(element, {
       attributes: true,
-      attributeFilter: ['class', 'data-theme', 'data-bs-theme', 'data-jp-theme-light'],
+      attributeFilter: [
+        'class', 'data-theme', 'data-bs-theme', 'data-jp-theme-light', 'data-md-color-scheme',
+      ],
     });
   }
   preference.addEventListener('change', update);
