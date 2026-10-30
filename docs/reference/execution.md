@@ -282,8 +282,13 @@ multiplication with at least one fixed expression, division by a nonzero fixed
 expression, powers that remain affine after assignment, and calls of `rx.max`
 and `rx.min` ([piecewise equations](#piecewise-equations)). Constraints support
 equality, nonstrict upper/lower bounds, conjunctions and Boolean constants. Strict
-comparisons are supported only when every referenced operand is explicitly fixed;
-this check precedes simplification and is repeated during acceptance.
+comparisons, `!=`, `or` and `not` are supported only when every referenced operand
+is fixed; this check precedes simplification and is repeated during acceptance.
+Their fixed values decide them exactly, with no tolerance. A true one needs no
+row. A false one is the row of a false constraint, `1 = 0`, so the backend proves
+the problem infeasible and the Outcome is `INFEASIBLE`, as for `False`
+([ADR-016](../decisions/016-safety-defaults.md#solution-outcomes),
+[#153](https://github.com/daniel-fink/rangekeeper/issues/153)).
 
 ### Staged solve
 
@@ -372,8 +377,8 @@ require unsupported offset-unit handling is rejected.
 After staging, the adapter explicitly rejects nonlinear unknown products/divisors/powers
 with a `nonaffine_unknowns` diagnostic. Its `values` give the `equation` text and
 the keys of the `unknowns` in the term that is not affine. It also rejects strict
-comparisons involving unknowns, disjunctions, calls of Functions other than
-`rx.max` and `rx.min`, selections, imposed queries, ordered
+comparisons, `!=`, disjunctions and negations involving unknowns, calls of
+Functions other than `rx.max` and `rx.min`, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
 Values and market path generation follow the [temporal contract](market-paths-and-rules.md).
 Structural interventions are unsupported. Execution never substitutes hard-coded
