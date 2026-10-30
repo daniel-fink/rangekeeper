@@ -202,7 +202,9 @@ class Inference(Analysis):
 
     A call of an equation function has the units that its registry entry gives
     (#309): ``result_units``, or the units of the argument that ``units_from``
-    names. Model validation does not check these units yet, so a draft infers
+    names, as ``EquationFunction.units`` gives them; a growth profile of an
+    amount per year gives the units of each Period's amount (#500). Model
+    validation does not check these units yet, so a draft infers
     them only for the values that it does not declare.
     """
 
@@ -234,8 +236,12 @@ class Inference(Analysis):
         kind = _RESULTS.get(entry.result, Kind.QUANTITY)
         if kind is not Kind.QUANTITY:
             return Dimension(kind=kind)
-        source = None if entry.units_from is None else arguments.get(entry.units_from)
-        units = entry.result_units or (None if source is None else source.units)
+        units = entry.units(
+            arguments={
+                name: None if item is None else item.units
+                for name, item in arguments.items()
+            }
+        )
         if units is None:
             return None
         periodwise = entry.availability is Availability.PERIODWISE

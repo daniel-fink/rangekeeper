@@ -355,8 +355,31 @@ growth profile takes `initial=`; with no `base` or `start`, the first Period
 holds it. A distribution profile takes `total=`; the last Period with a share
 takes the remainder, so the amounts add up to the total. With `start=NEVER` it
 has no share, and every amount is zero: the payments do not happen. A profile
-refuses the other keyword, so a total is never compounded by mistake. The amount
-gives the Flow its units.
+refuses the other keyword, so a total is never compounded by mistake.
+
+### Amounts per year
+
+The amount gives the Flow its units, with one rule for an amount per unit of
+time ([#500](https://github.com/daniel-fink/rangekeeper/issues/500)):
+
+| Amount | Each Period holds | Units of the Flow |
+| --- | --- | --- |
+| A plain amount, such as `initial="100 USD"` | The amount times the factor | `USD` |
+| An amount per unit of time, such as `initial="1e6 AUD pa"` | The amount times the factor times the Period's length: a yearly Period holds `1e6 AUD`, a quarterly Period `250e3 AUD` | `AUD` |
+| A total per unit of time, such as `total="1e6 AUD pa"` | Nothing: `UnitError`, because a distribution divides an amount | — |
+
+A Period's length counts a whole number of calendar months twelve to a year, also
+from a month end, so a quarter is a quarter of a year; another length counts its
+days, at 365.25 a year. Other units per unit of time convert to a year first:
+`"1e3 AUD per month"` gives a yearly Period `12e3 AUD`, and `"6 % pa"` gives a
+quarterly Period `0.015`. `rk.profile.period_units(units=)` gives the units of
+each Period's amount and `rk.profile.period_scales(units=, periods=)` the factor
+for each Period; `UnitSystem.per_time(units=)` tells an amount per unit of time.
+In lesson 03, `a_income` is in `AUD pa` and the Flow `a_rent` in `AUD`, so
+`a_rent = rx.profile.compounding(initial=a_income, ...)` agrees in its units. The
+equation functions `rx.profile.*` give the same units, and the solve reads each
+Period's amount from `Flow.from_profile`, so a quarterly Flow in `AUD` solves for
+a yearly amount in `AUD pa`.
 
 ```python
 growth = rk.profile.Compounding(rate="2 % pa")

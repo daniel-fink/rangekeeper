@@ -567,7 +567,8 @@ for _function in (
 _INITIAL = FunctionParameter(
     name="initial",
     kind=DomainKind.QUANTITY,
-    description="The amount of the first period, or on base.",
+    description="The amount of the first period, or on base. An amount per "
+    "year, such as AUD pa, gives each period that amount times its length.",
 )
 _TOTAL = FunctionParameter(
     name="total",
@@ -612,6 +613,16 @@ _OPTIONS = {
         "as 2 years.",
     ),
 }
+# The units of a profile's result (#500): an initial amount per unit of time
+# gives each Period that amount times the Period's length.
+_GROWTH_UNITS = (
+    "The result has the units of the initial amount for each Period: an amount "
+    "per unit of time, such as AUD pa, times the Period's length, in AUD."
+)
+_DISTRIBUTION_UNITS = (
+    "The result has the units of the total, which is an amount, not an amount "
+    "per unit of time."
+)
 # Each built-in profile: its class and the options that an equation gives it.
 _PROFILES: tuple[tuple[str, type, tuple[str, ...]], ...] = (
     ("constant", profile.Constant, ("start", "every")),
@@ -660,10 +671,16 @@ def profile_function(name: str, kind: type, options: Sequence[str]) -> EquationF
         stage=EvaluationStage.AFFINE,
         availability=Availability.PERIODWISE,
         mirrors=f"rangekeeper.flow.Flow.from_profile with rangekeeper.profile.{kind.__name__}",
-        unit_rule="The result has the units of the amount.",
+        unit_rule=_GROWTH_UNITS if growth else _DISTRIBUTION_UNITS,
         evaluator=_profiled(name, kind),
         units_from="initial" if growth else "total",
+        units_of=_period_units if growth else None,
     )
+
+
+def _period_units(units: str) -> str:
+    """Return the units of each Period of a growth profile of an amount in ``units``."""
+    return profile.period_units(units=units)
 
 
 for _name, _kind, _options in _PROFILES:

@@ -695,10 +695,7 @@ def _call_kind(
 
 
 def _call_units(function: EquationFunction, bound: Mapping[str, Term]) -> str | None:
-    if function.result_units is not None:
-        return function.result_units
-    source = function.units_from
-    return None if source is None or source not in bound else bound[source]._units
+    return function.units(arguments={name: term._units for name, term in bound.items()})
 
 
 def _combined(terms: Sequence[Term]) -> "_Shape":

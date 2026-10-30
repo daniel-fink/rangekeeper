@@ -21,7 +21,8 @@ def compounding(
 ) -> Term:
     """Return a Flow made by the growth profile Compounding.
 
-    ``initial``: The amount of the first period, or on base.
+    ``initial``: The amount of the first period, or on base. An amount per year,
+    such as AUD pa, gives each period that amount times its length.
     ``rate``: The growth rate per year, such as 2 % pa.
     ``start``: The date from which the profile has amounts; NEVER gives zero in
     every period.
@@ -46,7 +47,8 @@ def constant(
 ) -> Term:
     """Return a Flow made by the growth profile Constant.
 
-    ``initial``: The amount of the first period, or on base.
+    ``initial``: The amount of the first period, or on base. An amount per year,
+    such as AUD pa, gives each period that amount times its length.
     ``start``: The date from which the profile has amounts; NEVER gives zero in
     every period.
     ``every``: A length, such as 5 years: an amount on start and once each
@@ -70,7 +72,8 @@ def linear(
 ) -> Term:
     """Return a Flow made by the growth profile Linear.
 
-    ``initial``: The amount of the first period, or on base.
+    ``initial``: The amount of the first period, or on base. An amount per year,
+    such as AUD pa, gives each period that amount times its length.
     ``rate``: The growth rate per year, such as 2 % pa.
     ``start``: The date from which the profile has amounts; NEVER gives zero in
     every period.

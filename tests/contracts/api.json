@@ -984,16 +984,17 @@
   "EquationFunction": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, periods_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None",
+    "__init__": "method (self, *, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, units_of: collections.abc.Callable[[str], str] | None = None, periods_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None",
     "code": "property",
     "evaluate": "method (self, *, arguments: collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], periods: collections.abc.Sequence[rangekeeper.duration.period.Period] | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool",
     "id": "property",
     "parameter": "method (self, *, name: str) -> rangekeeper.model.expression.functions.FunctionParameter",
     "record": "method (self) -> rangekeeper.schema.records.Function",
-    "spelling": "property"
+    "spelling": "property",
+    "units": "method (self, *, arguments: collections.abc.Mapping[str, str | None]) -> str | None"
    },
    "module": "rangekeeper.model.expression.functions",
-   "signature": "(*, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, periods_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None"
+   "signature": "(*, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, units_of: collections.abc.Callable[[str], str] | None = None, periods_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None"
   },
   "EvaluationStage": {
    "kind": "enum",
@@ -2897,6 +2898,16 @@
    "module": "rangekeeper.profile",
    "signature": "(*, start: DateValue | None = None, length: Quantity | str | None = None) -> None"
   },
+  "period_scales": {
+   "kind": "function",
+   "module": "rangekeeper.profile",
+   "signature": "(*, units: str, periods: Sequence[Period]) -> tuple[float, ...]"
+  },
+  "period_units": {
+   "kind": "function",
+   "module": "rangekeeper.profile",
+   "signature": "(*, units: str) -> str"
+  },
   "profiles": {
    "kind": "value",
    "type": "Registry"
@@ -2930,6 +2941,7 @@
     "minor_unit": "method (self, code: str) -> int | None",
     "multiply": "method (self, left: str, right: str) -> str",
     "parse_quantity": "method (self, text: str) -> rangekeeper.quantity.Quantity",
+    "per_time": "method (self, *, units: str) -> bool",
     "register": "method (self, *, name: str, definition: str | None = None, aliases: tuple[str, ...] = tuple()) -> UnitSystem",
     "validate_units": "method (self, text: str) -> None"
    },

@@ -616,6 +616,16 @@ class UnitSystem:
         """
         return str(self._parse(units))
 
+    def per_time(self, *, units: str) -> bool:
+        """Return whether units are an amount per unit of time, such as ``AUD pa``.
+
+        The units divide by time once: ``"AUD pa"``, ``"AUD per month"`` and
+        ``"% pa"`` are per time; ``"AUD"``, ``"AUD year"`` and
+        ``"AUD per year ** 2"`` are not. Unknown or malformed units raise
+        UnitError.
+        """
+        return self._parse(units).dimensionality.get("[time]", 0) == -1
+
     def multiply(self, left: str, right: str) -> str:
         """Return product units without removing dimensions or changing magnitudes."""
         return str(self._parse(left) * self._parse(right))
