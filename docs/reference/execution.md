@@ -269,6 +269,7 @@ time limit has passed. The stages call it between steps.
 | `execution/planning.py` | Stage 1: the case graph, the pinned Models and one composition for each leaf. |
 | `execution/preparation.py` | Stages 2 and 3: validate the composition against its exact Model, keep the contributor scope, collect imposed predicates and normalize assignments to Measure units. |
 | `execution/compiler.py` | Stage 4: derive affine coefficients after assignments; check arithmetic capability, dimensions and the symbol and constraint limits; keep the original Constraint identity. No backend dependency. |
+| `execution/expansion.py` | Flow equations and equation functions: each Flow equation written for each period, and each equation function call as a linear map that its value function gives, or as a call after the affine stage. |
 | `execution/dates.py` | Date equations: the dates that fixed dates determine, and the exact decision of each equation over dates, before the affine stages. |
 | `execution/staging.py` | The staged solve: build the affine rows' problem, read its rank analysis, solve it when it determines a deferred row's unknown, and fix the determined values for the next stage. The rounds that pick and check the active side of each `max` and `min` call. |
 | `execution/piecewise.py` | Piecewise equations: find the Model's `rx.max` and `rx.min` Functions, read the active side of each call at given values, and write the equations of a set of sides and the bounds that keep them active. It solves nothing. |
@@ -404,6 +405,45 @@ Values and market path generation follow the [temporal contract](market-paths-an
 Structural interventions are unsupported. Execution never substitutes hard-coded
 valuation formulas.
 
+### Flow equations and equation functions
+
+An equation over Flows holds in each period
+([#279](https://github.com/daniel-fink/rangekeeper/issues/279)). `solve` writes
+each such equation over the Movements, one row for each period of the Flow that
+it defines, and each call of an equation function as rows that the compiler takes
+(`execution.expansion`, internal)
+([#276](https://github.com/daniel-fink/rangekeeper/issues/276)):
+
+- A reference to a Flow Value is the reference to its Movement in the period. A
+  scalar applies to every period. A reference to a whole Flow needs a role for each
+  of its Movements.
+- A call of `rx.max` or `rx.min` is a call in each period, which the solve picks a
+  side for ([piecewise equations](#piecewise-equations)).
+- An equation function of the affine stage, such as a profile,
+  `rx.flow.event`, `rx.finance.npv`, `rx.finance.interest` or the Flow methods
+  `cumulative()`, `diff()`, `since(on=)`, `until(on=)`, `at(on=)`, `total()`,
+  `first()`, `last()` and `shift(by=)`, is linear in its first argument and in its
+  Flow arguments once its other arguments, such as rates, dates and lengths, are
+  fixed. The solve reads the coefficients of that linear map from the function's
+  value function, on fixed data: the result at zero unknowns, and the change for
+  each unknown alone. One more evaluation, with every unknown at another value,
+  checks that the map is linear. A rate or a date that the solve finds makes the
+  call not affine: `UnsupportedError` with the code `nonaffine_unknowns`.
+- A function after the affine stage (D4): `rx.finance.irr` takes the Movements of
+  its Flow, and the solve evaluates it once earlier stages determine them
+  ([staged solve](#staged-solve)). `x.max()` and `x.min()` are `max` and `min`
+  calls over the periods of `x`, which the solve picks a side for. In the rounds
+  of active sides, an equation after the affine stage that only reports a value,
+  such as `equity_irr = rx.finance.irr(flow=equity_cash_flow)`, waits for the last
+  problem: it defines an unknown that no other equation reads.
+- A call whose values are all fixed, or settled dates, is evaluated once.
+
+Verification checks the row of each period. A sum of large amounts that cancel,
+such as a cash flow that a loan draw offsets, keeps a residual of the order of
+`1e-15` times its largest term, because a currency amount has 15 significant
+digits ([ADR-023](../decisions/023-decimal-money.md)); the relative tolerance of a
+sum reads its largest term ([independent acceptance](#independent-acceptance-and-immutable-publication)).
+
 ### Date equations
 
 A date Value has a role, fixed or free, as a number has: `fix(start_date=date(2027, 1, 1))`
@@ -531,10 +571,13 @@ not the lowered rows. Copied assignments, Boolean assertions and supported stric
 each numerical comparison the default tolerance is:
 
 ```text
-1e-8 + 1e-9 * max(abs(left), abs(right))
+1e-8 + 1e-9 * max(abs(left), abs(right), abs(largest term of a sum on either side))
 ```
 
-Both residual and tolerance use that comparison's evaluated left-side units. This
+Both residual and tolerance use that comparison's evaluated left-side units. The
+largest term is the largest magnitude among the operands of the sums and
+differences on either side, so that the 15 significant digits of currency
+amounts do not reject a sum that cancels. This
 is an explicit absolute floor of `1e-8` of that unit plus a relative term; it is not
 a universal monetary tolerance. `ExecutionConfig(tolerances=Tolerances(absolute=..., relative=...))`
 changes this acceptance policy independently of Specification/solver settings. Diagnostics state

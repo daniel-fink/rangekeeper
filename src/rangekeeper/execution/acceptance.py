@@ -8,6 +8,7 @@ from uuid import UUID
 from rangekeeper.duration.dates import NEVER, DateValue
 from rangekeeper.execution.dates import decide
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
+from rangekeeper.execution.expansion import resolve
 from rangekeeper.execution.piecewise import Pieces
 from rangekeeper.execution.preparation import Assertion, Binding
 from rangekeeper.model import Model
@@ -109,7 +110,7 @@ def verify(
             passed &= holds
             diagnostics.append(_date_check(binding, assertion, holds=holds))
             continue
-        for relation, left, right, boolean in _comparisons(
+        for relation, left, right, boolean, scale in _comparisons(
             _active(assertion.predicate, pieces=pieces, values=values, binding=binding),
             values,
             units=binding.units,
@@ -120,7 +121,7 @@ def verify(
                 0.0
                 if boolean
                 else tolerances.absolute
-                + tolerances.relative * max(abs(left.number), abs(right.number))
+                + tolerances.relative * max(abs(left.number), abs(right.number), scale)
             )
             if not math.isfinite(residual) or not math.isfinite(tolerance):
                 raise NumericalError("acceptance residual or tolerance is not finite")
@@ -200,13 +201,16 @@ def _active(
     The side is read from the candidate's values, not from the solve, so the
     check of the original equation does not depend on the sides it picked.
     """
+    resolved = resolve(node, values=values, binding=binding)
+    if resolved is None:
+        raise NumericalError("candidate has no quantity for a deferred call")
     try:
-        sides = pieces.active(node, values=values, units=binding.units)
+        sides = pieces.active(resolved, values=values, units=binding.units)
     except UnsupportedError:
         raise
     except (ArithmeticError, ValueError, TypeError) as error:
         raise NumericalError(str(error)) from error
-    return pieces.reduce(node, sides)
+    return pieces.reduce(resolved, sides)
 
 
 # The predicates other than strict comparisons that fixed values decide
@@ -302,17 +306,47 @@ def _reads(node: Expression) -> set[UUID]:
     }
 
 
+def _largest(
+    node: Expression,
+    values: Mapping[UUID, Quantity],
+    *,
+    units: UnitSystem,
+    to: str,
+) -> float:
+    """Return the largest magnitude of the terms of a sum, in the units ``to``.
+
+    A currency amount has 15 significant digits (ADR-023), so a sum of large
+    amounts that cancel, such as a cash flow that a loan draw offsets, keeps a
+    residual of the order of ``1e-15`` times its largest term. The relative
+    tolerance reads that term.
+    """
+    if node.kind is ExpressionKind.BINARY and node.operator in (
+        Operator.ADD,
+        Operator.SUBTRACT,
+    ):
+        return max(
+            _largest(item, values, units=units, to=to) for item in node.operands or ()
+        )
+    if node.kind is ExpressionKind.UNARY and node.operator is Operator.NEGATE:
+        assert node.operand is not None
+        return _largest(node.operand, values, units=units, to=to)
+    value = evaluate(node, values, units=units)
+    return abs(units.convert(quantity=value, to=to).number)
+
+
 def _comparisons(
     node: Expression,
     values: Mapping[UUID, Quantity],
     *,
     units: UnitSystem,
     fixed: Set[UUID] = frozenset(),
-) -> Iterator[tuple[str, Quantity, Quantity, bool]]:
+) -> Iterator[tuple[str, Quantity, Quantity, bool, float]]:
     """Retain conjunction order; fixed strict predicates use exact comparison.
 
     A ``!=``, ``or`` or ``not`` predicate of fixed values is decided exactly,
-    as a Boolean constant.
+    as a Boolean constant. Each comparison gives its relation, both sides,
+    whether it is exact, and the largest term of a sum on either side
+    (``_largest``), in the left side's units.
     """
     try:
         if node.kind is ExpressionKind.BOOLEAN or _decided(node):
@@ -326,6 +360,7 @@ def _comparisons(
                 finite_quantity(0 if holds else 1, "dimensionless"),
                 finite_quantity(0, "dimensionless"),
                 True,
+                0.0,
             )
         elif (
             node.kind is ExpressionKind.BINARY and node.operator is Operator.LOGICAL_AND
@@ -358,7 +393,11 @@ def _comparisons(
             right = units.convert(
                 quantity=evaluate(node.operands[1], values, units=units), to=left.units
             )
-            yield node.operator.value, left, right, strict
+            scale = max(
+                _largest(item, values, units=units, to=left.units)
+                for item in node.operands
+            )
+            yield node.operator.value, left, right, strict, scale
         else:
             raise UnsupportedError("unsupported predicate in numerical acceptance")
     except UnsupportedError:
