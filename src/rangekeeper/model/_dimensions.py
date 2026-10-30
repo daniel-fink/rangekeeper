@@ -18,9 +18,11 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from uuid import UUID
 
+from rangekeeper.model.expression.catalogue import functions
+from rangekeeper.model.expression.functions import Availability, EquationFunction
 from rangekeeper.quantity import UnitSystem
-from rangekeeper.schema.enums import ExpressionKind, Operator, ValueKind
-from rangekeeper.schema.records import Expression, Function, Value
+from rangekeeper.schema.enums import DomainKind, ExpressionKind, Operator, ValueKind
+from rangekeeper.schema.records import Call, Expression, Function, Value
 
 
 class Kind(Enum):
@@ -71,6 +73,8 @@ _COMPARISONS = frozenset(
     }
 )
 _LOGICAL = frozenset({Operator.LOGICAL_AND, Operator.LOGICAL_OR})
+# What a call gives, by the result kind of its equation function.
+_RESULTS = {DomainKind.DATE: Kind.DATE, DomainKind.BOOLEAN: Kind.BOOLEAN}
 
 
 class Analysis:
@@ -107,6 +111,7 @@ class Analysis:
         return self._lookup(node.target.target)
 
     def _call(self, node: Expression) -> Dimension | None:
+        """Return the result of a call from its Function record's result units."""
         call = node.call
         function = None if call is None else self._functions.get(call.function)
         result = None if function is None else function.result
@@ -192,6 +197,54 @@ class Analysis:
         return found
 
 
+class Inference(Analysis):
+    """The analysis of a draft, which also reads the units of equation functions.
+
+    A call of an equation function has the units that its registry entry gives
+    (#309): ``result_units``, or the units of the argument that ``units_from``
+    names. Model validation does not check these units yet, so a draft infers
+    them only for the values that it does not declare.
+    """
+
+    __slots__ = ()
+
+    def _call(self, node: Expression) -> Dimension | None:
+        call = node.call
+        entry = None if call is None else functions.get(call.function)
+        if call is None or entry is None:
+            return super()._call(node)
+        return self._equation_function(entry, call)
+
+    def _equation_function(
+        self,
+        entry: EquationFunction,
+        call: Call,
+    ) -> Dimension | None:
+        """Return the result of an equation function from the units of its arguments.
+
+        It is a Flow when the entry gives a Flow, or when a periodwise function
+        takes a Flow.
+        """
+        names = [parameter.name for parameter in entry.parameters]
+        given = [
+            *zip(names, call.arguments or (), strict=False),
+            *((item.name, item.expression) for item in call.named_arguments or ()),
+        ]
+        arguments = {name: self.dimension(item) for name, item in given}
+        kind = _RESULTS.get(entry.result, Kind.QUANTITY)
+        if kind is not Kind.QUANTITY:
+            return Dimension(kind=kind)
+        source = None if entry.units_from is None else arguments.get(entry.units_from)
+        units = entry.result_units or (None if source is None else source.units)
+        if units is None:
+            return None
+        periodwise = entry.availability is Availability.PERIODWISE
+        flow = entry.result is DomainKind.FLOW or (
+            periodwise and any(_flow(item) for item in arguments.values())
+        )
+        return Dimension(kind=Kind.QUANTITY, units=units, flow=flow)
+
+
 def of_value(value: Value, *, units: str | None) -> Dimension | None:
     """Return the Dimension of a Value with these Measure units, or None.
 
@@ -220,7 +273,8 @@ _VISITS: dict[ExpressionKind, _Visit] = {
     ExpressionKind.DATE: lambda analysis, node: DATE,
     ExpressionKind.BOOLEAN: lambda analysis, node: BOOLEAN,
     ExpressionKind.REFERENCE: Analysis._reference,
-    ExpressionKind.CALL: Analysis._call,
+    # A call of the method, so that an Inference reads equation functions.
+    ExpressionKind.CALL: lambda analysis, node: analysis._call(node),
     ExpressionKind.UNARY: Analysis._unary,
     ExpressionKind.BINARY: Analysis._binary,
 }

@@ -225,3 +225,58 @@ def test_cells_5_to_8_and_12_run_as_written():
         "Funding",
     ]
     assert model.metadata.previous is not None
+
+
+def run_cells(*keys: str) -> dict[str, object]:
+    """Run whole cells as written, from a fresh namespace with ``years``."""
+    numbered = cells()
+    namespace: dict[str, object] = {"rk": rk, "date": date, "years": YEARS}
+    for key in keys:
+        exec(numbered[key], namespace)
+    return namespace
+
+
+def test_cells_5_to_5c_run_as_written_and_infer_the_dates():
+    """Cell 5 declares four dates; its equations define four more (#282, D44)."""
+    model = run_cells("5", "5b", "5c")["draft"].commit()
+    values = {
+        value.key: value
+        for value in model.entity(code="project").characteristics.values
+    }
+    for key in ("shared_start", "a_start", "a_open", "b_open"):
+        assert values[key].kind is rk.model.ValueKind.DATE
+        assert values[key].measure is None
+    (root,) = model.system.formulations
+    (dates,) = root.formulations
+    assert (dates.name, len(dates.constraints)) == ("Dates", 5)
+    assert values["a_income"].kind is rk.model.ValueKind.MEASUREMENT
+    assert len(values["land"].flow.movements) == len(YEARS)
+
+
+def test_cells_5_to_8_and_12_infer_the_results_that_they_do_not_declare():
+    """The cells run as written with no declared results (#282, D44).
+
+    The draft works out the kind and units of each result in ``RESULTS`` from
+    its equations. Only the statement of ``WAITING`` is skipped.
+    """
+    numbered = cells()
+    namespace: dict[str, object] = {"rk": rk, "date": date, "years": YEARS}
+    for key in ("5", "5b", "5c", "6", "7", "7b", "8", "12", "12b"):
+        for statement in ast.parse(numbered[key]).body:
+            code = ast.unparse(statement)
+            if code not in WAITING:
+                exec(code, namespace)
+    model = namespace["model"]
+    assert isinstance(model, rk.Model)
+    words = {
+        rk.model.ValueKind.DATE: "date",
+        rk.model.ValueKind.FLOW: "flow",
+        rk.model.ValueKind.MEASUREMENT: "value",
+    }
+    inferred = {}
+    for key in RESULTS:
+        value = model.value(key=key)
+        measure = None if value.measure is None else model.record_by_id(value.measure)
+        units = None if measure is None else measure.record.units
+        inferred[key] = (words[value.kind], units)
+    assert inferred == RESULTS
