@@ -12,6 +12,7 @@ and [identity](identity.md) define shared construction and reference rules.
 | --- | --- |
 | `model/model.py` | Model facade, construction, UUID lookup, Value and Label lookup by UUID or by owner and key (`Model.value`, `Model.label`), and revision |
 | `model/draft.py` | `ModelDraft`, entity handles and value handles: the changes for the next revision and its single commit |
+| `model/equations.py` | `Equation` and `Equations`: the equations of a revision, with their keys and text, and `where` |
 | `schema/index.py` | Schema-directed UUID, type and nearest-owner index with original paths |
 | `model/{definitions,provenance}.py` | Catalogue lookup, Facts and upstream Locations |
 | `model/{update,diff}.py` | Complete-section replacement and descriptive comparison |
@@ -79,6 +80,7 @@ model = draft.commit()
 | `add_measure(code=, name=, units=, definition=None)` | A Measure; returns the record |
 | `add_classification(code=, name=None, parent=None, taxonomy="entity")` | A Classification under `parent` or the Taxonomy root; a missing Taxonomy is made with a root of the same code |
 | `entity(id=None, *, code=None, name=None)` | The handle of one Entity or Assembly of the Model or the draft |
+| `remove(entity=)` | Removes an Entity or Assembly, given by code, UUID or handle, with its values, equations and Relationships ([edits](#equation-keys-and-edits)) |
 | `commit()` | The validated revision |
 
 | Entity handle call | Result |
@@ -90,6 +92,9 @@ model = draft.commit()
 | `equations(*equations)` | Adds equations to the entity's default Formulation: [equation text](expressions.md#equation-text), such as `"total_cost = land_cost + works_cost"`, Boolean Terms of the [Python form](expressions.md#the-python-form-rx), such as `total == land + works`, or Boolean Expression records. It adds the Function record of each [equation function](expressions.md#equation-functions) that an equation calls to the Model's definitions |
 | `add_formulation(name=, description=None)` | A named Formulation of the entity, such as `"Funding"`; returns its `FormulationHandle` |
 | `formulation(name=)` | The handle of a named Formulation of the entity, made in the draft or in an earlier revision |
+| `replace(key=, equation=)` | Replaces the equation with this [key](#equation-keys-and-edits) by another equation, in any Formulation of the entity |
+| `add_to(key=, term=)` | Adds a term to the right side of the equation with this key |
+| `remove(key=)` | Removes the value and the equation with this key |
 
 A Formulation groups equations for displays and traces; it changes nothing in a
 solve, and the values stay on the entity. Its handle's `equations(*equations)`
@@ -152,6 +157,10 @@ and `==` makes an equation, so compare two value handles by their `id`.
   entity: a second `add_formulation` with a name raises `ContractError` with
   code `UNIQUE`. `formulation(name=)` raises `MissingReferenceError` with the
   nearest names when the entity has no Formulation with that name.
+
+- Each equation gets a key that names it: the key of the first value of its
+  text, such as `total_cost` in `"total_cost = land_cost + works_cost"`
+  ([equation keys](#equation-keys-and-edits)).
 
 `commit()` also checks the units of each equation: the two sides of an equation,
 and the operands of a sum, must have compatible units. A failure raises
@@ -225,6 +234,91 @@ project.equations("income = rent * area")  # AUD pa, from AUD per sqm pa and sqm
   equations reference.
 - A declaration is a check: when an equation gives a declared value other
   units, `commit()` fails with `incompatible_units`.
+
+### Equation keys and edits
+
+An equation's key names it (D40). The draft gives each equation the key of the
+first value of its text: the value on its left side in `income = a_rent +
+b_rent`, and `debt_service` in `0 AUD pa <= debt_service`. When an equation of
+the entity has the key already, the new one gets the next number:
+lesson 02's two equations for `effective_income` have the keys
+`effective_income` and `effective_income_2`. An equation that uses no value has
+no key. The key is the code of the equation's Constraint, and with a
+`namespace` the Constraint UUID is derived from the entity's path and the key.
+
+An entity handle finds an equation by its key in any of the entity's
+Formulations, the default one and the named ones. A key that no equation has
+raises `MissingReferenceError` with the nearest keys, and a key that several
+equations have, which records can give, raises `AmbiguousReferenceError` with
+their text.
+
+```python
+draft = model.edit()
+project = draft.entity(code="project")
+project.flow(key="rent_index", units="ratio", periods=years)
+project.replace(key="income", equation="income = rent_index * (a_rent + b_rent)")
+project.replace(
+    key="a_rent",
+    equation="a_rent = rx.profile.constant(initial=a_income, start=a_open)",
+)
+project.add_to(key="project_cash", term="b_site_sale")
+project.remove(key="rent_growth")
+model = draft.commit()
+```
+
+- `replace(key=, equation=)` checks the new equation as `equations` does. It
+  keeps the key, the Formulation and the Constraint UUID of the equation that
+  it replaces, and removes the old Expression records unless another equation
+  uses them.
+- `add_to(key=, term=)` adds the term to the right side of an equality or a
+  bound: `project_cash = land + works + operating + sale` becomes
+  `project_cash = land + works + operating + sale + b_site_sale`. A term that
+  starts with a negation is subtracted, so `term="-rx.profile.uniform(...)"`
+  gives `works = shared_works + a_works + b_works - rx.profile.uniform(...)`.
+  The term is equation text, an `rx` Term or a value handle. The new equation
+  is checked as `equations` checks it, and it keeps the key. Another kind of
+  equation raises `ContractError` with the code `PREDICATE`.
+- `remove(key=)` removes the value with the key and the equation with the key:
+  `remove(key="rent_growth")` removes an input, and `remove(key="income")`
+  removes the equation that defines `income` and its inferred value. A key
+  that names neither raises `MissingReferenceError` with the nearest keys.
+- `draft.remove(entity=)` removes an Entity or Assembly with its values, its
+  Formulations and their equations, the Relationships that it is the source or
+  the target of, and its membership of each Assembly. Its handles stop
+  working.
+
+A removal does not remove the equations of other values. An equation that
+still uses a removed value fails at `commit()` with `MissingReferenceError`:
+`requested` names the value as the equation writes it, such as `income` or
+`a_hotel_floor_1.income`, and `referenced_by` gives the keys of the equations
+that use it ([lookups](errors.md#lookups)). Remove or replace those equations,
+then commit again.
+
+## Equations of a revision
+
+`model.equations` gives the equations of a revision: an `Equations` sequence
+with one `Equation` for each Constraint, in the order of the Formulations (each
+root Formulation, then its children, depth first). A notebook shows it as a
+table, and `table` gives that Table.
+
+| `Equation` | Gives |
+| --- | --- |
+| `key` | The key that names the equation: its Constraint's code, or else the key of the first value of its text; None for an equation that uses no value |
+| `keys` | The key of each value that it uses, on either side, once each in the order of its text; a value of another entity is `code.key` |
+| `text` | Its [equation text](expressions.md#equation-text), which reads back to the same records: `"income = a_rent + b_rent"` |
+| `formulation` | The name of its named Formulation, such as `"Dates"`, or None in the default Formulation of its entity |
+| `entity` | The code of the entity whose Formulations hold it, or None |
+| `id` | The UUID of its Constraint |
+
+`where(key=, keys=, formulation=, entity=)` returns the equations whose
+columns match (D40): text means equals and a list means any of its items, and
+`keys` matches the equations that use a value. Several arguments must all hold.
+
+```python
+model.equations.where(formulation="Dates")  # the date equations
+model.equations.where(keys="start_date")  # each equation that uses start_date
+model.equations.where(key=["a_rent", "b_rent"])
+```
 
 ## Entities and their values
 

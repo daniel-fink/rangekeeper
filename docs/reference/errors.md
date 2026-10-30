@@ -153,7 +153,7 @@ all of its fields through `pickle`.
 | `execution`: `OutcomeError` | `ValueError` | The code of the diagnostic that gives the reason; `SOLVER_TERMINATION` by default. `status` is the Outcome's `Status`. `Outcome.raise_for_status()` raises it when no other error applies ([execution](execution.md#settings-limits-and-conclusions)) |
 | `model.system`: `HierarchyError` | `ValueError` | A `hierarchy.*` code, given by keyword. `targets` names the offending Entities |
 | `duration`: `AlignmentError` | `ValueError` | A `ContractError` with an `alignment.*` code, given by keyword: `ALIGNMENT_CROSSES` when a Period crosses the bounds of a selection, `ALIGNMENT_PARTIAL` when Periods end with a partial Period, `ALIGNMENT_MIXED` when Flows mix dated and period amounts, `ALIGNMENT_DIFFER` when Flows that must match have other coordinates, `ALIGNMENT_DUPLICATE` when a Flow repeats a coordinate, and `ALIGNMENT_GAP` when Periods leave a gap. `values` gives the Periods as ISO intervals ([Spans and Periods](calculations.md#spans-and-periods)). `duration` and `flow` raise it |
-| `MissingReferenceError` | `LookupError` | `REFERENCE_MISSING`. `requested`, `by`, `kind`, `where` and `candidates` say what was requested and where ([lookups](#lookups)) |
+| `MissingReferenceError` | `LookupError` | `REFERENCE_MISSING`. `requested`, `by`, `kind`, `where` and `candidates` say what was requested and where; `referenced_by` says what still references it ([lookups](#lookups)) |
 | `AmbiguousReferenceError` | `LookupError` | `REFERENCE_AMBIGUOUS`. A lookup for one item found several; `candidates` names each match |
 | `ReferenceTypeError` | `TypeError` | `REFERENCE_KIND` |
 | `IdentityConflictError` | `ValueError` | `REFERENCE_IDENTITY` |
@@ -193,6 +193,22 @@ try:
     model.entity(code="building_c")
 except rk.errors.MissingReferenceError as error:
     print(error.requested, error.where, error.candidates)
+```
+
+`MissingReferenceError` also has `referenced_by`: what still references the
+missing item, when it is known, or an empty tuple. `ModelDraft.commit()` gives
+it for an equation that uses a value that the draft removed: `requested` names
+the value as the equation writes it, such as `"a_hotel_floor_1.income"`, and
+`referenced_by` gives the [keys](model.md#equation-keys-and-edits) of the
+equations that use it.
+
+```python
+draft = model.edit()
+draft.remove(entity="a_hotel_floor_1")
+try:
+    draft.commit()
+except rk.errors.MissingReferenceError as error:
+    print(error.requested, error.referenced_by)  # a_hotel_floor_1.income ('reference_income',)
 ```
 
 An argument of the wrong Python type raises `TypeError`. Every other failure on

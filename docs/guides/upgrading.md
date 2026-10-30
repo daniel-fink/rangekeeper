@@ -148,6 +148,19 @@ A Value that a draft infers from its equations is stored with `inferred: true`;
 a declared Value has no such field. Documents of earlier releases have none,
 so their Values read as declared.
 
+### Equation keys
+
+Each Constraint that a draft makes has a code: the key of its equation
+([#283](https://github.com/daniel-fink/rangekeeper/issues/283), D40), such as
+`total_cost` for `total_cost = land_cost + works_cost`, or
+`effective_income_2` for a second equation with that key. With a `namespace`,
+the Constraint UUID is derived from the entity's path and the key, not from the
+UUID of the equation's Expression, so the same calls give the same UUID. Code
+that compared Constraint records of a draft with records that it made itself
+gives them the code. A document of an earlier release keeps its Constraints:
+`model.equations` gives each of them the key of the first value of its text.
+See [equation keys and edits](../reference/model.md#equation-keys-and-edits).
+
 ### False fixed predicates
 
 A predicate whose values are all fixed and that is false, such as `a > b` with

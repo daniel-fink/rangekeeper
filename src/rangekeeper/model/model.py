@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 from rangekeeper.flow import Movement
 from rangekeeper.model.entity import ModelEntity
+from rangekeeper.model.equations import Equations, equations_of
 from rangekeeper.model.formulation.authoring import identify
 from rangekeeper.model.update import SECTIONS, Update
 from rangekeeper.quantity import UnitSystem, default_units
@@ -555,6 +556,18 @@ class Model:
     def formulation(self, id: UUID) -> Formulation:
         """Resolve a root or nested Formulation without flattening its ownership."""
         return self._index.get(id, Formulation)
+
+    @property
+    def equations(self) -> Equations:
+        """The equations of this revision: their keys, the keys they use and their text.
+
+        One ``Equation`` for each Constraint, in the order of the Formulations:
+        each root Formulation, then its children, depth first. ``where(key=,
+        keys=, formulation=, entity=)`` selects some of them (D40), such as
+        ``model.equations.where(formulation="Dates")``; a notebook shows them as
+        a table.
+        """
+        return equations_of(self)
 
     def claim(self, id: UUID) -> Claim:
         """Resolve evidence in this pinned revision; never load an external source."""
