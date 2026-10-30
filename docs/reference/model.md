@@ -197,6 +197,9 @@ project.equations("income = rent * area")  # AUD pa, from AUD per sqm pa and sqm
 - `commit()` works out the kind and units of each such value from its
   definition, as Quantity arithmetic does: a sum keeps the units of its
   operands, a product multiplies them, and a date plus a length is a date. A
+  call of an equation function has the units that its registry entry gives:
+  `operating.at(on=sale_date)` has the units of `operating`, and
+  `rx.max(equity, need)` those of `equity`. A
   definition that references a whole Flow gives a Flow, which takes its Periods
   from its equations; another quantity gives a measurement value. The units are
   those of the first Measure of the draft that is compatible with them, such as
@@ -205,7 +208,7 @@ project.equations("income = rent * area")  # AUD pa, from AUD per sqm pa and sqm
 - The new revision stores each such value with its kind and Measure, after the
   declared values of its entity. In a later draft it is declared.
 - A value whose units `commit()` cannot work out, for example because its
-  definition calls a function whose units are unknown, raises `ValidationError`
+  definition calls a Function whose units are unknown, raises `ValidationError`
   with the code `semantic.units` and one issue for each such value, with its
   `key` and `where`. Declare it with its units.
 - A later declaration of the key, in the same draft, keeps the value that the

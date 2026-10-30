@@ -17,8 +17,8 @@ from difflib import get_close_matches
 from uuid import UUID
 
 from rangekeeper.model._dimensions import (
-    Analysis,
     Dimension,
+    Inference,
     Kind,
     Lookup,
     of_value,
@@ -58,6 +58,7 @@ class Unknown:
     key: str
     kind: None = None
     units: None = None
+    periods: None = None
 
 
 class Undeclared:
@@ -174,7 +175,7 @@ class Undeclared:
             if target in ids
         ]
         found: dict[UUID, Dimension] = {}
-        analysis = Analysis(
+        analysis = Inference(
             units=units,
             lookup=lambda identity: found.get(identity) or lookup(identity),
         )
@@ -188,7 +189,7 @@ class Undeclared:
 
 
 def _step(
-    analysis: Analysis,
+    analysis: Inference,
     definitions: Sequence[tuple[UUID, Expression]],
     found: dict[UUID, Dimension],
 ) -> bool:
