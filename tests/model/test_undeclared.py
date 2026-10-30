@@ -226,6 +226,20 @@ def test_a_definition_of_flows_gives_a_flow_over_their_periods():
         assert all(item.magnitude is None for item in value.flow.movements)
 
 
+def test_a_scalar_method_of_a_flow_gives_a_value():
+    # Lesson 03 cell 21: max() of a Flow is one amount, so rx.max of it too.
+    draft = works()
+    draft.entity(code="project").equations(
+        "total = a_works.total()",
+        "peak = (a_works - b_works).max()",
+        "gap = rx.max(0 AUD, (a_works - b_works).max())",
+    )
+    model = draft.commit()
+    for key in ("total", "peak", "gap"):
+        assert units_of(model, key) == (ValueKind.MEASUREMENT, "AUD"), key
+        assert model.value(key=key).flow is None
+
+
 def test_a_value_beside_a_scalar_waits_for_the_shape_of_its_definition():
     # need is defined before later, a Flow: a scalar beside an unknown value
     # gives no shape, so need waits for later instead of being a scalar.

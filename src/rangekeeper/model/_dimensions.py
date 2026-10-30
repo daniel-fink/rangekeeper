@@ -257,15 +257,17 @@ class Inference(Analysis):
             for name in entry.periodwise
             if name in given_names(given)
         ]
-        if entry.periods_from is not None:
-            shaping = [arguments.get(entry.periods_from)]
         lifted = [item for item in shaping if _flow(item)]
         if not lifted and any(item is None for item in shaping):
             # An unknown argument could be a Flow, so the shape is unknown.
             return None
-        flow = entry.result is DomainKind.FLOW or bool(lifted)
+        if entry.result is not DomainKind.FLOW and not lifted:
+            # A scalar result, such as total() or max() of a Flow.
+            return Dimension(kind=Kind.QUANTITY, units=units)
+        if entry.periods_from is not None:
+            lifted = [arguments.get(entry.periods_from)]
         _, periods = _shape(*lifted)
-        return Dimension(kind=Kind.QUANTITY, units=units, flow=flow, periods=periods)
+        return Dimension(kind=Kind.QUANTITY, units=units, flow=True, periods=periods)
 
 
 def of_value(value: Value, *, units: str | None) -> Dimension | None:
