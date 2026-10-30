@@ -57,6 +57,7 @@ def project(draft):
     project.flow(key="cash", units="AUD", periods=YEARS)
     project.flow(key="need", units="AUD", periods=YEARS)
     project.date(key="sale_date")
+    project.date(key="open")
     project.value(key="growth", units="% pa")
     project.value(key="irr", units="% pa")
     project.flow(key="loan", units="AUD", periods=YEARS)
@@ -357,6 +358,7 @@ FIXED = {
     "cash": CASH,
     "need": NEED,
     "sale_date": date(2028, 6, 30),
+    "open": date(2028, 1, 1),
     "value": rk.Quantity(text="90 AUD"),
     "growth": rk.Quantity(text="3 % pa"),
     "loan": LOAN,
@@ -450,6 +452,61 @@ MIRRORS: list[tuple[str, Callable[[], object]]] = [
         "rx.profile.scurve(total=value)",
         lambda: rk.flow.Flow.from_profile(
             profile=rk.profile.SCurve(), periods=YEARS, total="90 AUD"
+        ),
+    ),
+    # The options of the profiles (#303, #484).
+    (
+        "rx.profile.compounding(initial=value, rate=growth, start=open)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Compounding(rate="3 % pa", start=date(2028, 1, 1)),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.compounding(initial=value, rate=growth, start=open + 1 year,"
+        " every=2 years, base=open)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Compounding(
+                rate="3 % pa",
+                start=date(2029, 1, 1),
+                every="2 years",
+                base=date(2028, 1, 1),
+            ),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.linear(initial=value, rate=growth, base=open)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Linear(rate="3 % pa", base=date(2028, 1, 1)),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.constant(initial=value, start=NEVER)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Constant(start=rk.duration.NEVER),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.uniform(total=value, start=open, length=2 years)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Uniform(start=date(2028, 1, 1), length="2 years"),
+            periods=YEARS,
+            total="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.scurve(total=value, start=open, length=1 year)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.SCurve(start=date(2028, 1, 1), length="1 year"),
+            periods=YEARS,
+            total="90 AUD",
         ),
     ),
 ]
