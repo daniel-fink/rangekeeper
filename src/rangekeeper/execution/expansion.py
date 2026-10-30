@@ -1,4 +1,4 @@
-"""Flow-valued equations and equation functions in a solve (#276).
+"""Flow-valued equations and equation functions in a solve (#276, #277).
 
 An equation over Flows holds in each period (#279). ``expand`` writes each
 assertion of a Binding over scalar values and Movements, one assertion for
@@ -22,6 +22,9 @@ staged solve, the piecewise solve and verification work on scalar rows:
   stages determine them, the compiler evaluates the call (``resolve``).
   ``x.max()`` and ``x.min()`` become ``max`` and ``min`` calls over the
   periods of their Flow, which ``execution.piecewise`` solves.
+- An equation that fixes an IRR, ``r = rx.finance.irr(flow=cash)`` with ``r``
+  fixed, becomes its NPV row at that rate: the NPV of the Flow at ``r`` is
+  zero (D5, #277).
 
 A call whose references are all fixed is evaluated once. Each expanded
 assertion keeps the Constraint of its equation.
@@ -47,6 +50,7 @@ from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
+    Argument,
     Call,
     Expression,
     ExpressionKind,
@@ -66,6 +70,16 @@ LINEAR_RELATIVE = 1e-9
 LINEAR_ABSOLUTE = 1e-6
 # The piecewise functions that apply period by period.
 PERIODWISE = frozenset({"rx.max", "rx.min"})
+# The bounds on a reduction that hold in every period: the relation of the
+# reduction's side to the other side, and the reduction (D5).
+_SPREAD = {
+    Operator.GREATER_THAN_OR_EQUAL: "Flow.min",
+    Operator.LESS_THAN_OR_EQUAL: "Flow.max",
+}
+_MIRRORED = {
+    Operator.GREATER_THAN_OR_EQUAL: Operator.LESS_THAN_OR_EQUAL,
+    Operator.LESS_THAN_OR_EQUAL: Operator.GREATER_THAN_OR_EQUAL,
+}
 # The reductions of a Flow that are piecewise over its periods.
 REDUCTIONS = {"Flow.max": "Flow.max", "Flow.min": "Flow.min"}
 
@@ -104,6 +118,10 @@ class _Expansion:
                 for child in node.operands or ()
                 for part in self.assertion(replace(item, predicate=child))
             )
+        node = self.target(node)
+        spread = self.spread(node)
+        if spread is not None:
+            return tuple(replace(item, predicate=row) for row in spread)
         periods = self.periods(node)
         if periods is None:
             return (replace(item, predicate=self.at(node, None, None)),)
@@ -314,6 +332,104 @@ class _Expansion:
                     for index, movement in enumerate(_flow(value).movements)
                 ),
             ),
+        )
+
+    # A bound on a minimum or a maximum (#277).
+
+    def spread(self, node: Expression) -> tuple[Expression, ...] | None:
+        """Return a bound on ``x.min()`` or ``x.max()`` as one row for each period.
+
+        ``x.min() >= c`` holds when ``x >= c`` in every period, and
+        ``x.max() <= c`` when ``x <= c`` in every period; the same holds with
+        the sides exchanged (D5). Another predicate gives None.
+        """
+        if node.kind is not ExpressionKind.BINARY or node.operator not in _MIRRORED:
+            return None
+        left, right = node.operands or (None, None)
+        assert left is not None and right is not None
+        for side, other, relation in (
+            (left, right, node.operator),
+            (right, left, _MIRRORED[node.operator]),
+        ):
+            function = _function(side)
+            if function is None or _SPREAD[relation] != function.code:
+                continue
+            flow = _operands(side)[0]
+            periods = self.periods(flow)
+            if periods is None:
+                return None
+            return tuple(
+                Expression(
+                    id=_id(node, f"spread/{index}"),
+                    kind=ExpressionKind.BINARY,
+                    operator=relation,
+                    operands=(
+                        self.at(flow, index, periods),
+                        self.at(other, index, periods),
+                    ),
+                )
+                for index in range(len(periods))
+            )
+        return None
+
+    # A fixed IRR (#277).
+
+    def target(self, node: Expression) -> Expression:
+        """Return an equation that fixes an IRR as its NPV row at that rate.
+
+        ``r = rx.finance.irr(flow=cash)`` with ``r`` fixed is
+        ``rx.finance.npv(flow=cash, rate=r, on=start) = 0``, where ``start``
+        begins the Flow's first period. Another equation is unchanged.
+        """
+        if (
+            node.kind is not ExpressionKind.BINARY
+            or node.operator is not Operator.EQUAL
+        ):
+            return node
+        left, right = node.operands or (None, None)
+        assert left is not None and right is not None
+        for rate, call in ((left, right), (right, left)):
+            function = _function(call)
+            if (
+                function is not None
+                and function.code == "rx.finance.irr"
+                and rate.kind is ExpressionKind.REFERENCE
+                and self.fixed(rate)
+            ):
+                return self.npv_row(node, rate=rate, call=call)
+        return node
+
+    def npv_row(
+        self, node: Expression, *, rate: Expression, call: Expression
+    ) -> Expression:
+        """Return ``npv(flow=cash, rate=r, on=start) = 0`` for ``r = irr(flow=cash)``."""
+        (flow,) = _operands(call)
+        periods = self.periods(flow)
+        if periods is None:
+            raise UnsupportedError("a fixed IRR needs a Flow with Periods")
+        npv = functions.function(name="finance.npv")
+        units = self.result_units(flow, periods=periods)
+        on = Expression(
+            id=_id(node, "on"), kind=ExpressionKind.DATE, date=periods[0].start
+        )
+        value = Expression(
+            id=_id(node, "npv"),
+            kind=ExpressionKind.CALL,
+            call=Call(
+                function=npv.id,
+                named_arguments=(
+                    Argument(name="flow", expression=flow),
+                    Argument(name="rate", expression=rate),
+                    Argument(name="on", expression=on),
+                ),
+            ),
+        )
+        zero = _literal(Quantity(magnitude=0, units=units), id=_id(node, "zero"))
+        return Expression(
+            id=_id(node, "row"),
+            kind=ExpressionKind.BINARY,
+            operator=Operator.EQUAL,
+            operands=(value, zero),
         )
 
     # Values.

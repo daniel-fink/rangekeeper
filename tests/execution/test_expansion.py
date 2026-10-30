@@ -151,6 +151,45 @@ def test_functions_after_the_affine_stage_read_the_solved_flows(levered_outcome)
     assert levered_outcome["peak"] == levered_outcome["need"].max()
 
 
+def test_a_fixed_irr_finds_the_land_cost():
+    """Lesson 03 cell 15: the IRR fixed becomes its NPV row at that rate (#277)."""
+    target = levered().fix(irr="15 % pa").free("land_cost")
+    outcome = solve(specification=target).raise_for_status()
+    assert isclose(
+        actual=rk.finance.irr(flow=outcome["equity_cash"]),
+        expected=rk.Quantity(text="15 % pa"),
+        relative=1e-9,
+    )
+
+
+def floor(amount: str) -> rk.execution.Outcome:
+    """Solve ``paid.min() >= 5 AUD`` for a constant payment of ``amount``."""
+    draft = rk.Model(name="Floor").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.value(key="amount", units="AUD")
+    project.date(key="start_date")
+    project.flow(key="paid", units="AUD", periods=YEARS)
+    project.equations(
+        "paid = rx.profile.constant(initial=amount, start=start_date)",
+        "paid.min() >= 5 AUD",
+    )
+    model = draft.commit()
+    return solve(
+        specification=model.specify(name="Floor").fix(
+            amount=amount, start_date=date(2027, 1, 1)
+        )
+    )
+
+
+def test_a_bound_on_a_minimum_holds_in_every_period():
+    """D5: ``x.min() >= c`` is ``x >= c`` in each period, an affine row each (#277)."""
+    assert floor("6 AUD").status is Status.FEASIBLE
+    below = floor("4 AUD")
+    assert below.status is Status.INFEASIBLE
+    rows = [d for d in below.diagnostics if d.code == Code.SOLVER_SCALING]
+    assert rows  # the backend proved it, with the rows of the bound
+
+
 def test_a_rate_that_the_solve_finds_is_not_affine():
     loose = levered().free("loan_rate").fix(npv="1e6 AUD")
     outcome = solve(specification=loose)
