@@ -110,8 +110,8 @@ show the target API in use.
      handle, which declares values, Flows and dates with `value(key=, units=)`,
      `flow(key=, units=, periods=)` and `date(key=)`. `equations(...)` takes
      equation text, such as `"total_cost = land_cost + works_cost"`, with
-     quantity literals, `NEVER`, date arithmetic and the functions of the
-     equation-function registry; equations in Python with `rx`
+     quantity literals, `NEVER`, date arithmetic, Flow-valued equations and
+     the functions of the equation-function registry; equations in Python with `rx`
      (`rangekeeper.expressions`), such as `noi == coverage * debt_service`; or
      Expression records.
      `add_formulation(name=)` makes a named Formulation, such as "Funding",
@@ -123,8 +123,8 @@ show the target API in use.
   `Model.create(...)` and `Model.from_data(...)` still take complete records,
   and `model.revise(Update(...))` replaces complete sections. See the
   [Model reference](../reference/model.md).
-- 1.0 target: Flow equations in text and `rx`,
-  equation keys and edits of existing declarations.
+- 1.0 target: inferred units and Periods, equation keys and edits of
+  existing declarations.
 
   Gap issues: [#142](https://github.com/daniel-fink/rangekeeper/issues/142),
   [#145](https://github.com/daniel-fink/rangekeeper/issues/145),
@@ -132,7 +132,7 @@ show the target API in use.
   [#280](https://github.com/daniel-fink/rangekeeper/issues/280),
   [#283](https://github.com/daniel-fink/rangekeeper/issues/283),
   [#284](https://github.com/daniel-fink/rangekeeper/issues/284),
-  [#279](https://github.com/daniel-fink/rangekeeper/issues/279).
+  [#282](https://github.com/daniel-fink/rangekeeper/issues/282).
 
 **Calculate with known data**
 1. Make Flows and Streams from dates, periods and amounts.

@@ -49,6 +49,7 @@ class Symbol:
     key: str
     kind: ValueKind = ValueKind.MEASUREMENT
     units: str | None = None
+    periods: tuple | None = None
 
 
 @dataclass

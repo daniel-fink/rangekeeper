@@ -98,6 +98,8 @@ def infer_operator_domain(operator, domains, *, unary, scope):
         return dict(kind="boolean")
     if any(t["kind"] == "date" for t in domains):
         return infer_date_domain(operator, domains, unary=unary, scope=scope)
+    if any(t["kind"] == "flow" for t in domains):
+        return infer_flow_domain(operator, domains)
     require(
         all(t["kind"] in ("number", "quantity", "measurement") for t in domains),
         "numerical operands required",
@@ -111,6 +113,24 @@ def infer_operator_domain(operator, domains, *, unary, scope):
     # Full unit inference is deferred. Arithmetic alone does not supply
     # a Measurement's domain meaning or a Measure identity.
     return dict(kind="quantity")
+
+
+def infer_flow_domain(operator: str, domains: list[dict]) -> dict:
+    """Infer an operation on a Flow, which applies period by period (#279).
+
+    A Flow combines with a Flow or a numerical value; a value applies to every
+    period. Arithmetic gives a Flow, and a comparison gives a Boolean that
+    holds when it holds in every period.
+    """
+    require(
+        all(
+            t["kind"] in ("flow", "number", "quantity", "measurement") for t in domains
+        ),
+        "a Flow combines only with a Flow or a numerical value",
+    )
+    if operator in _COMPARISONS:
+        return dict(kind="boolean")
+    return dict(kind="flow")
 
 
 def infer_date_domain(operator, domains, *, unary, scope):

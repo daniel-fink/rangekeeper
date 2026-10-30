@@ -204,7 +204,6 @@ OPERATORS: list[tuple[str, Callable[..., object]]] = [
         lambda v: v["need"] == -rx.profile.scurve(total=v["value"]),
     ),
 ]
-FLOWS = frozenset({"cash", "need", "loan"})
 KEYS = (
     "growth",
     "irr",
@@ -230,10 +229,8 @@ def test_text_and_rx_make_identical_records_and_text(draft, project, source, bui
         parsed(project, source).to_expression()
     )
     project.equations(source, term)
-    if FLOWS.isdisjoint(source.replace("(", " ").replace(".", " ").split()):
-        # Flow-valued equations commit with #279.
-        from_text, from_rx = committed(draft)
-        assert records(from_text) == records(from_rx)
+    from_text, from_rx = committed(draft)
+    assert records(from_text) == records(from_rx)
 
 
 def test_each_function_and_method_is_in_the_equivalence_tests():
@@ -650,7 +647,8 @@ def test_the_calls_of_lessons_05_and_07_parse_as_written(draft):
     for key in ("b_sale_date", "expansion_date", "x_open"):
         project.date(key=key)
     for key in ("rent_index", "b_site_sale", "works", "income"):
-        project.flow(key=key, units="ratio" if key == "rent_index" else "AUD")
+        units = "ratio" if key == "rent_index" else "AUD"
+        project.flow(key=key, units=units, periods=YEARS)
     sources = (
         "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
         "b_site_sale = rx.flow.event(amount=b_site_value, on=b_sale_date)",

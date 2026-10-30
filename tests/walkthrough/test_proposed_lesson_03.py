@@ -6,6 +6,10 @@ methods (#278). This test reads each equation from the cells as written,
 adds it to the project of cells 5 to 5c, and checks that its records read
 back to the same text.
 
+The Flow-valued equations commit (#279): each Flow combines with Flows over
+the same Periods, and each Flow made from amounts, by a profile or an event,
+takes the Periods of the Flow that it defines.
+
 The cells themselves do more than these equations: they group the equations
 in named Formulations (``add_formulation``, #305), and they leave the
 results that they do not rely on undeclared, for the draft to infer (#282).
@@ -91,10 +95,14 @@ def declarations(cell: str) -> str:
 
 
 @pytest.fixture
-def project():
+def draft():
+    return rk.Model(name="Mixed-use base plan").edit()
+
+
+@pytest.fixture
+def project(draft):
     """Return the project of cells 5 to 5c, 8 and 12, with the results of RESULTS."""
     numbered = cells()
-    draft = rk.Model(name="Mixed-use base plan").edit()
     project = draft.add_entity(code="project", classification="project")
     namespace = {"rk": rk, "date": date, "project": project, "years": YEARS}
     for key in ("5", "5b", "5c", "8", "12"):
@@ -134,3 +142,25 @@ def test_each_equation_reads_back_to_its_text(project):
     for cell in EQUATION_CELLS:
         for source in equations(numbered[cell]):
             assert read(text=source, names=Names(project)).text == source
+
+
+def test_the_equations_of_the_cells_commit(draft, project):
+    numbered = cells()
+    texts = [text for cell in EQUATION_CELLS for text in equations(numbered[cell])]
+    project.equations(*texts)
+    model = draft.commit()
+    (formulation,) = model.system.formulations
+    assert len(formulation.constraints) == len(texts)
+    assert {record.code for record in model.definitions.functions} == {
+        "rx.flow.event",
+        "rx.profile.uniform",
+        "rx.profile.compounding",
+        "rx.finance.npv",
+        "rx.finance.interest",
+        "rx.finance.irr",
+        "rx.max",
+        "Flow.at",
+        "Flow.until",
+        "Flow.cumulative",
+        "Flow.diff",
+    }
