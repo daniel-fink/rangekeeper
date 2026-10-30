@@ -15,8 +15,8 @@ These files are not notebooks and do not run. The lessons
 when the library work lands. Lessons 01 and 02 are authored: their notebooks run
 the cells of [01_basic_dcf.md](01_basic_dcf.md) and
 [02_front_door_back_door.md](02_front_door_back_door.md). Each file lists where its
-cells differ from the first proposal. In lesson 02, the `rx` aside waits on
-[#309](https://github.com/daniel-fink/rangekeeper/issues/309) and is prose in the
+cells differ from the first proposal. In lesson 02, the `rx` aside
+([#309](https://github.com/daniel-fink/rangekeeper/issues/309)) is prose in the
 notebook, and no infeasible diagnostic names the equations that disagree yet (cell
 19).
 

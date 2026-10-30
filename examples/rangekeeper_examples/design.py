@@ -30,6 +30,7 @@ from rangekeeper.model.content import decode, encode
 from rangekeeper.model.definitions import find_classifications
 from rangekeeper.model.expression.authoring import (
     add,
+    add_all,
     divide,
     equal,
     literal,
@@ -37,7 +38,6 @@ from rangekeeper.model.expression.authoring import (
     power,
     reference,
 )
-from rangekeeper.model.expression.authoring import sum as expression_sum
 from rangekeeper.model.formulation import declare
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.records import Assignment
@@ -438,9 +438,7 @@ def formulate(model: Model) -> Model:
             put(
                 aggregate[name],
                 key,
-                expression_sum(
-                    [r(values(model, uid)[name], key) for uid in contributors]
-                ),
+                add_all([r(values(model, uid)[name], key) for uid in contributors]),
             )
     for i in range(10):
         key = f"y{i + 1}"
@@ -469,7 +467,7 @@ def formulate(model: Model) -> Model:
     put(
         aggregate["pv"],
         None,
-        expression_sum([r(aggregate["discounted"], f"y{i + 1}") for i in range(10)]),
+        add_all([r(aggregate["discounted"], f"y{i + 1}") for i in range(10)]),
     )
     declaration = declare(
         id=uuid4(),
