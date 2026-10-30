@@ -13,7 +13,9 @@ source links (default ``develop``).
 
 - ``walkthrough/``: each lesson, executed from a fresh kernel in the locked
   walkthrough environment and converted by ``notebooks.py``;
-- ``api/``: one mkdocstrings page for each public ``rangekeeper`` module.
+- ``api/``: one mkdocstrings page for each public ``rangekeeper`` module: the
+  packages of the API snapshot, without ``market``, and each other module with
+  its own ``__all__`` that exports a name that no package page shows.
 
 A link from ``docs/`` to a lesson notebook goes to its page. A link to another
 repository file outside ``docs/`` goes to the file on GitHub at ``REF``. The
@@ -26,12 +28,13 @@ from __future__ import annotations
 
 import json
 import os
+import pkgutil
 import re
 import shutil
 import subprocess
 import sys
 from importlib import import_module
-from importlib.util import find_spec
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from types import ModuleType
 from urllib.parse import unquote, urlsplit
@@ -162,64 +165,146 @@ def walkthrough(output: Path, *, ref: str, lessons: bool) -> None:
     )
 
 
-def directive(module: ModuleType, *, heading: bool = False) -> str:
-    """Return the mkdocstrings blocks for the names in ``module.__all__``.
+# The packages that the API reference leaves out: `market` is internal until
+# #298; `schema` and `shared` are internal.
+INTERNAL = frozenset({"market", "schema", "shared"})
+
+
+def internal(name: str) -> bool:
+    """Return whether the module ``name`` is internal or private."""
+    parts = name.split(".")[1:]
+    return bool(parts) and (
+        parts[0] in INTERNAL or any(part.startswith("_") for part in parts)
+    )
+
+
+def exports(module: ModuleType) -> dict[str, object]:
+    """Return the public names of ``module`` with their values.
+
+    As in the API snapshot, a module with ``__all__`` exports those names, and
+    a module without one exports the names that it defines.
+    """
+    names = getattr(module, "__all__", None)
+    if names is None:
+        return {
+            name: value
+            for name, value in vars(module).items()
+            if not name.startswith("_")
+            and getattr(value, "__module__", None) == module.__name__
+        }
+    return {name: getattr(module, name) for name in names if not name.startswith("_")}
+
+
+def snapshot_packages() -> tuple[str, ...]:
+    """Return the public packages of the API snapshot, ``tests/contracts/api.py``."""
+    spec = spec_from_file_location("api_snapshot", ROOT / "tests/contracts/api.py")
+    if spec is None or spec.loader is None:
+        raise ImportError("cannot read tests/contracts/api.py")
+    snapshot = module_from_spec(spec)
+    spec.loader.exec_module(snapshot)
+    return tuple(snapshot.PACKAGES)
+
+
+def named_modules(module: ModuleType) -> set[str]:
+    """Return the names of the modules that ``module`` exports."""
+    return {
+        value.__name__
+        for value in exports(module).values()
+        if isinstance(value, ModuleType)
+    }
+
+
+def public_modules(packages: list[ModuleType]) -> list[ModuleType]:
+    """Return the public modules that are not in ``packages``, parents first.
+
+    A module is public when it has its own ``__all__``, or when a public module
+    exports it.
+    """
+    import rangekeeper
+
+    known = {module.__name__ for module in packages}
+    named = set().union(*map(named_modules, packages))
+    found = []
+    for info in pkgutil.walk_packages(rangekeeper.__path__, "rangekeeper."):
+        if internal(info.name) or info.name in known:
+            continue
+        module = import_module(info.name)
+        if hasattr(module, "__all__") or info.name in named:
+            found.append(module)
+            named |= named_modules(module)
+    return found
+
+
+def pages() -> list[ModuleType]:
+    """Return the modules that get an API reference page, in name order.
+
+    Each public package of the API snapshot gets a page, without ``market``.
+    Each other public module gets a page when it exports an object that no
+    earlier page shows; the page of its package shows the others.
+    """
+    packages = [
+        import_module(name) for name in snapshot_packages() if not internal(name)
+    ]
+    shown = {id(value) for module in packages for value in exports(module).values()}
+    found = list(packages)
+    for module in public_modules(packages):
+        members = {id(value) for value in exports(module).values()}
+        if members - shown:
+            found.append(module)
+            shown |= members
+    return sorted(found, key=lambda module: module.__name__)
+
+
+def directive(module: ModuleType) -> str:
+    """Return the mkdocstrings block for the public names of ``module``.
 
     Some ``__all__`` lists are built at import time, so mkdocstrings cannot read
     them from the source; the block names the members. A module without
-    ``__all__`` shows its public names. A public submodule of a page's module
-    gets its own block, under its own heading.
+    ``__all__`` shows the names that it defines. Submodules have their own pages.
     """
-    names = getattr(module, "__all__", None)
-    public = {name: getattr(module, name) for name in names or ()}
-    options = ["show_root_heading: true"] if heading else []
-    if names is not None:
-        options.append("members:")
-        options.extend(
-            f"  - {name}"
-            for name, value in public.items()
-            if not name.startswith("_") and not isinstance(value, ModuleType)
-        )
-    lines = "".join(f"\n      {option}" for option in options)
-    blocks = [f"::: {module.__name__}" + (f"\n    options:{lines}" if lines else "")]
-    blocks.extend(
-        directive(value, heading=True)
-        for value in public.values()
-        if isinstance(value, ModuleType)
-        and value.__name__.startswith(f"{module.__name__}.")
-        and module.__name__ != "rangekeeper"
-    )
-    return "\n\n".join(block.rstrip("\n") for block in blocks) + "\n"
+    if not hasattr(module, "__all__"):
+        return f"::: {module.__name__}\n"
+    members = [
+        f"\n        - {name}"
+        for name, value in exports(module).items()
+        if not isinstance(value, ModuleType)
+    ]
+    listed = "".join(members) if members else " []"
+    return f"::: {module.__name__}\n    options:\n      members:{listed}\n"
 
 
-# Public modules that their package does not import, because each needs an
-# optional dependency. Their blocks follow the package's own blocks.
-OPTIONAL_MODULES = {"io": ("rangekeeper.io.bundle", "rangekeeper.io.polars")}
+def page(name: str) -> str:
+    """Return the file name of the API reference page of the module ``name``."""
+    return f"{name.removeprefix('rangekeeper.')}.md"
+
+
+def links(names: list[str]) -> str:
+    """Return a Markdown list of links to the pages of the modules ``names``."""
+    return "".join(f"- [`{name}`]({page(name)})\n" for name in names)
 
 
 def api(output: Path) -> None:
-    """Write one API reference page for each public module."""
+    """Write the API reference: the root package, then one page for each module."""
     import rangekeeper
 
-    public = [name for name in rangekeeper.__all__ if not name.startswith("_")]
-    modules = [name for name in public if find_spec(f"rangekeeper.{name}")]
+    modules = [module.__name__ for module in pages() if module is not rangekeeper]
     output.mkdir(parents=True)
-    links = "".join(f"- [`rangekeeper.{name}`]({name}.md)\n" for name in modules)
     (output / "index.md").write_text(
         "# API reference\n\n"
         "Generated from the docstrings of the public `rangekeeper` package. "
         "The [contract reference](../README.md#look-up-a-contract) gives the "
         "rules that the records follow.\n\n"
-        f"{directive(rangekeeper)}\n## Modules\n\n{links}"
+        f"{directive(rangekeeper)}\n## Modules\n\n{links(modules)}"
     )
     for name in modules:
-        module = import_module(f"rangekeeper.{name}")
-        blocks = [directive(module)] + [
-            directive(import_module(optional), heading=True)
-            for optional in OPTIONAL_MODULES.get(name, ())
+        children = [
+            child
+            for child in modules
+            if child.startswith(f"{name}.") and "." not in child[len(name) + 1 :]
         ]
-        (output / f"{name}.md").write_text(
-            f"# rangekeeper.{name}\n\n" + "\n".join(blocks)
+        submodules = f"\n## Modules\n\n{links(children)}" if children else ""
+        (output / page(name)).write_text(
+            f"# {name}\n\n{directive(import_module(name))}{submodules}"
         )
 
 
