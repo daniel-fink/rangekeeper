@@ -13,7 +13,7 @@ from rangekeeper.shared.fingerprints import (
     semantic_digest,
 )
 
-NAME = "rangekeeper.scenarios.market"
+NAME = "rangekeeper.market.generation"
 FORMAT = "scenario-calculation/v1"
 # The sources are the import closure of these entry modules: calculation,
 # normalization and record construction, with every module that they import.

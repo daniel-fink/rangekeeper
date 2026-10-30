@@ -2,15 +2,15 @@
 
 import math
 
+from rangekeeper.market._kernels import (
+    accumulate_volatility,
+    autoregression,
+    cycle,
+)
+from rangekeeper.market._kernels import shock as shock_values
+from rangekeeper.market._kernels import trend as trend_values
 from rangekeeper.market.contracts import check_inputs
 from rangekeeper.market.contracts import method as contract_for
-from rangekeeper.market.dynamics import (
-    accumulate_volatility,
-    calculate_autoregression,
-    calculate_cycle,
-    calculate_shock,
-    calculate_trend,
-)
 
 
 def construct_paths(method, parameters, draws):
@@ -36,29 +36,22 @@ def construct_paths(method, parameters, draws):
         )
         p["asset_period"] = p["space_period"] + p["asset_period_difference"]
     count = len(draws["innovations"])
-    trend = calculate_trend(
-        count=count,
-        growth_rate=p["growth_rate"],
-        cap_rate=p["cap_rate"],
-        initial_value=p["initial_value"],
-    )
-    ar = calculate_autoregression(
-        innovations=draws["innovations"], parameter=p["autoregression"]
-    )
+    trend = trend_values(count=count, rate=p["growth_rate"], initial=p["initial_value"])
+    ar = autoregression(innovations=draws["innovations"], parameter=p["autoregression"])
     volatility = accumulate_volatility(
         trend=trend,
         returns=ar,
-        growth_rate=p["growth_rate"],
+        growth=p["growth_rate"],
         mean_reversion=p["mean_reversion"],
     )
-    space_cycle = calculate_cycle(
+    space_cycle = cycle(
         count=count,
         period=p["space_period"],
         phase=p["space_phase"],
         amplitude=p["space_amplitude"],
         asymmetry=p["space_asymmetry"],
     )
-    asset_cycle = calculate_cycle(
+    asset_cycle = cycle(
         count=count,
         period=p["asset_period"],
         phase=p["asset_phase"],
@@ -73,11 +66,11 @@ def construct_paths(method, parameters, draws):
         raise ValueError("market path has nonpositive capitalization")
     true = tuple(s / a for s, a in zip(space, asset, strict=True))
     noise = draws["noise"]
-    shock = calculate_shock(
+    shock = shock_values(
         events=draws["events"],
-        likelihood=p["shock_likelihood"],
+        probability=p["shock_likelihood"],
         dissipation=p["shock_dissipation"],
-        impact=p["shock_impact"],
+        size=p["shock_impact"],
     )
     noisy = tuple((1 + n) * v for n, v in zip(noise, true, strict=True))
     # The shock kernel has already applied amplitude. Apply the resulting factor once.

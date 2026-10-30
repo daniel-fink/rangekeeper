@@ -1606,6 +1606,27 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, name: str, fingerprint: str, versions: tuple[LibraryVersion, ...]) -> None"
   },
+  "Dynamics": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, trend: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution = '0 % pa', cycle_period: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, cycle_amplitude: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, volatility: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, noise: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, shock_probability: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, shock_size: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None) -> None",
+    "from_records": "classmethod (cls, records: collections.abc.Sequence[rangekeeper.schema.records.PathParameter]) -> Dynamics",
+    "parameters": "property",
+    "random": "property",
+    "records": "method (self, *, series: str) -> tuple[rangekeeper.schema.records.PathParameter, ...]",
+    "replace": "method (self, *, trend: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, cycle_period: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, cycle_amplitude: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, volatility: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, noise: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, shock_probability: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, shock_size: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None) -> Dynamics"
+   },
+   "module": "rangekeeper.market.series",
+   "signature": "(*, trend: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution = '0 % pa', cycle_period: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, cycle_amplitude: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, volatility: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, noise: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, shock_probability: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None, shock_size: rangekeeper.quantity.Quantity | str | float | rangekeeper.profile.Distribution | None = None) -> None"
+  },
+  "DynamicsGenerator": {
+   "kind": "class",
+   "members": {
+    "generate": "method (self, *, parameters: collections.abc.Sequence[rangekeeper.schema.records.PathParameter], periods: collections.abc.Sequence[rangekeeper.duration.period.Period], seed: int | None, count: int) -> rangekeeper.market.paths.Paths"
+   },
+   "module": "rangekeeper.market.series",
+   "signature": "()"
+  },
   "LibraryVersion": {
    "kind": "class",
    "members": {
@@ -1815,13 +1836,10 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, plan: ScenarioPlan, key: str, calculation: CalculationProvenance | None | Unset = <Unset>, generator: str, versions: tuple[LibraryVersion, ...], streams: tuple[RandomStream, ...], inputs: tuple[Binding, ...], outputs: tuple[Binding, ...], availability: tuple[ObservationAvailability, ...]) -> None"
   },
-  "dynamics": {
-   "kind": "module",
-   "module": "rangekeeper.market.dynamics"
-  },
-  "generation": {
-   "kind": "module",
-   "module": "rangekeeper.market.generation"
+  "generate": {
+   "kind": "function",
+   "module": "rangekeeper.market.series",
+   "signature": "(*, dynamics: collections.abc.Mapping[str, rangekeeper.market.series.Dynamics], periods: collections.abc.Sequence[rangekeeper.duration.period.Period], seed: int | None = None, count: int) -> rangekeeper.market.paths.Paths"
   },
   "generators": {
    "kind": "value",
@@ -1831,33 +1849,6 @@
    "kind": "function",
    "module": "rangekeeper.market._replay",
    "signature": "(model: rangekeeper.model.model.Model, *, realization: uuid.UUID | None = None) -> rangekeeper.market.view.Market"
-  }
- },
- "rangekeeper.market.dynamics": {
-  "accumulate_volatility": {
-   "kind": "function",
-   "module": "rangekeeper.market.dynamics",
-   "signature": "(*, trend: collections.abc.Sequence[float], returns: collections.abc.Sequence[float], growth_rate: float, mean_reversion: float) -> tuple[float, ...]"
-  },
-  "calculate_autoregression": {
-   "kind": "function",
-   "module": "rangekeeper.market.dynamics",
-   "signature": "(*, innovations: collections.abc.Sequence[float], parameter: float) -> tuple[float, ...]"
-  },
-  "calculate_cycle": {
-   "kind": "function",
-   "module": "rangekeeper.market.dynamics",
-   "signature": "(*, count: int, period: float, phase: float, amplitude: float, asymmetry: float = 0, tolerance: float = 1e-10) -> tuple[float, ...]"
-  },
-  "calculate_shock": {
-   "kind": "function",
-   "module": "rangekeeper.market.dynamics",
-   "signature": "(*, events: collections.abc.Sequence[float], likelihood: float, dissipation: float, impact: float = 1) -> tuple[float, ...]"
-  },
-  "calculate_trend": {
-   "kind": "function",
-   "module": "rangekeeper.market.dynamics",
-   "signature": "(*, count: int, growth_rate: float, cap_rate: float, initial_value: float | None = None, initial_price_factor: float = 1) -> tuple[float, ...]"
   }
  },
  "rangekeeper.model": {

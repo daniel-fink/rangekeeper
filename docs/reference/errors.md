@@ -215,7 +215,7 @@ An argument of the wrong Python type raises `TypeError`. Every other failure on
 a public path raises a `RangekeeperError` subclass with a `Code`: a wrong value,
 a lookup that finds nothing, data or state that is not valid. `shared`,
 `schema`, `money`, `duration`, `flow`, `finance` (`pv`, `npv`, `irr` and
-`payment`), `market.dynamics`, `model`, `specification` and the `Outcome` and
+`payment`), `market`, `model`, `specification` and the `Outcome` and
 comparisons of `execution` follow this rule: for example, `Table.column` and
 `Record.has_field` raise `MissingReferenceError`, and `Record.from_data` raises
 `ValidationError` with `structure.json` for data that is not JSON. In `flow`, an

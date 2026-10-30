@@ -77,7 +77,7 @@ def test_direct_generation_never_uses_the_process_adapter(monkeypatch):
 
     monkeypatch.setattr(market, "_worker", forbidden)
     result = market.generate(base(), plan(), scenario_keys=["direct"])[0]
-    assert result.realization.calculation.name == "rangekeeper.scenarios.market"
+    assert result.realization.calculation.name == "rangekeeper.market.generation"
     assert result.realization.calculation.fingerprint.startswith(
         "scenario-calculation/v1:"
     )
@@ -134,11 +134,11 @@ def test_manifest_uses_portable_paths_and_imported_source_dependencies(tmp_path)
     import rangekeeper
 
     kernels = (
-        "calculate_trend",
-        "calculate_cycle",
-        "calculate_autoregression",
+        "trend",
+        "cycle",
+        "autoregression",
         "accumulate_volatility",
-        "calculate_shock",
+        "shock",
     )
     shutil.copytree(
         Path(rangekeeper.__file__).parent,
@@ -151,7 +151,7 @@ def test_manifest_uses_portable_paths_and_imported_source_dependencies(tmp_path)
     assert all(not Path(name).is_absolute() for name in original["sources"])
     assert set(original["sources"]) == set(source_paths(package=tmp_path))
     assert {
-        "market/dynamics.py",
+        "market/_kernels.py",
         "schema/records.py",
         "schema/enums.py",
         "schema/validation.py",
@@ -166,7 +166,7 @@ def test_manifest_uses_portable_paths_and_imported_source_dependencies(tmp_path)
     assert manifest_digest(original) == manifest_digest(
         calculation_manifest(package=tmp_path, versions=versions)
     )
-    changed = tmp_path / "market/dynamics.py"
+    changed = tmp_path / "market/_kernels.py"
     kernel_source = changed.read_text()
     assert kernel_source.startswith('"""')
     changed.write_text(

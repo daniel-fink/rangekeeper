@@ -1,19 +1,20 @@
-"""Lesson 04's market paths, from the proposed cells (#298).
+"""Lesson 04's market paths, from the proposed cells (#298, #299).
 
 The cells come from ``examples/walkthrough/proposed/04_market_futures.md``
-and run statement by statement, as written. These differences wait on other
-issues:
+and run statement by statement, as written. A call to ``helpers`` only draws,
+so the test evaluates its arguments and does not call it. These differences
+wait on other issues:
 
 - ``lesson_model`` and ``base_case``: lesson 04 loads lesson 03's Model and
   base case (cells 2 and 4, ``rk.io.load``, #295) and edits the Model (cells
   3 and 3b, ``replace`` and ``remove``, #283). The test runs lesson 03's
   cells with lesson 04's changes, and fixes the base case from ``PLAN``.
-- ``HISTORIES``: three paths made from data stand in for the generated paths
-  of cells 5 to 8 (``rk.market.generate``, #299).
-- The statements that call ``helpers`` are skipped.
+- ``COUNT``: cell 8 is tagged "parameters", so the test runs it with fewer
+  paths, as the lesson CI does.
 """
 
 import ast
+import math
 import re
 from datetime import date
 from pathlib import Path
@@ -53,9 +54,8 @@ CHANGES = {
     ),
 }
 LESSON_03_CELLS = ("3", "5", "5b", "5c", "6", "7", "7b", "8", "12", "12b", "18")
-YEARS = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
-    frequency=rk.duration.Frequency.YEAR
-)
+# The path count of cell 8 in this test.
+COUNT = 4
 
 
 def cells() -> dict[str, str]:
@@ -68,12 +68,18 @@ def cells() -> dict[str, str]:
 
 
 def statements(source: str) -> list[str]:
-    """Return the statements of a cell, without those that call ``helpers``."""
+    """Return the statements of a cell; a ``helpers`` call gives its arguments."""
     found = []
     for statement in ast.parse(source).body:
-        code = ast.unparse(statement)
-        if "helpers" not in code:
-            found.append(code)
+        call = getattr(statement, "value", None)
+        if (
+            isinstance(statement, ast.Expr)
+            and isinstance(call, ast.Call)
+            and ast.unparse(call.func).startswith("helpers.")
+        ):
+            found.extend(ast.unparse(keyword.value) for keyword in call.keywords)
+        else:
+            found.append(ast.unparse(statement))
     return found
 
 
@@ -81,7 +87,10 @@ def run(namespace: dict, *keys: str) -> dict:
     """Run cells of lesson 04 as written, statement by statement."""
     numbered = cells()
     for key in keys:
-        for code in statements(numbered[key]):
+        source = numbered[key]
+        if key == "8":
+            source = source.replace("count = 500", f"count = {COUNT}")
+        for code in statements(source):
             exec(code, namespace)
     return namespace
 
@@ -101,6 +110,13 @@ def lesson_model() -> rk.Model:
     return namespace["model"]
 
 
+def years() -> rk.duration.Periods:
+    """Return the Periods of lesson 04's cell 3."""
+    return rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
+        frequency=rk.duration.Frequency.YEAR
+    )
+
+
 def base_case(model: rk.Model) -> rk.Specification:
     """Return lesson 03's base case without rent growth, on lesson 04's Model (cell 4)."""
     return (
@@ -118,36 +134,62 @@ def base_case(model: rk.Model) -> rk.Specification:
     )
 
 
-def histories() -> rk.market.Paths:
-    """Return three paths of the rent index, made from data."""
-    growth = {"recovery": 0.03, "flat": 0.0, "downturn": -0.02}
-    return rk.market.Paths.from_flows(
-        flows={
-            key: {
-                "rent_index": rk.flow.Flow.from_periods(
-                    periods=YEARS,
-                    magnitudes=[(1 + rate) ** i for i in range(len(YEARS))],
-                    units="ratio",
-                )
-            }
-            for key, rate in growth.items()
-        }
-    )
-
-
 @pytest.fixture(scope="module")
 def lesson() -> dict:
-    """Run cell 10 of lesson 04, with its solve."""
+    """Run cells 5 to 8, 10, 17 and 18 of lesson 04, with their solves."""
     model = lesson_model()
     namespace: dict = {
         "rk": rk,
         "date": date,
         "model": model,
-        "years": YEARS,
+        "yearly": rk.duration.Frequency.YEAR,
+        "years": years(),
         "base": base_case(model),
-        "paths": histories(),
     }
-    return run(namespace, "10")
+    return run(namespace, "5", "6", "7", "8", "10", "17", "18")
+
+
+def test_cells_5_to_7_add_one_component_at_a_time(lesson):
+    count = len(lesson["years"])
+    (key,) = lesson["one_path"].keys
+    index = lesson["one_path"][key]["rent_index"]
+    assert [m.number for m in index.movements] == pytest.approx(
+        [1.02**i * (1 + 0.1 * math.sin(2 * math.pi * i / 10)) for i in range(count)]
+    )
+    five = lesson["five_paths"]
+    assert len(five) == 5 and five.capture.seed == 1
+    assert five.keys[0] != five.keys[1]
+    assert five[five.keys[0]]["rent_index"] != five[five.keys[1]]["rent_index"]
+    with pytest.raises(rk.errors.ContractError, match="needs a seed"):
+        rk.market.generate(
+            dynamics={"rent_index": lesson["dynamics"]},
+            periods=lesson["years"],
+            count=5,
+        )
+
+
+def test_cell_8_captures_the_paths(lesson):
+    paths = lesson["paths"]
+    assert len(paths) == COUNT
+    capture = paths.capture
+    assert (capture.generator, capture.seed, capture.count) == ("dynamics", 1, COUNT)
+    assert paths.regenerate(seed=1) == paths
+
+
+def test_cells_17_and_18_make_independent_series(lesson):
+    use_paths = lesson["use_paths"]
+    assert use_paths.names == (
+        "market_index",
+        "hotel_factor",
+        "residential_factor",
+        "retail_factor",
+    )
+    path = lesson["path"]
+    assert path.key == use_paths.keys[0]
+    hotel = path["market_index"] * path["hotel_factor"]
+    assert rk.quantity.default_units.compatible(hotel.units, "ratio")
+    assert len(hotel.movements) == len(lesson["years"])
+    assert path["market_index"] != path["hotel_factor"]
 
 
 def test_the_model_carries_the_market_in_one_rent_index():
