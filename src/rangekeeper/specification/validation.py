@@ -323,8 +323,13 @@ def _check_concrete(
                     "unit compatibility requires a unit-aware adapter",
                 )
             if units_compatible is not None:
+                key = _key(scope, UUID(target["target"]))
                 require(
-                    units_compatible(actual, expected), "incompatible supplied units"
+                    units_compatible(actual, expected),
+                    f"incompatible units: {key or target['target']} has units "
+                    f"{expected}, and the quantity that fixes it {actual}",
+                    code=Code.INCOMPATIBLE_UNITS,
+                    values={"key": key, "units": actual, "expected": expected},
                 )
 
     roles = check_roles(specification)

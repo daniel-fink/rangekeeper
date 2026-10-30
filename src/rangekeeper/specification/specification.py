@@ -737,12 +737,19 @@ def _quantity(
         if not unit_system.compatible("ratio", units):
             raise UnitError(
                 f"a bare number fixes a ratio, but {target} has units {units!r}; "
-                f"give a Quantity or text with units, such as '{value} {units}'"
+                f"give a Quantity or text with units, such as '{value} {units}'",
+                code=Code.INCOMPATIBLE_UNITS,
             )
     else:
         raise TypeError(
             f"the value of {target} must be a Quantity, Quantity text, a number "
             "or a mapping from Movement UUIDs to these"
+        )
+    if not unit_system.compatible(quantity.units, units):
+        raise UnitError(
+            f"incompatible units: {target} has units {units!r}, and the quantity "
+            f"that fixes it {quantity.units!r}",
+            code=Code.INCOMPATIBLE_UNITS,
         )
     unit_system.convert(quantity=quantity, to=units)
     return quantity

@@ -151,6 +151,12 @@ and `==` makes an equation, so compare two value handles by their `id`.
   code `UNIQUE`. `formulation(name=)` raises `MissingReferenceError` with the
   nearest names when the entity has no Formulation with that name.
 
+`commit()` also checks the units of each equation: the two sides of an equation,
+and the operands of a sum, must have compatible units. A failure raises
+`ValidationError` with the code `incompatible_units`, which names the equation,
+the part that fails and both units
+([dimensional analysis](errors.md#dimensional-analysis)).
+
 A missing entity or key raises `MissingReferenceError` with the nearest codes or
 keys. Its `where` names the owner that was searched, such as `"Entity project"`,
 or `"ModelDraft"` for the draft. A handle of another draft raises
