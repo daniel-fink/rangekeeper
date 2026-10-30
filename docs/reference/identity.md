@@ -32,19 +32,37 @@ Period alignment uses its boundaries and optional recorded date. Neither alignme
 rule uses the UUID. This allows separately authored Flows to align without sharing
 identities. Changing a label or coordinate does not break a UUID reference.
 
-| Operation | Movement UUIDs |
-|---|---|
-| `Movement.replace`, Model revision, solver publication | Preserve existing IDs |
-| Unit conversion, trimming, filtering and cleaning; the Movements that `since` and `until` keep | Preserve retained IDs |
-| `Flow.clone()` | Fresh IDs for an independent Value |
-| Scaling, `diff()`, `cumulative()` (such as a funding balance), collapse, aggregation, products, integration, resampling and valuation calculations; the zeros of `since` and `until` | Fresh IDs for result movements |
-| Alignment | Preserve existing IDs; create IDs for missing placeholders |
-| Scenario generation | Deterministic IDs from the owning Value UUID and period |
+### One rule for transforms
 
-`Flow.from_events` and `Flow.from_periods` generate UUIDs. For explicit
-identity, make the `Movement` records and pass them as `Flow(units=, movements=)`. Decoding never generates missing IDs. Reusing one
-Flow under a second Value would duplicate its Movement identities; call `clone()`
-to make that independent copy.
+A transform keeps the ID of each Movement that it **passes through**: a Movement
+that it selects, or whose amount it gives in other units. Each Movement that a
+transform **calculates**, its amount or its coordinate, is a new Movement with a
+fresh ID, also when the result equals the input (`flow.scale(1)`,
+`flow.shift(by=0)`). So a transformed Flow can go under another Value only when
+it has no Movement that it passed through; `clone()` gives fresh IDs to all of
+them.
+
+| Transform | Movement UUIDs |
+|---|---|
+| `Flow.trim`, `clean`, `drop_zeroes`, `trim_empty`; `Stream.select`, `select_values`, `trim`, `with_flows`, `with_policy`, `merge` and `stream[name]` | Kept: they select Movements |
+| `Flow.convert` | Kept: the same amounts in other units |
+| `Flow.since`, `until` | Kept for the Movements that keep their amounts; fresh for each zero |
+| `Stream.align` | Kept for the Movements that are present; fresh for each placeholder |
+| `Stream.dated` | Kept for the dated amounts; fresh for each period amount that gets a date |
+| Arithmetic (`+`, `-`, `*`, `/`, unary `-`), `scale`, `negate`, `round`, `shift`, `multiply`, `integrate`, `integrate_time`, `cumulative`, `diff`, `split`, `resample`, `collapse`; `Stream.resample`, `split`, `aggregate`, `sum`, `min` and `max`; `rk.finance.pv` | Fresh for every result Movement |
+| `Flow.clone()` | Fresh for every Movement, for an independent Value |
+| `Flow(amounts=)`, `from_events`, `from_periods`, `from_profile` | Fresh: new Movements |
+
+Records and documents are not transforms. `Movement.replace` and `Flow.replace`
+keep the IDs that they are not given. A Model revision and solver publication keep
+the IDs of existing Movements, and scenario generation makes deterministic IDs from
+the owning Value UUID and period. Methods that return the same Flow
+(`require_resolved()`, `check()`, unary `+`) make no Movements.
+
+For explicit identity, make the `Movement` records and pass them as
+`Flow(units=, movements=)`. Decoding never generates missing IDs. Reusing one Flow
+under a second Value would duplicate its Movement identities; call `clone()` to
+make that independent copy.
 
 ## Comparison rules
 
