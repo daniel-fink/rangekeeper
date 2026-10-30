@@ -1,16 +1,16 @@
 """The proposed cells that load saved documents run as written (#295).
 
-The cells come from ``examples/walkthrough/proposed/``: lesson 04 cells 2 and
-9, lesson 05 cells 2 and 3, lesson 06 cells 2 and 22, and lesson 07 cells 2 and
-3.
+The cells come from ``examples/walkthrough/proposed/``: lesson 04 cells 2, 4
+and 9, lesson 05 cells 2 and 3, lesson 06 cells 2 and 22, and lesson 07 cells 2
+and 3.
 Each reads a document of the data package with
 ``rk.io.load(path=helpers.data_path(name=...))``. Here ``helpers.data_path``
 gives a file in a temporary folder, which ``rk.io.save`` writes from the
 documents of the earlier lessons' cells.
 
 The other statements of these cells need other issues: ``rk.market.generate``
-(#299), ``model.equations`` (#283), ``model.summary()`` (#287), rollups (#285),
-the walkthrough helpers' data, and keyed values (#284).
+(#299), ``model.summary()`` (#287), rollups (#285), the walkthrough helpers'
+data, and keyed values (#284).
 """
 
 import ast
@@ -71,6 +71,8 @@ def data(tmp_path_factory) -> Path:
         start_date=date(2027, 1, 1), b_start=date(2030, 1, 1)
     )
     rk.io.save(document=base, path=folder / "04_base_case.specification.json")
+    growth = base.fix(rent_growth="3 % pa", exit_cap_rate="5 %")
+    rk.io.save(document=growth, path=folder / "03_base_case.specification.json")
     rk.io.save(document=back(), path=folder / "02_back_door.specification.json")
     for name in ("04_rent_index.paths.json", "04_use_factors.paths.json"):
         rk.io.save(document=histories(), path=folder / name)
@@ -85,11 +87,24 @@ def run(code: str, data: Path) -> dict[str, object]:
     return namespace
 
 
-def test_lesson_04_cell_2_loads_the_plan_of_lesson_03(data):
-    namespace = run(statements(cells("04_market_futures.md")["2"], 0), data)
+def test_lesson_04_cell_2_loads_the_plan_of_lesson_03_and_shows_its_equations(data):
+    namespace = run(cells("04_market_futures.md")["2"], data)
     model = namespace["model"]
     assert isinstance(model, rk.Model)
-    assert model.value(key="unlevered_npv").key == "unlevered_npv"
+    assert len(model.equations) == 32
+
+
+def test_lesson_04_cell_4_moves_lesson_03_s_base_case_to_the_new_plan(data):
+    """Cells 3 and 3b remove the rent growth (#283); cell 4 frees it, then on."""
+    numbered = cells("04_market_futures.md")
+    namespace = run(numbered["2"], data)
+    exec(numbered["3"], namespace)
+    exec(numbered["3b"], namespace)
+    exec(numbered["4"], namespace)
+    base = namespace["base"]
+    assert base.model_id == namespace["model"].id
+    keys = {row.values["key"] for row in base.roles.rows}
+    assert "rent_growth" not in keys and "exit_cap_rate" in keys
 
 
 def test_lesson_04_cell_9_saves_and_loads_market_paths(tmp_path, monkeypatch):
@@ -104,9 +119,17 @@ def test_lesson_04_cell_9_saves_and_loads_market_paths(tmp_path, monkeypatch):
 
 def test_lesson_05_cells_2_and_3_load_the_plan_the_paths_and_the_base_case(data):
     numbered = cells("05_when_to_commit.md")
-    loaded = run(statements(numbered["2"], 0, 1), data)
+    loaded = run(numbered["2"], data)
     model = loaded["model"]
     assert loaded["paths"] == histories()
+    dates = eval(statements(numbered["2"], 2), loaded)
+    assert [item.key for item in dates] == [
+        "shared_start",
+        "a_start",
+        "a_open",
+        "b_open",
+        "b_start",
+    ]
     namespace = run(numbered["3"], data)
     fixed = namespace["fixed"]
     assert isinstance(fixed, rk.Specification)
