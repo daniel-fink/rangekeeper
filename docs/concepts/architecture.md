@@ -154,8 +154,11 @@ show the target API in use.
   runs the typed stages: it resolves the cases, validates each composition, binds
   roles, builds the affine problem, solves it in a separate process, makes a
   candidate, verifies it independently and assembles an `Outcome`, and writes
-  nothing. `execute(specification=, store=)` also publishes the output Models and
-  then the Runs. Each stage is a public function that writes to no store. Read
+  nothing. `execute(specification=, store=)` also publishes the documents that
+  made the Specification, then the output Models and then the Runs.
+  `store.find_runs(specification=)` finds the stored Runs by name, and
+  `replay(run=, store=)` solves a stored Run again and compares the results.
+  Each stage is a public function that writes to no store. Read
   a solved value by key, `outcome["land_cost"]`, and the result from
   `outcome.status`; `outcome.raise_for_status()` raises when the solve found no
   determined result. A batch Outcome gives each case with `case(key=)` and one
@@ -204,7 +207,7 @@ show the target API in use.
 
 **Exchange data**
 - Strict codecs read and write JSON and YAML with an explicit kind.
-- Stores are append-only by UUID.
+- Stores are append-only by UUID. `find_runs(specification=)` finds their Runs by the name of the Specification.
 - A Bundle delivers a set of documents with their exact dependencies.
 - Polars tables are detached from the evidence.
 

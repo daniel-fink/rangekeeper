@@ -1,6 +1,8 @@
 """Run the stages for each case: pure ``solve`` and publishing ``execute``."""
 
+from collections.abc import Callable, Sequence
 from dataclasses import replace
+from typing import cast
 from uuid import UUID
 
 from rangekeeper.execution import assembly
@@ -17,7 +19,7 @@ from rangekeeper.run.validation import (
     validate_executed,
 )
 from rangekeeper.shared.errors import MissingReferenceError
-from rangekeeper.shared.references import DocumentResolver
+from rangekeeper.shared.references import DocumentResolver, SpecificationResolver
 from rangekeeper.shared.store import RecordStore
 from rangekeeper.specification import Specification
 
@@ -56,40 +58,63 @@ class Pinned:
 
     It returns the Specification itself and the Model revision that the
     Specification keeps from ``model.specify()``. It reads other identities
-    from the Specification's own resolver, when it has one. Any other identity
-    raises MissingReferenceError.
+    from the Specification's own resolver, when it has one, and then from
+    ``fallback``, when it is given: ``execute`` gives its store. Any other
+    identity raises MissingReferenceError.
     """
 
-    def __init__(self, specification: Specification) -> None:
+    def __init__(
+        self,
+        specification: Specification,
+        *,
+        fallback: DocumentResolver | None = None,
+    ) -> None:
         if not isinstance(specification, Specification):
             raise TypeError("specification must be a Specification")
         self.specification = specification
         # The facade keeps these for chained calls; they are not saved.
         self.model = specification.model
         self.resolver = specification.resolver
+        self.fallback = fallback
 
     def load_model(self, id: UUID) -> Model:
-        """Return the pinned Model, else load it from the Specification's resolver."""
+        """Return the pinned Model, else load it from the resolvers."""
         if self.model is not None and self.model.id == id:
             return self.model
-        if self.resolver is not None:
-            return self.resolver.load_model(id)
-        raise self._missing(id, "Model")
+        return _first(
+            self._sources(),
+            load=lambda source: source.load_model(id),
+            missing=lambda: self._missing(id, "Model"),
+        )
 
     def load_specification(self, id: UUID) -> Specification:
-        """Return the Specification itself, else load it from its resolver."""
+        """Return the Specification itself, else load it from the resolvers."""
         if id == self.specification.id:
             return self.specification
-        if self.resolver is not None:
-            return self.resolver.load_specification(id)
-        raise self._missing(id, "Specification")
+        return _first(
+            self._sources(),
+            load=lambda source: source.load_specification(id),
+            missing=lambda: self._missing(id, "Specification"),
+        )
 
     def load_run(self, id: UUID) -> Run:
-        """Load a Run from the Specification's resolver, when it can load Runs."""
-        load_run = getattr(self.resolver, "load_run", None)
-        if load_run is None:
-            raise self._missing(id, "Run")
-        return load_run(id)
+        """Load a Run from the resolvers that can load Runs."""
+        sources = [
+            cast(DocumentResolver, source)
+            for source in self._sources()
+            if hasattr(source, "load_run")
+        ]
+        return _first(
+            sources,
+            load=lambda source: source.load_run(id),
+            missing=lambda: self._missing(id, "Run"),
+        )
+
+    def _sources(self) -> list[SpecificationResolver]:
+        """Return the Specification's own resolver, then the fallback, when given."""
+        return [
+            source for source in (self.resolver, self.fallback) if source is not None
+        ]
 
     @staticmethod
     def _missing(id: UUID, kind: str) -> MissingReferenceError:
@@ -100,27 +125,51 @@ class Pinned:
         )
 
 
+def _first[S, D](
+    sources: Sequence[S],
+    *,
+    load: Callable[[S], D],
+    missing: Callable[[], MissingReferenceError],
+) -> D:
+    """Return what the first source that holds a revision loads.
+
+    A source that does not hold it raises MissingReferenceError; the error of
+    the last source raises, or ``missing()`` when there is no source.
+    """
+    if not sources:
+        raise missing()
+    for source in sources[:-1]:
+        try:
+            return load(source)
+        except MissingReferenceError:
+            continue
+    return load(sources[-1])
+
+
 def execute(
     *,
     specification: Specification,
     store: RecordStore,
     config: ExecutionConfig | None = None,
 ) -> Outcome:
-    """Solve ``specification`` with ``store`` as resolver, then publish the result.
+    """Solve ``specification``, then publish its documents and its result to ``store``.
 
-    Publication puts each case Specification that ``store`` does not hold,
-    then the Specification, then for each case its outputs and then its Run, cases
-    before their batch. Each Run is validated once, against
-    ``store``, before anything is put; ``store.put`` does not repeat that
-    validation. Nothing is put when solving or validation raises. There is no
-    multi-document transaction: a storage error can leave accepted outputs or
-    completed case Runs. Caller-owned input records never change.
+    The solve resolves the documents that made the Specification, as ``solve``
+    does without a resolver, and then reads ``store``. Publication puts each
+    input Model, include and case Specification that ``store`` does not hold,
+    then the Specification, then for each case its outputs and then its Run,
+    cases before their batch. So ``store`` can start empty, and it then holds
+    everything that its Runs reference.
+
+    Each Run is validated once, against ``store``, before anything is put;
+    ``store.put`` does not repeat that validation. Nothing is put when solving
+    or validation raises. There is no multi-document transaction: a storage
+    error can leave accepted outputs or completed case Runs. Caller-owned
+    input records never change.
     """
-    outcome, cases = _run(specification, store, config, store=store)
-    for case in _case_documents(specification, cases):
-        if not _stored(store, case.id):
-            store.put(case)
-    store.put(specification)
+    resolver = Pinned(specification, fallback=store)
+    outcome, cases = _run(specification, resolver, config, store=store)
+    _publish_inputs(store, cases)
     for item in outcome.walk():
         if not item.cases:
             for model in item.outputs:
@@ -169,29 +218,46 @@ def _run(
     return outcome, cases
 
 
-def _case_documents(specification: Specification, cases: Cases) -> list[Specification]:
-    """Return the case Specifications of a batch, each case before its batch."""
+def _publish_inputs(store: RecordStore, cases: Cases) -> None:
+    """Put the inputs that ``store`` lacks: Models, then Specifications, then the root."""
+    for model in cases.models.values():
+        if not _holds(store.load_model, model.id):
+            store.put(model)
+    for document in _inputs(cases.root, cases):
+        if not _holds(store.load_specification, document.id):
+            store.put(document)
+    store.put(cases.root)
+
+
+def _inputs(specification: Specification, cases: Cases) -> list[Specification]:
+    """Return the includes and cases of a Specification, each before its user."""
     found = []
-    for identity in specification.record.cases or ():
-        case = cases.documents[identity]
-        found.extend(_case_documents(case, cases))
-        found.append(case)
+    for identity in (
+        *(specification.record.includes or ()),
+        *(specification.record.cases or ()),
+    ):
+        document = cases.documents[identity]
+        found.extend(_inputs(document, cases))
+        found.append(document)
     return found
 
 
-def _stored(store: RecordStore, id: UUID) -> bool:
-    """Return whether ``store`` already holds the Specification ``id``."""
+def _holds(load: Callable[[UUID], object], id: UUID) -> bool:
+    """Return whether ``load`` finds the revision ``id`` in a store."""
     try:
-        store.load_specification(id)
+        load(id)
     except MissingReferenceError:
         return False
     return True
 
 
 def _unstored(outcome: Outcome, cases: Cases) -> set[UUID]:
-    """Return the revisions that validating ``outcome.run`` read from no store."""
-    documents = {cases.root.id}
-    documents.update(case.id for case in _case_documents(cases.root, cases))
+    """Return the revisions that validating ``outcome.run`` can read from no store.
+
+    They are the documents that made the Specification and the unstored
+    outputs and case Runs; ``execute`` puts each of them before the Run.
+    """
+    documents = set(cases.models) | set(cases.documents)
     for item in outcome.walk():
         documents.update(model.id for model in item.outputs)
         if item is not outcome:

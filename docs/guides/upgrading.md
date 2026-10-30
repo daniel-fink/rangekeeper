@@ -184,6 +184,22 @@ gives the installation hint in the `backend_unavailable` diagnostic. Evidence
 and results do not change. See the
 [solve worker](../reference/execution.md#solve-worker).
 
+### Stores
+
+The `RecordStore` protocol has a new method, `find_runs(*, specification)`: the
+stored Runs of the Specifications with that name, in the order that they
+finished ([#294](https://github.com/daniel-fink/rangekeeper/issues/294)).
+`MemoryStore` and `DirectoryStore` have it; a store of your own that `execute`
+takes must implement it. See [find Runs](../reference/run-and-storage.md#find-runs).
+
+`DirectoryStore` takes its folder as `path`, not `root`. A call that names it,
+`DirectoryStore(root=folder)`, is now `DirectoryStore(path=folder)`; the
+positional form `DirectoryStore(folder)` and the `root` property do not change.
+
+`execute` also puts the input Model, includes and case Specifications that the
+store does not hold, before the Specification. Code that put the input Model
+before `execute` still works; it can stop.
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names

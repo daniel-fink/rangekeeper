@@ -14,6 +14,7 @@ from rangekeeper.io._document import (
     require_same,
     trusted,
 )
+from rangekeeper.io._runs import find_runs
 from rangekeeper.run.validation import validate as validate_run
 from rangekeeper.run.validation import validated_in
 from rangekeeper.shared.arguments import require_uuid
@@ -77,3 +78,16 @@ class MemoryStore:
     def load_paths(self, id: UUID) -> Paths:
         """Return the exact market paths revision; never draw again."""
         return self._load(id, Paths)
+
+    def find_runs(self, *, specification: str) -> tuple[Run, ...]:
+        """Return the Runs of the Specifications named ``specification``.
+
+        The Runs come in the order of their recorded finish times, earliest
+        first, so ``[-1]`` is the Run that finished last. A batch Run takes
+        the latest finish time of its cases. A Run without a time comes first,
+        and Runs with the same time keep the order in which they were put.
+        The result can be empty.
+        """
+        with self._lock:
+            runs = [item for item in self._documents.values() if isinstance(item, Run)]
+        return find_runs(runs, specification=specification, resolver=self)

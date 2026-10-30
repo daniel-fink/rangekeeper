@@ -5,12 +5,14 @@ from rangekeeper.execution import (
     ExecutionConfig,
     Limits,
     Outcome,
+    Replay,
     Tolerances,
     execute,
+    replay,
     solve,
 )
 from rangekeeper.execution.backends import Backend, PyomoHighs
-from rangekeeper.io import MemoryStore
+from rangekeeper.io import DirectoryStore, MemoryStore
 
 
 def investigate(specification: Specification) -> Run:
@@ -29,3 +31,12 @@ def answer(specification: Specification, store: MemoryStore) -> Outcome:
     run: Run = outcome.run
     assert run.id == outcome.run.id
     return solve(specification=specification)
+
+
+def check(name: str) -> Replay:
+    store = DirectoryStore(path="runs")
+    found: tuple[Run, ...] = store.find_runs(specification=name)
+    replayed = replay(run=found[-1], store=store).raise_for_status()
+    stored: Outcome = replayed.stored
+    assert stored.run.id == found[-1].id
+    return replay(run=found[-1], store=store, config=ExecutionConfig())

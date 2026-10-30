@@ -1,10 +1,16 @@
-"""``solve`` needs no store; ``execute`` publishes outputs, then Runs (#126)."""
+"""``solve`` needs no store; ``execute`` publishes outputs, then Runs (#126).
+
+``execute`` also publishes the documents that made the Specification, so a
+store can start empty (#294).
+"""
 
 from collections import Counter
+from datetime import date
 from uuid import uuid4
 
 import pytest
 
+import rangekeeper as rk
 from rangekeeper import Specification
 from rangekeeper.execution import ExecutionConfig, Outcome, execute, solve
 from rangekeeper.execution.backends import BackendResult, Termination
@@ -48,6 +54,32 @@ def batch_of(model, *leaves):
             "model": str(model.id),
             "cases": [str(leaf.id) for leaf in leaves],
         }
+    )
+
+
+def dated() -> Specification:
+    """Return a Specification of a small dated Model that a draft made.
+
+    The Specification keeps its Model from ``model.specify()``; no store
+    holds either.
+    """
+    years = rk.duration.Span(start=date(2027, 1, 1), end=date(2030, 1, 1)).periods(
+        frequency=rk.duration.Frequency.YEAR
+    )
+    draft = rk.Model(name="Dated").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.value(key="cost", units="AUD")
+    project.value(key="rate", units="% pa")
+    project.date(key="start")
+    project.flow(key="works", units="AUD", periods=years)
+    project.equations(
+        "works = -rx.profile.uniform(total=cost, start=start, length=2 years)",
+        "npv = rx.finance.npv(flow=works, rate=rate, on=start)",
+    )
+    return (
+        draft.commit()
+        .specify(name="Dated")
+        .fix(cost="10e6 AUD", rate="7 % pa", start=date(2027, 1, 1))
     )
 
 
@@ -121,6 +153,42 @@ def test_execute_publishes_outputs_then_runs_and_validates_the_tree_once(monkeyp
     assert counts == {outcome.run.id: 1}
     assert store.load_run(outcome.run.id).to_data() == outcome.run.to_data()
     assert isinstance(store.load_model(leaves[0].outputs[0].id), Model)
+
+
+def test_execute_publishes_the_documents_that_made_the_specification(monkeypatch):
+    pytest.importorskip("pyomo")
+    pytest.importorskip("highspy")
+    counts = count_validations(monkeypatch)
+    base = dated()
+    batch = base.cases(cases={"low": {"rate": "5 % pa"}, "high": {"rate": "9 % pa"}})
+    store = Recording()
+    outcome = execute(specification=batch, store=store)
+    low, high = outcome.cases
+    first, second = batch.record.cases
+    assert store.puts == [
+        ("Model", base.model.id),
+        ("Specification", first),
+        ("Specification", second),
+        ("Specification", batch.id),
+        ("Model", low.outputs[0].id),
+        ("Run", low.run.id),
+        ("Model", high.outputs[0].id),
+        ("Run", high.run.id),
+        ("Run", outcome.run.id),
+    ]
+    assert counts == {outcome.run.id: 1}
+    # The second execution finds its inputs in the store.
+    store.puts.clear()
+    again = execute(specification=batch, store=store)
+    assert [kind for kind, _ in store.puts] == [
+        "Specification",
+        "Model",
+        "Run",
+        "Model",
+        "Run",
+        "Run",
+    ]
+    assert store.puts[-1] == ("Run", again.run.id)
 
 
 def test_execute_puts_nothing_when_solving_raises():

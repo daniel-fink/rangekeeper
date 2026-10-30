@@ -448,6 +448,7 @@
     "UNDERDETERMINED",
     "UNIQUENESS_NOT_ASSESSED",
     "UNSUPPORTED_CAPABILITY",
+    "REPLAY_MISMATCH",
     "DECODE",
     "ENCODING",
     "EXTENSION_CONFLICT",
@@ -824,6 +825,14 @@
    ],
    "module": "rangekeeper.execution.compiler"
   },
+  "Replay": {
+   "kind": "class",
+   "members": {
+    "raise_for_status": "method (self) -> Self"
+   },
+   "module": "rangekeeper.execution.replaying",
+   "signature": "()"
+  },
   "Row": {
    "kind": "class",
    "members": {
@@ -912,6 +921,11 @@
    "kind": "function",
    "module": "rangekeeper.execution.publication",
    "signature": "(*, binding: rangekeeper.execution.preparation.Binding, unknowns: collections.abc.Mapping[uuid.UUID, float], run_id: uuid.UUID) -> rangekeeper.model.model.Model"
+  },
+  "replay": {
+   "kind": "function",
+   "module": "rangekeeper.execution.replaying",
+   "signature": "(*, run: rangekeeper.run.run.Run, store: rangekeeper.shared.references.DocumentResolver, config: rangekeeper.execution.config.ExecutionConfig | None = None) -> Replay"
   },
   "resolve_cases": {
    "kind": "function",
@@ -1384,7 +1398,8 @@
   "DirectoryStore": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, root: pathlib.Path) -> None",
+    "__init__": "method (self, path: str | os.PathLike[str]) -> None",
+    "find_runs": "method (self, *, specification: str) -> tuple[rangekeeper.run.run.Run, ...]",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
     "load_paths": "method (self, id: uuid.UUID) -> rangekeeper.market.paths.Paths",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
@@ -1393,7 +1408,7 @@
     "root": "property"
    },
    "module": "rangekeeper.io.directory",
-   "signature": "(root: pathlib.Path) -> None"
+   "signature": "(path: str | os.PathLike[str]) -> None"
   },
   "Document": {
    "kind": "alias",
@@ -1412,6 +1427,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self) -> None",
+    "find_runs": "method (self, *, specification: str) -> tuple[rangekeeper.run.run.Run, ...]",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
     "load_paths": "method (self, id: uuid.UUID) -> rangekeeper.market.paths.Paths",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
@@ -1425,6 +1441,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *args, **kwargs)",
+    "find_runs": "method (self, *, specification: str) -> tuple[Run, ...]",
     "load_model": "method (self, id: uuid.UUID) -> Model",
     "load_paths": "method (self, id: uuid.UUID) -> Paths",
     "load_run": "method (self, id: uuid.UUID) -> Run",

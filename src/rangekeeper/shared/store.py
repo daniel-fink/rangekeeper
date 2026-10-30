@@ -26,3 +26,12 @@ class RecordStore(DocumentResolver, Protocol):
     def load_paths(self, id: UUID) -> "Paths":
         """Return one market paths revision without drawing again."""
         ...
+
+    def find_runs(self, *, specification: str) -> "tuple[Run, ...]":
+        """Return the Runs of the Specifications named ``specification``.
+
+        The Runs come in the order of their recorded finish times, earliest
+        first, so ``[-1]`` is the Run that finished last. A batch Run takes
+        the latest finish time of its cases. The result can be empty.
+        """
+        ...

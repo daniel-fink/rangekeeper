@@ -90,6 +90,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Availability | The earliest date at which a value can be observed | `specification` | — |
 | Solve | Calculate an `Outcome` without writing to a store | `execution` | `execution.solve` |
 | Execute | Solve and then publish to a store | `execution` | `execution.execute` |
+| Replay | Solve the Specification of a stored Run again, and compare the result with the stored result. Not the path replay of `market.replay`, which checks captured market paths against their inputs | `execution` | `execution.replay`, which returns a `Replay`; `store.find_runs(specification=)` finds the Run |
 | Affine problem | The linear problem that a backend receives | `execution` | `AffineProblem`: variables, rows with relations, bounds and the rank analysis |
 | Piecewise equation, active side | An equation with an `rx.max` or `rx.min` call that reads a free value. The active side is the operand that the call selects; with one active side for each call, the equation is affine. The solve picks the sides, solves and checks them at its solution, and reports sides that do not hold | `execution` | Calls of `rx.max` and `rx.min`; the `active_side` code |
 | Backend | A registered solver implementation | `execution` | — |
