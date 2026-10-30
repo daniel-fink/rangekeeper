@@ -205,7 +205,11 @@ class _LookupFields(RangekeeperError):
         message = f"{subject} {self._verb}" + (f" in {where}" if where else "")
         if self.candidates:
             message += f"; {self._label}: " + ", ".join(self.candidates)
-        super().__init__(message, **fields)
+        super().__init__(message + self._detail(), **fields)
+
+    def _detail(self) -> str:
+        """Return the end of the message that a subclass adds; empty by default."""
+        return ""
 
     def _arguments(self) -> tuple[Any, ...]:
         return (self.requested,)
@@ -227,11 +231,37 @@ class MissingReferenceError(_LookupFields, LookupError):
     ``"id"``, ``"code"``, ``"name"``, ``"key"`` or ``"path"``. ``kind`` names the
     kind of item, and ``where`` names the document, store or owner that was
     searched. ``candidates`` gives the nearest names that exist, when any are close.
+    ``referenced_by`` names what still references the item, when it is known:
+    the keys of the equations that use a value that a draft removed.
     """
 
     code = Code.REFERENCE_MISSING
     _verb = "not found"
     _label = "nearest"
+
+    def __init__(
+        self,
+        requested: object,
+        *,
+        kind: str = "reference",
+        by: str = "id",
+        where: str | None = None,
+        candidates: Iterable[str] = (),
+        referenced_by: Iterable[str] = (),
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        self.referenced_by = tuple(referenced_by)
+        super().__init__(
+            requested, kind=kind, by=by, where=where, candidates=candidates, **fields
+        )
+
+    def _detail(self) -> str:
+        if not self.referenced_by:
+            return ""
+        return "; referenced by: " + ", ".join(self.referenced_by)
+
+    def _fields(self) -> dict[str, Any]:
+        return {**super()._fields(), "referenced_by": self.referenced_by}
 
 
 class AmbiguousReferenceError(_LookupFields, LookupError):

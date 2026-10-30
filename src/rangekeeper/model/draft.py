@@ -7,7 +7,7 @@ equations on one entity.
 """
 
 import keyword
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
 from difflib import get_close_matches
 from typing import TYPE_CHECKING, TypeVar
@@ -15,11 +15,13 @@ from uuid import UUID, uuid4
 
 from rangekeeper.duration import Period
 from rangekeeper.flow import Flow, Movement
-from rangekeeper.model._mathematics import Mathematics
+from rangekeeper.model._mathematics import Located, Mathematics
 from rangekeeper.model._undeclared import Place, Undeclared, Unknown, known_values
-from rangekeeper.model.expression import terms
+from rangekeeper.model.equations import references
+from rangekeeper.model.expression import syntax, terms
 from rangekeeper.model.expression import text as equation_text
 from rangekeeper.model.expression.catalogue import functions
+from rangekeeper.model.expression.rendering import render
 from rangekeeper.model.expression.terms import Symbolic, Term
 from rangekeeper.model.expression.text import RESERVED
 from rangekeeper.model.formulation.authoring import identify
@@ -31,7 +33,6 @@ from rangekeeper.schema.records import (
     Assembly,
     Characteristics,
     Classification,
-    Constraint,
     Definitions,
     Entity,
     Expression,
@@ -60,9 +61,8 @@ if TYPE_CHECKING:
 # Relationship, when no Taxonomy has that code yet.
 ENTITY_TAXONOMY = "entity"
 RELATIONSHIP_TAXONOMY = "relationship"
-# Operators whose result is Boolean, so that an expression with one at its root
-# can be an equation.
-_RELATIONS = frozenset(
+# The comparisons: an equality or a bound, with one side on each side of it.
+_COMPARISONS = frozenset(
     {
         Operator.EQUAL,
         Operator.NOT_EQUAL,
@@ -70,11 +70,17 @@ _RELATIONS = frozenset(
         Operator.LESS_THAN_OR_EQUAL,
         Operator.GREATER_THAN,
         Operator.GREATER_THAN_OR_EQUAL,
-        Operator.LOGICAL_NOT,
-        Operator.LOGICAL_AND,
-        Operator.LOGICAL_OR,
     }
 )
+# Operators whose result is Boolean, so that an expression with one at its root
+# can be an equation.
+_RELATIONS = _COMPARISONS | {
+    Operator.LOGICAL_NOT,
+    Operator.LOGICAL_AND,
+    Operator.LOGICAL_OR,
+}
+# Name a value that an equation references, as the equations of one entity write it.
+_Namer = Callable[[UUID], str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -245,7 +251,10 @@ class EntityHandle:
         return self._draft._owner(self._id).record.code
 
     def __repr__(self) -> str:
-        record = self._draft._owner(self._id).record
+        owner = self._draft._owners.get(self._id)
+        if owner is None:
+            return f"<removed entity {self._id}>"
+        record = owner.record
         word = "assembly" if isinstance(record, Assembly) else "entity"
         name = "" if record.name is None else f" {record.name!r}"
         return f"<{word} {record.code or self._id}{name}>"
@@ -337,11 +346,57 @@ class EntityHandle:
         Formulation whose code is the entity's code; the draft makes it when it
         is absent. The draft adds the Function record of each equation
         function that an equation calls to the Model's definitions.
+
+        Each equation gets a key that names it (D40): the key of the first
+        value of its text, such as ``total_cost`` in
+        ``"total_cost = land_cost + works_cost"``. A key that the entity's
+        equations have already gets a number: ``effective_income_2``.
+        ``replace``, ``remove`` and ``add_to`` find an equation by its key.
         """
         draft = self._draft
-        records = draft._equations_of(self._id, equations)
+        records = draft._checked(self._id, equations)
         formulation = draft._mathematics.default(draft._owner(self._id).path)
-        draft._mathematics.add(formulation=formulation, expressions=records)
+        draft._add_keyed(self._id, formulation=formulation, records=records)
+
+    def replace(self, *, key: str, equation: str | Term | Expression) -> None:
+        """Replace the equation with this key by another equation.
+
+        The new equation keeps the key and the Formulation of the one it
+        replaces, and it is checked as ``equations`` checks it:
+        ``project.replace(key="income", equation="income = rent_index *
+        (a_rent + b_rent)")``. A key that no equation of the entity has raises
+        MissingReferenceError with the nearest keys; a failed call changes
+        nothing.
+        """
+        self._draft._replace(self._id, key=require_text(key, "key"), equation=equation)
+
+    def remove(self, *, key: str) -> None:
+        """Remove the value and the equation with this key from the entity.
+
+        A key names a value, an equation, or both: ``project.remove(key=
+        "rent_growth")`` removes the value ``rent_growth``, and
+        ``remove(key="income")`` removes the equation that defines ``income``
+        and the value. An equation that still uses a removed value fails at
+        ``commit()``: MissingReferenceError names the value in ``requested`` and
+        the keys of the equations that use it in ``referenced_by``. A key that
+        names neither a value nor an equation raises MissingReferenceError with
+        the nearest keys.
+        """
+        self._draft._remove_key(self._id, require_text(key, "key"))
+
+    def add_to(self, *, key: str, term: str | Term | ValueHandle) -> None:
+        """Add a term to the right side of the equation with this key.
+
+        ``project.add_to(key="project_cash", term="b_site_sale")`` makes
+        ``project_cash = land + works + operating + sale`` into
+        ``project_cash = land + works + operating + sale + b_site_sale``. A term
+        that starts with a negation is subtracted: ``term="-x"`` adds ``- x``.
+        The term is equation text, a Term of the Python form or a value handle;
+        the new equation keeps the key and the Formulation, and it is checked
+        as ``equations`` checks it. The equation must be an equality or a
+        bound; another one raises ContractError with the code ``PREDICATE``.
+        """
+        self._draft._add_term(self._id, key=require_text(key, "key"), term=term)
 
     def add_formulation(
         self,
@@ -413,6 +468,7 @@ class ModelDraft:
         "_undeclared",
         "_changed",
         "_known",
+        "_removed",
         "_handles",
         "_committed",
     )
@@ -432,6 +488,9 @@ class ModelDraft:
     _changed: set[str]
     # The UUIDs of the Values and Movements that equations can reference.
     _known: set[UUID]
+    # The path of the owner and the key of each Value and Movement that the
+    # draft removed, to name them in an error.
+    _removed: dict[UUID, tuple[str, str]]
     _handles: dict[UUID, EntityHandle]
     _committed: bool
 
@@ -463,7 +522,9 @@ class ModelDraft:
         }
         draft._relationships = list(system.relationships or ())
         draft._mathematics = Mathematics(
-            roots=system.formulations or (), identify=draft._identify
+            roots=system.formulations or (),
+            identify=draft._identify,
+            lookup=lambda identity: model._index.get(identity, Expression),
         )
         draft._undeclared = Undeclared()
         for owner in draft._owners.values():
@@ -477,6 +538,7 @@ class ModelDraft:
             for identity, record in model._index.records.items()
             if isinstance(record, (Value, Movement))
         }
+        draft._removed = {}
         draft._handles = {}
         draft._committed = False
         return draft
@@ -657,6 +719,38 @@ class ModelDraft:
             _find(records, text, kind="Entity", where="ModelDraft", by=by).id
         )
 
+    def remove(self, *, entity: "str | UUID | EntityHandle") -> None:
+        """Remove an Entity or Assembly from the next revision.
+
+        ``entity`` is a code, a UUID or a handle. The entity goes with its
+        values, its equations and Formulations, the Relationships that it is
+        the source or the target of, and its membership of each Assembly. An
+        equation of another entity that still uses one of its values fails at
+        ``commit()``: MissingReferenceError names the value, such as
+        ``a_hotel_floor_1.income``, in ``requested``, and the keys of the
+        equations that use it in ``referenced_by``. Its handles stop working.
+        """
+        self._require_open()
+        identity = self._entity_id(entity)
+        owner = self._owners.pop(identity)
+        self._handles.pop(identity, None)
+        for value in owner.values:
+            self._forget(owner, value)
+        for key in self._undeclared.keys(identity):
+            self._forget_pending(owner, key)
+        for formulation in self._mathematics.drop(owner.path):
+            self._known.difference_update(_contained(formulation.values or ()))
+        self._remove_relationships(identity)
+        for other in self._owners.values():
+            record = other.record
+            if isinstance(record, Assembly) and identity in (record.entities or ()):
+                members = tuple(
+                    item for item in record.entities or () if item != identity
+                )
+                other.record = record.replace(entities=members or UNSET)
+                other.changed = True
+        self._changed.add("owners")
+
     # Commit.
 
     def commit(self) -> "Model":
@@ -668,9 +762,13 @@ class ModelDraft:
 
         A value that equations define and no call declares takes its kind and
         units from its equations (D44); one whose units cannot be worked out
-        raises ValidationError with the code ``semantic.units``.
+        raises ValidationError with the code ``semantic.units``. An equation
+        that uses a value that the draft removed raises MissingReferenceError,
+        with the value in ``requested`` and the keys of the equations that use
+        it in ``referenced_by``.
         """
         self._require_open()
+        self._check_references()
         base = self._base
         measures = list(self._measures)
         inferred = self._inferred(measures)
@@ -849,18 +947,7 @@ class ModelDraft:
             )
         return ValueHandle._of(value, owner=owner, units=units)
 
-    def _add_to(
-        self,
-        formulation: UUID,
-        *,
-        owner: UUID,
-        equations: Sequence[str | Term | Expression],
-    ) -> None:
-        """Add the equations of an entity to one of its Formulations."""
-        records = self._equations_of(owner, equations)
-        self._mathematics.add(formulation=formulation, expressions=records)
-
-    def _equations_of(
+    def _checked(
         self,
         owner_id: UUID,
         equations: Sequence[str | Term | Expression],
@@ -893,6 +980,247 @@ class ModelDraft:
             self._add_functions(equation.to_data())
         return records
 
+    def _add_keyed(
+        self,
+        owner_id: UUID,
+        *,
+        formulation: UUID,
+        records: Sequence[Expression],
+    ) -> None:
+        """Add checked equations to a Formulation of an entity, each with its key.
+
+        An equation's key is the key of its first value; a key that the
+        entity's equations have gets the next number, such as ``income_2``.
+        """
+        owner = self._owner(owner_id)
+        name = self._namer(owner.path)
+        taken = self._equation_keys(owner)
+        keyed: list[tuple[str | None, Expression]] = []
+        for record in records:
+            key = _first(record, name=name)
+            if key is not None:
+                key = _unique(key, taken)
+                taken.add(key)
+            keyed.append((key, record))
+        self._mathematics.add(formulation=formulation, path=owner.path, equations=keyed)
+
+    def _replace(
+        self,
+        owner_id: UUID,
+        *,
+        key: str,
+        equation: str | Term | Expression,
+    ) -> None:
+        """Replace the equation with this key of an entity; it keeps its key."""
+        self._require_open()
+        located = self._one(self._owner(owner_id), key)
+        (record,) = self._checked(owner_id, [equation])
+        self._mathematics.replace(located=located, predicate=record)
+
+    def _add_term(
+        self,
+        owner_id: UUID,
+        *,
+        key: str,
+        term: "str | Term | ValueHandle",
+    ) -> None:
+        """Add a term to the right side of the equation with this key of an entity."""
+        self._require_open()
+        owner = self._owner(owner_id)
+        located = self._one(owner, key)
+        predicate = located.predicate
+        if (
+            predicate.kind is not ExpressionKind.BINARY
+            or predicate.operator not in _COMPARISONS
+            or predicate.operands is None
+        ):
+            raise ContractError(
+                f"add_to adds a term to one side of an equality or a bound; the "
+                f"equation {key!r} in {owner.where} is neither",
+                code=Code.PREDICATE,
+                values={"key": key, "where": owner.where},
+            )
+        name = self._written(owner, located)
+        left, right = (_text(side, name=name) for side in predicate.operands)
+        sign, added = _term(term, name=name)
+        symbol = syntax.SPELLINGS[predicate.operator].symbol
+        (record,) = self._checked(
+            owner_id, [f"{left} {symbol} {right} {sign} ({added})"]
+        )
+        self._mathematics.replace(located=located, predicate=record)
+
+    def _remove_key(self, owner_id: UUID, key: str) -> None:
+        """Remove the value and the equations with this key from an entity."""
+        self._require_open()
+        owner = self._owner(owner_id)
+        found = [
+            item
+            for item in self._mathematics.located(owner.path)
+            if self._key(item) == key
+        ]
+        index = owner.keys.get(key)
+        pending = self._undeclared.get(owner_id, key)
+        if not found and index is None and pending is None:
+            names = {*owner.keys, *self._undeclared.keys(owner_id)}
+            raise MissingReferenceError(
+                key,
+                kind="Value or equation",
+                by="key",
+                where=owner.where,
+                candidates=get_close_matches(
+                    key, sorted(names | self._equation_keys(owner)), n=3
+                ),
+            )
+        for item in found:
+            self._mathematics.remove(located=item)
+        if index is not None:
+            self._forget(owner, owner.values.pop(index))
+            owner.keys = {value.key: i for i, value in enumerate(owner.values)}
+            owner.changed = True
+            self._changed.add("owners")
+        if pending is not None:
+            self._forget_pending(owner, key)
+
+    def _one(self, owner: _Owner, key: str) -> Located:
+        """Return the one equation of an entity with this key."""
+        located = self._mathematics.located(owner.path)
+        matches = [item for item in located if self._key(item) == key]
+        if len(matches) == 1:
+            return matches[0]
+        if matches:
+            name = self._namer(owner.path)
+            raise AmbiguousReferenceError(
+                key,
+                kind="Equation",
+                by="key",
+                where=owner.where,
+                candidates=[_text(item.predicate, name=name) for item in matches],
+            )
+        raise MissingReferenceError(
+            key,
+            kind="Equation",
+            by="key",
+            where=owner.where,
+            candidates=get_close_matches(key, sorted(self._equation_keys(owner)), n=3),
+        )
+
+    def _key(self, located: Located) -> str | None:
+        """Return the key of an equation: its Constraint's code, or its first value."""
+        code = located.constraint.code
+        if code is not None:
+            return code
+        return _first(located.predicate, name=self._namer(located.path))
+
+    def _equation_keys(self, owner: _Owner) -> set[str]:
+        """Return the keys of the equations of an entity."""
+        keys = {self._key(item) for item in self._mathematics.located(owner.path)}
+        return {key for key in keys if key is not None}
+
+    def _namer(self, path: str | None) -> _Namer:
+        """Return the name of each referenced value, as the equations of an entity write it.
+
+        A value of the entity whose path is ``path`` is its key, and a value of
+        another entity is ``code.key``; a value that the draft does not hold
+        is its UUID. A Movement is named by its Flow.
+        """
+        directory = self._directory()
+
+        def name(target: UUID) -> str:
+            place = directory.get(target)
+            if place is None:
+                return str(target)
+            holder, key = place
+            return key if holder == path else f"{holder}.{key}"
+
+        return name
+
+    def _directory(self) -> dict[UUID, tuple[str, str]]:
+        """Return the owner's path and the key of each Value and Movement of the draft.
+
+        It includes the values that equations define and the values that the
+        draft removed, so that an error can name them.
+        """
+        found = dict(self._removed)
+        for item in self._undeclared:
+            found[item.id] = (item.place.path, item.key)
+        for owner in self._owners.values():
+            for value in owner.values:
+                for identity in _contained((value,)):
+                    found[identity] = (owner.path, value.key)
+        return found
+
+    def _written(self, owner: _Owner, located: Located) -> _Namer:
+        """Return the namer of an equation whose values text can write, for ``add_to``.
+
+        Text names a Value of an entity of the draft, but not a Movement.
+        """
+        values = {
+            value.id for item in self._owners.values() for value in item.values
+        } | {item.id for item in self._undeclared}
+        for target in references(located.predicate):
+            if target not in values:
+                raise ContractError(
+                    f"the equation {self._key(located)!r} in {owner.where} uses a "
+                    "value that equation text cannot write; use replace",
+                    code=Code.PREDICATE,
+                    targets=(target,),
+                    values={"key": self._key(located), "where": owner.where},
+                )
+        return self._namer(owner.path)
+
+    def _forget(self, owner: _Owner, value: Value) -> None:
+        """Forget a Value that the draft removes, and name it for later errors."""
+        for identity in _contained((value,)):
+            self._known.discard(identity)
+            self._removed[identity] = (owner.path, value.key)
+        self._undeclared.forget(owner.record.id, value.key)
+
+    def _forget_pending(self, owner: _Owner, key: str) -> None:
+        """Forget a value that equations define, when the draft removes its key."""
+        identity = self._undeclared.forget(owner.record.id, key)
+        if identity is not None:
+            self._known.discard(identity)
+            self._removed[identity] = (owner.path, key)
+
+    def _remove_relationships(self, entity: UUID) -> None:
+        """Remove the Relationships that an entity is the source or the target of."""
+        kept = []
+        for relationship in self._relationships:
+            if entity in (relationship.source, relationship.target):
+                self._known.difference_update(_contained(_values(relationship)))
+            else:
+                kept.append(relationship)
+        if len(kept) != len(self._relationships):
+            self._relationships = kept
+            self._changed.add("relationships")
+
+    def _check_references(self) -> None:
+        """Raise MissingReferenceError for an equation that uses a removed value."""
+        for located in self._mathematics.predicates():
+            for target in references(located.predicate):
+                if target not in self._known:
+                    raise self._dangling(target, located)
+
+    def _dangling(self, target: UUID, first: Located) -> MissingReferenceError:
+        """Return the error for the equations that use a value the draft removed."""
+        users = [
+            item
+            for item in self._mathematics.predicates()
+            if target in set(references(item.predicate))
+        ]
+        requested = self._namer(first.path)(target)
+        owner = next(
+            (item for item in self._owners.values() if item.path == first.path), None
+        )
+        return MissingReferenceError(
+            requested,
+            kind="Value",
+            by="path" if "." in requested else "key",
+            where="ModelDraft" if owner is None else owner.where,
+            referenced_by=dict.fromkeys(str(self._key(item)) for item in users),
+            targets=(target,),
+        )
+
     def _named(
         self,
         owner_id: UUID,
@@ -921,13 +1249,8 @@ class ModelDraft:
         """
         if not self._undeclared:
             return {}
-        base = [
-            self._base._index.get(record.predicate, Expression)
-            for record in self._base._index.records.values()
-            if isinstance(record, Constraint)
-        ]
         return self._undeclared.values(
-            equations=[*self._mathematics.expressions(), *base],
+            equations=[item.predicate for item in self._mathematics.predicates()],
             units=self._base.unit_system,
             lookup=known_values(
                 (
@@ -1036,9 +1359,59 @@ def _periods(value: Value) -> tuple[Period, ...] | None:
     return periods if periods and len(periods) == len(movements) else None
 
 
-def _values(record: Entity) -> tuple[Value, ...]:
+def _values(record: Entity | Relationship) -> tuple[Value, ...]:
     characteristics = record.characteristics
     return () if characteristics is None else characteristics.values or ()
+
+
+def _contained(values: Iterable[Value]) -> Iterator[UUID]:
+    """Yield the UUID of each Value and of each Movement of its Flow."""
+    for value in values:
+        yield value.id
+        if value.flow is not None:
+            yield from (movement.id for movement in value.flow.movements)
+
+
+def _first(expression: Expression, *, name: _Namer) -> str | None:
+    """Return the key of the first value of an equation's text: its default key."""
+    target = next(references(expression), None)
+    return None if target is None else name(target)
+
+
+def _unique(key: str, taken: set[str]) -> str:
+    """Return ``key``, or ``key_2``, ``key_3``... when the entity's equations have it."""
+    number, found = 1, key
+    while found in taken:
+        number += 1
+        found = f"{key}_{number}"
+    return found
+
+
+def _text(expression: Expression, *, name: _Namer) -> str:
+    """Return the equation text of an Expression, with ``name`` for each value."""
+    return render(expression=expression, name=lambda reference: name(reference.target))
+
+
+def _term(term: "str | Term | ValueHandle", *, name: _Namer) -> tuple[str, str]:
+    """Return the sign and the text of a term that ``add_to`` adds to an equation.
+
+    A term that starts with a negation is subtracted: its sign is ``-`` and
+    its text is the operand of the negation.
+    """
+    if isinstance(term, str):
+        node = syntax.parse(term)
+        if isinstance(node, syntax.Unary) and node.operator is Operator.NEGATE:
+            return "-", term[node.operand.start : node.operand.end]
+        return "+", term
+    if not isinstance(term, Symbolic):
+        raise TypeError("term must be equation text, a Term or a value handle")
+    expression = terms.operand(term).to_expression()
+    if expression.kind is ExpressionKind.UNARY and expression.operator is (
+        Operator.NEGATE
+    ):
+        assert expression.operand is not None
+        return "-", _text(expression.operand, name=name)
+    return "+", _text(expression, name=name)
 
 
 def _built(owner: _Owner, inferred: Sequence[Value]) -> Entity:

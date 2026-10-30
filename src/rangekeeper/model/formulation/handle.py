@@ -72,9 +72,12 @@ class FormulationHandle:
 
         The equations follow the rules of ``equations`` on the entity handle:
         text names the keys of the entity, and ``code.key`` names a key of
-        another entity. A call that fails adds no equation.
+        another entity. A call that fails adds no equation. Each equation gets
+        a key, as on the entity handle.
         """
-        self._draft._add_to(self.id, owner=self.owner, equations=equations)
+        draft = self._draft
+        records = draft._checked(self.owner, equations)
+        draft._add_keyed(self.owner, formulation=self.id, records=records)
 
 
 __all__ = ["FormulationHandle"]

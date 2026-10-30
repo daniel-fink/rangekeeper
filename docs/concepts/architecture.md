@@ -119,20 +119,24 @@ show the target API in use.
      `add_formulation(name=)` makes a named Formulation, such as "Funding",
      whose handle takes `equations(...)` too; `formulation(name=)` finds it in
      a later draft.
+     Each equation has a key, by default the key of the first value of its
+     text. A later draft edits equations by key: `replace(key=, equation=)`,
+     `add_to(key=, term=)` and `remove(key=)`; `draft.remove(entity=)` removes
+     an entity. `model.equations` lists the equations of a revision, with
+     `where(key=, keys=, formulation=)`.
   3. `commit()` validates the revision once and returns it.
   4. Put the revision into an append-only store.
 
   `Model.create(...)` and `Model.from_data(...)` still take complete records,
   and `model.revise(Update(...))` replaces complete sections. See the
   [Model reference](../reference/model.md).
-- 1.0 target: inferred units and Periods, equation keys and edits of
-  existing declarations.
+- 1.0 target: inferred units and Periods, and edits of existing
+  declarations.
 
   Gap issues: [#142](https://github.com/daniel-fink/rangekeeper/issues/142),
   [#145](https://github.com/daniel-fink/rangekeeper/issues/145),
   [#146](https://github.com/daniel-fink/rangekeeper/issues/146),
   [#280](https://github.com/daniel-fink/rangekeeper/issues/280),
-  [#283](https://github.com/daniel-fink/rangekeeper/issues/283),
   [#284](https://github.com/daniel-fink/rangekeeper/issues/284),
   [#282](https://github.com/daniel-fink/rangekeeper/issues/282).
 
