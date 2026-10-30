@@ -30,6 +30,7 @@ from rangekeeper.money import round as _round
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
 from rangekeeper.shared.amounts import text as _amount_text
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError, UnitError
 from rangekeeper.shared.fingerprints import manifest_digest
 from rangekeeper.shared.registry import Registry
@@ -632,7 +633,10 @@ class UnitSystem:
             raise TypeError("quantity must be a schema Quantity")
         source, destination = self._parse(quantity.units), self._parse(to)
         if source.dimensionality != destination.dimensionality:
-            raise UnitError(f"incompatible units: {quantity.units!r} and {to!r}")
+            raise UnitError(
+                f"incompatible units: {quantity.units!r} and {to!r}",
+                code=Code.INCOMPATIBLE_UNITS,
+            )
         if is_currency(quantity.units) and is_currency(to):
             return Quantity(magnitude=quantity.magnitude, units=to)
         try:

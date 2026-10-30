@@ -155,20 +155,21 @@ FAILURES: tuple[Failure, ...] = (
             raises=UnsupportedError,
         ),
     ),
+    # Units that do not agree make the problem invalid, not unsupported (ADR-016).
     Failure(
         errors=(UnitError,),
         before=Conclusion(
             solution=NOT_ASSESSED,
-            status=Status.UNSUPPORTED,
-            code=Code.UNSUPPORTED_CAPABILITY,
-            raises=UnsupportedError,
+            status=Status.INVALID,
+            code=Code.INCOMPATIBLE_UNITS,
+            raises=UnitError,
         ),
         boundary=Reached.SOLVED,
         after=Conclusion(
             solution=UNKNOWN,
-            status=Status.UNSUPPORTED,
-            code=Code.UNSUPPORTED_CAPABILITY,
-            raises=UnsupportedError,
+            status=Status.INVALID,
+            code=Code.INCOMPATIBLE_UNITS,
+            raises=UnitError,
         ),
     ),
     Failure(

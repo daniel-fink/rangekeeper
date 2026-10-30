@@ -59,6 +59,9 @@ class Code(StrEnum):
     ROLE_MISSING = "semantic.role"
     UNIQUE = "semantic.unique"
     UNITS = "semantic.units"
+    # Dimensional analysis (ADR-016): the two sides of an equation, the operands
+    # of a sum, or a value and the quantity that fixes it have incompatible units.
+    INCOMPATIBLE_UNITS = "incompatible_units"
 
     # Currency amounts (ADR-023): a magnitude whose type does not match its
     # units, and an amount with more than 15 significant digits.
