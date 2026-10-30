@@ -249,7 +249,7 @@ sequence helper used by extrapolation and the market kernels. Profile classes an
 | `Distribution` | Canonical parameters and intrinsic `check`, `sample`, `cdf`, `mass` |
 | `profile` | Grow a known Quantity, or distribute a total, over explicit periods |
 | `flow.Stream` | Align and combine several Flows with explicit policies |
-| `finance` | `pv`, `npv`, `irr` and `payment` with units; `finance.financial` has the older PV, XNPV and IRR functions and the PyXIRR day counts |
+| `finance` | `pv`, `npv`, `irr`, `interest` and `payment` with units; `finance.financial` has the older PV, XNPV and IRR functions and the PyXIRR day counts |
 | `market.dynamics` | Deterministic kernels over supplied shocks or samples |
 | `model.formulation` | Build declared equations for forward and inverse investigations |
 
@@ -524,7 +524,7 @@ movements crossing target periods must be allocated first. Resampling coverage
 counts known observations, not continuous time coverage. Zero filling does not
 resolve an explicitly unknown observation.
 
-### Present value, NPV, IRR and payments
+### Present value, NPV, IRR, interest and payments
 
 `rangekeeper.finance` calculates on known Flows and Quantities, with units:
 
@@ -533,6 +533,7 @@ resolve an explicitly unknown observation.
 | `pv(flow=, rate=, on=, day_count=ACTUAL_ACTUAL, timing=END)` | A Flow on the same coordinates: each amount divided by `(1 + rate) ** t`, where `t` is the years from `on` to its date |
 | `npv(flow=, rate=, on=, ...)` | The total of `pv`, a Quantity. An empty Flow has zero value |
 | `irr(flow=, guess=None, ...)` | The rate whose NPV is zero, in `% pa` |
+| `interest(balance=, rate=, day_count=ACTUAL_ACTUAL)` | A Flow on the same Periods: the balance of each Period times `(1 + rate) ** t - 1`, where `t` is the Period's length in years. A balance over dates raises `ContractError` |
 | `payment(principal=, rate=, term=, frequency=)` | The level payment per period that repays a loan, like a spreadsheet's PMT, in `AUD per month` and so on |
 
 Rates are effective rates per year, as Quantities or their text: `"7 % pa"`.
@@ -543,7 +544,10 @@ one year, also in a leap year. PyXIRR finds the IRR root; a `guess` is a startin
 point, not a bound. `irr` needs amounts of both signs on at least two dates, and
 the NPV at the root must be at most `1e-8` of the gross amounts; otherwise it
 raises `NumericalError`. `pv`, `npv` and `irr` discount the same way, so a price
-equal to the NPV earns the discount rate.
+equal to the NPV earns the discount rate. `interest` compounds the same
+effective rate over each Period, so a yearly Period at `"6 % pa"` earns 6 % of
+its balance. In an equation, `rx.finance.npv`, `rx.finance.irr` and
+`rx.finance.interest` mirror them ([equation functions](expressions.md#equation-functions)).
 
 `payment` divides a nominal yearly rate over the periods of a year (`"6 % pa"`
 monthly is 0.5 % a month) and pays at the end of each period. `term` is a whole

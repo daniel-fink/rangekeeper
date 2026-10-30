@@ -139,9 +139,12 @@ methods are written on a value, such as `operating.at(on=sale_date)`. The
 [equation functions](#equation-functions) table lists them. Every argument is
 named (D14), except the arguments of `rx.max`, as of Python's built-in `max`.
 Text that writes `rk.` gets the suggestion `rx.`, because `rk.` computes on
-values now, and a function name without `rx.` gets `rx.<name>`. The function
-catalogue ([#278](https://github.com/daniel-fink/rangekeeper/issues/278)) adds
-the profile, Flow and finance functions. Flow-valued equations are
+values now, and a function name without `rx.` gets `rx.<name>`. A function that
+makes a Flow from amounts, a profile or `rx.flow.event`, makes it over the
+Periods of the Flow that the equation defines, which is declared with its
+Periods. Each profile of `rangekeeper.profile`, also one that an extension
+registers, is an equation function under its name in lower case:
+`rk.profile.Compounding` is `rx.profile.compounding`. Flow-valued equations are
 [#279](https://github.com/daniel-fink/rangekeeper/issues/279), and keyed members
 such as `rent[use]` are [#284](https://github.com/daniel-fink/rangekeeper/issues/284).
 
@@ -235,14 +238,43 @@ and the table below are made from it.
   `complete` (from every period). A rule reads only known values (G53).
 - **Periodwise functions** take a Flow where a parameter takes a value, and then
   apply period by period: `rx.max(0 AUD, need)` is a Flow when `need` is one.
+- **Piecewise functions.** `rx.max` and `rx.min` have the Function codes
+  `rx.max` and `rx.min`, which the solve recognises: it picks the active side
+  of each call and checks it after the solve (G77,
+  [execution](execution.md)).
+- **One row for each period.** `rangekeeper.model.expression.lowering.per_period`
+  writes a Flow-valued equation as one scalar equation for each period, over
+  the Movements of its Flows: a periodwise call becomes one call for each
+  period, and `cumulative()`, `diff()`, `total()`, `first()` and `last()`
+  become sums and differences of Movements. Other calls need the staged solve
+  ([#276](https://github.com/daniel-fink/rangekeeper/issues/276)) and raise
+  `UnsupportedError`.
 
 <!-- BEGIN GENERATED FUNCTIONS -->
 | Function | Meaning | Stage | Availability | Mirrors |
 | --- | --- | --- | --- | --- |
+| `rx.finance.interest(balance=, rate=)` | The interest on a balance in each period. | `affine` | `periodwise` | `rangekeeper.finance.interest` |
+| `rx.finance.irr(flow=)` | The internal rate of return of a Flow: the rate whose NPV is zero. | `after_affine` | `complete` | `rangekeeper.finance.irr` |
+| `rx.finance.npv(flow=, rate=, on=)` | The net present value of a Flow on a date. | `affine` | `complete` | `rangekeeper.finance.npv` |
+| `rx.flow.event(amount=, on=)` | A Flow with one amount, in the period that contains a date. | `affine` | `periodwise` | `rangekeeper.flow.Flow`, with the amount on its date and zero elsewhere |
 | `rx.max(left, right)` | The larger of two values, period by period for Flows. | `after_affine` | `periodwise` | Python's built-in max, period by period |
+| `rx.min(left, right)` | The smaller of two values, period by period for Flows. | `after_affine` | `periodwise` | Python's built-in min, period by period |
+| `rx.profile.compounding(initial=, rate=, start=, every=, base=)` | A Flow made by the growth profile Compounding. | `affine` | `periodwise` | `rangekeeper.flow.Flow.from_profile` with `rangekeeper.profile.Compounding` |
+| `rx.profile.constant(initial=, start=, every=)` | A Flow made by the growth profile Constant. | `affine` | `periodwise` | `rangekeeper.flow.Flow.from_profile` with `rangekeeper.profile.Constant` |
+| `rx.profile.linear(initial=, rate=, start=, every=, base=)` | A Flow made by the growth profile Linear. | `affine` | `periodwise` | `rangekeeper.flow.Flow.from_profile` with `rangekeeper.profile.Linear` |
+| `rx.profile.scurve(total=, start=, length=)` | A Flow made by the distribution profile SCurve. | `affine` | `periodwise` | `rangekeeper.flow.Flow.from_profile` with `rangekeeper.profile.SCurve` |
+| `rx.profile.uniform(total=, start=, length=)` | A Flow made by the distribution profile Uniform. | `affine` | `periodwise` | `rangekeeper.flow.Flow.from_profile` with `rangekeeper.profile.Uniform` |
 | `x.at(on=)` | The amount of the period that contains a date. | `affine` | `complete` | `rangekeeper.flow.Flow.at` |
+| `x.cumulative()` | The running totals of a Flow. | `affine` | `running` | `rangekeeper.flow.Flow.cumulative` |
+| `x.diff()` | Each amount less the amount before it. | `affine` | `running` | `rangekeeper.flow.Flow.diff` |
+| `x.first()` | The amount of the first period. | `affine` | `complete` | `rangekeeper.flow.Flow.first` |
+| `x.last()` | The amount of the last period. | `affine` | `complete` | `rangekeeper.flow.Flow.last` |
+| `x.max()` | The largest amount of a Flow. | `after_affine` | `complete` | `rangekeeper.flow.Flow.max` |
+| `x.min()` | The smallest amount of a Flow. | `after_affine` | `complete` | `rangekeeper.flow.Flow.min` |
 | `x.shift(by=)` | Each period's amount from the period `by` periods away. | `affine` | `shifted` | `rangekeeper.flow.Flow.shift` |
+| `x.since(on=)` | The same periods, with zero before a date. | `affine` | `periodwise` | `rangekeeper.flow.Flow.since` |
 | `x.total()` | The sum of the amounts of a Flow. | `affine` | `complete` | `rangekeeper.flow.Flow.total` |
+| `x.until(on=)` | The same periods, with zero after a date. | `affine` | `periodwise` | `rangekeeper.flow.Flow.until` |
 <!-- END GENERATED FUNCTIONS -->
 
 The equivalence tests check each entry: text and `rx` make the same records
