@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from rangekeeper.shared.table import Table
+
 LESSONS = Path(__file__).resolve().parents[1]
 TOOL = LESSONS.parents[1] / "tools" / "docs" / "notebooks.py"
 PNG = base64.b64encode(b"\x89PNG\r\n\x1a\n").decode()
@@ -83,6 +85,25 @@ def test_conversion_writes_markdown_outputs_and_linked_files(tmp_path):
     assert '??? success "Solution"\n\n    ```python\n    answer = 2' in page
     assert (tmp_path / "site" / "01_first_lesson_files" / "output_1.png").is_file()
     assert (tmp_path / "site" / "resources" / "figure.png").read_bytes() == b"png"
+
+
+def test_conversion_keeps_the_html_display_of_a_table(tmp_path):
+    table = Table(
+        ("key", "quantity"),
+        ({"key": f"value_{index}", "quantity": None} for index in range(52)),
+    )
+    output = {
+        "output_type": "execute_result",
+        "data": {"text/html": table._repr_html_(), "text/plain": repr(table)},
+    }
+    source = notebook(tmp_path / "01_table.ipynb", [code("table", [output])])
+    result = run(tmp_path / "site", source)
+    assert result.returncode == 0, result.stderr
+    page = (tmp_path / "site" / "01_table.md").read_text()
+    assert f'<div class="rk-output" markdown="0">\n{table._repr_html_()}' in page
+    assert "<th>key</th>" in page
+    assert "… 2 more rows" in page
+    assert repr(table) not in page
 
 
 @pytest.mark.parametrize(

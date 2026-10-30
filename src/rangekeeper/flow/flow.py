@@ -6,14 +6,14 @@ Stream coordinates several Flows.
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from datetime import date
 from decimal import Decimal
-from itertools import pairwise
+from itertools import pairwise, takewhile
 from typing import TYPE_CHECKING, cast
-from uuid import uuid4
+from uuid import UUID, uuid4
 
-from rangekeeper.duration import Period, Periods
+from rangekeeper.duration import NEVER, DateValue, Period, Periods
 from rangekeeper.duration.calendar import (
     DayCount,
     PeriodTiming,
@@ -22,6 +22,7 @@ from rangekeeper.duration.calendar import (
     require_date,
     year_fraction,
 )
+from rangekeeper.duration.dates import require_date_value
 from rangekeeper.duration.errors import AlignmentError
 from rangekeeper.flow.options import MissingValueHandling, ResampleMethod
 from rangekeeper.money import (
@@ -43,7 +44,7 @@ from rangekeeper.quantity import (
 )
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
-from rangekeeper.schema.runtime import OMIT, UNSET
+from rangekeeper.schema.runtime import OMIT, UNSET, Omit
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
@@ -653,6 +654,153 @@ class Flow(records.Flow):
             raise NumericalError(f"the amount on {on.isoformat()} is unresolved")
         return Quantity(magnitude=found[0].magnitude, units=self.units)
 
+    def first(self) -> Quantity:
+        """Return the amount of the first Movement, as a Quantity.
+
+        An empty Flow raises ContractError, and an unresolved amount raises
+        NumericalError.
+        """
+        return self._quantity(self._required("first")[0])
+
+    def last(self) -> Quantity:
+        """Return the amount of the last Movement, as a Quantity.
+
+        An empty Flow raises ContractError, and an unresolved amount raises
+        NumericalError.
+        """
+        return self._quantity(self._required("last")[-1])
+
+    def min(self) -> Quantity:
+        """Return the smallest amount, as a Quantity.
+
+        An empty Flow raises ContractError. An unresolved amount raises
+        NumericalError, because the smallest amount is then unknown; ``clean``
+        removes the unresolved Movements first.
+        """
+        return self._quantity(min(self._known("min"), key=lambda m: m.number))
+
+    def max(self) -> Quantity:
+        """Return the largest amount, as a Quantity.
+
+        An empty Flow raises ContractError. An unresolved amount raises
+        NumericalError, because the largest amount is then unknown; ``clean``
+        removes the unresolved Movements first.
+        """
+        return self._quantity(max(self._known("max"), key=lambda m: m.number))
+
+    def _required(self, operation: str) -> tuple[Movement, ...]:
+        """Return the Movements; an empty Flow raises ContractError."""
+        if not self.movements:
+            raise ContractError(
+                f"an empty Flow has no {operation} amount",
+                values={"operation": operation, "units": self.units},
+            )
+        return self.movements
+
+    def _known(self, operation: str) -> tuple[Movement, ...]:
+        """Return the Movements of a Flow that has amounts, all of them resolved."""
+        movements = self._required(operation)
+        unresolved = tuple(m.id for m in movements if m.magnitude is None)
+        if unresolved:
+            raise NumericalError(
+                f"the {operation} of a Flow with unresolved amounts is unknown",
+                targets=unresolved,
+            )
+        return movements
+
+    def _quantity(self, movement: Movement) -> Quantity:
+        """Return the amount of one Movement as a Quantity; unresolved raises."""
+        if movement.magnitude is None:
+            raise NumericalError("the amount is unresolved", targets=(movement.id,))
+        return Quantity(magnitude=movement.magnitude, units=self.units)
+
+    def cumulative(self) -> Flow:
+        """Return the running totals: each Movement holds the sum of the amounts up to it.
+
+        The coordinates and units stay the same. Each Movement gets a fresh ID
+        and the Claims of the Movements that its total adds. An unresolved
+        amount makes its total and each later total unresolved. The last total
+        equals ``total()``, and ``diff`` reverses the operation.
+        """
+        movements = list(self.movements)
+        known = [m.number for m in _resolved_prefix(movements)]
+        totals: list[float | None] = list(_running_sums(known))
+        totals += [None] * (len(movements) - len(known))
+        claims = _accumulated_claims(movements)
+        return self._checked(
+            [
+                movement.replace(id=uuid4(), magnitude=value, claims=claim)
+                for movement, value, claim in zip(
+                    movements, totals, claims, strict=True
+                )
+            ],
+            self.units,
+        )
+
+    def diff(self) -> Flow:
+        """Return each amount less the amount before it; the first amount less zero.
+
+        It reverses ``cumulative``: ``flow.cumulative().diff()`` gives the
+        amounts of ``flow`` again, to floating-point precision. The coordinates
+        and units stay the same. Each Movement gets a fresh ID and the Claims
+        of the two Movements. An unresolved amount makes its own difference
+        and the next one unresolved.
+        """
+        movements = []
+        previous: Movement | None = None
+        for movement in self.movements:
+            pair = (movement,) if previous is None else (previous, movement)
+            value = (
+                None
+                if any(m.magnitude is None for m in pair)
+                else movement.number - (0.0 if previous is None else previous.number)
+            )
+            claims = tuple(dict.fromkeys(c for m in pair for c in (m.claims or ())))
+            movements.append(
+                movement.replace(
+                    id=uuid4(), magnitude=value, claims=claims if claims else OMIT
+                )
+            )
+            previous = movement
+        return self._checked(movements, self.units)
+
+    def since(self, *, on: DateValue) -> Flow:
+        """Return the same coordinates with zero before a date.
+
+        A Period that ends on or before ``on``, or an event before it, holds
+        zero, whatever its amount. The Period that contains ``on`` keeps its
+        amount. ``NEVER`` is later than every date, so ``since(on=NEVER)`` is
+        zero everywhere. The Movements that keep their amounts keep their IDs;
+        each zero is a new Movement, with a fresh ID and no Claims. ``until``
+        gives zero after a date.
+        """
+        day = require_date_value(on)
+        return self._zero(lambda movement: _before(movement, day))
+
+    def until(self, *, on: DateValue) -> Flow:
+        """Return the same coordinates with zero after a date.
+
+        A Period that starts after ``on``, or an event after it, holds zero,
+        whatever its amount. The Period that contains ``on`` keeps its amount.
+        ``NEVER`` is later than every date, so ``until(on=NEVER)`` keeps every
+        amount. The Movements that keep their amounts keep their IDs; each
+        zero is a new Movement, with a fresh ID and no Claims. ``since`` gives
+        zero before a date.
+        """
+        day = require_date_value(on)
+        return self._zero(lambda movement: _after(movement, day))
+
+    def _zero(self, outside: Callable[[Movement], bool]) -> Flow:
+        """Return this Flow with zero, a new Movement, in place of each Movement outside."""
+        return self.replace(
+            movements=tuple(
+                movement.replace(id=uuid4(), magnitude=0.0, claims=OMIT)
+                if outside(movement)
+                else movement
+                for movement in self.movements
+            )
+        )
+
     def shift(self, *, by: int) -> Flow:
         """Move each amount by whole Periods; the Periods stay the same.
 
@@ -988,25 +1136,6 @@ class Flow(records.Flow):
             )
         )
 
-    def difference(self, *, initial: float | None = None) -> Flow:
-        """Return adjacent differences; a missing neighbour yields an unresolved movement.
-
-        The first movement is unresolved unless the caller supplies an initial value in
-        the Flow's units. The model determines what the changes represent.
-        """
-        flow = self
-
-        previous, movements = initial, []
-        for movement in flow.movements:
-            magnitude = (
-                None
-                if previous is None or movement.magnitude is None
-                else movement.number - previous
-            )
-            movements.append(movement.replace(id=uuid4(), magnitude=magnitude))
-            previous = None if movement.magnitude is None else movement.number
-        return flow.replace(movements=tuple(movements))
-
     def collapse(
         self,
         *,
@@ -1074,6 +1203,64 @@ class Flow(records.Flow):
                 flow.movements[selected[0] : selected[-1] + 1] if selected else ()
             )
         )
+
+
+def _resolved_prefix(movements: Sequence[Movement]) -> list[Movement]:
+    """Return the Movements before the first unresolved one."""
+    return list(takewhile(lambda m: m.magnitude is not None, movements))
+
+
+def _running_sums(values: Sequence[float]) -> Iterator[float]:
+    """Yield the correctly rounded sum of each prefix of ``values``.
+
+    The partials hold the exact running sum as floats that do not overlap
+    (Shewchuk), so each sum equals ``math.fsum`` of its prefix with one pass
+    over the values.
+    """
+    partials: list[float] = []
+    for value in values:
+        x, kept = value, 0
+        for y in partials:
+            if abs(x) < abs(y):
+                x, y = y, x
+            high = x + y
+            low = y - (high - x)
+            if low:
+                partials[kept] = low
+                kept += 1
+            x = high
+        partials[kept:] = [x]
+        yield math.fsum(partials)
+
+
+def _accumulated_claims(movements: Sequence[Movement]) -> list[tuple[UUID, ...] | Omit]:
+    """Return the Claims of each Movement and of each Movement before it."""
+    seen: dict[UUID, None] = {}
+    result: list[tuple[UUID, ...] | Omit] = []
+    for movement in movements:
+        seen.update(dict.fromkeys(movement.claims or ()))
+        result.append(tuple(seen) if seen else OMIT)
+    return result
+
+
+def _before(movement: Movement, day: DateValue) -> bool:
+    """Return whether a Movement is before a date: its Period ends on or before it."""
+    if day is NEVER:
+        return True
+    assert isinstance(day, date)
+    if movement.period is not None:
+        return movement.period.end <= day
+    return movement.resolve() < day
+
+
+def _after(movement: Movement, day: DateValue) -> bool:
+    """Return whether a Movement is after a date: its Period starts after it."""
+    if day is NEVER:
+        return False
+    assert isinstance(day, date)
+    if movement.period is not None:
+        return movement.period.start > day
+    return movement.resolve() > day
 
 
 def _total_known(missing: MissingValueHandling, values: list[float]) -> bool:
