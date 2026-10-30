@@ -10,7 +10,7 @@ copyright = "Rangekeeper contributors, MPL-2.0"
 docs_dir = "_build/docs"
 site_dir = "_build/site"
 # mike publishes versions to this branch. Publication is an explicit, approved
-# step (docs/contributing/walkthrough-branch.md#publish-the-book).
+# step (docs/contributing/walkthrough-branch.md#publish-the-site).
 remote_branch = "gh-pages"
 remote_name = "origin"
 

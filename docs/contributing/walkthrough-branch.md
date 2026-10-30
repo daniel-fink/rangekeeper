@@ -42,25 +42,70 @@ holds the earlier book at its root.
 
 Zensical's fork of mike publishes each release line in its own folder, `/1.0/`
 from `develop` and `/0.8/` from `support/0.8`. It also writes `versions.json`,
-which the version selector reads. Publication needs explicit approval. When
-the book is ready:
+which the version selector reads. Publication needs explicit approval.
 
-1. Execute and validate the lessons, then check the local
-   [preview of the docs site](README.md#docs-site).
-2. With approval, stage the pages and commit the version to a local `gh-pages`.
-   From the repository root:
+How mike works with this repository:
+
+- `mike deploy VERSION` runs `zensical build --clean` on the staged pages in
+  `_build/docs`, with the version in the site URL. It does not stage the pages,
+  and its build is not strict. Run `tools/docs/site.py build` first: it stages
+  the pages and runs the strict build.
+- It commits the built site to the local branch that `remote_branch` in
+  `zensical.toml` names (`gh-pages`), in the folder `VERSION/`, and writes
+  `versions.json` and `.nojekyll` at the root. The other files on the branch do
+  not change, so the earlier book stays at the root.
+- Before the commit, it compares the local branch with `origin/gh-pages`. It
+  does not fetch. It moves a local branch that is behind to `origin/gh-pages`,
+  and stops when the two branches have diverged.
+- Without `--push`, it changes only the local branch.
+- `mike set-default VERSION` replaces the root `index.html` with a redirect to
+  `VERSION/`. The other root files of the earlier book stay.
+- `mike serve` serves the local branch, with the version selector, on
+  http://localhost:8000.
+- `--branch NAME` uses another branch for each command. Use a new branch name to
+  preview a publication without a change to `gh-pages`.
+
+The [verification of 30 October 2026](../research/docs-site-versions-2026-10-30/README.md)
+records these results. When the book is ready:
+
+1. Execute and validate the lessons. Leave `RK_DESIGN_MODE` and `RK_PATH_COUNT`
+   unset, for the full design data and path count. From the repository root,
+   make the environment and run the strict build:
 
    ```sh
    uv sync --locked --all-extras --group versions
-   uv run --locked --no-sync python tools/docs/site.py stage
-   uv run --locked --no-sync mike deploy 1.0
+   uv run --locked --no-sync python tools/docs/site.py build
    ```
 
-   `mike serve` shows the local `gh-pages` with its version selector. A
-   `mike deploy` without `--push` changes only the local branch.
-3. Push `gh-pages` as a separate, explicit action. The root redirect
-   (`mike set-default`) replaces the earlier book at the root; decide it with the
-   `/0.8/` site ([#72](https://github.com/daniel-fink/rangekeeper/issues/72)).
+2. Preview the versioned site on a new branch, and check the pages and the
+   version selector on http://localhost:8000/1.0/. Then delete the branch:
+
+   ```sh
+   uv run --locked --no-sync mike deploy --branch site-preview 1.0
+   uv run --locked --no-sync mike serve --branch site-preview
+   git branch -D site-preview
+   ```
+
+3. With approval, commit the version to the local `gh-pages`. Update
+   `origin/gh-pages` first, so that mike starts from the published branch:
+
+   ```sh
+   git fetch origin gh-pages
+   uv run --locked --no-sync mike deploy 1.0
+   uv run --locked --no-sync mike serve
+   ```
+
+4. Push `gh-pages` as a separate, explicit action, after a final check of
+   `mike serve`:
+
+   ```sh
+   git push origin gh-pages
+   ```
+
+   The root redirect (`mike set-default 1.0`) replaces the earlier book at the
+   root; decide it with the `/0.8/` site
+   ([#72](https://github.com/daniel-fink/rangekeeper/issues/72)), which also
+   builds the `/0.8/` site.
 
 ## History
 

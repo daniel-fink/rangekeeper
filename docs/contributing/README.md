@@ -232,7 +232,10 @@ and adds two generated parts:
 
 - `walkthrough/`: each lesson, run from a fresh kernel in the locked
   [walkthrough environment](../guides/walkthroughs.md#explore-the-lessons), then
-  [converted](../guides/walkthroughs.md#convert-for-the-docs-site);
+  [converted](../guides/walkthroughs.md#convert-for-the-docs-site). Each chart,
+  graph, timeline and geometry iframe shows a copy of its file, which the build
+  publishes at the file's path under `examples/`: `walkthrough/output/` and
+  `data/mixed_use_property/`;
 - `api/`: the mkdocstrings API reference. The docstrings are the content, so
   write them for readers. Each public package of the
   [API snapshot](../../tests/contracts/api.py) (`PACKAGES`) gets a page, without
@@ -252,12 +255,13 @@ ref that `--ref` gives. The files in `docs/` do not change.
 | --- | --- |
 | `serve` | Stage the pages and serve them. The preview reloads when the staged pages change; after you edit `docs/`, run the command again |
 | `build` | Stage the pages and run the strict build of the `site` CI job, to `_build/site` |
-| `stage` | Stage the pages only, for example before mike |
+| `stage` | Stage the pages only |
 | `--no-lessons` | Do not run the lessons; the walkthrough page links to the notebooks |
 | `--ref REF` | The git ref for links to files outside `docs/` |
 
 The lessons read `RK_DESIGN_MODE` and `RK_PATH_COUNT`; the CI job sets `fixture`
-and `4`. A build or preview does not publish the site. The
+and `4`. A build or preview does not publish the site. mike stages nothing: it
+builds the staged pages again for one version. The
 [walkthrough procedure](walkthrough-branch.md#publish-the-site) gives the
 versioned publication.
 

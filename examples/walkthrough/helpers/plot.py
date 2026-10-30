@@ -24,7 +24,8 @@ from .local import LocalDisplay
 from .theme import CONFIG, FONT, MODES, PACKAGE_COLORS, USE_COLORS, apply_theme
 
 LESSONS = Path(__file__).resolve().parents[1]
-DATA = LESSONS.parent / "data" / "mixed_use_property"
+EXAMPLES = LESSONS.parent
+DATA = EXAMPLES / "data" / "mixed_use_property"
 
 _displays = {}
 
@@ -33,7 +34,12 @@ def _iframe(path, height, *, root=None):
     parts = urlsplit(str(path))
     target = Path(parts.path).resolve()
     if root is None:
-        root = Path.cwd() if target.is_relative_to(Path.cwd()) else target.parent
+        # One display serves every file under examples/, so the URL path of a
+        # lesson display is its path there; the docs site build reads it.
+        root = next(
+            (base for base in (EXAMPLES, Path.cwd()) if target.is_relative_to(base)),
+            target.parent,
+        )
     root = Path(root).resolve()
     if root not in _displays:
         _displays[root] = LocalDisplay(root)
@@ -54,8 +60,9 @@ def show_geometry(view="context", height=650, *, name="mixed_use_property"):
     if view not in {"context", "property", "floors", "utilities"}:
         raise ValueError("Unknown geometry view")
     page = geometry.write(DATA, LESSONS / "output" / "geometry")
-    # The viewer reads the data package by a relative path, so serve both.
-    return _iframe(f"{page}?view={view}", height, root=DATA.parents[1])
+    # The viewer reads the data package by a relative path; the display of
+    # examples/ serves both.
+    return _iframe(f"{page}?view={view}", height)
 
 
 LABELS = {

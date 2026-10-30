@@ -86,6 +86,16 @@ in a `rk-output` block. The [docs site build](../contributing/README.md#docs-sit
 runs each lesson and converts it in the same way; its preview shows the lessons
 with their outputs.
 
+The helpers show charts, graphs, timelines and geometry as local HTML files in
+iframes, through a [local display](#live-notebook-display). A static site has no
+such server. So, before the conversion, the docs site build copies each displayed
+file and the files that it reads to the site, at its path under `examples/`, and
+points the iframe at the copy. The files that a display reads are the files
+beside it that are not HTML pages, for example the shared Plotly bundle, and the
+data files that the geometry viewer's `geometry.json` names. A display file
+outside `examples/` stops the build. `tools/docs/notebooks.py` alone keeps the
+iframes as they are.
+
 ## Design example conventions
 
 [`rangekeeper_examples.design`](../../examples/rangekeeper_examples/design.py)
@@ -127,7 +137,8 @@ use different dashes and markers. Helpers apply the style to a copy of the Figur
 
 The local HTML embeds share a Plotly bundle in their output folder. A small
 [`theme.js`](../../examples/walkthrough/helpers/theme.js) bridge follows the
-same-origin page or JupyterLab theme; standalone and cross-origin views use the
+theme of a same-origin page, JupyterLab or the docs site, where the light and
+dark switch also changes the charts. Standalone and cross-origin views use the
 operating system's colour preference. Theme changes update layout without
 changing numerical values, use colours, zoom or drill-down. To style a Figure for
 direct notebook display or a fixed export, call `apply_theme(figure, mode="light")`
@@ -144,9 +155,12 @@ See [examples](examples.md), [upgrading](upgrading.md) and
 
 ## Live notebook display
 
-The helpers start `helpers.local.LocalDisplay` for the folder that holds the
-displayed file. It serves read-only files on loopback with a random URL prefix
-and no directory listing. It stops when the kernel closes. This avoids
+The helpers start one `helpers.local.LocalDisplay` for `examples/`, which holds
+the lesson displays and the data package that the geometry viewer reads. A file
+outside `examples/` gets a display for the current folder, or for the file's own
+folder. The URL path of a lesson display is its path under `examples/`; the
+[docs site build](#convert-for-the-docs-site) reads it. The display serves
+read-only files on loopback with a random URL prefix and no directory listing. It stops when the kernel closes. This avoids
 JupyterLab's file-URL query rewriting and HTML sandbox restrictions. The saved
 notebook's display links work while its kernel runs; execute the cells again
 after a restart.
