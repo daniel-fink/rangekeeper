@@ -1,4 +1,4 @@
-"""Lesson 04's market paths, from the proposed cells (#298, #299, #306).
+"""Lesson 04's market paths, from the proposed cells (#296, #298, #299, #306).
 
 The cells come from ``examples/walkthrough/proposed/04_market_futures.md``
 and run statement by statement, as written. A call to ``helpers`` only draws,
@@ -11,8 +11,15 @@ wait on other issues:
   then edit the Model, and cell 4 moves the base case, as written.
 - ``COUNT``: cell 8 is tagged "parameters", so the test runs it with fewer
   paths, as the lesson CI does.
-- ``WAITING``: cell 19's check of the flaw of averages reads ``npv``, the
-  distribution of cell 12 (#296); the Outcomes track adds cells 12 to 16.
+- ``WAITING``: cell 4's ``rk.io.load`` of the base case (#295).
+
+One statement does not hold as written:
+
+- ``HELD``: cell 19's check of the flaw of averages,
+  ``npv.mean() != average_outcome["unlevered_npv"]``. The unlevered NPV is
+  linear in the rent index, so the mean of the paths' NPVs is the NPV on the
+  mean path (``test_the_unlevered_npv_has_no_flaw_of_averages``). The lesson
+  must choose another check; the test runs the rest of the cell.
 """
 
 import ast
@@ -24,7 +31,8 @@ from pathlib import Path
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.execution import Status
+from rangekeeper.execution import Distribution, Paired, Status
+from rangekeeper.shared.table import Table
 from tests.execution.test_lesson03 import PLAN
 from tests.walkthrough import test_proposed_lesson_03 as lesson03
 
@@ -40,6 +48,9 @@ WAITING = {
     "4": (
         'base = rk.io.load(path=helpers.data_path(name="03_base_case.specification.json"))',
     ),
+}
+# The statements of a cell that do not hold as written.
+HELD = {
     "19": ('assert npv.mean() != average_outcome["unlevered_npv"]',),
 }
 
@@ -77,8 +88,8 @@ def run(namespace: dict, *keys: str) -> dict:
         if key == "8":
             source = source.replace("count = 500", f"count = {COUNT}")
         for code in statements(source):
-            waiting = {ast.unparse(ast.parse(text)) for text in WAITING.get(key, ())}
-            if code not in waiting:
+            skipped = WAITING.get(key, ()) + HELD.get(key, ())
+            if code not in {ast.unparse(ast.parse(text)) for text in skipped}:
                 exec(code, namespace)
     return namespace
 
@@ -114,12 +125,17 @@ def base_case(model: rk.Model) -> rk.Specification:
 
 @pytest.fixture(scope="module")
 def lesson() -> dict:
-    """Run cells 3 to 8, 10, 11 and 17 to 19 of lesson 04, with their solves."""
+    """Run cells 3 to 8 and 10 to 19 of lesson 04, with their solves."""
     model = lesson03_model()
     namespace: dict = {"rk": rk, "date": date, "model": model}
     namespace["base"] = base_case(model)
-    cells = ("3", "3b", "4", "5", "6", "7", "8", "10", "11", "17", "18", "19")
-    return run(namespace, *cells)
+    cells = ("3", "3b", "4", "5", "6", "7", "8", "10", "11")
+    return run(namespace, *cells, "12", "13", "14", "15", "16", "17", "18", "19")
+
+
+def evaluate(lesson: dict, key: str) -> object:
+    """Return the value of a cell's last statement, an expression, as written."""
+    return eval(statements(cells()[key])[-1], lesson)
 
 
 def test_cells_5_to_7_add_one_component_at_a_time(lesson):
@@ -168,6 +184,62 @@ def test_cell_19_checks_the_cases_and_the_pinned_paths(lesson):
     case = lesson["paths_outcome"].case(key=first)
     assert case.run.paths == paths.id
     assert case["rent_index"] == paths[first]["rent_index"]
+
+
+def test_cell_12_summarises_the_npv_across_the_paths(lesson):
+    npv = lesson["npv"]
+    assert isinstance(npv, Distribution)
+    table = lesson["paths_outcome"].table("unlevered_npv")
+    assert list(npv.values) == list(table.column("unlevered_npv"))
+    summary = evaluate(lesson, "12")
+    assert isinstance(summary, Table)
+    (row,) = summary.rows
+    assert row.values["count"] == COUNT
+    assert row.values["minimum"] <= row.values["quantile_05"]
+    assert row.values["quantile_95"] <= row.values["maximum"]
+    assert row.values["mean"] == npv.mean()
+
+
+def test_cell_14_compares_the_mean_of_the_paths_with_the_average_path(lesson):
+    comparison = evaluate(lesson, "14")
+    assert isinstance(comparison, Paired)
+    mean = lesson["paths_outcome"].mean()
+    average = lesson["average_outcome"]
+    for key in ("unlevered_npv", "equity_npv", "peak_shortfall"):
+        (difference,) = comparison.difference(outcome="Mean of paths", key=key)
+        assert difference == mean[key] - average[key]
+
+
+def test_cell_15_reads_the_probability_of_a_loss_and_a_shortfall(lesson):
+    loss, shortfall = evaluate(lesson, "15")
+    table = lesson["paths_outcome"].table("unlevered_npv", "peak_shortfall")
+    zero = rk.Quantity(text="0 AUD")
+    npvs = table.column("unlevered_npv")
+    shortfalls = table.column("peak_shortfall")
+    assert loss == sum(1 for value in npvs if value < zero) / COUNT
+    assert shortfall == sum(1 for value in shortfalls if value > zero) / COUNT
+
+
+def test_cell_16_finds_the_path_at_the_5_percent_quantile(lesson):
+    worst = lesson["worst"]
+    npv = lesson["npv"]
+    assert worst in lesson["paths_outcome"].cases
+    assert worst["unlevered_npv"] == npv.quantile(level=0.05)
+    # With four paths the 5 % quantile is the lowest NPV.
+    assert worst["unlevered_npv"] == min(npv.values)
+    # The helper draws these Flows. ``committed`` comes from lesson 03's
+    # optional cell 21, which ``lesson_model`` does not run.
+    for key in ("equity_available", "loan_available"):
+        assert isinstance(worst[key], rk.flow.Flow)
+
+
+def test_the_unlevered_npv_has_no_flaw_of_averages(lesson):
+    """The unlevered NPV is linear in the rent index: cell 19's check is held."""
+    assert rk.quantity.isclose(
+        actual=lesson["npv"].mean(),
+        expected=lesson["average_outcome"]["unlevered_npv"],
+        relative=1e-12,
+    )
 
 
 def test_cells_17_and_18_make_independent_series(lesson):
