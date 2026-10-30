@@ -508,7 +508,7 @@ def test_lesson_03_cell_5_dates_and_their_equations():
     )
     dates.equations("start_date != NEVER")
     model = draft.commit()
-    values = model.entity(code="project").characteristics.values
+    values = model.entity(code="project").record.characteristics.values
     assert [value.key for value in values][:4] == [
         "base_date",
         "sale_date",

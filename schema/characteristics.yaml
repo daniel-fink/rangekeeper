@@ -111,6 +111,11 @@ classes:
       never:
         description: Records that the event of a date Value does not happen; it excludes date.
         range: Never
+      inferred:
+        description: True when a draft worked out the kind, units and Periods of this Value from
+          the equation that defines it, because no call declared them; a later revision works them
+          out again. Absent or false when they were declared, and are a check of the equations.
+        range: boolean
     slot_usage:
       measure:
         required: false

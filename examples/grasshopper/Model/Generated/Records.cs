@@ -2573,6 +2573,12 @@ public sealed class Value : WireRecord
         get => Read<Guid>("id");
         init => Write("id", value);
     }
+    /// <summary>Wire field inferred; missing and null remain distinct.</summary>
+    public Optional<bool> Inferred
+    {
+        get => ReadOptional<bool>("inferred");
+        init => WriteOptional("inferred", value);
+    }
     /// <summary>Wire field key; missing and null remain distinct.</summary>
     public string Key
     {

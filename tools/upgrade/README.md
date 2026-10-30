@@ -56,6 +56,12 @@ literals are new in 1.0.0
 have no date kind, so the tool adds nothing for them. A 0.x property Value with
 date content stays a property Value; declare a date Value to use it in equations.
 
+`Value.inferred` is new in 1.0.0
+([#282](https://github.com/daniel-fink/rangekeeper/issues/282)): a draft stores
+`inferred: true` on a Value whose kind and units it worked out from the
+equations. The earlier formats declared the units of every Value, so the tool
+adds nothing, and each converted Value reads as declared.
+
 Everything else stays the same:
 
 - **Identities.** Each document keeps its UUID and its `previous` lineage, so a

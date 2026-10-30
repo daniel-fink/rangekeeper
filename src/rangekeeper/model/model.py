@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Self, TypeVar, cast
 from uuid import UUID, uuid4
 
 from rangekeeper.flow import Movement
+from rangekeeper.model.entity import ModelEntity
 from rangekeeper.model.formulation.authoring import identify
 from rangekeeper.model.update import SECTIONS, Update
 from rangekeeper.quantity import UnitSystem, default_units
@@ -317,17 +318,24 @@ class Model:
         id: UUID | None = None,
         code: str | None = None,
         name: str | None = None,
-    ) -> Entity:
+    ) -> ModelEntity:
         """Return the one Entity or canonical Assembly with this UUID, code or name.
 
-        Give exactly one selector. No match raises MissingReferenceError with the
-        nearest codes or names; several matches raise AmbiguousReferenceError with
-        their codes. ``find_entities`` is the search that can return none or several.
+        The result is a read-only ``ModelEntity`` of this revision: its
+        ``record`` is the Entity or Assembly record, and ``values`` shows the
+        units of each Value, declared or inferred. Give exactly one selector. No
+        match raises MissingReferenceError with the nearest codes or names;
+        several matches raise AmbiguousReferenceError with their codes.
+        ``find_entities`` is the search that can return none or several.
         """
         if sum(value is not None for value in (id, code, name)) != 1:
             raise TypeError("entity takes exactly one of id, code or name")
         if id is not None:
-            return self._index.get(id, Entity)
+            return ModelEntity._of(self, self._index.get(id, Entity))
+        return ModelEntity._of(self, self._entity_named(code=code, name=name))
+
+    def _entity_named(self, *, code: str | None, name: str | None) -> Entity:
+        """Return the one Entity or Assembly record with this code, or this name."""
         by, text = ("code", code) if code is not None else ("name", name)
         text = require_text(text, by)
         entities = [

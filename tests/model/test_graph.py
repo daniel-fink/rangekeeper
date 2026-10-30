@@ -160,22 +160,22 @@ def test_model_selection_modes_and_stable_order():
     model, root, a, b, c, edges, _ = fixture(overlap=True)
     view = View(model=model, assembly=root.id)
     assert tuple(item.id for item in view.entities) == (a.id, b.id, c.id, root.id)
-    assert view.entity(id=root.id) is model.entity(id=root.id)
+    assert view.entity(id=root.id) is model.entity(id=root.id).record
     assert root.id not in {item.id for item in model.system.entities}
     assert view.relationships == edges
     assert View(model=model, entities=(b.id, root.id, a.id)).relationships == edges[:2]
     assert View(model=model, relationships=(edges[1].id,)).entities == (
-        model.entity(id=b.id),
-        model.entity(id=root.id),
+        model.entity(id=b.id).record,
+        model.entity(id=root.id).record,
     )
     assert View(model=model, entities=()).entities == ()
     assert View(model=model, relationships=()).relationships == ()
     assert len(View(model=model).entities) == 5
-    assert view.roots == (model.entity(id=root.id),)
+    assert view.roots == (model.entity(id=root.id).record,)
     assert view.leaves == (
-        model.entity(id=a.id),
-        model.entity(id=b.id),
-        model.entity(id=c.id),
+        model.entity(id=a.id).record,
+        model.entity(id=b.id).record,
+        model.entity(id=c.id).record,
     )
     assert view.successors(root.id) == view.leaves
     assert view.predecessors(b.id) == view.roots
@@ -231,7 +231,10 @@ def test_filter_keeps_selection_and_removes_incident_edges():
         predicate=lambda entity: entity.id != b.id
     )
     assert view.relationships == (edges[0], edges[2])
-    assert view.successors(root.id) == (model.entity(id=a.id), model.entity(id=c.id))
+    assert view.successors(root.id) == (
+        model.entity(id=a.id).record,
+        model.entity(id=c.id).record,
+    )
     with pytest.raises(TypeError):
         view.filter(predicate=lambda entity: 1)
     with pytest.raises(MissingReferenceError):
@@ -241,9 +244,9 @@ def test_filter_keeps_selection_and_removes_incident_edges():
 def test_membership_and_relationship_direction_are_distinct():
     model, root, a, b, c, edges, _ = fixture(overlap=True)
     assert entities_in(model=model, assembly=root.id) == (
-        model.entity(id=a.id),
-        model.entity(id=b.id),
-        model.entity(id=c.id),
+        model.entity(id=a.id).record,
+        model.entity(id=b.id).record,
+        model.entity(id=c.id).record,
     )
     assert relationships_in(model=model, assembly=root.id) == edges
     assert tuple(x.code for x in containing_assemblies(model=model, entity=b.id)) == (
@@ -544,7 +547,11 @@ assert graph.View(model=model).entities==()
 def test_classification_filters_include_sub_types_unless_exclusive():
     model, root, a, b, c, edges, _ = fixture()
     view = View(model=model)
-    rooms = (model.entity(id=a.id), model.entity(id=b.id), model.entity(id=c.id))
+    rooms = (
+        model.entity(id=a.id).record,
+        model.entity(id=b.id).record,
+        model.entity(id=c.id).record,
+    )
     assert view.filter(entity_classification=a.classification).entities == rooms
     assert view.filter(entity_classification=a.classification).relationships == ()
     parent = model.definitions.taxonomies[0].classifications[0]

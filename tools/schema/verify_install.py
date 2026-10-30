@@ -271,7 +271,7 @@ for prefix in ('yaml', 'pint', 'pandas', 'numpy', 'networkx', 'matplotlib', 'spe
 print('Installed wheel: all public roots, JSON and both revision stores passed without optional imports')
 from rangekeeper.model.system import View, Hierarchy
 view = View(model=domain)
-assert view.entity(entity.id) is domain.entity(id=entity.id)
+assert view.entity(entity.id) is domain.entity(id=entity.id).record
 assert Hierarchy.from_relationships(view).preorder() == (entity.id,)
 for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix

@@ -205,3 +205,11 @@ def test_a_property_date_stays_a_property_value():
     assert result == value
     assert not {"date", "never"} & set(result)
     assert all("never" not in keys(load(name)) for name in ("model.json", "run.json"))
+
+
+def test_converted_values_read_as_declared():
+    # `Value.inferred` is new in 1.0.0 (#282): the earlier formats declared the
+    # units of every Value, so the converted documents have no such field.
+    assert all(
+        "inferred" not in keys(load(name)) for name in ("model.json", "run.json")
+    )

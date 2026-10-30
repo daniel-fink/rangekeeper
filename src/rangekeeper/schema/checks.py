@@ -2329,7 +2329,7 @@ def check_Value(d, fields=None):
     if 'kind' not in d:
         issues.append(('structure.required', 'kind is required', ''))
     for name in d:
-        if name not in ('content', 'date', 'description', 'flow', 'id', 'key', 'kind', 'measure', 'never', 'quantity'):
+        if name not in ('content', 'date', 'description', 'flow', 'id', 'inferred', 'key', 'kind', 'measure', 'never', 'quantity'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'content' in d and (fields is None or 'content' in fields):
         v = d['content']
@@ -2351,6 +2351,10 @@ def check_Value(d, fields=None):
         v = d['id']
         if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
             issues.append(('structure.value', 'invalid id', '/id'))
+    if 'inferred' in d and (fields is None or 'inferred' in fields):
+        v = d['inferred']
+        if not ((type(v) is bool or v is None)):
+            issues.append(('structure.value', 'invalid inferred', '/inferred'))
     if 'key' in d and (fields is None or 'key' in fields):
         v = d['key']
         if not ((type(v) is not str or _P2.search(v) is not None) and (type(v) is str)):

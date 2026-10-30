@@ -135,7 +135,7 @@ def test_assembly_lookup_is_typed_and_preserves_entity_lookup():
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(entities=(ordinary,), assemblies=(assembly,)),
     )
-    assert model.assembly(assembly.id) == model.entity(id=assembly.id)
+    assert model.assembly(assembly.id) == model.entity(id=assembly.id).record
     with pytest.raises(ReferenceTypeError):
         model.assembly(ordinary.id)
 

@@ -212,7 +212,7 @@ def match(
     failed: list[UUID] = []
     undecided: list[UUID] = []
     for entity in entities:
-        result = test(model.entity(id=entity.id))
+        result = test(model.entity(id=entity.id).record)
         (passed if result else failed if result is False else undecided).append(
             entity.id
         )

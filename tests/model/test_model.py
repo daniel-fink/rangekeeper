@@ -146,7 +146,7 @@ def test_labels_by_owner_and_key():
 def test_canonical_assembly_search_and_lookup_errors():
     model = simple()
     assembly = model.system.assemblies[0]
-    assert isinstance(model.entity(id=assembly.id), Assembly)
+    assert isinstance(model.entity(id=assembly.id).record, Assembly)
     assert assembly.id not in {entity.id for entity in model.system.entities}
     assert tuple(e.id for e in model.find_entities()) == (
         model.system.entities[0].id,
@@ -192,8 +192,8 @@ def test_lookup_errors_name_what_was_requested_and_where():
 def test_entity_by_code_or_name_returns_one_or_raises():
     model = simple()
     entity, assembly = model.system.entities[0], model.system.assemblies[0]
-    assert model.entity(code="A") == entity
-    assert model.entity(code="group") == assembly
+    assert model.entity(code="A").record == entity
+    assert model.entity(code="group").record == assembly
     with pytest.raises(MissingReferenceError) as caught:
         model.entity(code="groups")
     error = caught.value

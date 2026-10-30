@@ -322,7 +322,7 @@ def test_lookup_guard_restores_generated_constructors(inspected, monkeypatch):
         metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
         system=System(entities=(entity,)),
     )
-    assert after.entity(id=entity.id) == entity
+    assert after.entity(id=entity.id).record == entity
 
 
 def test_lookup_creates_only_selected_chain_wrappers(inspected, monkeypatch):

@@ -129,6 +129,25 @@ that it dates is a new Movement with a fresh ID. Code that found a dated
 Movement by the ID of its period Movement must match it by coordinate. See
 [the rule](../reference/identity.md#one-rule-for-transforms).
 
+### Model entities
+
+`Model.entity(id=, code=, name=)` returns a read-only `ModelEntity`, not the
+generated `Entity` record
+([#282](https://github.com/daniel-fink/rangekeeper/issues/282), D44). Its
+`record` is the record, and `id`, `code`, `name` and `classification` are the
+record's fields; `values` is a Table of the entity's Values with their units,
+declared or inferred. Code that used the record reads `record`:
+
+| Before | Now |
+| --- | --- |
+| `model.entity(code="project").characteristics.values` | `model.entity(code="project").record.characteristics.values` |
+| `model.entity(id=id) == record` | `model.entity(id=id).record == record` |
+| `isinstance(model.entity(id=id), Assembly)` | `isinstance(model.entity(id=id).record, Assembly)` |
+
+A Value that a draft infers from its equations is stored with `inferred: true`;
+a declared Value has no such field. Documents of earlier releases have none,
+so their Values read as declared.
+
 ### False fixed predicates
 
 A predicate whose values are all fixed and that is false, such as `a > b` with

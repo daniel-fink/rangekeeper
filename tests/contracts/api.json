@@ -12,7 +12,7 @@
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
     "edit": "method (self, *, name: str | None = None, description: str | None = None) -> ModelDraft",
-    "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
+    "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.model.entity.ModelEntity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
     "from_data": "classmethod (cls, *, data: collections.abc.Mapping[str, object], units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
@@ -2104,7 +2104,7 @@
     "definitions": "property",
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
     "edit": "method (self, *, name: str | None = None, description: str | None = None) -> ModelDraft",
-    "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.schema.records.Entity",
+    "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.model.entity.ModelEntity",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
     "from_data": "classmethod (cls, *, data: collections.abc.Mapping[str, object], units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
@@ -2146,6 +2146,20 @@
     "model": "property"
    },
    "module": "rangekeeper.model.draft",
+   "signature": "() -> None"
+  },
+  "ModelEntity": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self) -> None",
+    "classification": "property",
+    "code": "property",
+    "id": "property",
+    "name": "property",
+    "record": "property",
+    "values": "property"
+   },
+   "module": "rangekeeper.model.entity",
    "signature": "() -> None"
   },
   "Provenance": {
@@ -2246,21 +2260,22 @@
   "Value": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>, inferred: bool | None | Unset = <Unset>) -> None",
     "content": "property",
     "date": "property",
     "description": "property",
     "flow": "property",
     "id": "property",
+    "inferred": "property",
     "key": "property",
     "kind": "property",
     "measure": "property",
     "never": "property",
     "quantity": "property",
-    "replace": "method (self, *, measure: UUID | None | Unset | Omit = <Unset>, quantity: Quantity | None | Unset | Omit = <Unset>, id: UUID | Unset = <Unset>, key: str | Unset = <Unset>, kind: ValueKind | Unset = <Unset>, description: str | None | Unset | Omit = <Unset>, flow: Flow | None | Unset | Omit = <Unset>, content: PropertyContent | None | Unset | Omit = <Unset>, date: Date | None | Unset | Omit = <Unset>, never: Never | Unset | Omit = <Unset>) -> Self"
+    "replace": "method (self, *, measure: UUID | None | Unset | Omit = <Unset>, quantity: Quantity | None | Unset | Omit = <Unset>, id: UUID | Unset = <Unset>, key: str | Unset = <Unset>, kind: ValueKind | Unset = <Unset>, description: str | None | Unset | Omit = <Unset>, flow: Flow | None | Unset | Omit = <Unset>, content: PropertyContent | None | Unset | Omit = <Unset>, date: Date | None | Unset | Omit = <Unset>, never: Never | Unset | Omit = <Unset>, inferred: bool | None | Unset | Omit = <Unset>) -> Self"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>) -> None"
+   "signature": "(*, measure: UUID | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>, id: UUID, key: str, kind: ValueKind, description: str | None | Unset = <Unset>, flow: Flow | None | Unset = <Unset>, content: PropertyContent | None | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>, inferred: bool | None | Unset = <Unset>) -> None"
   },
   "ValueHandle": {
    "kind": "class",

@@ -13,8 +13,8 @@ takes the Periods of the Flow that it defines.
 ``run_as_written`` runs cells 5 to 8, 12 and 12b as written, with their
 named Formulations (#305). The cells leave the results that they do not rely
 on undeclared, and the draft infers them, with the Periods of their Flows
-(#282): ``RESULTS`` gives the kind and units that it infers. The test skips
-the one statement that shows the inferred units (``WAITING``).
+(#282): ``RESULTS`` gives the kind and units that it infers, and
+``model.entity(code="project").values`` shows them (D44).
 """
 
 import ast
@@ -166,20 +166,13 @@ def test_the_equations_of_the_cells_commit(draft, project):
     }
 
 
-# The one statement of the cells that waits on #282: Entity.values shows the
-# units of each value as declared or inferred (D44).
-WAITING = ("model.entity(code='project').values",)
-
-
 def run_as_written(*keys: str) -> dict[str, object]:
     """Run cells as written, statement by statement, from a fresh namespace."""
     numbered = cells()
     namespace: dict[str, object] = {"rk": rk, "date": date, "years": YEARS}
     for key in keys:
         for statement in ast.parse(numbered[key]).body:
-            code = ast.unparse(statement)
-            if code not in WAITING:
-                exec(code, namespace)
+            exec(ast.unparse(statement), namespace)
     return namespace
 
 
@@ -222,7 +215,7 @@ def test_cells_5_to_5c_run_as_written_and_infer_the_dates():
     model = run_cells("5", "5b", "5c")["draft"].commit()
     values = {
         value.key: value
-        for value in model.entity(code="project").characteristics.values
+        for value in model.entity(code="project").record.characteristics.values
     }
     for key in ("shared_start", "a_start", "a_open", "b_open"):
         assert values[key].kind is rk.model.ValueKind.DATE
@@ -238,7 +231,8 @@ def test_cells_5_to_8_and_12_infer_the_results_that_they_do_not_declare():
     """The cells run as written with no declared results (#282, D44).
 
     The draft works out the kind and units of each result in ``RESULTS`` from
-    its equations. Only the statement of ``WAITING`` is skipped.
+    its equations, and ``Entity.values`` shows each value as declared or
+    inferred.
     """
     namespace = run_as_written("5", "5b", "5c", "6", "7", "7b", "8", "12", "12b")
     model = namespace["model"]
@@ -258,3 +252,8 @@ def test_cells_5_to_8_and_12_infer_the_results_that_they_do_not_declare():
             # A Flow takes the Periods of its operands, one Movement in each.
             assert len(value.flow.movements) == len(YEARS)
     assert inferred == RESULTS
+    shown = {
+        row.values["key"]: row.values["inferred"]
+        for row in model.entity(code="project").values.rows
+    }
+    assert {key for key, flag in shown.items() if flag} == set(RESULTS)
