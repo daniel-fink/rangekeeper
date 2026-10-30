@@ -136,6 +136,10 @@ OPERATORS: list[tuple[str, Callable[..., object]]] = [
         lambda v: v["need"] == rx.max("0 AUD", v["cash"] - v["need"]),
     ),
     (
+        "need = rx.min(cash, need * 2)",
+        lambda v: v["need"] == rx.min(v["cash"], v["need"] * 2),
+    ),
+    (
         "value = 2 * (cash + need).total()",
         lambda v: v["value"] == 2 * (v["cash"] + v["need"]).total(),
     ),
@@ -299,7 +303,7 @@ def test_an_equation_is_boolean(project):
         (
             lambda v: terms.call("rx.mux", v["noi"], v["noi"]),
             Code.EQUATION_FUNCTION,
-            ["rx.max"],
+            ["rx.max", "rx.min"],
         ),
         (
             lambda v: terms.call("rx.max", v["noi"], left=v["noi"]),
@@ -364,6 +368,13 @@ FIXED = {
 MIRRORS: list[tuple[str, Callable[[], object]]] = [
     ("rx.max(noi, debt_service)", lambda: max(FIXED["noi"], FIXED["debt_service"])),
     ("rx.max(debt_service, noi)", lambda: max(FIXED["debt_service"], FIXED["noi"])),
+    ("rx.min(noi, debt_service)", lambda: min(FIXED["noi"], FIXED["debt_service"])),
+    (
+        "rx.min(0 AUD, cash)",
+        lambda: rk.flow.Flow(
+            amounts=dict(zip(YEARS, (0, -50, 0), strict=True)), units="AUD"
+        ),
+    ),
     (
         "rx.max(0 AUD, cash - need)",
         lambda: rk.flow.Flow(

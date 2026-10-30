@@ -238,6 +238,17 @@ and the table below are made from it.
   `complete` (from every period). A rule reads only known values (G53).
 - **Periodwise functions** take a Flow where a parameter takes a value, and then
   apply period by period: `rx.max(0 AUD, need)` is a Flow when `need` is one.
+- **Piecewise functions.** `rx.max` and `rx.min` have the Function codes
+  `rx.max` and `rx.min`, which the solve recognises: it picks the active side
+  of each call and checks it after the solve (G77,
+  [execution](execution.md)).
+- **One row for each period.** `rangekeeper.model.expression.lowering.per_period`
+  writes a Flow-valued equation as one scalar equation for each period, over
+  the Movements of its Flows: a periodwise call becomes one call for each
+  period, and `cumulative()`, `diff()`, `total()`, `first()` and `last()`
+  become sums and differences of Movements. Other calls need the staged solve
+  ([#276](https://github.com/daniel-fink/rangekeeper/issues/276)) and raise
+  `UnsupportedError`.
 
 <!-- BEGIN GENERATED FUNCTIONS -->
 | Function | Meaning | Stage | Availability | Mirrors |
@@ -247,6 +258,7 @@ and the table below are made from it.
 | `rx.finance.npv(flow=, rate=, on=)` | The net present value of a Flow on a date. | `affine` | `complete` | `rangekeeper.finance.npv` |
 | `rx.flow.event(amount=, on=)` | A Flow with one amount, in the period that contains a date. | `affine` | `periodwise` | `rangekeeper.flow.Flow`, with the amount on its date and zero elsewhere |
 | `rx.max(left, right)` | The larger of two values, period by period for Flows. | `after_affine` | `periodwise` | Python's built-in max, period by period |
+| `rx.min(left, right)` | The smaller of two values, period by period for Flows. | `after_affine` | `periodwise` | Python's built-in min, period by period |
 | `rx.profile.compounding(initial=, rate=, start=, every=, base=)` | A Flow made by the growth profile Compounding. | `affine` | `periodwise` | `rangekeeper.flow.Flow.from_profile` with `rangekeeper.profile.Compounding` |
 | `rx.profile.constant(initial=, start=, every=)` | A Flow made by the growth profile Constant. | `affine` | `periodwise` | `rangekeeper.flow.Flow.from_profile` with `rangekeeper.profile.Constant` |
 | `rx.profile.linear(initial=, rate=, start=, every=, base=)` | A Flow made by the growth profile Linear. | `affine` | `periodwise` | `rangekeeper.flow.Flow.from_profile` with `rangekeeper.profile.Linear` |

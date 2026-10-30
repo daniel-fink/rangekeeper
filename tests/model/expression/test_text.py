@@ -340,7 +340,7 @@ def test_invalid_units_name_the_unit_words():
     [
         ("value = rk.max(noi, cap_rate)", 8, 14, ("rx.max",)),
         ("value = rk", 8, 10, ()),
-        ("value = rx.mux(noi, cap_rate)", 8, 14, ("rx.max",)),
+        ("value = rx.mux(noi, cap_rate)", 8, 14, ("rx.max", "rx.min")),
         ("value = rx.max", 8, 14, ()),
         ("value = rx", 8, 10, ()),
         ("value = rx()", 8, 10, ()),

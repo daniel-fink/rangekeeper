@@ -142,6 +142,10 @@ def _larger(left: Quantity, right: Quantity) -> Quantity:
     return left if left >= right else right
 
 
+def _smaller(left: Quantity, right: Quantity) -> Quantity:
+    return left if left <= right else right
+
+
 # The built-in entries.
 
 _FLOW = FunctionParameter(
@@ -152,10 +156,48 @@ _FLOW = FunctionParameter(
 )
 
 
-def _maximum(
-    arguments: Mapping[str, Content], periods: Sequence[Period] | None
-) -> Content:
-    return periodwise(_larger, arguments["left"], arguments["right"])
+def _extreme(
+    name: str, *, word: str, select: Callable[[Quantity, Quantity], Quantity]
+) -> EquationFunction:
+    """Return ``rx.max`` or ``rx.min``: the larger or the smaller of two values.
+
+    The solve picks the active side of each call (G77, #308); its Function
+    code, ``rx.max`` or ``rx.min``, is the one that the solve recognises.
+    """
+
+    def evaluate(
+        arguments: Mapping[str, Content], periods: Sequence[Period] | None
+    ) -> Content:
+        return periodwise(select, arguments["left"], arguments["right"])
+
+    return EquationFunction(
+        name=name,
+        form=Form.FUNCTION,
+        summary=f"The {word} of two values, period by period for Flows.",
+        parameters=(
+            FunctionParameter(
+                name="left",
+                kind=DomainKind.QUANTITY,
+                description="A value or a Flow.",
+                call=ParameterKind.POSITIONAL_OR_NAMED,
+            ),
+            FunctionParameter(
+                name="right",
+                kind=DomainKind.QUANTITY,
+                description="A value or a Flow, in units compatible with left.",
+                call=ParameterKind.POSITIONAL_OR_NAMED,
+            ),
+        ),
+        result=DomainKind.QUANTITY,
+        stage=EvaluationStage.AFTER_AFFINE,
+        availability=Availability.PERIODWISE,
+        mirrors=f"Python's built-in {name}, period by period",
+        units_from="left",
+        periodwise=("left", "right"),
+        unit_rule="The arguments have compatible units; the result has the units "
+        f"of the {word} argument.",
+        evaluator=evaluate,
+    )
 
 
 def _at(arguments: Mapping[str, Content], periods: Sequence[Period] | None) -> Content:
@@ -177,34 +219,8 @@ def _shift(
 
 
 for _function in (
-    EquationFunction(
-        name="max",
-        form=Form.FUNCTION,
-        summary="The larger of two values, period by period for Flows.",
-        parameters=(
-            FunctionParameter(
-                name="left",
-                kind=DomainKind.QUANTITY,
-                description="A value or a Flow.",
-                call=ParameterKind.POSITIONAL_OR_NAMED,
-            ),
-            FunctionParameter(
-                name="right",
-                kind=DomainKind.QUANTITY,
-                description="A value or a Flow, in units compatible with left.",
-                call=ParameterKind.POSITIONAL_OR_NAMED,
-            ),
-        ),
-        result=DomainKind.QUANTITY,
-        stage=EvaluationStage.AFTER_AFFINE,
-        availability=Availability.PERIODWISE,
-        mirrors="Python's built-in max, period by period",
-        units_from="left",
-        periodwise=("left", "right"),
-        unit_rule="The arguments have compatible units; the result has the units "
-        "of the larger argument.",
-        evaluator=_maximum,
-    ),
+    _extreme("max", word="larger", select=_larger),
+    _extreme("min", word="smaller", select=_smaller),
     EquationFunction(
         name="at",
         form=Form.METHOD,

@@ -83,7 +83,7 @@ def test_a_lookup_suggests_the_nearest_names():
     with pytest.raises(ContractError) as error:
         functions.function(name="mux")
     assert error.value.code is Code.EQUATION_FUNCTION
-    assert error.value.values["suggestions"] == ["rx.max"]
+    assert error.value.values["suggestions"] == ["rx.max", "rx.min"]
     with pytest.raises(ContractError) as error:
         functions.method(name="totl")
     assert error.value.values["suggestions"] == ["total"]

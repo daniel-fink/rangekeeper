@@ -8,7 +8,7 @@ equation text: ``rx.max(a, b)`` here, and ``rx.profile``, ``rx.flow`` and
 ``rx.finance``. ``rk.`` computes on values now; ``rx.`` builds an equation.
 Text and ``rx`` make the same records.
 
-``max`` keeps the name of Python's built-in, as in equation text (D21).
+``max`` and ``min`` keep the names of Python's built-ins, as in equation text (D21).
 
 tools/expressions/generate.py writes this module from the equation-function
 registry; do not edit it by hand.
@@ -38,8 +38,20 @@ def max(left: Operand, right: Operand) -> Term:
     return call("rx.max", left, right)
 
 
+def min(left: Operand, right: Operand) -> Term:
+    """Return the smaller of two values, period by period for Flows.
+
+    ``left``: A value or a Flow.
+    ``right``: A value or a Flow, in units compatible with left.
+
+    Mirrors Python's built-in min, period by period.
+    """
+    return call("rx.min", left, right)
+
+
 __all__ = [
     "max",
+    "min",
     "Availability",
     "EquationFunction",
     "EvaluationStage",

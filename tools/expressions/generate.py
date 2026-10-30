@@ -217,7 +217,7 @@ def package() -> dict[Path, str]:
         "equation text: ``rx.max(a, b)`` here, and ``rx.profile``, ``rx.flow`` and\n"
         "``rx.finance``. ``rk.`` computes on values now; ``rx.`` builds an equation.\n"
         "Text and ``rx`` make the same records.\n\n"
-        "``max`` keeps the name of Python's built-in, as in equation text (D21)."
+        "``max`` and ``min`` keep the names of Python's built-ins, as in equation text (D21)."
     )
     sources = {
         PACKAGE / "__init__.py": _module(root_doc, grouped.pop("", []), root=True)

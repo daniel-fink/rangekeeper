@@ -1064,6 +1064,11 @@
    "module": "rangekeeper.expressions",
    "signature": "(left: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, right: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
   },
+  "min": {
+   "kind": "function",
+   "module": "rangekeeper.expressions",
+   "signature": "(left: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, right: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
+  },
   "profile": {
    "kind": "module",
    "module": "rangekeeper.expressions.profile"
