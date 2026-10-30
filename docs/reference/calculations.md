@@ -321,21 +321,40 @@ has two kinds:
 
 | Profile | Kind | Factor for each Period |
 | --- | --- | --- |
-| `Constant()` | Growth, `initial=` | 1 |
-| `Linear(rate=)` | Growth, `initial=` | `1 + rate * t` |
-| `Compounding(rate=)` | Growth, `initial=` | `(1 + rate) ** t` |
-| `Uniform()` | Distribution, `total=` | `1 / n` |
-| `SCurve(distribution=None)` | Distribution, `total=` | The increase of an S-shaped cumulative distribution over each Period's equal part: by default `3x² - 2x³` (Beta(2, 2)), or the `Distribution` given, such as `Distribution.pert()` |
+| `Constant(start=None, every=None)` | Growth, `initial=` | 1 |
+| `Linear(rate=, base=None, start=None, every=None)` | Growth, `initial=` | `1 + rate * t` |
+| `Compounding(rate=, base=None, start=None, every=None)` | Growth, `initial=` | `(1 + rate) ** t` |
+| `Uniform(start=None, length=None)` | Distribution, `total=` | `1 / n` |
+| `SCurve(distribution=None, start=None, length=None)` | Distribution, `total=` | The increase of an S-shaped cumulative distribution over each Period's equal part: by default `3x² - 2x³` (Beta(2, 2)), or the `Distribution` given, such as `Distribution.pert()` |
 
 `rate` is a rate per year, a Quantity or its text, such as `"2 % pa"`. `t` is the
-years from the start of the first Period to the start of each: a start on the
-same day of the month counts whole months, otherwise days at 365.25 a year.
+years from `base` to the start of each Period: a start on the same day of the
+month counts whole months, otherwise days at 365.25 a year. `base` is the date of
+the initial amount, by default the start of the first Period, so a Period before
+it has a negative `t`.
+
+The other options say when the amount occurs. They are checked when the profile
+is made:
+
+| Option | Profiles | Meaning |
+| --- | --- | --- |
+| `start=` | All | A date value. A growth profile is zero in each Period that ends on or before it; the Period that contains it holds the amount. A distribution starts its window on it. `NEVER` gives zero everywhere |
+| `every=` | Growth | A whole length, such as `"5 years"`. The amount occurs on `start`, by default the start of the first Period, and once each `every` after it, in the Period that contains each date. Two dates in one Period give twice the amount |
+| `length=` | Distribution | A whole length. The window of the shares ends `length` after its start, by default at the end of the last Period |
+
+A distribution divides the total over the `n` Periods of its window, and the
+Periods outside it hold zero. The window must cover whole Periods and lie inside
+the Periods: a window that crosses a Period raises `rk.duration.AlignmentError`
+with `Code.ALIGNMENT_CROSSES`, and one that runs past the Periods raises it with
+`Code.ALIGNMENT_PARTIAL`, so no part of the total is lost.
 
 `Flow.from_profile(profile=, periods=, initial= or total=)` makes the Flow. A
-growth profile takes `initial=`, and the first Period holds it. A distribution
-profile takes `total=`; the last Period takes the remainder, so the amounts add
-up to the total. A profile refuses the other keyword, so a total is never
-compounded by mistake. The amount gives the Flow its units.
+growth profile takes `initial=`; with no `base` or `start`, the first Period
+holds it. A distribution profile takes `total=`; the last Period with a share
+takes the remainder, so the amounts add up to the total. With `start=NEVER` it
+has no share, and every amount is zero: the payments do not happen. A profile
+refuses the other keyword, so a total is never compounded by mistake. The amount
+gives the Flow its units.
 
 ```python
 growth = rk.profile.Compounding(rate="2 % pa")
@@ -343,7 +362,19 @@ pgi = rk.flow.Flow.from_profile(profile=growth, periods=years, initial="100 USD"
 fees = rk.flow.Flow.from_profile(
     profile=rk.profile.SCurve(), periods=build, total="3e6 AUD"
 )
+# Lesson 03: rent grows from the first Period and starts at the opening, renewals
+# come every five years after it, and the works divide over two years.
+rent = rk.profile.Compounding(rate="3 % pa", start=date(2030, 1, 1))
+renewals = rk.profile.Compounding(
+    rate="3.5 % pa", start=date(2035, 1, 1), every="5 years"
+)
+works = rk.profile.Uniform(start=date(2028, 1, 1), length="2 years")
 ```
+
+In equation text, each profile is a function with the same options:
+`rx.profile.compounding(initial=, rate=, start=, every=, base=)` and
+`rx.profile.uniform(total=, start=, length=)` (see the
+[proposed cells](../../examples/walkthrough/proposed/README.md#equation-strings)).
 
 A new profile is a class whose instances have `takes` (`"initial"` or `"total"`)
 and `factors(*, periods)`. Register it in `rangekeeper.profile.profiles`

@@ -30,7 +30,7 @@ from rangekeeper.money import round as _round
 from rangekeeper.schema import records
 from rangekeeper.schema.kinds import register
 from rangekeeper.shared.amounts import text as _amount_text
-from rangekeeper.shared.errors import UnitError
+from rangekeeper.shared.errors import ContractError, UnitError
 from rangekeeper.shared.fingerprints import manifest_digest
 from rangekeeper.shared.registry import Registry
 
@@ -750,56 +750,78 @@ default_units = UnitSystem()
 
 def isclose(
     *,
-    actual: "Quantity | Flow",
-    expected: "Quantity | Flow",
+    actual: "Quantity | Flow | str",
+    expected: "Quantity | Flow | str",
     tolerance: "Quantity | str | None" = None,
     relative: float = 1e-9,
 ) -> bool:
     """Return whether two Quantities, or two Flows, are equal within a tolerance.
 
-    ``actual`` is converted to the units of ``expected``; incompatible units
-    raise UnitError. Two values are close when their difference is at most
-    ``tolerance`` (a Quantity or its text, in units compatible with
-    ``expected``) or at most ``relative`` times the larger magnitude, as in
-    ``math.isclose``. Two Flows are close when they have the same coordinates
-    and each pair of amounts is close; two unresolved amounts are close.
+    A Quantity can be given as its text, such as ``"0 AUD"``. ``actual`` is
+    converted to the units of ``expected``; incompatible units raise UnitError.
+    Two values are close when their difference is at most ``tolerance`` (a
+    Quantity or its text, in units compatible with ``expected``) or at most
+    ``relative`` times the larger magnitude, as in ``math.isclose``. Two Flows
+    are close when they have the same coordinates and each pair of amounts is
+    close; two unresolved amounts are close. A ``relative`` outside 0 up to 1
+    raises ContractError.
     """
     if type(relative) not in (int, float) or not 0 <= relative < 1:
-        raise ValueError("relative must be a number from 0 up to 1")
-    pairs: list[tuple[Decimal | int | float | None, Decimal | int | float | None]]
+        raise ContractError(
+            "relative must be a number from 0 up to 1", values={"relative": relative}
+        )
+    left, right = _compared(actual, "actual"), _compared(expected, "expected")
+    pairs = _pairs(left, right)
+    if pairs is None:
+        return False
+    scale = _sum_scale(right.units, left.units)
+    absolute = 0.0
+    if tolerance is not None:
+        allowed = _compared(tolerance, "tolerance")
+        if not isinstance(allowed, records.Quantity):
+            raise TypeError("tolerance must be a Quantity or its text")
+        absolute = abs(_number(allowed.magnitude)) * _sum_scale(
+            right.units, allowed.units
+        )
+    return all(
+        a is e
+        if a is None or e is None
+        else math.isclose(
+            _number(a) * scale, _number(e), rel_tol=relative, abs_tol=absolute
+        )
+        for a, e in pairs
+    )
+
+
+_Magnitude = Decimal | int | float | None
+
+
+def _compared(value: object, field: str) -> "records.Quantity | records.Flow":
+    """Return a Quantity or a Flow to compare; read text as a Quantity."""
+    if isinstance(value, str):
+        return Quantity(text=value)
+    if not isinstance(value, (records.Quantity, records.Flow)):
+        raise TypeError(f"{field} must be a Quantity, its text or a Flow")
+    return value
+
+
+def _pairs(
+    actual: "records.Quantity | records.Flow",
+    expected: "records.Quantity | records.Flow",
+) -> list[tuple[_Magnitude, _Magnitude]] | None:
+    """Return the pairs of magnitudes to compare, or None for other coordinates."""
     if isinstance(actual, records.Quantity) and isinstance(expected, records.Quantity):
-        pairs = [(actual.magnitude, expected.magnitude)]
-    elif isinstance(actual, records.Flow) and isinstance(expected, records.Flow):
+        return [(actual.magnitude, expected.magnitude)]
+    if isinstance(actual, records.Flow) and isinstance(expected, records.Flow):
         if [_coordinate(m) for m in actual.movements] != [
             _coordinate(m) for m in expected.movements
         ]:
-            return False
-        pairs = [
+            return None
+        return [
             (a.magnitude, e.magnitude)
             for a, e in zip(actual.movements, expected.movements, strict=True)
         ]
-    else:
-        raise TypeError("compare two Quantities or two Flows")
-    scale = _sum_scale(expected.units, actual.units)
-    absolute = 0.0
-    if tolerance is not None:
-        if isinstance(tolerance, str):
-            tolerance = Quantity(text=tolerance)
-        if not isinstance(tolerance, records.Quantity):
-            raise TypeError("tolerance must be a Quantity or its text")
-        absolute = abs(_number(tolerance.magnitude)) * _sum_scale(
-            expected.units, tolerance.units
-        )
-    for a, e in pairs:
-        if a is None or e is None:
-            if a is not e:
-                return False
-            continue
-        if not math.isclose(
-            _number(a) * scale, _number(e), rel_tol=relative, abs_tol=absolute
-        ):
-            return False
-    return True
+    raise TypeError("compare two Quantities or two Flows")
 
 
 def _number(magnitude: Decimal | int | float) -> float:
