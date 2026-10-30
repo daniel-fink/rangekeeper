@@ -2,17 +2,13 @@
 
 from collections.abc import Mapping
 from typing import TypeAlias, TypeVar, cast
-from uuid import UUID
 
 from rangekeeper.market.paths import Paths
 from rangekeeper.model.model import Model
+from rangekeeper.run.documents import require_same as require_same
 from rangekeeper.run.run import Run
-from rangekeeper.shared.errors import (
-    DecodeError,
-    IdentityConflictError,
-    ReferenceTypeError,
-    RevisionConflictError,
-)
+from rangekeeper.shared.errors import DecodeError
+from rangekeeper.shared.references import require_revision as require_revision
 from rangekeeper.specification.specification import Specification
 
 Document: TypeAlias = Model | Specification | Run | Paths
@@ -45,29 +41,6 @@ def trusted(document: Document) -> Document:
     """
     require_kind(type(document))
     return document
-
-
-def require_revision(document: Document, identity: UUID, kind: type[D]) -> D:
-    """Verify both the requested revision and kind after decoding."""
-    if document.id != identity:
-        raise IdentityConflictError(
-            f"stored revision does not match requested UUID {identity}"
-        )
-    if not isinstance(document, kind):
-        raise ReferenceTypeError(
-            f"{identity} is {type(document).__name__}, expected {kind.__name__}"
-        )
-    return document
-
-
-def require_same(existing: Document, candidate: Document) -> None:
-    """Compare schema-directed content, never changing stored encounter order."""
-    left = existing._record if isinstance(existing, Model) else existing.record
-    right = candidate._record if isinstance(candidate, Model) else candidate.record
-    if type(existing) is not type(candidate) or not left.equivalent(right):
-        raise RevisionConflictError(
-            f"different content or kind for revision {candidate.id}"
-        )
 
 
 def envelope(document: Document) -> dict:
