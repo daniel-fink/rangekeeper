@@ -148,3 +148,27 @@ def test_payment_errors():
             principal="1 AUD", rate="6 % pa", term="52 weeks", frequency=Frequency.WEEK
         ).number
     )
+
+
+def test_interest_is_the_balance_at_the_effective_rate_over_each_period():
+    years = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=2)
+    balance = Flow(amounts=dict(zip(years, (100, -200), strict=True)), units="AUD")
+    interest = rk.finance.interest(balance=balance, rate="6 % pa")
+    assert interest.units == "AUD"
+    assert [m.period for m in interest.movements] == list(years)
+    assert [m.number for m in interest.movements] == pytest.approx([6, -12])
+    months = Periods(start=date(2027, 1, 1), frequency=Frequency.MONTH, count=12)
+    monthly = Flow(amounts=dict.fromkeys(months, 100), units="AUD")
+    owed = rk.finance.interest(
+        balance=monthly, rate="6 % pa", day_count=DayCount.ACTUAL_365
+    )
+    expected = [100 * (1.06 ** ((p.end - p.start).days / 365) - 1) for p in months]
+    assert [m.number for m in owed.movements] == pytest.approx(expected)
+
+
+def test_interest_needs_a_resolved_balance_over_periods():
+    dated = Flow(amounts={date(2027, 1, 1): 100}, units="AUD")
+    with pytest.raises(ContractError, match="over Periods"):
+        rk.finance.interest(balance=dated, rate="6 % pa")
+    with pytest.raises(TypeError):
+        rk.finance.interest(balance=Quantity(text="100 AUD"), rate="6 % pa")

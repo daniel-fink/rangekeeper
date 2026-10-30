@@ -119,9 +119,9 @@ class EquationFunction:
     ``name`` is the name after ``rx.`` for a function, such as
     ``"finance.npv"``, and the method name for a method, such as ``"at"``.
     A method's first parameter is the Flow that it is called on.
-    ``periodwise`` functions take a Flow where a parameter takes a quantity,
-    and then apply period by period: ``rx.max(0 AUD, need)`` is a Flow when
-    ``need`` is a Flow. ``mirrors`` names the value function that gives the
+    ``periodwise`` names the parameters that take a value or a Flow: a Flow
+    there applies the function period by period, so ``rx.max(0 AUD, need)``
+    is a Flow when ``need`` is a Flow. ``mirrors`` names the value function that gives the
     same result on fixed data, such as ``rangekeeper.finance.npv``.
     ``result_units`` are the units of every result, such as ``"% pa"``;
     otherwise ``units_from`` names the parameter whose units the result has,
@@ -140,6 +140,7 @@ class EquationFunction:
     evaluator: Evaluator = field(repr=False, compare=False)
     result_units: str | None = None
     units_from: str | None = None
+    periodwise: tuple[str, ...] = ()
     version: str = "1"
 
     @property
@@ -155,11 +156,6 @@ class EquationFunction:
     def id(self) -> UUID:
         """The UUID of the Function record, the same in every Model."""
         return uuid5(NAMESPACE, f"{self.code}/{self.version}")
-
-    @property
-    def lifts(self) -> bool:
-        """Whether a Flow argument in a quantity parameter applies period by period."""
-        return self.availability is Availability.PERIODWISE
 
     def parameter(self, *, name: str) -> FunctionParameter:
         """Return the parameter with this name; an unknown name raises ContractError."""
@@ -212,13 +208,23 @@ class EquationFunction:
 
 
 class EquationFunctions:
-    """Equation functions by code; ``catalogue.functions`` holds the built-ins."""
+    """Equation functions by code; ``catalogue.functions`` holds the built-ins.
 
-    __slots__ = ("_entries", "_ids")
+    ``extension`` returns the equation function of a name that is not
+    registered, such as a profile that an installed distribution registers,
+    or None; the registry then holds it too.
+    """
 
-    def __init__(self) -> None:
+    __slots__ = ("_entries", "_ids", "_extension")
+
+    def __init__(
+        self,
+        *,
+        extension: Callable[[str], EquationFunction | None] | None = None,
+    ) -> None:
         self._entries: dict[str, EquationFunction] = {}
         self._ids: dict[UUID, EquationFunction] = {}
+        self._extension = extension
 
     def register(self, function: EquationFunction) -> EquationFunction:
         """Add an equation function and return it; a code in use raises ContractError."""
@@ -236,7 +242,12 @@ class EquationFunctions:
 
     def function(self, *, name: str) -> EquationFunction:
         """Return the function ``rx.<name>``; an unknown name raises ContractError."""
-        return self._find(f"{PREFIX}.{name}", form=Form.FUNCTION)
+        code = f"{PREFIX}.{name}"
+        if code not in self._entries and self._extension is not None:
+            found = self._extension(name)
+            if found is not None and found.code == code:
+                self.register(found)
+        return self._find(code, form=Form.FUNCTION)
 
     def method(self, *, name: str) -> EquationFunction:
         """Return the Flow method ``name``; an unknown name raises ContractError."""
@@ -286,6 +297,7 @@ __all__ = [
     "EquationFunction",
     "EquationFunctions",
     "EvaluationStage",
+    "Evaluator",
     "Form",
     "FunctionParameter",
 ]

@@ -984,17 +984,16 @@
   "EquationFunction": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, version: str = '1') -> None",
+    "__init__": "method (self, *, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None",
     "code": "property",
     "evaluate": "method (self, *, arguments: collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], periods: collections.abc.Sequence[rangekeeper.duration.period.Period] | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool",
     "id": "property",
-    "lifts": "property",
     "parameter": "method (self, *, name: str) -> rangekeeper.model.expression.functions.FunctionParameter",
     "record": "method (self) -> rangekeeper.schema.records.Function",
     "spelling": "property"
    },
    "module": "rangekeeper.model.expression.functions",
-   "signature": "(*, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, version: str = '1') -> None"
+   "signature": "(*, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None"
   },
   "EvaluationStage": {
    "kind": "enum",
@@ -1030,15 +1029,31 @@
    "members": {
     "__init__": "method (self) -> None",
     "at": "method (self, *, on: Operand) -> Term",
+    "cumulative": "method (self) -> Term",
+    "diff": "method (self) -> Term",
+    "first": "method (self) -> Term",
     "kind": "property",
+    "last": "method (self) -> Term",
+    "max": "method (self) -> Term",
+    "min": "method (self) -> Term",
     "shift": "method (self, *, by: Operand) -> Term",
+    "since": "method (self, *, on: Operand) -> Term",
     "text": "property",
     "to_expression": "method (self) -> rangekeeper.schema.records.Expression",
     "total": "method (self) -> Term",
-    "units": "property"
+    "units": "property",
+    "until": "method (self, *, on: Operand) -> Term"
    },
    "module": "rangekeeper.model.expression.terms",
    "signature": "() -> None"
+  },
+  "finance": {
+   "kind": "module",
+   "module": "rangekeeper.expressions.finance"
+  },
+  "flow": {
+   "kind": "module",
+   "module": "rangekeeper.expressions.flow"
   },
   "functions": {
    "kind": "value",
@@ -1048,12 +1063,77 @@
    "kind": "function",
    "module": "rangekeeper.expressions",
    "signature": "(left: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, right: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
+  },
+  "min": {
+   "kind": "function",
+   "module": "rangekeeper.expressions",
+   "signature": "(left: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, right: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
+  },
+  "profile": {
+   "kind": "module",
+   "module": "rangekeeper.expressions.profile"
+  }
+ },
+ "rangekeeper.expressions.finance": {
+  "interest": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.finance",
+   "signature": "(*, balance: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, rate: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
+  },
+  "irr": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.finance",
+   "signature": "(*, flow: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
+  },
+  "npv": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.finance",
+   "signature": "(*, flow: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, rate: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, on: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
+  }
+ },
+ "rangekeeper.expressions.flow": {
+  "event": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.flow",
+   "signature": "(*, amount: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, on: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never) -> rangekeeper.model.expression.terms.Term"
+  }
+ },
+ "rangekeeper.expressions.profile": {
+  "compounding": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.profile",
+   "signature": "(*, initial: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, rate: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, start: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None, every: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None, base: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None) -> rangekeeper.model.expression.terms.Term"
+  },
+  "constant": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.profile",
+   "signature": "(*, initial: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, start: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None, every: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None) -> rangekeeper.model.expression.terms.Term"
+  },
+  "linear": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.profile",
+   "signature": "(*, initial: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, rate: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, start: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None, every: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None, base: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None) -> rangekeeper.model.expression.terms.Term"
+  },
+  "scurve": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.profile",
+   "signature": "(*, total: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, start: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None, length: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None) -> rangekeeper.model.expression.terms.Term"
+  },
+  "uniform": {
+   "kind": "function",
+   "module": "rangekeeper.expressions.profile",
+   "signature": "(*, total: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never, start: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None, length: rangekeeper.model.expression.terms.Symbolic | rangekeeper.quantity.Quantity | str | int | float | datetime.date | rangekeeper.schema.enums.Never | None = None) -> rangekeeper.model.expression.terms.Term"
   }
  },
  "rangekeeper.finance": {
   "financial": {
    "kind": "module",
    "module": "rangekeeper.finance.financial"
+  },
+  "interest": {
+   "kind": "function",
+   "module": "rangekeeper.finance.valuation",
+   "signature": "(*, balance: Flow, rate: Quantity | str, day_count: DayCount = DayCount.ACTUAL_ACTUAL) -> Flow"
   },
   "irr": {
    "kind": "function",
@@ -2185,8 +2265,16 @@
    "members": {
     "__init__": "method (self) -> None",
     "at": "method (self, *, on: Operand) -> Term",
+    "cumulative": "method (self) -> Term",
+    "diff": "method (self) -> Term",
+    "first": "method (self) -> Term",
+    "last": "method (self) -> Term",
+    "max": "method (self) -> Term",
+    "min": "method (self) -> Term",
     "shift": "method (self, *, by: Operand) -> Term",
-    "total": "method (self) -> Term"
+    "since": "method (self, *, on: Operand) -> Term",
+    "total": "method (self) -> Term",
+    "until": "method (self, *, on: Operand) -> Term"
    },
    "module": "rangekeeper.model.draft",
    "signature": "() -> None"
