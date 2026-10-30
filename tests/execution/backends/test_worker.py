@@ -277,10 +277,12 @@ def test_concurrent_solves_keep_one_idle_worker(session, monkeypatch, log):
         thread.join()
     assert [result.termination for result in results] == [Termination.FEASIBLE] * 2
     assert comparable(results[0]) == comparable(results[1])
+    # The IDs are the interpreters' own: on Windows, a venv's python.exe starts
+    # the interpreter as its child, so Popen.pid is another process.
     workers = started(log)
-    idle = session.idle.process.pid
-    assert idle in workers
-    assert [pid for pid in workers if pid != idle and running(pid)] == []
+    assert 1 <= len(workers) <= 2
+    assert len([pid for pid in workers if running(pid)]) == 1
+    assert session.idle is not None and session.idle.usable
 
 
 def test_workers_close_at_interpreter_exit(tmp_path):
