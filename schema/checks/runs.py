@@ -196,6 +196,22 @@ for completion, solution in (
 good("forward", lambda b, r: outcome(r, "limited", "feasible", True))
 
 
+def underdetermined(run, keep_output):
+    """Record an underdetermined conclusion, with its outputs or without them."""
+    outcome(run, "completed", "underdetermined", keep_output)
+    run["report"]["diagnostics"].append(
+        dict(
+            severity="warning",
+            code="underdetermined",
+            message="Synthetic free unknowns; not observed execution.",
+        )
+    )
+
+
+good("forward", lambda b, r: underdetermined(r, True))
+good("forward", lambda b, r: underdetermined(r, False))
+
+
 def partial(bundle, run):
     run["spawns"][1] = ids["failed"]
     run["outputs"] = [fmid]
@@ -367,8 +383,12 @@ bad(
     "invalid non-batch", lambda b, r: r["report"]["status"].update(completion="partial")
 )
 bad("invalid non-batch", lambda b, r: r["report"]["status"].update(completion="failed"))
-bad("outputs require feasible", lambda b, r: r.pop("outputs"))
+bad("feasible conclusion requires outputs", lambda b, r: r.pop("outputs"))
 bad("outputs require feasible", lambda b, r: r.update(outputs=[fmid]), "failed")
+bad(
+    "names the free unknowns",
+    lambda b, r: r["report"]["status"].update(solution="underdetermined"),
+)
 bad("runtime evidence", lambda b, r: r["report"].pop("runtime"))
 bad(
     "skipped Run cannot have runtime",

@@ -4023,6 +4023,7 @@
       "description": "The mathematical conclusion of a Run.",
       "enum": [
         "feasible",
+        "underdetermined",
         "infeasible",
         "unknown",
         "not_assessed",

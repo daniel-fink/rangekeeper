@@ -215,8 +215,15 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
     )
     store = MemoryStore()
     store.put(model)
-    run = execute(specification=specification, store=store).run
-    assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report.to_data()
+    # No equation reads y2: the solve is underdetermined, and publishes on request.
+    run = execute(
+        specification=specification,
+        store=store,
+        config=ExecutionConfig(allow_underdetermined=True),
+    ).run
+    assert run.report.status.solution == SolutionStatus.UNDERDETERMINED, (
+        run.report.to_data()
+    )
     result = store.load_model(run.record.outputs[0])
     movements = result.value(id=ids["cash"]).flow.movements
     assert [m.magnitude for m in movements] == [25, 0, 99]

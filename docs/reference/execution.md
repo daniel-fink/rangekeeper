@@ -80,12 +80,12 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 
 | Member | Leaf | Batch |
 | --- | --- | --- |
-| `outcome["key"]` | The solved value: a Quantity, a Flow, or a date or NEVER for a date Value. Without an output, the error of `raise_for_status()` | `ContractError`, `batch.unsupported`: read a case |
+| `outcome["key"]` | The solved value: a Quantity, a Flow, or a date or NEVER for a date Value. Without an output, such as an underdetermined solve without `allow_underdetermined`, the error of `raise_for_status()` | `ContractError`, `batch.unsupported`: read a case |
 | `quantity(reference)` | The solved Quantity of a scalar Value or a Movement, by `Reference` or UUID | `ContractError`, `batch.unsupported` |
 | `model` | The accepted output Model. Without one, the error of `raise_for_status()` | `ContractError`, `batch.unsupported` |
 | `status` | A `Status`, from the Run report | The status of the first leaf case, in `walk()` order, that is not `FEASIBLE`; else `FEASIBLE` |
 | `raise_for_status()` | Returns the Outcome when its status is `FEASIBLE`; otherwise raises | Raises for the first leaf case that is not `FEASIBLE` |
-| `free_unknowns` | The keys of the free values that the equations do not determine | `ContractError`, `batch.unsupported` |
+| `free_unknowns` | The keys of the free values that the equations do not determine, with or without an output | `ContractError`, `batch.unsupported` |
 | `diagnostics` | The Run's diagnostics, in report order | The batch Run's diagnostics |
 | `evidence` | The typed solver `Evidence` | `ContractError`, `batch.unsupported` |
 | `key` | The name of the solved Specification: for a case, its case key. None when it has no name | The same |
@@ -98,7 +98,7 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 | `Status` | Run report | `raise_for_status()` raises |
 | --- | --- | --- |
 | `FEASIBLE` | Solution `feasible`, and no `underdetermined` or `uniqueness_not_assessed` diagnostic | Nothing |
-| `UNDERDETERMINED` | Solution `feasible`, with an `underdetermined` or `uniqueness_not_assessed` diagnostic: the equations leave some unknowns free, with or without bounds | `OutcomeError`, with the code of that diagnostic |
+| `UNDERDETERMINED` | Solution `underdetermined`, with an `underdetermined` or `uniqueness_not_assessed` diagnostic: the equations leave some unknowns free, with or without bounds. A Run written before 1.0.0b1 records solution `feasible` with that diagnostic | `OutcomeError`, with the code of that diagnostic |
 | `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination` |
 | `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError`, code `solver_termination` |
 | `INVALID` | Failed, with `specification_invalid`, or `incompatible_units` for units that disagree | `ValidationError`, with the validation issues of the attempt; `UnitError` for `incompatible_units` |
@@ -109,8 +109,26 @@ The error class comes from the same `FAILURES` row as the status. Each error
 carries the code of the diagnostic that gives the reason, and the fields that
 the attempt wrote into that diagnostic's `values`: a `ValidationError` has
 every issue of the attempt, with its code, path, targets and values.
-`OutcomeError` also has `status`. In an underdetermined Outcome, `outcome["key"]`
-still reads every value; a free unknown holds one candidate value.
+`OutcomeError` also has `status`.
+
+An underdetermined solve has no output by default (ADR-016,
+[#152](https://github.com/daniel-fink/rangekeeper/issues/152)): the Run's
+solution is `underdetermined`, its diagnostic names the free unknowns,
+`outcome["key"]` raises the error of `raise_for_status()`, and `execute` stores
+the Run only. With `ExecutionConfig(allow_underdetermined=True)` the verified
+candidate is the output: the solution is still `underdetermined`, `execute`
+stores the output Model, and `outcome["key"]` reads every value. A free unknown
+then holds one candidate value; `pyomo-highs` gives it zero.
+
+```python
+loose_outcome = rk.execution.solve(specification=back.free("rent_factor"))
+loose_outcome.status, loose_outcome.free_unknowns  # no output
+published = rk.execution.solve(
+    specification=back.free("rent_factor"),
+    config=rk.execution.ExecutionConfig(allow_underdetermined=True),
+)
+published["land_cost"]  # one candidate value
+```
 
 `free_unknowns` names every undetermined unknown, in unknown order (D7). An
 unknown is undetermined when its value can change while every equality row still
@@ -203,6 +221,7 @@ source of its defaults. It is frozen.
 | `limits` | `Limits()` | The default budget of each leaf: `time_limit=30` seconds, `iteration_limit=100000`, `symbol_limit=10000`, `constraint_limit=20000`. A Specification's `settings` replace a limit for its own cases. `Limits` refuses a value that is not positive and finite |
 | `tolerances` | `Tolerances()` | The policy of independent verification; see [independent acceptance](#independent-acceptance-and-immutable-publication) |
 | `backend_options` | `{}` | String keys and JSON scalar values that go to the backend unchanged |
+| `allow_underdetermined` | `False` | Publish the verified candidate of an underdetermined solve as its output. The Run's solution stays `underdetermined` and names the free unknowns ([read an Outcome](#read-an-outcome)) |
 
 `pyomo-highs` reads `backend_options` as HiGHS options. They replace the
 worker's defaults, and the `solver_termination` evidence records the options that
@@ -447,12 +466,14 @@ starts on a date Value, needs the equation functions in the solve
   evidence does not acquire an invented solver result, count or implementation
   invocation.
 
-Only an independently accepted candidate produces `solution: feasible` and outputs.
+Only an independently accepted candidate produces `solution: feasible` or
+`solution: underdetermined`, and outputs: always for `feasible`, and for
+`underdetermined` only with `allow_underdetermined`.
 Generic code reads only the backend's `Termination`:
 
 | `Termination` | Completion | Solution | `pyomo-highs` conditions |
 | --- | --- | --- | --- |
-| `FEASIBLE` | completed | `feasible` when verification accepts the candidate | `convergenceCriteriaSatisfied` |
+| `FEASIBLE` | completed | `feasible` when verification accepts the candidate; `underdetermined` when the equations leave unknowns free | `convergenceCriteriaSatisfied` |
 | `INFEASIBLE` | completed | `infeasible`, for the compiled affine problem | `provenInfeasible` |
 | `LIMITED` | limited | `feasible` only for an accepted candidate, else `unknown` | `maxTimeLimit`, `iterationLimit`, `objectiveLimit`, a killed worker |
 | `FAILED` | failed | `unknown` | `error`, `interrupted` |

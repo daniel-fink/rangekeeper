@@ -380,16 +380,36 @@ def test_constraint_residual_diagnostics_name_their_equation():
     assert "capital_value * capitalization_rate = NOI" in equations
 
 
-def test_underdetermined_case_returns_one_candidate_without_uniqueness_claim():
+def test_an_underdetermined_case_publishes_its_candidate_only_on_request():
+    """ADR-016: free unknowns are named; no output unless the caller asks (#152)."""
     store, model = setup()
     payload = fresh(data("specification-forward"))
     payload["assignments"] = [
         a for a in payload["assignments"] if a["target"]["target"] != str(RENT)
     ]
     payload["unknowns"].append(dict(target=str(RENT)))
-    run = execute(store, Specification.from_data(payload))
-    assert run.report.status.solution == SolutionStatus.FEASIBLE
-    assert any(d.code == "underdetermined" for d in run.report.diagnostics)
+    specification = Specification.from_data(payload)
+    run = execute(store, specification)
+    assert run.report.status.solution == SolutionStatus.UNDERDETERMINED
+    assert not run.record.outputs
+    free = next(d for d in run.report.diagnostics if d.code == "underdetermined")
+    assert "No output is published" in free.message
+    assert set(free.values["unknowns"]) == {
+        "NOI",
+        "capital_value",
+        "annual_rent_per_home",
+    }
+    published = execute_specification(
+        specification=specification,
+        store=store,
+        config=ExecutionConfig(allow_underdetermined=True),
+    )
+    validate(run=published.run, resolver=store).raise_if_invalid()
+    assert published.run.report.status.solution == SolutionStatus.UNDERDETERMINED
+    assert published.run.record.outputs == (published.model.id,)
+    assert store.load_model(published.model.id).id == published.model.id
+    assert published.status is Status.UNDERDETERMINED
+    assert set(published.free_unknowns) == set(free.values["unknowns"])
 
 
 class WrongCandidate:
@@ -668,8 +688,14 @@ def test_unconstrained_unknown_has_explicit_choice_evidence():
             "unknowns": [dict(target=str(area))],
         }
     )
-    run = execute(store, investigation)
-    assert output(store, run).value(id=area).quantity.magnitude == 0
+    run = execute_specification(
+        specification=investigation,
+        store=store,
+        config=ExecutionConfig(allow_underdetermined=True),
+    ).run
+    assert run.report.status.solution == SolutionStatus.UNDERDETERMINED
+    published = store.load_model(run.record.outputs[0])
+    assert published.value(id=area).quantity.magnitude == 0
     assert any(
         d.code == Code.UNDERDETERMINED
         and area in {reference.target for reference in d.references or ()}

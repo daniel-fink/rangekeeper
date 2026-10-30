@@ -29,6 +29,10 @@ class ExecutionConfig:
       from the solver's own tolerances.
     - ``backend_options`` go to the backend unchanged. Each backend documents
       the options that it reads and the options that it refuses.
+    - ``allow_underdetermined`` publishes the verified candidate of an
+      underdetermined solve as its output. By default an underdetermined solve
+      has no output; either way its Run's solution is ``underdetermined`` and
+      names the free unknowns (ADR-016).
     """
 
     backend: Backend | str = "pyomo-highs"
@@ -38,6 +42,7 @@ class ExecutionConfig:
     backend_options: Mapping[str, BackendOption] = field(
         default_factory=lambda: MappingProxyType({})
     )
+    allow_underdetermined: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.backend, str) and not isinstance(self.backend, Backend):
@@ -48,6 +53,8 @@ class ExecutionConfig:
             raise TypeError("limits must be Limits")
         if not isinstance(self.tolerances, Tolerances):
             raise TypeError("tolerances must be Tolerances")
+        if type(self.allow_underdetermined) is not bool:
+            raise TypeError("allow_underdetermined must be True or False")
         options = dict(self.backend_options)
         for name, value in options.items():
             if not isinstance(name, str):
