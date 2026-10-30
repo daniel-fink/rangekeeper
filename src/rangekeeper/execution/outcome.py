@@ -9,6 +9,12 @@ from uuid import UUID
 from rangekeeper.duration.dates import NEVER, DateValue
 from rangekeeper.execution import statuses
 from rangekeeper.execution.backends.base import Termination
+from rangekeeper.execution.distribution import (
+    DateDistribution,
+    Distribution,
+    Mean,
+    _distribution_of,
+)
 from rangekeeper.execution.errors import OutcomeError
 from rangekeeper.execution.status import Status
 from rangekeeper.flow import Flow, Stream
@@ -289,12 +295,7 @@ class Outcome:
         exist. A leaf Outcome has no cases: ContractError with the code
         ``BATCH_REQUIRED``.
         """
-        if not self.cases:
-            raise ContractError(
-                "a leaf Outcome has no cases",
-                code=Code.BATCH_REQUIRED,
-                document_id=self.run.id,
-            )
+        self._require_batch("case")
         for case in self.cases:
             if case.key == key:
                 return case
@@ -328,6 +329,34 @@ class Outcome:
                 row[key] = leaf[key] if leaf.outputs else None
             rows.append(row)
         return Table(("case", "status", *keys), rows)
+
+    def distribution(self, *, key: str) -> "Distribution[Outcome] | DateDistribution":
+        """Return the distribution of the solved value at ``key`` across the leaf cases.
+
+        Each leaf case, in ``walk()`` order, has the same weight. A scalar
+        value gives a ``Distribution``: its ``summary()``, ``mean()``,
+        ``quantile(level=)``, ``probability(below=, above=)``, ``counts()``
+        and ``case(quantile=)``, which returns the leaf Outcome at that
+        quantile. A date value gives a ``DateDistribution`` with
+        ``counts()``. A Flow value raises ContractError with the code
+        ``DISTRIBUTION_VALUE``. A case without an output raises the error of
+        its ``raise_for_status()``. A leaf Outcome has no cases:
+        ContractError with the code ``BATCH_REQUIRED``.
+        """
+        self._require_batch("distribution")
+        return _distribution_of(
+            key=key, values=[(leaf, leaf[key]) for leaf in self._leaves()]
+        )
+
+    def mean(self) -> Mean:
+        """Return the mean of this batch's scalar values, each leaf case with the same weight.
+
+        Read the mean of a value by key, ``outcome.mean()["equity_npv"]``.
+        ``rk.execution.compare`` takes the ``Mean`` as one leaf Outcome. A leaf
+        Outcome has no cases: ContractError with the code ``BATCH_REQUIRED``.
+        """
+        self._require_batch("mean")
+        return Mean._of(outcome=self)
 
     def stream(self, *keys: str) -> Stream:
         """Return a Stream of the solved Flows at these keys, named by key.
@@ -395,6 +424,15 @@ class Outcome:
 
     def _leaves(self) -> Iterator["Outcome"]:
         return (item for item in self.walk() if not item.cases)
+
+    def _require_batch(self, name: str) -> None:
+        """Raise ContractError with the code ``BATCH_REQUIRED`` for a leaf."""
+        if not self.cases:
+            raise ContractError(
+                f"{name} reads the cases of a batch, and a leaf Outcome has none",
+                code=Code.BATCH_REQUIRED,
+                document_id=self.run.id,
+            )
 
     def _require_leaf(self, name: str) -> None:
         """Raise ContractError with the code ``BATCH_UNSUPPORTED`` for a batch."""
