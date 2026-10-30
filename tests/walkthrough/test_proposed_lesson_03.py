@@ -225,3 +225,29 @@ def test_cells_5_to_8_and_12_run_as_written():
         "Funding",
     ]
     assert model.metadata.previous is not None
+
+
+def run_cells(*keys: str) -> dict[str, object]:
+    """Run whole cells as written, from a fresh namespace with ``years``."""
+    numbered = cells()
+    namespace: dict[str, object] = {"rk": rk, "date": date, "years": YEARS}
+    for key in keys:
+        exec(numbered[key], namespace)
+    return namespace
+
+
+def test_cells_5_to_5c_run_as_written_and_infer_the_dates():
+    """Cell 5 declares four dates; its equations define four more (#282, D44)."""
+    model = run_cells("5", "5b", "5c")["draft"].commit()
+    values = {
+        value.key: value
+        for value in model.entity(code="project").characteristics.values
+    }
+    for key in ("shared_start", "a_start", "a_open", "b_open"):
+        assert values[key].kind is rk.model.ValueKind.DATE
+        assert values[key].measure is None
+    (root,) = model.system.formulations
+    (dates,) = root.formulations
+    assert (dates.name, len(dates.constraints)) == ("Dates", 5)
+    assert values["a_income"].kind is rk.model.ValueKind.MEASUREMENT
+    assert len(values["land"].flow.movements) == len(YEARS)

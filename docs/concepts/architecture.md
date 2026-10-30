@@ -114,6 +114,8 @@ show the target API in use.
      the functions of the equation-function registry; equations in Python with `rx`
      (`rangekeeper.expressions`), such as `noi == coverage * debt_service`; or
      Expression records.
+     A value that an equation defines needs no declaration: `commit()` works
+     out its kind and units from its equations.
      `add_formulation(name=)` makes a named Formulation, such as "Funding",
      whose handle takes `equations(...)` too; `formulation(name=)` finds it in
      a later draft.

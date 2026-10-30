@@ -140,8 +140,9 @@ and `==` makes an equation, so compare two value handles by their `id`.
   Another Expression record raises `ContractError` with the code `PREDICATE`.
   Text names the keys of its entity, and `code.key` names a key of another
   entity. Every Value or Movement that it references must be in the Model or
-  the draft. Text that does not make an equation raises `EquationError` with
-  the position of the part that fails, and the call adds no equation
+  the draft, or be [defined by an equation](#values-that-equations-define).
+  Text that does not make an equation raises `EquationError` with the position
+  of the part that fails, and the call adds no equation
   ([equation text](expressions.md#equation-text)).
 - The default Formulation of an entity is the root Formulation whose code is the
   entity's code (or its UUID when it has no code). The draft makes it when the
@@ -172,6 +173,45 @@ namespace and the object's code path (UUID version 5), so the same calls make th
 same records. Revision UUIDs and the UUIDs inside Expression records are not
 derived yet. A revision keeps the namespace of the object it was made from; a
 Model read from data has none.
+
+### Values that equations define
+
+Declare every input, and every result that you rely on. Another value can be
+left undeclared when an equation defines it: one side of an equality is its key
+alone (D44):
+
+```python
+dates = project.add_formulation(name="Dates")
+dates.equations(
+    "shared_start = start_date",  # shared_start is a date
+    "a_start = shared_start + 1 year",  # a_start is a date
+)
+project.equations("income = rent * area")  # AUD pa, from AUD per sqm pa and sqm
+```
+
+- The equation that defines a key is in the same call, before or after the
+  equation that uses it, or in an earlier call or revision. A key that is not
+  declared and that no equation defines raises `EquationError` with the code
+  `REFERENCE_MISSING` and the nearest keys, as a typo does. A bound, such as
+  `shortfall >= 0 AUD`, defines nothing.
+- `commit()` works out the kind and units of each such value from its
+  definition, as Quantity arithmetic does: a sum keeps the units of its
+  operands, a product multiplies them, and a date plus a length is a date. A
+  definition that references a whole Flow gives a Flow, which takes its Periods
+  from its equations; another quantity gives a measurement value. The units are
+  those of the first Measure of the draft that is compatible with them, such as
+  `AUD pa` for `AUD * per_annum`, or `ratio` for a ratio; otherwise their
+  canonical text.
+- The new revision stores each such value with its kind and Measure, after the
+  declared values of its entity. In a later draft it is declared.
+- A value whose units `commit()` cannot work out, for example because its
+  definition calls a function whose units are unknown, raises `ValidationError`
+  with the code `semantic.units` and one issue for each such value, with its
+  `key` and `where`. Declare it with its units.
+- A later declaration of the key, in the same draft, keeps the value that the
+  equations reference.
+- A declaration is a check: when an equation gives a declared value other
+  units, `commit()` fails with `incompatible_units`.
 
 ## Records, lookup and revisions
 

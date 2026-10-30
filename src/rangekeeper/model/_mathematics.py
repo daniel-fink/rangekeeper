@@ -132,6 +132,12 @@ class Mathematics:
             for expression in expressions
         )
 
+    def expressions(self) -> tuple[Expression, ...]:
+        """Return the equations that the draft adds, in the order of their calls."""
+        return tuple(
+            item.expression for items in self._pending.values() for item in items
+        )
+
     def formulations(self) -> tuple[Formulation, ...]:
         """Return the root Formulations, with the Formulations and equations added."""
         return tuple(self._built(record) for record in self._roots)
