@@ -7,7 +7,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import TYPE_CHECKING, cast
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from rangekeeper.duration.calendar import PeriodTiming
 from rangekeeper.flow._batch import Batch, align
@@ -515,7 +515,9 @@ class Stream:
         """Return a Stream whose period amounts are dated events.
 
         Each period amount keeps its recorded date, or gets the date that
-        ``timing`` gives in its Period. Dated amounts do not change.
+        ``timing`` gives in its Period. Each such dated amount is a new
+        Movement with a fresh ID, because its coordinate changes. Dated
+        amounts do not change, and keep their IDs.
         """
         if not isinstance(timing, PeriodTiming):
             raise TypeError("timing must be a PeriodTiming")
@@ -556,7 +558,7 @@ def _dated(flow: Flow, timing: PeriodTiming) -> Flow:
         movements=tuple(
             m
             if m.period is None
-            else m.replace(period=OMIT, date=m.resolve(timing=timing))
+            else m.replace(id=uuid4(), period=OMIT, date=m.resolve(timing=timing))
             for m in flow.movements
         )
     )

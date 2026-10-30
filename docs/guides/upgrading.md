@@ -94,6 +94,16 @@ opening value, subtract it in the first Period:
 `flow.diff() - rk.flow.Flow(amounts={first_period: opening}, units="AUD")`. See
 [running totals](../reference/calculations.md#running-totals-date-masks-and-extremes).
 
+### Movement identity
+
+One rule gives Movement IDs for every transform
+([#162](https://github.com/daniel-fink/rangekeeper/issues/162)): a transform keeps
+the ID of each Movement that it selects or converts, and gives a fresh ID to each
+Movement that it calculates. `Stream.dated()` follows it now: each period amount
+that it dates is a new Movement with a fresh ID. Code that found a dated
+Movement by the ID of its period Movement must match it by coordinate. See
+[the rule](../reference/identity.md#one-rule-for-transforms).
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names
