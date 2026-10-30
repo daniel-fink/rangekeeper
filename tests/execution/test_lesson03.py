@@ -1,4 +1,4 @@
-"""Lesson 03's solves, from the proposed cells (#276, #280, #308).
+"""Lesson 03's solves, from the proposed cells (#276, #277, #280, #308).
 
 The cells come from ``examples/walkthrough/proposed/03_cases_debt_equity.md``
 and run statement by statement, as written, with three differences, each
@@ -93,7 +93,7 @@ def run(namespace: dict, *keys: str) -> dict:
 
 @pytest.fixture(scope="module")
 def lesson() -> dict:
-    """Run cells 3, 5 to 13 and 16 to 19 of lesson 03, with their solves."""
+    """Run cells 3 and 5 to 19 of lesson 03, with the solves of 9 to 19."""
     namespace: dict = {"rk": rk, "date": date, "plan": PLAN}
     namespace["cases"] = None
     return run(
@@ -111,6 +111,7 @@ def lesson() -> dict:
         "12",
         "12b",
         "13",
+        "15",
         "16",
         "17",
         "18",
@@ -147,6 +148,16 @@ def test_cell_13_funds_the_plan_equity_first(lesson):
     assert isclose(
         actual=reference["equity_irr"],
         expected=rk.finance.irr(flow=cash),
+        relative=1e-9,
+    )
+
+
+def test_cell_15_finds_the_land_cost_of_a_target_irr(lesson):
+    target = lesson["target_outcome"].raise_for_status()
+    cash = target["equity_cash_flow"]
+    assert isclose(
+        actual=rk.finance.irr(flow=cash),
+        expected=rk.Quantity(text="15 % pa"),
         relative=1e-9,
     )
 

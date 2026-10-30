@@ -438,6 +438,19 @@ it defines, and each call of an equation function as rows that the compiler take
   problem: it defines an unknown that no other equation reads.
 - A call whose values are all fixed, or settled dates, is evaluated once.
 
+Two inverse rewrites make an equation affine (D5,
+[#277](https://github.com/daniel-fink/rangekeeper/issues/277)):
+
+- An equation that fixes an IRR, `r = rx.finance.irr(flow=cash)` with `r` fixed,
+  is its NPV row at that rate: `rx.finance.npv(flow=cash, rate=r, on=start) = 0`,
+  where `start` begins the first period of `cash`. A fixed IRR then answers an
+  inverse question, such as the land price of lesson 03 cell 15, and verification
+  checks the NPV row.
+- A bound on a minimum or a maximum, `x.min() >= c` or `x.max() <= c`, or the same
+  with the sides exchanged, holds in every period: one row `x >= c`, or `x <= c`,
+  for each period of `x`. The other bounds on them, such as `x.min() <= c`, hold in
+  one period at least, and take the active-side solve.
+
 Verification checks the row of each period. A sum of large amounts that cancel,
 such as a cash flow that a loan draw offsets, keeps a residual of the order of
 `1e-15` times its largest term, because a currency amount has 15 significant
