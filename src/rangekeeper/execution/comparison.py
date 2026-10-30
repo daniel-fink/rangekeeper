@@ -3,15 +3,20 @@
 ``compare`` returns a ``SideBySide`` without a baseline and a ``Paired`` with
 one, so that each result has only the members that apply to it. The cases of
 two batches pair by case key. ``compare`` takes the ``Mean`` of a batch, from
-``Outcome.mean()``, as one leaf Outcome.
+``Outcome.mean()``, as one leaf Outcome. ``Paired.by(key=)`` and
+``Paired.by_case`` put the pairs in ``Groups``, with the statistics of each
+group.
 """
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import date
+from itertools import groupby
 from types import MappingProxyType
-from typing import Any, Self, overload
+from typing import TYPE_CHECKING, Self, overload
 
-from rangekeeper.execution.distribution import Mean
+from rangekeeper.duration.dates import DateValue, Never, order
+from rangekeeper.execution.distribution import SUMMARY, Distribution, Mean
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.flow.table import render
 from rangekeeper.quantity import Quantity, isclose
@@ -23,6 +28,11 @@ Compared = Outcome | Mean
 """An Outcome, or the Mean of a batch, which compares as one leaf Outcome."""
 Member = tuple[str | None, Compared]
 """One leaf case of an Outcome with its case key, or a leaf Outcome with None."""
+_SUMMARY = ("key", *SUMMARY, "share_above_zero")
+"""The columns of a paired summary after the labels of its rows."""
+
+if TYPE_CHECKING:
+    from _typeshed import SupportsRichComparison
 
 
 @overload
@@ -159,8 +169,10 @@ class Paired:
     """The paired differences of named Outcomes from a baseline, on some keys.
 
     Make it with ``rk.execution.compare(..., baseline=)``. ``differences``
-    gives one row for each Outcome, key and pair, and ``summary()`` the
-    statistics of the paired differences.
+    gives one row for each Outcome, key and pair, ``summary()`` the
+    statistics of the paired differences, and ``distribution(outcome=,
+    key=)`` the distribution of one Outcome's differences. ``by(key=)`` and
+    ``by_case`` give the statistics of groups of pairs.
 
     Each member of an Outcome is one leaf case, in ``walk()`` order; a leaf
     Outcome has one member. The members of two batches pair by case key, and
@@ -255,10 +267,20 @@ class Paired:
         Each difference is the Outcome's value less the baseline's value, in
         the baseline's units.
         """
+        return self.distribution(outcome=outcome, key=key).values
+
+    def distribution(self, *, outcome: str, key: str) -> Distribution[Pair]:
+        """Return the distribution of one Outcome's paired differences on one key.
+
+        Each pair has the same weight. Each difference is the Outcome's value
+        less the baseline's value, in the baseline's units: ``mean()``,
+        ``quantile(level=)``, ``probability(below=, above=)`` and
+        ``summary()`` read the differences, and ``case(quantile=)`` returns
+        the ``Pair`` at a quantile.
+        """
         _require_key(self.keys, key)
-        return tuple(
-            _difference(pair, key=key, name=outcome, baseline=self.baseline)
-            for pair in self.pairs(outcome=outcome)
+        return _differences(
+            self.pairs(outcome=outcome), key=key, name=outcome, baseline=self.baseline
         )
 
     @property
@@ -290,27 +312,51 @@ class Paired:
     def summary(self) -> Table:
         """Return the statistics of the paired differences of each Outcome and key.
 
-        The columns are ``outcome``, ``key``, ``count``, ``mean``, ``minimum``,
-        ``maximum`` and ``share_above_zero``: the share of pairs whose
+        The columns are ``outcome``, then the columns of the differences'
+        ``Distribution.summary()``: ``key``, ``count``, ``mean``,
+        ``standard_deviation``, ``minimum``, ``quantile_05``, ``quantile_95``
+        and ``maximum``; and ``share_above_zero``, the share of pairs whose
         difference is above zero.
         """
         rows = [
-            _statistics(name, key, self.difference(outcome=name, key=key))
+            _summary_row(
+                labels={"outcome": name},
+                found=self.distribution(outcome=name, key=key),
+            )
             for name in self.compared
             for key in self.keys
         ]
-        return Table(
-            (
-                "outcome",
-                "key",
-                "count",
-                "mean",
-                "minimum",
-                "maximum",
-                "share_above_zero",
-            ),
-            rows,
-        )
+        return Table(("outcome", *_SUMMARY), rows)
+
+    def by(self, *, key: str) -> "Groups":
+        """Return the pairs of each compared Outcome in groups by a value of its member.
+
+        A group holds the pairs whose compared member has one value at
+        ``key``, which need not be a compared key: ``by(key="start_date")``
+        groups the pairs by each case's start date. The groups are in
+        ascending order of value, with ``NEVER`` after every date. A Flow
+        value raises ContractError (``comparison.scalar``).
+        """
+        groups = {
+            name: _by_value(self.pairs(outcome=name), key=key, name=name)
+            for name in self.compared
+        }
+        return Groups._of(paired=self, column=key, groups=groups)
+
+    @property
+    def by_case(self) -> "Groups":
+        """Return the pairs of each compared Outcome in groups by case.
+
+        A batch has one group for each of its direct cases, in case order,
+        with the pairs of that case's leaf cases; the ``case`` column holds
+        the case key. A leaf Outcome is one group with its key, and a
+        ``Mean`` one group without a key.
+        """
+        groups = {
+            name: _by_case(self.outcomes[name], self.pairs(outcome=name))
+            for name in self.compared
+        }
+        return Groups._of(paired=self, column="case", groups=groups)
 
     def select(self, *keys: str) -> "Paired":
         """Return the same comparison on some of its keys, in the order given."""
@@ -413,6 +459,68 @@ class Paired:
         return str(self)
 
 
+type Group = tuple[object, tuple[Pair, ...]]
+"""One group of pairs: its label and its pairs, in pair order."""
+
+
+@dataclass(frozen=True, kw_only=True, init=False)
+class Groups:
+    """The pairs of a paired comparison in groups, with the statistics of each group.
+
+    Make it with ``Paired.by(key=)``, which groups the pairs of each compared
+    Outcome by its member's value at a key, or ``Paired.by_case``, which
+    groups them by case. ``column`` names the group column: the key, or
+    ``case``. ``summary()`` gives one row for each compared Outcome, group
+    and compared key. It displays as its ``summary()``.
+    """
+
+    paired: Paired
+    column: str
+    _groups: Mapping[str, tuple[Group, ...]] = field(repr=False, compare=False)
+
+    @classmethod
+    def _of(
+        cls,
+        *,
+        paired: Paired,
+        column: str,
+        groups: Mapping[str, tuple[Group, ...]],
+    ) -> Self:
+        made = object.__new__(cls)
+        object.__setattr__(made, "paired", paired)
+        object.__setattr__(made, "column", column)
+        object.__setattr__(made, "_groups", MappingProxyType(dict(groups)))
+        return made
+
+    def summary(self) -> Table:
+        """Return the statistics of each group's paired differences.
+
+        The columns are ``outcome``, the group column, then the columns of
+        ``Paired.summary()`` from ``key``: ``count``, ``mean``,
+        ``standard_deviation``, ``minimum``, ``quantile_05``, ``quantile_95``,
+        ``maximum`` and ``share_above_zero``. The rows are in the order of the
+        compared Outcomes, then of the groups, then of the compared keys.
+        """
+        baseline = self.paired.baseline
+        rows = [
+            _summary_row(
+                labels={"outcome": name, self.column: label},
+                found=_differences(pairs, key=key, name=name, baseline=baseline),
+            )
+            for name, groups in self._groups.items()
+            for label, pairs in groups
+            for key in self.paired.keys
+        ]
+        return Table(("outcome", self.column, *_SUMMARY), rows)
+
+    def _repr_html_(self) -> str:
+        return self.summary()._repr_html_()
+
+    def __repr__(self) -> str:
+        count = sum(len(groups) for groups in self._groups.values())
+        return f"Groups(column={self.column!r}, groups={count})"
+
+
 def _outcomes(outcomes: Mapping[str, Compared]) -> Mapping[str, Compared]:
     """Return the named Outcomes after checking their types and number."""
     if not isinstance(outcomes, Mapping):
@@ -506,18 +614,80 @@ def _difference(pair: Pair, *, key: str, name: str, baseline: str) -> Quantity:
     return value - base
 
 
-def _statistics(name: str, key: str, found: tuple[Quantity, ...]) -> dict[str, Any]:
-    """Return one summary row: the statistics of the differences on one key."""
-    zero = Quantity(magnitude=0, units=found[0].units)
+def _differences(
+    pairs: tuple[Pair, ...],
+    *,
+    key: str,
+    name: str,
+    baseline: str,
+) -> Distribution[Pair]:
+    """Return the distribution of the differences of some pairs on one key."""
+    return Distribution._of(
+        key=key,
+        items=[
+            (pair, _difference(pair, key=key, name=name, baseline=baseline))
+            for pair in pairs
+        ],
+    )
+
+
+def _summary_row(
+    *,
+    labels: Mapping[str, object],
+    found: Distribution[Pair],
+) -> dict[str, object]:
+    """Return one row of a paired summary: its labels, then the statistics."""
+    zero = Quantity(magnitude=0, units=found.units)
     return {
-        "outcome": name,
-        "key": key,
-        "count": len(found),
-        "mean": sum(found[1:], found[0]) / len(found),
-        "minimum": min(found, key=_number),
-        "maximum": max(found, key=_number),
-        "share_above_zero": sum(1 for item in found if item > zero) / len(found),
+        **labels,
+        **found.summary().rows[0].values,
+        "share_above_zero": found.probability(above=zero),
     }
+
+
+def _by_value(pairs: tuple[Pair, ...], *, key: str, name: str) -> tuple[Group, ...]:
+    """Return the pairs in groups by their member's value at ``key``, in ascending order."""
+    values = [_groupable(pair.member, key=key, name=name) for pair in pairs]
+    ascending = sorted(range(len(pairs)), key=lambda index: _ordered(values[index]))
+    groups = []
+    for _, positions in groupby(ascending, key=lambda index: _ordered(values[index])):
+        found = tuple(positions)
+        groups.append((values[found[0]], tuple(pairs[index] for index in found)))
+    return tuple(groups)
+
+
+def _by_case(outcome: Compared, pairs: tuple[Pair, ...]) -> tuple[Group, ...]:
+    """Return the pairs in groups by the direct case of their member, in case order."""
+    if isinstance(outcome, Mean):
+        return ((None, pairs),)
+    if not outcome.cases:
+        return ((outcome.key, pairs),)
+    groups = []
+    for position, case in enumerate(outcome.cases):
+        leaves = {id(leaf) for leaf in case.walk() if not leaf.cases}
+        found = tuple(pair for pair in pairs if id(pair.member) in leaves)
+        if found:
+            groups.append((case.key or str(position), found))
+    return tuple(groups)
+
+
+def _groupable(member: Compared, *, key: str, name: str) -> Quantity | DateValue:
+    """Return a member's scalar or date value at ``key``; a Flow cannot group pairs."""
+    value = member[key]
+    if isinstance(value, (Quantity, date, Never)):
+        return value
+    raise ContractError(
+        f"{key} of {name} is not a scalar or a date value; group by one of them",
+        code=Code.COMPARISON_SCALAR,
+        values={"key": key, "outcome": name},
+    )
+
+
+def _ordered(value: Quantity | DateValue) -> "SupportsRichComparison":
+    """Return a sort key: Quantities by their units and magnitude, then dates."""
+    if isinstance(value, Quantity):
+        return (0, value.units, value.magnitude)
+    return (1, *order(value))
 
 
 def _matches(value: object, wanted: object) -> bool:
@@ -530,10 +700,6 @@ def _matches(value: object, wanted: object) -> bool:
     if isinstance(value, Quantity) and isinstance(wanted, Quantity):
         return isclose(actual=value, expected=wanted)
     return value == wanted
-
-
-def _number(quantity: Quantity) -> float:
-    return float(quantity.magnitude)
 
 
 def _text(value: object) -> str:

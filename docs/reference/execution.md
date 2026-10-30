@@ -243,9 +243,27 @@ A `Paired` pairs each other Outcome with the baseline:
 | `pairs(outcome=)` | The `Pair`s of one Outcome: each `member`, the `baseline` member it pairs with, and its `case` key (None when both are leaves) |
 | `difference(outcome=, key=)` | The paired differences, value less baseline, in the baseline's units |
 | `differences` | A `Table`: `outcome`, `key`, `case`, `value`, `baseline` and `difference` for each pair |
-| `summary()` | A `Table`: `outcome`, `key`, `count`, `mean`, `minimum`, `maximum` and `share_above_zero` of the paired differences |
+| `distribution(outcome=, key=)` | The [`Distribution`](#distributions-of-a-batch) of one Outcome's paired differences on one key, each pair with the same weight. Its `case(quantile=)` returns the `Pair` at a quantile |
+| `summary()` | A `Table`: `outcome`, then the `summary()` columns of each distribution of differences (`key`, `count`, `mean`, `standard_deviation`, `minimum`, `quantile_05`, `quantile_95` and `maximum`), and `share_above_zero`: the share of pairs whose difference is above zero |
+| `by(key=)` | The pairs of each compared Outcome in `Groups`, by its member's value at `key`: a scalar or a date value, which need not be compared. The groups are in ascending order, `NEVER` after every date |
+| `by_case` | The pairs of each compared Outcome in `Groups`, by case: one group for each direct case of a batch, with the pairs of its leaf cases. A leaf Outcome is one group with its key, and a `Mean` one group without a key |
 | `select(*keys)` | The same comparison on some of its keys |
 | `where(**values)` | The comparison of the pairs whose compared member has these values; a list means any of them, and Quantities compare after unit conversion |
+
+`Groups` has the `paired` comparison that it groups and its group `column`:
+the key, or `case`. `summary()` gives one row for each compared Outcome, group
+and compared key: `outcome`, the group column, then the columns of
+`Paired.summary()` from `key`. It displays as its summary.
+
+```python
+difference = rk.execution.compare(
+    outcomes={"Strategy": strategy_outcome, "Fixed plan": fixed_outcome},
+    keys=["equity_npv"],
+    baseline="Fixed plan",
+)
+difference.distribution(outcome="Strategy", key="equity_npv").quantile(level=0.05)
+difference.by(key="start_date").summary()  # where waiting gains, and where it costs
+```
 
 Each member is one leaf case, in `walk()` order. The cases of two batches pair
 by case key, the `case` column of `Outcome.table`: the keys of nested batches
@@ -258,16 +276,19 @@ compares as one leaf. Neither type has a public constructor: make them with
 | --- | --- |
 | A key that names no value of an Outcome, or that the comparison does not have | `MissingReferenceError` (`kind="Value"`, `by="key"`) |
 | A baseline or outcome name that is not compared | `MissingReferenceError` (`kind="Outcome"`, `by="name"`) |
-| A Flow value | `ContractError`, `comparison.scalar` |
+| A Flow value, also as the key of `by` | `ContractError`, `comparison.scalar` |
 | A batch without `baseline` | `ContractError`, `comparison.batch` |
 | Batches with different case keys, or a key that two cases share | `ContractError`, `comparison.cases`, with `missing` and `extra`, or `repeated`, in `values` |
 | `where` keeps no case of an Outcome | `ContractError`, `comparison.empty` |
 | Fewer than two Outcomes, or a repeated key | `ContractError` |
 | A wrong Python type, such as one string for `keys` | `TypeError` |
 
-`by`, `by_case` and `distribution(outcome=, key=)` follow with paths
-([#296](https://github.com/daniel-fink/rangekeeper/issues/296),
-[#310](https://github.com/daniel-fink/rangekeeper/issues/310)).
+Pairing by path key follows with `across`
+([#306](https://github.com/daniel-fink/rangekeeper/issues/306)): the cases of
+a batch of cases across paths pair with the cases of a batch across the same
+paths. The query operations of `by_case`, such as `where(condition=)`,
+`order_by` and `max`, follow with
+[#310](https://github.com/daniel-fink/rangekeeper/issues/310).
 
 ## Configuration
 
@@ -339,7 +360,7 @@ time limit has passed. The stages call it between steps.
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
-| `execution/comparison.py` | `compare`, `SideBySide` and `Paired`: values side by side, or paired differences from a baseline by case key, with `summary`, `select` and `where`. |
+| `execution/comparison.py` | `compare`, `SideBySide`, `Paired` and `Groups`: values side by side, or paired differences from a baseline by case key, with `distribution`, `summary`, `by`, `by_case`, `select` and `where`. |
 | `execution/distribution.py` | `Distribution`, `DateDistribution` and `Mean`: the values of one key across the cases of a batch, their statistics and counts, and the mean of a batch. |
 | `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns`, `Evidence`, and a batch's `distribution` and `mean`. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
