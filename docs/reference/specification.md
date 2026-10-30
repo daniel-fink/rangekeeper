@@ -174,6 +174,13 @@ Specification, with its estimates.
 | A Quantity | That Quantity |
 | Text, `"20e6 AUD"` or `"65 %"` | The Quantity that the text gives; text without units raises `UnitError` |
 | A number, `coverage=1.25` | A ratio. A target with units that are not dimensionless raises `UnitError` |
+| A `datetime.date`, `start_date=date(2027, 1, 1)`, or `rk.duration.NEVER` | The date of a date Value, or NEVER: the event does not happen. A date for a target that is not a date Value, or a Quantity for a date Value, raises `ContractError` |
+
+A fix of a date Value is an Assignment with `date`, or with `never`, and no
+`quantity` ([#280](https://github.com/daniel-fink/rangekeeper/issues/280)). An
+Assignment has exactly one of `quantity`, `date` and `never`. A date Value that is
+not fixed is free, as a number is: the date equations determine it
+([execution](execution.md#date-equations)).
 
 `fix` takes the targets that are not keywords, such as dotted keys and UUIDs, in
 a mapping as its first argument. One value fixes a scalar Value, or each
@@ -194,7 +201,7 @@ role, in Model order. Each Row's `id` is the UUID of its target.
 | `key` | The key that `fix` takes, from `Model.key_of`: the bare key; the dotted key when several Values have the key; or the text of the Value UUID when the owner has no code. For a Movement, the key of its Flow Value |
 | `movement` | The Movement UUID, or None for a scalar Value |
 | `role` | `rk.specification.Role`: `FIXED`, `FREE` or `DECIDED` (a rule controls the value) |
-| `quantity` | The fixed Quantity, or None |
+| `quantity` | The fixed Quantity, date or NEVER, or None |
 
 A Specification with includes reads its roles from its Composition, so it needs
 its resolver. A batch has no roles.

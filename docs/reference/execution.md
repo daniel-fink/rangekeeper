@@ -80,7 +80,7 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 
 | Member | Leaf | Batch |
 | --- | --- | --- |
-| `outcome["key"]` | The solved value. Without an output, the error of `raise_for_status()` | `ContractError`, `batch.unsupported`: read a case |
+| `outcome["key"]` | The solved value: a Quantity, a Flow, or a date or NEVER for a date Value. Without an output, the error of `raise_for_status()` | `ContractError`, `batch.unsupported`: read a case |
 | `quantity(reference)` | The solved Quantity of a scalar Value or a Movement, by `Reference` or UUID | `ContractError`, `batch.unsupported` |
 | `model` | The accepted output Model. Without one, the error of `raise_for_status()` | `ContractError`, `batch.unsupported` |
 | `status` | A `Status`, from the Run report | The status of the first leaf case, in `walk()` order, that is not `FEASIBLE`; else `FEASIBLE` |
@@ -221,7 +221,7 @@ and only the backend starts a process. `solve` calls the stages for each case;
 | --- | --- | --- | --- | --- |
 | 1 | `resolve_cases(*, specification, resolver)` | The root Specification | `Cases`: the documents, the pinned Models, the `compositions` of the leaves that compose and the `failures` (a `ValidationError` each) of those that do not. `Cases` is also a resolver | Missing or wrong-kind revisions, cycles, a contradicted batch Model pin. A leaf whose composition fails is in `failures` |
 | 2 | `validate(*, composition, resolver, units=None)` | One composition | `Validation`: the `report`, the `composition`, the input `model` and the `units` | Nothing for a content problem; it is an issue in the report |
-| 3 | `bind_roles(*, validation, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
+| 3 | `bind_roles(*, validation, checkpoint=)` | A `Validation` | `Binding`: assignments in Measure units, unknowns, fixed and free dates (`dates`, `date_unknowns`), assertions and rule evidence | `ValidationError` for an invalid report; `UnsupportedError` |
 | 4 | `build_problem(*, binding, limits=None, checkpoint=)` | A `Binding` | `AffineProblem`: `variables`, unscaled `rows` (each with a `Relation` and its original Constraint; `equalities` and `bounds`) and its `Analysis`: `equality_rank`, `unknown_count`, the `undetermined` unknowns and those of them that a bound reads (`bounded`) | `UnsupportedError`, with the `symbol_limit` or `constraint_limit` code when the problem exceeds `limits`, or for a row that is not affine; `NumericalError` |
 | 5 | `Backend.solve(*, problem, limits, remaining, options)` | An `AffineProblem` | `backends.BackendResult`: a `Termination`, the candidate values, the applied limits, the backend's diagnostics and its raw evidence | `BackendUnavailableError`, `NumericalError`, `UnsupportedError` for a refused option or row |
 | 6 | `make_candidate(*, binding, unknowns, run_id)` | Solved values | A candidate Model revision, round-tripped through JSON | `NumericalError` |
@@ -250,6 +250,7 @@ time limit has passed. The stages call it between steps.
 | `execution/planning.py` | Stage 1: the case graph, the pinned Models and one composition for each leaf. |
 | `execution/preparation.py` | Stages 2 and 3: validate the composition against its exact Model, keep the contributor scope, collect imposed predicates and normalize assignments to Measure units. |
 | `execution/compiler.py` | Stage 4: derive affine coefficients after assignments; check arithmetic capability, dimensions and the symbol and constraint limits; keep the original Constraint identity. No backend dependency. |
+| `execution/dates.py` | Date equations: the dates that fixed dates determine, and the exact decision of each equation over dates, before the affine stages. |
 | `execution/staging.py` | The staged solve: build the affine rows' problem, read its rank analysis, solve it when it determines a deferred row's unknown, and fix the determined values for the next stage. The rounds that pick and check the active side of each `max` and `min` call. |
 | `execution/piecewise.py` | Piecewise equations: find the Model's `rx.max` and `rx.min` Functions, read the active side of each call at given values, and write the equations of a set of sides and the bounds that keep them active. It solves nothing. |
 | `execution/analysis.py` | Rank and free-variable analysis of the rows, in pure Python. |
@@ -276,8 +277,8 @@ Failed composition cases remain accountably visible within batch Runs.
 
 ## Supported mathematics
 
-Execution supports Model-owned scalar Measurements and finite Flow Movements with explicit fixed and
-unknown roles, quantity literals, references, negation, addition, subtraction,
+Execution supports Model-owned scalar Measurements, date Values ([date equations](#date-equations))
+and finite Flow Movements with explicit fixed and unknown roles, quantity literals, references, negation, addition, subtraction,
 multiplication with at least one fixed expression, division by a nonzero fixed
 expression, powers that remain affine after assignment, and calls of `rx.max`
 and `rx.min` ([piecewise equations](#piecewise-equations)). Constraints support
@@ -383,6 +384,31 @@ optimization objectives and Specification-local Value publication. Rich temporal
 Values and market path generation follow the [temporal contract](market-paths-and-rules.md).
 Structural interventions are unsupported. Execution never substitutes hard-coded
 valuation formulas.
+
+### Date equations
+
+A date Value has a role, fixed or free, as a number has: `fix(start_date=date(2027, 1, 1))`
+or `fix(b_open=rk.duration.NEVER)`
+([#280](https://github.com/daniel-fink/rangekeeper/issues/280)). Dates are not
+numbers, so no affine row holds them. Before the affine stages, `solve` settles the
+dates (`execution.dates`, internal):
+
+1. A date equation `x = e`, where `x` is a free date and every reference of `e` is a
+   fixed or settled date, determines `x`: `a_start = shared_start + 1 year`. This
+   repeats until no equation determines another date.
+2. Each equation that reads only dates is then decided exactly, with the
+   [date rules](expressions.md#dates-and-never): a true one needs no row, and a false
+   one, such as `b_start >= shared_start + 1 year` for a `b_start` that is too early,
+   is the row of `False`, so the Outcome is `INFEASIBLE`.
+3. A free date that an equation still reads raises `UnsupportedError`: no date
+   equation of fixed dates determines it.
+
+`Binding.dates` holds the fixed dates and `Binding.date_unknowns` the free ones. The
+candidate records each fixed and settled date, and verification checks each date
+and each equation over dates again, exactly. `outcome["a_open"]` gives a date, or
+`rk.duration.NEVER`. An equation that reads dates and numbers, such as a profile that
+starts on a date Value, needs the equation functions in the solve
+([#276](https://github.com/daniel-fink/rangekeeper/issues/276)).
 
 ## Settings, limits and conclusions
 

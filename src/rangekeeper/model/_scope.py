@@ -126,6 +126,29 @@ def numerical_units(reference: dict, targets, measures) -> str:
     return _scalar_units(value, movement, measures.__getitem__)
 
 
+def date_reference(reference: dict, targets) -> bool:
+    """Return whether a reference names a date Value, which takes a date or NEVER."""
+    value, movement = resolve_reference(reference, targets)
+    return movement is None and value.get("kind") == "date"
+
+
+def recorded_date(reference: dict, targets) -> str | None:
+    """Read the recorded date of a date Value: its ISO date, ``"never"`` or None."""
+    value, _ = resolve_reference(reference, targets)
+    if value.get("never") is not None:
+        return "never"
+    found = value.get("date")
+    return None if found is None else str(found)
+
+
+def supplied_date(assignment: dict) -> str | None:
+    """Read the date that an Assignment supplies: its ISO date or ``"never"``."""
+    if assignment.get("never") is not None:
+        return "never"
+    found = assignment.get("date")
+    return None if found is None else str(found)
+
+
 def recorded_quantity(reference: dict, targets, measures):
     """Read one resolved scalar; an absent amount remains unresolved and zero survives."""
     value, movement = resolve_reference(reference, targets)

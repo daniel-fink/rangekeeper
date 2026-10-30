@@ -6,6 +6,7 @@ from types import MappingProxyType
 from typing import Self
 from uuid import UUID
 
+from rangekeeper.duration.dates import NEVER, DateValue
 from rangekeeper.execution import statuses
 from rangekeeper.execution.backends.base import Termination
 from rangekeeper.execution.errors import OutcomeError
@@ -23,6 +24,7 @@ from rangekeeper.schema.records import (
     Report,
     Severity,
     SolutionStatus,
+    ValueKind,
 )
 from rangekeeper.schema.runtime import FrozenJSONValue
 from rangekeeper.shared.codes import Code
@@ -239,19 +241,26 @@ class Outcome:
             raise OutcomeError("this Outcome has no output Model", status=self.status)
         return self.outputs[0]
 
-    def __getitem__(self, key: str) -> Quantity | Flow:
+    def __getitem__(self, key: str) -> Quantity | Flow | DateValue:
         """Return the solved value at a key, as ``Model.value(key=)`` takes it.
 
         The key is a bare key, a dotted key such as ``building_a.income``, or
         the text of a Value UUID.
 
-        A scalar value gives its Quantity; a Flow value gives its Flow. An
-        Outcome without an output raises the error of ``raise_for_status()``.
-        In an underdetermined Outcome, a free unknown holds one candidate value.
+        A scalar value gives its Quantity; a Flow value gives its Flow; a date
+        Value gives its date, or ``rk.duration.NEVER``. An Outcome without an
+        output raises the error of ``raise_for_status()``. In an
+        underdetermined Outcome, a free unknown holds one candidate value.
         """
         value = self.model.value(key=key)
         if value.flow is not None:
             return value.flow
+        if value.kind is ValueKind.DATE:
+            if value.never is not None:
+                return NEVER
+            if value.date is None:
+                raise ContractError(f"{key} has no date in the output Model")
+            return value.date
         if value.quantity is None:
             raise ContractError(f"{key} has no quantity in the output Model")
         return value.quantity

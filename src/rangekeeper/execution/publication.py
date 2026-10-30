@@ -2,9 +2,11 @@
 
 import json
 from collections.abc import Mapping
+from datetime import date
 from typing import Any, cast
 from uuid import UUID, uuid4
 
+from rangekeeper.duration.dates import NEVER, DateValue
 from rangekeeper.execution.errors import NumericalError
 from rangekeeper.execution.preparation import Binding
 from rangekeeper.model import Model
@@ -45,7 +47,7 @@ def make_candidate(
     claims = provenance.setdefault("claims", [])
     changed = {
         str(target_value(binding.model, binding.references[token]).id)
-        for token in quantities
+        for token in (*quantities, *binding.dates)
     }
     facts = [f for f in provenance.get("facts", []) if f["target"] not in changed]
 
@@ -67,8 +69,10 @@ def make_candidate(
 
     for node, _ in walk_data("System", data.get("system", {})):
         identity = node.get("id")
-        if identity in changed and node.get("kind") in ("measurement", "flow"):
-            if node["kind"] == "measurement":
+        if identity in changed and node.get("kind") in ("measurement", "flow", "date"):
+            if node["kind"] == "date":
+                _write_date(node, binding.dates[UUID(identity)])
+            elif node["kind"] == "measurement":
                 node["quantity"] = quantities[UUID(identity)].to_data()
             else:
                 for movement in node["flow"]["movements"]:
@@ -91,12 +95,12 @@ def make_candidate(
                         ]
             content = {
                 name: node[name]
-                for name in ("measure", "quantity", "flow")
+                for name in ("measure", "quantity", "flow", "date", "never")
                 if name in node
             }
             evidence = claim(content, "rangekeeper.value.publication")
             facts.append(dict(target=identity, claims=[evidence]))
-    if not quantities:
+    if not quantities and not binding.dates:
         claim(dict(model=str(binding.model.id)), "rangekeeper.feasibility")
     provenance["facts"] = facts
     data["metadata"] = dict(
@@ -110,3 +114,14 @@ def make_candidate(
     )
     check_revision(binding.model._record, candidate._record)
     return candidate
+
+
+def _write_date(node: dict[str, Any], value: DateValue) -> None:
+    """Record a date or NEVER in the wire data of a date Value."""
+    node.pop("date", None)
+    node.pop("never", None)
+    if value is NEVER:
+        node["never"] = "never"
+    else:
+        assert isinstance(value, date)
+        node["date"] = value.isoformat()

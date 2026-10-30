@@ -105,11 +105,23 @@ public sealed class Assignment : WireRecord
     public Assignment() { }
     public Assignment(JsonObject data) : base(data) { }
 
-    /// <summary>Wire field quantity; missing and null remain distinct.</summary>
-    public Quantity Quantity
+    /// <summary>Wire field date; missing and null remain distinct.</summary>
+    public Optional<DateOnly> Date
     {
-        get => Read<Quantity>("quantity");
-        init => Write("quantity", value);
+        get => ReadOptional<DateOnly>("date");
+        init => WriteOptional("date", value);
+    }
+    /// <summary>Wire field never; missing and null remain distinct.</summary>
+    public Optional<string> Never
+    {
+        get => ReadOptional<string>("never");
+        init => WriteOptional("never", value);
+    }
+    /// <summary>Wire field quantity; missing and null remain distinct.</summary>
+    public Optional<Quantity> Quantity
+    {
+        get => ReadOptional<Quantity>("quantity");
+        init => WriteOptional("quantity", value);
     }
     /// <summary>Wire field target; missing and null remain distinct.</summary>
     public Reference Target

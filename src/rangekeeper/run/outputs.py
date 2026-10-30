@@ -10,7 +10,14 @@ import math
 from copy import deepcopy
 from uuid import UUID
 
-from rangekeeper.model._scope import numerical_units, recorded_quantity, reference_key
+from rangekeeper.model._scope import (
+    date_reference,
+    numerical_units,
+    recorded_date,
+    recorded_quantity,
+    reference_key,
+    supplied_date,
+)
 from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.runtime import exact_equal
 from rangekeeper.shared.amounts import number
@@ -60,6 +67,9 @@ def validate_outputs(
         for r, _ in walk_data("Model", result):
             if r.get("kind") == "measurement" and "id" in r and UUID(r["id"]) in needed:
                 r.pop("quantity", None)
+            if r.get("kind") == "date" and "id" in r and UUID(r["id"]) in needed:
+                r.pop("date", None)
+                r.pop("never", None)
             if r.get("kind") == "flow" and "id" in r:
                 for m in (r.get("flow") or {}).get("movements") or []:
                     if UUID(m["id"]) in needed:
@@ -83,6 +93,12 @@ def validate_outputs(
             "output must preserve input definitions and unrelated recorded content",
         )
         for target in needed.values():
+            if date_reference(target, scope.targets):
+                require(
+                    recorded_date(target, output_scope.targets) is not None,
+                    "accepted output has unresolved solve Value",
+                )
+                continue
             quantity = recorded_quantity(
                 target, output_scope.targets, output_scope.measures
             )
@@ -97,6 +113,13 @@ def validate_outputs(
                 "non-finite output quantity",
             )
         for assignment in assignments:
+            if "quantity" not in assignment:
+                require(
+                    recorded_date(assignment["target"], output_scope.targets)
+                    == supplied_date(assignment),
+                    "output violates assignment",
+                )
+                continue
             actual = recorded_quantity(
                 assignment["target"], output_scope.targets, output_scope.measures
             )
