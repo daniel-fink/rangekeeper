@@ -1,9 +1,12 @@
-"""Lesson 03's solves, from the proposed cells (#276, #277, #280, #308).
+"""Lesson 03's solves, from the proposed cells (#276, #277, #280, #308, #294).
 
 The cells come from ``examples/walkthrough/proposed/03_cases_debt_equity.md``
-and run statement by statement, as written. The draft infers the results that
-the cells do not declare, with the Periods of their Flows (#282). One difference
-waits on another issue:
+and run statement by statement, as written; the value of a cell's last
+expression is ``_``, as in IPython. The draft infers the results that the
+cells do not declare, with the Periods of their Flows (#282). Cell 22 executes
+into an empty ``runs/03`` folder, and cell 23 replays its Run in a namespace
+that holds only ``rk``, as in a new kernel. One difference waits on another
+issue:
 
 - ``PLAN``: the plan's inputs stand in for ``helpers.load_base_plan()`` (G07),
   and the statements that call ``helpers`` are skipped.
@@ -51,10 +54,16 @@ def statements(key: str) -> list[str]:
 
 
 def run(namespace: dict, *keys: str) -> dict:
-    """Run cells as written, statement by statement, from ``namespace``."""
+    """Run cells as written, statement by statement, from ``namespace``.
+
+    The value of each expression statement is ``_``, as in IPython.
+    """
     for key in keys:
         for code in statements(key):
-            exec(code, namespace)
+            if isinstance(ast.parse(code).body[0], ast.Expr):
+                namespace["_"] = eval(code, namespace)
+            else:
+                exec(code, namespace)
     return namespace
 
 
@@ -85,6 +94,16 @@ def lesson() -> dict:
         "19",
         "21",
     )
+
+
+@pytest.fixture(scope="module")
+def kernel(lesson: dict, tmp_path_factory: pytest.TempPathFactory) -> dict:
+    """Run cell 22 in an empty folder, then cell 23 as in a new kernel."""
+    folder = tmp_path_factory.mktemp("lesson03")
+    with pytest.MonkeyPatch.context() as patch:
+        patch.chdir(folder)
+        run(lesson, "22")
+        return run({"rk": rk}, "23")
 
 
 def test_cell_9_solves_the_base_case(lesson):
@@ -158,3 +177,34 @@ def test_cell_21_reports_the_commitment_gap(lesson):
             case["peak_shortfall"]
             == lesson["funded_outcome"].case(key=key)["peak_shortfall"]
         )
+
+
+def test_cell_22_executes_the_funded_cases_into_an_empty_store(lesson, kernel):
+    """``execute`` publishes the Model, the cases, the outputs and the Runs (#294)."""
+    executed = lesson["executed"].raise_for_status()
+    assert lesson["_"] == executed.run.id
+    store = lesson["store"]
+    assert store.root.parts[-2:] == ("runs", "03")
+    assert store.load_model(lesson["funded"].model.id).id == lesson["funded"].model.id
+    for case in executed.cases:
+        assert store.load_run(case.run.id).id == case.run.id
+        assert store.load_model(case.outputs[0].id).id == case.outputs[0].id
+
+
+def test_cell_23_replays_the_stored_run_in_a_new_kernel(lesson, kernel):
+    """``find_runs`` finds the batch Run by name; ``replay`` gives its result."""
+    assert kernel["run"].id == lesson["executed"].run.id
+    replayed = kernel["_"]
+    assert isinstance(replayed, rk.execution.Replay)
+    assert replayed.diagnostics == ()
+    assert replayed.outcome.status is Status.FEASIBLE
+    assert [case.key for case in replayed.outcome.cases] == [
+        "weak",
+        "reference",
+        "strong",
+    ]
+    reference = replayed.outcome.case(key="reference")
+    assert (
+        reference["peak_shortfall"]
+        == (lesson["funded_outcome"].case(key="reference")["peak_shortfall"])
+    )

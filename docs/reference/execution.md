@@ -19,7 +19,8 @@ Pyomo and HiGHS versions that it found.
 | Function | Writes | Returns |
 | --- | --- | --- |
 | `solve(*, specification, resolver=None, config=None)` | Nothing | An `Outcome` |
-| `execute(*, specification, store, config=None)` | The case Specifications of a batch, then the Specification, then for each case its outputs and then its Run, cases before their batch | The same `Outcome` |
+| `execute(*, specification, store, config=None)` | The input Models, includes and case Specifications that `store` does not hold, then the Specification, then for each case its outputs and then its Run, cases before their batch | The same `Outcome` |
+| `replay(*, run, store, config=None)` | Nothing | A `Replay` of the stored Run ([replay a stored Run](#replay-a-stored-run)) |
 
 Without `resolver`, `solve` resolves the documents that made the Specification:
 the Model revision that `model.specify()` pinned, the Specification itself, and
@@ -28,7 +29,11 @@ chained call (`fix`, `free`) keeps them, so `solve(specification=back)` needs no
 store. A Specification read from data keeps none of them; pass `resolver` for
 it, or a missing revision raises `MissingReferenceError`. `resolver` is any
 `DocumentResolver`, for example a `MemoryStore`; it must supply the Models,
-includes and cases that the Specification names. `store` is a
+includes and cases that the Specification names. `execute` resolves the
+documents that made the Specification in the same way, and then reads `store`;
+it puts each of them that `store` does not hold before the Specification
+([#294](https://github.com/daniel-fink/rangekeeper/issues/294)). So `store` can start empty, and it then holds every document that its
+Runs reference. `store` is a
 `MemoryStore`, `DirectoryStore` or a compatible `RecordStore`. `config` is an
 [`ExecutionConfig`](#configuration); without it, the defaults apply. Each Run
 records the backend as a `solver` implementation, with its registered name and
@@ -290,6 +295,61 @@ paths. The query operations of `by_case`, such as `where(condition=)`,
 `order_by` and `max`, follow with
 [#310](https://github.com/daniel-fink/rangekeeper/issues/310).
 
+## Replay a stored Run
+
+`rk.execution.replay(run=, store=, config=None)` solves the Specification of a
+stored Run again and compares the result with the stored result (G25,
+[#294](https://github.com/daniel-fink/rangekeeper/issues/294)). `store` holds
+the documents of the Run, as `execute` puts them: its Specification and the
+documents that it names, its case Runs and its outputs. Replay reads them and
+writes nothing, so it also works in a new kernel. Find the Run with
+`store.find_runs(specification=name)`, which gives the Runs of the
+Specifications with that name in the order that they finished
+([find Runs](run-and-storage.md#find-runs)):
+
+```python
+store = rk.io.DirectoryStore(path="runs/03")
+executed = rk.execution.execute(specification=funded.cases(cases=cases), store=store)
+
+# In a new kernel:
+store = rk.io.DirectoryStore(path="runs/03")
+run = store.find_runs(specification="Base case")[-1]
+rk.execution.replay(run=run, store=store).raise_for_status()
+```
+
+Replay solves with `store` as resolver and with `config`, as `solve` does. Give
+the configuration of the execution that made the Run; without one, the defaults
+apply. It then compares each leaf case of the new Outcome with the stored case
+of the same key, in `walk()` order:
+
+1. the `Status`;
+2. the number of outputs;
+3. each Value of the stored output Model: a scalar, each amount of a Flow, or
+   a date. Amounts agree within the tolerances of `config.tolerances` (the
+   absolute tolerance in the value's units, or the relative one, as
+   `rk.quantity.isclose` takes them); dates and `NEVER` agree exactly.
+
+| Member of `Replay` | Contents |
+| --- | --- |
+| `stored` | The stored Outcome: the Run, its outputs and its case Outcomes, read from `store` |
+| `outcome` | The Outcome of the new solve. Nothing stores it |
+| `diagnostics` | One diagnostic with the code `replay_mismatch` for each difference, in case order. Empty when the replay gives the stored result |
+| `raise_for_status()` | Returns the Replay when `diagnostics` is empty; otherwise raises `ContractError` with the code `REPLAY_MISMATCH`, the stored Run as `document_id` and the `values` of the first difference |
+
+A different status or number of outputs gives one diagnostic for its case; a
+value gives one for its first amount that differs. The `values` of each
+diagnostic are in [Run diagnostics](errors.md#run-diagnostics). Replay has no
+public constructor: make it with `replay`.
+
+This is the replay of a Run. The path replay of the internal `market` package,
+`market.replay`, is a different check: it compares captured market paths with
+their captured inputs, and it solves nothing
+([market paths](market-paths-and-rules.md)). Replay does not compare rule
+evidence yet: the comparison of decision traces, with the first window date
+that differs, follows with sequential rules
+([ADR-021](../decisions/021-sequential-decisions.md#verification-and-replay),
+[#215](https://github.com/daniel-fink/rangekeeper/issues/215)).
+
 ## Configuration
 
 `ExecutionConfig` is the one public configuration of an execution, and the one
@@ -368,7 +428,8 @@ time limit has passed. The stages call it between steps.
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and one `except` arm for the expected failures. It stores nothing. |
 | `execution/status.py` | `Status`, in a module that imports nothing from `execution`. |
 | `execution/statuses.py` | `FAILURES`: one row for each expected error, with its completion, solution, `Status` and diagnostic code. `TERMINATIONS`: one row for each `Termination`. |
-| `execution/pipeline.py` | `solve`: the stages for each case of a batch, in order. `execute`: `solve`, then output-before-Run publication. |
+| `execution/pipeline.py` | `solve`: the stages for each case of a batch, in order. `execute`: `solve`, then the publication of the inputs that the store lacks, and of each output before its Run. |
+| `execution/replaying.py` | `replay` and `Replay`: solve a stored Run's Specification again and compare each case with the stored case. |
 | `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
 
 Derived stage results are runtime objects, not a second

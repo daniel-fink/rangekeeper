@@ -36,7 +36,7 @@ contract: a Run that is read back has the same code text.
 | Comparisons | `comparison.*`, from `rk.execution.compare` | `COMPARISON_CASES`, `COMPARISON_SCALAR`, `COMPARISON_BATCH`, `COMPARISON_EMPTY` |
 | Distributions | `distribution.*`, from `Outcome.distribution` and `Outcome.mean` | `DISTRIBUTION_VALUE`: a Flow value has no distribution, and a date value has counts but no mean |
 | Other errors | Bare words | `DECODE`, `ENCODING`, `REVISION_CONFLICT`, `UNSUPPORTED_VERSION` |
-| Execution | Bare words in Run diagnostics | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED` |
+| Execution | Bare words in Run diagnostics, and in the diagnostics of a `Replay` | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED`; `REPLAY_MISMATCH` (a replay of a stored Run gives another result) |
 
 `CONTRACT` is the general code of a semantic rule. Rules that callers must tell
 apart have their own codes.
@@ -106,6 +106,7 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | `specification_invalid` | `issues`: each validation issue of the attempt, with its `code`, `message`, `document`, `path`, `targets`, `values` and `evidence` |
 | A failure from another error | `path`, when the error has one; `targets`, when it names more than one record. One target is the diagnostic's `target` |
 | `constraint_residual` | `equation`: the text of the Constraint that was checked. `formulation`: the Formulation that groups an equation of the Model, by its name (such as `"Funding"`) or, for an entity's default Formulation, its code. `target` is the Constraint |
+| `replay_mismatch` | In a `Replay`, not in a Run ([replay a stored Run](execution.md#replay-a-stored-run)). `case`: the case key, or None for a leaf Run. `stored` and `replayed`: the two results as text: a `Status` value, a number of outputs, or an amount, a date or `never`, with None for an unresolved amount. `key`: the key of the Value, as `Model.key_of` gives it. `on`: the Period of a Flow amount as an ISO interval, or its date. For other cases, `stored` and `replayed` are the two lists of case keys |
 
 ```python
 for diagnostic in run.report.diagnostics:

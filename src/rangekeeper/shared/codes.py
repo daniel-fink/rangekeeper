@@ -122,6 +122,9 @@ class Code(StrEnum):
     UNDERDETERMINED = "underdetermined"
     UNIQUENESS_NOT_ASSESSED = "uniqueness_not_assessed"
     UNSUPPORTED_CAPABILITY = "unsupported_capability"
+    # The replay of a stored Run (``rk.execution.replay``): solved again, a
+    # case has another status, other outputs or another value.
+    REPLAY_MISMATCH = "replay_mismatch"
 
     # Errors outside validation and execution.
     DECODE = "decode"

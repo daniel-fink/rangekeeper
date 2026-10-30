@@ -10,9 +10,10 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 | `run/report.py`, `run/outputs.py` | Shared status/report rules and pure output conformance checks; no output helper owns traversal state. |
 | `run/validation.py` | One operation-local owner resolves exact documents, caches matching preparation, and checks the Run tree; public `validate(*, run, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
 | `shared/references.py` | `SpecificationResolver` supplies Model/Specification reads; `DocumentResolver` extends it with Run reads. Domain code imports no IO implementation. |
-| `shared/store.py` | `RecordStore` protocol: the typed reads `load_model`, `load_specification`, `load_run` and `load_paths` (market paths), plus `put(document) -> UUID`. `execution` depends on this protocol, not on `io`. Import it from `rangekeeper.io`. |
+| `shared/store.py` | `RecordStore` protocol: the typed reads `load_model`, `load_specification`, `load_run` and `load_paths` (market paths), `find_runs(*, specification) -> tuple[Run, ...]` and `put(document) -> UUID`. `execution` depends on this protocol, not on `io`. Import it from `rangekeeper.io`. |
 | `io/json.py`, `io/yaml.py` | Explicit-kind `loads`, `dumps`, `read`, and atomic create-only `write`. YAML is imported only when used. |
-| `io/memory.py`, `io/directory.py` | `MemoryStore()` and `DirectoryStore(root)` implement immutable revision storage of Models, Specifications, Runs and market paths (`rk.market.Paths`). |
+| `io/memory.py`, `io/directory.py` | `MemoryStore()` and `DirectoryStore(path)` implement immutable revision storage of Models, Specifications, Runs and market paths (`rk.market.Paths`). |
+| `io/_runs.py` | The [search for Runs](#find-runs) that both stores use. |
 | `io/_document.py`, `io/_atomic.py` | The `Document` union, small kind/envelope dispatch and filesystem publication helpers; no handwritten field schema. |
 
 Methods and helpers have docstrings documenting validation, error, mutation, and IO
@@ -178,6 +179,37 @@ generated slot metadata; arbitrary strings inside opaque content remain untouche
   remain `OSError` subclasses, while invalid UTF-8 raises `DecodeError`.
 - Old Graph JSON is not new Model JSON. No implicit migration/conversion is provided.
 
+## Find Runs
+
+`store.find_runs(specification=name)` returns the stored Runs whose attempted
+Specification has the name `name`, as a tuple that can be empty
+([#294](https://github.com/daniel-fink/rangekeeper/issues/294)). It is a search,
+like `Model.find_entities`: it does not select one Run. The Runs come in the
+order of their recorded finish times (`report.runtime.finished_at`), earliest
+first, so `[-1]` is the Run that finished last:
+
+```python
+store = rk.io.DirectoryStore(path="runs/03")
+run = store.find_runs(specification="Base case")[-1]
+```
+
+A batch Run records no time of its own: it takes the latest finish time of its
+case Runs. A Run without a time comes first. Runs with the same time keep the
+order of their puts in a `MemoryStore`, and UUID order in a `DirectoryStore`.
+The order does not depend on the store or on file times, so a copied folder
+gives the same order. A batch Specification that `Specification.cases` made
+has the name of its base, and each case has its case key: in the example,
+`"Base case"` finds the batch Runs and `"weak"` the Runs of one case.
+
+`DirectoryStore` reads and validates each stored Run, and the Specification of
+each, so the search reads every Run of the folder. A file whose name is not
+`<UUID>.json`, such as the temporary file of an interrupted put, is not a
+revision. The `name` is exact and case-sensitive; text that is not a string
+raises `TypeError`, and empty text `ContractError`. Use the Run with
+[`rk.execution.replay`](execution.md#replay-a-stored-run). The
+[store layering](https://github.com/daniel-fink/rangekeeper/issues/176) will
+enumerate stores in general.
+
 ## Revision publication and failures
 
 Stores and codecs trust a validated document: an exact `Model`, `Specification` or
@@ -207,6 +239,9 @@ Every disk read checks the envelope, document validity, UUID, kind and version. 
 IDs raise `MissingReferenceError`; wrong kinds `ReferenceTypeError`; filename/content
 identity disagreement `IdentityConflictError`; malformed envelopes `DecodeError`.
 
+`DirectoryStore(path)` takes the folder of the files, as text or a path, such as
+`DirectoryStore(path="runs/03")`; a relative path is relative to the working
+folder at construction, and `root` is the absolute folder.
 Directory construction performs no writes. A successful put creates storage as needed,
 writes a same-directory temporary file, flushes/fsyncs it, publishes an atomic hard link
 only if the UUID filename is absent, removes the temporary name, and fsyncs the directory

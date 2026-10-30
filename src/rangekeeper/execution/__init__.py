@@ -26,7 +26,9 @@ distribution of each Outcome's differences and their statistics in ``Groups``
 of pairs.
 
 ``solve`` runs the stages for each case and writes nothing. ``execute`` solves,
-then publishes the outputs and the Runs to a store.
+then publishes the documents that made the Specification, the outputs and the
+Runs to a store. ``replay`` solves a stored Run's Specification again and
+compares the result with the stored one, in a ``Replay``.
 ``ExecutionConfig`` holds the backend, unit system, limits, tolerances and
 backend options, with one source of defaults. ``DecisionResult`` names the
 result of one check of a decision rule.
@@ -51,6 +53,7 @@ from rangekeeper.execution.preparation import (
     validate,
 )
 from rangekeeper.execution.publication import make_candidate
+from rangekeeper.execution.replaying import Replay, replay
 from rangekeeper.execution.rule.result import DecisionResult
 from rangekeeper.execution.settings import Limits
 from rangekeeper.execution.status import Status
@@ -75,6 +78,7 @@ __all__ = [
     "Pair",
     "Paired",
     "Relation",
+    "Replay",
     "Row",
     "SideBySide",
     "Status",
@@ -88,6 +92,7 @@ __all__ = [
     "compare",
     "execute",
     "make_candidate",
+    "replay",
     "resolve_cases",
     "solve",
     "validate",
