@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
-from rangekeeper.execution.preparation import Binding
+from rangekeeper.execution.preparation import Assertion, Binding
 from rangekeeper.model import Model
 from rangekeeper.model.expression.evaluation import (
     evaluate,
@@ -147,12 +147,31 @@ def verify(
                         and node.kind is ExpressionKind.REFERENCE
                         and node.target is not None
                     ),
-                    values={"equation": binding.text(assertion.predicate)},
+                    values=_equation_values(binding, assertion),
                     residual=Quantity(magnitude=residual, units=left.units),
                     tolerance=Quantity(magnitude=tolerance, units=left.units),
                 )
             )
     return Verification(passed=passed, diagnostics=tuple(diagnostics))
+
+
+def _equation_values(binding: Binding, assertion: Assertion) -> dict[str, str]:
+    """Return the text of an equation and, for a Model equation, its Formulation.
+
+    The Formulation is named by its name, such as ``"Funding"``, or by its
+    code for the default Formulation of an entity.
+    """
+    values = {"equation": binding.text(assertion.predicate)}
+    model = binding.model
+    if assertion.document != model.id:
+        return values
+    owner = model.owner_of(assertion.constraint.id)
+    if owner is not None:
+        formulation = model.formulation(owner)
+        group = formulation.name or formulation.code
+        if group is not None:
+            values["formulation"] = group
+    return values
 
 
 def _comparisons(

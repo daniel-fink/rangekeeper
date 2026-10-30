@@ -1712,10 +1712,12 @@
    "kind": "class",
    "members": {
     "__init__": "method (self) -> None",
+    "add_formulation": "method (self, *, name: str, description: str | None = None) -> rangekeeper.model.formulation.handle.FormulationHandle",
     "code": "property",
     "date": "method (self, *, key: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
     "equations": "method (self, *equations: str | rangekeeper.schema.records.Expression) -> None",
     "flow": "method (self, *, key: str, units: str, periods: collections.abc.Iterable[rangekeeper.duration.period.Period] | None = None, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
+    "formulation": "method (self, *, name: str) -> rangekeeper.model.formulation.handle.FormulationHandle",
     "id": "property",
     "ref": "method (self, *, key: str) -> rangekeeper.model.draft.ValueHandle",
     "value": "method (self, *, key: str, units: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle"
@@ -1787,6 +1789,15 @@
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, code: str | None | Unset = <Unset>, name: str | None | Unset = <Unset>, description: str | None | Unset = <Unset>, bindings: tuple[Binding, ...] | None | Unset = <Unset>, values: tuple[Value, ...] | None | Unset = <Unset>, expressions: tuple[Expression, ...] | None | Unset = <Unset>, constraints: tuple[Constraint, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>) -> None"
+  },
+  "FormulationHandle": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self) -> None",
+    "equations": "method (self, *equations: str | rangekeeper.schema.records.Expression) -> None"
+   },
+   "module": "rangekeeper.model.formulation.handle",
+   "signature": "() -> None"
   },
   "Function": {
    "kind": "class",
