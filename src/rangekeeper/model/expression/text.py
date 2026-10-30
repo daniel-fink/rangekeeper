@@ -8,11 +8,13 @@ the records with the functions that the Python form (``rx``) uses, so text and
 operator table, so text that ``parse`` reads reads back to the same records.
 
 Names are value keys of one entity, or ``code.key`` for a value of another
-entity. Functions are called as ``rx.<name>(...)`` and Flow methods as
+entity. ``NEVER`` is the date that never comes, and ``date(2027, 1, 1)`` a
+calendar date, as in Python. Functions are called as ``rx.<name>(...)`` and Flow methods as
 ``x.<name>(...)``, from the equation-function registry
 (``rangekeeper.model.expression.catalogue``).
 """
 
+from datetime import date
 from typing import Protocol
 
 from rangekeeper.duration import NEVER, Never
@@ -164,6 +166,8 @@ class _Reader:
 
     def _call(self, node: Call) -> Term:
         """Return the Term of a call of an equation function or a Flow method."""
+        if isinstance(node.callee, Name) and node.callee.name == syntax.DATE:
+            return self._date(node)
         function, subject = self._callee(node.callee)
         given = [] if subject is None else [subject]
         given.extend(item.value for item in node.arguments if item.name is None)
@@ -184,6 +188,34 @@ class _Reader:
                 node=located.get(name, node) if isinstance(name, str) else node,
                 suggestions=_suggestions(error),
             ) from error
+
+    def _date(self, node: Call) -> Term:
+        """Return the Term of a date literal: ``date(2027, 1, 1)``, as in Python."""
+        numbers = [
+            argument.value.number
+            for argument in node.arguments
+            if argument.name is None
+            and isinstance(argument.value, Literal)
+            and argument.value.units is None
+            and argument.value.number.isdigit()
+        ]
+        if len(numbers) != 3 or len(node.arguments) != 3:
+            raise self._error(
+                "a date is written date(year, month, day), with three whole numbers",
+                code=Code.EQUATION_SYNTAX,
+                node=node,
+                suggestions=("date(2027, 1, 1)",),
+            )
+        year, month, day = (int(number) for number in numbers)
+        try:
+            value = date(year, month, day)
+        except ValueError as error:
+            raise self._error(
+                f"date({year}, {month}, {day}) is not a calendar date: {error}",
+                code=Code.EQUATION_SYNTAX,
+                node=node,
+            ) from error
+        return terms.constant(value)
 
     def _callee(self, callee: Node) -> tuple[EquationFunction, Node | None]:
         """Return the function that ``callee`` names, and the subject of a method."""

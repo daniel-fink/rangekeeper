@@ -172,7 +172,7 @@ def test_constants_are_boolean_and_never_literals():
     # NEVER is a date literal with never, as a date Value records it (#387).
     assert (never.kind, never.date) == (ExpressionKind.DATE, None)
     assert text(never) == "NEVER"
-    assert text(date_literal(date(2027, 1, 1))) == "<date 2027-01-01>"
+    assert text(date_literal(date(2027, 1, 1))) == "date(2027, 1, 1)"
     assert [o.boolean for o in parsed.operands[1].operands] == [True, False]
 
 
@@ -251,7 +251,7 @@ def test_a_dotted_path_names_a_value_of_another_entity():
         (equal(ref("b_start"), date_literal(rk.duration.NEVER)), "b_start = NEVER"),
         (
             equal(ref("b_start"), date_literal(date(2027, 1, 1))),
-            "b_start = <date 2027-01-01>",
+            "b_start = date(2027, 1, 1)",
         ),
     ],
 )
@@ -271,6 +271,8 @@ def test_render_writes_equation_text_with_the_fewest_brackets(expression, expect
         "value <= 0.5 * (noi + 7 % pa * land_cost) and value >= 0 AUD",
         "b_start = NEVER or not b_start > a_open",
         "rate = 1.5e-07 * growth ** 2",
+        "b_start >= date(2027, 1, 1) + 1 year",
+        "b_start = NEVER or b_start <= date(2030, 12, 31)",
     ],
 )
 def test_canonical_text_reads_back_to_the_same_text(source):
