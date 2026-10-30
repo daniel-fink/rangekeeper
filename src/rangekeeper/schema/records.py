@@ -472,7 +472,7 @@ class Assembly(Entity):
 
 
 class Assignment(Record):
-    'An explicit scalar or Movement target and finite supplied Quantity; its collection determines assignment or estimate semantics.'
+    'An explicit target and its supplied content, a finite Quantity for a scalar Value or a Movement, or a date or NEVER for a date Value; its collection determines assignment or estimate semantics.'
     __slots__ = ()
     _kind = 'Assignment'
     _SLOTS = _freeze(
@@ -484,44 +484,87 @@ class Assignment(Record):
                     'ordered': False,
                     'lineage': False},
          'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
-                      'required': True,
+                      'required': False,
                       'many': False,
                       'mapping': False,
                       'nullable': False,
                       'ordered': False,
-                      'lineage': False}}
+                      'lineage': False},
+         'date': {'options': [{'kind': 'date', 'category': 'primitive'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False,
+                  'lineage': False},
+         'never': {'options': [{'kind': 'Never', 'category': 'enum'}],
+                   'required': False,
+                   'many': False,
+                   'mapping': False,
+                   'nullable': False,
+                   'ordered': False,
+                   'lineage': False}}
     )
 
     def __init__(self, *,
         target: Reference,
-        quantity: Quantity,
+        quantity: Quantity | Unset = UNSET,
+        date: Date | None | Unset = UNSET,
+        never: Never | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         data['target'] = _encode_record(target, Reference, 'target')
-        data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if quantity is not UNSET:
+            data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if date is not UNSET:
+            data['date'] = _encode_date(date)
+        if never is not UNSET:
+            data['never'] = _encode_enum(never, Never, 'never')
         self._set_checked(data)
 
     def replace(self, *,
         target: Reference | Unset = UNSET,
-        quantity: Quantity | Unset = UNSET,
+        quantity: Quantity | Unset | Omit = UNSET,
+        date: Date | None | Unset | Omit = UNSET,
+        never: Never | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
         if target is not UNSET:
             changes['target'] = _encode_record(target, Reference, 'target')
-        if quantity is not UNSET:
+        if quantity is OMIT:
+            changes['quantity'] = OMIT
+        elif quantity is not UNSET:
             changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        if date is OMIT:
+            changes['date'] = OMIT
+        elif date is not UNSET:
+            changes['date'] = _encode_date(date)
+        if never is OMIT:
+            changes['never'] = OMIT
+        elif never is not UNSET:
+            changes['never'] = _encode_enum(never, Never, 'never')
         return self._replace(changes)
 
     @property
     def target(self) -> Reference:
-        'Value or Movement to which the quantity is supplied.'
+        'Value or Movement to which the content is supplied.'
         return cast('Reference', self._child('target', Reference, False))
 
     @property
-    def quantity(self) -> _Quantity:
-        'Explicit finite magnitude and compatible units; omission or null is not a supplied amount.'
-        return cast('_Quantity', self._child('quantity', Quantity, False))
+    def quantity(self) -> _Quantity | None:
+        'Explicit finite magnitude and compatible units for a scalar Value or a Movement; omission or null is not a supplied amount.'
+        return cast('_Quantity | None', self._child('quantity', Quantity, False))
+
+    @property
+    def date(self) -> Date | None:
+        'The calendar date supplied to a date Value; it excludes quantity and never.'
+        return cast('Date | None', _decode_date(self._data.get('date')))
+
+    @property
+    def never(self) -> Never | None:
+        'Supplies NEVER to a date Value, the event does not happen; it excludes quantity and date.'
+        return cast('Never | None', _decode_enum(self._data.get('never'), Never))
 
 
 class Binding(Record):

@@ -174,6 +174,34 @@
     }
   },
   "Assignment": {
+    "date": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "never": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "enum",
+          "kind": "Never"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
     "quantity": {
       "lineage": false,
       "many": false,
@@ -186,7 +214,7 @@
         }
       ],
       "ordered": false,
-      "required": true
+      "required": false
     },
     "target": {
       "lineage": false,

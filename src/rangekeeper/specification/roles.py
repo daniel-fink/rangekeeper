@@ -4,9 +4,11 @@ from enum import StrEnum, unique
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from rangekeeper.duration.dates import NEVER
 from rangekeeper.schema.enums import ExpressionKind, ValueKind
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
+    Assignment,
     Constraint,
     Expression,
     Movement,
@@ -102,12 +104,12 @@ def role_table(
 
     ``record`` is a composed, concrete Specification of ``model``. The columns are
     ``key``, ``movement`` (the Movement UUID, or None for a scalar Value), ``role``
-    (a Role) and ``quantity`` (the fixed Quantity, or None). Each Row's ``id`` is
+    (a Role) and ``quantity`` (the fixed Quantity, date or NEVER, or None). Each Row's ``id`` is
     the UUID of its target.
     """
     roles: dict[UUID, tuple[Role, object]] = {}
     for assignment in record.assignments or ():
-        roles[assignment.target.target] = (Role.FIXED, assignment.quantity)
+        roles[assignment.target.target] = (Role.FIXED, fixed_content(assignment))
     for reference in record.unknowns or ():
         roles[reference.target] = (Role.FREE, None)
     if record.rules is not None:
@@ -130,6 +132,13 @@ def role_table(
             )
         )
     return Table(ROLE_COLUMNS, rows)
+
+
+def fixed_content(assignment: Assignment) -> object:
+    """Return the content of an Assignment: a Quantity, a date or NEVER."""
+    if assignment.quantity is not None:
+        return assignment.quantity
+    return NEVER if assignment.never is not None else assignment.date
 
 
 def _key(model: "Model", identity: UUID) -> str:

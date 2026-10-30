@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "005688ed3cfc1e834f658f7c82de8bc1ce0509299f63eb47d9c0404cc5675978",
+    "checks.py": "2900711accf986033ba5f3634f3f69f85ae2f5735672b4c6d910d9f27176f42f",
     "enums.py": "b6e92143c87403bcca40aa8de7c85afe5d243f62e372ddf85064e4f7062ad883",
-    "records.py": "ef81b4046e314732c97d692d53beaedba290dff9de616ade02a110b2e81149d3",
-    "schema.json": "3029ff465e2976f80aa50f1bed864cf48b55010cc4143265bc5a27c3e330ad8a",
-    "slots.json": "4f2bac26b857f86774c0593c4b4d45292c886553f2ed45c4b51c5c61ad722056"
+    "records.py": "faec79ec7ef17eb1e3cd1e4a610c22cba42e4b9d444decb46c2db8bc6b66e3aa",
+    "schema.json": "d2a6fd6e05e464c605687390a07bcd1da6b04b3bd9f89c63f82c57b617102762",
+    "slots.json": "185957d2f59cef5ccf29f4278cae4d50c539ba9d57e7d3c301e721b353395131"
   },
   "classes": [
     "Action",
@@ -123,7 +123,7 @@
     "schema/model.yaml": "d998afd2fc7010b15863b358defb9c178d1aacd982aa93877fd1bab479f2aef7",
     "schema/provenance.yaml": "ab4ddf472dad4dc8a43e54c3fd3d14c699ceb1dde275011232aebee9a291a6d5",
     "schema/query.yaml": "a7aaed8586e6b5fdbaabffa15cf4d3f1df7e759eb2cdd3bce4414f75b0ea1a10",
-    "schema/reference.yaml": "2e554658a7d03b849bddf72a1014317b1144eec9b3bd34fe63874b4059400ced",
+    "schema/reference.yaml": "8d01f4dc6dce689d1a79c4c4c026545434b8f0b8bd37e19c9bba93fccc92f023",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
     "schema/rule.yaml": "c8c85bcb173b90946556b54335cc59d7ea7b627000f7df61d313c3769b42ea67",
     "schema/run.yaml": "c6be68f9f87a20984d485e1354c163ccb5e4f64d63aacbd70ccfae5b31a5641d",

@@ -84,6 +84,17 @@ the store-protocol methods, the Python protocol methods, an error constructor
 | `execution` | `rule.evaluate(rules, model=)`, `rule.observe(model, at=, bindings=)` | `evaluate(rules=, model=)`, `observe(model=, at=, bindings=)` |
 | `execution` | A backend: `def solve(self, problem, *, limits, remaining, options)` | `def solve(self, *, problem, limits, remaining, options)`; Rangekeeper calls `solve(problem=, ...)` |
 
+### Date fixes
+
+A Specification can fix a date Value: `fix(start_date=date(2027, 1, 1))` or
+`fix(b_open=rk.duration.NEVER)`
+([#280](https://github.com/daniel-fink/rangekeeper/issues/280)). The stored
+`Assignment` then has `date` or `never` and no `quantity`, so `quantity` is now
+optional: an Assignment has exactly one of the three. 1.0.0a2 documents stay
+valid. Code that reads `assignment.quantity` handles None for a date fix. A
+date Value that is not fixed is free, as a number is; in 1.0.0a2 a date Value
+could not have a role.
+
 ### Flow differences
 
 `Flow.difference(initial=None)` is now `Flow.diff()`, the reverse of

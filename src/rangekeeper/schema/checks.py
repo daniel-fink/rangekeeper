@@ -101,19 +101,27 @@ def check_Assignment(d, fields=None):
     issues = []
     if 'target' not in d:
         issues.append(('structure.required', 'target is required', ''))
-    if 'quantity' not in d:
-        issues.append(('structure.required', 'quantity is required', ''))
     for name in d:
-        if name not in ('quantity', 'target'):
+        if name not in ('date', 'never', 'quantity', 'target'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'date' in d and (fields is None or 'date' in fields):
+        v = d['date']
+        if not ((type(v) is not str or _date(v)) and (type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid date', '/date'))
+    if 'never' in d and (fields is None or 'never' in fields):
+        v = d['never']
+        if not ((v in ('never',) and (type(v) is str))):
+            issues.append(('structure.value', 'invalid never', '/never'))
     if 'quantity' in d and (fields is None or 'quantity' in fields):
         v = d['quantity']
-        if not (isinstance(v, Mapping) and (isinstance(v, Mapping))):
+        if not ((isinstance(v, Mapping))):
             issues.append(('structure.value', 'invalid quantity', '/quantity'))
     if 'target' in d and (fields is None or 'target' in fields):
         v = d['target']
         if not (isinstance(v, Mapping)):
             issues.append(('structure.value', 'invalid target', '/target'))
+    if not ((sum(map(bool, (('quantity' in d), ('date' in d), ('never' in d),))) == 1)):
+        issues.append(('structure.rule', 'a Assignment rule is not met', ''))
     return issues
 
 

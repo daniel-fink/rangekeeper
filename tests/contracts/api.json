@@ -82,7 +82,7 @@
     "cases": "method (self, *, cases: Mapping[str, Mapping[str | UUID | Reference, object]]) -> Specification",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
-    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
+    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
     "free": "method (self, *targets: str | UUID | Reference) -> Specification",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Specification",
     "id": "property",
@@ -659,12 +659,12 @@
   "Binding": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple()) -> None",
+    "__init__": "method (self, *, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple(), dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None",
     "key": "method (self, reference: rangekeeper.schema.records.Reference) -> str",
     "text": "method (self, expression: rangekeeper.schema.records.Expression) -> str"
    },
    "module": "rangekeeper.execution.preparation",
-   "signature": "(*, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple()) -> None"
+   "signature": "(*, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple(), dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "Cases": {
    "kind": "class",
@@ -3126,13 +3126,15 @@
   "Assignment": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, target: Reference, quantity: Quantity) -> None",
+    "__init__": "method (self, *, target: Reference, quantity: Quantity | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>) -> None",
+    "date": "property",
+    "never": "property",
     "quantity": "property",
-    "replace": "method (self, *, target: Reference | Unset = <Unset>, quantity: Quantity | Unset = <Unset>) -> Self",
+    "replace": "method (self, *, target: Reference | Unset = <Unset>, quantity: Quantity | Unset | Omit = <Unset>, date: Date | None | Unset | Omit = <Unset>, never: Never | Unset | Omit = <Unset>) -> Self",
     "target": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, target: Reference, quantity: Quantity) -> None"
+   "signature": "(*, target: Reference, quantity: Quantity | Unset = <Unset>, date: Date | None | Unset = <Unset>, never: Never | Unset = <Unset>) -> None"
   },
   "Composition": {
    "kind": "class",
@@ -3197,7 +3199,7 @@
     "cases": "method (self, *, cases: Mapping[str, Mapping[str | UUID | Reference, object]]) -> Specification",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
     "compose": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver) -> rangekeeper.specification.composition.Composition",
-    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
+    "fix": "method (self, targets: Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]] | None = None, /, **values: Quantity | str | float | Decimal | date | Never | Mapping[UUID, Quantity | str | float | Decimal]) -> Specification",
     "free": "method (self, *targets: str | UUID | Reference) -> Specification",
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Specification",
     "id": "property",

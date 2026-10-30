@@ -5,6 +5,8 @@ from collections.abc import Iterator, Mapping, Set
 from dataclasses import dataclass
 from uuid import UUID
 
+from rangekeeper.duration.dates import NEVER, DateValue
+from rangekeeper.execution.dates import decide
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
 from rangekeeper.execution.piecewise import Pieces
 from rangekeeper.execution.preparation import Assertion, Binding
@@ -23,6 +25,7 @@ from rangekeeper.schema.records import (
     Expression,
     ExpressionKind,
     Operator,
+    Reference,
 )
 from rangekeeper.shared.codes import Code
 
@@ -81,8 +84,11 @@ def verify(
         if value is None:
             raise NumericalError(f"candidate has no quantity for {id}")
         values[id] = binding.units.convert(quantity=value, to=binding.value_units[id])
-    diagnostics = []
-    passed = True
+    dated = {
+        id: _recorded_date(candidate, binding.references[id]) for id in binding.dates
+    }
+    diagnostics = _date_changes(binding, dated)
+    passed = not diagnostics
     pieces = Pieces.of(binding.model)
     for id, assigned in binding.assignments.items():
         if values[id].to_data() != assigned.to_data():
@@ -98,6 +104,11 @@ def verify(
                 )
             )
     for assertion in binding.assertions:
+        if _reads(assertion.predicate) & dated.keys():
+            holds = decide(assertion.predicate, dates=dated, units=binding.units)
+            passed &= holds
+            diagnostics.append(_date_check(binding, assertion, holds=holds))
+            continue
         for relation, left, right, boolean in _comparisons(
             _active(assertion.predicate, pieces=pieces, values=values, binding=binding),
             values,
@@ -231,6 +242,64 @@ def _truth(
             " literal operands"
         )
     return bool(truth(node, values, units=units))
+
+
+def _recorded_date(candidate: Model, reference: Reference) -> DateValue:
+    """Return the date or NEVER that the candidate records for a date Value."""
+    value = candidate.value(id=reference.target)
+    if value.never is not None:
+        return NEVER
+    if value.date is None:
+        raise NumericalError(f"candidate has no date for {reference.target}")
+    return value.date
+
+
+def _date_changes(
+    binding: Binding, dated: Mapping[UUID, DateValue]
+) -> list[Diagnostic]:
+    """Return a diagnostic for each fixed or determined date that the candidate changed."""
+    return [
+        _changed(binding, id)
+        for id, fixed in binding.dates.items()
+        if dated[id] != fixed
+    ]
+
+
+def _changed(binding: Binding, id: UUID) -> Diagnostic:
+    return Diagnostic(
+        severity=Severity.ERROR,
+        code=Code.ASSIGNMENT_REJECTED.value,
+        message="Candidate changed a fixed or determined date.",
+        document=binding.model.id,
+        target=binding.references[id].target,
+        references=(binding.references[id],),
+    )
+
+
+def _date_check(binding: Binding, assertion: Assertion, *, holds: bool) -> Diagnostic:
+    """Return the exact check of an equation over dates (#280)."""
+    zero = Quantity(magnitude=0, units="dimensionless")
+    return Diagnostic(
+        severity=Severity.INFO if holds else Severity.ERROR,
+        code=Code.CONSTRAINT_RESIDUAL.value,
+        message=f"Independent original-expression check of dates: exact. Accepted={holds}.",
+        document=assertion.document,
+        target=assertion.constraint.id,
+        references=tuple(Reference(target=id) for id in _reads(assertion.predicate)),
+        values=_equation_values(binding, assertion),
+        residual=Quantity(magnitude=0 if holds else 1, units="dimensionless"),
+        tolerance=zero,
+    )
+
+
+def _reads(node: Expression) -> set[UUID]:
+    return {
+        child.target.target
+        for child, _, _ in walk(node)
+        if isinstance(child, Expression)
+        and child.kind is ExpressionKind.REFERENCE
+        and child.target is not None
+    }
 
 
 def _comparisons(
