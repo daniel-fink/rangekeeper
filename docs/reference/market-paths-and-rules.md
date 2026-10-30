@@ -34,6 +34,9 @@ See [calendar contracts](calculations.md).
 | `model.formulation.flow` | `sum`, `scale`, `accumulate`, and symbolic shape/alignment helpers |
 | `model.formulation.growth` | `linear` and `compound` |
 | `model.formulation.financial` | `discount`, `pv`, `reversion` and explicit principal `interest` |
+| `market.paths` | `Paths`, the market paths document, and `MarketPath`, one path of it: access, construction from data, means, availability and `regenerate` |
+| `market.generator` | The `PathGenerator` Protocol and the `generators` registry |
+| `market.validation` | The checks of a `Paths` document |
 | `market.contracts` | Immutable method, parameter, input and output inventories; captured-record conformance without random generation |
 | `market.generation` | `make_plan`, `validate`, `sample`, `capture`, `realize` and `generate` |
 | `market.dynamics` | Deterministic trend, cycle and shock kernels over supplied inputs |
@@ -75,7 +78,86 @@ Rates are per declared step. Builders do not infer annualization. `growth.linear
 takes an amount increment. [Scalar execution](execution.md) defines limits,
 independent acceptance, implementation fingerprints and publication.
 
+## The market paths document
+
+`rangekeeper.market.Paths` is a stored, immutable document of market paths
+([ADR-014](../decisions/014-market-paths.md),
+[#298](https://github.com/daniel-fink/rangekeeper/issues/298)). A path is one
+possible history of external conditions: one Flow for each named series, over the
+Periods of the document. The document stores the amounts, so a use of the paths
+draws no random numbers. Its kind is `Paths`, with the record
+`rangekeeper.schema.records.Paths` from [market.yaml](../../schema/market.yaml).
+
+```python
+paths = rk.market.Paths.from_flows(
+    flows={
+        "recovery": {"rent_index": recovery},
+        "downturn": {"rent_index": downturn},
+    },
+    lag="1 month",
+)
+paths.keys  # ("recovery", "downturn")
+paths["downturn"]["rent_index"]  # a Flow over the Periods of the document
+paths.mean(name="rent_index")  # one Flow: the mean of each Period
+paths.available(name="rent_index")  # the date on which each amount is known
+paths.capture  # how the paths were made
+```
+
+| Member | Result |
+| --- | --- |
+| `keys`, `names`, `periods` | The path keys, the series names and the Periods, in order |
+| `paths[key]` | The `MarketPath` with that key. A missing key raises `MissingReferenceError` with the keys in `candidates` |
+| `path[name]` | The Flow of one series, in the units of the series. A missing name raises `MissingReferenceError` with the names |
+| `mean(name=)` | The mean of a series over the paths, Period by Period, as one Flow |
+| `series(name=)` | The declaration of a series: its `name`, `units` and `lag` |
+| `available(name=)` | The date on which each amount is known: the end of its Period plus the lag of the series ([ADR-021](../decisions/021-sequential-decisions.md)) |
+| `capture` | The `PathCapture` record: `generator`, `fingerprint`, `seed`, `count`, `parameters`, `algorithm`, `streams` and `versions` |
+| `regenerate(seed=)` | The paths again from the same generator, parameters, Periods and count, with another seed |
+
+`Paths.from_flows(flows=, lag="0 days", name=None, description=None)` makes paths
+from data: a mapping from each path key to its Flows by series name. Every path
+has the same names, and each Flow has the Periods of the first path and the units
+of its series (`ALIGNMENT_DIFFER`). A Flow with a dated amount raises
+`ContractError`. `lag` is one whole length of zero or more, such as `"1 month"`,
+or a mapping from each series name to its length; a length that is not a whole
+number of days, weeks, months, quarters or years raises `UnitError`. Paths from
+data have no generator, so `regenerate` raises `ContractError`.
+
+A path generator makes its paths with
+`Paths.create(periods=, series=, members=, capture=, name=None, description=None)`.
+The UUID of each revision is a digest of its content, without the UUID. The same
+paths, capture record, name and description give the same revision, so
+`paths.regenerate(seed=paths.capture.seed) == paths`; `==` compares the content.
+Construction checks the document: Periods in order that do not overlap, unique
+series names with known units and lags, unique path keys, one finite amount of
+each series in each Period, and a capture record that agrees with the paths.
+`validate()` and `check()` take the same arguments as on the other documents; a
+Paths document refers to no other document.
+
+### Path generators
+
+A path generator satisfies `rangekeeper.market.PathGenerator`:
+`generate(*, parameters, periods, seed, count) -> Paths`. `parameters` are the
+`PathParameter` records of each series, a constant `quantity` or a
+`distribution`. `seed` is None when nothing is random. The registry is
+`rangekeeper.market.generators`, the extension point `market`
+([extension points](extensions.md)). The capture record keeps the registered
+name, the fingerprint and the parameters, so `regenerate` finds the generator by
+its name; an unknown name raises `UnknownExtensionError`.
+
+### Storage
+
+`MemoryStore`, `DirectoryStore` and the Bundle `Reader` store a Paths document
+under its UUID and return it with `load_paths(id)`; the codecs read it with
+`kind=rk.market.Paths`. An identical write changes nothing.
+
 ## Captured market paths and replay
+
+The scenario plan and the realizations below are the earlier design. `Paths`,
+the path generators and `Specification.across` replace them
+([#299](https://github.com/daniel-fink/rangekeeper/issues/299),
+[#306](https://github.com/daniel-fink/rangekeeper/issues/306),
+[#140](https://github.com/daniel-fink/rangekeeper/issues/140)).
 
 Use `from rangekeeper.market import generation as market`. Stable method codes are `market`,
 `market.estimates` and `market.independent`. `market.sample` records random inputs only; `market.capture`
@@ -155,6 +237,9 @@ See [migration](../guides/upgrading.md), [record methods](records.md), and
 |---|---|
 | Model | Canonical immutable content and provenance |
 | Market | Read-only, typed access to a recorded market within one Model revision |
+| Paths | A captured, replayable set of market paths with its capture record |
+| MarketPath | One path of a Paths document: one Flow for each series |
+| PathGenerator | A registered method that makes market paths from parameters |
 | ScenarioPlan | Complete generation inputs, method, periods and seed |
 | ScenarioParameter | Named fixed quantity or distribution input |
 | ScenarioRealization | Captured inputs and outputs, random identities and availability |

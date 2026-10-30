@@ -16,7 +16,7 @@ from rangekeeper.quantity import UnitSystem
 from rangekeeper.run import Run
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
-DOCUMENTS = (rk.Model, rk.Specification, Run)
+DOCUMENTS = (rk.Model, rk.Specification, Run, rk.market.Paths)
 
 
 def load(name):

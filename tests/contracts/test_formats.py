@@ -16,7 +16,7 @@ from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.errors import UnsupportedVersionError
 
-KINDS = ("Model", "Specification", "Run")
+KINDS = ("Model", "Specification", "Run", "Paths")
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 
 

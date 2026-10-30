@@ -7,6 +7,7 @@ from rangekeeper.io._document import (
     D,
     Document,
     Model,
+    Paths,
     Run,
     Specification,
     require_revision,
@@ -72,3 +73,7 @@ class MemoryStore:
     def load_run(self, id: UUID) -> Run:
         """Return the finalized Run; never execute or revise it."""
         return self._load(id, Run)
+
+    def load_paths(self, id: UUID) -> Paths:
+        """Return the exact market paths revision; never draw again."""
+        return self._load(id, Paths)

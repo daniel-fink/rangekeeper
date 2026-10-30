@@ -34,6 +34,13 @@ PINNED = {
     "jsonschema": "4.26.0",
     "PyYAML": "6.0.3",
 }
+# The schema module that versions each document kind (ADR-017).
+DOCUMENTS = {
+    "Model": "model",
+    "Specification": "specification",
+    "Run": "run",
+    "Paths": "market",
+}
 # The owner package of each value type (ADR-011). The owner subclasses the
 # generated record and registers it in rangekeeper.schema.kinds; records decode
 # to the owner class. The records name owners only for type checking.
@@ -978,8 +985,8 @@ def manifest(loaded: Loaded, versions, sources, files):
             name: hashlib.sha256(data).hexdigest() for name, data in sources.items()
         },
         "document_versions": {
-            kind: yaml.safe_load(sources[f"schema/{kind.lower()}.yaml"])["version"]
-            for kind in ("Model", "Specification", "Run")
+            kind: yaml.safe_load(sources[f"schema/{module}.yaml"])["version"]
+            for kind, module in DOCUMENTS.items()
         },
         "classes": sorted(loaded.classes),
         "opaque_classes": sorted(loaded.opaque),

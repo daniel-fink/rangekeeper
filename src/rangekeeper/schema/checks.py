@@ -1104,6 +1104,27 @@ def check_Location(d, fields=None):
     return issues
 
 
+def check_MarketPath(d, fields=None):
+    """Check the fields and rules of one MarketPath node."""
+    issues = []
+    if 'key' not in d:
+        issues.append(('structure.required', 'key is required', ''))
+    if 'amounts' not in d:
+        issues.append(('structure.required', 'amounts is required', ''))
+    for name in d:
+        if name not in ('amounts', 'key'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'amounts' in d and (fields is None or 'amounts' in fields):
+        v = d['amounts']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid amounts', '/amounts'))
+    if 'key' in d and (fields is None or 'key' in fields):
+        v = d['key']
+        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid key', '/key'))
+    return issues
+
+
 def check_Measure(d, fields=None):
     """Check the fields and rules of one Measure node."""
     issues = []
@@ -1397,6 +1418,171 @@ def check_Parameter(d, fields=None):
         v = d['required']
         if not ((((type(v) is bool))) and (type(v) is bool)):
             issues.append(('structure.value', 'invalid required', '/required'))
+    return issues
+
+
+def check_PathAmounts(d, fields=None):
+    """Check the fields and rules of one PathAmounts node."""
+    issues = []
+    if 'series' not in d:
+        issues.append(('structure.required', 'series is required', ''))
+    if 'magnitudes' not in d:
+        issues.append(('structure.required', 'magnitudes is required', ''))
+    for name in d:
+        if name not in ('magnitudes', 'series'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'magnitudes' in d and (fields is None or 'magnitudes' in fields):
+        v = d['magnitudes']
+        if not ((not _array(v) or all(((_number(x1))) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid magnitudes', '/magnitudes'))
+    if 'series' in d and (fields is None or 'series' in fields):
+        v = d['series']
+        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid series', '/series'))
+    return issues
+
+
+def check_PathCapture(d, fields=None):
+    """Check the fields and rules of one PathCapture node."""
+    issues = []
+    if 'count' not in d:
+        issues.append(('structure.required', 'count is required', ''))
+    if 'parameters' not in d:
+        issues.append(('structure.required', 'parameters is required', ''))
+    if 'streams' not in d:
+        issues.append(('structure.required', 'streams is required', ''))
+    if 'versions' not in d:
+        issues.append(('structure.required', 'versions is required', ''))
+    for name in d:
+        if name not in ('algorithm', 'count', 'fingerprint', 'generator', 'parameters', 'seed', 'streams', 'versions'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'algorithm' in d and (fields is None or 'algorithm' in fields):
+        v = d['algorithm']
+        if not ((type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid algorithm', '/algorithm'))
+    if 'count' in d and (fields is None or 'count' in fields):
+        v = d['count']
+        if not ((not _number(v) or v >= 1) and (_integer(v))):
+            issues.append(('structure.value', 'invalid count', '/count'))
+    if 'fingerprint' in d and (fields is None or 'fingerprint' in fields):
+        v = d['fingerprint']
+        if not ((type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid fingerprint', '/fingerprint'))
+    if 'generator' in d and (fields is None or 'generator' in fields):
+        v = d['generator']
+        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid generator', '/generator'))
+    if 'parameters' in d and (fields is None or 'parameters' in fields):
+        v = d['parameters']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid parameters', '/parameters'))
+    if 'seed' in d and (fields is None or 'seed' in fields):
+        v = d['seed']
+        if not ((not _number(v) or v >= 0) and (_integer(v) or v is None)):
+            issues.append(('structure.value', 'invalid seed', '/seed'))
+    if 'streams' in d and (fields is None or 'streams' in fields):
+        v = d['streams']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid streams', '/streams'))
+    if 'versions' in d and (fields is None or 'versions' in fields):
+        v = d['versions']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid versions', '/versions'))
+    return issues
+
+
+def check_PathParameter(d, fields=None):
+    """Check the fields and rules of one PathParameter node."""
+    issues = []
+    if 'series' not in d:
+        issues.append(('structure.required', 'series is required', ''))
+    if 'name' not in d:
+        issues.append(('structure.required', 'name is required', ''))
+    for name in d:
+        if name not in ('distribution', 'name', 'quantity', 'series'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'distribution' in d and (fields is None or 'distribution' in fields):
+        v = d['distribution']
+        if not (((isinstance(v, Mapping)) or ((v is None)))):
+            issues.append(('structure.value', 'invalid distribution', '/distribution'))
+    if 'name' in d and (fields is None or 'name' in fields):
+        v = d['name']
+        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid name', '/name'))
+    if 'quantity' in d and (fields is None or 'quantity' in fields):
+        v = d['quantity']
+        if not (((isinstance(v, Mapping)) or ((v is None)))):
+            issues.append(('structure.value', 'invalid quantity', '/quantity'))
+    if 'series' in d and (fields is None or 'series' in fields):
+        v = d['series']
+        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid series', '/series'))
+    return issues
+
+
+def check_PathSeries(d, fields=None):
+    """Check the fields and rules of one PathSeries node."""
+    issues = []
+    if 'name' not in d:
+        issues.append(('structure.required', 'name is required', ''))
+    if 'units' not in d:
+        issues.append(('structure.required', 'units is required', ''))
+    if 'lag' not in d:
+        issues.append(('structure.required', 'lag is required', ''))
+    for name in d:
+        if name not in ('lag', 'name', 'units'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'lag' in d and (fields is None or 'lag' in fields):
+        v = d['lag']
+        if not (isinstance(v, Mapping)):
+            issues.append(('structure.value', 'invalid lag', '/lag'))
+    if 'name' in d and (fields is None or 'name' in fields):
+        v = d['name']
+        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid name', '/name'))
+    if 'units' in d and (fields is None or 'units' in fields):
+        v = d['units']
+        if not ((type(v) is not str or _P2.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid units', '/units'))
+    return issues
+
+
+def check_Paths(d, fields=None):
+    """Check the fields and rules of one Paths node."""
+    issues = []
+    if 'metadata' not in d:
+        issues.append(('structure.required', 'metadata is required', ''))
+    if 'periods' not in d:
+        issues.append(('structure.required', 'periods is required', ''))
+    if 'series' not in d:
+        issues.append(('structure.required', 'series is required', ''))
+    if 'members' not in d:
+        issues.append(('structure.required', 'members is required', ''))
+    if 'capture' not in d:
+        issues.append(('structure.required', 'capture is required', ''))
+    for name in d:
+        if name not in ('capture', 'members', 'metadata', 'periods', 'series'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'capture' in d and (fields is None or 'capture' in fields):
+        v = d['capture']
+        if not (isinstance(v, Mapping)):
+            issues.append(('structure.value', 'invalid capture', '/capture'))
+    if 'members' in d and (fields is None or 'members' in fields):
+        v = d['members']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid members', '/members'))
+    if 'metadata' in d and (fields is None or 'metadata' in fields):
+        v = d['metadata']
+        if not (isinstance(v, Mapping) and (isinstance(v, Mapping))):
+            issues.append(('structure.value', 'invalid metadata', '/metadata'))
+    if 'periods' in d and (fields is None or 'periods' in fields):
+        v = d['periods']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid periods', '/periods'))
+    if 'series' in d and (fields is None or 'series' in fields):
+        v = d['series']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid series', '/series'))
     return issues
 
 
@@ -2451,6 +2637,7 @@ CHECKS = {
     'Label': check_Label,
     'LibraryVersion': check_LibraryVersion,
     'Location': check_Location,
+    'MarketPath': check_MarketPath,
     'Measure': check_Measure,
     'Metadata': check_Metadata,
     'Method': check_Method,
@@ -2461,6 +2648,11 @@ CHECKS = {
     'ObservationBinding': check_ObservationBinding,
     'ObservedQuantity': check_ObservedQuantity,
     'Parameter': check_Parameter,
+    'PathAmounts': check_PathAmounts,
+    'PathCapture': check_PathCapture,
+    'PathParameter': check_PathParameter,
+    'PathSeries': check_PathSeries,
+    'Paths': check_Paths,
     'Period': check_Period,
     'Projection': check_Projection,
     'PropertyContent': check_PropertyContent,

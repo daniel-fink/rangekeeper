@@ -1,6 +1,6 @@
 # ADR-014: Market paths and path generators
 
-Status: accepted for 1.0; package move done in 1.0.0a2, implementation pending. Recorded: 2026-10-26. Amended
+Status: accepted for 1.0; package move done in 1.0.0a2; the `Paths` document done (#298); generators, `across` and the removal pending. Recorded: 2026-10-26. Amended
 2026-10-28 by #201 decisions D29 and D31 and gap G73: generators and paths move to
 `rk.market` (`Dynamics`, `generate`, `Paths`), and `across` matches path series to
 Model values by key.
@@ -59,7 +59,8 @@ not to the core library.
 ### The MarketPaths document
 
 `MarketPaths` is a new stored, immutable document kind. It has metadata and
-validation. It contains:
+validation. Its class is `rk.market.Paths` (D29), and its stored kind is `Paths`
+(#298). It contains:
 
 - its members: a key, named Flows and availability dates;
 - a capture record: the generator name and fingerprint, the parameters, the
