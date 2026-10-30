@@ -116,7 +116,7 @@ class View:
 
     def entity(self, id: UUID) -> Entity:
         """Resolve a selected Entity; known but unselected IDs raise SelectionError."""
-        entity = self.model.entity(id=id)
+        entity = self.model.entity(id=id).record
         if id not in self._entity_ids:
             raise SelectionError(f"Entity {id} is outside this View of {self.model.id}")
         return entity

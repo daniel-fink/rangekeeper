@@ -57,7 +57,10 @@ def test_values_that_equations_define_take_their_kind_and_units():
     assert units_of(model, "yield_on_cost") == (ValueKind.MEASUREMENT, "ratio")
     assert units_of(model, "open_date") == (ValueKind.DATE, None)
     # The inferred values follow the declared ones, in the order of their equations.
-    keys = [value.key for value in model.entity(code="project").characteristics.values]
+    keys = [
+        value.key
+        for value in model.entity(code="project").record.characteristics.values
+    ]
     assert keys[6:] == [
         "income",
         "noi",

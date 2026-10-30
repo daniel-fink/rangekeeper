@@ -249,7 +249,7 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
         2,
         2,
     )
-    assert model.entity(id=parent.id).entities == tuple(c.id for c in children)
+    assert model.entity(id=parent.id).record.entities == tuple(c.id for c in children)
 
 
 def test_type_ancestry_uses_canonical_classification_references():

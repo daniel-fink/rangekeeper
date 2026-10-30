@@ -50,11 +50,16 @@ class Place:
 
 @dataclass(frozen=True, slots=True)
 class Pending:
-    """A value that an equation defines and no call declares: its owner, key and UUID."""
+    """A value that an equation defines and no call declares: its owner, key and UUID.
+
+    ``previous`` is the Value of an earlier revision whose units were inferred,
+    which the draft works out again; it is None for a new value.
+    """
 
     place: Place
     key: str
     id: UUID
+    previous: Value | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,17 +80,26 @@ class Unknown:
 class Undeclared:
     """The values of a draft that its equations define without a declaration."""
 
-    __slots__ = ("_pending",)
+    __slots__ = ("_pending", "_again")
     _pending: dict[tuple[UUID, str], Pending]
+    # The inferred Values of the draft's Model, which it works out again.
+    _again: list[Pending]
 
     def __init__(self) -> None:
         self._pending = {}
+        self._again = []
 
     def __iter__(self) -> Iterator[Pending]:
-        return iter(tuple(self._pending.values()))
+        return iter((*self._pending.values(), *self._again))
 
     def __bool__(self) -> bool:
-        return bool(self._pending)
+        return bool(self._pending or self._again)
+
+    def again(self, *, place: Place, value: Value) -> None:
+        """Work out the units of an inferred Value of the Model again at commit."""
+        self._again.append(
+            Pending(place=place, key=value.key, id=value.id, previous=value)
+        )
 
     def get(self, owner: UUID, key: str) -> UUID | None:
         """Return the UUID of an undeclared value of an owner, or None."""
@@ -139,19 +153,30 @@ class Undeclared:
     ) -> dict[UUID, list[Value]]:
         """Return a Value record for each undeclared value, by the UUID of its owner.
 
-        ``measure`` gives the Measure of units text, and ``known`` the units
-        texts in the order of their Measures; a quantity takes the first of
-        them that is compatible with its units. A Flow with known Periods has
-        one unresolved Movement in each, with an identity from ``identify``. A
-        value whose units cannot be worked out raises ValidationError, with one
-        issue for each such value.
+        Each record has ``inferred=True``. A Value that the draft works out
+        again keeps its UUID and description. ``measure`` gives the Measure of
+        units text, and ``known`` the units texts in the order of their
+        Measures; a quantity takes the first of them that is compatible with
+        its units. A Flow with known Periods has one unresolved Movement in
+        each, with an identity from ``identify``, or the identity of the
+        previous Movement of that Period. A value whose units cannot be worked
+        out raises ValidationError, with one issue for each such value.
         """
         found = self.infer(equations=equations, units=units, lookup=lookup)
         added: dict[UUID, list[Value]] = {}
         for item in self:
             dimension = found[item.id]
+            description: str | Unset = UNSET
+            if item.previous is not None and item.previous.description is not None:
+                description = item.previous.description
             if dimension.kind is Kind.DATE:
-                value = Value(id=item.id, key=item.key, kind=ValueKind.DATE)
+                value = Value(
+                    id=item.id,
+                    key=item.key,
+                    kind=ValueKind.DATE,
+                    description=description,
+                    inferred=True,
+                )
             else:
                 assert dimension.units is not None  # a quantity has units
                 text = spelled(dimension.units, units=units, known=known)
@@ -160,7 +185,9 @@ class Undeclared:
                     key=item.key,
                     kind=ValueKind.FLOW if dimension.flow else ValueKind.MEASUREMENT,
                     measure=measure(text).id,
+                    description=description,
                     flow=_shape(item, dimension, units=text, identify=identify),
+                    inferred=True,
                 )
             added.setdefault(item.place.id, []).append(value)
         return added
@@ -226,11 +253,18 @@ def _shape(
     """Return the Flow shape of an inferred Flow with known Periods, or UNSET."""
     if not dimension.flow or not dimension.periods:
         return UNSET
+    before = item.previous.flow if item.previous is not None else None
+    kept = {
+        movement.period: movement.id
+        for movement in (() if before is None else before.movements)
+        if movement.period is not None
+    }
     return Flow(
         units=units,
         movements=[
             Movement(
-                id=identify(
+                id=kept.get(period)
+                or identify(
                     "movement", item.place.path, item.key, period.start.isoformat()
                 ),
                 period=period,

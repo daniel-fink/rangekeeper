@@ -31,6 +31,7 @@ from rangekeeper.schema.records import (
     Assembly,
     Characteristics,
     Classification,
+    Constraint,
     Definitions,
     Entity,
     Expression,
@@ -465,6 +466,11 @@ class ModelDraft:
             roots=system.formulations or (), identify=draft._identify
         )
         draft._undeclared = Undeclared()
+        for owner in draft._owners.values():
+            place = Place(id=owner.record.id, where=owner.where, path=owner.path)
+            for value in owner.values:
+                if value.inferred:
+                    draft._undeclared.again(place=place, value=value)
         draft._changed = set()
         draft._known = {
             identity
@@ -915,11 +921,21 @@ class ModelDraft:
         """
         if not self._undeclared:
             return {}
+        base = [
+            self._base._index.get(record.predicate, Expression)
+            for record in self._base._index.records.values()
+            if isinstance(record, Constraint)
+        ]
         return self._undeclared.values(
-            equations=self._mathematics.expressions(),
+            equations=[*self._mathematics.expressions(), *base],
             units=self._base.unit_system,
             lookup=known_values(
-                (value for owner in self._owners.values() for value in owner.values),
+                (
+                    value
+                    for owner in self._owners.values()
+                    for value in owner.values
+                    if not value.inferred
+                ),
                 measures=measures,
             ),
             measure=lambda units: _measure_in(measures, units, self._identify),
@@ -1026,9 +1042,19 @@ def _values(record: Entity) -> tuple[Value, ...]:
 
 
 def _built(owner: _Owner, inferred: Sequence[Value]) -> Entity:
-    """Return the record of an owner, with the values that the draft added."""
-    values = (*owner.values, *inferred)
-    if not (owner.changed or inferred) or not values:
+    """Return the record of an owner, with the values that the draft added.
+
+    An inferred Value with the UUID of one of the owner's Values replaces it;
+    the others follow the owner's Values.
+    """
+    again = {value.id: value for value in inferred}
+    values = (
+        *(again.pop(value.id, value) for value in owner.values),
+        *again.values(),
+    )
+    if values == tuple(owner.values) and not owner.changed:
+        return owner.record
+    if not values:
         return owner.record
     characteristics = owner.record.characteristics or Characteristics()
     return owner.record.replace(characteristics=characteristics.replace(values=values))

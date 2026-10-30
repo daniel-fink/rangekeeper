@@ -209,8 +209,14 @@ project.equations("income = rent * area")  # AUD pa, from AUD per sqm pa and sqm
   those of the first Measure of the draft that is compatible with them, such as
   `AUD pa` for `AUD * per_annum`, or `ratio` for a ratio; otherwise their
   canonical text.
-- The new revision stores each such value with its kind and Measure, after the
-  declared values of its entity. In a later draft it is declared.
+- The new revision stores each such value with its kind, its Measure and
+  `inferred: true`, after the declared values of its entity. A later draft
+  works its kind, units and Periods out again from the equations, so that a
+  changed equation can change them; it keeps the Value's UUID, description and
+  the UUID of the Movement of each Period that stays. A declared value stays a
+  check.
+- `model.entity(code=).values` shows each value's units and whether they were
+  declared or inferred ([entities](#entities-and-their-values)).
 - A value whose units `commit()` cannot work out, for example because its
   definition calls a Function whose units are unknown, raises `ValidationError`
   with the code `semantic.units` and one issue for each such value, with its
@@ -219,6 +225,24 @@ project.equations("income = rent * area")  # AUD pa, from AUD per sqm pa and sqm
   equations reference.
 - A declaration is a check: when an equation gives a declared value other
   units, `commit()` fails with `incompatible_units`.
+
+## Entities and their values
+
+`model.entity(id=, code=, name=)` returns a read-only `ModelEntity` of the
+revision. Give exactly one selector; no match raises `MissingReferenceError`
+with the nearest codes or names, and several matches raise
+`AmbiguousReferenceError`. Two entities are equal when they are the same record
+of the same revision.
+
+| `ModelEntity` | Gives |
+| --- | --- |
+| `record` | The generated `Entity` or `Assembly` record |
+| `id`, `code`, `name`, `classification` | The fields of the record |
+| `values` | A Table with one row for each Value, in declaration order: `key`, `kind` (a `ValueKind`), `units` (the units of its Measure, or None for a date), `inferred` (True when the draft worked out the kind and units from the equations) and `description`. Each row's id is the Value's UUID |
+
+```python
+model.entity(code="project").values  # units of each value: declared or inferred
+```
 
 ## Records, lookup and revisions
 

@@ -86,7 +86,7 @@ def test_the_model_cells_declare_the_equations_in_text():
     model = namespace["model"]
     assert isinstance(model, rk.Model)
     project = model.entity(code="project")
-    keys = {value.id: value.key for value in project.characteristics.values}
+    keys = {value.id: value.key for value in project.record.characteristics.values}
     (formulation,) = model.system.formulations
     assert formulation.code == "project"
     texts = [

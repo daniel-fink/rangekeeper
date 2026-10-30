@@ -9,7 +9,7 @@ from rangekeeper.shared.errors import ReferenceTypeError
 def _assembly(model: Model, id: UUID) -> Assembly:
     if not isinstance(model, Model):
         raise TypeError("model must be a Model")
-    entity = model.entity(id=id)
+    entity = model.entity(id=id).record
     if not isinstance(entity, Assembly):
         raise ReferenceTypeError(f"{id} is not an Assembly")
     return entity
@@ -32,7 +32,7 @@ def entities_in(
     found = set(root.entities or ())
     pending = list(found) if recursive else []
     while pending:
-        member = model.entity(id=pending.pop())
+        member = model.entity(id=pending.pop()).record
         if isinstance(member, Assembly):
             unseen = set(member.entities or ()) - found
             found.update(unseen)

@@ -37,8 +37,6 @@ PLAN = {
     "equity": rk.Quantity(text="50e6 AUD"),
     "loan_limit": rk.Quantity(text="80e6 AUD"),
 }
-# The statement of cell 8 that waits on #282: Entity.values (D44).
-WAITING = "model.entity(code='project').values"
 
 
 def statements(key: str) -> list[str]:
@@ -46,7 +44,7 @@ def statements(key: str) -> list[str]:
     found = []
     for statement in ast.parse(cells()[key]).body:
         code = ast.unparse(statement)
-        if "helpers" in code or code == WAITING:
+        if "helpers" in code:
             continue
         found.append(code)
     return found
@@ -62,7 +60,7 @@ def run(namespace: dict, *keys: str) -> dict:
 
 @pytest.fixture(scope="module")
 def lesson() -> dict:
-    """Run cells 3 and 5 to 19 of lesson 03, with the solves of 9 to 19."""
+    """Run cells 3, 5 to 19 and 21 of lesson 03, with their solves."""
     namespace: dict = {"rk": rk, "date": date, "plan": PLAN}
     namespace["cases"] = None
     return run(
@@ -85,6 +83,7 @@ def lesson() -> dict:
         "17",
         "18",
         "19",
+        "21",
     )
 
 
@@ -142,3 +141,20 @@ def test_cell_19_reports_the_peak_shortfall(lesson):
     reference = funded.case(key="reference")
     shortfall = reference["shortfall"]
     assert reference["peak_shortfall"] == shortfall.max()
+
+
+def test_cell_21_reports_the_commitment_gap(lesson):
+    """Cell 21 finds the Funding Formulation of cell 12 and adds commitments (#305)."""
+    committed = lesson["committed_outcome"]
+    assert committed.status is Status.FEASIBLE
+    model = lesson["model"]
+    funding = model.edit().entity(code="project").formulation(name="Funding")
+    assert funding.name == "Funding"
+    for key in ("weak", "reference", "strong"):
+        case = committed.case(key=key)
+        gap = case["commitment_gap"]
+        assert gap.units == "AUD" and gap.number >= 0
+        assert (
+            case["peak_shortfall"]
+            == lesson["funded_outcome"].case(key=key)["peak_shortfall"]
+        )

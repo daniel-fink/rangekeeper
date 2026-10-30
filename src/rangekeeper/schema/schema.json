@@ -4659,6 +4659,13 @@
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
+        "inferred": {
+          "description": "True when a draft worked out the kind, units and Periods of this Value from the equation that defines it, because no call declared them; a later revision works them out again. Absent or false when they were declared, and are a check of the equations.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "key": {
           "description": "Nonblank name unique within the owner's values collection; not reference identity.",
           "pattern": "\\S",

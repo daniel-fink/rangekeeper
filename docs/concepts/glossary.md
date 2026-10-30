@@ -30,7 +30,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Sub-type | A Classification below another in its Taxonomy | `model` | — |
 | Function | A declared mathematical function that equations can use | `model` | — |
 | System | The Entities, Assemblies, Relationships and Formulations of a Model | `model` | — |
-| Entity | One thing in the project, such as a floor or a building | `model` | — |
+| Entity | One thing in the project, such as a floor or a building | `model` | The `Entity` record; `model.entity(code=)` returns a `ModelEntity`, whose `values` show the units of each value, declared or inferred |
 | Assembly | An Entity that groups member Entities | `model` | — |
 | Relationship | A typed, classified link between two Entities | `model` | — |
 | Direction | Which way a traversal follows a Relationship: `rk.model.Direction.OUTGOING` or `INCOMING`. Each Relationship has one name; the other direction is `INCOMING`, not a second name | `model` | — |

@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "f3249df205b42ebf5d19bc1faab70a929ce3a30d2642ab0931252c492bd23571",
+    "checks.py": "b8cbc290df1ce90716215a4f1000c80c0a6288d227fe9f898e6da3ceb6010e14",
     "enums.py": "d3accef130020fb6f1a96cf2350b22f26865659a6b5bac694ee8a60a0e5148a2",
-    "records.py": "faec79ec7ef17eb1e3cd1e4a610c22cba42e4b9d444decb46c2db8bc6b66e3aa",
-    "schema.json": "88a822f32ef5a31f5d883869564532037314dd07ddcef17f4f732656c21614fb",
-    "slots.json": "185957d2f59cef5ccf29f4278cae4d50c539ba9d57e7d3c301e721b353395131"
+    "records.py": "df6930823e9e027560869ec887177f7100b1e3dcd06b63e3c1828c935f2fcf49",
+    "schema.json": "8e624328b7dd79ef9f0741a3489942381379b6022c9b187b03da3aeaa754040d",
+    "slots.json": "6e68e78f1f7dcd2c5798ee61fcdee0c7d1147dd6f7dd2bbc70a980e96e582eca"
   },
   "classes": [
     "Action",
@@ -105,7 +105,7 @@
   "sources": {
     "schema/assembly.yaml": "780821a9ae2750975ea9a87c6ba527041f1e28570da2a65e7c62321f90554250",
     "schema/binding.yaml": "68a69d3be474c4bea52e4fbbf1dd853cf8f7eddd9923e79c489a0629ccbcc8ec",
-    "schema/characteristics.yaml": "db59c72f1bca79580fd3c49de938670fa62881fd0df5b5dbfc2921fc29ea9d22",
+    "schema/characteristics.yaml": "246672e260b93830fdbc09089dfbce0c7bd6128239439042619976e9688cf750",
     "schema/classification.yaml": "65e92ca8e598ed94e51468ffbed1f8e646bae0c7127983f905c884a35589c49d",
     "schema/common.yaml": "4cdf7eeb661a6356cc39d69d417099f43fcc15fdebe66da5ba11f31d46f31992",
     "schema/constraint.yaml": "74242011c99b655ce4ced89426df36b26c09eb7a0bbef8602983168e75c972dd",

@@ -4750,6 +4750,20 @@
       "ordered": false,
       "required": true
     },
+    "inferred": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "boolean"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
     "key": {
       "lineage": false,
       "many": false,

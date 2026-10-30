@@ -53,7 +53,7 @@ def select_value(*, key: str, measure: UUID | None = None) -> ValueSelector:
     def select(model: Model, entity: Entity) -> Value | None:
         if not isinstance(model, Model) or not isinstance(entity, Entity):
             raise TypeError("selector requires a Model and schema Entity")
-        canonical = model.entity(id=entity.id)
+        canonical = model.entity(id=entity.id).record
         if measure is not None:
             model._index.get(measure, Measure)
         return _local_value(model, canonical, key=key, measure=measure)

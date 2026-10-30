@@ -7494,7 +7494,14 @@ class Value(Record):
                    'mapping': False,
                    'nullable': False,
                    'ordered': False,
-                   'lineage': False}}
+                   'lineage': False},
+         'inferred': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False,
+                      'lineage': False}}
     )
 
     def __init__(self, *,
@@ -7508,6 +7515,7 @@ class Value(Record):
         content: PropertyContent | None | Unset = UNSET,
         date: Date | None | Unset = UNSET,
         never: Never | Unset = UNSET,
+        inferred: bool | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         if measure is not UNSET:
@@ -7527,6 +7535,8 @@ class Value(Record):
             data['date'] = _encode_date(date)
         if never is not UNSET:
             data['never'] = _encode_enum(never, Never, 'never')
+        if inferred is not UNSET:
+            data['inferred'] = copy_json(inferred)
         self._set_checked(data)
 
     def replace(self, *,
@@ -7540,6 +7550,7 @@ class Value(Record):
         content: PropertyContent | None | Unset | Omit = UNSET,
         date: Date | None | Unset | Omit = UNSET,
         never: Never | Unset | Omit = UNSET,
+        inferred: bool | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -7577,6 +7588,10 @@ class Value(Record):
             changes['never'] = OMIT
         elif never is not UNSET:
             changes['never'] = _encode_enum(never, Never, 'never')
+        if inferred is OMIT:
+            changes['inferred'] = OMIT
+        elif inferred is not UNSET:
+            changes['inferred'] = copy_json(inferred)
         return self._replace(changes)
 
     @property
@@ -7628,6 +7643,11 @@ class Value(Record):
     def never(self) -> Never | None:
         'Records that the event of a date Value does not happen; it excludes date.'
         return cast('Never | None', _decode_enum(self._data.get('never'), Never))
+
+    @property
+    def inferred(self) -> bool | None:
+        'True when a draft worked out the kind, units and Periods of this Value from the equation that defines it, because no call declared them; a later revision works them out again. Absent or false when they were declared, and are a check of the equations.'
+        return cast('bool | None', self._data.get('inferred'))
 
 
 class ValueTest(Record):
