@@ -7,6 +7,7 @@ too, and execution never reports units as an unsupported capability.
 """
 
 import importlib.util
+from datetime import date
 from uuid import UUID, uuid4
 
 import pytest
@@ -94,6 +95,45 @@ def test_compatible_units_of_another_scale_commit():
     )
     model = draft.commit()
     assert len(model.system.formulations[0].constraints) == 7
+
+
+def flows() -> rk.model.ModelDraft:
+    """Return a draft with an annual amount, a rate, a date and yearly Flows."""
+    years = rk.duration.Span(start=date(2027, 1, 1), end=date(2030, 1, 1)).periods(
+        frequency=rk.duration.Frequency.YEAR
+    )
+    draft = rk.Model(name="Calls").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.value(key="a_income", units="AUD pa")
+    project.value(key="rent_growth", units="% pa")
+    project.date(key="a_open")
+    project.date(key="sale_date")
+    project.flow(key="a_rent", units="AUD", periods=years)
+    project.flow(key="operating", units="AUD", periods=years)
+    project.value(key="noi", units="AUD pa")
+    return draft
+
+
+def test_a_call_of_an_equation_function_has_the_units_of_its_entry():
+    # Lesson 03 cell 7: a growth profile of an amount per year gives each yearly
+    # Period an amount in AUD (#500), as cell 5c declares a_rent.
+    draft = flows()
+    draft.entity(code="project").equations(
+        "a_rent = rx.profile.compounding(initial=a_income, rate=rent_growth,"
+        " start=a_open)"
+    )
+    assert draft.commit().value(key="a_rent").kind is rk.model.ValueKind.FLOW
+
+
+def test_validation_checks_the_units_of_a_call():
+    draft = flows()
+    draft.entity(code="project").equations("noi = operating.at(on=sale_date)")
+    with pytest.raises(ValidationError) as error:
+        draft.commit()
+    (issue,) = error.value.report.issues
+    assert issue.code == Code.INCOMPATIBLE_UNITS
+    assert issue.values["equation"] == "noi = operating.at(on=sale_date)"
+    assert issue.values["units"] == ["AUD pa", "AUD"]
 
 
 def test_loading_a_model_checks_its_equations():

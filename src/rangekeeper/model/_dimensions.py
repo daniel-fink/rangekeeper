@@ -8,9 +8,9 @@ have incompatible units. Model validation reports them as ``incompatible_units``
 (ADR-016), and a ModelDraft uses the same analysis to work out the units of the
 values that it does not declare (D44).
 
-A part that the analysis cannot read, such as a call of an equation function, a
-selection or a query, has unknown units; it is not checked, and it gives no
-units to a value.
+A call of an equation function has the units that its registry entry gives. A
+part that the analysis cannot read, such as a selection or a query, has unknown
+units; it is not checked, and it gives no units to a value.
 """
 
 from collections.abc import Callable, Mapping, Sequence
@@ -114,13 +114,72 @@ class Analysis:
         return self._lookup(node.target.target)
 
     def _call(self, node: Expression) -> Dimension | None:
-        """Return the result of a call from its Function record's result units."""
+        """Return the result of a call: from its equation function, or its record.
+
+        A call of an equation function has the units that its registry entry
+        gives (#309): ``result_units``, or the units of the argument that
+        ``units_from`` names, as ``EquationFunction.units`` gives them; a
+        growth profile of an amount per year gives the units of each Period's
+        amount (#500). Another call has its Function record's result units.
+        """
         call = node.call
-        function = None if call is None else self._functions.get(call.function)
+        if call is None:
+            return None
+        entry = functions.get(call.function)
+        if entry is not None:
+            return self._equation_function(entry, call)
+        function = self._functions.get(call.function)
         result = None if function is None else function.result
         if result is None or result.units is None:
             return None
         return Dimension(kind=Kind.QUANTITY, units=result.units)
+
+    def _equation_function(
+        self,
+        entry: EquationFunction,
+        call: Call,
+    ) -> Dimension | None:
+        """Return the result of an equation function from the units of its arguments.
+
+        It is a Flow when the entry gives a Flow, or when one of its periodwise
+        parameters takes a Flow. A Flow has the Periods of the argument that
+        ``periods_from`` names, or of its periodwise Flows; a Flow made from
+        amounts has the Periods of the Flow that it defines, which are not
+        known here.
+        """
+        names = [parameter.name for parameter in entry.parameters]
+        given = [
+            *zip(names, call.arguments or (), strict=False),
+            *((item.name, item.expression) for item in call.named_arguments or ()),
+        ]
+        arguments = {name: self.dimension(item) for name, item in given}
+        kind = _RESULTS.get(entry.result, Kind.QUANTITY)
+        if kind is not Kind.QUANTITY:
+            return Dimension(kind=kind)
+        units = entry.units(
+            arguments={
+                name: None if item is None else item.units
+                for name, item in arguments.items()
+            }
+        )
+        if units is None:
+            return None
+        shaping = [
+            arguments.get(name)
+            for name in entry.periodwise
+            if name in given_names(given)
+        ]
+        lifted = [item for item in shaping if _flow(item)]
+        if not lifted and any(item is None for item in shaping):
+            # An unknown argument could be a Flow, so the shape is unknown.
+            return None
+        if entry.result is not DomainKind.FLOW and not lifted:
+            # A scalar result, such as total() or max() of a Flow.
+            return Dimension(kind=Kind.QUANTITY, units=units)
+        if entry.periods_from is not None:
+            lifted = [arguments.get(entry.periods_from)]
+        _, periods = _shape(*lifted)
+        return Dimension(kind=Kind.QUANTITY, units=units, flow=True, periods=periods)
 
     def _unary(self, node: Expression) -> Dimension | None:
         assert node.operand is not None
@@ -202,74 +261,6 @@ class Analysis:
         return found
 
 
-class Inference(Analysis):
-    """The analysis of a draft, which also reads the units of equation functions.
-
-    A call of an equation function has the units that its registry entry gives
-    (#309): ``result_units``, or the units of the argument that ``units_from``
-    names, as ``EquationFunction.units`` gives them; a growth profile of an
-    amount per year gives the units of each Period's amount (#500). Model
-    validation does not check these units yet, so a draft infers
-    them only for the values that it does not declare.
-    """
-
-    __slots__ = ()
-
-    def _call(self, node: Expression) -> Dimension | None:
-        call = node.call
-        entry = None if call is None else functions.get(call.function)
-        if call is None or entry is None:
-            return super()._call(node)
-        return self._equation_function(entry, call)
-
-    def _equation_function(
-        self,
-        entry: EquationFunction,
-        call: Call,
-    ) -> Dimension | None:
-        """Return the result of an equation function from the units of its arguments.
-
-        It is a Flow when the entry gives a Flow, or when one of its periodwise
-        parameters takes a Flow. A Flow has the Periods of the argument that
-        ``periods_from`` names, or of its periodwise Flows; a Flow made from
-        amounts has the Periods of the Flow that it defines, which are not
-        known here.
-        """
-        names = [parameter.name for parameter in entry.parameters]
-        given = [
-            *zip(names, call.arguments or (), strict=False),
-            *((item.name, item.expression) for item in call.named_arguments or ()),
-        ]
-        arguments = {name: self.dimension(item) for name, item in given}
-        kind = _RESULTS.get(entry.result, Kind.QUANTITY)
-        if kind is not Kind.QUANTITY:
-            return Dimension(kind=kind)
-        units = entry.units(
-            arguments={
-                name: None if item is None else item.units
-                for name, item in arguments.items()
-            }
-        )
-        if units is None:
-            return None
-        shaping = [
-            arguments.get(name)
-            for name in entry.periodwise
-            if name in given_names(given)
-        ]
-        lifted = [item for item in shaping if _flow(item)]
-        if not lifted and any(item is None for item in shaping):
-            # An unknown argument could be a Flow, so the shape is unknown.
-            return None
-        if entry.result is not DomainKind.FLOW and not lifted:
-            # A scalar result, such as total() or max() of a Flow.
-            return Dimension(kind=Kind.QUANTITY, units=units)
-        if entry.periods_from is not None:
-            lifted = [arguments.get(entry.periods_from)]
-        _, periods = _shape(*lifted)
-        return Dimension(kind=Kind.QUANTITY, units=units, flow=True, periods=periods)
-
-
 def of_value(value: Value, *, units: str | None) -> Dimension | None:
     """Return the Dimension of a Value with these Measure units, or None.
 
@@ -333,8 +324,7 @@ _VISITS: dict[ExpressionKind, _Visit] = {
     ExpressionKind.DATE: lambda analysis, node: DATE,
     ExpressionKind.BOOLEAN: lambda analysis, node: BOOLEAN,
     ExpressionKind.REFERENCE: Analysis._reference,
-    # A call of the method, so that an Inference reads equation functions.
-    ExpressionKind.CALL: lambda analysis, node: analysis._call(node),
+    ExpressionKind.CALL: Analysis._call,
     ExpressionKind.UNARY: Analysis._unary,
     ExpressionKind.BINARY: Analysis._binary,
 }

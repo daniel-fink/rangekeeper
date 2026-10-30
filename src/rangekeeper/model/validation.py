@@ -213,7 +213,8 @@ def equation_unit_issues(
     The two sides of an equality or a bound, and the operands of a sum or a
     difference, must have compatible units (ADR-016). Each issue names the
     equation, the operation that fails and both units. A part whose units are
-    unknown, such as a call of an equation function, is not checked. Run this
+    unknown, such as a selection or a query, is not checked; a call of an
+    equation function has the units of its registry entry. Run this
     after the recorded units are valid.
     """
     analysis = Analysis(

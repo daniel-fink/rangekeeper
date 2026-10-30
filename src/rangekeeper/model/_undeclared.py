@@ -18,8 +18,8 @@ from uuid import UUID
 
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model._dimensions import (
+    Analysis,
     Dimension,
-    Inference,
     Kind,
     Lookup,
     of_value,
@@ -213,7 +213,7 @@ class Undeclared:
             if target in ids
         ]
         found: dict[UUID, Dimension] = {}
-        analysis = Inference(
+        analysis = Analysis(
             units=units,
             lookup=lambda identity: found.get(identity) or lookup(identity),
         )
@@ -227,7 +227,7 @@ class Undeclared:
 
 
 def _step(
-    analysis: Inference,
+    analysis: Analysis,
     definitions: Sequence[tuple[UUID, Expression]],
     found: dict[UUID, Dimension],
 ) -> bool:
