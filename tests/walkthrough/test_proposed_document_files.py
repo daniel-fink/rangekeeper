@@ -8,9 +8,8 @@ Each reads a document of the data package with
 gives a file in a temporary folder, which ``rk.io.save`` writes from the
 documents of the earlier lessons' cells.
 
-The other statements of these cells need other issues: ``rk.market.generate``
-(#299), ``model.summary()`` (#287), rollups (#285), the walkthrough helpers'
-data, and keyed values (#284).
+The other statements of these cells need other issues: ``model.summary()``
+(#287), rollups (#285), the walkthrough helpers' data, and keyed values (#284).
 """
 
 import ast
@@ -107,14 +106,23 @@ def test_lesson_04_cell_4_moves_lesson_03_s_base_case_to_the_new_plan(data):
     assert "rent_growth" not in keys and "exit_cap_rate" in keys
 
 
-def test_lesson_04_cell_9_saves_and_loads_market_paths(tmp_path, monkeypatch):
-    """The first two statements; regenerate needs rk.market.generate (#299)."""
+def test_lesson_04_cell_9_saves_and_loads_the_generated_paths(tmp_path, monkeypatch):
+    """Cells 5 to 9 as written; the helpers only draw, so here they draw nothing."""
     monkeypatch.chdir(tmp_path)
-    paths = histories()
-    code = statements(cells("04_market_futures.md")["9"], 0, 1)
-    exec(code, {"rk": rk, "paths": paths})
-    exec(code, {"rk": rk, "paths": paths})  # the same paths: a cell runs again
-    assert (tmp_path / "paths" / "04_rent_index.json").exists()
+    numbered = cells("04_market_futures.md")
+    namespace: dict[str, object] = {
+        "rk": rk,
+        "date": date,
+        "years": YEARS,
+        "helpers": SimpleNamespace(plot_paths=lambda **_: None),
+    }
+    for key in ("5", "6", "7", "8", "9"):
+        exec(numbered[key], namespace)
+    # The cell runs again: the same paths are in the file already.
+    exec(numbered["9"], namespace)
+    assert (
+        rk.io.load(path=tmp_path / "paths" / "04_rent_index.json") == namespace["paths"]
+    )
 
 
 def test_lesson_05_cells_2_and_3_load_the_plan_the_paths_and_the_base_case(data):
