@@ -282,9 +282,11 @@ show complete calculations and investigations.
 
 ## Movement identity
 
-The [identity contract](identity.md#movement-identity-and-alignment) owns Movement
-UUID retention and creation. Coordinate alignment does not use UUIDs. Clone a
-Flow before placing an independent copy under a second Value.
+The [identity contract](identity.md#one-rule-for-transforms) owns Movement
+UUID retention and creation: a transform keeps the ID of each Movement that it
+selects or converts, and gives a fresh ID to each Movement that it calculates.
+Coordinate alignment does not use UUIDs. Clone a Flow before placing an
+independent copy under a second Value.
 
 ## Alignment and reduction
 

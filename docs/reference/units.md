@@ -78,14 +78,16 @@ that is not finite raises `UnitError`.
 units first. Quantities are not hashable.
 
 `rangekeeper.quantity.isclose(*, actual, expected, tolerance=None, relative=1e-9)`
-compares two Quantities, or two Flows, in the units of `expected`. They are
-close when the difference is at most `tolerance` (a Quantity or its text) or at
-most `relative` times the larger magnitude, as in `math.isclose`. Two Flows must
-have the same coordinates; two unresolved amounts are close.
+compares two Quantities, or two Flows, in the units of `expected`. A Quantity
+can be given as its text, such as `"0 AUD"`. They are close when the difference
+is at most `tolerance` (a Quantity or its text) or at most `relative` times the
+larger magnitude, as in `math.isclose`. Two Flows must have the same
+coordinates; two unresolved amounts are close. A Quantity and a Flow raise
+`TypeError`, and a `relative` outside 0 up to 1 raises `ContractError`.
 
 ```python
-rk.quantity.isclose(actual=irr, expected=rk.Quantity(text="7 % pa"))
-rk.quantity.isclose(actual=a, expected=b, tolerance="1 AUD")
+rk.quantity.isclose(actual=irr, expected="7 % pa")
+rk.quantity.isclose(actual=npv, expected="0 AUD", tolerance="1 AUD")
 ```
 
 ## Errors and suggestions
