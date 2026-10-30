@@ -123,7 +123,7 @@ show the target API in use.
   `Model.create(...)` and `Model.from_data(...)` still take complete records,
   and `model.revise(Update(...))` replaces complete sections. See the
   [Model reference](../reference/model.md).
-- 1.0 target: the function catalogue and Flow equations in text and `rx`,
+- 1.0 target: Flow equations in text and `rx`,
   equation keys and edits of existing declarations.
 
   Gap issues: [#142](https://github.com/daniel-fink/rangekeeper/issues/142),
@@ -132,7 +132,6 @@ show the target API in use.
   [#280](https://github.com/daniel-fink/rangekeeper/issues/280),
   [#283](https://github.com/daniel-fink/rangekeeper/issues/283),
   [#284](https://github.com/daniel-fink/rangekeeper/issues/284),
-  [#278](https://github.com/daniel-fink/rangekeeper/issues/278),
   [#279](https://github.com/daniel-fink/rangekeeper/issues/279).
 
 **Calculate with known data**
@@ -217,7 +216,7 @@ contents are not yet in their 1.0 owner:
 | `profile` | Growth profiles (`Constant`, `Linear`, `Compounding`), distribution profiles (`Uniform`, `SCurve`), the `Profile` Protocol and the `profiles` registry; the Distribution owner (public as `rangekeeper.model.Distribution`). `Flow.from_profile` in `flow` makes the Flow | — |
 | `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
 | `market` | Deterministic kernels (`market.dynamics`), path generation, captured paths, `Market` access and replay | `Dynamics`, `generate` and `Paths` replace the scenario plan ([#298](https://github.com/daniel-fink/rangekeeper/issues/298), [#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Generation, `Market` and replay still import `model`, above `market` |
-| `finance` | Financial valuation: `pv`, `npv`, `irr` and `payment`; the older `financial` module with PV, XNPV, IRR and day counts | `pv`, `npv` and `irr` replace `financial.calculate_*` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
+| `finance` | Financial valuation: `pv`, `npv`, `irr`, `interest` and `payment`; the older `financial` module with PV, XNPV, IRR and day counts | `pv`, `npv` and `irr` replace `financial.calculate_*` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
 | `model` | The Model document, definitions, the system graph and rollups, equations, the equation-function registry, provenance and geometry | — |
 | `expressions` | `rx`, the Python form of equations, written from the equation-function registry | — |
 | `specification` | The Specification document, composition, roles, and rule declarations and their validation | Rule queries over a `Window` replace the rule records ([#300](https://github.com/daniel-fink/rangekeeper/issues/300), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |

@@ -345,7 +345,7 @@ def test_invalid_units_name_the_unit_words():
         ("value = rx", 8, 10, ()),
         ("value = rx()", 8, 10, ()),
         ("value = max(noi, cap_rate)", 8, 11, ("rx.max",)),
-        ("value = noi.cumulatve()", 8, 21, ()),
+        ("value = noi.cumulatve()", 8, 21, ("cumulative",)),
         ("value = noi.totl()", 8, 16, ("total",)),
         ("value = (noi + cap_rate)(1)", 9, 23, ()),
         ("value = noi.a.b", 8, 15, ()),

@@ -6,6 +6,7 @@ same records; and a call evaluated on fixed data equals the value function
 that it mirrors.
 """
 
+import dataclasses
 import random
 from collections.abc import Callable
 from datetime import date
@@ -20,6 +21,7 @@ from rangekeeper.model.expression.catalogue import functions
 from rangekeeper.model.expression.evaluation import evaluate_fixed
 from rangekeeper.schema.enums import DomainKind, Operator
 from rangekeeper.schema.records import Expression
+from rangekeeper.shared.registry import Registry
 
 YEARS = rk.duration.Periods(
     start=date(2027, 1, 1), frequency=rk.duration.Frequency.YEAR, count=3
@@ -55,6 +57,9 @@ def project(draft):
     project.flow(key="cash", units="AUD", periods=YEARS)
     project.flow(key="need", units="AUD", periods=YEARS)
     project.date(key="sale_date")
+    project.value(key="growth", units="% pa")
+    project.value(key="irr", units="% pa")
+    project.flow(key="loan", units="AUD", periods=YEARS)
     return project
 
 
@@ -134,9 +139,72 @@ OPERATORS: list[tuple[str, Callable[..., object]]] = [
         "value = 2 * (cash + need).total()",
         lambda v: v["value"] == 2 * (v["cash"] + v["need"]).total(),
     ),
+    # The catalogue (#278).
+    ("need = cash.cumulative()", lambda v: v["need"] == v["cash"].cumulative()),
+    ("need = cash.diff()", lambda v: v["need"] == v["cash"].diff()),
+    (
+        "need = cash.since(on=sale_date)",
+        lambda v: v["need"] == v["cash"].since(on=v["sale_date"]),
+    ),
+    (
+        "need = cash.until(on=NEVER)",
+        lambda v: v["need"] == v["cash"].until(on=rk.duration.NEVER),
+    ),
+    (
+        "value <= cash.first() + cash.last()",
+        lambda v: v["value"] <= v["cash"].first() + v["cash"].last(),
+    ),
+    (
+        "value = rx.max(0 AUD, cash.max() - cash.min())",
+        lambda v: v["value"] == rx.max("0 AUD", v["cash"].max() - v["cash"].min()),
+    ),
+    (
+        "need = -rx.flow.event(amount=value, on=sale_date)",
+        lambda v: v["need"] == -rx.flow.event(amount=v["value"], on=v["sale_date"]),
+    ),
+    (
+        "value = rx.finance.npv(flow=cash, rate=growth, on=sale_date)",
+        lambda v: (
+            v["value"]
+            == rx.finance.npv(flow=v["cash"], rate=v["growth"], on=v["sale_date"])
+        ),
+    ),
+    (
+        "irr = rx.finance.irr(flow=loan)",
+        lambda v: v["irr"] == rx.finance.irr(flow=v["loan"]),
+    ),
+    (
+        "need = -rx.finance.interest(balance=loan, rate=7 % pa)",
+        lambda v: v["need"] == -rx.finance.interest(balance=v["loan"], rate="7 % pa"),
+    ),
+    (
+        "need = rx.profile.compounding(initial=value, rate=growth)",
+        lambda v: (
+            v["need"] == rx.profile.compounding(initial=v["value"], rate=v["growth"])
+        ),
+    ),
+    (
+        "need = rx.profile.linear(initial=value, rate=2 % pa)",
+        lambda v: v["need"] == rx.profile.linear(initial=v["value"], rate="2 % pa"),
+    ),
+    (
+        "need = rx.profile.constant(initial=value)",
+        lambda v: v["need"] == rx.profile.constant(initial=v["value"]),
+    ),
+    (
+        "need = rx.profile.uniform(total=value)",
+        lambda v: v["need"] == rx.profile.uniform(total=v["value"]),
+    ),
+    (
+        "need = -rx.profile.scurve(total=value)",
+        lambda v: v["need"] == -rx.profile.scurve(total=v["value"]),
+    ),
 ]
-FLOWS = frozenset({"cash", "need"})
+FLOWS = frozenset({"cash", "need", "loan"})
 KEYS = (
+    "growth",
+    "irr",
+    "loan",
     "noi",
     "coverage",
     "debt_service",
@@ -280,6 +348,7 @@ def test_the_draft_adds_the_function_records_that_equations_call(draft, project)
 # A call on fixed data equals its value function.
 
 CASH = rk.flow.Flow(amounts=dict(zip(YEARS, (100, -50, 25), strict=True)), units="AUD")
+LOAN = rk.flow.Flow(amounts=dict(zip(YEARS, (-100, 60, 60), strict=True)), units="AUD")
 NEED = rk.flow.Flow(amounts=dict(zip(YEARS, (-10, 80, 30), strict=True)), units="AUD")
 FIXED = {
     "noi": rk.Quantity(text="5 AUD pa"),
@@ -287,6 +356,9 @@ FIXED = {
     "cash": CASH,
     "need": NEED,
     "sale_date": date(2028, 6, 30),
+    "value": rk.Quantity(text="90 AUD"),
+    "growth": rk.Quantity(text="3 % pa"),
+    "loan": LOAN,
 }
 # Each call in text, and the value function that it mirrors on FIXED.
 MIRRORS: list[tuple[str, Callable[[], object]]] = [
@@ -309,6 +381,69 @@ MIRRORS: list[tuple[str, Callable[[], object]]] = [
     ("cash.shift(by=-1)", lambda: CASH.shift(by=-1)),
     ("(cash + need).total()", lambda: (CASH + NEED).total()),
     ("-cash.total() + 1 AUD", lambda: -CASH.total() + rk.Quantity(text="1 AUD")),
+    # The catalogue (#278).
+    ("cash.cumulative()", lambda: CASH.cumulative()),
+    ("cash.diff()", lambda: CASH.diff()),
+    ("cash.since(on=sale_date)", lambda: CASH.since(on=date(2028, 6, 30))),
+    ("cash.until(on=sale_date)", lambda: CASH.until(on=date(2028, 6, 30))),
+    ("cash.since(on=NEVER)", lambda: CASH.since(on=rk.duration.NEVER)),
+    ("cash.first()", lambda: CASH.first()),
+    ("cash.last()", lambda: CASH.last()),
+    ("cash.min()", lambda: CASH.min()),
+    ("cash.max()", lambda: CASH.max()),
+    (
+        "rx.flow.event(amount=value, on=sale_date)",
+        lambda: rk.flow.Flow(
+            amounts=dict(zip(YEARS, (0, 90, 0), strict=True)), units="AUD"
+        ),
+    ),
+    (
+        "rx.flow.event(amount=value, on=NEVER)",
+        lambda: rk.flow.Flow(
+            amounts=dict(zip(YEARS, (0, 0, 0), strict=True)), units="AUD"
+        ),
+    ),
+    (
+        "rx.finance.npv(flow=cash, rate=growth, on=sale_date)",
+        lambda: rk.finance.npv(flow=CASH, rate="3 % pa", on=date(2028, 6, 30)),
+    ),
+    ("rx.finance.irr(flow=loan)", lambda: rk.finance.irr(flow=LOAN)),
+    (
+        "rx.finance.interest(balance=loan, rate=growth)",
+        lambda: rk.finance.interest(balance=LOAN, rate="3 % pa"),
+    ),
+    (
+        "rx.profile.compounding(initial=value, rate=growth)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Compounding(rate="3 % pa"),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.linear(initial=value, rate=growth)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Linear(rate="3 % pa"), periods=YEARS, initial="90 AUD"
+        ),
+    ),
+    (
+        "rx.profile.constant(initial=value)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Constant(), periods=YEARS, initial="90 AUD"
+        ),
+    ),
+    (
+        "rx.profile.uniform(total=value)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Uniform(), periods=YEARS, total="90 AUD"
+        ),
+    ),
+    (
+        "rx.profile.scurve(total=value)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.SCurve(), periods=YEARS, total="90 AUD"
+        ),
+    ),
 ]
 
 
@@ -316,7 +451,9 @@ MIRRORS: list[tuple[str, Callable[[], object]]] = [
 def test_a_call_on_fixed_data_equals_its_value_function(project, source, mirror):
     term = parsed(project, source)
     values = {project.ref(key=key).id: value for key, value in FIXED.items()}
-    result = evaluate_fixed(expression=term.to_expression(), values=values)
+    result = evaluate_fixed(
+        expression=term.to_expression(), values=values, periods=YEARS
+    )
     assert result == mirror()
 
 
@@ -379,3 +516,137 @@ def test_random_rx_trees_read_back_from_their_text(project):
         assert records(parsed(project, equation.text).to_expression()) == records(
             equation.to_expression()
         )
+
+
+def test_a_flow_made_from_amounts_needs_the_periods_that_it_defines(project):
+    term = parsed(project, "rx.flow.event(amount=value, on=sale_date)")
+    values = {project.ref(key=key).id: value for key, value in FIXED.items()}
+    with pytest.raises(ContractError) as error:
+        evaluate_fixed(expression=term.to_expression(), values=values)
+    assert error.value.code is Code.EQUATION_FUNCTION
+
+
+@pytest.mark.parametrize(
+    ("source", "part", "code"),
+    [
+        (
+            "need = rx.finance.npv(flow=noi, rate=growth, on=sale_date)",
+            "flow=noi",
+            Code.EQUATION_FUNCTION,
+        ),
+        (
+            "need = rx.finance.npv(flow=cash, rate=value, on=sale_date)",
+            "rate=value",
+            Code.UNITS,
+        ),
+        (
+            "need = rx.finance.npv(cash, growth, sale_date)",
+            "rx.finance.npv(cash, growth, sale_date)",
+            Code.EQUATION_FUNCTION,
+        ),
+        (
+            "need = rx.profile.uniform(total=value, length=2 AUD)",
+            "length=2 AUD",
+            Code.UNITS,
+        ),
+        (
+            "need = rx.profile.uniform(total=value, start=noi)",
+            "start=noi",
+            Code.EQUATION_FUNCTION,
+        ),
+        (
+            "need = rx.profile.compound(initial=value, rate=growth)",
+            "rx.profile.compound",
+            Code.EQUATION_FUNCTION,
+        ),
+        (
+            "need = rx.flow.event(amount=value)",
+            "rx.flow.event(amount=value)",
+            Code.EQUATION_FUNCTION,
+        ),
+        (
+            "need = cash.since(sale_date)",
+            "cash.since(sale_date)",
+            Code.EQUATION_FUNCTION,
+        ),
+    ],
+)
+def test_catalogue_calls_are_checked_when_written(project, source, part, code):
+    with pytest.raises(EquationError) as error:
+        project.equations(source)
+    assert error.value.code is code
+    assert error.value.text[error.value.start : error.value.end] == part
+
+
+def test_text_suggests_the_nearest_function(project):
+    with pytest.raises(EquationError) as error:
+        project.equations("need = rx.profile.compound(initial=value, rate=growth)")
+    assert error.value.suggestions[0] == "rx.profile.compounding"
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class Step:
+    """Growth profile: the initial amount, then twice it from the second Period."""
+
+    takes = "initial"
+    start: object = None
+
+    def factors(self, *, periods):
+        return tuple(1.0 if index == 0 else 2.0 for index, _ in enumerate(periods))
+
+
+@pytest.fixture
+def extension(monkeypatch):
+    """Register a profile in copies of the two registries, so no other test sees it.
+
+    The registries have no public way to remove a name, so the fixture
+    replaces their tables for the test.
+    """
+    registry = Registry("profiles", type)
+    for name in rk.profile.profiles.names():
+        registry.register(name=name, implementation=rk.profile.profiles.get(name))
+    registry.register(name="step_test", implementation=Step)
+    monkeypatch.setattr(rk.profile, "profiles", registry)
+    monkeypatch.setattr(functions, "_entries", dict(functions._entries))
+    monkeypatch.setattr(functions, "_ids", dict(functions._ids))
+
+
+def test_a_profile_from_the_extension_point_is_an_equation_function(project, extension):
+    term = rx.profile.step_test(initial=project.ref(key="value"))
+    assert term.text == "rx.profile.step_test(initial=value)"
+    assert parsed(project, term.text).text == term.text
+    values = {project.ref(key="value").id: rk.Quantity(text="90 AUD")}
+    result = evaluate_fixed(
+        expression=term.to_expression(), values=values, periods=YEARS
+    )
+    assert [m.number for m in result.movements] == [90, 180, 180]
+    with pytest.raises(AttributeError):
+        rx.profile.not_a_profile  # noqa: B018
+
+
+def test_the_calls_of_lessons_05_and_07_parse_as_written(draft):
+    """Lesson 05 cell 10 and lesson 07 cell 17c, as equations on their values.
+
+    Cell 17c gives its terms to ``add_to`` (#283); here each term is the
+    right side of an equation.
+    """
+    project = draft.add_entity(code="project", classification="project")
+    for key, units in (("b_land_share", "ratio"), ("land_cost", "AUD")):
+        project.value(key=key, units=units)
+    for key in ("x_cost", "b_site_value"):
+        project.value(key=key, units="AUD")
+    project.value(key="x_income", units="AUD pa")
+    for key in ("b_sale_date", "expansion_date", "x_open"):
+        project.date(key=key)
+    for key in ("rent_index", "b_site_sale", "works", "income"):
+        project.flow(key=key, units="ratio" if key == "rent_index" else "AUD")
+    sources = (
+        "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
+        "b_site_sale = rx.flow.event(amount=b_site_value, on=b_sale_date)",
+        "x_open = expansion_date + 1 year",
+        "works = -rx.profile.uniform(total=x_cost, start=expansion_date, length=1 year)",
+        "income = rx.profile.constant(initial=x_income, start=x_open)",
+    )
+    project.equations(*sources)
+    for source in sources:
+        assert parsed(project, source).text == source

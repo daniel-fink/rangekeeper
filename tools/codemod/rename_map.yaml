@@ -847,9 +847,9 @@ removed:
   - name: rangekeeper.calculations.account
     replacement: >-
       Compose the funding with Flows: a balance is `cumulative()`. Interest is
-      the Model equation `rangekeeper.model.formulation.financial.interest`;
-      `rx.finance.interest` in equation text follows (#255 D2, D23, #278). A
-      how-to recipe follows (#194)
+      `rk.finance.interest(balance=, rate=)` on known values, and
+      `rx.finance.interest(balance=, rate=)` in an equation (#255 D2, D23,
+      #278). A how-to recipe follows (#194)
     status: agreed
     source: "#255 D2"
   - name: rangekeeper.model.formulation.account.schedule

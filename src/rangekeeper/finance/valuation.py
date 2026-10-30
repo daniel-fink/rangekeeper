@@ -1,4 +1,4 @@
-"""Present value, NPV, IRR and loan payments on known amounts, with units.
+"""Present value, NPV, IRR, interest and loan payments on known amounts, with units.
 
 Rates are effective rates per year, such as ``"7 % pa"``, as Quantities or
 their text. Each amount is discounted from its date: the recorded date of a
@@ -16,7 +16,12 @@ from collections.abc import Sequence
 from datetime import date
 from uuid import uuid4
 
-from rangekeeper.duration.calendar import DayCount, Frequency, require_date
+from rangekeeper.duration.calendar import (
+    DayCount,
+    Frequency,
+    require_date,
+    year_fraction,
+)
 from rangekeeper.duration.period import PeriodTiming, steps
 from rangekeeper.flow import Flow
 from rangekeeper.money import is_currency
@@ -164,6 +169,46 @@ def irr(
     if abs(residual) > 1e-8 * max(1.0, math.fsum(abs(a) for a in amounts)):
         raise NumericalError("IRR residual exceeds the acceptance tolerance")
     return Quantity(magnitude=100 * root, units="% pa")
+
+
+def interest(
+    *,
+    balance: Flow,
+    rate: Quantity | str,
+    day_count: DayCount = DayCount.ACTUAL_ACTUAL,
+) -> Flow:
+    """Return the interest on a balance in each Period, on the same Periods.
+
+    The balance of each Period earns interest over that Period at an effective
+    rate per year, as ``pv`` and ``npv`` discount: ``balance * ((1 + rate) **
+    t - 1)``, where ``t`` is the Period's length in years by ``day_count``. A
+    yearly Period at ``"6 % pa"`` earns 6 % of its balance. The interest has
+    the units and the sign of the balance. A dated Movement has no length,
+    so a Flow over dates raises ContractError; an unresolved balance raises
+    NumericalError.
+    """
+    if not isinstance(balance, Flow):
+        raise TypeError("balance must be a Flow")
+    if not isinstance(day_count, DayCount):
+        raise TypeError("day_count must be a DayCount")
+    periods = [movement.period for movement in balance.movements]
+    if any(period is None for period in periods):
+        raise ContractError("interest needs a balance over Periods, not over dates")
+    balance.require_resolved()
+    effective = _rate(rate)
+    values = [
+        movement.number
+        * ((1 + effective) ** year_fraction(p.start, p.end, convention=day_count) - 1)
+        for movement, p in zip(balance.movements, periods, strict=True)
+        if p is not None
+    ]
+    if any(not math.isfinite(value) for value in values):
+        raise NumericalError("interest produced a non-finite amount")
+    return Flow.from_periods(
+        periods=[p for p in periods if p is not None],
+        magnitudes=values,
+        units=balance.units,
+    )
 
 
 def payment(

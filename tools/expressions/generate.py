@@ -22,6 +22,7 @@ writes nothing and fails when a file differs from what the registry gives:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import textwrap
 from collections import defaultdict
@@ -49,6 +50,7 @@ tools/expressions/generate.py writes this module from the equation-function
 registry; do not edit it by hand.
 """
 '''
+EXTENSION = 'def __getattr__(name: str) -> Callable[..., Term]:\n    """Return the equation function of a profile that an extension registers.\n\n    A profile in ``rangekeeper.profile.profiles`` is an equation function under\n    its name (D12). Its arguments are its amount and its options, by name.\n    """\n    try:\n        function = functions.function(name=f"profile.{name}")\n    except ContractError as error:\n        raise AttributeError(name) from error\n\n    def build(**arguments: Operand) -> Term:\n        return call(function.code, **arguments)\n\n    build.__name__ = name\n    build.__doc__ = function.summary\n    return build\n'
 NAMESPACES = {
     "profile": "Profiles in equations: a Flow made by a growth or a distribution profile.",
     "flow": "Flows made from amounts in equations.",
@@ -113,11 +115,7 @@ def _docstring(function: EquationFunction, *, indent: str) -> str:
         lines.append(f"``{parameter.name}``: {parameter.description}")
     if shown:
         lines.append("")
-    lines.append(
-        f"Mirrors ``{function.mirrors}``."
-        if function.mirrors.startswith("rangekeeper")
-        else f"Mirrors {function.mirrors}."
-    )
+    lines.append(f"Mirrors {_names(function.mirrors, quote='``')}.")
     body = "\n".join(lines).strip()
     wrapped = []
     for line in body.split("\n"):
@@ -147,7 +145,11 @@ def _method_source(function: EquationFunction) -> str:
 
 
 def _module(
-    doc: str, entries: list[tuple[str, EquationFunction]], *, root: bool
+    doc: str,
+    entries: list[tuple[str, EquationFunction]],
+    *,
+    root: bool,
+    namespace: str = "",
 ) -> str:
     uses_given = any(not p.required for _, f in entries for p in f.parameters)
     imports = ["call"]
@@ -161,7 +163,11 @@ def _module(
             "    Availability,\n    EquationFunction,\n    EvaluationStage,\n"
             "    Form,\n    FunctionParameter,\n)\n"
         )
+    if root or namespace == "profile":
         lines.append("from rangekeeper.model.expression.catalogue import functions\n")
+    if namespace == "profile":
+        lines.append("from collections.abc import Callable\n")
+        lines.append("from rangekeeper.shared.errors import ContractError\n")
     lines.append(
         "from rangekeeper.model.expression.terms import Operand, Term, "
         + ", ".join(imports)
@@ -174,6 +180,8 @@ def _module(
     lines.append("\n")
     for name, function in sorted(entries, key=lambda item: item[0]):
         lines.append("\n" + _function_source(function, name=name) + "\n")
+    if namespace == "profile":
+        lines.append("\n" + EXTENSION + "\n")
     exported = list(names)
     if root:
         exported += [
@@ -216,7 +224,9 @@ def package() -> dict[Path, str]:
     }
     for namespace, entries in grouped.items():
         doc = NAMESPACES.get(namespace, f"Equation functions in ``rx.{namespace}``.")
-        sources[PACKAGE / f"{namespace}.py"] = _module(doc, entries, root=False)
+        sources[PACKAGE / f"{namespace}.py"] = _module(
+            doc, entries, root=False, namespace=namespace
+        )
     return sources
 
 
@@ -255,9 +265,12 @@ def _spelled(function: EquationFunction) -> str:
 
 
 def _mirrors(function: EquationFunction) -> str:
-    if function.mirrors.startswith("rangekeeper"):
-        return f"`{function.mirrors}`"
-    return function.mirrors
+    return _names(function.mirrors, quote="`")
+
+
+def _names(text: str, *, quote: str) -> str:
+    """Quote each dotted name of the package in ``text`` as code."""
+    return re.sub(r"(rangekeeper(?:\.\w+)+)", rf"{quote}\1{quote}", text)
 
 
 def _between(text: str, markers: tuple[str, str], body: str) -> str:

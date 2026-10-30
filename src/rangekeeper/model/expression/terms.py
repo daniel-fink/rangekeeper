@@ -202,6 +202,48 @@ class Symbolic:
         """
         return call("Flow.at", self, on=on)
 
+    def cumulative(self) -> "Term":
+        """Return the running totals of a Flow.
+
+        Mirrors ``rangekeeper.flow.Flow.cumulative``.
+        """
+        return call("Flow.cumulative", self)
+
+    def diff(self) -> "Term":
+        """Return each amount less the amount before it.
+
+        Mirrors ``rangekeeper.flow.Flow.diff``.
+        """
+        return call("Flow.diff", self)
+
+    def first(self) -> "Term":
+        """Return the amount of the first period.
+
+        Mirrors ``rangekeeper.flow.Flow.first``.
+        """
+        return call("Flow.first", self)
+
+    def last(self) -> "Term":
+        """Return the amount of the last period.
+
+        Mirrors ``rangekeeper.flow.Flow.last``.
+        """
+        return call("Flow.last", self)
+
+    def max(self) -> "Term":
+        """Return the largest amount of a Flow.
+
+        Mirrors ``rangekeeper.flow.Flow.max``.
+        """
+        return call("Flow.max", self)
+
+    def min(self) -> "Term":
+        """Return the smallest amount of a Flow.
+
+        Mirrors ``rangekeeper.flow.Flow.min``.
+        """
+        return call("Flow.min", self)
+
     def shift(self, *, by: "Operand") -> "Term":
         """Return each period's amount from the period `by` periods away.
 
@@ -212,12 +254,30 @@ class Symbolic:
         """
         return call("Flow.shift", self, by=by)
 
+    def since(self, *, on: "Operand") -> "Term":
+        """Return the same periods, with zero before a date.
+
+        ``on``: The date, or NEVER.
+
+        Mirrors ``rangekeeper.flow.Flow.since``.
+        """
+        return call("Flow.since", self, on=on)
+
     def total(self) -> "Term":
         """Return the sum of the amounts of a Flow.
 
         Mirrors ``rangekeeper.flow.Flow.total``.
         """
         return call("Flow.total", self)
+
+    def until(self, *, on: "Operand") -> "Term":
+        """Return the same periods, with zero after a date.
+
+        ``on``: The date, or NEVER.
+
+        Mirrors ``rangekeeper.flow.Flow.until``.
+        """
+        return call("Flow.until", self, on=on)
 
     # END GENERATED METHODS
 
@@ -543,7 +603,7 @@ def _check(
 ) -> None:
     """Require an argument of the kind and the units that its parameter takes."""
     accepted = _ACCEPTS.get(parameter.kind, frozenset())
-    if function.lifts and parameter.kind in (DomainKind.QUANTITY, DomainKind.NUMBER):
+    if parameter.name in function.periodwise:
         accepted = accepted | {DomainKind.FLOW}
     if term._kind is not None and term._kind not in accepted:
         subject = function.form is Form.METHOD and parameter is function.parameters[0]
@@ -588,10 +648,10 @@ def _leading(
 def _call_kind(
     function: EquationFunction, bound: Mapping[str, Term]
 ) -> DomainKind | None:
-    lifted = function.lifts and any(
-        bound[p.name]._kind is DomainKind.FLOW
-        for p in function.parameters
-        if p.name in bound and p.kind in (DomainKind.QUANTITY, DomainKind.NUMBER)
+    lifted = any(
+        bound[name]._kind is DomainKind.FLOW
+        for name in function.periodwise
+        if name in bound
     )
     return DomainKind.FLOW if lifted else function.result
 

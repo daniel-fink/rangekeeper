@@ -24,6 +24,8 @@ from rangekeeper.model.expression.functions import (
 )
 from rangekeeper.model.expression.terms import Operand, Term, call
 
+from . import finance, flow, profile
+
 
 def max(left: Operand, right: Operand) -> Term:
     """Return the larger of two values, period by period for Flows.
@@ -46,4 +48,7 @@ __all__ = [
     "Operand",
     "Term",
     "functions",
+    "finance",
+    "flow",
+    "profile",
 ]
