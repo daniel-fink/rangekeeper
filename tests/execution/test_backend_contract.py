@@ -146,6 +146,7 @@ def no_process(monkeypatch):
         raise AssertionError("the backend started a process")
 
     monkeypatch.setattr(subprocess, "run", forbidden)
+    monkeypatch.setattr(subprocess, "Popen", forbidden)
 
 
 def test_the_highs_iteration_clamp_lives_in_the_backend(monkeypatch):

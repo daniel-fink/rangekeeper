@@ -1,6 +1,6 @@
 # ADR-013: Execution pipeline and extension points
 
-Status: accepted for 1.0; extension points implemented in 1.0.0a2 (#131); typed stages, `ExecutionConfig`, `solve`, `execute`, the backend contract, validate-once and the status tables implemented (#125, #128, #126, #129, #132, #134); `Outcome` reading implemented (#127); the reusable worker pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; extension points implemented in 1.0.0a2 (#131); typed stages, `ExecutionConfig`, `solve`, `execute`, the backend contract, validate-once and the status tables implemented (#125, #128, #126, #129, #132, #134); `Outcome` reading implemented (#127); the reusable isolated worker, sparse rows and the fingerprint cache of each process implemented (#130). Recorded: 2026-10-26.
 
 ## Problem
 

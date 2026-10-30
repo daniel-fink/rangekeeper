@@ -221,7 +221,6 @@ known-first-party = ["rangekeeper", "rangekeeper_examples"]
 # (tools/ci/check_baseline.py). When you fix a hotspot, remove its codes here.
 # B023: nested helpers run only inside the loop iteration that defines them.
 "src/rangekeeper/execution/attempt.py" = ["PLR0913"]
-"src/rangekeeper/execution/backends/_worker.py" = ["PLC0415", "ANN001", "ANN202"]
 "src/rangekeeper/execution/compiler.py" = ["C901", "PLR0911", "PLR0912"]
 "src/rangekeeper/execution/planning.py" = ["C901"]
 "src/rangekeeper/execution/preparation.py" = ["C901", "PLC0415"]

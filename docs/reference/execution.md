@@ -11,10 +11,10 @@ finalized Runs. LinkML remains the field authority.
 
 Install the `execution` extra; YAML fixtures also need the `yaml` extra. See the
 [installation guide](../guides/installation.md). Importing `rangekeeper` or
-`rangekeeper.execution` does not load Pyomo or HiGHS. They load in the solve
-worker. `pyproject.toml` declares the supported version ranges. The worker does
-not refuse other versions; the Run evidence records the Pyomo and HiGHS versions
-that it found.
+`rangekeeper.execution` does not load Pyomo or HiGHS. They load in the
+[solve worker](#solve-worker). `pyproject.toml` declares the supported version
+ranges. The worker does not refuse other versions; the Run evidence records the
+Pyomo and HiGHS versions that it found.
 
 | Function | Writes | Returns |
 | --- | --- | --- |
@@ -335,7 +335,7 @@ time limit has passed. The stages call it between steps.
 | `execution/piecewise.py` | Piecewise equations: find the Model's `rx.max` and `rx.min` Functions, read the active side of each call at given values, and write the equations of a set of sides and the bounds that keep them active. It solves nothing. |
 | `execution/analysis.py` | Rank and free-variable analysis of the rows, in pure Python. |
 | `execution/backends/base.py` | Stage 5: the narrow problem and result protocol; a backend candidate is a claim that waits for verification. |
-| `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
+| `execution/backends/pyomo.py`, `_process.py`, `_worker.py` | The parent deadline, the [solve worker](#solve-worker) of the session and its private protocol of sparse rows; the worker builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
 | `execution/publication.py` | Stage 6: construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/acceptance.py` | Stage 7: check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
@@ -543,6 +543,35 @@ and each equation over dates again, exactly. `outcome["a_open"]` gives a date, o
 starts on a date Value, needs the equation functions in the solve
 ([#276](https://github.com/daniel-fink/rangekeeper/issues/276)).
 
+## Solve worker
+
+The `pyomo-highs` backend solves in a worker process, so that a stalled or
+failed native solver cannot stop the caller
+([ADR-013](../decisions/013-execution-and-extensions.md#worker-process)).
+
+- **One worker for each session.** The solves of one Python process reuse one
+  worker. It starts at the first solve and closes at interpreter exit. Each
+  `PyomoHighs` uses it. Each solve builds a new Pyomo model and a new HiGHS
+  solver in it. So the evidence and the result of a solve are the same from a
+  new or a reused worker, and they do not depend on the solves before it. Only
+  the timings change. Solves from two threads at the same time use two
+  workers; one of them stays for the next solve.
+- **Isolated mode.** The worker runs as `python -I` with the caller's
+  interpreter. It reads no `PYTHON*` environment variable. A module in the
+  current folder or on `PYTHONPATH` cannot replace one of its imports. It reads
+  the user site directory only when the caller reads it. Install the `execution`
+  extra in the environment of that interpreter.
+- **Sparse rows.** Only numbers cross the process boundary: the size of the
+  problem and, for each scaled row, the index and value of each nonzero
+  coefficient, the constant and the relation. The candidate comes back as one
+  value for each variable.
+- **Failures.** A solve that passes its deadline kills and reaps its worker; it
+  is `LIMITED`, with `termination_condition: worker_deadline` in its evidence. A
+  worker that ends without a response gives a `numerical_failure` diagnostic
+  with its exit code and the end of its stderr. After any failure or
+  interruption of a solve, the next solve starts a new worker. A worker that
+  ended while it waited is replaced, and the next solve does not fail.
+
 ## Settings, limits and conclusions
 
 - Default limits are **30 seconds**, **100,000 simplex iterations**, **10,000 symbols**
@@ -553,9 +582,9 @@ starts on a date Value, needs the equation functions in the solve
   are separate. The `pyomo-highs` backend clamps a request above HiGHS's integer
   maximum, 2147483647, with a `settings_adjusted` diagnostic, and records the
   clamped value in the effective Runtime Settings.
-- `time_limit` supplies the scalar-attempt preparation/solver budget. The child
+- `time_limit` supplies the scalar-attempt preparation/solver budget. The worker
   receives the remaining time after preparation; the parent kills and reaps a worker
-  that exceeds it, including worker startup/imports. Reference preflight, document
+  that exceeds it, including the startup and imports of a new worker. Reference preflight, document
   construction/validation, independent acceptance and persistence are synchronous;
   there is no hard deadline on the complete API call. Large expression trees can
   make structural validation expensive before a worker starts.
@@ -684,7 +713,10 @@ contracts. See [verification](../contributing/verification.md) for current check
 Each manifest includes its semantic Python sources, packaged schema resources,
 and relevant library versions. The sources are the static import closure of the
 role's entry modules in `rangekeeper`: `shared.fingerprints.import_closure` reads
-the import statements with `ast` and does not import the modules. Shared
+the import statements with `ast` and does not import the modules. Each process
+caches the closure of each role: a change to the size or the modification time
+of one of its files calculates it again. Each attempt reads the sources again,
+so its fingerprint follows each change to the code. Shared
 arithmetic changes alter both identities. Comments and docstrings do not. A
 missing entry or imported module fails explicitly.
 Each Run with a Runtime also records the numerical convention for currency
