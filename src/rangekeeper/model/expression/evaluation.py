@@ -14,6 +14,7 @@ from uuid import UUID
 
 from rangekeeper.duration import Period
 from rangekeeper.duration.dates import NEVER, DateValue, order, shift
+from rangekeeper.flow import Flow
 from rangekeeper.model.expression.catalogue import functions, periodwise
 from rangekeeper.model.expression.functions import Content
 from rangekeeper.quantity import Quantity, UnitSystem
@@ -227,11 +228,14 @@ def _fixed_unary(
 def _fixed_binary(
     node: Expression, values: Mapping[UUID, Content], periods: Sequence[Period] | None
 ) -> Content:
+    operands = _required(node.operands, node)
+    relation = _required(node.operator, node)
+    if relation in _ORDERED and periods is None:
+        periods = _defined_periods(operands, values)
     left, right = (
         evaluate_fixed(expression=item, values=values, periods=periods)
-        for item in _required(node.operands, node)
+        for item in operands
     )
-    relation = _required(node.operator, node)
     if relation in (Operator.LOGICAL_AND, Operator.LOGICAL_OR):
         both = (_boolean(left), _boolean(right))
         return all(both) if relation is Operator.LOGICAL_AND else any(both)
@@ -295,6 +299,23 @@ def _holds(relation: Operator, left: Content, right: Content) -> bool:
     if isinstance(outcome, Quantity):
         return bool(outcome.magnitude)
     return all(movement.magnitude for movement in outcome.movements)
+
+
+def _defined_periods(
+    operands: Sequence[Expression], values: Mapping[UUID, Content]
+) -> Sequence[Period] | None:
+    """Return the Periods of the Flow that an equation defines, if a side names one.
+
+    A Flow made from amounts in the equation takes these Periods (#279).
+    """
+    for operand in operands:
+        target = operand.target
+        value = None if target is None else values.get(target.target)
+        if isinstance(value, Flow):
+            periods = [m.period for m in value.movements if m.period is not None]
+            if periods and len(periods) == len(value.movements):
+                return periods
+    return None
 
 
 def _is_date_value(value: object) -> bool:

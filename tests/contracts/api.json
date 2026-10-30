@@ -984,7 +984,7 @@
   "EquationFunction": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None",
+    "__init__": "method (self, *, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, periods_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None",
     "code": "property",
     "evaluate": "method (self, *, arguments: collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], periods: collections.abc.Sequence[rangekeeper.duration.period.Period] | None = None) -> rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool",
     "id": "property",
@@ -993,7 +993,7 @@
     "spelling": "property"
    },
    "module": "rangekeeper.model.expression.functions",
-   "signature": "(*, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None"
+   "signature": "(*, name: str, form: rangekeeper.model.expression.functions.Form, summary: str, parameters: tuple[rangekeeper.model.expression.functions.FunctionParameter, ...], result: rangekeeper.schema.enums.DomainKind, stage: rangekeeper.model.expression.functions.EvaluationStage, availability: rangekeeper.model.expression.functions.Availability, mirrors: str, unit_rule: str, evaluator: collections.abc.Callable[[collections.abc.Mapping[str, rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], collections.abc.Sequence[rangekeeper.duration.period.Period] | None], rangekeeper.quantity.Quantity | rangekeeper.flow.flow.Flow | datetime.date | rangekeeper.schema.enums.Never | bool], result_units: str | None = None, units_from: str | None = None, periods_from: str | None = None, periodwise: tuple[str, ...] = tuple(), version: str = '1') -> None"
   },
   "EvaluationStage": {
    "kind": "enum",
@@ -1036,6 +1036,7 @@
     "last": "method (self) -> Term",
     "max": "method (self) -> Term",
     "min": "method (self) -> Term",
+    "periods": "property",
     "shift": "method (self, *, by: Operand) -> Term",
     "since": "method (self, *, on: Operand) -> Term",
     "text": "property",

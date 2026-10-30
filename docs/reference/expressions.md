@@ -144,9 +144,40 @@ makes a Flow from amounts, a profile or `rx.flow.event`, makes it over the
 Periods of the Flow that the equation defines, which is declared with its
 Periods. Each profile of `rangekeeper.profile`, also one that an extension
 registers, is an equation function under its name in lower case:
-`rk.profile.Compounding` is `rx.profile.compounding`. Flow-valued equations are
-[#279](https://github.com/daniel-fink/rangekeeper/issues/279), and keyed members
-such as `rent[use]` are [#284](https://github.com/daniel-fink/rangekeeper/issues/284).
+`rk.profile.Compounding` is `rx.profile.compounding`. Keyed members such as
+`rent[use]` are [#284](https://github.com/daniel-fink/rangekeeper/issues/284).
+
+**Flow-valued equations.** An equation between Flows applies period by period
+([D32](../../examples/walkthrough/proposed/README.md#decisions), G18):
+
+```python
+project.flow(key="land", units="AUD", periods=years)
+project.equations(
+    "land = -rx.flow.event(amount=land_cost, on=start_date)",
+    "works = shared_works + a_works + b_works",
+    "funding_need = -(net_cash_flow + loan_interest).cumulative()",
+    "loan_principal = rx.max(0 AUD, funding_need - equity)",
+)
+```
+
+- Arithmetic on Flows gives a Flow, and a value applies to every period:
+  `cash * rate - fees`. A comparison of Flows holds when it holds in every
+  period.
+- A Flow takes its Periods from its declaration, `flow(key=, units=,
+  periods=)`, or from its operands. Two Flows whose declarations give other
+  Periods do not combine: the equation raises `EquationError` with the code
+  `ALIGNMENT_DIFFER`.
+- A Flow made from amounts, by a profile or `rx.flow.event`, takes the Periods
+  of the Flow that its equation defines. That Flow must be declared with its
+  Periods (D44); otherwise the equation raises `EquationError` with the code
+  `EQUATION_FUNCTION`.
+- A Flow method keeps the Periods of its Flow, and a periodwise function, such
+  as `rx.max`, the Periods of its Flow arguments.
+
+`commit()` checks the domains again: a Flow combines only with a Flow or a
+numerical value, so a Flow plus a date, or a Flow as a condition of `and`, does
+not commit. Inferring the Periods of a Flow that is not declared is
+[#282](https://github.com/daniel-fink/rangekeeper/issues/282).
 
 A call is a `call` Expression of the function's Function record
 ([functions and domains](#functions-and-domains)). An argument that a call can
@@ -175,9 +206,10 @@ Value with key 'work_cost' not found in Entity project; nearest: works_cost, tot
 | `UNITS` | The units of a literal are not valid, or an argument has units of another dimension than its parameter, such as a rate in `AUD`. The error marks the unit words or the argument |
 | `EQUATION_FUNCTION` | An unknown function or method, or a member of a value. A call with an unknown or a missing argument, an argument given twice or by position where only a name is accepted, or an argument of the wrong kind, such as a Flow where a date is expected. The error marks the call or the argument; `suggestions` gives the nearest names |
 | `PREDICATE` | The text is not Boolean, for example `total_cost + 1 AUD` |
+| `ALIGNMENT_DIFFER` | Two Flows over other Periods in one operation |
 
 `commit()` then validates the domains of every expression with the revision,
-for example a date compared with an amount. Dimensional checks of equations are
+for example a date compared with an amount, or a Flow plus a date. Dimensional checks of equations are
 [#151](https://github.com/daniel-fink/rangekeeper/issues/151).
 
 ## The Python form: rx
@@ -197,7 +229,7 @@ coverage = project.ref(key="coverage")
 debt_service = project.ref(key="debt_service")
 equation = noi == coverage * debt_service
 assert equation.text == "noi = coverage * debt_service"
-project.equations(equation, rx.max(noi, "0 AUD") >= debt_service)
+project.equations(equation, rx.max(noi, "0 AUD pa") >= debt_service)
 ```
 
 | Python | Equation text |
@@ -211,7 +243,8 @@ project.equations(equation, rx.max(noi, "0 AUD") >= debt_service)
 
 An operator or a function makes a `Term`. `term.text` is its equation text,
 with each value written by its key; it reads back to the same records.
-`term.kind` and `term.units` give what it is, when the declarations give them.
+`term.kind`, `term.units` and `term.periods` give what it is, when the
+declarations give them.
 `==` on handles makes an equation, so compare handles by `id`; a Term has no
 truth value, so `if` on a Term raises `TypeError`. A call is checked when it is
 written, with the rules of equation text; an error is a `ContractError` with

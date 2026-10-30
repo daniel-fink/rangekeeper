@@ -6,6 +6,7 @@ from types import MappingProxyType
 from uuid import UUID
 
 from rangekeeper.model._scope import Scope, resolve_reference
+from rangekeeper.model.expression.catalogue import functions as equation_functions
 from rangekeeper.model.expression.domains import (
     DomainCompatibility,
     compare_domains,
@@ -177,37 +178,46 @@ def _infer_expression_domain(node, seen, *, scope: Scope, analysis, path) -> dic
             base, index=index_domain, literal=literal, scope=scope
         )
     if kind == "call":
-        call = node["call"]
-        require(UUID(call["function"]) in scope.functions, "unknown Function")
-        function = scope.functions[UUID(call["function"])]
-        parameters = function.get("parameters") or []
-        bound = bind_arguments(call, function)
-        for parameter in parameters:
-            name = parameter["name"]
-            require(
-                name in bound or not parameter["required"],
-                "missing required argument",
-            )
-            if name in bound:
-                actual = _analyze_node(
-                    bound[name][0],
-                    seen,
-                    scope=scope,
-                    analysis=analysis,
-                    path=path + "/call" + bound[name][1],
-                )
-                comparison = compare_domains(actual, parameter["domain"], scope=scope)
-                require(
-                    comparison is DomainCompatibility.COMPATIBLE,
-                    (
-                        f"argument domain not established: {name}"
-                        if comparison is DomainCompatibility.UNPROVEN
-                        else f"argument domain mismatch: {name}"
-                    ),
-                    path=path + "/call" + bound[name][1],
-                )
-        return function["result"]
+        return _infer_call_domain(
+            node["call"], seen, scope=scope, analysis=analysis, path=path
+        )
     raise ContractError(f"unsupported expression kind: {kind}")
+
+
+def _infer_call_domain(call, seen, *, scope: Scope, analysis, path: str) -> dict:
+    """Check the arguments of a call against its Function, and return its result.
+
+    A periodwise parameter of an equation function takes a Flow, and the call
+    then gives a Flow, period by period (#279).
+    """
+    require(UUID(call["function"]) in scope.functions, "unknown Function")
+    function = scope.functions[UUID(call["function"])]
+    entry = equation_functions.get(UUID(call["function"]))
+    periodwise = frozenset(() if entry is None else entry.periodwise)
+    bound = bind_arguments(call, function)
+    lifted = False
+    for parameter in function.get("parameters") or []:
+        name = parameter["name"]
+        if name not in bound:
+            continue
+        where = path + "/call" + bound[name][1]
+        actual = _analyze_node(
+            bound[name][0], seen, scope=scope, analysis=analysis, path=where
+        )
+        if name in periodwise and actual.get("kind") == "flow":
+            lifted = True
+            continue
+        comparison = compare_domains(actual, parameter["domain"], scope=scope)
+        require(
+            comparison is DomainCompatibility.COMPATIBLE,
+            (
+                f"argument domain not established: {name}"
+                if comparison is DomainCompatibility.UNPROVEN
+                else f"argument domain mismatch: {name}"
+            ),
+            path=where,
+        )
+    return dict(kind="flow") if lifted else function["result"]
 
 
 def _require_constraint_identities(constraints, *, scope: Scope) -> set[UUID]:

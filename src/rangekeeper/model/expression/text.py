@@ -111,11 +111,23 @@ class _Reader:
             case Call():
                 return self._call(node)
             case Unary():
-                return terms.unary(node.operator, self.build(node.operand))
+                return self._operation(node, self.build(node.operand))
             case Binary():
-                left, right = self.build(node.left), self.build(node.right)
-                return terms.binary(node.operator, left, right)
+                return self._operation(
+                    node, self.build(node.left), self.build(node.right)
+                )
         raise TypeError(f"unknown syntax node {node!r}")
+
+    def _operation(self, node: Unary | Binary, *operands: Term) -> Term:
+        """Return the Term of an operator; a failure marks the operation."""
+        try:
+            if isinstance(node, Unary):
+                return terms.unary(node.operator, *operands)
+            return terms.binary(node.operator, *operands)
+        except ContractError as error:
+            raise self._error(
+                str(error), code=error.code or Code.EQUATION_SYNTAX, node=node
+            ) from error
 
     def _literal(self, node: Literal) -> Term:
         units = node.units or "dimensionless"

@@ -272,6 +272,7 @@ for _function in (
         availability=Availability.SHIFTED,
         mirrors="rangekeeper.flow.Flow.shift",
         units_from="flow",
+        periods_from="flow",
         unit_rule="The result has the units of the Flow.",
         evaluator=_shift,
     ),
@@ -371,6 +372,7 @@ for _name, _summary, _result, _stage, _availability in _PLAIN:
             unit_rule="The result has the units of the Flow.",
             evaluator=_plain(_name),
             units_from="flow",
+            periods_from="flow",
         )
     )
 for _name, _summary, _evaluator in (
@@ -390,6 +392,7 @@ for _name, _summary, _evaluator in (
             unit_rule="The result has the units of the Flow.",
             evaluator=_evaluator,
             units_from="flow",
+            periods_from="flow",
         )
     )
 
@@ -551,6 +554,7 @@ for _function in (
         unit_rule="The result has the units of the balance.",
         evaluator=_interest,
         units_from="balance",
+        periods_from="balance",
     ),
 ):
     functions.register(_function)

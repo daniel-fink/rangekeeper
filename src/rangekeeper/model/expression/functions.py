@@ -125,7 +125,9 @@ class EquationFunction:
     same result on fixed data, such as ``rangekeeper.finance.npv``.
     ``result_units`` are the units of every result, such as ``"% pa"``;
     otherwise ``units_from`` names the parameter whose units the result has,
-    when it has them.
+    when it has them. A Flow result has the Periods of the parameter that
+    ``periods_from`` names, or of its periodwise Flows; a function with neither
+    makes a Flow from amounts, over the Periods of the Flow that it defines.
     """
 
     name: str
@@ -140,6 +142,7 @@ class EquationFunction:
     evaluator: Evaluator = field(repr=False, compare=False)
     result_units: str | None = None
     units_from: str | None = None
+    periods_from: str | None = None
     periodwise: tuple[str, ...] = ()
     version: str = "1"
 

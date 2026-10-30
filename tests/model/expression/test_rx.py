@@ -57,6 +57,7 @@ def project(draft):
     project.flow(key="cash", units="AUD", periods=YEARS)
     project.flow(key="need", units="AUD", periods=YEARS)
     project.date(key="sale_date")
+    project.date(key="open")
     project.value(key="growth", units="% pa")
     project.value(key="irr", units="% pa")
     project.flow(key="loan", units="AUD", periods=YEARS)
@@ -204,7 +205,6 @@ OPERATORS: list[tuple[str, Callable[..., object]]] = [
         lambda v: v["need"] == -rx.profile.scurve(total=v["value"]),
     ),
 ]
-FLOWS = frozenset({"cash", "need", "loan"})
 KEYS = (
     "growth",
     "irr",
@@ -230,10 +230,8 @@ def test_text_and_rx_make_identical_records_and_text(draft, project, source, bui
         parsed(project, source).to_expression()
     )
     project.equations(source, term)
-    if FLOWS.isdisjoint(source.replace("(", " ").replace(".", " ").split()):
-        # Flow-valued equations commit with #279.
-        from_text, from_rx = committed(draft)
-        assert records(from_text) == records(from_rx)
+    from_text, from_rx = committed(draft)
+    assert records(from_text) == records(from_rx)
 
 
 def test_each_function_and_method_is_in_the_equivalence_tests():
@@ -360,6 +358,7 @@ FIXED = {
     "cash": CASH,
     "need": NEED,
     "sale_date": date(2028, 6, 30),
+    "open": date(2028, 1, 1),
     "value": rk.Quantity(text="90 AUD"),
     "growth": rk.Quantity(text="3 % pa"),
     "loan": LOAN,
@@ -453,6 +452,61 @@ MIRRORS: list[tuple[str, Callable[[], object]]] = [
         "rx.profile.scurve(total=value)",
         lambda: rk.flow.Flow.from_profile(
             profile=rk.profile.SCurve(), periods=YEARS, total="90 AUD"
+        ),
+    ),
+    # The options of the profiles (#303, #484).
+    (
+        "rx.profile.compounding(initial=value, rate=growth, start=open)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Compounding(rate="3 % pa", start=date(2028, 1, 1)),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.compounding(initial=value, rate=growth, start=open + 1 year,"
+        " every=2 years, base=open)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Compounding(
+                rate="3 % pa",
+                start=date(2029, 1, 1),
+                every="2 years",
+                base=date(2028, 1, 1),
+            ),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.linear(initial=value, rate=growth, base=open)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Linear(rate="3 % pa", base=date(2028, 1, 1)),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.constant(initial=value, start=NEVER)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Constant(start=rk.duration.NEVER),
+            periods=YEARS,
+            initial="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.uniform(total=value, start=open, length=2 years)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.Uniform(start=date(2028, 1, 1), length="2 years"),
+            periods=YEARS,
+            total="90 AUD",
+        ),
+    ),
+    (
+        "rx.profile.scurve(total=value, start=open, length=1 year)",
+        lambda: rk.flow.Flow.from_profile(
+            profile=rk.profile.SCurve(start=date(2028, 1, 1), length="1 year"),
+            periods=YEARS,
+            total="90 AUD",
         ),
     ),
 ]
@@ -650,7 +704,8 @@ def test_the_calls_of_lessons_05_and_07_parse_as_written(draft):
     for key in ("b_sale_date", "expansion_date", "x_open"):
         project.date(key=key)
     for key in ("rent_index", "b_site_sale", "works", "income"):
-        project.flow(key=key, units="ratio" if key == "rent_index" else "AUD")
+        units = "ratio" if key == "rent_index" else "AUD"
+        project.flow(key=key, units=units, periods=YEARS)
     sources = (
         "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
         "b_site_sale = rx.flow.event(amount=b_site_value, on=b_sale_date)",

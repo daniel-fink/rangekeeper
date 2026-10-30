@@ -120,7 +120,9 @@ class ValueHandle(Symbolic):
 
     A draft makes handles: ``value``, ``flow``, ``date`` and ``ref`` on an
     entity handle return them. ``owner`` is the UUID of the entity, and
-    ``units`` are the declared units, or None for a Value with no Measure.
+    ``units`` are the declared units, or None for a Value with no Measure;
+    ``periods`` are the declared Periods of a Flow, or None when its
+    equations give them.
     The display names the kind, key, units and entity, for example
     ``<value land_cost [AUD] on project>``.
 
@@ -135,6 +137,7 @@ class ValueHandle(Symbolic):
     kind: ValueKind
     owner: UUID
     units: str | None
+    periods: tuple[Period, ...] | None
     # The name or code of the owner, for the display only.
     _entity: str = field(repr=False, compare=False)
 
@@ -151,6 +154,7 @@ class ValueHandle(Symbolic):
             "kind": value.kind,
             "owner": owner.record.id,
             "units": units,
+            "periods": _periods(value),
             "_entity": owner.label,
         }
         for name, item in fields.items():
@@ -941,6 +945,13 @@ class ModelDraft:
             if item.parent is None
         )
         return self._classify(index, code, name=None, parent=root).id
+
+
+def _periods(value: Value) -> tuple[Period, ...] | None:
+    """Return the declared Periods of a Flow Value, or None."""
+    movements = () if value.flow is None else value.flow.movements
+    periods = tuple(m.period for m in movements if m.period is not None)
+    return periods if periods and len(periods) == len(movements) else None
 
 
 def _values(record: Entity) -> tuple[Value, ...]:

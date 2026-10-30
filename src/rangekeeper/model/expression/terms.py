@@ -15,7 +15,7 @@ from types import MappingProxyType
 from typing import Protocol, TypeAlias
 from uuid import UUID, uuid4
 
-from rangekeeper.duration import NEVER, Never
+from rangekeeper.duration import NEVER, Never, Period
 from rangekeeper.model.expression.catalogue import functions
 from rangekeeper.model.expression.functions import (
     EquationFunction,
@@ -59,6 +59,11 @@ class Symbol(Protocol):
     @property
     def units(self) -> str | None:
         """The declared units, or None for a Value without units."""
+        ...
+
+    @property
+    def periods(self) -> tuple[Period, ...] | None:
+        """The declared Periods of a Flow, or None when its equations give them."""
         ...
 
 
@@ -292,11 +297,16 @@ class Term(Symbolic):
     an equation.
     """
 
-    __slots__ = ("_expression", "_kind", "_units", "_names")
+    __slots__ = ("_expression", "_kind", "_units", "_names", "_periods", "_amounts")
     _expression: Expression
     _kind: DomainKind | None
     _units: str | None
     _names: Mapping[UUID, str]
+    # The Periods of a Flow when the declarations give them; ``_amounts``
+    # marks a Flow made from amounts, which takes the Periods of the Flow that
+    # its equation defines.
+    _periods: tuple[Period, ...] | None
+    _amounts: bool
 
     def __init__(self) -> None:
         raise TypeError("operators, rx functions and value handles make Terms")
@@ -309,12 +319,14 @@ class Term(Symbolic):
         kind: DomainKind | None,
         units: str | None = None,
         names: Mapping[UUID, str] = MappingProxyType({}),
+        shape: "_Shape" = (None, False),
     ) -> "Term":
         term = cls.__new__(cls)
         term._expression = expression
         term._kind = kind
         term._units = units
         term._names = names
+        term._periods, term._amounts = shape
         return term
 
     @property
@@ -329,6 +341,11 @@ class Term(Symbolic):
     def units(self) -> str | None:
         """The units of the Term, when the declarations give them; otherwise None."""
         return self._units
+
+    @property
+    def periods(self) -> tuple[Period, ...] | None:
+        """The Periods of a Flow, when its declarations give them; otherwise None."""
+        return self._periods
 
     @property
     def text(self) -> str:
@@ -368,6 +385,7 @@ def reference(symbol: Symbol, *, name: str) -> Term:
         kind=_REFERENCE_KINDS.get(symbol.kind),
         units=symbol.units,
         names=MappingProxyType({symbol.id: name}),
+        shape=(symbol.periods, False),
     )
 
 
@@ -445,12 +463,23 @@ def unary(operator: Operator, value: object) -> Term:
         kind=term._kind if negation else DomainKind.BOOLEAN,
         units=term._units if negation else None,
         names=term._names,
+        shape=(term._periods, term._amounts) if negation else (None, False),
     )
 
 
 def binary(operator: Operator, left: object, right: object) -> Term:
-    """Return the Term of an operator between two operands."""
+    """Return the Term of an operator between two operands.
+
+    A Flow applies period by period. Two Flows whose declarations give other
+    Periods raise ContractError with the code ``ALIGNMENT_DIFFER``, and an
+    equation of a Flow made from amounts, such as a profile, with no Flow
+    that gives its Periods raises ContractError with ``EQUATION_FUNCTION``.
+    """
     first, second = operand(left), operand(right)
+    shape = _combined((first, second))
+    if operator in _COMPARISONS:
+        _require_periods(shape)
+        shape = (None, False)
     return Term._of(
         Expression(
             id=uuid4(),
@@ -461,6 +490,7 @@ def binary(operator: Operator, left: object, right: object) -> Term:
         kind=_binary_kind(operator, first, second),
         units=_binary_units(operator, first, second),
         names=_merged(first, second),
+        shape=shape,
     )
 
 
@@ -513,11 +543,15 @@ def apply(
             or UNSET,
         ),
     )
+    kind = _call_kind(function, bound)
     return Term._of(
         expression,
-        kind=_call_kind(function, bound),
+        kind=kind,
         units=_call_units(function, bound),
         names=_merged(*bound.values()),
+        shape=_call_shape(function, bound)
+        if kind is DomainKind.FLOW
+        else (None, False),
     )
 
 
@@ -663,6 +697,48 @@ def _call_units(function: EquationFunction, bound: Mapping[str, Term]) -> str | 
     return None if source is None or source not in bound else bound[source]._units
 
 
+def _combined(terms: Sequence[Term]) -> "_Shape":
+    """Return the shape of Flows that combine period by period; they need one set of Periods."""
+    known = [t._periods for t in terms if t._periods is not None]
+    for other in known[1:]:
+        if other != known[0]:
+            raise ContractError(
+                "Flows with different Periods do not combine: "
+                f"{_span(known[0])} and {_span(other)}",
+                code=Code.ALIGNMENT_DIFFER,
+                values={"periods": [len(known[0]), len(other)]},
+            )
+    if known:
+        return known[0], False
+    return None, any(t._amounts for t in terms)
+
+
+def _require_periods(shape: "_Shape") -> None:
+    """Require Periods for a Flow made from amounts in an equation (D44)."""
+    if shape[1]:
+        raise ContractError(
+            "a Flow made from amounts takes the Periods of the Flow that its "
+            "equation defines; declare that Flow with periods=",
+            code=Code.EQUATION_FUNCTION,
+        )
+
+
+def _call_shape(function: EquationFunction, bound: Mapping[str, Term]) -> "_Shape":
+    if function.periods_from is not None:
+        source = bound[function.periods_from]
+        return source._periods, source._amounts
+    lifted = [bound[name] for name in function.periodwise if name in bound]
+    if lifted:
+        return _combined(lifted)
+    return None, True
+
+
+def _span(periods: tuple[Period, ...]) -> str:
+    if not periods:
+        return "no Periods"
+    return f"{periods[0].start.isoformat()} to {periods[-1].end.isoformat()}"
+
+
 def _binary_kind(operator: Operator, left: Term, right: Term) -> DomainKind | None:
     if operator in _COMPARISONS or operator in _LOGIC:
         return DomainKind.BOOLEAN
@@ -708,6 +784,8 @@ def _fresh(expression: Expression) -> Expression:
     return fresh
 
 
+# The Periods of a Flow, if known, and whether it is a Flow made from amounts.
+_Shape: TypeAlias = tuple[tuple[Period, ...] | None, bool]
 Operand: TypeAlias = Symbolic | Quantity | str | int | float | date | Never
 """What an equation operator or function takes: a handle, a Term, a Quantity,
 quantity text, a number, a date or NEVER."""

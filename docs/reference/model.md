@@ -110,7 +110,8 @@ funding.equations("loan <= total_cost")
 ```
 
 A `ValueHandle` has the Value's `id`, `key`, `kind` (a `ValueKind`), `owner`
-(the UUID of its entity) and declared `units`, or `None` for a date. A
+(the UUID of its entity), declared `units`, or `None` for a date, and declared
+`periods`, or `None` when a Flow takes its Periods from its equations. A
 `FormulationHandle` has the Formulation's `id`, `name` and `owner`; two handles
 of one Formulation are equal. Only a draft makes handles: `ValueHandle(...)`,
 `EntityHandle(...)` and `FormulationHandle(...)` raise `TypeError`. A handle
