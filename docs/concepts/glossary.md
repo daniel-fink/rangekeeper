@@ -40,7 +40,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Dotted key | `code.key`: the key of a Value on the Entity or Assembly with that code, such as `building_a.income`. It names a Value whose key is not unique in the Model. `Model.value(key=)` reads a key, a dotted key or a Value UUID text, and `Model.key_of(id)` gives the one that names a Value. Not a market path | `model` | — |
 | Code | A catalogue identifier, such as a Classification code. Not `rk.errors.Code`; see [words with one meaning only](#words-with-one-meaning-only) | `model` | — |
 | Label | A Classification attached to an Entity in addition to its main Classification | `model` | — |
-| Formulation | A named set of equations over Values, such as "Funding". It does not say which values are known. `project.add_formulation(name=)` makes one and `project.formulation(name=)` finds one; each takes `equations(...)` | `model` | The `Formulation` record. The handles: none (planned, #305) |
+| Formulation | A named set of equations over Values, such as "Funding". It does not say which values are known. `project.add_formulation(name=)` makes one and `project.formulation(name=)` finds one; each takes `equations(...)` | `model` | The `Formulation` record and `FormulationHandle` |
 | Equation | One relation that must hold between values: an equality, or a bound such as `b_start >= shared_start + 1 year`. It is written as text or in Python with `rx` (`rangekeeper.expressions`), and stored as a Constraint over Expressions in a Formulation. It has no calculation direction | `model` | The `Constraint` record. `rx`: none (planned, #309) |
 | Equation text | An equation written as a string: the Python form with `=` for equality, `and`, `or` and `not`, quantity literals such as `2 years`, and `NEVER`. Names are value keys, or `code.key` for a value of another entity. `project.equations("noi = coverage * debt_service")` reads it into Expression records | `model` | `EntityHandle.equations`. Equation functions and Flow methods: none (planned, #278) |
 | Expression | One mathematical expression in an equation | `model` | — |
@@ -125,7 +125,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | --- | --- | --- | --- |
 | Draft | A mutable set of additions or changes to a Model, from `model.edit()`. `commit()` checks it once and returns a new revision | `model` | `ModelDraft` |
 | Namespace | A UUID that makes the IDs of a Model and its drafts deterministic | `model` | `rk.Model(namespace=)` derives the IDs that a draft makes; the tested contract and stored namespace are planned (#146, #147) |
-| Handle | A draft's reference to an object, such as an entity or a value, by its UUID. A value's handle also builds equations with Python operators | `model`, `expressions` | `EntityHandle` and `ValueHandle`; operators are planned (#309), and Formulation handles (#305) |
+| Handle | A draft's reference to an object, such as an entity or a value, by its UUID. A value's handle also builds equations with Python operators | `model`, `expressions` | `EntityHandle`, `ValueHandle` and `FormulationHandle`; operators are planned (#309) |
 | Expressions (`rx`) | The Python form of equations: `import rangekeeper.expressions as rx`. It mirrors the equation functions of the text form and makes the same records | `expressions` | None (planned, #309). Now equation text, or the provisional record constructors in `rangekeeper.model.expression.authoring` |
 
 ## Words with one meaning only
