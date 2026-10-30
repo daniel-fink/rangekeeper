@@ -54,14 +54,14 @@ INVALID = ValidationError(ValidationReport((Issue(Code.CONTRACT, "invalid"),)))
             Reached.NOTHING,
             FAILED,
             NOT_ASSESSED,
-            Code.UNSUPPORTED_CAPABILITY,
+            Code.INCOMPATIBLE_UNITS,
         ),
         (
             UnitError("unit"),
             Reached.SOLVED,
             FAILED,
             UNKNOWN,
-            Code.UNSUPPORTED_CAPABILITY,
+            Code.INCOMPATIBLE_UNITS,
         ),
         (
             BackendUnavailableError("absent"),
@@ -154,6 +154,8 @@ def test_every_termination_has_a_row():
         (Code.NUMERICAL_FAILURE, statuses.Status.FAILED),
         (Code.BACKEND_UNAVAILABLE, statuses.Status.FAILED),
         (Code.UNSUPPORTED_CAPABILITY, statuses.Status.UNSUPPORTED),
+        # Units that do not agree are invalid, never unsupported (ADR-016).
+        (Code.INCOMPATIBLE_UNITS, statuses.Status.INVALID),
         (Code.ATTEMPT_DEADLINE, statuses.Status.LIMITED),
         # The codes that an UnsupportedError carries itself.
         (Code.NONAFFINE_UNKNOWNS, statuses.Status.UNSUPPORTED),
@@ -178,6 +180,7 @@ def test_failed_reads_the_status_of_a_code_from_the_failures_table(code, status)
         (Code.BACKEND_UNAVAILABLE, BackendUnavailableError),
         (Code.UNSUPPORTED_CAPABILITY, UnsupportedError),
         (Code.NONAFFINE_UNKNOWNS, UnsupportedError),
+        (Code.INCOMPATIBLE_UNITS, UnitError),
     ],
 )
 def test_each_failure_code_names_the_error_that_raise_for_status_raises(code, error):

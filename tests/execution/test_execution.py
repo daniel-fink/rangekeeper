@@ -339,9 +339,15 @@ def test_expected_failures_have_evidence_and_no_output(kind):
             "nonaffine_unknowns",
             "specification_invalid",
             "numerical_failure",
+            "incompatible_units",
         }
         for d in run.report.diagnostics
     )
+    # Units that disagree are never an unsupported capability (ADR-016).
+    if kind == "units":
+        codes = {d.code for d in run.report.diagnostics}
+        assert "incompatible_units" in codes
+        assert "unsupported_capability" not in codes
 
 
 def test_nonaffine_unknowns_diagnostic_names_the_equation_and_unknowns():

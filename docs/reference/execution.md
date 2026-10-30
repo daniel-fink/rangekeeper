@@ -101,7 +101,7 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 | `UNDERDETERMINED` | Solution `feasible`, with an `underdetermined` or `uniqueness_not_assessed` diagnostic: the equations leave some unknowns free, with or without bounds | `OutcomeError`, with the code of that diagnostic |
 | `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination` |
 | `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError`, code `solver_termination` |
-| `INVALID` | Failed, with `specification_invalid` | `ValidationError`, with the validation issues of the attempt |
+| `INVALID` | Failed, with `specification_invalid`, or `incompatible_units` for units that disagree | `ValidationError`, with the validation issues of the attempt; `UnitError` for `incompatible_units` |
 | `FAILED` | Failed, with `numerical_failure`, `numerical_rejection`, `active_side`, `backend_unavailable` or another error diagnostic, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
 | `UNSUPPORTED` | Failed, with the code of an `UnsupportedError`: `unsupported_capability`, `nonaffine_unknowns`, `symbol_limit` or `constraint_limit` | `UnsupportedError` with that code, `document_id`, `targets`, `equation` and `unknowns` |
 
@@ -450,7 +450,7 @@ severity, or else the last error. A code that the table does not name gives
 | `AttemptDeadlineError` | limited | `not_assessed` | `LIMITED` | `attempt_deadline` (warning) | `AttemptDeadlineError` |
 | `ValidationError` | failed | `not_assessed`; `unknown` once bound | `INVALID`; `FAILED` once bound | `specification_invalid`; `numerical_rejection` once bound | `ValidationError`; `NumericalError` once bound |
 | `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | The error's own code: `unsupported_capability`, `nonaffine_unknowns`, `symbol_limit` or `constraint_limit` | `UnsupportedError` |
-| `UnitError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | `unsupported_capability` | `UnsupportedError` |
+| `UnitError` | failed | `not_assessed`; `unknown` once solved | `INVALID` | `incompatible_units` | `UnitError` |
 | `BackendUnavailableError` | failed | `not_assessed` | `FAILED` | `backend_unavailable` | `BackendUnavailableError` |
 | `NumericalError` | failed | `unknown` | `FAILED` | The error's own code: `numerical_failure`, or `active_side` when no active side of each `max` and `min` holds ([piecewise equations](#piecewise-equations)) | `NumericalError` |
 | `ArithmeticError` | failed | `unknown` | `FAILED` | `numerical_failure` | `NumericalError` |

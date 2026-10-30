@@ -25,6 +25,7 @@ contract: a Run that is read back has the same code text.
 | --- | --- | --- |
 | Structure | `structure.json`, `structure.kind`, `structure.<keyword>` for each JSON Schema keyword, and `structure.value` and `structure.rule` from the generated node checks of typed construction and `replace` | `STRUCTURE_REQUIRED`, `STRUCTURE_TYPE`. A keyword without its own member has the code `STRUCTURE` and a `keyword` value |
 | Semantic | `semantic.*` | `CONTRACT`, `UNIQUE`, `CYCLE`, `IDENTITY`, `UNITS`, `ROLE_MISSING`, `MODEL_MISSING` (no Model, or no pinned Model), `RESOLVER_MISSING` (a call must load included or case Specifications and has no resolver) |
+| Units | `incompatible_units`: the two sides of an equation, the operands of a sum, or a value and the quantity that fixes it, have units with other dimensions ([dimensional analysis](#dimensional-analysis)) | `INCOMPATIBLE_UNITS` |
 | Currency amounts | `currency_amount` (a magnitude whose type does not match its units) and `amount_digits` (more than 15 significant digits) | `CURRENCY_AMOUNT`, `AMOUNT_DIGITS` |
 | Invariants | `invariant.<kind>` for the local rules of a value type: Period, Span, Movement, Flow and Distribution | `INVARIANT_FLOW`, `INVARIANT_PERIOD` |
 | References | `reference.*` | `REFERENCE_MISSING`, `REFERENCE_AMBIGUOUS`, `REFERENCE_KIND` |
@@ -38,6 +39,31 @@ contract: a Run that is read back has the same code text.
 
 `CONTRACT` is the general code of a semantic rule. Rules that callers must tell
 apart have their own codes.
+
+### Dimensional analysis
+
+Model validation checks the units of each equation when a Model is committed,
+made or read (ADR-016). The two sides of an equality or a bound, and the
+operands of a sum or a difference, must have compatible units; a product or a
+quotient multiplies or divides them. A failure is an issue with the code
+`incompatible_units`. Its `values` give the `equation` text, the `term` that
+fails and its two `units`; its target is the Constraint:
+
+```python
+issue.values == {
+    "equation": "total_cost = land_cost + area",
+    "term": "land_cost + area",
+    "units": ["AUD", "sqm"],
+}
+```
+
+A part whose units are unknown, such as a call of an equation function, is not
+checked. Specification validation checks each quantity that fixes a value
+against the value's units: the issue has `key`, `units` and `expected`, and
+`fix()` raises `UnitError` with the code `INCOMPATIBLE_UNITS`. A conversion
+between incompatible units raises the same `UnitError`. Execution reports units
+that disagree as `incompatible_units` with the Status `INVALID`, never as an
+unsupported capability.
 
 ## Validation issues
 
@@ -129,7 +155,7 @@ all of its fields through `pickle`.
 | `IdentityConflictError` | `ValueError` | `REFERENCE_IDENTITY` |
 | `RevisionConflictError` | `ValueError` | `REVISION_CONFLICT` |
 | `UnsupportedVersionError` | `ValueError` | `UNSUPPORTED_VERSION` |
-| `UnitError` | `ValueError` | `UNITS`. `suggestions` gives spellings to try |
+| `UnitError` | `ValueError` | `UNITS`, or `INCOMPATIBLE_UNITS` for units with other dimensions. `suggestions` gives spellings to try |
 | `EquationError` | `ValueError` | `EQUATION_SYNTAX` by default, or the code of the failure: `REFERENCE_MISSING`, `REFERENCE_AMBIGUOUS`, `UNITS`, `EQUATION_FUNCTION` or `PREDICATE`. `text[start:end]` is the part of the equation text that fails, and `suggestions` gives text to try ([equation text](expressions.md#equation-text)) |
 | `DecodeError`, `EncodingError` | `ValueError` | `DECODE`, `ENCODING` |
 | `TableError` | `ValueError` | `TABLE` |

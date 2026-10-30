@@ -1,19 +1,25 @@
-"""Structural and bounded Model semantics; no evaluation or unit inference."""
+"""Structural and bounded Model semantics, and the units of equations; no evaluation."""
 
 from collections.abc import Callable, Mapping, Sequence
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from rangekeeper.flow import Flow
+from rangekeeper.flow import Flow, Movement
+from rangekeeper.model._dimensions import Analysis, Dimension, Kind, Lookup, of_value
 from rangekeeper.model.definitions import check_definitions
+from rangekeeper.model.expression.text import render
 from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.model.provenance import check_provenance
 from rangekeeper.model.system.validation import check_system
 from rangekeeper.quantity import Quantity, UnitSystem, default_units
 from rangekeeper.schema.index import RecordIndex, walk, walk_data
 from rangekeeper.schema.records import (
+    Constraint,
     Domain,
+    Expression,
+    Function,
     Measure,
+    Reference,
     Value,
 )
 from rangekeeper.schema.records import (
@@ -114,7 +120,7 @@ def _validate(
         return report
     if index is None:
         index = RecordIndex.build(record)
-    return ValidationReport(
+    issues = list(
         recorded_unit_issues(
             record,
             measure=lambda id: index.get(id, Measure),
@@ -122,6 +128,13 @@ def _validate(
             document_id=record.metadata.id,
         )
     )
+    if not issues:
+        issues.extend(
+            equation_unit_issues(
+                index=index, units=units, document_id=record.metadata.id
+            )
+        )
+    return ValidationReport(tuple(issues))
 
 
 def recorded_unit_issues(
@@ -187,6 +200,90 @@ def recorded_unit_issues(
                 )
             )
     return tuple(issues)
+
+
+def equation_unit_issues(
+    *,
+    index: RecordIndex,
+    units: UnitSystem,
+    document_id: UUID,
+) -> tuple[Issue, ...]:
+    """Report each equation whose units disagree, with the code ``incompatible_units``.
+
+    The two sides of an equality or a bound, and the operands of a sum or a
+    difference, must have compatible units (ADR-016). Each issue names the
+    equation, the operation that fails and both units. A part whose units are
+    unknown, such as a call of an equation function, is not checked. Run this
+    after the recorded units are valid.
+    """
+    analysis = Analysis(
+        units=units,
+        lookup=_dimensions(index),
+        functions={
+            identity: record
+            for identity, record in index.records.items()
+            if isinstance(record, Function)
+        },
+    )
+    name = _namer(index)
+    issues = []
+    predicates = {
+        record.predicate: record.id
+        for record in index.records.values()
+        if isinstance(record, Constraint)
+    }
+    for predicate, constraint in predicates.items():
+        before = len(analysis.mismatches)
+        equation = index.get(predicate, Expression)
+        analysis.dimension(equation)
+        text = render(expression=equation, name=name)
+        for mismatch in analysis.mismatches[before:]:
+            term = render(expression=mismatch.operation, name=name)
+            issues.append(
+                Issue(
+                    Code.INCOMPATIBLE_UNITS,
+                    f'incompatible units in "{text}": "{term}" has '
+                    f"{mismatch.units[0]} and {mismatch.units[1]}",
+                    document_id,
+                    index.paths.get(mismatch.operation.id, ""),
+                    (constraint,),
+                    {"equation": text, "term": term, "units": list(mismatch.units)},
+                )
+            )
+    return tuple(issues)
+
+
+def _dimensions(index: RecordIndex) -> Lookup:
+    """Return the Dimension of each Value or Movement of an index, by its UUID."""
+
+    def lookup(identity: UUID) -> Dimension | None:
+        record = index.records.get(identity)
+        if isinstance(record, Movement):
+            owner = index.owners[identity]
+            assert owner is not None  # a Movement belongs to its Flow Value
+            value = index.records[owner]
+            assert isinstance(value, Value) and value.flow is not None
+            return Dimension(kind=Kind.QUANTITY, units=value.flow.units)
+        if not isinstance(record, Value):
+            return None
+        measure = None if record.measure is None else index.get(record.measure, Measure)
+        return of_value(record, units=None if measure is None else measure.units)
+
+    return lookup
+
+
+def _namer(index: RecordIndex) -> Callable[[Reference], str]:
+    """Return the key that names each referenced Value or Movement in equation text."""
+
+    def name(reference: Reference) -> str:
+        record = index.records.get(reference.target)
+        if isinstance(record, Movement):
+            owner = index.owners[record.id]
+            record = None if owner is None else index.records[owner]
+        key = record.key if isinstance(record, Value) else None
+        return key or str(reference.target)
+
+    return name
 
 
 def check_model(model, schema_version, history=(), *, index=None):
