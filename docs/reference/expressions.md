@@ -118,7 +118,9 @@ Operators bind as in Python. A higher level binds tighter:
 | 8 | `**` | Right: `a ** b ** c` is `a ** (b ** c)`, and `-a ** 2` is `-(a ** 2)` |
 
 `rangekeeper.model.expression.text.render` writes records as equation text with
-the fewest brackets that keep the meaning. Text that an entity handle reads
+the fewest brackets that keep the meaning. `model.equations` gives the text of
+each equation of a revision, with its key ([equations of a
+revision](model.md#equations-of-a-revision)). Text that an entity handle reads
 reads back to the same records. Diagnostics use the same text: an unsupported
 equation in a solve is `"noi = coverage * debt_service"`. A date literal is
 written `date(2027, 1, 1)` and NEVER is written `NEVER`, so both read back. A

@@ -13,6 +13,7 @@
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
     "edit": "method (self, *, name: str | None = None, description: str | None = None) -> ModelDraft",
     "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.model.entity.ModelEntity",
+    "equations": "property",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
     "from_data": "classmethod (cls, *, data: collections.abc.Mapping[str, object], units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
@@ -535,10 +536,10 @@
   "MissingReferenceError": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
+    "__init__": "method (self, requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple(), referenced_by: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
    },
    "module": "rangekeeper.shared.errors",
-   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
+   "signature": "(requested: object, *, kind: str = 'reference', by: str = 'id', where: str | None = None, candidates: collections.abc.Iterable[str] = tuple(), referenced_by: collections.abc.Iterable[str] = tuple(), **fields: Unpack[rangekeeper.shared.errors.ErrorFields]) -> None"
   },
   "NumericalError": {
    "kind": "class",
@@ -2029,6 +2030,7 @@
    "members": {
     "__init__": "method (self) -> None",
     "add_formulation": "method (self, *, name: str, description: str | None = None) -> rangekeeper.model.formulation.handle.FormulationHandle",
+    "add_to": "method (self, *, key: str, term: str | rangekeeper.model.expression.terms.Term | rangekeeper.model.draft.ValueHandle) -> None",
     "code": "property",
     "date": "method (self, *, key: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle",
     "equations": "method (self, *equations: str | rangekeeper.model.expression.terms.Term | rangekeeper.schema.records.Expression) -> None",
@@ -2036,10 +2038,30 @@
     "formulation": "method (self, *, name: str) -> rangekeeper.model.formulation.handle.FormulationHandle",
     "id": "property",
     "ref": "method (self, *, key: str) -> rangekeeper.model.draft.ValueHandle",
+    "remove": "method (self, *, key: str) -> None",
+    "replace": "method (self, *, key: str, equation: str | rangekeeper.model.expression.terms.Term | rangekeeper.schema.records.Expression) -> None",
     "value": "method (self, *, key: str, units: str, description: str | None = None) -> rangekeeper.model.draft.ValueHandle"
    },
    "module": "rangekeeper.model.draft",
    "signature": "() -> None"
+  },
+  "Equation": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, id: uuid.UUID, key: str | None, keys: tuple[str, ...], text: str, formulation: str | None, entity: str | None) -> None"
+   },
+   "module": "rangekeeper.model.equations",
+   "signature": "(*, id: uuid.UUID, key: str | None, keys: tuple[str, ...], text: str, formulation: str | None, entity: str | None) -> None"
+  },
+  "Equations": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, equations: collections.abc.Iterable[rangekeeper.model.equations.Equation] = tuple()) -> None",
+    "table": "property",
+    "where": "method (self, *, key: str | collections.abc.Sequence[str] | None = None, keys: str | collections.abc.Sequence[str] | None = None, formulation: str | collections.abc.Sequence[str] | None = None, entity: str | collections.abc.Sequence[str] | None = None) -> Equations"
+   },
+   "module": "rangekeeper.model.equations",
+   "signature": "(equations: collections.abc.Iterable[rangekeeper.model.equations.Equation] = tuple()) -> None"
   },
   "Expression": {
    "kind": "class",
@@ -2253,6 +2275,7 @@
     "descendants": "method (self, classification: uuid.UUID) -> tuple[rangekeeper.schema.records.Classification, ...]",
     "edit": "method (self, *, name: str | None = None, description: str | None = None) -> ModelDraft",
     "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.model.entity.ModelEntity",
+    "equations": "property",
     "find_entities": "method (self, *, code: str | None = None, name: str | None = None, classification: uuid.UUID | None = None) -> tuple[rangekeeper.schema.records.Entity, ...]",
     "formulation": "method (self, id: uuid.UUID) -> rangekeeper.schema.records.Formulation",
     "from_data": "classmethod (cls, *, data: collections.abc.Mapping[str, object], units: rangekeeper.quantity.UnitSystem = <UnitSystem>) -> Model",
@@ -2291,7 +2314,8 @@
     "add_relationship": "method (self, *, source: str | UUID | EntityHandle, target: str | UUID | EntityHandle, classification: str | uuid.UUID) -> rangekeeper.schema.records.Relationship",
     "commit": "method (self) -> Model",
     "entity": "method (self, *, id: uuid.UUID | None = None, code: str | None = None, name: str | None = None) -> rangekeeper.model.draft.EntityHandle",
-    "model": "property"
+    "model": "property",
+    "remove": "method (self, *, entity: str | UUID | EntityHandle) -> None"
    },
    "module": "rangekeeper.model.draft",
    "signature": "() -> None"

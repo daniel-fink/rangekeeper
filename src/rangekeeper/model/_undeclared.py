@@ -132,6 +132,22 @@ class Undeclared:
         for key, identity in new.items():
             self._pending[(place.id, key)] = Pending(place=place, key=key, id=identity)
 
+    def forget(self, owner: UUID, key: str) -> UUID | None:
+        """Stop working out the value of a key that the draft removes; return its UUID.
+
+        It returns None when the owner has no such value.
+        """
+        found = self._pending.pop((owner, key), None)
+        kept = [
+            item
+            for item in self._again
+            if not (item.place.id == owner and item.key == key)
+        ]
+        again = next((item for item in self._again if item not in kept), None)
+        self._again = kept
+        item = found or again
+        return None if item is None else item.id
+
     def declare(self, owner: UUID, key: str) -> UUID | None:
         """Return the UUID of an undeclared value that a call now declares, or None.
 
