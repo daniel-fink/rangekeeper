@@ -107,6 +107,9 @@ show the target API in use.
      `flow(key=, units=, periods=)` and `date(key=)`. `equations(...)` takes
      equation text, such as `"total_cost = land_cost + works_cost"`, with
      quantity literals, `NEVER` and date arithmetic; or Expression records.
+     `add_formulation(name=)` makes a named Formulation, such as "Funding",
+     whose handle takes `equations(...)` too; `formulation(name=)` finds it in
+     a later draft.
   3. `commit()` validates the revision once and returns it.
   4. Put the revision into an append-only store.
 
@@ -114,7 +117,7 @@ show the target API in use.
   and `model.revise(Update(...))` replaces complete sections. See the
   [Model reference](../reference/model.md).
 - 1.0 target: equations in `rx`, equation functions and Flow equations in text,
-  Formulation handles, equation keys and edits of existing declarations.
+  equation keys and edits of existing declarations.
 
   Gap issues: [#142](https://github.com/daniel-fink/rangekeeper/issues/142),
   [#145](https://github.com/daniel-fink/rangekeeper/issues/145),
@@ -122,7 +125,6 @@ show the target API in use.
   [#280](https://github.com/daniel-fink/rangekeeper/issues/280),
   [#283](https://github.com/daniel-fink/rangekeeper/issues/283),
   [#284](https://github.com/daniel-fink/rangekeeper/issues/284),
-  [#305](https://github.com/daniel-fink/rangekeeper/issues/305),
   [#309](https://github.com/daniel-fink/rangekeeper/issues/309).
 
 **Calculate with known data**
