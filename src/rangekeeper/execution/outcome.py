@@ -49,10 +49,13 @@ def status_of(report: Report) -> Status:
     """Return the Status of one leaf Run report."""
     solution = report.status.solution
     codes = {item.code for item in report.diagnostics or ()}
+    # A Run before #152 records an underdetermined solve as feasible, with the
+    # diagnostic: bounds or not, the equations leave these unknowns free.
+    if solution == SolutionStatus.UNDERDETERMINED or (
+        solution == SolutionStatus.FEASIBLE and codes.intersection(_FREE)
+    ):
+        return Status.UNDERDETERMINED
     if solution == SolutionStatus.FEASIBLE:
-        # Bounds or not, the equations leave these unknowns free.
-        if codes.intersection(_FREE):
-            return Status.UNDERDETERMINED
         return Status.FEASIBLE
     if solution == SolutionStatus.INFEASIBLE:
         return Status.INFEASIBLE
@@ -215,19 +218,31 @@ class Outcome:
         take it: a dotted key names a value whose key is not unique in the
         Model. The tuple is empty exactly when the equations determine every
         unknown. A bound can still restrict these values: the diagnostic is
-        then ``uniqueness_not_assessed``.
+        then ``uniqueness_not_assessed``. The keys need no output: the
+        diagnostic records them. A Run before #152 records only references,
+        which its output Model names.
         """
         self._require_leaf("free_unknowns")
-        if not self.outputs:
-            return ()
         keys: list[str] = []
         for item in self.diagnostics:
             if item.code in _FREE:
-                for reference in item.references or ():
-                    key = self.model.key_of(reference.target)
+                for key in self._free_keys(item):
                     if key not in keys:
                         keys.append(key)
         return tuple(keys)
+
+    def _free_keys(self, diagnostic: Diagnostic) -> tuple[str, ...]:
+        """Return the keys of the free unknowns that one diagnostic names."""
+        values = diagnostic.values if isinstance(diagnostic.values, Mapping) else {}
+        recorded = values.get("unknowns")
+        if isinstance(recorded, (list, tuple)):
+            return tuple(str(key) for key in recorded)
+        if not self.outputs:
+            return ()
+        return tuple(
+            self.model.key_of(reference.target)
+            for reference in diagnostic.references or ()
+        )
 
     @property
     def model(self) -> Model:
@@ -249,8 +264,10 @@ class Outcome:
 
         A scalar value gives its Quantity; a Flow value gives its Flow; a date
         Value gives its date, or ``rk.duration.NEVER``. An Outcome without an
-        output raises the error of ``raise_for_status()``. In an
-        underdetermined Outcome, a free unknown holds one candidate value.
+        output raises the error of ``raise_for_status()``. An underdetermined
+        Outcome has an output only with
+        ``ExecutionConfig(allow_underdetermined=True)``; a free unknown then
+        holds one candidate value.
         """
         value = self.model.value(key=key)
         if value.flow is not None:

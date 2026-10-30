@@ -145,11 +145,14 @@ classes:
   RunStatus:
     description: Execution completion and mathematical conclusion of a Run, recorded independently.
     notes:
-    - For a non-batch Run, completed permits feasible, infeasible, or unknown; limited permits feasible
-      or unknown, or not_assessed when preparation exhausts the execution budget before numerical assessment;
-      failed and cancelled permit unknown or not_assessed; skipped requires not_assessed.
-      partial is reserved for batches. feasible asserts acceptance, not optimality; infeasible requires
-      evidence rather than inference from numerical failure.
+    - For a non-batch Run, completed permits feasible, underdetermined, infeasible, or unknown; limited
+      permits feasible, underdetermined or unknown, or not_assessed when preparation exhausts the execution
+      budget before numerical assessment; failed and cancelled permit unknown or not_assessed; skipped
+      requires not_assessed. partial is reserved for batches. feasible asserts acceptance, not optimality;
+      infeasible requires evidence rather than inference from numerical failure.
+    - A feasible conclusion has outputs. An underdetermined conclusion has an underdetermined or
+      uniqueness_not_assessed diagnostic that names the free unknowns, and outputs only when the execution
+      published its candidate on request. Other conclusions have no outputs.
     - 'Batch solution is not_applicable: conclusions belong to individual cases. Batch completion summarizes
       direct spawns: all completed gives completed; some completed and some not gives partial; otherwise
       choose failed if any failed or partial, then limited if any limited, then cancelled if any cancelled,
@@ -396,6 +399,10 @@ enums:
       feasible:
         description: Published output satisfies the investigation requirements under recorded checking
           conventions; optimality is not implied.
+      underdetermined:
+        description: A candidate satisfies the investigation requirements under recorded checking conventions,
+          but the equations do not determine every unknown; outputs exist only when the candidate was published
+          on request.
       infeasible:
         description: The investigation was established to be infeasible by the recorded method.
       unknown:

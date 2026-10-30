@@ -98,7 +98,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Status | What an Outcome found, in one word: feasible, underdetermined, infeasible, unsupported, invalid, limited or failed | `execution` | `rk.execution.Status`, from `Outcome.status` |
 | Run status | The completion and the solution that a Run report records, each in its own enum. It is a record, not a Status | `run` | `rk.run.RunStatus`, at `run.report.status` |
 | Outcome | The result of a solve: status, values, evidence, Run and outputs | `execution` | `Outcome`: `outcome["key"]`, `status`, `raise_for_status()`, `free_unknowns`, `evidence`, `run`, `outputs` and `cases` |
-| Underdetermined | A result with free unknowns that the equations do not fix, with or without bounds | `execution` | `Status.UNDERDETERMINED`, with `Outcome.free_unknowns` |
+| Underdetermined | A result with free unknowns that the equations do not fix, with or without bounds. It has no output unless the caller asks for one | `execution` | `Status.UNDERDETERMINED`, with `Outcome.free_unknowns`; the Run's solution `underdetermined`; `ExecutionConfig(allow_underdetermined=True)` publishes the candidate |
 | Report | Diagnostics, trace, settings, fingerprints and decision traces in a Run | `run` | — |
 | Diagnostic | One coded finding with structured fields | `shared` | Also `findings` and `issues` |
 | Fingerprint | A digest that identifies an implementation and its import closure | `shared` | — |

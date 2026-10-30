@@ -95,6 +95,20 @@ valid. Code that reads `assignment.quantity` handles None for a date fix. A
 date Value that is not fixed is free, as a number is; in 1.0.0a2 a date Value
 could not have a role.
 
+### Underdetermined solves
+
+An underdetermined solve no longer has an output by default (ADR-016,
+[#152](https://github.com/daniel-fink/rangekeeper/issues/152)). Its Run records
+the solution `underdetermined`, not `feasible`, and `execute` stores no output
+Model. `Outcome.status` is `UNDERDETERMINED` as before, and
+`Outcome.free_unknowns` still names the free unknowns. `outcome["key"]` raises
+the error of `raise_for_status()`. Code that read one candidate value of an
+underdetermined solve passes
+`config=rk.execution.ExecutionConfig(allow_underdetermined=True)`, or fixes as
+many of the free unknowns as the equations lack. A Run that 1.0.0a2 wrote, with
+the solution `feasible` and an `underdetermined` diagnostic, still reads as
+`UNDERDETERMINED`; nothing needs conversion.
+
 ### Flow differences
 
 `Flow.difference(initial=None)` is now `Flow.diff()`, the reverse of

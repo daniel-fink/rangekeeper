@@ -44,14 +44,23 @@ def completion_for(completions):
     return CompletionStatus.SKIPPED
 
 
+# The diagnostic codes that name the free unknowns of an underdetermined Run.
+FREE_UNKNOWNS = ("underdetermined", "uniqueness_not_assessed")
+
+
 def check_non_batch_status(run):
-    """Check the permitted completion/solution/output combinations for one attempt."""
+    """Check the permitted completion/solution/output combinations for one attempt.
+
+    A feasible conclusion has outputs. An underdetermined one names its free
+    unknowns in a diagnostic, and has outputs only when the execution
+    published its candidate on request. Other conclusions have none.
+    """
     status = run["report"]["status"]
     completion, solution = status["completion"], status["solution"]
     outputs = set(run.get("outputs") or [])
     allowed = {
-        "completed": {"feasible", "infeasible", "unknown"},
-        "limited": {"feasible", "unknown", "not_assessed"},
+        "completed": {"feasible", "underdetermined", "infeasible", "unknown"},
+        "limited": {"feasible", "underdetermined", "unknown", "not_assessed"},
         "failed": {"unknown", "not_assessed"},
         "cancelled": {"unknown", "not_assessed"},
         "skipped": {"not_assessed"},
@@ -61,8 +70,20 @@ def check_non_batch_status(run):
         "invalid non-batch status combination",
     )
     require(
-        bool(outputs) == (solution == "feasible"),
-        "outputs require feasible conclusion and vice versa",
+        not outputs or solution in ("feasible", "underdetermined"),
+        "outputs require feasible or underdetermined conclusion",
+    )
+    require(
+        bool(outputs) or solution != "feasible",
+        "feasible conclusion requires outputs",
+    )
+    require(
+        solution != "underdetermined"
+        or any(
+            item["code"] in FREE_UNKNOWNS
+            for item in run["report"].get("diagnostics") or []
+        ),
+        "underdetermined conclusion requires a diagnostic that names the free unknowns",
     )
     if completion == "skipped":
         require(not run.get("spawns"), "skipped non-batch Run cannot spawn")
@@ -101,7 +122,10 @@ def check_report(run, *, batch, effective=None):
     runtime = data.get("runtime")
     if not batch and (
         completion == "limited"
-        or (completion == "completed" and solution in ("feasible", "infeasible"))
+        or (
+            completion == "completed"
+            and solution in ("feasible", "underdetermined", "infeasible")
+        )
     ):
         require(runtime is not None, "outcome requires runtime evidence")
     if completion == "skipped":

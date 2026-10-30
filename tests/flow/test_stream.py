@@ -10,7 +10,7 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.duration import Frequency, Periods, Span
-from rangekeeper.execution import execute
+from rangekeeper.execution import ExecutionConfig, execute
 from rangekeeper.flow import AlignmentJoin as Join
 from rangekeeper.flow import Flow, Stream
 from rangekeeper.flow import MissingValueHandling as Missing
@@ -397,8 +397,11 @@ def test_underdetermined_and_inconsistent_reverse_cases():
     under = reverse.free(
         *[m.id for m in model.value(id=ids["A_rent"]).flow.movements[-2:]]
     )
-    run = execute(specification=under, store=store).run
-    assert run.report.status.solution is SolutionStatus.FEASIBLE
+    # An underdetermined solve publishes its candidate only on request (#152).
+    assert not execute(specification=under, store=store).run.record.outputs
+    published = ExecutionConfig(allow_underdetermined=True)
+    run = execute(specification=under, store=store, config=published).run
+    assert run.report.status.solution is SolutionStatus.UNDERDETERMINED
     result = store.load_model(run.record.outputs[0])
     assert sum(
         m.number for m in result.value(id=ids["A_rent"]).flow.movements[-2:]

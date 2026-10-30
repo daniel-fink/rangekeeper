@@ -296,6 +296,8 @@ class SolutionStatus(StrEnum):
     'The mathematical conclusion of a Run.'
     FEASIBLE = 'feasible'
     'Published output satisfies the investigation requirements under recorded checking conventions; optimality is not implied.'
+    UNDERDETERMINED = 'underdetermined'
+    'A candidate satisfies the investigation requirements under recorded checking conventions, but the equations do not determine every unknown; outputs exist only when the candidate was published on request.'
     INFEASIBLE = 'infeasible'
     'The investigation was established to be infeasible by the recorded method.'
     UNKNOWN = 'unknown'

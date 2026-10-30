@@ -101,12 +101,23 @@ def test_equations_that_leave_values_free_name_them():
     assert outcome.status is Status.UNDERDETERMINED
     assert set(outcome.free_unknowns) == {"land_cost", "works_cost"}
     assert outcome.evidence.equality_rank == outcome.evidence.unknown_count - 1
-    # A determined value is still readable; the free ones hold one candidate.
-    assert outcome["noi"].units == "AUD pa"
     with pytest.raises(OutcomeError) as raised:
         outcome.raise_for_status()
     assert raised.value.status is Status.UNDERDETERMINED
     assert raised.value.code is Code.UNDERDETERMINED
+    # No output by default (ADR-016): reading a value raises the same error.
+    assert outcome.outputs == ()
+    with pytest.raises(OutcomeError):
+        outcome["noi"]
+    published = solve(
+        specification=loose,
+        resolver=store(),
+        config=ExecutionConfig(allow_underdetermined=True),
+    )
+    assert published.status is Status.UNDERDETERMINED
+    assert published.free_unknowns == outcome.free_unknowns
+    # A determined value is readable; the free ones hold one candidate.
+    assert published["noi"].units == "AUD pa"
 
 
 def test_fixed_values_that_disagree_are_infeasible():

@@ -91,7 +91,15 @@ def test_backend_options_are_frozen():
         "limits",
         "tolerances",
         "backend_options",
+        "allow_underdetermined",
     }
+
+
+def test_publication_of_an_underdetermined_candidate_is_a_choice():
+    assert ExecutionConfig().allow_underdetermined is False
+    assert ExecutionConfig(allow_underdetermined=True).allow_underdetermined
+    with pytest.raises(TypeError):
+        ExecutionConfig(allow_underdetermined=1)  # type: ignore[arg-type]
 
 
 def test_config_limits_apply_when_the_specification_has_no_settings():
