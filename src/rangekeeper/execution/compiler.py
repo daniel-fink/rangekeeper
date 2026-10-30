@@ -7,7 +7,6 @@ the original expression trees against the proposed serialized Model.
 """
 
 import math
-import operator
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
@@ -23,6 +22,7 @@ from rangekeeper.model.expression.evaluation import (
     evaluate as numerical,
 )
 from rangekeeper.quantity import Quantity
+from rangekeeper.run._rule.predicate import evaluate as truth
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import Expression, ExpressionKind, Operator
 from rangekeeper.shared.codes import Code
@@ -246,7 +246,12 @@ class Compiler:
         return _affine(magnitude, {}, f"({left.units}) ** {right.constant}")
 
     def assertion(self, item: Assertion) -> tuple[Row, ...]:
-        """Flatten conjunctions and check fixed strict predicates before lowering."""
+        """Flatten conjunctions and decide exact predicates before lowering.
+
+        A strict comparison, ``!=``, ``or`` or ``not`` is decided exactly from
+        its fixed values (``exact``). Equalities and nonstrict bounds are
+        lowered to affine rows.
+        """
         node = item.predicate
         if node.kind == ExpressionKind.BINARY and node.operator == Operator.LOGICAL_AND:
             assert node.operands is not None
@@ -262,49 +267,9 @@ class Compiler:
                 )
             )
         if node.kind == ExpressionKind.BOOLEAN:
-            residual = _affine(0 if node.boolean else 1, {}, "dimensionless")
-            return (Row(assertion=item, relation=Relation.EQUAL, residual=residual),)
-        if node.kind is ExpressionKind.BINARY and node.operator in (
-            Operator.LESS_THAN,
-            Operator.GREATER_THAN,
-        ):
-            if node.operands is None or len(node.operands) != 2:
-                raise UnsupportedError("comparison requires two operands")
-            referenced = {
-                child.target.target
-                for child, _, _ in walk(node)
-                if isinstance(child, Expression)
-                and child.kind is ExpressionKind.REFERENCE
-                and child.target is not None
-            }
-            if not referenced <= self.binding.assignments.keys():
-                raise UnsupportedError(
-                    "strict predicates require only fixed assigned or literal operands"
-                )
-            try:
-                left = numerical(
-                    node.operands[0],
-                    self.binding.assignments,
-                    units=self.binding.units,
-                )
-                right = self.binding.units.convert(
-                    quantity=numerical(
-                        node.operands[1],
-                        self.binding.assignments,
-                        units=self.binding.units,
-                    ),
-                    to=left.units,
-                )
-            except (UnsupportedError, UnitError):
-                raise
-            except (ArithmeticError, TypeError, ValueError) as error:
-                raise NumericalError(str(error)) from error
-            compare = (
-                operator.lt if node.operator is Operator.LESS_THAN else operator.gt
-            )
-            if not compare(left.number, right.number):
-                raise UnsupportedError("fixed strict predicate is false")
-            return ()
+            return _constant(item, holds=bool(node.boolean))
+        if _decides(node):
+            return self.exact(item)
         if node.kind != ExpressionKind.BINARY or node.operator not in {
             Operator.EQUAL,
             Operator.LESS_THAN_OR_EQUAL,
@@ -324,6 +289,67 @@ class Compiler:
                 residual=residual,
             ),
         )
+
+    def exact(self, item: Assertion) -> tuple[Row, ...]:
+        """Return the rows of a predicate that its fixed values decide exactly.
+
+        Each reference must be fixed. A true predicate needs no row. A false
+        one gives the row of a false constraint, ``1 = 0``, so the backend
+        proves the problem infeasible, as for ``False`` (ADR-016, #153).
+        """
+        node = item.predicate
+        if not _references(node) <= self.binding.assignments.keys():
+            raise UnsupportedError(
+                "strict comparisons, !=, or and not require only fixed assigned"
+                " or literal operands"
+            )
+        try:
+            values, units = self.binding.assignments, self.binding.units
+            sides = self.pieces.active(node, values=values, units=units)
+            holds = truth(self.pieces.reduce(node, sides), values, units=units)
+        except (UnsupportedError, UnitError):
+            raise
+        except (ArithmeticError, TypeError, ValueError) as error:
+            raise NumericalError(str(error)) from error
+        if not holds:
+            return _constant(item, holds=False)
+        return ()
+
+
+# The predicates that fixed values decide exactly, without a tolerance.
+_EXACT = frozenset(
+    {
+        Operator.LESS_THAN,
+        Operator.GREATER_THAN,
+        Operator.NOT_EQUAL,
+        Operator.LOGICAL_OR,
+        Operator.LOGICAL_NOT,
+    }
+)
+
+
+def _decides(node: Expression) -> bool:
+    """Return whether ``node`` is a predicate that fixed values decide exactly."""
+    return (
+        node.kind in (ExpressionKind.BINARY, ExpressionKind.UNARY)
+        and node.operator in _EXACT
+    )
+
+
+def _constant(item: Assertion, *, holds: bool) -> tuple[Row, ...]:
+    """Return the row of a constant predicate: ``0 = 0`` when it holds, else ``1 = 0``."""
+    residual = _affine(0 if holds else 1, {}, "dimensionless")
+    return (Row(assertion=item, relation=Relation.EQUAL, residual=residual),)
+
+
+def _references(node: Expression) -> set[UUID]:
+    return {
+        child.target.target
+        for child, _, _ in walk(node)
+        if isinstance(child, Expression)
+        and child.kind is ExpressionKind.REFERENCE
+        and child.target is not None
+    }
 
 
 def build_problem(
