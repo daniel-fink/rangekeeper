@@ -12,6 +12,7 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 | `run/documents.py` | For internal use by `run`, `execution` and `io`: `Documents`, a read-only resolver of its own documents first, else a fallback resolver; `dependencies(document)`, the one list of the documents that a document needs; and `closure(roots, resolver=)`, which resolves them once each. Run validation, `Overlay`, `Cases` and the Bundle use them. |
 | `shared/references.py` | `SpecificationResolver` supplies Model/Specification reads; `DocumentResolver` extends it with Run reads. `require_revision` checks the UUID and kind of a document that a lookup read. Domain code imports no IO implementation. |
 | `shared/store.py` | `RecordStore` protocol: the typed reads `load_model`, `load_specification`, `load_run` and `load_paths` (market paths), `find_runs(*, specification) -> tuple[Run, ...]` and `put(document) -> UUID`. `execution` depends on this protocol, not on `io`. Import it from `rangekeeper.io`. |
+| `io/files.py` | `load(*, path)` and `save(*, document, path, resolver=None)`: one [document file](#document-files) with the documents that it depends on, read with no kind. |
 | `io/json.py`, `io/yaml.py` | Explicit-kind `loads`, `dumps`, `read`, and atomic create-only `write`. YAML is imported only when used. |
 | `io/memory.py`, `io/directory.py` | `MemoryStore()` and `DirectoryStore(path)` implement immutable revision storage of Models, Specifications, Runs and market paths (`rk.market.Paths`). |
 | `io/_runs.py` | The [search for Runs](#find-runs) that both stores use. |
@@ -153,6 +154,61 @@ mathematical failure. Child checks retain these pins for their parent; parent
 accounting does not recompose each descendant. `completion_for` consumes canonical
 CompletionStatus members and returns a member; empty input yields COMPLETED, while
 actual batch validation still enforces complete case accounting.
+
+## Document files
+
+`rk.io.save(document=, path=)` writes one document to a JSON file, with the
+documents that it depends on, and `rk.io.load(path=)` reads it back. A
+document is a Model, a Specification, a Run or market paths (`rk.market.Paths`).
+The file gives the kind, so `load` takes none:
+
+```python
+import rangekeeper as rk
+
+rk.io.save(document=back, path="data/02_back_door.specification.json")
+lesson_02 = rk.io.load(path="data/02_back_door.specification.json")
+lesson_02.roles  # the loaded Specification keeps its Model
+outcome = rk.execution.solve(specification=lesson_02)  # no resolver needed
+```
+
+A file is one JSON object: the `kind` and the `document`, as the codecs write
+it, and `documents`, a list of the other documents with their kind and content.
+`documents` is absent when the document depends on none, as for a Model or
+market paths; the file is then the envelope of a
+[`DirectoryStore`](#revision-publication-and-failures) file, so `load` reads
+that file too.
+
+```json
+{
+  "kind": "Specification",
+  "document": {"metadata": {"id": "...", "schema_version": "1.0.0"}, "model": "..."},
+  "documents": [{"kind": "Model", "document": {"metadata": {"id": "...", "schema_version": "1.0.0"}}}]
+}
+```
+
+- **Dependencies.** The file holds the closure of the document: a
+  Specification's Model, includes and cases, and a Run's Specification,
+  outputs, spawned Runs and report documents, at any depth. A Specification
+  brings the documents that it keeps: the Model of `model.specify()` and the
+  cases that `cases` made, with their Models. Its own resolver gives the
+  others, or `resolver=` when it is given. Another document takes its
+  dependencies from `resolver=`. A dependency that cannot be found raises
+  `MissingReferenceError` and writes nothing.
+- **Publication.** `save` makes missing parent folders and writes atomically.
+  It never replaces a file: when the path holds the same document already, it
+  returns the path, and another document there raises
+  `RevisionConflictError`. It returns the path.
+- **Loading.** Each document is validated as `rk.io.json.read` validates it. A
+  loaded Specification keeps its Model and the other documents of the file as
+  its resolver, so `fix`, `roles` and `rk.execution.solve` find them. The other
+  documents are read as a store reads them, with no Model kept. Text that is
+  not a document file raises `DecodeError`; a document that the file's
+  document needs and the file lacks raises `MissingReferenceError`; and a
+  document that it does not need raises `DecodeError`.
+
+A document file is for one document and the exact revisions that it needs. A
+[Bundle](bundle.md) delivers several roots with Geometry in Parquet tables;
+stores hold any number of revisions.
 
 ## Interchange contract
 

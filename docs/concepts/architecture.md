@@ -67,7 +67,7 @@ contracts enforce the rule.
 | 9 | `specification` | The Specification document, composition, roles and rule declarations |
 | 10 | `run` | The Run document and evidence validation, with the rule trace check |
 | 11 | `execution` | Case resolution, role binding, problem building, backends, verification, rule evaluation and publication |
-| 12 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
+| 12 | `io` | Document files, JSON and YAML codecs, stores, Bundle and Polars export |
 
 `quantity` and `money` sit between `schema` and `duration`; `money` is below
 `quantity`. `expressions` (`rx`, the Python form of equations) is in the `model`
@@ -211,6 +211,9 @@ show the target API in use.
 4. Read the result, or export a detached table.
 
 **Exchange data**
+- `rk.io.save(document=, path=)` writes one document file with the documents
+  that it depends on, and `rk.io.load(path=)` reads it back with no kind: a
+  loaded Specification brings its Model, so `solve` resolves it.
 - Strict codecs read and write JSON and YAML with an explicit kind.
 - Stores are append-only by UUID. `find_runs(specification=)` finds their Runs by the name of the Specification.
 - A Bundle delivers a set of documents with their exact dependencies.
@@ -237,7 +240,7 @@ contents are not yet in their 1.0 owner:
 | `specification` | The Specification document, composition, roles, and rule declarations and their validation | Rule queries over a `Window` replace the rule records ([#300](https://github.com/daniel-fink/rangekeeper/issues/300), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
 | `run` | The Run document, its report and outputs, and evidence validation. The internal `run._rule` has the rule trace check, with the exact condition truth and the availability rule that rule evaluation also uses. `run.documents` has the one document lookup and dependency closure that execution and IO use | The stores move onto `run.documents` ([#423](https://github.com/daniel-fink/rangekeeper/issues/423)) |
 | `execution` | The typed stages (case resolution, validation, role binding, problem building, candidates, verification and assembly), backends, the executor and rule evaluation (`execution.rule`) | Sequential rule evaluation replaces `execution.rule.evaluate` ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)) |
-| `io` | JSON and YAML codecs, stores, Bundle and Polars export. It re-exports the `RecordStore` protocol from `shared` | — |
+| `io` | Document files (`load`, `save`), JSON and YAML codecs, stores, Bundle and Polars export. It re-exports the `RecordStore` protocol from `shared` | — |
 
 The import-linter contract in [`pyproject.toml`](../../pyproject.toml) enforces the
 layer order. The `layers` CI job and a pre-commit hook run it; see
