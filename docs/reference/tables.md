@@ -39,6 +39,31 @@ The outer containers are frozen, but cell values are unconstrained and only
 shallowly frozen. A Table can hold native or mutable cells; an `Evidence[Table]`
 applies a stricter immutable-value contract.
 
+## Display
+
+A notebook shows a Table as an HTML table, for example `Specification.roles` or
+`Outcome.table(...)`. The display does not change the cells, and it needs no
+optional dependency:
+
+- The header has one column for each Table column. When each cell of a column
+  that has a value is a Quantity in the same units, the header gives the units,
+  as `cost [AUD]`, and the cells give the magnitudes. Other Quantities show their
+  units in the cell.
+- A UUID cell that identifies another row of the Table shows that row's `key`,
+  `name` or `code` cell, for example a `parent_id`. Only a label that one row has
+  identifies a row. Other UUIDs show their first eight hexadecimal digits.
+- An enum shows its text value, or its name. `None` shows as `—`. Numbers have
+  digit groups. A float shows six significant digits, or all the digits of its
+  integer part.
+- The display shows the first 50 rows. A last line gives the number of the other
+  rows. Read all the cells from `Table.rows`, or export them with
+  [Polars](#polars).
+
+`repr(table)` gives the shape and the column names, for example
+`Table(22 rows, 4 columns: key, movement, role, quantity)`. The
+[docs site](../contributing/README.md#docs-site) keeps the HTML display of a
+lesson output.
+
 ## Project a Model selection
 
 Use `rangekeeper.model.system.table.to_table` with a pinned `View` or
