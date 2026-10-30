@@ -158,7 +158,9 @@ Flow
   convert(*, units, unit_system=None) / scale(factor) / negate()
   total(*, missing=MissingValueHandling.ERROR) -> Quantity | None
   trim(*, span) / clean() / drop_zeroes()
-  difference(*, initial=None) / collapse(*, on=None, missing=MissingValueHandling.ERROR)
+  cumulative() / diff() / since(*, on) / until(*, on)  same coordinates
+  first() / last() / min() / max() -> Quantity
+  collapse(*, on=None, missing=MissingValueHandling.ERROR)
   extent() / trim_empty()
   display(*, name=None, transpose=False, precision=2) -> StreamTable
 

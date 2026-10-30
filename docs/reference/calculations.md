@@ -31,8 +31,9 @@ assert flow.scale(2).total().magnitude == 200
 
 A Flow owns conversion, scaling, negation, totals, `at(on=)`, `shift(by=)`,
 `trim(span=)`, `resample(periods= or frequency=, method=, ...)`,
-`split(periods= or frequency=)`, `integrate`, `multiply`, differences, collapse
-and extent. A Stream owns the operations on several Flows: `align`, `trim`,
+`split(periods= or frequency=)`, `integrate`, `multiply`, `cumulative()`,
+`diff()`, `since(on=)`, `until(on=)`, `first()`, `last()`, `min()`, `max()`,
+collapse and extent. A Stream owns the operations on several Flows: `align`, `trim`,
 `resample`, `split`, `aggregate`, `sum`, `min` and `max`. `trim`, `resample` and
 `split` take the same arguments on Flow and Stream.
 `FlowAggregate` returns the reduced Flow with its coverage. Join and
@@ -104,6 +105,51 @@ quarters = pgi.split(frequency=rk.duration.Frequency.QUARTER)
 assert quarters.resample(
     frequency=rk.duration.Frequency.YEAR, method=rk.flow.ResampleMethod.SUM
 ) == pgi
+```
+
+### Running totals, date masks and extremes
+
+These methods are the operations on one Flow that equations use, such as
+`loan_draws = loan_principal.diff()` (D2, D21):
+
+| Method | Result |
+| --- | --- |
+| `cumulative()` | A Flow on the same coordinates: each amount is the sum of the amounts up to it. The last amount equals `total()` |
+| `diff()` | A Flow on the same coordinates: each amount less the amount before it, and the first amount less zero. It reverses `cumulative()`: `flow.cumulative().diff() == flow`, to floating-point precision |
+| `since(on=)` | A Flow on the same coordinates, with zero before a date: a Period that ends on or before `on`, or an event before it, holds zero |
+| `until(on=)` | A Flow on the same coordinates, with zero after a date: a Period that starts after `on`, or an event after it, holds zero |
+| `first()`, `last()` | The amount of the first or the last Movement, a Quantity |
+| `min()`, `max()` | The smallest or the largest amount, a Quantity |
+
+`since` and `until` keep the Period that contains `on`, as `at(on=)` finds it,
+and they give zero whatever the amount was, also an unresolved one. `on` is a
+date value: `NEVER` is later than every date, so `since(on=NEVER)` is zero
+everywhere and `until(on=NEVER)` keeps every amount. In `cumulative` and `diff`,
+an unresolved amount makes its own result unresolved, and also each later total,
+or the next difference. Each running total is the exactly rounded sum of its
+amounts, as `math.fsum` gives.
+
+`first` and `last` read one Movement; `min` and `max` read every Movement, so an
+unresolved amount anywhere raises `NumericalError` (use `clean()` first to leave
+the unresolved Movements out). An empty Flow raises `ContractError` with
+`Code.CONTRACT`. A currency amount keeps its exact `Decimal`.
+
+```python
+from datetime import date
+
+import rangekeeper as rk
+
+years = rk.duration.Periods(
+    start=date(2027, 1, 1), frequency=rk.duration.Frequency.YEAR, count=4
+)
+net_cash_flow = rk.flow.Flow(
+    amounts={years[0]: -60e6, years[1]: -30e6, years[2]: 10e6, years[3]: 100e6},
+    units="AUD",
+)
+funding_need = -net_cash_flow.cumulative()  # 60e6, 90e6, 80e6, -20e6 AUD
+funding_need.max()  # Quantity(text='90000000 AUD')
+funding_need.diff() == -net_cash_flow  # True
+net_cash_flow.since(on=date(2028, 6, 30))  # 0, -30e6, 10e6, 100e6 AUD
 ```
 
 Dimensional compatibility is necessary but does not prove the intended economics.
