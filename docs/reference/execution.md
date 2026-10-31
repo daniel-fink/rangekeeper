@@ -93,6 +93,8 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 | `free_unknowns` | The keys of the free values that the equations do not determine, with or without an output | `ContractError`, `batch.unsupported` |
 | `diagnostics` | The Run's diagnostics, in report order | The batch Run's diagnostics |
 | `evidence` | The typed solver `Evidence` | `ContractError`, `batch.unsupported` |
+| `decisions` | The [decision trace](market-paths-and-rules.md#the-decision-trace) of this case, a `DecisionTable` | The same, one row for each leaf case and window date |
+| `trace` | The same as `decisions` | `ContractError`, `batch.unsupported` |
 | `key` | The name of the solved Specification: for a case, its case key. None when it has no name | The same |
 | `case(key=)` | `ContractError`, `batch.required` | The Outcome of the direct case with that key. No such case raises `MissingReferenceError` (`kind="Outcome"`, `by="key"`) with the keys that exist |
 | `table(*keys)` | One row | One row for each leaf case, in `walk()` order |
@@ -338,9 +340,12 @@ the configuration of the execution that made the Run; without one, the defaults
 apply. It then compares each leaf case of the new Outcome with the stored case
 of the same key, in `walk()` order:
 
-1. the `Status`;
-2. the number of outputs;
-3. each Value of the stored output Model: a scalar, each amount of a Flow, or
+1. the [decision trace](market-paths-and-rules.md#the-decision-trace), record by
+   record: decisions, dates and sources agree exactly, and amounts within the
+   tolerances;
+2. the `Status`;
+3. the number of outputs;
+4. each Value of the stored output Model: a scalar, each amount of a Flow, or
    a date. Amounts agree within the tolerances of `config.tolerances` (the
    absolute tolerance in the value's units, or the relative one, as
    `rk.quantity.isclose` takes them); dates and `NEVER` agree exactly.
@@ -353,7 +358,8 @@ of the same key, in `walk()` order:
 | `raise_for_status()` | Returns the Replay when `diagnostics` is empty; otherwise raises `ContractError` with the code `REPLAY_MISMATCH`, the stored Run as `document_id` and the `values` of the first difference |
 
 A different status or number of outputs gives one diagnostic for its case; a
-value gives one for its first amount that differs. The `values` of each
+value gives one for its first amount that differs; a trace gives one for its first
+record that differs, with the rule as `key` and its window date as `on`. The `values` of each
 diagnostic are in [Run diagnostics](errors.md#run-diagnostics). Replay has no
 public constructor: make it with `replay`.
 
@@ -439,6 +445,7 @@ time limit has passed. The stages call it between steps.
 | `execution/assembly.py` | Stage 8: make the Outcome of a leaf or a batch, and validate its Run against an overlay of the unstored outputs and Runs. |
 | `execution/comparison.py` | `compare`, `SideBySide`, `Paired` and `Groups`: values side by side, or paired differences from a baseline by case key, with `distribution`, `summary`, `by`, `by_case`, `select` and `where`. |
 | `execution/distribution.py` | `Distribution`, `DateDistribution` and `Mean`: the values of one key across the cases of a batch, their statistics and counts, and the mean of a batch. |
+| `execution/decisions.py` | `DecisionTable`, `DecisionRow` and `ObservationRow`: read the decision traces of an Outcome. |
 | `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns`, `Evidence`, and a batch's `distribution` and `mean`. |
 | `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances, backend options and workers, with one source of defaults. |
 | `execution/_parallel.py`, `execution/_batch_worker.py` | Solve the leaves of a batch in the calling process or in [batch workers](#batch-workers): the rule that chooses, the caller's side and the worker's side. |

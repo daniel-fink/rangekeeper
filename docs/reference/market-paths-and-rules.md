@@ -75,7 +75,7 @@ backend never infer assignments from stored amounts.
 | Strict comparison of fixed or literal operands | Exact check before solving and again during independent acceptance |
 | Strict comparison involving an unknown | Rejected before simplification, even when terms cancel |
 | Finite exogenous rules | Evaluate once before compilation, then use explicit control assignments |
-| Sequential rules that read solved values | `fix(key=rule)` [declares them](#declare-a-rule). The solve runs them in the next step of #300 |
+| Sequential rules that read solved values | `fix(key=rule)` [declares them](#declare-a-rule), and the solve runs them [on each path](#sequential-rule-evaluation) |
 | Multistage optimization | Capability rejection |
 
 Discounting begins at exponent one by default; growth starts at the initial amount.
@@ -230,9 +230,9 @@ under its UUID and return it with `load_paths(id)`; the codecs read it with
 
 ## Rule declarations and evidence
 
-Import `RuleSet`, `Decision`, `Rule`, `Action`, `ActionKind` and `RuleEvidence`
+Import `RuleSet`, `Decision`, `Rule`, `Action`, `ActionKind` and `DecisionEvidence`
 from `rangekeeper.specification.rule`. `Specification.rules` holds a `RuleSet`;
-`RuleSet.decisions` contains dated declarations. `Report.rule_evidence` contains
+`RuleSet.decisions` contains dated declarations. `Report.decision_evidence` contains
 the evidence. Each record's `decision` identifies its declaration. The rule
 queries of [ADR-021](../decisions/021-sequential-decisions.md) replace these
 records ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)). There is no public `decide` or `DecisionHistory` wrapper.
@@ -247,12 +247,7 @@ control value cannot substitute for an earlier decision. Declared availability c
 delay access, but cannot advance a coordinate.
 
 `RuleResult.evidence` is an immutable tuple. Its assignments are derived from
-that evidence. `rk.execution.DecisionResult` names the result of one check:
-`DECIDED`, `NOT_MET`, `SKIPPED` or `OTHERWISE`. `DecisionResult.of(evidence)`
-reads it from one `RuleEvidence` record: `DECIDED` when a rule matched, else
-`OTHERWISE`. The checks on each window date, which also give `NOT_MET` and
-`SKIPPED`, come with the rule queries
-([#300](https://github.com/daniel-fink/rangekeeper/issues/300)). Independent stored-evidence validation checks dates, observed
+that evidence. Independent stored-evidence validation checks dates, observed
 quantities, first-match choice, actions, termination, complete trace and exactly-once
 control coverage. It applies to Runs with and without published outputs. Runtime
 and stored checks use the caller's unit context. Neither certifies numerical
@@ -271,14 +266,12 @@ See [migration](../guides/upgrading.md), [record methods](records.md), and
 ## Sequential rule evaluation
 
 [ADR-021](../decisions/021-sequential-decisions.md) decides each value of a rule
-during the solve, on each path by itself. The engine is in place and verified
-([#215](https://github.com/daniel-fink/rangekeeper/issues/215)). A Specification
-[declares its rules](#declare-a-rule). The next step of
-[#300](https://github.com/daniel-fink/rangekeeper/issues/300) makes
-`rk.execution.solve` run them; until then, a case with rules ends with the status
-`unsupported`. The parameters of rules come with
+during the solve, on each path by itself. A Specification
+[declares its rules](#declare-a-rule), `rk.execution.solve` runs them, and the Run
+[records the trace](#the-decision-trace). The parameters of rules come with
 [#301](https://github.com/daniel-fink/rangekeeper/issues/301). The dated slice above
-stays in place.
+stays in place until the last step of
+[#300](https://github.com/daniel-fink/rangekeeper/issues/300).
 
 ### Declare a rule
 
@@ -326,11 +319,14 @@ past, so that is not `rule_order`.
 
 ### The stage of a rule
 
+`bind_roles` makes each decided value free. Then
 `execution.rule.sequence.run_rules(binding=, rules=, solver=, parameters=None,
-paths=None)` takes one bound case, with each decided value free. It returns
-`Decisions`: the decided values with their decision dates, the trace and the number
-of provisional solves. `Decisions.bind(binding)` fixes the decided values, so the
-later stages solve one affine problem that contains no rule.
+paths=None, progress=None)` takes the bound case and returns `Decisions`: the decided
+values with their decision dates, the trace and the number of provisional solves.
+`Decisions.bind(binding)` fixes the decided values, so the later stages solve one
+affine problem that contains no rule. A case in a batch worker process runs the same
+stage, with the Models and the Paths of its `Setup`. So the decisions and the trace do
+not depend on the number of workers.
 
 ### The dates of a rule
 
@@ -376,11 +372,18 @@ Each failure below ends one case. `Attempt` gives it a Run with the status
 | `ContractError` | `rule_reads_unknown` | A condition depends on a Value that no equation defines and the case does not fix |
 | `ContractError` | `rule_capability` | A rule gives another kind of value than its Value holds, a value with two rules, or a rule with no window date |
 | `DecisionError` | `decision_changes_past` | A decision determines a date before its decision date, such as `marketing_start = b_start - 6 months`, or a later solution changes a Movement of a Period that ended before a decision. `values` name the decision and the date or Movement |
-| `DecisionError` | `provisional_infeasible` | The provisional problem is infeasible. `values["constraints"]` gives the date constraints that the decisions break |
+| `DecisionError` | `provisional_infeasible` | The provisional problem is infeasible. `values["constraints"]` gives the date constraints that the decisions break, `values["window_date"]` the date of the solve, and `values["decided"]` the decisions so far |
+| `DecisionError` | `rule_capability` | A rule has no window date on this case |
 | `DecisionError` | `rule_trace` | `check_trace` rejects the trace |
 
-The `ContractError` rows raise out of the stage. `fix` reports the same problems
-[as `ValidationError`](#declare-a-rule) when the Specification is made.
+The `ContractError` rows raise out of the stage. `fix` and `validate` report the same
+problems [as `ValidationError`](#declare-a-rule), so a solve reports them as a case
+with the status `INVALID`.
+
+A final solve that the decided dates make infeasible has the status `INFEASIBLE`,
+with one `constraint_residual` error diagnostic for each date constraint that they
+break. Its `values["equation"]` gives the text of the constraint, such as
+`b_start >= shared_start + 1 year`. The trace stays in the Run.
 
 ### The trace check
 
@@ -391,6 +394,45 @@ order and the written order; the bounds; each reading against the path, the
 candidate and its availability date; each condition against its readings; the first
 true window date, or `otherwise` on a date that the window allows; that no window
 date of the calendar is missing; and that the candidate holds each decided value.
+`rk.run.validate` runs it on each stored Run that has an output, and reports a
+failure as an issue with the code `rule_trace`. A Run without an output has no
+candidate, so it has no check. The check uses the default tolerances (`1e-8` absolute,
+`1e-9` relative), because a stored Run does not record `ExecutionConfig.tolerances`.
+
+### The decision trace
+
+```python
+outcome = rk.execution.solve(specification=strategy.across(paths=paths))
+outcome.decisions  # one row for each case and window date
+outcome.decisions.where(key="b_start", result=rk.execution.DecisionResult.DECIDED)
+outcome.case(key=paths.keys[0]).trace  # the same rows, of one case
+```
+
+| Member | Contents |
+| --- | --- |
+| `outcome.decisions` | A `DecisionTable` of each leaf case. Its rows are `DecisionRow` records. A case without rules has no rows, and a case that fails during its rules keeps the rows up to its failure |
+| `outcome.trace` | The `DecisionTable` of a leaf Outcome. A batch raises `ContractError` with `batch.unsupported` |
+| `DecisionTable.where(*, key=None, result=None)` | The rows of one rule, of one result, or of both. A key that no rule decides raises `MissingReferenceError` |
+| `DecisionTable.observations` | One `ObservationRow` for each value that has an availability date: `case`, `key`, `decision_date`, `name`, `target`, `value`, `available_on` and `source`. A fixed value and a parameter are always available, and an undecided value has no value, so they have no row |
+| `DecisionTable.table` | A `Table`, for display and for columns. A notebook shows it |
+| `DecisionRow` | `case`, `key`, `decision_date`, `result` (a `DecisionResult`), `condition` (True, False, or None for unknown or no test), `value` (what the row fixes, else None), `observed` (each value read, by the text that reads it; None for an undecided value) and `observations` |
+| `run.rule_evidence` | The stored `RuleEvidence`, or None for a case without rules |
+
+`Report.rule_evidence` holds these stored records. LinkML defines them in
+`schema/rule.yaml`:
+
+| Record | Fields |
+| --- | --- |
+| `RuleEvidence` | `checks`, `decided`, `provisional_solves` and `verified`. The final solve is one solve more than `provisional_solves`. `verified` says that the trace check passed on a candidate; an output needs it |
+| `Check` | `target` and `key` of the rule, `date`, `result`, `condition`, `observations`, `earliest`, `latest` and `value`. There is one for each window date and each `otherwise`. An absent `condition` is unknown, or no test. An absent bound is undecided, or no bound |
+| `Observation` | `name`, `target` (the Value, or the Movement of a Flow), `source` (an `ObservationSource`: `path`, `fixed`, `parameter`, `decided` or `solved`), `value` (absent when undecided) and `available_on` (absent when always available, or undecided) |
+| `DecidedValue` | `target`, `key`, `value` and `decision_date` |
+| `TraceValue` | Exactly one of `quantity`, `date` and `never` |
+
+A failed trace check is a `rule_trace` diagnostic in `Report.diagnostics`.
+
+`rk.execution.replay` [compares the traces](execution.md#replay-a-stored-run) of a
+stored Run and a new solve.
 
 ## Market path vocabulary
 
@@ -409,7 +451,8 @@ date of the calendar is missing; and that the candidate holds each decided value
 | RandomStream | Recorded identity of a random sequence, separate from a Flow Stream |
 | RuleSet | The rules of a Specification: controlled targets and dated decisions |
 | Decision | Dated rule declaration with observations, rules and fallback |
-| RuleEvidence | Recorded observations, assignments and termination for one Decision |
+| DecisionEvidence | Recorded observations, assignments and termination for one Decision |
+| RuleEvidence | The decision trace of one case: its Checks, decided values, solve count and trace check result |
 
 `schema/market.yaml` holds the Paths records; `schema/distribution.yaml` and
 `schema/binding.yaml` contain reusable contracts. No generated field schema is

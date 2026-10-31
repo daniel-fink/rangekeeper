@@ -1,8 +1,9 @@
 # ADR-021: Decide values by rules over market paths
 
 Status: accepted for 1.0; the evaluation engine is implemented and verified (#215),
-the queries are declared and stored (#300, part), and the solve, the stored evidence
-and the Outcome API are pending (#300, #301).
+the queries are declared and stored, the solve runs them, and the stored evidence, the
+Outcome API and trace replay are in place (#300, part). Parameters are pending (#301),
+and so is the removal of the old slice (#300).
 Recorded: 2026-10-27. Amended 2026-10-27 by #201 decisions D2, D25 and D26 (`Periods`,
 `NEVER`, the equity-first funding names), 2026-10-28 by decisions D41 (rules, not
 policies) and D42 (a rule is a query over a window), 2026-10-28 by #102 (the shared
@@ -210,6 +211,27 @@ each reading agrees with the worked examples below:
 - **Triggers before #301.** `rules[key]` brings the fixed values that the rule reads,
   because `parameters` does not exist yet. A value that the other Specification fixes
   stays.
+
+#### How #300 stores the trace
+
+- **One record for each case.** `Report.rule_evidence` holds one `RuleEvidence`, with
+  `checks`, `decided`, `provisional_solves` and `verified`. The old slice keeps its
+  list as `Report.decision_evidence`, of `DecisionEvidence` records, until the step
+  that removes it. `ObservedQuantity` stays with the old slice: an `Observation` also
+  holds a date, NEVER or an undecided value, with its source.
+- **Observations with a date.** Cell 18 asserts `row.available_on <= row.decision_date`
+  for each row of `decisions.observations`, so a value that is always available, and
+  an undecided value, have no row there. `row.observed` holds them.
+- **The solve count.** `provisional_solves` does not count the final solve.
+- **`verified` and its diagnostics.** A failed check is a `rule_trace` diagnostic in
+  the report, so the record holds only the result.
+- **Open: three points for the maintainer.** The table under cell 6 reads a 2026
+  Period on 2027-01-01, but lesson 04's `rent_index` starts in 2027, so the first
+  check on the lesson's paths is on 2028-01-01, and it reads 2027; #207 settles this.
+  Cell 10 calls `rent_index.at(on=b_sale_date)`, and `at` has no value for NEVER. And
+  lesson 03's `b_unpaid = b_works.cumulative() - b_works.total()` changes before B's
+  decision date when B starts, which is `decision_changes_past` under the rule below.
+  Until the last two are decided, cell 11b is not feasible on a path where B starts.
 
 **Decisions do not change the past.** A decision on a date must not change a
 Movement before that date. The executor compares each new provisional solution, and

@@ -41,6 +41,8 @@ from rangekeeper.shared.errors import ValidationError
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.shared.registry import Registry
 from rangekeeper.specification import Composition, Specification
+from rangekeeper.specification.rule._declaration import query_of
+from rangekeeper.specification.rule._query import RuleQuery
 
 # The wall-clock seconds that worker processes cost before they repay anything:
 # 0.4 s to import Rangekeeper and read the Setup, and 1.4 s more for the first
@@ -145,13 +147,25 @@ def solve_leaf(
 ) -> Solved:
     """Run the stages of one leaf; the same code in any process."""
     attempt = Attempt(
-        specification, view, config=config, backend=backend, resolver=resolver
+        specification,
+        view,
+        config=config,
+        backend=backend,
+        resolver=resolver,
+        rules=_rules(view),
     )
     outcome = attempt.execute()
     validation = attempt.validation
     if validation is not None and validation.report.valid and validation._scope:
         return Solved(outcome=outcome, scope=validation._scope)
     return Solved(outcome=outcome)
+
+
+def _rules(view: Composition | ValidationError) -> tuple[RuleQuery, ...]:
+    """Return what the rule engine reads from the rules of a leaf, in their order."""
+    if isinstance(view, ValidationError):
+        return ()
+    return tuple(query_of(item) for item in view.requirements.declared_rules or ())
 
 
 def start_session(setup: Setup) -> Session:

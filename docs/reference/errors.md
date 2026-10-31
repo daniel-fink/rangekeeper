@@ -106,12 +106,12 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | `no_sign_change` | `inflows` and `outflows`: the totals of the positive and of the negative amounts, as Quantity text, before near-zero amounts count as zero. `tolerance`: the size at or below which an amount counts as zero, `1e-8 * max(gross amounts, 1)` ([IRR](calculations.md#present-value-npv-irr-interest-and-payments)) |
 | `specification_invalid` | `issues`: each validation issue of the attempt, with its `code`, `message`, `document`, `path`, `targets`, `values` and `evidence` |
 | A failure from another error | `path`, when the error has one; `targets`, when it names more than one record. One target is the diagnostic's `target` |
-| `constraint_residual` | `equation`: the text of the Constraint that was checked. `formulation`: the Formulation that groups an equation of the Model, by its name (such as `"Funding"`) or, for an entity's default Formulation, its code. `target` is the Constraint |
+| `constraint_residual` | `equation`: the text of the Constraint that was checked. `formulation`: the Formulation that groups an equation of the Model, by its name (such as `"Funding"`) or, for an entity's default Formulation, its code. `target` is the Constraint. A date constraint that decided dates break gives an error with `equation` alone |
 | `observation_unavailable` | `key`, `available_on` and `decision_date`, from `AvailabilityError` |
 | `decision_changes_past` | `decision`, and `movement` with `before`, `earlier` and `later`, or `decision_date`, `movement` and `date` for a date |
-| `provisional_infeasible` | `constraints`: the text of the date constraints that the decisions break |
+| `provisional_infeasible` | `constraints`: the text of the date constraints that the decisions break. `window_date` and `decided`: the date of the provisional solve and the decisions so far |
 | `rule_trace` | `key`, `on` and `result` of the record that the trace check rejects |
-| `replay_mismatch` | In a `Replay`, not in a Run ([replay a stored Run](execution.md#replay-a-stored-run)). `case`: the case key, or None for a leaf Run. `stored` and `replayed`: the two results as text: a `Status` value, a number of outputs, or an amount, a date or `never`, with None for an unresolved amount. `key`: the key of the Value, as `Model.key_of` gives it. `on`: the Period of a Flow amount as an ISO interval, or its date. For other cases, `stored` and `replayed` are the two lists of case keys |
+| `replay_mismatch` | In a `Replay`, not in a Run ([replay a stored Run](execution.md#replay-a-stored-run)). `case`: the case key, or None for a leaf Run. `stored` and `replayed`: the two results as text: a `Status` value, a number of outputs, or an amount, a date or `never`, with None for an unresolved amount. `key`: the key of the Value, as `Model.key_of` gives it. `on`: the Period of a Flow amount as an ISO interval, or its date. For a decision trace, `key` is the rule and `on` is the first window date that differs. For other cases, `stored` and `replayed` are the two lists of case keys |
 
 ```python
 for diagnostic in run.report.diagnostics:

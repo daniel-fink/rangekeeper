@@ -101,7 +101,7 @@ classes:
     description: One ordered Boolean condition and its atomic actions.
     attributes:
       id:
-        description: Stable identity of the Rule, referenced by RuleEvidence.
+        description: Stable identity of the Rule, referenced by DecisionEvidence.
         range: UUID
         required: true
         identifier: true
@@ -123,7 +123,7 @@ classes:
     description: One dated rule decision with explicit observations, first-match rules and fallback.
     attributes:
       id:
-        description: Stable identity of the Decision, referenced by RuleEvidence.
+        description: Stable identity of the Decision, referenced by DecisionEvidence.
         range: UUID
         required: true
         identifier: true
@@ -200,8 +200,8 @@ classes:
         description: Date from which the quantity was available; it is not later than the Decision date.
         range: date
         required: true
-  RuleEvidence:
-    description: Recorded evidence of one evaluated decision; absence of a rule means fallback.
+  DecisionEvidence:
+    description: Recorded evidence of one evaluated Decision of a RuleSet; absence of a rule means fallback.
     attributes:
       decision:
         description: UUID of the evaluated Decision.
@@ -239,6 +239,155 @@ classes:
       termination_reason:
         range: string
         description: Reason for termination, required when terminated is true.
+  TraceValue:
+    description: One value in a decision trace, a Quantity, a calendar date or NEVER.
+    attributes:
+      quantity:
+        description: The amount of a scalar Value or a Movement; it excludes date and never.
+        range: Quantity
+        inlined: true
+      date:
+        description: The calendar date of a date Value; it excludes quantity and never.
+        range: date
+      never:
+        description: The value of a date Value when the event does not happen; it excludes quantity and date.
+        range: Never
+    exactly_one_of:
+    - slot_conditions:
+        quantity:
+          required: true
+    - slot_conditions:
+        date:
+          required: true
+    - slot_conditions:
+        never:
+          required: true
+  Observation:
+    description: One value that a rule read on a window date, and when it became available.
+    attributes:
+      name:
+        description: The text of what the condition reads, unique within its Check, such as rent_index or
+          rent_index.shift(by=1).
+        range: string
+        required: true
+      target:
+        description: The Value that the rule read, or the Movement for a reading of a Flow.
+        range: Reference
+        required: true
+        inlined: true
+      source:
+        description: Where the value comes from.
+        range: ObservationSource
+        required: true
+      value:
+        description: The value that the rule read. Absent or null means that the value was undecided, so the observation
+          is unknown.
+        range: TraceValue
+        inlined: true
+      available_on:
+        description: The date from which the value was available; it is not after the date of the Check. Absent or null
+          means always available, or undecided.
+        range: date
+  Check:
+    description: One record of a decision trace, a window date of a rule or the date on which the rule took otherwise.
+    attributes:
+      target:
+        description: The Value that the rule decides, which identifies the rule.
+        range: Reference
+        required: true
+        inlined: true
+      key:
+        description: The key of that Value in the input Model.
+        range: string
+        required: true
+      date:
+        description: The date of this record.
+        range: date
+        required: true
+      result:
+        description: The result of this record.
+        range: DecisionResult
+        required: true
+      condition:
+        description: The result of the condition. Absent or null means unknown, or that this record tested no condition.
+        range: boolean
+      observations:
+        description: The values that the condition read, in the order of the condition. Absent or null means that this
+          record tested no condition.
+        range: Observation
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      earliest:
+        description: The earliest bound of the window on this date. Absent or null means no bound, or an undecided bound.
+        range: TraceValue
+        inlined: true
+      latest:
+        description: The latest bound of the window on this date. Absent or null means no bound, or an undecided bound.
+        range: TraceValue
+        inlined: true
+      value:
+        description: The value that this record fixes. It is present when the result is decided or otherwise, and only
+          then.
+        range: TraceValue
+        inlined: true
+  DecidedValue:
+    description: The value that a rule fixed on one path, and its decision date.
+    attributes:
+      target:
+        description: The Value that the rule decides, which identifies the rule.
+        range: Reference
+        required: true
+        inlined: true
+      key:
+        description: The key of that Value in the input Model.
+        range: string
+        required: true
+      value:
+        description: The value that the rule fixed.
+        range: TraceValue
+        required: true
+        inlined: true
+      decision_date:
+        description: The date on which the rule fixed the value.
+        range: date
+        required: true
+  RuleEvidence:
+    description: The decision trace of one case, its decided values, its solve count and the result of its trace check
+      (ADR-021).
+    notes:
+    - A case that fails during the rules stage keeps the records up to its failure, so decided can have fewer values than
+      the Specification has rules.
+    - The trace check reads only this record, the rules, the path data and the output Model, so it can run on a stored
+      Run with no solve. A failed trace check fails the case with a rule_trace diagnostic in the report.
+    attributes:
+      checks:
+        description: One record for each window date and each otherwise, in the order in which they ran.
+        range: Check
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      decided:
+        description: The value of each rule that fixed its value, in the order of the decisions.
+        range: DecidedValue
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      provisional_solves:
+        description: The number of provisional solves that the rules needed. The final solve of the case is one more.
+        range: integer
+        required: true
+        minimum_value: 0
+      verified:
+        description: Whether the trace check passed on a candidate. False means that the case has no candidate, or that
+          the check found a difference.
+        range: boolean
+        required: true
 enums:
   ActionKind:
     description: What a Rule action does.
@@ -247,3 +396,27 @@ enums:
         description: Assign a quantity to a controlled target.
       terminate:
         description: End the decision sequence.
+  DecisionResult:
+    description: The result of one check of a decision rule.
+    permissible_values:
+      decided:
+        description: The condition held, so the rule decided the value on this date.
+      not_met:
+        description: The condition did not hold on this date; the rule keeps checking.
+      skipped:
+        description: The rule did not test its condition on this date.
+      otherwise:
+        description: No check decided the value, so the otherwise value applies.
+  ObservationSource:
+    description: Where the value that a rule read comes from.
+    permissible_values:
+      path:
+        description: A market path that fixes the Movement.
+      fixed:
+        description: A value that the Specification fixes.
+      parameter:
+        description: A parameter of the rule.
+      decided:
+        description: A value that an earlier rule decided.
+      solved:
+        description: A value of the provisional solution.

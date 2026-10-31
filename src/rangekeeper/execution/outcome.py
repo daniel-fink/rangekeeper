@@ -9,6 +9,7 @@ from uuid import UUID
 from rangekeeper.duration.dates import NEVER, DateValue
 from rangekeeper.execution import statuses
 from rangekeeper.execution.backends.base import Termination
+from rangekeeper.execution.decisions import DecisionTable, decision_rows
 from rangekeeper.execution.distribution import (
     DateDistribution,
     Distribution,
@@ -357,6 +358,33 @@ class Outcome:
         """
         self._require_batch("mean")
         return Mean._of(outcome=self)
+
+    @property
+    def decisions(self) -> DecisionTable:
+        """Return the decision trace of each leaf case, one row for each window date.
+
+        Read them with ``where(key=, result=)`` and ``observations``. A case without
+        rules has no rows, and a case that failed during its rules holds the records
+        up to its failure.
+        """
+        return DecisionTable(
+            rows=(
+                row
+                for path, leaf in self._keyed_leaves(())
+                for row in decision_rows(
+                    "/".join(path) if path else self.key, leaf.run.rule_evidence
+                )
+            )
+        )
+
+    @property
+    def trace(self) -> DecisionTable:
+        """Return the decision trace of a leaf Outcome, one row for each window date.
+
+        A batch has no single trace: read ``decisions``, or the trace of one case.
+        """
+        self._require_leaf("trace")
+        return self.decisions
 
     def stream(self, *keys: str) -> Stream:
         """Return a Stream of the solved Flows at these keys, named by key.

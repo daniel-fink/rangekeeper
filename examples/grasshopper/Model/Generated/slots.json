@@ -335,6 +335,134 @@
       "required": false
     }
   },
+  "Check": {
+    "condition": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "boolean"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "date": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "earliest": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "TraceValue"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "key": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "latest": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "TraceValue"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "observations": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Observation"
+        }
+      ],
+      "ordered": true,
+      "required": false
+    },
+    "result": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "enum",
+          "kind": "DecisionResult"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "target": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Reference"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "value": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "TraceValue"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    }
+  },
   "Claim": {
     "content": {
       "lineage": false,
@@ -630,6 +758,64 @@
       "required": true
     }
   },
+  "DecidedValue": {
+    "decision_date": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "key": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "target": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Reference"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "value": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "TraceValue"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
   "Decision": {
     "at": {
       "lineage": false,
@@ -700,6 +886,106 @@
       ],
       "ordered": true,
       "required": true
+    }
+  },
+  "DecisionEvidence": {
+    "assignments": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Assignment"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "at": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "decision": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "observations": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "ObservedQuantity"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "rule": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "terminated": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "boolean"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "termination_reason": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
     }
   },
   "Definitions": {
@@ -2599,6 +2885,78 @@
       "required": true
     }
   },
+  "Observation": {
+    "available_on": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "name": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "source": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "enum",
+          "kind": "ObservationSource"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "target": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Reference"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "value": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "TraceValue"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    }
+  },
   "ObservationBinding": {
     "available_at": {
       "lineage": false,
@@ -3622,6 +3980,20 @@
     }
   },
   "Report": {
+    "decision_evidence": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "DecisionEvidence"
+        }
+      ],
+      "ordered": true,
+      "required": false
+    },
     "diagnostics": {
       "lineage": false,
       "many": true,
@@ -3638,16 +4010,16 @@
     },
     "rule_evidence": {
       "lineage": false,
-      "many": true,
+      "many": false,
       "mapping": false,
-      "nullable": true,
+      "nullable": false,
       "options": [
         {
           "category": "record",
           "kind": "RuleEvidence"
         }
       ],
-      "ordered": true,
+      "ordered": false,
       "required": false
     },
     "runtime": {
@@ -3852,7 +4224,7 @@
     }
   },
   "RuleEvidence": {
-    "assignments": {
+    "checks": {
       "lineage": false,
       "many": true,
       "mapping": false,
@@ -3860,13 +4232,27 @@
       "options": [
         {
           "category": "record",
-          "kind": "Assignment"
+          "kind": "Check"
         }
       ],
       "ordered": true,
       "required": true
     },
-    "at": {
+    "decided": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "DecidedValue"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "provisional_solves": {
       "lineage": false,
       "many": false,
       "mapping": false,
@@ -3874,55 +4260,13 @@
       "options": [
         {
           "category": "primitive",
-          "kind": "date"
+          "kind": "integer"
         }
       ],
       "ordered": false,
       "required": true
     },
-    "decision": {
-      "lineage": false,
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "observations": {
-      "lineage": false,
-      "many": true,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "ObservedQuantity"
-        }
-      ],
-      "ordered": true,
-      "required": true
-    },
-    "rule": {
-      "lineage": false,
-      "many": false,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": false
-    },
-    "terminated": {
+    "verified": {
       "lineage": false,
       "many": false,
       "mapping": false,
@@ -3935,20 +4279,6 @@
       ],
       "ordered": false,
       "required": true
-    },
-    "termination_reason": {
-      "lineage": false,
-      "many": false,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "primitive",
-          "kind": "string"
-        }
-      ],
-      "ordered": false,
-      "required": false
     }
   },
   "RuleSet": {
@@ -4865,6 +5195,50 @@
       ],
       "ordered": false,
       "required": true
+    }
+  },
+  "TraceValue": {
+    "date": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "never": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "enum",
+          "kind": "Never"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "quantity": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Quantity"
+        }
+      ],
+      "ordered": false,
+      "required": false
     }
   },
   "Traversal": {

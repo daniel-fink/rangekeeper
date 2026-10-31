@@ -137,7 +137,7 @@ def test_rule_run_rejects_forged_information_timing_and_actions():
     for mutation in ("availability", "assignment", "rule", "termination"):
         data = run.to_data()
         data["metadata"]["id"] = str(uuid4())
-        decision = data["report"]["rule_evidence"][0]
+        decision = data["report"]["decision_evidence"][0]
         if mutation == "availability":
             decision["observations"][0]["available_at"] = "2000-01-01"
         elif mutation == "assignment":

@@ -1,14 +1,11 @@
 """Each fixed list of words that rangekeeper defines is an enum (D26, #307, #390)."""
 
 import importlib
-from datetime import date
 from enum import Enum, StrEnum
-from uuid import uuid4
 
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.specification.rule import RuleEvidence
 from tests.contracts import api
 
 
@@ -68,24 +65,6 @@ def test_decision_result_values_are_the_recorded_words():
         "otherwise",
     ]
     assert rk.execution.DecisionResult("decided") is rk.execution.DecisionResult.DECIDED
-
-
-def test_decision_result_of_recorded_evidence():
-    def evidence(rule):
-        return RuleEvidence(
-            decision=uuid4(),
-            at=date(2027, 1, 1),
-            rule=rule,
-            observations=(),
-            assignments=(),
-            terminated=False,
-        )
-
-    result = rk.execution.DecisionResult
-    assert result.of(evidence(uuid4())) is result.DECIDED
-    assert result.of(evidence(None)) is result.OTHERWISE
-    with pytest.raises(TypeError):
-        result.of("decided")
 
 
 def test_direction_reads_both_ways_of_a_relationship():

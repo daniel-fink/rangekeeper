@@ -3,14 +3,13 @@
 The rule engine in ``execution.rule`` records a ``Check`` for each window date.
 ``check_trace`` does not trust that record. It reads only the declarations, the
 recorded readings, the path data and the serialized candidate, so it can run on a
-stored Run without a solve. #300 defines the stored fields of these records in
-LinkML.
+stored Run without a solve. ``run._rule.stored`` converts these records to and from
+the stored ``RuleEvidence``.
 """
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
-from enum import StrEnum, unique
 from math import isclose
 from uuid import UUID
 
@@ -23,7 +22,7 @@ from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.run._rule.availability import known_on
 from rangekeeper.run._rule.result import DecisionResult
 from rangekeeper.run._rule.truth import UNKNOWN, truth
-from rangekeeper.schema.enums import ValueKind
+from rangekeeper.schema.enums import ObservationSource, ValueKind
 from rangekeeper.schema.records import (
     Expression,
     ExpressionKind,
@@ -41,17 +40,6 @@ from rangekeeper.specification.rule._query import (
 )
 
 
-@unique
-class Source(StrEnum):
-    """Where the value of a reading comes from."""
-
-    PATH = "path"
-    FIXED = "fixed"
-    PARAMETER = "parameter"
-    DECIDED = "decided"
-    SOLVED = "solved"
-
-
 @dataclass(frozen=True, kw_only=True)
 class Reading:
     """One value that a rule read on a window date.
@@ -65,7 +53,7 @@ class Reading:
     target: UUID
     value: Quantity | DateValue | None
     available_on: date | None
-    source: Source
+    source: ObservationSource
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -318,7 +306,7 @@ def _check_reading(
 ) -> None:
     if reading.available_on is not None and reading.available_on > check.on:
         raise _fail(f"{reading.name} is read before it is known", check=check)
-    if reading.source is Source.DECIDED:
+    if reading.source is ObservationSource.DECIDED:
         _check_order_of_reading(reading, check=check, decided=decided)
     expected, known = _source_value(reading, check=check, trace=trace)
     if reading.value is None or expected is None:
@@ -344,18 +332,18 @@ def _source_value(
 ) -> tuple[Quantity | DateValue | None, date | None]:
     """Return the value that a reading's source holds, and when it is known."""
     target = reading.target
-    if reading.source is Source.PATH:
+    if reading.source is ObservationSource.PATH:
         if target not in trace.path_amounts:
             raise _fail(f"{reading.name} is not in the path", check=check)
         return trace.path_amounts[target], trace.path_known[target]
-    if reading.source is Source.PARAMETER:
+    if reading.source is ObservationSource.PARAMETER:
         if reading.name not in trace.parameters:
             raise _fail(f"{reading.name} is not a parameter", check=check)
         return trace.parameters[reading.name], None
-    if reading.source is Source.DECIDED:
+    if reading.source is ObservationSource.DECIDED:
         return _decided_value(reading, check=check, trace=trace)
     record = trace.candidate._index.records.get(target)
-    if reading.source is Source.SOLVED and not isinstance(record, Movement):
+    if reading.source is ObservationSource.SOLVED and not isinstance(record, Movement):
         # A solved scalar reads the state of its date, not the final state.
         return None, None
     if target not in trace.values:
@@ -470,7 +458,6 @@ def _add_value(value: Value, found: dict[UUID, Quantity | DateValue]) -> None:
 __all__ = [
     "Check",
     "Reading",
-    "Source",
     "TraceFacts",
     "calendar",
     "candidate_values",

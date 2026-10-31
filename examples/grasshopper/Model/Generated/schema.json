@@ -313,6 +313,87 @@
       "title": "Characteristics",
       "type": "object"
     },
+    "Check": {
+      "additionalProperties": false,
+      "description": "One record of a decision trace, a window date of a rule or the date on which the rule took otherwise.",
+      "properties": {
+        "condition": {
+          "description": "The result of the condition. Absent or null means unknown, or that this record tested no condition.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "date": {
+          "description": "The date of this record.",
+          "format": "date",
+          "type": "string"
+        },
+        "earliest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TraceValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The earliest bound of the window on this date. Absent or null means no bound, or an undecided bound."
+        },
+        "key": {
+          "description": "The key of that Value in the input Model.",
+          "type": "string"
+        },
+        "latest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TraceValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The latest bound of the window on this date. Absent or null means no bound, or an undecided bound."
+        },
+        "observations": {
+          "description": "The values that the condition read, in the order of the condition. Absent or null means that this record tested no condition.",
+          "items": {
+            "$ref": "#/$defs/Observation"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "result": {
+          "$ref": "#/$defs/DecisionResult",
+          "description": "The result of this record."
+        },
+        "target": {
+          "$ref": "#/$defs/Reference",
+          "description": "The Value that the rule decides, which identifies the rule."
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TraceValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The value that this record fixes. It is present when the result is decided or otherwise, and only then."
+        }
+      },
+      "required": [
+        "target",
+        "key",
+        "date",
+        "result"
+      ],
+      "title": "Check",
+      "type": "object"
+    },
     "Claim": {
       "additionalProperties": false,
       "allOf": [
@@ -657,6 +738,37 @@
       "title": "Criterion",
       "type": "object"
     },
+    "DecidedValue": {
+      "additionalProperties": false,
+      "description": "The value that a rule fixed on one path, and its decision date.",
+      "properties": {
+        "decision_date": {
+          "description": "The date on which the rule fixed the value.",
+          "format": "date",
+          "type": "string"
+        },
+        "key": {
+          "description": "The key of that Value in the input Model.",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/Reference",
+          "description": "The Value that the rule decides, which identifies the rule."
+        },
+        "value": {
+          "$ref": "#/$defs/TraceValue",
+          "description": "The value that the rule fixed."
+        }
+      },
+      "required": [
+        "target",
+        "key",
+        "value",
+        "decision_date"
+      ],
+      "title": "DecidedValue",
+      "type": "object"
+    },
     "Decision": {
       "additionalProperties": false,
       "description": "One dated rule decision with explicit observations, first-match rules and fallback.",
@@ -674,7 +786,7 @@
           "type": "array"
         },
         "id": {
-          "description": "Stable identity of the Decision, referenced by RuleEvidence.",
+          "description": "Stable identity of the Decision, referenced by DecisionEvidence.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         },
@@ -702,6 +814,75 @@
       ],
       "title": "Decision",
       "type": "object"
+    },
+    "DecisionEvidence": {
+      "additionalProperties": false,
+      "description": "Recorded evidence of one evaluated Decision of a RuleSet; absence of a rule means fallback.",
+      "properties": {
+        "assignments": {
+          "description": "Assignments made by the applied actions, in action order.",
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "type": "array"
+        },
+        "at": {
+          "description": "Date of the evaluated Decision.",
+          "format": "date",
+          "type": "string"
+        },
+        "decision": {
+          "description": "UUID of the evaluated Decision.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "observations": {
+          "description": "Observed quantities, in the order of the Decision observations.",
+          "items": {
+            "$ref": "#/$defs/ObservedQuantity"
+          },
+          "type": "array"
+        },
+        "rule": {
+          "description": "UUID of the first Rule whose condition was true; absent or null when the fallback applied.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "terminated": {
+          "description": "Whether the applied actions terminated the decision sequence; no evidence follows a termination.",
+          "type": "boolean"
+        },
+        "termination_reason": {
+          "description": "Reason for termination, required when terminated is true.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "decision",
+        "at",
+        "observations",
+        "assignments",
+        "terminated"
+      ],
+      "title": "DecisionEvidence",
+      "type": "object"
+    },
+    "DecisionResult": {
+      "description": "The result of one check of a decision rule.",
+      "enum": [
+        "decided",
+        "not_met",
+        "skipped",
+        "otherwise"
+      ],
+      "title": "DecisionResult",
+      "type": "string"
     },
     "Definitions": {
       "additionalProperties": false,
@@ -2714,6 +2895,50 @@
       "title": "ObjectiveKind",
       "type": "string"
     },
+    "Observation": {
+      "additionalProperties": false,
+      "description": "One value that a rule read on a window date, and when it became available.",
+      "properties": {
+        "available_on": {
+          "description": "The date from which the value was available; it is not after the date of the Check. Absent or null means always available, or undecided.",
+          "format": "date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "The text of what the condition reads, unique within its Check, such as rent_index or rent_index.shift(by=1).",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/ObservationSource",
+          "description": "Where the value comes from."
+        },
+        "target": {
+          "$ref": "#/$defs/Reference",
+          "description": "The Value that the rule read, or the Movement for a reading of a Flow."
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TraceValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The value that the rule read. Absent or null means that the value was undecided, so the observation is unknown."
+        }
+      },
+      "required": [
+        "name",
+        "target",
+        "source"
+      ],
+      "title": "Observation",
+      "type": "object"
+    },
     "ObservationBinding": {
       "additionalProperties": false,
       "description": "An explicit observation target. An optional date may delay availability but cannot advance it.",
@@ -2742,6 +2967,18 @@
       ],
       "title": "ObservationBinding",
       "type": "object"
+    },
+    "ObservationSource": {
+      "description": "Where the value that a rule read comes from.",
+      "enum": [
+        "path",
+        "fixed",
+        "parameter",
+        "decided",
+        "solved"
+      ],
+      "title": "ObservationSource",
+      "type": "string"
     },
     "ObservedQuantity": {
       "additionalProperties": false,
@@ -3593,6 +3830,16 @@
       "additionalProperties": false,
       "description": "Outcome, actual runtime, findings, and ordered execution trace of a Run.",
       "properties": {
+        "decision_evidence": {
+          "description": "Ordered evidence of each evaluated Decision of the RuleSet of the Specification.",
+          "items": {
+            "$ref": "#/$defs/DecisionEvidence"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
         "diagnostics": {
           "description": "Unordered findings supporting interpretation of the outcome.",
           "items": {
@@ -3604,14 +3851,12 @@
           ]
         },
         "rule_evidence": {
-          "description": "Ordered evidence of each evaluated Decision of the Specification rules.",
-          "items": {
-            "$ref": "#/$defs/RuleEvidence"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
+          "allOf": [
+            {
+              "$ref": "#/$defs/RuleEvidence"
+            }
+          ],
+          "description": "The decision trace of the rules of this case; absent for a case without rules and for a batch."
         },
         "runtime": {
           "allOf": [
@@ -3663,7 +3908,7 @@
           "description": "Boolean Expression that refers only to the observations of its Decision."
         },
         "id": {
-          "description": "Stable identity of the Rule, referenced by RuleEvidence.",
+          "description": "Stable identity of the Rule, referenced by DecisionEvidence.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
         }
@@ -3750,58 +3995,37 @@
     },
     "RuleEvidence": {
       "additionalProperties": false,
-      "description": "Recorded evidence of one evaluated decision; absence of a rule means fallback.",
+      "description": "The decision trace of one case, its decided values, its solve count and the result of its trace check (ADR-021).",
       "properties": {
-        "assignments": {
-          "description": "Assignments made by the applied actions, in action order.",
+        "checks": {
+          "description": "One record for each window date and each otherwise, in the order in which they ran.",
           "items": {
-            "$ref": "#/$defs/Assignment"
+            "$ref": "#/$defs/Check"
           },
           "type": "array"
         },
-        "at": {
-          "description": "Date of the evaluated Decision.",
-          "format": "date",
-          "type": "string"
-        },
-        "decision": {
-          "description": "UUID of the evaluated Decision.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "observations": {
-          "description": "Observed quantities, in the order of the Decision observations.",
+        "decided": {
+          "description": "The value of each rule that fixed its value, in the order of the decisions.",
           "items": {
-            "$ref": "#/$defs/ObservedQuantity"
+            "$ref": "#/$defs/DecidedValue"
           },
           "type": "array"
         },
-        "rule": {
-          "description": "UUID of the first Rule whose condition was true; absent or null when the fallback applied.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": [
-            "string",
-            "null"
-          ]
+        "provisional_solves": {
+          "description": "The number of provisional solves that the rules needed. The final solve of the case is one more.",
+          "minimum": 0,
+          "type": "integer"
         },
-        "terminated": {
-          "description": "Whether the applied actions terminated the decision sequence; no evidence follows a termination.",
+        "verified": {
+          "description": "Whether the trace check passed on a candidate. False means that the case has no candidate, or that the check found a difference.",
           "type": "boolean"
-        },
-        "termination_reason": {
-          "description": "Reason for termination, required when terminated is true.",
-          "type": [
-            "string",
-            "null"
-          ]
         }
       },
       "required": [
-        "decision",
-        "at",
-        "observations",
-        "assignments",
-        "terminated"
+        "checks",
+        "decided",
+        "provisional_solves",
+        "verified"
       ],
       "title": "RuleEvidence",
       "type": "object"
@@ -4659,6 +4883,63 @@
         "classifications"
       ],
       "title": "Taxonomy",
+      "type": "object"
+    },
+    "TraceValue": {
+      "additionalProperties": false,
+      "description": "One value in a decision trace, a Quantity, a calendar date or NEVER.",
+      "oneOf": [
+        {
+          "properties": {
+            "quantity": {}
+          },
+          "required": [
+            "quantity"
+          ]
+        },
+        {
+          "properties": {
+            "date": {}
+          },
+          "required": [
+            "date"
+          ]
+        },
+        {
+          "properties": {
+            "never": {}
+          },
+          "required": [
+            "never"
+          ]
+        }
+      ],
+      "properties": {
+        "date": {
+          "description": "The calendar date of a date Value; it excludes quantity and never.",
+          "format": "date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "never": {
+          "$ref": "#/$defs/Never",
+          "description": "The value of a date Value when the event does not happen; it excludes quantity and date."
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The amount of a scalar Value or a Movement; it excludes date and never."
+        }
+      },
+      "title": "TraceValue",
       "type": "object"
     },
     "Traversal": {

@@ -13,7 +13,7 @@ takes ``otherwise`` on its last date, after all rules on that date.
 
 import time
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from types import MappingProxyType
 from uuid import UUID
@@ -35,13 +35,12 @@ from rangekeeper.run._rule.result import DecisionResult
 from rangekeeper.run._rule.trace import (
     Check,
     Reading,
-    Source,
     calendar,
     leaf_name,
     naming,
 )
 from rangekeeper.run._rule.truth import UNKNOWN, truth
-from rangekeeper.schema.enums import ValueKind
+from rangekeeper.schema.enums import ObservationSource, ValueKind
 from rangekeeper.schema.records import (
     Expression,
     ExpressionKind,
@@ -102,6 +101,14 @@ class Decisions:
         )
 
 
+@dataclass(kw_only=True)
+class Progress:
+    """The trace so far, which a case that fails during its rules still records."""
+
+    checks: list[Check] = field(default_factory=list)
+    solves: int = 0
+
+
 @dataclass(frozen=True, kw_only=True)
 class Solver:
     """What a provisional solve uses: the same backend and limits as the case."""
@@ -119,31 +126,21 @@ def run_rules(
     solver: Solver,
     parameters: Mapping[str, Quantity] | None = None,
     paths: Paths | None = None,
+    progress: Progress | None = None,
 ) -> Decisions:
     """Return the decisions of ``rules`` on one case.
 
     ``binding`` is the bound case, with each decided value free. ``paths`` is the
-    document of the case's path, when it has one. Static failures of the rules
+    document of the case's path, when it has one. ``progress`` holds the trace as
+    it grows, so a caller keeps it when this raises. Static failures of the rules
     raise as ``check_queries`` says; an unavailable observation raises
     AvailabilityError, a decision that moves an earlier date or Movement raises
-    DecisionError, and so does an infeasible provisional solve.
+    DecisionError, and so does an infeasible provisional solve, with the window
+    date and the decisions so far in its ``values``.
     """
     rules = tuple(rules)
     fixed = {*binding.assignments, *binding.dates}
     check_queries(rules=rules, model=binding.model, fixed=fixed)
-    started = time.monotonic()
-    limits = solver.limits
-
-    def provisional(state: Binding) -> Solution:
-        return solve(
-            state,
-            backend=solver.backend,
-            config=solver.config,
-            limits=limits,
-            remaining=lambda: limits.time_limit - (time.monotonic() - started),
-            checkpoint=solver.checkpoint,
-        )
-
     path = binding.composition.requirements.path
     known = {}
     if path is not None and paths is not None:
@@ -153,8 +150,8 @@ def run_rules(
         rules=rules,
         parameters=dict(parameters or {}),
         path_known=known,
-        provisional=provisional,
-        tolerances=solver.config.tolerances,
+        solver=solver,
+        progress=Progress() if progress is None else progress,
     ).run()
 
 
@@ -229,15 +226,16 @@ class _Evaluation:
         rules: tuple[RuleQuery, ...],
         parameters: Mapping[str, Quantity],
         path_known: Mapping[UUID, date],
-        provisional: Callable[[Binding], Solution],
-        tolerances: Tolerances,
+        solver: Solver,
+        progress: Progress,
     ) -> None:
         self.binding = binding
         self.rules = rules
         self.parameters = {parameter_id(k): (k, v) for k, v in parameters.items()}
         self.path_known = path_known
-        self.provisional = provisional
-        self.tolerances = tolerances
+        self.solver = solver
+        self.started = time.monotonic()
+        self.tolerances = solver.config.tolerances
         self.targets = {rule.target for rule in rules}
         self.keys = {rule.target: _key(binding, rule.target) for rule in rules}
         self.name = naming(model=binding.model, parameters=parameters)
@@ -247,9 +245,8 @@ class _Evaluation:
             for rule in rules
         }
         self.decided: dict[UUID, Decided] = {}
-        self.checks: list[Check] = []
+        self.progress = progress
         self.solution: Solution | None = None
-        self.solves = 0
         self.since: date | None = None
         self.stale = True
         self.certain: tuple[int, Mapping[UUID, DateValue]] | None = None
@@ -275,8 +272,8 @@ class _Evaluation:
             decided=MappingProxyType(
                 {rule.target: self.decided[rule.target] for rule in self.rules}
             ),
-            checks=tuple(self.checks),
-            solves=self.solves,
+            checks=tuple(self.progress.checks),
+            solves=self.progress.solves,
             solution=self.solution,
             since=self.since,
         )
@@ -385,7 +382,7 @@ class _Evaluation:
     ) -> None:
         key = self.keys[rule.target]
         if not _open(rule, on, earliest=earliest, latest=latest):
-            self.checks.append(
+            self.progress.checks.append(
                 Check(
                     rule=rule.target,
                     key=key,
@@ -401,7 +398,7 @@ class _Evaluation:
         if condition is True:
             value = rule.then if rule.then is not None else on
             self._fix(rule, on=on, value=value)
-        self.checks.append(
+        self.progress.checks.append(
             Check(
                 rule=rule.target,
                 key=key,
@@ -421,7 +418,7 @@ class _Evaluation:
 
     def _otherwise(self, rule: RuleQuery, on: date) -> None:
         self._fix(rule, on=on, value=rule.otherwise)
-        self.checks.append(
+        self.progress.checks.append(
             Check(
                 rule=rule.target,
                 key=self.keys[rule.target],
@@ -534,7 +531,7 @@ class _Evaluation:
                 target=target,
                 value=self.parameters[target][1],
                 available_on=None,
-                source=Source.PARAMETER,
+                source=ObservationSource.PARAMETER,
             )
         if target in self.targets:
             return self._decided_reading(target, name=name)
@@ -552,7 +549,7 @@ class _Evaluation:
             target=target,
             value=None if found is None else found.value,
             available_on=None if found is None else found.on,
-            source=Source.DECIDED,
+            source=ObservationSource.DECIDED,
         )
 
     def _date_reading(self, target: UUID, *, name: str) -> Reading:
@@ -563,7 +560,7 @@ class _Evaluation:
                 target=target,
                 value=self.binding.dates[target],
                 available_on=None,
-                source=Source.FIXED,
+                source=ObservationSource.FIXED,
             )
         value = self._certain().get(target)
         reach = dependencies(target, defined=self.defined) & self.decided.keys()
@@ -572,7 +569,7 @@ class _Evaluation:
             target=target,
             value=value,
             available_on=max((self.decided[t].on for t in reach), default=None),
-            source=Source.SOLVED,
+            source=ObservationSource.SOLVED,
         )
 
     def _scalar(self, target: UUID, *, on: date, rule: RuleQuery, name: str) -> Reading:
@@ -582,7 +579,7 @@ class _Evaluation:
                 target=target,
                 value=self.binding.assignments[target],
                 available_on=None,
-                source=Source.FIXED,
+                source=ObservationSource.FIXED,
             )
         known = self._require_inputs(target, on=on, rule=rule)
         solved = self._solved(on)
@@ -591,7 +588,7 @@ class _Evaluation:
             target=target,
             value=solved.values[target],
             available_on=known,
-            source=Source.SOLVED,
+            source=ObservationSource.SOLVED,
         )
 
     def _require_inputs(
@@ -654,25 +651,47 @@ class _Evaluation:
             source=self._source(movement),
         )
 
-    def _source(self, movement: Movement) -> Source:
+    def _source(self, movement: Movement) -> ObservationSource:
         if movement.id in self.path_known:
-            return Source.PATH
+            return ObservationSource.PATH
         if movement.id in self.binding.assignments:
-            return Source.FIXED
-        return Source.SOLVED
+            return ObservationSource.FIXED
+        return ObservationSource.SOLVED
 
     def _amount(self, movement: Movement, *, on: date) -> Quantity:
         if movement.id in self.binding.assignments:
             return self.binding.assignments[movement.id]
         return self._solved(on).values[movement.id]
 
+    def _provisional(self, state: Binding) -> Solution:
+        limits = self.solver.limits
+        return solve(
+            state,
+            backend=self.solver.backend,
+            config=self.solver.config,
+            limits=limits,
+            remaining=lambda: limits.time_limit - (time.monotonic() - self.started),
+            checkpoint=self.solver.checkpoint,
+        )
+
+    def _named_state(self, on: date) -> Mapping[str, object]:
+        """Return the window date and the decisions so far, for a diagnostic."""
+        return {
+            "window_date": on.isoformat(),
+            "decided": {item.key: _text(item.value) for item in self.decided.values()},
+        }
+
     def _solved(self, on: date) -> Solution:
         """Return the provisional solution of the current state, solving when stale."""
         if self.solution is not None and not self.stale:
             return self.solution
         state = with_values(self.binding, values=self._state())
-        new = self.provisional(state)
-        self.solves += 1
+        try:
+            new = self._provisional(state)
+        except DecisionError as error:
+            error.values = {**error.values, **self._named_state(on)}
+            raise
+        self.progress.solves += 1
         if self.solution is not None and self.since is not None:
             _compare_past(
                 binding=self.binding,
@@ -684,6 +703,10 @@ class _Evaluation:
             )
         self.solution, self.stale, self.since = new, False, None
         return new
+
+
+def _text(value: Quantity | DateValue) -> str:
+    return "NEVER" if value is NEVER else str(value)
 
 
 def _open(
@@ -701,4 +724,4 @@ def _key(binding: Binding, token: UUID) -> str:
     return binding.key(binding.references.get(token) or Reference(target=token))
 
 
-__all__ = ["Decided", "Decisions", "Solver", "check_past", "run_rules"]
+__all__ = ["Decided", "Decisions", "Progress", "Solver", "check_past", "run_rules"]

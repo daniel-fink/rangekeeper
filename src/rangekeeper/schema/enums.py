@@ -90,6 +90,18 @@ class ContentKind(StrEnum):
     'Entries with unique keys, of a read-only mapping.'
 
 @unique
+class DecisionResult(StrEnum):
+    'The result of one check of a decision rule.'
+    DECIDED = 'decided'
+    'The condition held, so the rule decided the value on this date.'
+    NOT_MET = 'not_met'
+    'The condition did not hold on this date; the rule keeps checking.'
+    SKIPPED = 'skipped'
+    'The rule did not test its condition on this date.'
+    OTHERWISE = 'otherwise'
+    'No check decided the value, so the otherwise value applies.'
+
+@unique
 class Depth(StrEnum):
     'How many edges a traversal step follows.'
     DIRECT = 'direct'
@@ -214,6 +226,20 @@ class ObjectiveKind(StrEnum):
     'Prefer smaller results of the objective Expression.'
     MAXIMIZE = 'maximize'
     'Prefer larger results of the objective Expression.'
+
+@unique
+class ObservationSource(StrEnum):
+    'Where the value that a rule read comes from.'
+    PATH = 'path'
+    'A market path that fixes the Movement.'
+    FIXED = 'fixed'
+    'A value that the Specification fixes.'
+    PARAMETER = 'parameter'
+    'A parameter of the rule.'
+    DECIDED = 'decided'
+    'A value that an earlier rule decided.'
+    SOLVED = 'solved'
+    'A value of the provisional solution.'
 
 @unique
 class Operator(StrEnum):
@@ -380,6 +406,7 @@ _ENUM_TYPES = {
     'CollectionKind': CollectionKind,
     'CompletionStatus': CompletionStatus,
     'ContentKind': ContentKind,
+    'DecisionResult': DecisionResult,
     'Depth': Depth,
     'Direction': Direction,
     'DistributionFamily': DistributionFamily,
@@ -391,6 +418,7 @@ _ENUM_TYPES = {
     'MissingHandling': MissingHandling,
     'Never': Never,
     'ObjectiveKind': ObjectiveKind,
+    'ObservationSource': ObservationSource,
     'Operator': Operator,
     'ParameterKind': ParameterKind,
     'PeriodTiming': PeriodTiming,
@@ -405,4 +433,4 @@ _ENUM_TYPES = {
     'ValueRelation': ValueRelation,
 }
 
-__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'Never', 'ObjectiveKind', 'Operator', 'ParameterKind', 'PeriodTiming', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']
+__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'DecisionResult', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'Never', 'ObjectiveKind', 'ObservationSource', 'Operator', 'ParameterKind', 'PeriodTiming', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']

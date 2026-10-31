@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from rangekeeper.run._rule.result import DecisionResult as DecisionResult
-from rangekeeper.schema.records import Assignment, ObservedQuantity, RuleEvidence
+from rangekeeper.schema.records import Assignment, DecisionEvidence, ObservedQuantity
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
@@ -27,12 +27,12 @@ class Observation:
 class RuleResult:
     """Ordered evidence makes no claim about numerical feasibility."""
 
-    evidence: tuple[RuleEvidence, ...]
+    evidence: tuple[DecisionEvidence, ...]
 
     def __post_init__(self) -> None:
         items = tuple(self.evidence)
-        if any(not isinstance(item, RuleEvidence) for item in items):
-            raise TypeError("evidence must be RuleEvidence records")
+        if any(not isinstance(item, DecisionEvidence) for item in items):
+            raise TypeError("evidence must be DecisionEvidence records")
         object.__setattr__(self, "evidence", items)
 
     @property

@@ -97,7 +97,7 @@ def test_probabilistic_and_flexible_use_identical_captured_paths():
     chosen, run = execute(flexible, model, rules=rules)
     assert chosen.sale_date == datetime.date(2022, 12, 31)
     assert fixed.sale_date == datetime.date(2023, 12, 31)
-    assert len(run.report.rule_evidence) == 2
+    assert len(run.report.decision_evidence) == 2
     for key, name in (
         ("space_market_price_factors", "space_market_price_factors"),
         ("reversion_cap_rates", "asset_market"),

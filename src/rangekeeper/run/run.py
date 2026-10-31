@@ -7,7 +7,7 @@ from uuid import UUID
 
 from rangekeeper.quantity import UnitSystem
 from rangekeeper.run.report import check_local
-from rangekeeper.schema.records import Metadata, Report
+from rangekeeper.schema.records import Metadata, Report, RuleEvidence
 from rangekeeper.schema.records import Run as RunRecord
 from rangekeeper.schema.validation import document_version, supports_version
 from rangekeeper.shared.diagnostics import ValidationReport
@@ -77,6 +77,11 @@ class Run:
     def report(self) -> Report:
         """Recorded outcome and evidence; this is a declaration, not solver proof."""
         return self._record.report
+
+    @property
+    def rule_evidence(self) -> RuleEvidence | None:
+        """The decision trace of this Run's rules, or None for a case without rules."""
+        return self._record.report.rule_evidence
 
     def to_data(self) -> dict[str, object]:
         """Return detached data, preserving omitted/null fields and trace order."""

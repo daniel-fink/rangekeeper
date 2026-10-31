@@ -47,7 +47,7 @@ def publication(model_data, output_data, *, rules=None, decisions=None):
         },
     }
     if decisions is not None:
-        report["rule_evidence"] = decisions
+        report["decision_evidence"] = decisions
     run = Run.from_data(
         {
             "metadata": metadata("Run"),
@@ -289,13 +289,13 @@ def test_rule_result_normalizes_and_checks_outcomes():
     from rangekeeper.model import Reference
     from rangekeeper.quantity import Quantity
     from rangekeeper.specification import Assignment
-    from rangekeeper.specification.rule import RuleEvidence
+    from rangekeeper.specification.rule import DecisionEvidence
 
     assignment = Assignment(
         target=Reference(target=uuid4()),
         quantity=Quantity(magnitude=1, units="dimensionless"),
     )
-    outcome = RuleEvidence(
+    outcome = DecisionEvidence(
         decision=uuid4(),
         at=date(2027, 1, 1),
         observations=(),

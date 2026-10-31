@@ -50,7 +50,9 @@ infeasibility. A batch accounts for each direct case and the union of its output
 
 The Report retains diagnostics, runtime implementations and settings, trace steps
 and rule evidence where applicable. `RuleSet.decisions` contains declared Decision
-records; `Report.rule_evidence` contains RuleEvidence records. Local construction checks the report.
+records; `Report.decision_evidence` contains DecisionEvidence records. A Specification with
+rule queries gives one RuleEvidence in `Report.rule_evidence`: the decision trace of
+that case. Local construction checks the report.
 Resolver-backed validation also checks document kinds, references, lineage and
 permitted publication changes. It does not rerun mathematics. Independent numerical
 acceptance occurs in execution before an output is published.
