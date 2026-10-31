@@ -1,9 +1,9 @@
 """A saved investigation contribution, distinct from its derived composition."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import date, datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from rangekeeper.market.paths import Paths
@@ -19,7 +19,12 @@ from rangekeeper.flow import Flow
 from rangekeeper.model.formulation.validation import check_formulation_names
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.index import RecordIndex
-from rangekeeper.schema.records import Assignment, Metadata, Reference
+from rangekeeper.schema.records import (
+    Assignment,
+    Metadata,
+    Reference,
+    RuleDeclaration,
+)
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.runtime import UNSET
@@ -30,12 +35,11 @@ from rangekeeper.schema.validation import (
 )
 from rangekeeper.shared.arguments import optional_text
 from rangekeeper.shared.codes import Code
-from rangekeeper.shared.diagnostics import ValidationReport
+from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
     IdentityConflictError,
     MissingReferenceError,
-    UnitError,
     UnsupportedVersionError,
 )
 from rangekeeper.shared.references import SpecificationResolver
@@ -47,7 +51,22 @@ from rangekeeper.specification.composition import (
     check_path,
     check_settings,
 )
-from rangekeeper.specification.roles import equation_targets, in_model_order, role_table
+from rangekeeper.specification.roles import (
+    decided_targets,
+    equation_targets,
+    in_model_order,
+    role_table,
+)
+from rangekeeper.specification.rule._declaration import (
+    Rule,
+    Rules,
+    check_declared,
+    declare,
+    path_movements,
+    rule_of,
+)
+from rangekeeper.specification.rule._query import read_targets, references
+from rangekeeper.specification.targets import checked_quantity
 
 
 def _validate_local(record: SpecificationRecord) -> ValidationReport:
@@ -103,7 +122,8 @@ class Specification:
 
     A value that is not fixed is free: the solve finds it. ``specify`` and each
     chained call record as unknowns the values that the equations use and that
-    no fix or rule controls.
+    no fix or rule controls. A rule fixes a value during the solve: that value is
+    decided, and ``rules`` gives its rule.
     """
 
     __slots__ = ("_record", "_model", "_resolver", "_cases", "_paths")
@@ -228,6 +248,32 @@ class Specification:
             # The path's assignments come from its Paths document.
             record = self.compose(resolver=self._resolver).requirements  # type: ignore[arg-type]
         return role_table(model, record)
+
+    @property
+    def rules(self) -> Rules:
+        """Return the rules of this Specification by key, in the order that they run.
+
+        ``rules[key]`` is a Rule with the fixed values that it reads, its
+        ``triggers``, so another Specification can reuse it:
+        ``fixed.fix(start_date=timing["start_date"])``. A key without a rule raises
+        MissingReferenceError. A Specification with includes needs its resolver; a
+        batch has no rules of its own.
+        """
+        model = self._require_model()
+        self._require_concrete("rules", "read the rules of one case")
+        record = self.record
+        if record.includes:
+            record = self.compose(resolver=self._require_resolver("rules")).requirements
+        assignments = record.assignments or ()
+        return Rules(
+            rules={
+                model.key_of(item.target.target): rule_of(
+                    item, model=model, assignments=assignments
+                )
+                for item in record.declared_rules or ()
+            },
+            where=self._where,
+        )
 
     @property
     def record(self) -> SpecificationRecord:
@@ -360,7 +406,8 @@ class Specification:
         a rule decides raise ContractError, whose ``values`` list the path
         series and the Model keys. A value must be a Flow over the Periods of
         the paths (``ALIGNMENT_DIFFER``) in units that the series converts to
-        (UnitError).
+        (UnitError). A rule that reads a Flow that the paths leave free raises
+        ValidationError with the code ``rule_reads_unknown``.
         """
         from rangekeeper.market.paths import Paths
 
@@ -373,9 +420,8 @@ class Specification:
         bindings = _paths.bindings(model=model, paths=paths, matches=matches)
         fixed = {ref.target for binding in bindings for ref in binding.movements}
         requirements = self._check_edit(model, []).requirements
-        taken = {a.target.target for a in requirements.assignments or ()}
-        if requirements.rules is not None:
-            taken.update(ref.target for ref in requirements.rules.targets)
+        given = {a.target.target for a in requirements.assignments or ()}
+        taken = given | {ref.target for ref in decided_targets(requirements)}
         clash = [
             item.key
             for item, binding in zip(matches, bindings, strict=True)
@@ -391,6 +437,12 @@ class Specification:
                     "series": list(paths.names),
                 },
             )
+        check_declared(
+            requirements.declared_rules or (),
+            model=model,
+            fixed=given | fixed,
+            document_id=self.id,
+        )
         unknowns = tuple(
             ref for ref in self.record.unknowns or () if ref.target not in fixed
         )
@@ -423,9 +475,9 @@ class Specification:
 
     def fix(
         self,
-        targets: "Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]] | None" = None,
+        targets: "Mapping[str | UUID | Reference, Quantity | str | float | Decimal | date | Never | Flow | Rule | Mapping[UUID, Quantity | str | float | Decimal]] | None" = None,
         /,
-        **values: "Quantity | str | float | Decimal | date | Never | Flow | Mapping[UUID, Quantity | str | float | Decimal]",
+        **values: "Quantity | str | float | Decimal | date | Never | Flow | Rule | Mapping[UUID, Quantity | str | float | Decimal]",
     ) -> "Specification":
         """Return a new Specification that fixes values, by key.
 
@@ -443,6 +495,16 @@ class Specification:
         with other Periods raises ContractError. A fix replaces an earlier fix or
         free of the same target. When no role changes, ``fix`` returns this
         Specification.
+
+        A Rule makes the value decided: the solve finds it. Rules run in the order
+        that they are fixed, and a later ``fix`` of the same key replaces the rule
+        or the value, a rule in the same position. A Rule that ``rules`` gave brings
+        each fixed value that it reads and that this Specification does not fix.
+        A condition that reads the future raises AvailabilityError. ValidationError
+        reports a condition that reads a later rule (``rule_order``), one that
+        reads a free input (``rule_reads_unknown``) and a rule of another kind than
+        its value (``rule_capability``). A Flow counts as known here, because a
+        later ``across`` can fix it; ``across`` and the solve check it again.
         """
         items = dict(targets or {})
         for key, quantity in values.items():
@@ -459,6 +521,8 @@ class Specification:
         model = self._require_model()
         refs: list[Reference] = []
         assignments = []
+        rules = {key: rule for key, rule in items.items() if isinstance(rule, Rule)}
+        items = {key: item for key, item in items.items() if key not in rules}
         for target, value in items.items():
             quantity = (
                 self._by_movement(model, target, value)
@@ -473,7 +537,40 @@ class Specification:
                 )
                 assignments.append(_assignment(model, ref, given, target=target))
             refs.extend(selected)
-        return self._edit_roles(refs, tuple(assignments), name=name)
+        if not rules:
+            return self._edit_roles(refs, tuple(assignments), name=name)
+        return self._fix_rules(rules, refs=refs, assignments=assignments, name=name)
+
+    def _fix_rules(
+        self,
+        rules: Mapping,
+        *,
+        refs: "list[Reference]",
+        assignments: "list[Assignment]",
+        name: str | None,
+    ) -> "Specification":
+        """Return the revision with ``rules`` and the fixes that come with them."""
+        model = self._require_model()
+        declared = _declared(self, rules, model=model)
+        requirements = self._check_edit(model, []).requirements
+        present = {a.target.target for a in assignments}
+        present.update(ref.target for ref in decided_targets(requirements))
+        present.update(a.target.target for a in requirements.assignments or ())
+        present.update(rule.target.target for rule in declared.values())
+        for rule in rules.values():
+            for key, value in rule.triggers.items():
+                ref = Reference(target=model.value(key=key).id)
+                if ref.target not in present:
+                    present.add(ref.target)
+                    refs.append(ref)
+                    assignments.append(_assignment(model, ref, value, target=key))
+        refs.extend(rule.target for rule in declared.values())
+        return self._edit_roles(
+            refs,
+            tuple(assignments),
+            rules=_placed(self.record.declared_rules or (), declared),
+            name=name,
+        )
 
     def free(self, *targets: "str | UUID | Reference") -> "Specification":
         """Return a new Specification that frees values: the solve finds them.
@@ -481,8 +578,9 @@ class Specification:
         A value that is not fixed is already free; ``free`` releases a value
         that was fixed before. Each target is a key, a dotted key, a Value or
         Movement UUID, or a Reference, as in ``fix``. A Flow frees each of its
-        Movements. A free removes an earlier fix of the same target. When no
-        role changes, ``free`` returns this Specification.
+        Movements. A free removes an earlier fix or rule of the same target. When
+        no role changes, ``free`` returns this Specification. A rule that then
+        reads the free value raises ValidationError with ``rule_reads_unknown``.
         """
         if not targets:
             raise TypeError("free takes at least one value")
@@ -596,13 +694,19 @@ class Specification:
         record = self.record
         declared = model._index.records
         controlled = [a.target for a in record.assignments or ()]
-        if record.rules is not None:
-            controlled.extend(record.rules.targets)
-        missing = [ref.target for ref in controlled if ref.target not in declared]
+        controlled.extend(decided_targets(record))
+        read = [
+            Reference(target=token)
+            for rule in record.declared_rules or ()
+            for token in _rule_reads(rule)
+        ]
+        missing = [
+            ref.target for ref in (*controlled, *read) if ref.target not in declared
+        ]
         if missing:
             keys = tuple(self._key(identity) for identity in missing)
             raise ContractError(
-                f"Model {model.id} does not declare these fixed or decided "
+                f"Model {model.id} does not declare these fixed, decided or read "
                 f"values: {', '.join(keys)}; free them first, then call on",
                 code=Code.REFERENCE_MISSING,
                 document_id=self.id,
@@ -696,12 +800,15 @@ class Specification:
         refs: "list[Reference]",
         assignments: "tuple[Assignment, ...] | None",
         *,
+        rules: "tuple[RuleDeclaration, ...] | None" = None,
         name: str | None = None,
     ) -> "Specification":
         """Return the revision that fixes ``refs`` to ``assignments``, or frees them.
 
         ``assignments`` is None for a free. A fix replaces the estimate of its
-        target; a free keeps it. When no role changes, return this Specification.
+        target; a free keeps it. ``rules`` are the new rules; without them, the
+        rule of each target of ``refs`` goes. When no role changes, return this
+        Specification.
         """
         model = self._require_model()
         composition = self._check_edit(model, refs)
@@ -724,27 +831,49 @@ class Specification:
         controlled = {a.target.target for a in local_assignments}
         controlled.update(r.target for r in local_unknowns)
         controlled.update(_controlled(composition, local=self.id))
+        declared = rules
+        if declared is None:
+            declared = tuple(
+                rule
+                for rule in record.declared_rules or ()
+                if rule.target.target not in targets
+            )
+        controlled.update(rule.target.target for rule in declared)
         local_unknowns += tuple(
             Reference(target=identity)
             for identity in equation_targets(model, record)
             if identity not in controlled
         )
         unknowns = in_model_order(model, local_unknowns)
-        if name is None and (local_assignments, unknowns, estimates) == (
+        if name is None and (local_assignments, unknowns, estimates, declared) == (
             record.assignments or (),
             record.unknowns or (),
             record.estimates or (),
+            record.declared_rules or (),
         ):
             # The roles do not change: a free of a free value, or the same fix.
             return self
-        revised = self._derive(
-            assignments=local_assignments,
-            unknowns=unknowns,
-            estimates=estimates,
-            name=name,
-        )
+        # A Specification that never had a rule stores no empty list of rules.
+        changes: dict[str, Any] = {
+            "assignments": local_assignments,
+            "unknowns": unknowns,
+            "estimates": estimates,
+        }
+        if declared or record.declared_rules:
+            changes["declared_rules"] = declared
+        revised = self._derive(name=name, **changes)
         # A Specification without includes composes without a resolver.
-        revised.compose(resolver=self._resolver)  # type: ignore[arg-type]
+        composed = revised.compose(resolver=self._resolver)  # type: ignore[arg-type]
+        # A fix without a rule only adds what a rule can read.
+        if rules is not None or assignments is None:
+            requirements = composed.requirements
+            given = {a.target.target for a in requirements.assignments or ()}
+            check_declared(
+                requirements.declared_rules or (),
+                model=model,
+                fixed=given | path_movements(model),
+                document_id=revised.id,
+            )
         return revised
 
     def _check_edit(self, model: "Model", refs: "list[Reference]") -> Composition:
@@ -790,21 +919,61 @@ class Specification:
         return composition
 
 
+def _declared(
+    specification: "Specification", rules: Mapping, *, model: "Model"
+) -> "dict[UUID, RuleDeclaration]":
+    """Return the stored record of each Rule, by the UUID of the value it decides.
+
+    A record that does not fit its value raises ValidationError.
+    """
+    found = {}
+    for target, rule in rules.items():
+        value = model.value(key=target) if isinstance(target, str) else None
+        if value is None:
+            identity = target.target if isinstance(target, Reference) else target
+            value = model.value(id=identity)
+        try:
+            found[value.id] = declare(rule, target=value, model=model)
+        except ContractError as error:
+            issue = Issue.from_error(error, document_id=specification.id)
+            ValidationReport((issue,)).raise_if_invalid()
+    return found
+
+
+def _placed(
+    current: "Sequence[RuleDeclaration]", new: "dict[UUID, RuleDeclaration]"
+) -> "tuple[RuleDeclaration, ...]":
+    """Return the rules with each new one in the position of the one it replaces."""
+    kept = [new.get(rule.target.target, rule) for rule in current]
+    held = {rule.target.target for rule in current}
+    kept.extend(rule for token, rule in new.items() if token not in held)
+    return tuple(kept)
+
+
+def _rule_reads(rule: RuleDeclaration) -> "tuple[UUID, ...]":
+    """Return each Value that a rule's condition and bounds read."""
+    found = dict.fromkeys(read_targets(rule.condition))
+    for bound in (rule.earliest, rule.latest):
+        if bound is not None:
+            found.update(dict.fromkeys(references(bound)))
+    return tuple(found)
+
+
 def _controlled(composition: Composition, *, local: UUID) -> set[UUID]:
     """Return the targets that rules and included Specifications control."""
     controlled: set[UUID] = set()
     for contribution in composition.contributors:
         record = contribution.record
-        if record.rules:
-            controlled.update(ref.target for ref in record.rules.targets)
+        controlled.update(ref.target for ref in decided_targets(record))
         if contribution.id != local:
             controlled.update(_roles(record))
     return controlled
 
 
 def _roles(record: SpecificationRecord) -> set[UUID]:
-    """Return the targets that a Specification fixes, frees or estimates."""
+    """Return the targets that a Specification fixes, frees, estimates or decides."""
     found = {ref.target for ref in record.unknowns or ()}
+    found.update(rule.target.target for rule in record.declared_rules or ())
     found.update(a.target.target for a in record.assignments or ())
     found.update(e.target.target for e in record.estimates or ())
     return found
@@ -892,52 +1061,13 @@ def _assignment(
             targets=(ref.target,),
             values={"key": str(target)},
         )
-    quantity = _quantity(
+    quantity = checked_quantity(
         value,
         target=target,
         units=target_units(model, ref),
         unit_system=model.unit_system,
     )
     return Assignment(target=ref, quantity=quantity)
-
-
-def _quantity(
-    value: object,
-    *,
-    target: object,
-    units: str,
-    unit_system: UnitSystem,
-) -> Quantity:
-    """Return the Quantity that fixes a target, after a check of its units.
-
-    Text is read as a Quantity. A bare number is a ratio, so its target must have
-    dimensionless units.
-    """
-    if isinstance(value, Quantity):
-        quantity = value
-    elif isinstance(value, str):
-        quantity = Quantity(text=value)
-    elif isinstance(value, (int, float, Decimal)) and not isinstance(value, bool):
-        quantity = Quantity(magnitude=value, units="ratio")
-        if not unit_system.compatible("ratio", units):
-            raise UnitError(
-                f"a bare number fixes a ratio, but {target} has units {units!r}; "
-                f"give a Quantity or text with units, such as '{value} {units}'",
-                code=Code.INCOMPATIBLE_UNITS,
-            )
-    else:
-        raise TypeError(
-            f"the value of {target} must be a Quantity, Quantity text, a number "
-            "or a mapping from Movement UUIDs to these"
-        )
-    if not unit_system.compatible(quantity.units, units):
-        raise UnitError(
-            f"incompatible units: {target} has units {units!r}, and the quantity "
-            f"that fixes it {quantity.units!r}",
-            code=Code.INCOMPATIBLE_UNITS,
-        )
-    unit_system.convert(quantity=quantity, to=units)
-    return quantity
 
 
 from rangekeeper.model import model as _model_module  # noqa: E402

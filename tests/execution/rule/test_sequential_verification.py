@@ -39,7 +39,7 @@ from rangekeeper.execution.status import Status
 from rangekeeper.market.paths import Paths
 from rangekeeper.run._rule.result import DecisionResult
 from rangekeeper.schema.records import Expression, ExpressionKind
-from rangekeeper.specification.rule._query import RuleQuery, parse_text
+from rangekeeper.specification.rule._query import RuleQuery, parse_condition_text
 
 NEVER = rk.duration.NEVER
 FIRST_YEAR, LAST_YEAR = 2026, 2036
@@ -261,7 +261,7 @@ def rules(model: rk.Model) -> tuple[RuleQuery, ...]:
     """Return the rules of the docstring, in their written order."""
 
     def text(source: str) -> Expression:
-        return parse_text(text=source, model=model, parameters=PARAMETERS)
+        return parse_condition_text(text=source, model=model, parameters=PARAMETERS)
 
     return (
         RuleQuery(
@@ -282,7 +282,7 @@ def rules(model: rk.Model) -> tuple[RuleQuery, ...]:
         ),
         RuleQuery(
             target=model.value(key="b_sale_date").id,
-            condition=text("b_start = NEVER"),
+            condition=text("b_start == NEVER"),
             earliest=_date_bound(date(2033, 1, 1)),
             latest=_date_bound(date(2033, 1, 1)),
             otherwise=NEVER,

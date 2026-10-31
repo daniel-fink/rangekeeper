@@ -3737,6 +3737,120 @@
       "required": true
     }
   },
+  "RuleDeclaration": {
+    "condition": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Expression"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "earliest": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Expression"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "latest": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Expression"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "otherwise": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Expression"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "periods": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Period"
+        }
+      ],
+      "ordered": true,
+      "required": false
+    },
+    "target": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Reference"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "then": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Expression"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "timing": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "enum",
+          "kind": "PeriodTiming"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    }
+  },
   "RuleEvidence": {
     "assignments": {
       "lineage": false,
@@ -4394,6 +4508,20 @@
         }
       ],
       "ordered": false,
+      "required": false
+    },
+    "declared_rules": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "RuleDeclaration"
+        }
+      ],
+      "ordered": true,
       "required": false
     },
     "estimates": {

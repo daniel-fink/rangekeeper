@@ -6,8 +6,12 @@ number followed by unit words is a quantity literal, and ``NEVER`` is a
 constant. A date literal has its Python spelling, ``date(2027, 1, 1)``. ``parse`` makes a syntax tree in which each node has its position in
 the text. ``rangekeeper.model.expression.text`` makes Expression records from
 the tree, and writes records back as text with the same operator table.
+
+A rule's condition has one difference, in ``parse_condition``: ``==`` tests a
+value, and ``=``, which states an equation, is an error (#300).
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import IntEnum
 from keyword import iskeyword
@@ -97,6 +101,38 @@ SPELLINGS: dict[Operator, Spelling] = {
 }
 # Python spellings that equation text writes in another way.
 MISSPELLINGS = {"==": "=", "&": "and", "|": "or", "~": "not", "^": "**"}
+
+_EQUALITY_TEST = Spelling(
+    symbol="==", operator=Operator.EQUAL, precedence=Precedence.COMPARISON
+)
+# The spelling of each operator in a condition.
+CONDITION_SPELLINGS: dict[Operator, Spelling] = {
+    **SPELLINGS,
+    Operator.EQUAL: _EQUALITY_TEST,
+}
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Grammar:
+    """What one kind of text writes: its name, its operators and what it refuses."""
+
+    name: str
+    infix: Mapping[str, Spelling]
+    misspellings: Mapping[str, str]
+
+
+EQUATION = Grammar(name="equation text", infix=INFIX, misspellings=MISSPELLINGS)
+CONDITION = Grammar(
+    name="a condition",
+    infix={
+        **{symbol: item for symbol, item in INFIX.items() if symbol != "="},
+        "==": _EQUALITY_TEST,
+    },
+    misspellings={
+        **{wrong: right for wrong, right in MISSPELLINGS.items() if wrong != "=="},
+        "=": "==",
+    },
+)
 # The words that name constants.
 TRUE = "True"
 FALSE = "False"
@@ -187,9 +223,21 @@ def parse(text: str) -> Node:
     Text that does not parse raises EquationError with the code
     ``EQUATION_SYNTAX`` and the position of the part that fails.
     """
+    return _parse(text, grammar=EQUATION)
+
+
+def parse_condition(text: str) -> Node:
+    """Return the syntax tree of a rule's condition, where ``==`` tests a value.
+
+    Text that does not parse raises as ``parse`` does; ``=`` is one such text.
+    """
+    return _parse(text, grammar=CONDITION)
+
+
+def _parse(text: str, *, grammar: Grammar) -> Node:
     if not text.strip():
-        raise _error("equation text is empty", text=text, start=0, end=len(text))
-    return _Parser(text).parse()
+        raise _error(f"{grammar.name} is empty", text=text, start=0, end=len(text))
+    return _Parser(text, grammar=grammar).parse()
 
 
 def path(node: Node) -> tuple[str, ...] | None:
@@ -205,10 +253,11 @@ def path(node: Node) -> tuple[str, ...] | None:
 class _Parser:
     """A precedence-climbing parser over the tokens of one equation text."""
 
-    __slots__ = ("_text", "_tokens", "_index")
+    __slots__ = ("_text", "_grammar", "_tokens", "_index")
 
-    def __init__(self, text: str) -> None:
+    def __init__(self, text: str, *, grammar: Grammar) -> None:
         self._text = text
+        self._grammar = grammar
         self._tokens = tokenize(text)
         self._index = 0
 
@@ -251,10 +300,10 @@ class _Parser:
 
     def _infix(self, token: Token) -> Spelling | None:
         """Return the operator that ``token`` writes between operands, if any."""
-        if token.kind is TokenKind.SYMBOL and token.text in MISSPELLINGS:
+        if token.kind is TokenKind.SYMBOL and token.text in self._grammar.misspellings:
             raise self._misspelled(token)
         if token.kind in (TokenKind.SYMBOL, TokenKind.NAME):
-            return INFIX.get(token.text)
+            return self._grammar.infix.get(token.text)
         return None
 
     def _prefix(self) -> Node:
@@ -283,7 +332,7 @@ class _Parser:
             node = self._expression(Precedence.NONE)
             self._expect(")", opened=token)
             return node
-        if token.text in MISSPELLINGS:
+        if token.text in self._grammar.misspellings:
             raise self._misspelled(token)
         raise self._unexpected(token)
 
@@ -404,9 +453,9 @@ class _Parser:
         )
 
     def _misspelled(self, token: Token) -> EquationError:
-        spelling = MISSPELLINGS[token.text]
+        spelling = self._grammar.misspellings[token.text]
         return _error(
-            f"equation text writes {spelling!r}, not {token.text!r}",
+            f"{self._grammar.name} writes {spelling!r}, not {token.text!r}",
             text=self._text,
             start=token.start,
             end=token.end,
@@ -467,6 +516,8 @@ __all__ = [
     "INFIX",
     "PREFIX",
     "SPELLINGS",
+    "CONDITION_SPELLINGS",
     "parse",
+    "parse_condition",
     "path",
 ]

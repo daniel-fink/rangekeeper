@@ -2051,6 +2051,62 @@ public sealed class Rule : WireRecord
     }
 }
 
+/// <summary>Schema-derived RuleDeclaration wire record. Exports and nested reads are detached.</summary>
+public sealed class RuleDeclaration : WireRecord
+{
+    public RuleDeclaration() { }
+    public RuleDeclaration(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field condition; missing and null remain distinct.</summary>
+    public Expression Condition
+    {
+        get => Read<Expression>("condition");
+        init => Write("condition", value);
+    }
+    /// <summary>Wire field earliest; missing and null remain distinct.</summary>
+    public Optional<Expression> Earliest
+    {
+        get => ReadOptional<Expression>("earliest");
+        init => WriteOptional("earliest", value);
+    }
+    /// <summary>Wire field latest; missing and null remain distinct.</summary>
+    public Optional<Expression> Latest
+    {
+        get => ReadOptional<Expression>("latest");
+        init => WriteOptional("latest", value);
+    }
+    /// <summary>Wire field otherwise; missing and null remain distinct.</summary>
+    public Expression Otherwise
+    {
+        get => Read<Expression>("otherwise");
+        init => Write("otherwise", value);
+    }
+    /// <summary>Wire field periods; missing and null remain distinct.</summary>
+    public Optional<IReadOnlyList<Period>> Periods
+    {
+        get => ReadOptional<IReadOnlyList<Period>>("periods");
+        init => WriteOptional("periods", value);
+    }
+    /// <summary>Wire field target; missing and null remain distinct.</summary>
+    public Reference Target
+    {
+        get => Read<Reference>("target");
+        init => Write("target", value);
+    }
+    /// <summary>Wire field then; missing and null remain distinct.</summary>
+    public Optional<Expression> Then
+    {
+        get => ReadOptional<Expression>("then");
+        init => WriteOptional("then", value);
+    }
+    /// <summary>Wire field timing; missing and null remain distinct.</summary>
+    public Optional<string> Timing
+    {
+        get => ReadOptional<string>("timing");
+        init => WriteOptional("timing", value);
+    }
+}
+
 /// <summary>Schema-derived RuleEvidence wire record. Exports and nested reads are detached.</summary>
 public sealed class RuleEvidence : WireRecord
 {
@@ -2406,6 +2462,12 @@ public sealed class Specification : WireRecord
     {
         get => ReadOptional<IReadOnlyList<Guid>>("cases");
         init => WriteOptional("cases", value);
+    }
+    /// <summary>Wire field declared_rules; missing and null remain distinct.</summary>
+    public Optional<IReadOnlyList<RuleDeclaration>> DeclaredRules
+    {
+        get => ReadOptional<IReadOnlyList<RuleDeclaration>>("declared_rules");
+        init => WriteOptional("declared_rules", value);
     }
     /// <summary>Wire field estimates; missing and null remain distinct.</summary>
     public Optional<IReadOnlyList<Assignment>> Estimates
