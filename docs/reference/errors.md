@@ -166,7 +166,6 @@ all of its fields through `pickle`.
 | `UnknownExtensionError` | `LookupError` | `EXTENSION_UNKNOWN`. `suggestions` gives registered names to try ([extension points](extensions.md)) |
 | `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
 | `model.system`: `SelectionError`, `RollupError` | `ValueError` | `SELECTION`, `ROLLUP` |
-| `market`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
 | `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
 | `NumericalError` | `ValueError` | `NUMERICAL_FAILURE`, or `NUMERICAL_REJECTION` when verification rejected a candidate |
 | `BackendUnavailableError`, `AttemptDeadlineError` | `RuntimeError` | `BACKEND_UNAVAILABLE`, `ATTEMPT_DEADLINE` |
@@ -223,10 +222,9 @@ unresolved or non-finite amount raises `NumericalError`, incompatible units
 raise `UnitError`, coordinates that do not align raise `AlignmentError`, a
 missing line raises `MissingReferenceError`, and conflicting names or revisions
 in `Stream.merge` raise `IdentityConflictError` or `RevisionConflictError`. The
-older `finance.financial` functions and the other internal `market` modules
-still raise plain errors; their replacements
-([#167](https://github.com/daniel-fink/rangekeeper/issues/167),
-[#298](https://github.com/daniel-fink/rangekeeper/issues/298)) follow the rule.
+older `finance.financial` functions still raise plain errors; their
+replacements ([#167](https://github.com/daniel-fink/rangekeeper/issues/167))
+follow the rule.
 An optional dependency that is not installed raises
 `ImportError`.
 `ValidationError` has the same name as an error in jsonschema, which the

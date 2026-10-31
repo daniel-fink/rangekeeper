@@ -3,7 +3,6 @@
 import hashlib
 import json
 from copy import deepcopy
-from datetime import date
 from pathlib import Path
 from types import MappingProxyType
 from uuid import UUID
@@ -350,48 +349,6 @@ def test_recursive_property_content_is_still_checked(case, indexed):
         }
     )
     compare_record(data, indexed=indexed, valid=case == "valid")
-
-
-@pytest.fixture(scope="module")
-def scenario_data():
-    from rangekeeper.duration import Frequency, Periods
-    from rangekeeper.market import generation as market
-
-    base = Model.from_data(
-        data={"metadata": {"id": str(UUID(int=910)), "schema_version": "1.0.0"}}
-    )
-    plan = market.make_plan(
-        id=UUID(int=911),
-        periods=Periods(start=date(2026, 1, 1), frequency=Frequency.YEAR, count=2),
-        seed=123,
-    )
-    return market.generate(base, plan, scenario_keys=["equivalence"])[0].model.to_data()
-
-
-@pytest.mark.parametrize("indexed", [False, True])
-@pytest.mark.parametrize("case", ["valid", "parameter", "binding", "availability"])
-def test_captured_scenario_contracts_match_export(scenario_data, case, indexed):
-    data = deepcopy(scenario_data)
-    realization = data["provenance"]["scenarios"][0]
-    if case == "parameter":
-        parameter = next(
-            p for p in realization["plan"]["parameters"] if p["name"] == "cap_rate"
-        )
-        parameter["quantity"]["magnitude"] = 0
-    elif case == "binding":
-        realization["outputs"][0]["value"] = MISSING
-    elif case == "availability":
-        realization["availability"].append(deepcopy(realization["availability"][0]))
-    compare_record(
-        data,
-        indexed=indexed,
-        valid=case == "valid",
-        error=(
-            (ValueError, "scenario parameter below its bound: cap_rate")
-            if case == "parameter"
-            else None
-        ),
-    )
 
 
 @pytest.mark.parametrize("section", ["definitions", "system", "provenance"])

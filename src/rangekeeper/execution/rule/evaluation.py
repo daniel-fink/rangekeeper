@@ -8,7 +8,6 @@ from rangekeeper.execution.rule.result import RuleResult
 from rangekeeper.model import Model
 from rangekeeper.model._scope import scope_for_model
 from rangekeeper.quantity import Quantity, UnitSystem
-from rangekeeper.run._rule.availability import evidence_dates
 from rangekeeper.run._rule.evidence import validate_evidence
 from rangekeeper.run._rule.predicate import evaluate as evaluate_expression
 from rangekeeper.schema.records import (
@@ -77,8 +76,6 @@ def evaluate(
     scope = scope_for_model(model)
     declaration = rules.to_data()
     validate_rules(declaration, scope=scope, units_compatible=units.compatible)
-    provenance = model.provenance.to_data() if model.provenance else {}
-    evidence = evidence_dates(provenance)
     controlled = {target.target for target in rules.targets}
     outcomes: list[RuleEvidence] = []
     prior: dict[UUID, tuple[Quantity, date]] = {}
@@ -87,7 +84,6 @@ def evaluate(
             scope,
             at=decision.at,
             bindings=decision.observations,
-            evidence=evidence,
             prior=prior,
             controlled=controlled,
         )
@@ -104,7 +100,6 @@ def evaluate(
             declaration,
             [item.to_data() for item in outcomes],
             scope=scope,
-            provenance=provenance,
             units=units,
         )
     except ContractError as error:
