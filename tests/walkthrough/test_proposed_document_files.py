@@ -14,6 +14,7 @@ The other statements of these cells need other issues: ``model.summary()``
 
 import ast
 import importlib.util
+import os
 import re
 from datetime import date
 from pathlib import Path
@@ -109,10 +110,12 @@ def test_lesson_04_cell_4_moves_lesson_03_s_base_case_to_the_new_plan(data):
 def test_lesson_04_cell_9_saves_and_loads_the_generated_paths(tmp_path, monkeypatch):
     """Cells 5 to 9 as written; the helpers only draw, so here they draw nothing."""
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("RK_PATH_COUNT", "3")
     numbered = cells("04_market_futures.md")
     namespace: dict[str, object] = {
         "rk": rk,
         "date": date,
+        "os": os,
         "years": YEARS,
         "helpers": SimpleNamespace(plot_paths=lambda **_: None),
     }
@@ -120,8 +123,9 @@ def test_lesson_04_cell_9_saves_and_loads_the_generated_paths(tmp_path, monkeypa
         exec(numbered[key], namespace)
     # The cell runs again: the same paths are in the file already.
     exec(numbered["9"], namespace)
+    paths = namespace["paths"]
     assert (
-        rk.io.load(path=tmp_path / "paths" / "04_rent_index.json") == namespace["paths"]
+        rk.io.load(path=tmp_path / "paths" / f"04_rent_index_{paths.id}.json") == paths
     )
 
 

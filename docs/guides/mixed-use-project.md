@@ -220,6 +220,8 @@ The original property collection is `bed351126771f61e3d6255c18cd48aa5`.
 | [assumptions.json](../../examples/data/mixed_use_property/assumptions.json) | Separate legacy teaching assumptions and calculation conventions |
 | [development.json](../../examples/data/mixed_use_property/development.json) | Teaching inputs for the development plan |
 | [base_plan.json](../../examples/data/mixed_use_property/base_plan.json) | The dated plan of walkthrough lesson 03 at 2027 prices, derived from the inventory, the assumptions and the development plan |
+| [03_base_plan.model.json](../../examples/data/mixed_use_property/03_base_plan.model.json) | The Model of walkthrough lesson 03, with its commitments, derived from the cells of the lesson. Lesson 04 loads it |
+| [03_base_case.specification.json](../../examples/data/mixed_use_property/03_base_case.specification.json) | The funded Specification of walkthrough lesson 03, on that Model, derived in the same way. Lesson 04 loads it |
 | [origins.json](../../examples/data/mixed_use_property/origins.json) | The origin of each teaching assumption: a legacy notebook cell, a book method or the author's choice |
 
 SDK reserialization changes content IDs for this historical payload. The package

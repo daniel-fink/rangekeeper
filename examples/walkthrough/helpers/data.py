@@ -5,6 +5,8 @@
 its origin. ``load_base_plan()`` reads ``base_plan.json``: the dates, budgets,
 incomes, operating costs, renewals and funding of the development, each with its
 origin, and the areas, rates and phases of the plan. Neither does arithmetic.
+``data_path(name=)`` gives the path of a document of the data package, for
+``rk.io.load``.
 ``examples/data/derive_totals.py`` and ``examples/data/derive_base_plan.py``
 derive the files from the floor inventory and the teaching assumptions, and
 document how. The lessons declare every financial equation (ADR-020, principle
@@ -16,6 +18,7 @@ from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from datetime import date
 from html import escape
+from pathlib import Path
 
 import rangekeeper as rk
 
@@ -192,6 +195,14 @@ class BasePlan(Mapping[str, "rk.Quantity | date"]):
         for key, shown, origin in rows:
             lines.append(f"{key:<{width}}  {shown:>24}  {origin}")
         return "\n".join(lines)
+
+
+def data_path(*, name: str) -> Path:
+    """Return the path of one file of the data package; the file must exist."""
+    path = DATA / name
+    if not path.is_file():
+        raise ValueError(f"The data package has no file {name!r}")
+    return path
 
 
 def load_base_plan() -> BasePlan:

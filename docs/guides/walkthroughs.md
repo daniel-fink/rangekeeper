@@ -54,7 +54,13 @@ The tests check the helpers, the lesson names and the conversion. They run each
 lesson in a new kernel, then convert it for the docs site. The `walkthrough` CI job
 runs the same tests with `RK_DESIGN_MODE=fixture` and `RK_PATH_COUNT=4`. Inspect
 the tables, figures and expected financial results of each executed lesson. Helpers
-write their HTML to `examples/walkthrough/output/`, which git ignores.
+write their HTML to `examples/walkthrough/output/`, which git ignores. Lesson 04
+saves its market paths to `examples/walkthrough/paths/`, which git also ignores.
+
+Without `RK_PATH_COUNT`, lesson 04 uses 500 paths. One batch takes about 3 s for
+each path, so its four batches take about 100 minutes
+([#523](https://github.com/daniel-fink/rangekeeper/issues/523)). `RK_PATH_COUNT`
+also applies to the [docs site build](../contributing/README.md#docs-site).
 
 ## Convert for the docs site
 
@@ -131,7 +137,9 @@ shared `plotly_white`/`plotly_dark` styles, fonts, controls and colour palettes.
 Use colours stay the same across the hierarchy charts. Package colours stay the
 same in the development timeline. `show_timeline(of=)` displays the dates of a
 plan's phases; `plot_cash_flows(outcome=, key=)` and `plot_flows(outcome=, keys=)`
-draw solved Flows of an Outcome; `show_equations(of=)` derives its edges from the actual equations; for a
+draw solved Flows of an Outcome; `plot_flows(flows=)` draws labelled Flows;
+`plot_paths(paths=)` draws market paths; `plot_target_curve(outcomes=, key=, markers=)`
+draws the distribution of a batch; `show_equations(of=)` derives its edges from the actual equations; for a
 Specification it marks each value fixed or free without changing the relationships,
 and `show_relations()` lets the reader switch between Specifications. Line charts also
 use different dashes and markers. Helpers apply the style to a copy of the Figure.
