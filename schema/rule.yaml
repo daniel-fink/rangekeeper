@@ -11,6 +11,26 @@ imports:
 default_prefix: rk
 default_range: string
 classes:
+  RuleParameter:
+    description: A named value of a Specification that rules read, such as a trigger. It is the same on every path, and
+      a case can change it without a new Model revision.
+    notes:
+    - A condition or a window bound refers to a parameter by a UUID that comes from its key. The UUID is version 5, in
+      the URL namespace, of the text rangekeeper:rule-parameter:<key>. The Model does not hold it.
+    attributes:
+      key:
+        description: Key of the parameter. It is unique in the composed Specification, and no Value of the Model has
+          it when the Specification is made.
+        range: Code
+        required: true
+      quantity:
+        description: The finite magnitude and the units of the parameter.
+        range: Quantity
+        required: true
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true
   Rule:
     description: One rule as a query over a window of dates. On each path it fixes one value on the first window date
       on which its condition holds, or fixes otherwise.

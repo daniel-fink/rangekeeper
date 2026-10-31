@@ -255,6 +255,7 @@ def check_queries(
     rules: Sequence[RuleQuery],
     model: Model,
     fixed: Collection[UUID],
+    parameters: Collection[str] = (),
 ) -> None:
     """Raise when a rule reads the future, a later rule or a free input.
 
@@ -263,9 +264,11 @@ def check_queries(
     one, raises ContractError with ``rule_order``. A condition that depends on a
     free input (a Value that no equation defines and ``fixed`` does not hold, by
     its UUID or its Movements' UUIDs) raises ContractError with
-    ``rule_reads_unknown``. A rule may read a Flow that depends on a later rule: a
-    decision cannot change the Movements of the past (ADR-021).
+    ``rule_reads_unknown``, and so does a name that is neither a Value of ``model``
+    nor one of the keys in ``parameters``. A rule may read a Flow that depends on a
+    later rule: a decision cannot change the Movements of the past (ADR-021).
     """
+    declared = frozenset(parameter_id(key) for key in parameters)
     defined = definitions(model)
     targets = {rule.target for rule in rules}
     unknown = _free_inputs(model, fixed=fixed, defined=defined) - targets
@@ -278,6 +281,7 @@ def check_queries(
         later = {item.target for item in rules[position:]}
         _check_kind(rule, model=model)
         _check_reads(rule, model=model)
+        _check_names(rule, model=model, parameters=declared)
         _check_look_ahead(rule, model=model)
         for read in read_targets(rule.condition):
             _check_read(
@@ -319,6 +323,28 @@ def _check_reads(rule: RuleQuery, *, model: Model) -> None:
                 code=Code.RULE_CAPABILITY,
                 targets=(rule.target,),
             )
+
+
+def _check_names(rule: RuleQuery, *, model: Model, parameters: frozenset[UUID]) -> None:
+    """Check that each name of a condition and of a bound exists."""
+    reads = set(read_targets(rule.condition))
+    for bound in (rule.earliest, rule.latest):
+        if bound is not None:
+            reads.update(references(bound))
+    missing = tuple(
+        token
+        for token in reads
+        if token not in parameters and token not in model._index.records
+    )
+    if missing:
+        key = model.key_of(rule.target)
+        raise ContractError(
+            f"the rule for {key} reads a parameter that this Specification does "
+            "not declare",
+            code=Code.RULE_READS_UNKNOWN,
+            targets=(rule.target, *missing),
+            values={"key": key},
+        )
 
 
 def _check_look_ahead(rule: RuleQuery, *, model: Model) -> None:

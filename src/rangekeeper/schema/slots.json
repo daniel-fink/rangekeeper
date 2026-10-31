@@ -3905,6 +3905,36 @@
       "required": true
     }
   },
+  "RuleParameter": {
+    "key": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "quantity": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Quantity"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
   "Run": {
     "metadata": {
       "lineage": false,
@@ -3929,6 +3959,20 @@
         {
           "category": "uuid",
           "kind": "Metadata"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "path_key": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
         }
       ],
       "ordered": false,
@@ -4499,6 +4543,20 @@
         {
           "category": "record",
           "kind": "Objective"
+        }
+      ],
+      "ordered": true,
+      "required": false
+    },
+    "parameters": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "RuleParameter"
         }
       ],
       "ordered": true,

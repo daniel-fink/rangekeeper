@@ -81,6 +81,7 @@ def assemble(
             specification=specification.id,
             outputs=() if output is None else (output.id,),
             paths=UNSET if path is None else path.paths,
+            path_key=UNSET if path is None else path.key,
             report=report,
         )
     )

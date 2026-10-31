@@ -67,6 +67,7 @@
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Run",
     "id": "property",
     "metadata": "property",
+    "path_key": "property",
     "paths": "property",
     "record": "property",
     "report": "property",
@@ -94,6 +95,7 @@
     "model": "property",
     "model_id": "property",
     "on": "method (self, *, model: Model) -> Specification",
+    "parameters": "method (self, **values: Quantity | str | int | float | Decimal) -> Specification",
     "record": "property",
     "resolver": "property",
     "revise": "method (self, replacement: rangekeeper.schema.records.Specification) -> Specification",
@@ -3172,6 +3174,7 @@
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Run",
     "id": "property",
     "metadata": "property",
+    "path_key": "property",
     "paths": "property",
     "record": "property",
     "report": "property",
@@ -3185,17 +3188,18 @@
   "RunRecord": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, paths: UUID | Unset = <Unset>, report: Report) -> None",
+    "__init__": "method (self, *, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, paths: UUID | Unset = <Unset>, path_key: str | None | Unset = <Unset>, report: Report) -> None",
     "metadata": "property",
     "outputs": "property",
+    "path_key": "property",
     "paths": "property",
-    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, specification: UUID | Unset = <Unset>, spawns: tuple[UUID, ...] | None | Unset | Omit = <Unset>, outputs: tuple[UUID, ...] | None | Unset | Omit = <Unset>, paths: UUID | Unset | Omit = <Unset>, report: Report | Unset = <Unset>) -> Self",
+    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, specification: UUID | Unset = <Unset>, spawns: tuple[UUID, ...] | None | Unset | Omit = <Unset>, outputs: tuple[UUID, ...] | None | Unset | Omit = <Unset>, paths: UUID | Unset | Omit = <Unset>, path_key: str | None | Unset | Omit = <Unset>, report: Report | Unset = <Unset>) -> Self",
     "report": "property",
     "spawns": "property",
     "specification": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, paths: UUID | Unset = <Unset>, report: Report) -> None"
+   "signature": "(*, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, paths: UUID | Unset = <Unset>, path_key: str | None | Unset = <Unset>, report: Report) -> None"
   },
   "RunStatus": {
    "kind": "class",
@@ -3331,10 +3335,10 @@
   "Rule": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, window: Window, condition: str, otherwise: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never, then: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never | None = None, triggers: collections.abc.Mapping[str, rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+    "__init__": "method (self, *, window: Window, condition: str, otherwise: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never, then: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never | None = None, triggers: collections.abc.Mapping[str, rangekeeper.quantity.Quantity] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
    },
    "module": "rangekeeper.specification.rule._declaration",
-   "signature": "(*, window: Window, condition: str, otherwise: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never, then: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never | None = None, triggers: collections.abc.Mapping[str, rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
+   "signature": "(*, window: Window, condition: str, otherwise: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never, then: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never | None = None, triggers: collections.abc.Mapping[str, rangekeeper.quantity.Quantity] = <_HAS_DEFAULT_FACTORY_CLASS>) -> None"
   },
   "Rules": {
    "kind": "class",
@@ -3376,6 +3380,7 @@
     "model": "property",
     "model_id": "property",
     "on": "method (self, *, model: Model) -> Specification",
+    "parameters": "method (self, **values: Quantity | str | int | float | Decimal) -> Specification",
     "record": "property",
     "resolver": "property",
     "revise": "method (self, replacement: rangekeeper.schema.records.Specification) -> Specification",
@@ -3390,7 +3395,7 @@
   "SpecificationRecord": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: tuple[Rule, ...] | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, parameters: tuple[RuleParameter, ...] | None | Unset = <Unset>, rules: tuple[Rule, ...] | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None",
     "assignments": "property",
     "cases": "property",
     "estimates": "property",
@@ -3399,14 +3404,15 @@
     "metadata": "property",
     "model": "property",
     "objectives": "property",
+    "parameters": "property",
     "path": "property",
-    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, model: UUID | Unset | Omit = <Unset>, includes: tuple[UUID, ...] | None | Unset | Omit = <Unset>, cases: tuple[UUID, ...] | None | Unset | Omit = <Unset>, assignments: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, unknowns: tuple[Reference, ...] | None | Unset | Omit = <Unset>, estimates: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, formulations: tuple[Formulation, ...] | None | Unset | Omit = <Unset>, objectives: tuple[Objective, ...] | None | Unset | Omit = <Unset>, settings: Settings | Unset | Omit = <Unset>, rules: tuple[Rule, ...] | None | Unset | Omit = <Unset>, path: PathCase | None | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, model: UUID | Unset | Omit = <Unset>, includes: tuple[UUID, ...] | None | Unset | Omit = <Unset>, cases: tuple[UUID, ...] | None | Unset | Omit = <Unset>, assignments: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, unknowns: tuple[Reference, ...] | None | Unset | Omit = <Unset>, estimates: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, formulations: tuple[Formulation, ...] | None | Unset | Omit = <Unset>, objectives: tuple[Objective, ...] | None | Unset | Omit = <Unset>, settings: Settings | Unset | Omit = <Unset>, parameters: tuple[RuleParameter, ...] | None | Unset | Omit = <Unset>, rules: tuple[Rule, ...] | None | Unset | Omit = <Unset>, path: PathCase | None | Unset | Omit = <Unset>) -> Self",
     "rules": "property",
     "settings": "property",
     "unknowns": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: tuple[Rule, ...] | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None"
+   "signature": "(*, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, parameters: tuple[RuleParameter, ...] | None | Unset = <Unset>, rules: tuple[Rule, ...] | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None"
   },
   "Where": {
    "kind": "class",

@@ -35,13 +35,13 @@ from rangekeeper.execution.outcome import Outcome
 from rangekeeper.execution.planning import Cases
 from rangekeeper.market.paths import Paths
 from rangekeeper.model import Model
-from rangekeeper.quantity import unit_systems
+from rangekeeper.quantity import Quantity, unit_systems
 from rangekeeper.run.documents import Documents
 from rangekeeper.shared.errors import ValidationError
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.shared.registry import Registry
 from rangekeeper.specification import Composition, Specification
-from rangekeeper.specification.rule._declaration import query_of
+from rangekeeper.specification.rule._declaration import parameters_of, query_of
 from rangekeeper.specification.rule._query import RuleQuery
 
 # The wall-clock seconds that worker processes cost before they repay anything:
@@ -153,6 +153,7 @@ def solve_leaf(
         backend=backend,
         resolver=resolver,
         rules=_rules(view),
+        parameters=_parameters(view),
     )
     outcome = attempt.execute()
     validation = attempt.validation
@@ -166,6 +167,13 @@ def _rules(view: Composition | ValidationError) -> tuple[RuleQuery, ...]:
     if isinstance(view, ValidationError):
         return ()
     return tuple(query_of(item) for item in view.requirements.rules or ())
+
+
+def _parameters(view: Composition | ValidationError) -> dict[str, Quantity]:
+    """Return the parameters that the rules of a leaf read, by key."""
+    if isinstance(view, ValidationError):
+        return {}
+    return parameters_of(view.requirements)
 
 
 def start_session(setup: Setup) -> Session:

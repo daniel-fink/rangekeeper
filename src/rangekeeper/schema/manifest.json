@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "e95c768245097a19f8db2d60eab8ff03dc91eb9ec766de8619ccb1ccf417c3ca",
+    "checks.py": "0348444421e73e3c2e6bca3ec0cdbc5b39d5d6c3fbd1884c355db92e6c4ad15c",
     "enums.py": "2a0ac7b56c54850edd83593771fdb1bc5ce0fb34326581bbea0f9115e74b3a45",
-    "records.py": "c25c2577f0c6c2eccfe5c6491e6a6021f40e7d2db9d6318c11e14bfe5a963218",
-    "schema.json": "00b1dd8f409531fe12022ecc958faba7a1c1e838ca1f2d778fd0014d37afd2b6",
-    "slots.json": "c886e82c89880297940ff04a7616d69bf7b1a1abaf52b9bf6466f52a31bb7591"
+    "records.py": "86b1e39500671723163bf4a446e22a97004f09802213297d1e96f261716089d3",
+    "schema.json": "7e79509eac32bd9a2dcf23abac68b466ccd4d4b049238c8defa096dcd09a7e20",
+    "slots.json": "37f2b67eff6a67a988712d37dbf05e3bcafa73194e3e7b8569e2788b9a6b7a94"
   },
   "classes": [
     "Argument",
@@ -71,6 +71,7 @@
     "Report",
     "Rule",
     "RuleEvidence",
+    "RuleParameter",
     "Run",
     "RunStatus",
     "Runtime",
@@ -129,10 +130,10 @@
     "schema/query.yaml": "a7aaed8586e6b5fdbaabffa15cf4d3f1df7e759eb2cdd3bce4414f75b0ea1a10",
     "schema/reference.yaml": "8d01f4dc6dce689d1a79c4c4c026545434b8f0b8bd37e19c9bba93fccc92f023",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
-    "schema/rule.yaml": "785cbc2020b549c3dd30e1fd5054b99cbab78aa056a8d428c0b59d281af0a24e",
-    "schema/run.yaml": "6ce25a6d5da891b029ac7fabab267ae96e00fecb46be5e4ac5174089855fef5c",
+    "schema/rule.yaml": "1aa980a4ce6b6406da6195c4081e1f3e55079b32440b6945007ca711f32e08e5",
+    "schema/run.yaml": "e7816f0a6fabd456babaf869b8fc9e93b521f8790dc34d4ca96f16ab86277f51",
     "schema/settings.yaml": "33b976592d1f15197791e08f1b4c6fa418738a60e77ecc13b955ac94a8396248",
-    "schema/specification.yaml": "10069cba55bbe5ccd7d6a7120f1c187c4dba67cfb0533b03bed66f3cefbca12d",
+    "schema/specification.yaml": "52855483fd53008c1bcf0bd23badee413ebf1e0d6a2e205ff5fcd50a6a30c20b",
     "tools/schema/bundle.yaml": "b40e8c01d8367d9bc274d2512ab462f056170c06a7f7ad62e3cfac01902afc4d",
     "tools/schema/generate.py": "53bafe1468ae417da4cdcd728fcbe4390d5ca944950ec498550e6449b9270955",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"

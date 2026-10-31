@@ -6201,6 +6201,59 @@ class RuleEvidence(Record):
         return cast('bool', self._data.get('verified'))
 
 
+class RuleParameter(Record):
+    'A named value of a Specification that rules read, such as a trigger. It is the same on every path, and a case can change it without a new Model revision.'
+    __slots__ = ()
+    _kind = 'RuleParameter'
+    _SLOTS = _freeze(
+        {'key': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                 'required': True,
+                 'many': False,
+                 'mapping': False,
+                 'nullable': False,
+                 'ordered': False,
+                 'lineage': False},
+         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
+                      'required': True,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': False,
+                      'ordered': False,
+                      'lineage': False}}
+    )
+
+    def __init__(self, *,
+        key: str,
+        quantity: Quantity,
+    ) -> None:
+        data: dict[str, object] = {}
+        data['key'] = copy_json(key)
+        data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        self._set_checked(data)
+
+    def replace(self, *,
+        key: str | Unset = UNSET,
+        quantity: Quantity | Unset = UNSET,
+    ) -> Self:
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
+        changes: dict[str, object] = {}
+        if key is not UNSET:
+            changes['key'] = copy_json(key)
+        if quantity is not UNSET:
+            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
+        return self._replace(changes)
+
+    @property
+    def key(self) -> str:
+        'Key of the parameter. It is unique in the composed Specification, and no Value of the Model has it when the Specification is made.'
+        return cast('str', self._data.get('key'))
+
+    @property
+    def quantity(self) -> _Quantity:
+        'The finite magnitude and the units of the parameter.'
+        return cast('_Quantity', self._child('quantity', Quantity, False))
+
+
 class Run(Record):
     'The finalized record of one execution attempt against an exact Specification revision.'
     __slots__ = ()
@@ -6241,6 +6294,13 @@ class Run(Record):
                    'nullable': False,
                    'ordered': False,
                    'lineage': False},
+         'path_key': {'options': [{'kind': 'Code', 'category': 'primitive'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False,
+                      'lineage': False},
          'report': {'options': [{'kind': 'Report', 'category': 'record'}],
                     'required': True,
                     'many': False,
@@ -6256,6 +6316,7 @@ class Run(Record):
         spawns: tuple[UUID, ...] | None | Unset = UNSET,
         outputs: tuple[UUID, ...] | None | Unset = UNSET,
         paths: UUID | Unset = UNSET,
+        path_key: str | None | Unset = UNSET,
         report: Report,
     ) -> None:
         data: dict[str, object] = {}
@@ -6267,6 +6328,8 @@ class Run(Record):
             data['outputs'] = _encode_many(outputs, lambda v: _encode_uuid(v))
         if paths is not UNSET:
             data['paths'] = _encode_uuid(paths)
+        if path_key is not UNSET:
+            data['path_key'] = copy_json(path_key)
         data['report'] = _encode_record(report, Report, 'report')
         self._set_checked(data)
 
@@ -6276,6 +6339,7 @@ class Run(Record):
         spawns: tuple[UUID, ...] | None | Unset | Omit = UNSET,
         outputs: tuple[UUID, ...] | None | Unset | Omit = UNSET,
         paths: UUID | Unset | Omit = UNSET,
+        path_key: str | None | Unset | Omit = UNSET,
         report: Report | Unset = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
@@ -6296,6 +6360,10 @@ class Run(Record):
             changes['paths'] = OMIT
         elif paths is not UNSET:
             changes['paths'] = _encode_uuid(paths)
+        if path_key is OMIT:
+            changes['path_key'] = OMIT
+        elif path_key is not UNSET:
+            changes['path_key'] = copy_json(path_key)
         if report is not UNSET:
             changes['report'] = _encode_record(report, Report, 'report')
         return self._replace(changes)
@@ -6324,6 +6392,11 @@ class Run(Record):
     def paths(self) -> UUID | None:
         'UUID of the Paths revision whose series fix the cases of this Run; absent when no case takes a path.'
         return cast('UUID | None', _decode_uuid(self._data.get('paths')))
+
+    @property
+    def path_key(self) -> str | None:
+        'Key in the Paths revision of the path that fixes this case. It is present exactly when the Specification of this Run has a path, so a batch Run has none.'
+        return cast('str | None', self._data.get('path_key'))
 
     @property
     def report(self) -> Report:
@@ -7044,6 +7117,13 @@ class Specification(Record):
                       'nullable': False,
                       'ordered': False,
                       'lineage': False},
+         'parameters': {'options': [{'kind': 'RuleParameter', 'category': 'record'}],
+                        'required': False,
+                        'many': True,
+                        'mapping': False,
+                        'nullable': True,
+                        'ordered': True,
+                        'lineage': False},
          'rules': {'options': [{'kind': 'Rule', 'category': 'record'}],
                    'required': False,
                    'many': True,
@@ -7071,6 +7151,7 @@ class Specification(Record):
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
         settings: Settings | Unset = UNSET,
+        parameters: tuple[RuleParameter, ...] | None | Unset = UNSET,
         rules: tuple[Rule, ...] | None | Unset = UNSET,
         path: PathCase | None | Unset = UNSET,
     ) -> None:
@@ -7094,6 +7175,8 @@ class Specification(Record):
             data['objectives'] = _encode_many(objectives, lambda v: _encode_record(v, Objective, 'objectives'))
         if settings is not UNSET:
             data['settings'] = _encode_record(settings, Settings, 'settings')
+        if parameters is not UNSET:
+            data['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, RuleParameter, 'parameters'))
         if rules is not UNSET:
             data['rules'] = _encode_many(rules, lambda v: _encode_record(v, Rule, 'rules'))
         if path is not UNSET:
@@ -7111,6 +7194,7 @@ class Specification(Record):
         formulations: tuple[Formulation, ...] | None | Unset | Omit = UNSET,
         objectives: tuple[Objective, ...] | None | Unset | Omit = UNSET,
         settings: Settings | Unset | Omit = UNSET,
+        parameters: tuple[RuleParameter, ...] | None | Unset | Omit = UNSET,
         rules: tuple[Rule, ...] | None | Unset | Omit = UNSET,
         path: PathCase | None | Unset | Omit = UNSET,
     ) -> Self:
@@ -7154,6 +7238,10 @@ class Specification(Record):
             changes['settings'] = OMIT
         elif settings is not UNSET:
             changes['settings'] = _encode_record(settings, Settings, 'settings')
+        if parameters is OMIT:
+            changes['parameters'] = OMIT
+        elif parameters is not UNSET:
+            changes['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, RuleParameter, 'parameters'))
         if rules is OMIT:
             changes['rules'] = OMIT
         elif rules is not UNSET:
@@ -7213,6 +7301,11 @@ class Specification(Record):
     def settings(self) -> Settings | None:
         'Optional numerical requests. Choices still unspecified after composition are left to the implementation; the Run records the effective settings.'
         return cast('Settings | None', self._child('settings', Settings, False))
+
+    @property
+    def parameters(self) -> tuple[RuleParameter, ...] | None:
+        'Named values that rules read, such as a trigger. A case changes them like other values.'
+        return cast('tuple[RuleParameter, ...] | None', self._child('parameters', RuleParameter, True))
 
     @property
     def rules(self) -> tuple[Rule, ...] | None:
@@ -8123,6 +8216,7 @@ _TYPES = {
     'Report': Report,
     'Rule': Rule,
     'RuleEvidence': RuleEvidence,
+    'RuleParameter': RuleParameter,
     'Run': Run,
     'RunStatus': RunStatus,
     'Runtime': Runtime,
@@ -8204,6 +8298,7 @@ _SLOTS = {
     'Report': Report._SLOTS,
     'Rule': Rule._SLOTS,
     'RuleEvidence': RuleEvidence._SLOTS,
+    'RuleParameter': RuleParameter._SLOTS,
     'Run': Run._SLOTS,
     'RunStatus': RunStatus._SLOTS,
     'Runtime': Runtime._SLOTS,
@@ -8231,4 +8326,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Check', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'DecidedValue', 'DecisionResult', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'Observation', 'ObservationSource', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'PeriodTiming', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'Run', 'RunStatus', 'Runtime', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'TraceValue', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']
+__all__ = ['Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Check', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'DecidedValue', 'DecisionResult', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'Observation', 'ObservationSource', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'PeriodTiming', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleParameter', 'Run', 'RunStatus', 'Runtime', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'TraceValue', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']

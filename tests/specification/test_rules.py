@@ -142,15 +142,13 @@ def test_rules_is_a_mapping_that_names_a_missing_key():
     assert rules.get("second") is None
 
 
-def test_a_rule_brings_the_fixed_values_it_reads():
-    made = spec().fix(first=rising())
-    rule = made.rules["first"]
-    assert rule.triggers["trigger"].number == pytest.approx(1.05)
-    other = small_model().specify().fix(first=rule)
-    assert other.rules["first"].triggers["trigger"].number == pytest.approx(1.05)
-    # A value that the other Specification fixes stays.
-    mine = small_model().specify().fix(trigger=2.0).fix(first=rule)
-    assert mine.rules["first"].triggers["trigger"].number == pytest.approx(2.0)
+def test_a_rule_does_not_bring_the_model_values_it_reads():
+    """``triggers`` holds parameters (test_rule_parameters); a Model value stays put."""
+    rule = spec().fix(first=rising()).rules["first"]
+    assert rule.triggers == {}
+    with pytest.raises(ValidationError) as raised:
+        small_model().specify().fix(first=rule)
+    assert raised.value.report.issues[0].code is Code.RULE_READS_UNKNOWN
 
 
 def test_a_look_ahead_raises_availability_error():

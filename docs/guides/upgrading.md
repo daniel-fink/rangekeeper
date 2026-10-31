@@ -294,6 +294,28 @@ This does not change what `solve` does for a Specification without these rules.
 Bundle slot map changes with it.
 `rk.duration.PeriodTiming` keeps its members, and is now generated from the schema.
 
+### Rule parameters and cases across paths
+
+`Specification.parameters(start_trigger=1.05)` declares a value that a rule reads,
+and `fix` and `cases` change it
+([declare a rule](../reference/market-paths-and-rules.md#declare-a-rule)). Three
+things need an action:
+
+- **A trigger declared as a Model Value** still works. To vary it without a Model
+  revision, remove the Value from the Model and declare a parameter. A key that a
+  Value of the Model has raises `ContractError` with the code `UNIQUE`.
+- **`spec.rules[key].triggers`** holds parameters only. A reused rule no longer brings
+  the fixed Model values that it reads, so fix them in the other Specification.
+  Otherwise `fix` raises `ValidationError` with the code `rule_reads_unknown`.
+- **`across` of a batch** now makes one case for each pair of a case and a path
+  ([cases across market paths](../reference/specification.md#cases-across-market-paths)),
+  in place of `ContractError` with `BATCH_UNSUPPORTED`. A batch whose cases already
+  take a path still raises it.
+
+The stored formats add `Specification.parameters` and `Run.path_key`. A stored Run of
+a case with a path must record its path key: `validate` rejects one without it, so
+solve the case again.
+
 ### Decision traces in the Run
 
 A case with rules records [its decision trace](../reference/market-paths-and-rules.md#the-decision-trace).

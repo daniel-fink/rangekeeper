@@ -3780,6 +3780,32 @@
       "title": "RuleEvidence",
       "type": "object"
     },
+    "RuleParameter": {
+      "additionalProperties": false,
+      "description": "A named value of a Specification that rules read, such as a trigger. It is the same on every path, and a case can change it without a new Model revision.",
+      "properties": {
+        "key": {
+          "description": "Key of the parameter. It is unique in the composed Specification, and no Value of the Model has it when the Specification is made.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "quantity": {
+          "$ref": "#/$defs/Quantity",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            }
+          ],
+          "description": "The finite magnitude and the units of the parameter."
+        }
+      },
+      "required": [
+        "key",
+        "quantity"
+      ],
+      "title": "RuleParameter",
+      "type": "object"
+    },
     "Run": {
       "additionalProperties": false,
       "description": "The finalized record of one execution attempt against an exact Specification revision.",
@@ -3807,6 +3833,14 @@
           },
           "type": [
             "array",
+            "null"
+          ]
+        },
+        "path_key": {
+          "description": "Key in the Paths revision of the path that fixes this case. It is present exactly when the Specification of this Run has a path, so a batch Run has none.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": [
+            "string",
             "null"
           ]
         },
@@ -4342,6 +4376,16 @@
           "description": "Objectives in decreasing order of preference. Implementations may use this order for automatic selection; candidate exploration and final selection are implementation responsibilities.",
           "items": {
             "$ref": "#/$defs/Objective"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "parameters": {
+          "description": "Named values that rules read, such as a trigger. A case changes them like other values.",
+          "items": {
+            "$ref": "#/$defs/RuleParameter"
           },
           "type": [
             "array",

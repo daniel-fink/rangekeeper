@@ -654,12 +654,11 @@ def _across_paths(outcome: Compared) -> bool:
 def _path(member: Compared) -> PathKey | None:
     """Return the Paths UUID and the path key of a case across market paths, or None.
 
-    The Run of a case across market paths pins its Paths, and ``across``
-    names the case by its path key.
+    The Run of a case across market paths records both (ADR-014).
     """
     if not isinstance(member, Outcome) or member.run.paths is None:
         return None
-    return member.run.paths, member.key
+    return member.run.paths, member.run.path_key
 
 
 def _paths_of(outcome: Compared, name: str, *, unique: bool) -> set[PathKey]:

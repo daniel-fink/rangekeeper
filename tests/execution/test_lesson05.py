@@ -7,9 +7,6 @@ it. These differences wait on other issues:
 
 - ``lesson_model`` and ``plan``: lesson 05 loads lesson 04's Model and base case
   (cells 2 and 3, ``rk.io.load``, #207). The test runs lesson 04's cells.
-- ``parameters``: ``fixed.parameters(start_trigger=1.05)`` is #301. The test
-  declares each trigger as a Model Value and fixes it, so the statement runs as
-  ``fix``.
 - ``stories``: cell 4 loads the three histories (#207). The test makes them on the
   Periods of lesson 04's ``rent_index``, from 2027, so the first check of cell 6 is on
   2028-01-01 and reads 2027. ADR-021's table reads a 2026 Period on 2027-01-01; #207
@@ -34,7 +31,6 @@ from tests.execution import test_lesson04 as lesson04
 ROOT = Path(__file__).resolve().parents[2]
 LESSON_05 = ROOT / "examples/walkthrough/proposed/05_when_to_commit.md"
 LESSON_07 = ROOT / "examples/walkthrough/proposed/07_policies_and_graph.md"
-TRIGGERS = ("start_trigger", "b_start_trigger")
 HISTORIES = {
     "early recovery": (
         1.06,
@@ -64,8 +60,8 @@ def cells(path: Path) -> dict[str, str]:
 
 
 def run(namespace: dict, source: str) -> dict:
-    """Run a cell as written, with ``parameters`` as ``fix`` until #301."""
-    for code in lesson04.statements(source.replace(".parameters(", ".fix(")):
+    """Run a cell as written."""
+    for code in lesson04.statements(source):
         exec(code, namespace)
     return namespace
 
@@ -88,15 +84,10 @@ def histories() -> rk.market.Paths:
 
 
 def lesson_inputs() -> tuple[rk.Model, rk.Specification]:
-    """Return lesson 04's Model and base case, with the triggers of #301 in the Model."""
+    """Return lesson 04's Model and base case."""
     helpers = SimpleNamespace(data_path=lambda *, name: lesson04.DATA / name)
     namespace: dict = {"rk": rk, "date": date, "helpers": helpers}
     lesson04.run(namespace, "2", "3", "3b")
-    draft = namespace["model"].edit()
-    project = draft.entity(code="project")
-    for key in TRIGGERS:
-        project.value(key=key, units="ratio")
-    namespace["model"] = draft.commit()
     lesson04.run(namespace, "4")
     return namespace["model"], namespace["base"]
 
@@ -287,7 +278,8 @@ def test_lesson_07_reuses_the_rules_of_lesson_05(lesson):
     fixed = lesson["fixed"].on(model=lesson["model"]).fix(b_land_share="40 %")
     timing = strategy.rules
     assert timing["start_date"].triggers["start_trigger"].number == pytest.approx(1.05)
-    assert timing["b_start"].triggers["b_cost"] is not None
+    assert set(timing["b_start"].triggers) == {"b_start_trigger"}
+    assert timing["b_sale_date"].triggers == {}
     namespace = {"fixed": fixed, "timing": timing, "switch": fixed}
     exec(cells(LESSON_07)["8"], namespace)
     timing_only = namespace["timing_only"]
@@ -297,6 +289,35 @@ def test_lesson_07_reuses_the_rules_of_lesson_05(lesson):
     fixed_values = dict(zip(table.column("key"), table.column("quantity"), strict=True))
     assert fixed_values["start_trigger"].number == pytest.approx(1.05)
     assert fixed_values["b_start_trigger"].number == pytest.approx(1.10)
+
+
+def test_lesson_05_cell_17_tests_several_triggers_on_every_path(lesson):
+    """Cells 13, 17 and 17b: each trigger runs on every path, as a pair of keys."""
+    namespace = dict(lesson)
+    namespace["paths"] = lesson["stories"]
+    written = cells(LESSON_05)
+    for key in ("13", "17", "17b"):
+        run(namespace, written[key])
+    outcome = namespace["trigger_outcome"]
+    triggers = list(namespace["start_triggers"])
+    assert [case.key for case in outcome.cases] == triggers
+    assert outcome.table("equity_npv").column("case") == tuple(
+        f"{trigger}/{path}" for trigger in triggers for path in HISTORIES
+    )
+    # A trigger changes the decision on a path: the early recovery reads 1.06 on
+    # 2028-01-01 and 1.12 on 2029-01-01.
+    low, high = (
+        outcome.case(key=trigger).case(key="early recovery")
+        for trigger in ("1.05", "1.08")
+    )
+    assert (low["start_date"], high["start_date"]) == (
+        date(2028, 1, 1),
+        date(2029, 1, 1),
+    )
+    assert low.run.path_key == "early recovery"
+    summary = namespace["trigger_difference"].by_case.summary()
+    assert summary.column("case") == tuple(triggers)
+    assert set(summary.column("count")) == {len(HISTORIES)}
 
 
 def test_lesson_07_cell_8b_solves_each_strategy(lesson):

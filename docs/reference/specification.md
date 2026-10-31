@@ -157,7 +157,9 @@ back.roles  # each value: fixed with its Quantity, free or decided
 ```
 
 A [rule](market-paths-and-rules.md#declare-a-rule) can fix a value during the solve:
-`fix(start_date=rule)`. `rules` gives the rules by key.
+`fix(start_date=rule)`. `rules` gives the rules by key. `parameters(start_trigger=1.05)`
+declares a value that a rule reads, and `fix` changes it. `roles` shows it as fixed,
+after the Model's values.
 
 `fix(**values)` fixes each named value, and `free(*targets)` releases a value
 that was fixed before. A fix or free replaces an earlier fix or free of the same
@@ -301,8 +303,22 @@ store, and `execute` puts the Paths in its store before the Specifications. A
 case read from data loads the Paths with its resolver (`load_paths`); a resolver
 without `load_paths` raises `ContractError` with the code `RESOLVER_MISSING`.
 
+On a batch that `cases` made, `across` makes one case for each pair of a case and a
+path. Each case of the batch becomes a batch with its case key as its Metadata name,
+and its cases are the paths. So the key of a pair has two parts
+([ADR-014](../decisions/014-market-paths.md)), and each part is stored once: the
+case key is the name of the case's batch, and the path key is in the `path` field of
+the leaf. `Outcome.table` and `Pair.case` join them with `/`, as `1.05/up`, and
+`outcome.case(key="1.05").case(key="up")` reads one pair:
+
+```python
+trigger_cases = strategy.cases(cases={"1.05": {"start_trigger": 1.05}})
+trigger_outcome = rk.execution.solve(specification=trigger_cases.across(paths=paths))
+```
+
 The Run of each case and of the batch pins the Paths in `run.paths`, so Runs
-show that two strategies used the same futures. Each assigned Movement is known
+show that two strategies used the same futures. The Run of a case with a path also
+records its path key in `run.path_key`; a batch Run has none. Each assigned Movement is known
 on the date that `paths.available(name=)` gives, which rules read
 ([#300](https://github.com/daniel-fink/rangekeeper/issues/300)).
 
@@ -315,7 +331,7 @@ on the date that `paths.available(name=)` gives, which rules read
 | A value that is not a Flow, or a Flow over other Periods than the paths | `ContractError`, with `ALIGNMENT_DIFFER` for the Periods |
 | Series units that do not convert to the value's units | `UnitError` |
 | The members of a keyed value in `series=` | `ContractError`: keyed values come with [#284](https://github.com/daniel-fink/rangekeeper/issues/284) |
-| `across` of a batch | `ContractError` with the code `BATCH_UNSUPPORTED` |
+| `across` of a batch whose cases already take a path | `ContractError` with the code `BATCH_UNSUPPORTED` |
 | `fix`, `free`, `on`, `cases` or `across` of a case that `across` made | `ContractError`: change the Specification that `across` was called on |
 
 The `values` of a matching error give the `key`, the path `series` and the

@@ -1941,6 +1941,27 @@ def check_RuleEvidence(d, fields=None):
     return issues
 
 
+def check_RuleParameter(d, fields=None):
+    """Check the fields and rules of one RuleParameter node."""
+    issues = []
+    if 'key' not in d:
+        issues.append(('structure.required', 'key is required', ''))
+    if 'quantity' not in d:
+        issues.append(('structure.required', 'quantity is required', ''))
+    for name in d:
+        if name not in ('key', 'quantity'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'key' in d and (fields is None or 'key' in fields):
+        v = d['key']
+        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid key', '/key'))
+    if 'quantity' in d and (fields is None or 'quantity' in fields):
+        v = d['quantity']
+        if not (isinstance(v, Mapping) and (isinstance(v, Mapping))):
+            issues.append(('structure.value', 'invalid quantity', '/quantity'))
+    return issues
+
+
 def check_Run(d, fields=None):
     """Check the fields and rules of one Run node."""
     issues = []
@@ -1951,7 +1972,7 @@ def check_Run(d, fields=None):
     if 'report' not in d:
         issues.append(('structure.required', 'report is required', ''))
     for name in d:
-        if name not in ('metadata', 'outputs', 'paths', 'report', 'spawns', 'specification'):
+        if name not in ('metadata', 'outputs', 'path_key', 'paths', 'report', 'spawns', 'specification'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'metadata' in d and (fields is None or 'metadata' in fields):
         v = d['metadata']
@@ -1961,6 +1982,10 @@ def check_Run(d, fields=None):
         v = d['outputs']
         if not ((not _array(v) or all(((((type(x1) is not str or _P1.search(x1) is not None) and (type(x1) is str))) and (type(x1) is not str or _P1.search(x1) is not None) and (type(x1) is str)) for x1 in v)) and (_array(v) or v is None)):
             issues.append(('structure.value', 'invalid outputs', '/outputs'))
+    if 'path_key' in d and (fields is None or 'path_key' in fields):
+        v = d['path_key']
+        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid path_key', '/path_key'))
     if 'paths' in d and (fields is None or 'paths' in fields):
         v = d['paths']
         if not ((((type(v) is not str or _P1.search(v) is not None) and (type(v) is str)) or ((v is None))) and (type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
@@ -2185,7 +2210,7 @@ def check_Specification(d, fields=None):
     if 'metadata' not in d:
         issues.append(('structure.required', 'metadata is required', ''))
     for name in d:
-        if name not in ('assignments', 'cases', 'estimates', 'formulations', 'includes', 'metadata', 'model', 'objectives', 'path', 'rules', 'settings', 'unknowns'):
+        if name not in ('assignments', 'cases', 'estimates', 'formulations', 'includes', 'metadata', 'model', 'objectives', 'parameters', 'path', 'rules', 'settings', 'unknowns'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'assignments' in d and (fields is None or 'assignments' in fields):
         v = d['assignments']
@@ -2219,6 +2244,10 @@ def check_Specification(d, fields=None):
         v = d['objectives']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
             issues.append(('structure.value', 'invalid objectives', '/objectives'))
+    if 'parameters' in d and (fields is None or 'parameters' in fields):
+        v = d['parameters']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
+            issues.append(('structure.value', 'invalid parameters', '/parameters'))
     if 'path' in d and (fields is None or 'path' in fields):
         v = d['path']
         if not (((isinstance(v, Mapping)) or ((v is None)))):
@@ -2548,6 +2577,7 @@ CHECKS = {
     'Report': check_Report,
     'Rule': check_Rule,
     'RuleEvidence': check_RuleEvidence,
+    'RuleParameter': check_RuleParameter,
     'Run': check_Run,
     'RunStatus': check_RunStatus,
     'Runtime': check_Runtime,

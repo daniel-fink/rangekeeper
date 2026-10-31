@@ -74,6 +74,11 @@ class Run:
         return self._record.paths
 
     @property
+    def path_key(self) -> str | None:
+        """The key of the path that fixes this case, or None for a batch or no path."""
+        return self._record.path_key
+
+    @property
     def report(self) -> Report:
         """Recorded outcome and evidence; this is a declaration, not solver proof."""
         return self._record.report
