@@ -24,6 +24,12 @@ The Rangekeeper code is licensed separately, under MPL-2.0.
 - [`origins.json`](origins.json) gives the origin of each teaching assumption in
   `assumptions.json` and `development.json`: a legacy notebook cell, a book
   method or the author's choice.
+- On 31 October 2026 the rents of `assumptions.json` became 10 % higher and its
+  floor and facade OPEX rates 10 % lower than the legacy rates, so that the dated
+  plan of walkthrough lesson 03 can pay for its costs and its loan
+  ([#205](https://github.com/daniel-fink/rangekeeper/issues/205)). `origins.json`
+  records the author's change against the legacy cell; `totals_2032.json` is
+  derived again from the new rates.
 
 - `totals_2032.json` gives the property's totals in the stabilised year 2032
   for walkthrough lesson 02, each with its origin.

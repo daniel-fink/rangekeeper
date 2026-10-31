@@ -9,11 +9,11 @@
       "sha256": "8b0e9c0f2914d9dc54d077cdfac3114d73b68b685d9e5cad20fc400540804411"
     },
     "assumptions.json": {
-      "bytes": 3056,
-      "description": "Legacy teaching assumptions for the property. origins.json gives the origin of each value.",
+      "bytes": 3181,
+      "description": "Teaching assumptions for the property: the legacy rates, with the rents 10 % higher and the floor and facade OPEX rates 10 % lower (2026-10-31). origins.json gives the origin of each value.",
       "licence": "CC-BY-4.0",
       "origin": "teaching-assumptions",
-      "sha256": "23ad7fc529db239453b4e432e0b8e8d77f9c03a57a60c49049d21f1105f651bc"
+      "sha256": "ae221bc63ea20850f63203dc839186b5ae4e2dafd522a8cc3be37c7616f7a77b"
     },
     "audit.json": {
       "bytes": 8060,
@@ -51,11 +51,11 @@
       "sha256": "d1caf8d8aced2c5e22c9895e76c15ef2a0c377a80c197a6f35d05059367a3fab"
     },
     "origins.json": {
-      "bytes": 8852,
+      "bytes": 9270,
       "description": "The origin of each teaching assumption in assumptions.json and development.json.",
       "licence": "CC-BY-4.0",
       "origin": "author",
-      "sha256": "fb86274125b5b037f8600cc0c7f3b47d051a3ffdf340d081f970a262c963a10b"
+      "sha256": "e4dff84067d47620aea7d571d4a50c2dd20987dce85fae6c9350bd6c36adcbac"
     },
     "relationships.csv": {
       "bytes": 7860,
@@ -69,7 +69,7 @@
       "description": "Totals of the property in the stabilised year 2032 for walkthrough lesson 02: lettable area, rent and vacancy by use, operating cost and works cost, each with its origin. examples/data/derive_totals.py derives it from inventory.csv, assumptions.json and development.json.",
       "licence": "CC-BY-4.0",
       "origin": "derived",
-      "sha256": "a322537d558236026846a0ea7c14133683490a1a228ef73b864cae2cd1bb7832"
+      "sha256": "fe8d722bf001e84fe4ce00b9af46b6fa7e9816734b3103ff2b551f7f526832b6"
     },
     "transport.json.gz": {
       "bytes": 2380678,
