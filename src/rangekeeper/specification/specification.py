@@ -992,14 +992,15 @@ class Specification:
             if identity not in controlled
         )
         unknowns = in_model_order(model, local_unknowns)
+        # The schema does not order assignments, and a fix appends its own.
         if name is None and (
-            local_assignments,
+            _by_target(local_assignments),
             unknowns,
             estimates,
             declared,
             parameters,
         ) == (
-            record.assignments or (),
+            _by_target(record.assignments or ()),
             record.unknowns or (),
             record.estimates or (),
             record.rules or (),
@@ -1227,6 +1228,11 @@ def _require_content(model: "Model", assignment: Assignment) -> None:
     model.unit_system.convert(
         quantity=assignment.quantity, to=target_units(model, assignment.target)
     )
+
+
+def _by_target(assignments: Iterable[Assignment]) -> list[Assignment]:
+    """Return ``assignments`` in target UUID order, to compare without their order."""
+    return sorted(assignments, key=lambda item: item.target.target)
 
 
 def _assignment(
