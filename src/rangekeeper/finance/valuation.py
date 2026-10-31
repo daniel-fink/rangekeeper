@@ -6,7 +6,8 @@ Movement, or else its Period's date by ``timing`` (by default the end of the
 Period). The year fraction between two dates uses ``day_count``, by default
 actual/actual (ISDA), so a calendar year is exactly one year. PyXIRR finds IRR
 roots; ``npv`` and ``pv`` use the same discounting, so a price equal to the
-NPV earns the discount rate.
+NPV earns the discount rate. ``check_sign_change`` is for internal use: the
+solve applies it to a Flow whose IRR an equation fixes.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ from rangekeeper.flow import Flow
 from rangekeeper.money import is_currency
 from rangekeeper.quantity import Quantity, default_units
 from rangekeeper.schema import records
+from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError, NumericalError, UnitError
 from rangekeeper.shared.optional import requires
 
@@ -141,10 +143,14 @@ def irr(
 ) -> Quantity:
     """Return the internal rate of return, in ``% pa``: the rate whose NPV is zero.
 
-    The amounts need both signs and at least two dates. PyXIRR finds one root;
-    a ``guess`` is a starting point, not a bound, and several roots can exist.
-    The NPV at the root, on the first date, must be at most 1e-8 of the
-    gross amounts.
+    The amounts need inflows and outflows, on at least two dates. An amount
+    within the acceptance tolerance, 1e-8 of the gross amounts (at least
+    1e-8 of one unit), counts as zero: amounts without a real change of sign,
+    such as an equity cash flow whose only inflows are rounding noise, raise
+    NumericalError with the code ``no_sign_change``. PyXIRR finds one root;
+    a ``guess`` is a starting point, not a bound, and several roots can
+    exist. The NPV at the root, on the first date, must be within the same
+    tolerance.
     """
     with requires("calculations"):
         import pyxirr  # noqa: PLC0415 - optional dependency
@@ -152,9 +158,8 @@ def irr(
     from rangekeeper.finance.financial import resolve_day_count  # noqa: PLC0415 - the package loads financial on first use
 
     dates = _dates(flow, timing)
+    check_sign_change(flow)
     amounts = [movement.number for movement in flow.movements]
-    if not any(a < 0 for a in amounts) or not any(a > 0 for a in amounts):
-        raise NumericalError("IRR needs both positive and negative amounts")
     if len(set(dates)) < 2:
         raise NumericalError("IRR needs amounts on at least two dates")
     start = None if guess is None else _rate(guess)
@@ -166,9 +171,46 @@ def irr(
     residual = math.fsum(
         _discounted(flow, rate=root, on=min(dates), day_count=day_count, timing=timing)
     )
-    if abs(residual) > 1e-8 * max(1.0, math.fsum(abs(a) for a in amounts)):
+    if abs(residual) > _tolerance(amounts):
         raise NumericalError("IRR residual exceeds the acceptance tolerance")
     return Quantity(magnitude=100 * root, units="% pa")
+
+
+def _tolerance(amounts: Sequence[float]) -> float:
+    """Return the acceptance tolerance of an IRR: 1e-8 of the gross amounts.
+
+    The tolerance is at least 1e-8 of one unit. It bounds the NPV at the root,
+    and an amount within it counts as zero.
+    """
+    return 1e-8 * max(1.0, math.fsum(abs(a) for a in amounts))
+
+
+def check_sign_change(flow: Flow) -> None:
+    """Raise NumericalError unless an inflow and an outflow exceed the tolerance.
+
+    The error has the code ``no_sign_change``, and its message and ``values``
+    give the totals of the inflows and of the outflows, and the tolerance.
+    ``irr`` calls this function; the solve calls it for a fixed IRR.
+    """
+    amounts = [movement.number for movement in flow.movements]
+    tolerance = _tolerance(amounts)
+    if any(a > tolerance for a in amounts) and any(a < -tolerance for a in amounts):
+        return
+    values = {
+        name: str(Quantity(magnitude=amount, units=flow.units))
+        for name, amount in (
+            ("inflows", math.fsum(a for a in amounts if a > 0)),
+            ("outflows", math.fsum(a for a in amounts if a < 0)),
+            ("tolerance", tolerance),
+        )
+    }
+    raise NumericalError(
+        f"IRR needs inflows and outflows: the inflows total {values['inflows']} and"
+        f" the outflows total {values['outflows']}. An amount within"
+        f" {values['tolerance']}, 1e-8 of the gross amounts, counts as zero.",
+        code=Code.NO_SIGN_CHANGE,
+        values=values,
+    )
 
 
 def interest(
@@ -259,4 +301,4 @@ def _periods(term: Quantity | str, frequency: Frequency) -> int:
     return count * length // step
 
 
-__all__: Sequence[str] = ("irr", "npv", "payment", "pv")
+__all__: Sequence[str] = ("check_sign_change", "irr", "npv", "payment", "pv")

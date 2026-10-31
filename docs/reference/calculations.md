@@ -564,9 +564,15 @@ An amount's date is its recorded date, or else its Period's date by `timing`:
 by default the end of the Period, so year 1 of a yearly Flow is discounted once.
 The default day count is actual/actual (ISDA), so a calendar year is exactly
 one year, also in a leap year. PyXIRR finds the IRR root; a `guess` is a starting
-point, not a bound. `irr` needs amounts of both signs on at least two dates, and
+point, not a bound. `irr` needs inflows and outflows on at least two dates, and
 the NPV at the root must be at most `1e-8` of the gross amounts; otherwise it
-raises `NumericalError`. `pv`, `npv` and `irr` discount the same way, so a price
+raises `NumericalError`. For the sign check, an amount of at most
+`1e-8 * max(gross amounts, 1)` counts as zero. Rounding noise, such as an inflow of
+`1e-9 AUD` after an affine solve, is therefore not an inflow: amounts without a real
+change of sign raise `NumericalError` with the code `no_sign_change`, and its
+`values` give the totals of the `inflows` and `outflows` and the `tolerance`
+([errors](errors.md#run-diagnostics)). A small inflow above the tolerance is real,
+and gives a rate near -100 % pa. `pv`, `npv` and `irr` discount the same way, so a price
 equal to the NPV earns the discount rate. `interest` compounds the same
 effective rate over each Period, so a yearly Period at `"6 % pa"` earns 6 % of
 its balance. In an equation, `rx.finance.npv`, `rx.finance.irr` and

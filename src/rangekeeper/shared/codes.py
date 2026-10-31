@@ -101,6 +101,8 @@ class Code(StrEnum):
 
     # Execution findings that a Run records. ``ACTIVE_SIDE``: no active side
     # of each max or min call held at the solution of its affine problem.
+    # ``NO_SIGN_CHANGE``: an IRR of amounts without both inflows and outflows,
+    # where an amount within the acceptance tolerance counts as zero.
     ACTIVE_SIDE = "active_side"
     ASSIGNMENT_REJECTED = "assignment_rejected"
     ATTEMPT_DEADLINE = "attempt_deadline"
@@ -111,6 +113,7 @@ class Code(StrEnum):
     CONSTRAINT_RESIDUAL = "constraint_residual"
     ESTIMATES_UNUSED = "estimates_unused"
     FEASIBLE_CANDIDATE = "feasible_candidate"
+    NO_SIGN_CHANGE = "no_sign_change"
     NONAFFINE_UNKNOWNS = "nonaffine_unknowns"
     NUMERICAL_FAILURE = "numerical_failure"
     NUMERICAL_REJECTION = "numerical_rejection"
