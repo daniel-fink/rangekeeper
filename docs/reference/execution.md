@@ -274,8 +274,8 @@ difference.by(key="start_date").summary()  # where waiting gains, and where it c
 
 Each member is one leaf case, in `walk()` order. When each case of two batches
 takes a market path (`Specification.across`), their cases pair by path: the
-Paths that each case's Run pins (`run.paths`) and the path key, which names
-the case. So a batch of cases, each across the paths, pairs with one batch
+Paths that each case's Run pins (`run.paths`) and the path key that it records
+(`run.path_key`). So a batch of cases, each across the paths, pairs with one batch
 across the same paths, case by case and path by path, and `by_case` gives the
 statistics of each case. Other batches pair by case key, the `case` column of
 `Outcome.table`: the keys of nested batches joined by `/`, or the position of a
@@ -306,10 +306,7 @@ rk.execution.compare(
 | Fewer than two Outcomes, or a repeated key | `ContractError` |
 | A wrong Python type, such as one string for `keys` | `TypeError` |
 
-`across` of a batch of cases, one case for each pair of a case and a path,
-follows with the rules of
-[#300](https://github.com/daniel-fink/rangekeeper/issues/300); until then a batch
-of the cases' batches pairs in the same way. The query operations of `by_case`,
+The query operations of `by_case`,
 such as `where(condition=)`, `order_by` and `max`, follow with
 [#310](https://github.com/daniel-fink/rangekeeper/issues/310).
 

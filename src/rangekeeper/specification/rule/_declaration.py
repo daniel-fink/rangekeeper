@@ -7,7 +7,7 @@ against the pinned Model: ``declare`` makes the stored ``RuleRecord``, and
 rule engine what it reads.
 """
 
-from collections.abc import Collection, Iterator, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
@@ -26,22 +26,23 @@ from rangekeeper.model.targets import target_units
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import DomainKind, ExpressionKind, Operator, ValueKind
 from rangekeeper.schema.records import (
-    Assignment,
     Expression,
     Movement,
     Reference,
+    RuleParameter,
     Value,
 )
 from rangekeeper.schema.records import Rule as RuleRecord
+from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.runtime import UNSET, Unset
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import ContractError, MissingReferenceError
-from rangekeeper.specification.roles import fixed_content
 from rangekeeper.specification.rule._query import (
     RuleQuery,
     check_queries,
     names_of,
+    parameter_id,
     parse_condition_text,
     read_targets,
     references,
@@ -72,16 +73,16 @@ class Rule:
 
     Fix it by key: ``spec.fix(start_date=rule)``. On each path, the value is the
     first window date on which ``condition`` holds (or ``then``), and otherwise
-    ``otherwise``. ``triggers`` holds the fixed values that the rule reads, by key,
+    ``otherwise``. ``triggers`` holds the parameters that the rule reads, by key,
     when ``Specification.rules`` gives the rule: ``fix`` brings each one that the
-    other Specification does not fix.
+    other Specification does not declare.
     """
 
     window: "Window"
     condition: str
     otherwise: RuleValue
     then: RuleValue | None = None
-    triggers: Mapping[str, RuleValue] = field(default_factory=dict)
+    triggers: Mapping[str, Quantity] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -188,10 +189,27 @@ class Rules(Mapping[str, Rule]):
         return f"Rules({dict(self._rules)!r})"
 
 
-def declare(rule: Rule, *, target: Value, model: Model) -> RuleRecord:
+def parameters_of(record: SpecificationRecord) -> dict[str, Quantity]:
+    """Return the parameters of a Specification record by key, in stored order."""
+    return {item.key: item.quantity for item in record.parameters or ()}
+
+
+def stored_parameters(values: Mapping[str, Quantity]) -> tuple[RuleParameter, ...]:
+    """Return the stored form of parameters by key, in their order."""
+    return tuple(RuleParameter(key=key, quantity=item) for key, item in values.items())
+
+
+def declare(
+    rule: Rule,
+    *,
+    target: Value,
+    model: Model,
+    parameters: Mapping[str, Quantity],
+) -> RuleRecord:
     """Return the stored record of ``rule``, which decides ``target`` in ``model``.
 
-    A name that the Model lacks raises EquationError. A target that is not a date
+    A name that is neither in the Model nor in ``parameters`` raises EquationError.
+    A target that is not a date
     or a scalar measurement, a value of the wrong kind and a condition or a bound
     of the wrong kind raise ContractError with ``rule_capability``.
     """
@@ -203,15 +221,15 @@ def declare(rule: Rule, *, target: Value, model: Model) -> RuleRecord:
     window = rule.window
     return RuleRecord(
         target=Reference(target=target.id),
-        condition=_condition(rule.condition, model=model),
+        condition=_condition(rule.condition, model=model, parameters=parameters),
         otherwise=_literal(rule.otherwise, target=target, model=model),
         then=(
             UNSET
             if rule.then is None
             else _literal(rule.then, target=target, model=model)
         ),
-        earliest=_stored_bound(window.earliest, model=model),
-        latest=_stored_bound(window.latest, model=model),
+        earliest=_stored_bound(window.earliest, model=model, parameters=parameters),
+        latest=_stored_bound(window.latest, model=model, parameters=parameters),
         periods=UNSET if window.periods is None else tuple(window.periods),
         timing=UNSET if window.timing is PeriodTiming.FIRST else window.timing,
     )
@@ -232,19 +250,20 @@ def query_of(record: RuleRecord) -> RuleQuery:
 
 
 def rule_of(
-    record: RuleRecord, *, model: Model, assignments: Sequence[Assignment] = ()
+    record: RuleRecord, *, model: Model, parameters: Mapping[str, Quantity]
 ) -> Rule:
-    """Return the Rule of one stored rule, with the fixed values that it reads.
+    """Return the Rule of one stored rule, with the parameters that it reads.
 
-    ``assignments`` are the fixed values of its Specification.
+    ``parameters`` are the parameters of its Specification, by key.
     """
+    keys = {parameter_id(key): key for key in parameters}
 
     def name(reference: Reference) -> str:
-        return model.key_of(reference.target)
+        return keys.get(reference.target) or model.key_of(reference.target)
 
     window = Window(
-        earliest=_bound_of(record.earliest, model=model),
-        latest=_bound_of(record.latest, model=model),
+        earliest=_bound_of(record.earliest, name=name),
+        latest=_bound_of(record.latest, name=name),
         periods=record.periods or None,
         timing=record.timing or PeriodTiming.FIRST,
     )
@@ -253,7 +272,7 @@ def rule_of(
         condition=render_condition(expression=record.condition, name=name),
         otherwise=_content(record.otherwise),
         then=None if record.then is None else _content(record.then),
-        triggers=_triggers(record, model=model, assignments=assignments),
+        triggers=_triggers(record, parameters=parameters),
     )
 
 
@@ -271,6 +290,7 @@ def check_declared(
     *,
     model: Model,
     fixed: Collection[UUID],
+    parameters: Collection[str],
     document_id: UUID,
 ) -> None:
     """Raise when the stored rules read the future, a later rule or a free input.
@@ -280,15 +300,20 @@ def check_declared(
     """
     try:
         check_queries(
-            rules=[query_of(record) for record in declared], model=model, fixed=fixed
+            rules=[query_of(record) for record in declared],
+            model=model,
+            fixed=fixed,
+            parameters=parameters,
         )
     except ContractError as error:
         issue = Issue.from_error(error, document_id=document_id)
         ValidationReport((issue,)).raise_if_invalid()
 
 
-def _condition(text: str, *, model: Model) -> Expression:
-    expression = parse_condition_text(text=text, model=model)
+def _condition(
+    text: str, *, model: Model, parameters: Mapping[str, Quantity]
+) -> Expression:
+    expression = parse_condition_text(text=text, model=model, parameters=parameters)
     if expression.kind is not ExpressionKind.BOOLEAN and (
         expression.operator not in _CONDITIONS
     ):
@@ -296,24 +321,28 @@ def _condition(text: str, *, model: Model) -> Expression:
     return expression
 
 
-def _stored_bound(bound: date | str | None, *, model: Model) -> Expression | Unset:
+def _stored_bound(
+    bound: date | str | None, *, model: Model, parameters: Mapping[str, Quantity]
+) -> Expression | Unset:
     """Return the Expression of a bound, or UNSET without one."""
     if bound is None:
         return UNSET
     if isinstance(bound, date):
         return terms.constant(bound).to_expression()
-    term = read(text=bound, names=names_of(model))
+    term = read(text=bound, names=names_of(model, parameters=parameters))
     if term.kind is not DomainKind.DATE:
         raise _capability(f"a window bound is a date, and {bound!r} is not")
     return term.to_expression()
 
 
-def _bound_of(node: Expression | None, *, model: Model) -> date | str | None:
+def _bound_of(
+    node: Expression | None, *, name: Callable[[Reference], str]
+) -> date | str | None:
     if node is None:
         return None
     if node.kind is ExpressionKind.DATE and node.date is not None:
         return node.date
-    return render(expression=node, name=lambda item: model.key_of(item.target))
+    return render(expression=node, name=name)
 
 
 def _literal(value: RuleValue, *, target: Value, model: Model) -> Expression:
@@ -356,18 +385,13 @@ def _content(node: Expression) -> Quantity | date | Never:
 
 
 def _triggers(
-    record: RuleRecord, *, model: Model, assignments: Sequence[Assignment]
-) -> Mapping[str, RuleValue]:
-    fixed = {item.target.target: item for item in assignments}
-    reads = dict.fromkeys(read_targets(record.condition))
+    record: RuleRecord, *, parameters: Mapping[str, Quantity]
+) -> Mapping[str, Quantity]:
+    reads = set(read_targets(record.condition))
     for bound in (record.earliest, record.latest):
         if bound is not None:
-            reads.update(dict.fromkeys(references(bound)))
-    return {
-        model.key_of(token): fixed_content(fixed[token])  # type: ignore[misc]
-        for token in reads
-        if token in fixed
-    }
+            reads.update(references(bound))
+    return {key: item for key, item in parameters.items() if parameter_id(key) in reads}
 
 
 def _check_bound(bound: object) -> None:
@@ -403,7 +427,9 @@ __all__ = [
     "Window",
     "check_declared",
     "declare",
+    "parameters_of",
     "path_movements",
     "query_of",
     "rule_of",
+    "stored_parameters",
 ]

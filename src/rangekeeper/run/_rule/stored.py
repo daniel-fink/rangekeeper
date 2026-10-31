@@ -19,14 +19,13 @@ from rangekeeper.schema.records import Check as CheckRecord
 from rangekeeper.schema.records import (
     DecidedValue,
     Observation,
-    PathCase,
     Reference,
-    Rule,
     RuleEvidence,
+    Specification,
     TraceValue,
 )
 from rangekeeper.schema.runtime import UNSET, Unset
-from rangekeeper.specification.rule._declaration import query_of
+from rangekeeper.specification.rule._declaration import parameters_of, query_of
 
 Traced = Quantity | DateValue
 
@@ -79,26 +78,29 @@ def read_checks(evidence: RuleEvidence) -> tuple[Check, ...]:
 def check_stored(
     evidence: RuleEvidence,
     *,
-    rules: Sequence[Rule],
+    requirements: Specification,
     candidate: Model,
-    path: PathCase | None,
     paths: Paths | None,
     units: UnitSystem,
 ) -> None:
-    """Raise DecisionError with ``rule_trace`` when a stored trace does not hold."""
+    """Raise DecisionError with ``rule_trace`` when a stored trace does not hold.
+
+    ``requirements`` is the composed Specification of the Run: its rules, its
+    parameters and its path.
+    """
+    path = requirements.path
     known, amounts = {}, {}
     if path is not None and paths is not None:
         known = dict(path_known(path=path, paths=paths))
         amounts = dict(path_amounts(path=path, paths=paths))
     check_trace(
-        rules=tuple(query_of(rule) for rule in rules),
+        rules=tuple(query_of(rule) for rule in requirements.rules or ()),
         checks=read_checks(evidence),
         facts=TraceFacts(
             candidate=candidate,
             path_known=known,
             path_amounts=amounts,
-            # A Specification holds no rule parameters yet (#301).
-            parameters={},
+            parameters=parameters_of(requirements),
             units=units,
         ),
     )

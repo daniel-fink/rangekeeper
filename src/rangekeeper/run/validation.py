@@ -259,9 +259,8 @@ def _check_traces(
         try:
             check_stored(
                 run.rule_evidence,
-                rules=requirements.rules or (),
+                requirements=requirements,
                 candidate=found[run.record.outputs[0]],
-                path=path,
                 paths=None if path is None else load_paths(resolver, path.paths),
                 units=units,
             )
@@ -467,6 +466,10 @@ class _RunValidation:
                 require(
                     run.get("paths") == (spec.get("path") or {}).get("paths"),
                     "the Run pins other Paths than the path of its Specification",
+                )
+                require(
+                    run.get("path_key") == (spec.get("path") or {}).get("key"),
+                    "the Run records another path key than its Specification",
                 )
                 try:
                     spec_id = spec["metadata"]["id"]

@@ -140,7 +140,9 @@ def run_rules(
     """
     rules = tuple(rules)
     fixed = {*binding.assignments, *binding.dates}
-    check_queries(rules=rules, model=binding.model, fixed=fixed)
+    check_queries(
+        rules=rules, model=binding.model, fixed=fixed, parameters=parameters or ()
+    )
     path = binding.composition.requirements.path
     known = {}
     if path is not None and paths is not None:

@@ -3,14 +3,15 @@
 Status: accepted for 1.0; the evaluation engine is implemented and verified (#215),
 the queries are declared and stored, the solve runs them, the stored evidence, the
 Outcome API and trace replay are in place, and the old slice is removed (#300).
-Parameters are pending (#301), and so are lesson 05's data and its checks (#207).
+Parameters are in place (#301). Lesson 05's data and its checks are pending (#207).
 Recorded: 2026-10-27. Amended 2026-10-27 by #201 decisions D2, D25 and D26 (`Periods`,
 `NEVER`, the equity-first funding names), 2026-10-28 by decisions D41 (rules, not
 policies) and D42 (a rule is a query over a window), 2026-10-28 by #102 (the shared
 rule semantics are in `run`), 2026-10-31 by #215 (see
 [how #215 reads the evaluation order](#how-215-reads-the-evaluation-order)),
 2026-10-31 by #300 (see [how #300 declares rules](#how-300-declares-rules)), and
-2026-11-01 by #300 (see [how #300 removes the old slice](#how-300-removes-the-old-slice)).
+2026-11-01 by #300 (see [how #300 removes the old slice](#how-300-removes-the-old-slice)),
+and 2026-11-01 by #301 (see [how #301 stores parameters](#how-301-stores-parameters)).
 
 ## Problem
 
@@ -210,9 +211,24 @@ each reading agrees with the worked examples below:
   solve check the rules again with what the case fixes.
 - **The stored record.** `Specification.rules` holds the ordered `Rule` records. The
   target identifies a rule, so the record has no UUID of its own.
-- **Triggers before #301.** `rules[key]` brings the fixed values that the rule reads,
-  because `parameters` does not exist yet. A value that the other Specification fixes
-  stays.
+- **Triggers before #301.** `rules[key]` brought the fixed values that the rule read.
+  Since #301 it brings only the parameters that the rule reads.
+
+#### How #301 stores parameters
+
+- **The record.** `Specification.parameters` holds one `RuleParameter` for each key,
+  with its Quantity. `Parameter` is the name of a function's parameter in the schema,
+  so the record takes the longer name; the public call stays `parameters`.
+- **The reference.** A condition or a bound refers to a parameter by a UUID that comes
+  from its key, so a case that changes the value keeps the stored rule unchanged.
+- **Model keys.** A key that a Value of the Model has is refused at `parameters`, at
+  `on`, and when `fix` brings a rule's trigger, because equation text names both in the
+  same way.
+- **A missing parameter.** A stored rule that reads a parameter that its
+  composed Specification lacks fails with `rule_reads_unknown`, at `validate` and at
+  the solve. So does `free` of a parameter that a rule reads.
+- **`roles`.** A parameter has the role `FIXED`, after the Model's values, so that one
+  table shows each value that a Specification gives.
 
 #### How #300 stores the trace
 
@@ -432,7 +448,8 @@ reject it with `rule_order`.
 **Several triggers (cell 17).** The trigger is a Specification parameter from
 cell 6. `cases` make one case for each trigger, across every path. Each case key is
 a pair of the
-case name and the path member key ([ADR-014](014-market-paths.md)).
+case name and the path member key ([ADR-014](014-market-paths.md)), as
+[ADR-014 stores it](014-market-paths.md#availability-and-member-references).
 
 ## Acceptance for #215
 

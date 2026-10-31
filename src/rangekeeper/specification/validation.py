@@ -606,7 +606,10 @@ def prepare(
 
 def _rule_report(composition: Composition, *, model: "Model") -> ValidationReport:
     """Report the static problems of the rules of one composition (ADR-021)."""
-    from rangekeeper.specification.rule._declaration import check_declared
+    from rangekeeper.specification.rule._declaration import (
+        check_declared,
+        parameters_of,
+    )
 
     requirements = composition.requirements
     try:
@@ -614,6 +617,7 @@ def _rule_report(composition: Composition, *, model: "Model") -> ValidationRepor
             requirements.rules or (),
             model=model,
             fixed={item.target.target for item in requirements.assignments or ()},
+            parameters=parameters_of(requirements),
             document_id=composition.root_id,
         )
     except ValidationError as error:

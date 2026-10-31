@@ -216,7 +216,8 @@ record keeps the registered name, the fingerprint and the parameters, so
 path series fixes the Model value with the same key, and `series=` maps the
 others. A case refers to its path by UUID and key and does not copy the amounts;
 its composition expands the path into assignments. Runs pin the Paths in
-`run.paths`. See [cases across market paths](specification.md#cases-across-market-paths).
+`run.paths`, and the Run of each case records its path key in `run.path_key`. See
+[cases across market paths](specification.md#cases-across-market-paths).
 
 ### Storage
 
@@ -272,12 +273,19 @@ strategy = fixed.fix(start_trigger=1.05, start_date=rule)
 | `where(condition=)` | A condition in the equation language. It writes equality with `==`, as in `b_start == NEVER`; `=` states an equation, and here it is an error that suggests `==`. Text that does not parse raises `EquationError` |
 | `first(otherwise=, then=None)` | The `Rule`: the first window date that meets the condition, or `then` on that date. `otherwise` applies when no window date qualifies. A date Value takes a date or `NEVER`; a scalar Value takes a quantity and needs `then` |
 | `fix(key=rule)` | The value becomes decided. Rules run in the order that they are fixed. A later `fix` of the key replaces the rule or the value, a rule in the same position. `free(key)` removes the rule. One `fix` call can give values and rules together |
-| `spec.rules` | The `Rules` by key, in their order. `spec.rules[key]` is a `Rule` whose `triggers` hold the fixed values that it reads. `fix` with that Rule brings each of them that the other Specification does not fix; a value that it fixes stays. A key without a rule raises `MissingReferenceError` |
+| `spec.parameters(**values)` | Declares named Specification values that rules read, such as a trigger: a Quantity, Quantity text or a bare number for a ratio. A condition or a bound reads a parameter by key, on every window date. `fix` and `cases` change it like other values, without a new Model revision. `free(key)` removes it |
+| `spec.rules` | The `Rules` by key, in their order. `spec.rules[key]` is a `Rule` whose `triggers` hold the parameters that it reads. `fix` with that Rule brings each of them that the other Specification does not declare; a parameter that it declares stays. A fixed Model value that the rule reads does not come with it. A key without a rule raises `MissingReferenceError` |
 
 `fix` reads the text against the pinned Model and stores a `rangekeeper.schema.records.Rule`
 in the ordered `rules` of the Specification. The record has the `target`, and
 Expressions for `condition`, `otherwise`, `then`, `earliest` and `latest`, with the
 `periods` and the `timing`. `otherwise` and `then` are literals.
+
+The ordered `parameters` of the Specification hold each `RuleParameter`, a `key` and
+a `quantity`. An Expression refers to a parameter by the version 5 UUID, in the URL
+namespace, of the text `rangekeeper:rule-parameter:<key>`. The solve reads the
+parameters of each case in the process that solves it, and the check of a stored
+trace reads them from the composed Specification of the Run.
 
 | Failure at `fix` | Error |
 | --- | --- |
@@ -285,7 +293,11 @@ Expressions for `condition`, `otherwise`, `then`, `earliest` and `latest`, with 
 | A condition that reads its own value or a later rule, or a scalar that depends on one | `ValidationError` with the code `rule_order` |
 | A condition that depends on a free input | `ValidationError` with the code `rule_reads_unknown` |
 | A value that is not a date or a scalar, a value of another kind than its target, a condition that is not a test, a call other than `flow.shift(by=)` in a condition, and a bound that is not a date | `ValidationError` with the code `rule_capability` |
-| A name that the Model lacks | `EquationError` |
+| A name that is neither in the Model nor a parameter | `EquationError` |
+| A key of `parameters` that a Value of the Model has | `ContractError` with the code `UNIQUE` |
+| A new value of a parameter in units that do not convert to its units | `UnitError` |
+| A parameter that an included Specification declares, given to `fix` or `parameters` | `ContractError`: change it in that Specification |
+| A condition that reads a free input, or `free` of a parameter that a rule reads | `ValidationError` with the code `rule_reads_unknown` |
 
 A Flow can be free at `fix`, because a later `across` can fix it: lesson 05 calls
 `fix` before `across`. So `fix` counts each Flow as known. `across` checks the rules

@@ -2123,6 +2123,26 @@ public sealed class RuleEvidence : WireRecord
     }
 }
 
+/// <summary>Schema-derived RuleParameter wire record. Exports and nested reads are detached.</summary>
+public sealed class RuleParameter : WireRecord
+{
+    public RuleParameter() { }
+    public RuleParameter(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field key; missing and null remain distinct.</summary>
+    public string Key
+    {
+        get => Read<string>("key");
+        init => Write("key", value);
+    }
+    /// <summary>Wire field quantity; missing and null remain distinct.</summary>
+    public Quantity Quantity
+    {
+        get => Read<Quantity>("quantity");
+        init => Write("quantity", value);
+    }
+}
+
 /// <summary>Schema-derived Run wire record. Exports and nested reads are detached.</summary>
 public sealed class Run : WireRecord
 {
@@ -2140,6 +2160,12 @@ public sealed class Run : WireRecord
     {
         get => ReadOptional<IReadOnlyList<Guid>>("outputs");
         init => WriteOptional("outputs", value);
+    }
+    /// <summary>Wire field path_key; missing and null remain distinct.</summary>
+    public Optional<string> PathKey
+    {
+        get => ReadOptional<string>("path_key");
+        init => WriteOptional("path_key", value);
     }
     /// <summary>Wire field paths; missing and null remain distinct.</summary>
     public Optional<Guid> Paths
@@ -2438,6 +2464,12 @@ public sealed class Specification : WireRecord
     {
         get => ReadOptional<IReadOnlyList<Objective>>("objectives");
         init => WriteOptional("objectives", value);
+    }
+    /// <summary>Wire field parameters; missing and null remain distinct.</summary>
+    public Optional<IReadOnlyList<RuleParameter>> Parameters
+    {
+        get => ReadOptional<IReadOnlyList<RuleParameter>>("parameters");
+        init => WriteOptional("parameters", value);
     }
     /// <summary>Wire field path; missing and null remain distinct.</summary>
     public Optional<PathCase> Path

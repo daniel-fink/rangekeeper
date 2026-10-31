@@ -165,6 +165,13 @@ classes:
         all_of:
         - range: Settings
           inlined: true
+      parameters:
+        description: Named values that rules read, such as a trigger. A case changes them like other values.
+        range: RuleParameter
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        list_elements_ordered: true
       rules:
         description: Nonempty ordered rules, each a query over a window that decides one value. They run in this order.
           A decided value has no other role.

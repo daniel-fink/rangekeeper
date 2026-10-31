@@ -497,28 +497,19 @@ def test_batches_across_the_same_paths_pair_by_path(priced):
 
 
 def test_cases_each_across_the_paths_pair_with_one_batch_by_path(priced):
-    """A batch of cases, each across the same paths, pairs path by path.
-
-    ``across`` of a batch is not yet available (#306), so the batch of the
-    cases is made from records, as ``batch_of`` makes one.
-    """
+    """A batch of cases, each across the same paths, pairs path by path."""
     paths = market()
     prices = priced.specify(name="Prices").cases(
         cases={"110": {"price": "110 AUD"}, "130": {"price": "130 AUD"}}
     )
-    batches = [prices.case(key=key).across(paths=paths) for key in ("110", "130")]
-    leaves = [batch.case(key=key) for batch in batches for key in paths.keys]
-    nested = Specification.from_data(
-        {
-            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
-            "model": str(priced.id),
-            "cases": [str(batch.id) for batch in batches],
-        }
-    )
-    resolver = rk.io.MemoryStore()
-    for document in (priced, paths, *leaves, *batches, nested):
-        resolver.put(document)
-    outcome = solve(specification=nested, resolver=resolver).raise_for_status()
+    nested = prices.across(paths=paths)
+    outcome = solve(specification=nested).raise_for_status()
+    assert [case.key for case in outcome.cases] == ["110", "130"]
+    assert {leaf.run.path_key for case in outcome.cases for leaf in case.cases} == {
+        "up",
+        "down",
+    }
+    assert outcome.run.path_key is None
     low = solve(
         specification=priced.specify(name="Low")
         .fix(price="100 AUD")
@@ -541,6 +532,11 @@ def test_cases_each_across_the_paths_pair_with_one_batch_by_path(priced):
     assert summary.column("mean") == (q("30 AUD"), q("90 AUD"))
     # A batch on some of the paths, or with two cases on one path, does not
     # pair with a batch on all of them.
+    batches = [nested.case(key=key) for key in ("110", "130")]
+    leaves = [batch.case(key=key) for batch in batches for key in paths.keys]
+    resolver = rk.io.MemoryStore()
+    for document in (priced, paths, *leaves):
+        resolver.put(document)
     for chosen, match in (
         ((leaves[0],), "different paths"),
         ((leaves[0], leaves[2]), "one case"),

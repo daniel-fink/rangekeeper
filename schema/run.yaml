@@ -106,6 +106,10 @@ classes:
         - range: Metadata
           inlined: false
           pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      path_key:
+        description: Key in the Paths revision of the path that fixes this case. It is present exactly when the
+          Specification of this Run has a path, so a batch Run has none.
+        range: Code
       report:
         description: Execution outcome and supporting evidence.
         range: Report

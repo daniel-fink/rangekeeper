@@ -49,6 +49,7 @@ REQUIREMENTS = (
     "formulations",
     "objectives",
     "settings",
+    "parameters",
     "rules",
     "path",
 )
@@ -164,6 +165,8 @@ def check_roles(document):
         "assigned and unknown roles overlap",
     )
     controls = [reference_key(rule["target"]) for rule in document.get("rules") or ()]
+    keys = [item["key"] for item in document.get("parameters") or ()]
+    require(len(keys) == len(set(keys)), "duplicate parameter key")
     groups["rules"] = set(controls)
     require(len(controls) == len(groups["rules"]), "duplicate rule-controlled role")
     require(
@@ -291,6 +294,9 @@ def compose_specification(
             if value is not None:
                 claim(("settings", name), source, f"/settings/{name}")
                 effective.setdefault("settings", {})[name] = deepcopy(value)
+        for position, entry in enumerate(doc.get("parameters") or []):
+            claim(("parameters", entry["key"]), source, f"/parameters/{position}")
+            effective.setdefault("parameters", []).append(deepcopy(entry))
         if doc.get("rules"):
             claim(("rules",), source, "/rules")
             effective["rules"] = deepcopy(doc["rules"])

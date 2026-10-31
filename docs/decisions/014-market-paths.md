@@ -101,8 +101,14 @@ document.
   assignments, and each assigned Movement carries its availability date.
 - **Other values.** A value that `fix` supplies is available on every review date.
 - **Cases across paths.** `cases(...)` with `across(...)` makes one case for each
-  pair. Its key has two parts: the case name and the member key.
-- **Runs** record the member key of each case.
+  pair. Its key has two parts: the case name and the member key. Each part is stored
+  once, and no record holds them joined (#301): the batch of a case has the case name
+  as its Metadata name, and the leaf holds the member key in `PathCase.key`. A batch of
+  batches was already valid and reported its keys joined by `/`, so this needs no new
+  field on a Specification.
+- **Runs** record the member key of each case in `Run.path_key` (#301). It is present
+  exactly when the Specification of the Run has a path. A paired comparison reads it
+  there, because a case name is not a path key.
 
 ### Removal
 

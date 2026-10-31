@@ -17,6 +17,7 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.shared.table import Row, Table
+from rangekeeper.specification.rule._query import parameter_id
 
 if TYPE_CHECKING:
     from rangekeeper.model import Model
@@ -111,7 +112,7 @@ def role_table(
     ``record`` is a composed, concrete Specification of ``model``. The columns are
     ``key``, ``movement`` (the Movement UUID, or None for a scalar Value), ``role``
     (a Role) and ``quantity`` (the fixed Quantity, date or NEVER, or None). Each Row's ``id`` is
-    the UUID of its target.
+    the UUID of its target. A parameter is fixed, and its rows come after the Model's.
     """
     roles: dict[UUID, tuple[Role, object]] = {}
     for assignment in record.assignments or ():
@@ -120,6 +121,9 @@ def role_table(
         roles[reference.target] = (Role.FREE, None)
     for reference in decided_targets(record):
         roles[reference.target] = (Role.DECIDED, None)
+    for parameter in record.parameters or ():
+        roles[parameter_id(parameter.key)] = (Role.FIXED, parameter.quantity)
+    keys = {parameter_id(item.key): item.key for item in record.parameters or ()}
     rows = []
     for identity in in_model_order(model, roles):
         role, quantity = roles[identity]
@@ -128,7 +132,7 @@ def role_table(
         rows.append(
             Row(
                 {
-                    "key": _key(model, identity),
+                    "key": keys.get(identity) or _key(model, identity),
                     "movement": movement,
                     "role": role,
                     "quantity": quantity,
