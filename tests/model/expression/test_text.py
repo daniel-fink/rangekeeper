@@ -330,6 +330,17 @@ def test_an_unknown_key_names_its_position_and_the_nearest_keys():
     assert failure("value = building_b.income").code is Code.REFERENCE_MISSING
 
 
+def test_a_span_and_a_day_count_have_no_text_form():
+    """Text has no Span and no enum value; the catalogue does not list them."""
+    trim = failure("value = noi.trim(span=b_start)")
+    assert trim.code is Code.EQUATION_FUNCTION
+    assert "'trim' is not a Flow method" in str(trim)
+    assert failure('value = rx.max(noi, "simple")').code is Code.EQUATION_SYNTAX
+    function = failure("value = rx.nothing(noi)")
+    assert function.code is Code.EQUATION_FUNCTION
+    assert "'rx.nothing' is not an equation function" in str(function)
+
+
 def test_invalid_units_name_the_unit_words():
     error = failure("value = 5 dollars + 3 AUD")
     assert error.code is Code.UNITS

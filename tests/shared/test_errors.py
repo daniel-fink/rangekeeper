@@ -114,7 +114,7 @@ def test_an_error_without_a_class_code_takes_one():
 REQUIRED = {
     errors.PublishedFileError: {"file": Path("published.json")},
     errors.EquationError: {"text": "a = b c", "start": 6, "end": 7},
-    OutcomeError: {"status": Status.INFEASIBLE},
+    OutcomeError: {"status": Status.INFEASIBLE, "equation": "a >= b"},
 }
 
 

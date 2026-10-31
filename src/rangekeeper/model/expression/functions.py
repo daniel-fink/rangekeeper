@@ -301,9 +301,9 @@ class EquationFunctions:
             for item in self._entries.values()
             if item.form is form
         ]
-        kind = "equation function" if form is Form.FUNCTION else "Flow method"
+        kind = "an equation function" if form is Form.FUNCTION else "a Flow method"
         raise ContractError(
-            f"{spelled!r} is not an {kind}",
+            f"{spelled!r} is not {kind}",
             code=Code.EQUATION_FUNCTION,
             values={
                 "function": code,

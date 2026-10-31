@@ -1,4 +1,4 @@
-"""The rules of lessons 05 and 07, from the proposed cells (#300).
+"""The rules of lessons 05 and 07 and a lookup of lesson 06, from the proposed cells.
 
 The cells come from ``examples/walkthrough/proposed/05_when_to_commit.md`` and
 ``07_policies_and_graph.md``, and run statement by statement, as written. A call
@@ -13,8 +13,15 @@ it. These differences wait on other issues:
   settles this.
 - Lesson 07's ``rk.io.load`` of lesson 05's strategy (#207).
 
-Lesson 07's cell 18 calls ``alternatives`` (#244) and reads ``use_index["..."]``
+Lesson 07's cell 18 calls ``alternatives`` (#302) and reads ``use_index["..."]``
 (#284), so the test runs only its window and its rule on a Value of this Model.
+Lesson 07's cell 17 includes a fragment (#302) and makes a Filter with labels
+(#288), and cell 17b declares rollups (#285), so the test runs the first two
+statements of cell 17, declares ``x_income`` and ``x_cost`` as values, and runs
+cell 17c.
+
+Lesson 06's cell 16 reads ``model.entities`` (#288), so the test runs only cell 17,
+on a small Model with two entities of one name.
 """
 
 import re
@@ -30,6 +37,7 @@ from tests.execution import test_lesson04 as lesson04
 
 ROOT = Path(__file__).resolve().parents[2]
 LESSON_05 = ROOT / "examples/walkthrough/proposed/05_when_to_commit.md"
+LESSON_06 = ROOT / "examples/walkthrough/proposed/06_project_structure.md"
 LESSON_07 = ROOT / "examples/walkthrough/proposed/07_policies_and_graph.md"
 HISTORIES = {
     "early recovery": (
@@ -369,3 +377,181 @@ def test_a_window_with_periods_keeps_its_calendar(lesson):
     assert tuple(stored.periods) == tuple(years)
     assert stored.timing is PeriodTiming.LAST
     assert spec.rules["b_start"].window.periods == tuple(years)
+
+
+def test_cell_7b_raises_with_the_broken_constraint(lesson):
+    with pytest.raises(rk.execution.OutcomeError) as error:
+        lesson["downturn"].raise_for_status()
+    assert error.value.status is rk.execution.Status.INFEASIBLE
+    assert error.value.code is rk.errors.Code.CONSTRAINT_RESIDUAL
+    assert error.value.equation == "b_start >= shared_start + 1 year"
+    assert "b_start >= shared_start + 1 year" in str(error.value)
+
+
+@pytest.fixture(scope="module")
+def compared(lesson) -> dict:
+    """Run cells 13, 14 and 16 on the three histories of this test (#207)."""
+    namespace = {**lesson, "paths": lesson["stories"]}
+    written = cells(LESSON_05)
+    for key in ("13", "14", "16"):
+        run(namespace, written[key])
+    return namespace
+
+
+def test_cell_13_fixes_a_date_and_never(compared):
+    plan = compared["fixed_plan"]
+    stored = plan.record.assignments
+    assert [item.never for item in stored if item.never] == [rk.duration.NEVER]
+    assert rk.Specification.from_data(plan.to_data()).record.assignments == stored
+    for case in compared["fixed_outcome"].cases:
+        assert case["start_date"] == date(2027, 1, 1)
+        assert case["b_sale_date"] is rk.duration.NEVER
+        assert not [item for item in case["b_site_sale"].movements if item.number]
+
+
+def test_cell_14_pairs_the_strategy_with_the_fixed_plan_on_each_path(compared):
+    summary = compared["difference"].summary()
+    assert summary.column("key") == ("equity_npv", "peak_shortfall")
+    assert summary.column("count") == (len(HISTORIES), len(HISTORIES))
+    strategy, plan = compared["strategy_outcome"], compared["fixed_outcome"]
+    paired = [
+        strategy.case(key=key)["equity_npv"].number
+        - plan.case(key=key)["equity_npv"].number
+        for key in HISTORIES
+    ]
+    assert summary.column("mean")[0].number == pytest.approx(sum(paired) / len(paired))
+
+
+def test_cell_16_reads_the_realised_dates(compared):
+    dates = (date(2028, 1, 1), date(2030, 1, 1), rk.duration.NEVER)
+    counts = compared["strategy_outcome"].distribution(key="start_date").counts()
+    assert counts.column("value") == dates
+    assert counts.column("count") == (1, 1, 1)
+    summary = compared["difference"].by(key="start_date").summary()
+    assert summary.column("start_date") == tuple(day for day in dates for _ in "ab")
+
+
+def test_the_exercises_run_on_the_histories(compared):
+    namespace = dict(compared)
+    text = LESSON_05.read_text()
+    for block in re.findall(r"```python\n(# solution.*?)```", text, re.S):
+        run(namespace, block)
+    assert namespace["early_outcome"].status is rk.execution.Status.FEASIBLE
+    assert namespace["gaps"].probability(above="0 AUD") == pytest.approx(2 / 3)
+    unbuilt = namespace["cheap_difference"].where(b_start=rk.duration.NEVER).summary()
+    assert unbuilt.column("count") == (1,)
+    assert unbuilt.column("mean")[0].number == pytest.approx(
+        namespace["cheap_site_outcome"].case(key="long downturn")["equity_npv"].number
+        - compared["fixed_outcome"].case(key="long downturn")["equity_npv"].number
+    )
+
+
+def test_a_run_and_its_output_model_keep_the_decided_dates(lesson):
+    case = lesson["stories_outcome"].case(key="long downturn")
+    output = rk.Model.from_data(data=case.model.to_data())
+    assert output.value(key="start_date").never is rk.duration.NEVER
+    assert output.value(key="start_date").date is None
+    assert output.value(key="b_sale_date").date == date(2033, 1, 1)
+    again = rk.run.Run.from_data(case.run.to_data())
+    assert again.to_data() == case.run.to_data()
+
+
+@pytest.mark.parametrize("then", [date(2031, 1, 1), rk.duration.NEVER])
+def test_a_rule_takes_a_date_or_never_as_its_values(lesson, then):
+    window = rk.specification.Window(earliest=date(2028, 1, 1), latest=date(2030, 1, 1))
+    rule = window.where(condition="rent_index >= 1.05").first(
+        otherwise=date(2032, 1, 1), then=then
+    )
+    spec = lesson["strategy"].fix(b_sale_date=rule)
+    stored = rk.Specification.from_data(spec.to_data())
+    assert stored.record.rules == spec.record.rules
+    outcome = rk.execution.solve(specification=spec.across(paths=lesson["stories"]))
+    assert outcome.table("b_sale_date").column("b_sale_date") == (
+        then,
+        date(2032, 1, 1),
+        then,
+    )
+
+
+def test_lesson_07_cell_7_loads_the_rules_of_lesson_05(lesson, tmp_path):
+    path = tmp_path / "05_strategy.specification.json"
+    rk.io.save(document=lesson["strategy"], path=path)
+    helpers = SimpleNamespace(data_path=lambda *, name: tmp_path / name)
+    namespace = run({"rk": rk, "helpers": helpers}, cells(LESSON_07)["7"])
+    timing = namespace["timing"]
+    assert list(timing) == ["start_date", "b_start", "b_sale_date"]
+    assert timing["start_date"].triggers["start_trigger"].number == pytest.approx(1.05)
+    assert timing["b_start"].window.earliest == "shared_start + 1 year"
+    assert timing["b_sale_date"].otherwise is rk.duration.NEVER
+
+
+@pytest.fixture(scope="module")
+def expansion(lesson) -> rk.Specification:
+    """Run lesson 07's cell 17c on lesson 05's Model and return the strategy on it."""
+    written = cells(LESSON_07)
+    namespace = {"rk": rk, "date": date, "residential": lesson["model"]}
+    for code in lesson04.statements(written["17"])[:2]:
+        exec(code, namespace)
+    namespace["project"].value(key="x_income", units="AUD pa")
+    namespace["project"].value(key="x_cost", units="AUD")
+    run(namespace, written["17c"])
+    return (
+        lesson["strategy"]
+        .on(model=namespace["expanded"])
+        .fix(x_income="1e6 AUD pa", x_cost="5e6 AUD")
+    )
+
+
+def _early_recovery(spec, stories):
+    outcome = rk.execution.solve(specification=spec.across(paths=stories))
+    return outcome.case(key="early recovery")
+
+
+def _changed(left: rk.flow.Flow, right: rk.flow.Flow) -> dict[int, float]:
+    """Return the difference of two Flows in each year where they differ."""
+    pairs = zip(left.movements, right.movements, strict=True)
+    differences = {
+        one.period.start.year: one.number - other.number for one, other in pairs
+    }
+    return {year: amount for year, amount in differences.items() if abs(amount) > 1e-6}
+
+
+def test_lesson_07_cell_17c_solves_its_profiles_from_a_date(lesson, expansion):
+    """Lesson 07's profiles start on a fixed date; on NEVER, they have no amounts."""
+    stories = lesson["stories"]
+    built = _early_recovery(expansion.fix(expansion_date=date(2032, 1, 1)), stories)
+    unbuilt = _early_recovery(expansion.fix(expansion_date=rk.duration.NEVER), stories)
+    assert built["x_open"] == date(2033, 1, 1)
+    assert unbuilt["x_open"] is rk.duration.NEVER
+    assert _changed(built["works"], unbuilt["works"]) == {2032: pytest.approx(-5e6)}
+    assert _changed(built["income"], unbuilt["income"]) == {
+        year: pytest.approx(1e6) for year in range(2033, 2038)
+    }
+
+
+def test_lesson_07_cell_17c_solves_its_profiles_from_a_rule(lesson, expansion):
+    """Cell 18's window, on the index of this Model: a_open is 2031, so 2034 is first."""
+    source = cells(LESSON_07)["18"]
+    namespace: dict = {"rk": rk, "date": date}
+    exec(source[: source.index("expansion_rule")], namespace)
+    rule = (
+        namespace["expansion_window"]
+        .where(condition="rent_index >= expansion_trigger")
+        .first(otherwise=rk.duration.NEVER)
+    )
+    spec = expansion.parameters(expansion_trigger=1.0).fix(expansion_date=rule)
+    case = _early_recovery(spec, lesson["stories"])
+    assert case["expansion_date"] == date(2034, 1, 1)
+    assert case["x_open"] == date(2035, 1, 1)
+    assert case.run.rule_evidence.verified is True
+
+
+def test_lesson_06_cell_17_names_the_codes_of_a_lookup(capsys):
+    draft = rk.Model(name="Project structure").edit()
+    draft.add_entity(code="building_a", classification="building")
+    for code in ("a_retail", "a_retail_2"):
+        draft.add_entity(code=code, classification="floor", name="buildingAretail")
+    run({"rk": rk, "model": draft.commit()}, cells(LESSON_06)["17"])
+    assert capsys.readouterr().out == (
+        "buildingAretail ('a_retail', 'a_retail_2')\nbuilding_c ('building_a',)\n"
+    )

@@ -326,6 +326,10 @@ and the table below are made from it.
 | `x.until(on=)` | The same periods, with zero after a date. | `affine` | `periodwise` | `rangekeeper.flow.Flow.until` |
 <!-- END GENERATED FUNCTIONS -->
 
+Equation text has no Span value and no enum value, so `flow.trim(span=)` and the
+`day_count=` of `rk.finance.interest` have no equation form. In an equation, use
+`x.since(on=)` and `x.until(on=)` to keep part of a Flow.
+
 The equivalence tests check each entry: text and `rx` make the same records
 and the same text, text reads back to the same records, and the call evaluated
 on fixed data equals its value function.
