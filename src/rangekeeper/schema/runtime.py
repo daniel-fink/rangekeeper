@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from datetime import date as Date
 from decimal import Decimal
 from difflib import get_close_matches
-from functools import cache
+from functools import cache, lru_cache
 from types import MappingProxyType
 from typing import TypeAlias, TypeVar, cast
 from uuid import UUID
@@ -214,14 +214,20 @@ def _encode_many(value, encode):
     return encode(value)
 
 
+@lru_cache(maxsize=2**16)
+def _uuid(text: str) -> UUID:
+    """Return the immutable UUID of ``text``; a solve reads each identity many times."""
+    return UUID(text)
+
+
 def _decode_uuid(value):
-    return UUID(value) if isinstance(value, str) else value
+    return _uuid(value) if isinstance(value, str) else value
 
 
 def _decode_uuids(values):
     if values is None:
         return None
-    return tuple(UUID(v) if isinstance(v, str) else v for v in values)
+    return tuple(_uuid(v) if isinstance(v, str) else v for v in values)
 
 
 def _decode_enum(value, enum):
