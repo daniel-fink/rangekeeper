@@ -17,6 +17,7 @@ move ([ADR-012](../decisions/012-naming-and-glossary.md)).
 | Run | Finalized evidence of one attempt or batch: status, report, output Models and child Runs | `run` | — |
 | Market paths (`rk.market.Paths`) | A captured, replayable set of market paths with its capture record; the document kind `Paths` | `market` | `rangekeeper.market.Paths`. `ScenarioPlan` and `ScenarioRealization`, inside Model provenance, remain until #140 |
 | Bundle | A delivered set of documents with their exact dependencies | `io` | — |
+| Document file | One JSON file with one document, its kind and the documents that it depends on. `rk.io.save(document=, path=)` writes one and `rk.io.load(path=)` reads it; a loaded Specification brings its Model. Not a Bundle, which holds several roots in Parquet tables | `io` | `rk.io.load`, `rk.io.save` |
 | Revision | One immutable version of a document, identified by its Metadata UUID | `schema` | — |
 
 ## Inside a Model

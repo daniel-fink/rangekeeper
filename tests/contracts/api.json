@@ -1460,6 +1460,16 @@
    "kind": "module",
    "module": "rangekeeper.io.json"
   },
+  "load": {
+   "kind": "function",
+   "module": "rangekeeper.io.files",
+   "signature": "(*, path: pathlib.Path | str) -> rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths"
+  },
+  "save": {
+   "kind": "function",
+   "module": "rangekeeper.io.files",
+   "signature": "(*, document: rangekeeper.model.model.Model | rangekeeper.specification.specification.Specification | rangekeeper.run.run.Run | rangekeeper.market.paths.Paths, path: pathlib.Path | str, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> pathlib.Path"
+  },
   "yaml": {
    "kind": "module",
    "module": "rangekeeper.io.yaml"
