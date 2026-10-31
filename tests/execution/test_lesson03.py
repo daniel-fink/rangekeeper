@@ -1,80 +1,107 @@
-"""Lesson 03's solves, from the proposed cells (#276, #277, #280, #308, #294).
+"""Lesson 03's solves, from the proposed cells (#276, #277, #280, #308, #294, #205).
 
 The cells come from ``examples/walkthrough/proposed/03_cases_debt_equity.md``
 and run statement by statement, as written; the value of a cell's last
 expression is ``_``, as in IPython. The draft infers the results that the
 cells do not declare, with the Periods of their Flows (#282). Cell 22 executes
 into an empty ``runs/03`` folder, and cell 23 replays its Run in a namespace
-that holds only ``rk``, as in a new kernel. One difference waits on another
-issue:
+that holds only ``rk``, as in a new kernel.
 
-- ``PLAN``: the plan's inputs stand in for ``helpers.load_base_plan()`` (G07),
-  and the statements that call ``helpers`` are skipped.
+``base_plan()`` reads the data package's ``base_plan.json``, as
+``helpers.load_base_plan()`` does: the helpers need the walkthrough environment,
+so the statements that call ``helpers`` are skipped here. The lesson's own run,
+with its helpers, is in ``examples/walkthrough/tests/test_lessons.py``.
 """
 
 import ast
+import json
+import re
 from datetime import date
+from pathlib import Path
 
 import pytest
 
 import rangekeeper as rk
 from rangekeeper.execution import Status
 from rangekeeper.quantity import isclose
-from tests.walkthrough.test_proposed_lesson_03 import cells
+from tests.walkthrough.test_proposed_lesson_03 import LESSON, cells
 
-PLAN = {
-    "base_date": date(2027, 1, 1),
-    "sale_date": date(2036, 12, 31),
-    "start_date": date(2027, 1, 1),
-    "b_start": date(2030, 1, 1),
-    "land_cost": rk.Quantity(text="20e6 AUD"),
-    "shared_cost": rk.Quantity(text="10e6 AUD"),
-    "a_cost": rk.Quantity(text="60e6 AUD"),
-    "b_cost": rk.Quantity(text="50e6 AUD"),
-    "a_income": rk.Quantity(text="6e6 AUD pa"),
-    "b_income": rk.Quantity(text="5e6 AUD pa"),
-    "a_opex": rk.Quantity(text="1.5e6 AUD pa"),
-    "b_opex": rk.Quantity(text="1.2e6 AUD pa"),
-    "a_renewal": rk.Quantity(text="2e6 AUD"),
-    "b_renewal": rk.Quantity(text="1.5e6 AUD"),
-    "equity": rk.Quantity(text="50e6 AUD"),
-    "loan_limit": rk.Quantity(text="80e6 AUD"),
-}
+DATA = (
+    Path(__file__).resolve().parents[2]
+    / "examples/data/mixed_use_property/base_plan.json"
+)
 
 
-def statements(key: str) -> list[str]:
-    """Return the statements of a cell, with the differences of this module."""
+class Plan(dict):
+    """The plan's values by key, with its areas and rates: as ``BasePlan`` gives them."""
+
+    areas: dict[str, dict[str, rk.Quantity]]
+    rates: dict[str, rk.Quantity]
+
+
+def quantity(item: dict) -> rk.Quantity:
+    return rk.Quantity(magnitude=item["magnitude"], units=item["units"])
+
+
+def base_plan() -> Plan:
+    """Return the base plan of the data package, without arithmetic."""
+    content = json.loads(DATA.read_text(encoding="utf-8"))
+    plan = Plan()
+    for key, item in content["values"].items():
+        plan[key] = (
+            date.fromisoformat(item["date"]) if "date" in item else quantity(item)
+        )
+    plan.areas = {
+        package: {use: quantity(item) for use, item in uses.items()}
+        for package, uses in content["areas"].items()
+    }
+    plan.rates = {use: quantity(item) for use, item in content["rates"].items()}
+    return plan
+
+
+PLAN = base_plan()
+
+
+def solutions() -> list[str]:
+    """Return the solution cells of the exercises, in order."""
+    blocks = re.findall(r"```python\n(.*?)```", LESSON.read_text(), re.S)
+    return [block for block in blocks if block.startswith("# solution")]
+
+
+def statements(source: str) -> list[str]:
+    """Return the statements of a cell, without those that call ``helpers``."""
     found = []
-    for statement in ast.parse(cells()[key]).body:
+    for statement in ast.parse(source).body:
         code = ast.unparse(statement)
-        if "helpers" in code:
-            continue
-        found.append(code)
+        if "helpers" not in code:
+            found.append(code)
     return found
 
 
-def run(namespace: dict, *keys: str) -> dict:
-    """Run cells as written, statement by statement, from ``namespace``.
+def execute(namespace: dict, source: str) -> None:
+    """Run one cell, statement by statement; an expression's value is ``_``."""
+    for code in statements(source):
+        if isinstance(ast.parse(code).body[0], ast.Expr):
+            namespace["_"] = eval(code, namespace)
+        else:
+            exec(code, namespace)
 
-    The value of each expression statement is ``_``, as in IPython.
-    """
+
+def run(namespace: dict, *keys: str) -> dict:
+    """Run numbered cells as written, from ``namespace``."""
     for key in keys:
-        for code in statements(key):
-            if isinstance(ast.parse(code).body[0], ast.Expr):
-                namespace["_"] = eval(code, namespace)
-            else:
-                exec(code, namespace)
+        execute(namespace, cells()[key])
     return namespace
 
 
 @pytest.fixture(scope="module")
 def lesson() -> dict:
-    """Run cells 3, 5 to 19 and 21 of lesson 03, with their solves."""
+    """Run cells 3 to 19 and 21 of lesson 03, with their solves."""
     namespace: dict = {"rk": rk, "date": date, "plan": PLAN}
-    namespace["cases"] = None
     return run(
         namespace,
         "3",
+        "4",
         "5",
         "5b",
         "5c",
@@ -83,10 +110,12 @@ def lesson() -> dict:
         "7b",
         "8",
         "9",
+        "10",
         "11",
         "12",
         "12b",
         "13",
+        "14",
         "15",
         "16",
         "17",
@@ -149,9 +178,16 @@ def test_cell_15_finds_the_land_cost_of_a_target_irr(lesson):
     )
 
 
-def test_cells_16_and_17_split_the_first_year_by_hand(lesson):
-    # Cell 17 asserts that the solved principal of 2027 is the split by hand.
-    assert lesson["from_equity"] == min(lesson["paid_2027"], PLAN["equity"])
+def test_cells_16_and_17_split_the_need_through_2028_by_hand(lesson):
+    """The running total passes the equity in 2028, so the loan's part is positive.
+
+    Cell 17 asserts that the solved principal of 2028 is the split by hand.
+    """
+    assert lesson["from_equity"] == PLAN["equity"]
+    assert lesson["from_loan"] > rk.Quantity(text="0 AUD")
+    paid = -lesson["outcome"]["net_cash_flow"].cumulative()
+    assert paid.at(on=date(2027, 1, 1)) < PLAN["equity"]
+    assert lesson["year_interest"] == pytest.approx(0.06)
 
 
 def test_cell_19_reports_the_peak_shortfall(lesson):
@@ -208,3 +244,58 @@ def test_cell_23_replays_the_stored_run_in_a_new_kernel(lesson, kernel):
         reference["peak_shortfall"]
         == (lesson["funded_outcome"].case(key="reference")["peak_shortfall"])
     )
+
+
+def test_the_plan_gives_the_reference_case_a_target_land_price(lesson):
+    """The reference case earns the equity rate, and cell 15's land price is positive."""
+    reference = lesson["levered_outcome"].case(key="reference")
+    assert reference["equity_irr"] >= rk.Quantity(text="12 % pa")
+    assert lesson["target_outcome"]["land_cost"] > rk.Quantity(text="0 AUD")
+
+
+def test_cell_14_compares_the_equity_levels(lesson):
+    table = rk.execution.solve(
+        specification=lesson["levered"].cases(cases=lesson["levels"])
+    ).table("equity_npv")
+    npvs = table.column("equity_npv")
+    assert npvs[0] < npvs[1] < npvs[2]  # less equity, higher equity NPV
+
+
+@pytest.fixture(scope="module")
+def exercises(lesson: dict) -> dict:
+    """Run the three solutions of the exercises as written, in order."""
+    for source in solutions():
+        execute(lesson, source)
+    return lesson
+
+
+def test_try_it_1_stresses_the_funded_plan(exercises):
+    stress = exercises["stress_outcome"].raise_for_status()
+    reference = exercises["funded_outcome"].case(key="reference")
+    assert stress["peak_shortfall"] > reference["peak_shortfall"]
+    # The equity receives real cash at the sale, so its IRR is not rounding noise.
+    assert stress["equity_cash_flow"].max() > rk.Quantity(text="1e6 AUD")
+    assert stress["equity_irr"] > rk.Quantity(text="-50 % pa")
+
+
+def test_try_it_2_finds_a_lower_land_price_in_the_weak_case(exercises):
+    # The solution asserts the order; the land price of the weak case can be negative.
+    assert exercises["weak_target_outcome"].status is Status.FEASIBLE
+
+
+def test_try_it_3_finds_the_year_of_the_smallest_available_loan(exercises, capsys):
+    source = solutions()[2]
+    execute(exercises, source)
+    shown = capsys.readouterr().out
+    available = exercises["available"]
+    smallest = available.min()
+    assert str(smallest) in shown
+    assert "2032" in shown
+    assert available.at(on=date(2032, 1, 1)) == smallest
+
+
+def test_cell_24_checks_the_lesson(exercises):
+    """The check cell runs as written, after the cells that it reads."""
+    run(exercises, "24")
+    npvs = exercises["npvs"]
+    assert list(npvs) == sorted(npvs)

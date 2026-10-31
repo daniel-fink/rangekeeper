@@ -40,6 +40,7 @@ YEARS = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
 # draft infers from their equations (#282, D44).
 RESULTS = {
     "shared_start": ("date", None),
+    "shared_open": ("date", None),
     "a_start": ("date", None),
     "a_open": ("date", None),
     "b_open": ("date", None),
@@ -224,12 +225,12 @@ def test_cells_5_to_5c_run_as_written_and_infer_the_dates():
         value.key: value
         for value in model.entity(code="project").record.characteristics.values
     }
-    for key in ("shared_start", "a_start", "a_open", "b_open"):
+    for key in ("shared_start", "shared_open", "a_start", "a_open", "b_open"):
         assert values[key].kind is rk.model.ValueKind.DATE
         assert values[key].measure is None
     (root,) = model.system.formulations
     (dates,) = root.formulations
-    assert (dates.name, len(dates.constraints)) == ("Dates", 5)
+    assert (dates.name, len(dates.constraints)) == ("Dates", 6)
     assert values["a_income"].kind is rk.model.ValueKind.MEASUREMENT
     assert len(values["land"].flow.movements) == len(YEARS)
 

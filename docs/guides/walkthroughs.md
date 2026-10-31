@@ -129,8 +129,9 @@ Assignment alone does not display the chart.
 [`helpers/theme.py`](../../examples/walkthrough/helpers/theme.py) defines the
 shared `plotly_white`/`plotly_dark` styles, fonts, controls and colour palettes.
 Use colours stay the same across the hierarchy charts. Package colours stay the
-same in the development timeline. `show_timeline()` displays supplied dates;
-`show_equations(of=)` derives its edges from the actual equations; for a
+same in the development timeline. `show_timeline(of=)` displays the dates of a
+plan's phases; `plot_cash_flows(outcome=, key=)` and `plot_flows(outcome=, keys=)`
+draw solved Flows of an Outcome; `show_equations(of=)` derives its edges from the actual equations; for a
 Specification it marks each value fixed or free without changing the relationships,
 and `show_relations()` lets the reader switch between Specifications. Line charts also
 use different dashes and markers. Helpers apply the style to a copy of the Figure.

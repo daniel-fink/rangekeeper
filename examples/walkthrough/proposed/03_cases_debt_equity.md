@@ -4,6 +4,39 @@ Issue: [#205](https://github.com/daniel-fink/rangekeeper/issues/205). Plan:
 [ADR-020 §03](../../../docs/decisions/020-walkthrough-plan-v2.md#03-cases-debt-and-equity).
 API conventions and the gap list: [README](README.md).
 
+The lesson notebook [`03_cases_debt_equity.ipynb`](../03_cases_debt_equity.ipynb)
+runs these cells ([#205](https://github.com/daniel-fink/rangekeeper/issues/205)).
+These places differ from the first proposal, and this file now shows the notebook's
+form (maintainer decisions of 31 October 2026):
+
+- The shared plinth's operating cost and renewals are in the Model as project-level
+  values, not split between the buildings: cell 5 adds the date `shared_open`, cells
+  5b and 5c declare `shared_opex`, `shared_renewal`, `shared_costs` and
+  `shared_renewals`, cells 7 and 7b add their equations, and cell 9 fixes the two
+  amounts. The rents and the operating cost rates of the data package changed by
+  +10 % and −10 % so that the plan can pay for these costs and its loan.
+- Cell 16 splits the whole net need through 2028, the first year in which the
+  running total passes the equity, and grosses the loan's part up for its own
+  interest in that year. The loan rate comes from the Model. The first year's
+  payments are less than the equity, so its split had no loan part. Cells 17 and 24
+  compare the result with the Model's principal with `rk.quantity.isclose`.
+- Cell 1 imports `helpers` after `date` and before `rangekeeper`, which is the order
+  of the project's import sorting. A notebook shows only the last expression of a
+  cell, so cell 3 draws the timeline last and cell 10 is two cells, 10 and 10b.
+- Cell 23 has a short narrative: in the notebook it runs in the same kernel, and the
+  reader can restart the kernel to see that it needs only the store. Try it 1's
+  answer is a comment in the solution cell, so that it stays in the collapsed block.
+- Cell 24 reads the column of NPVs with `Table.column` and checks the order with
+  `sorted`; `Table` has no column lookup by `[...]` and no `is_sorted()`.
+- Try it 3 finds the year of the smallest available loan with `min()` and a loop
+  over the Movements; `Flow` has no `argmin()`.
+- The namespace aside of section 12 is prose in the notebook, with no code:
+  `rk.model.namespace` waits on
+  [#147](https://github.com/daniel-fink/rangekeeper/issues/147).
+- The base plan's budgets leave out the data package's 4 million AUD construction
+  finance allowance, because the funding cascade calculates the loan interest. The
+  finance note after cell 3 says so.
+
 Decisions used here (recorded in the [README](README.md#decisions)): the cases
 reach the cash flows through the solve (D1); `irr`, `min` and `max` are evaluated
 after the affine stage, and a fixed IRR becomes an affine row (D4); funding is an
@@ -47,8 +80,9 @@ assumptions. The plan does not change in this lesson; the assumptions do.
 # cell 1
 from datetime import date
 
-import rangekeeper as rk
 import helpers
+
+import rangekeeper as rk
 ```
 
 ```python
@@ -59,15 +93,17 @@ plan  # dates, budgets, incomes and funding, with origins
 
 ```python
 # cell 3
-helpers.show_timeline(of=plan)
 yearly = rk.duration.Frequency.YEAR
 years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
     frequency=yearly
 )
+helpers.show_timeline(of=plan)
 ```
 
 > **Finance note.** A development budget has hard costs (construction), soft costs
-> (fees and approvals) and a contingency. Land is a separate line.
+> (fees and approvals) and a contingency. Land is a separate line. The plan's budgets
+> leave out the data package's 4 million AUD allowance for construction finance:
+> section 6 calculates the interest on the loan instead.
 
 ## 2. The budget, by hand once
 
@@ -91,9 +127,10 @@ assert rk.quantity.isclose(actual=budget, expected=plan["a_cost"])
 
 Narrative: as in lesson 02, start an empty Model and edit it. Declare the inputs
 with their units. Dates are values too, so a later lesson can change them. The
-plan's sequence relates them: the shared works start on the start date, Building A
-follows a year later, each building takes two years to build, and Building B cannot
-start before the shared works finish. Group equations in named formulations, like
+plan's sequence relates them: the shared works start on the start date, and the
+shared plinth opens a year later; Building A follows a year later, each building
+takes two years to build, and Building B cannot start before the shared works
+finish. Group equations in named formulations, like
 the sections of a pro forma: `add_formulation(name=)` makes one, and its
 `equations(...)` adds to it. A formulation changes nothing in the solve; it organises
 the display and the trace. The date equations form "Dates".
@@ -110,6 +147,7 @@ project.date(key="b_start")
 dates = project.add_formulation(name="Dates")
 dates.equations(
     "shared_start = start_date",
+    "shared_open = shared_start + 1 year",
     "a_start = shared_start + 1 year",
     "a_open = a_start + 2 years",
     "b_open = b_start + 2 years",
@@ -118,8 +156,9 @@ dates.equations(
 ```
 
 Narrative: the amounts and rates. Incomes and operating costs are annual amounts
-at 2027 prices; budgets and renewals are totals. The cases in section 5 change two of
-the rates.
+at 2027 prices; budgets and renewals are totals. The shared plinth has its own
+operating cost and renewal: it serves both buildings, so the plan does not split
+them between the buildings. The cases in section 5 change two of the rates.
 
 ```python
 # cell 5b
@@ -129,8 +168,10 @@ project.value(key="a_cost", units="AUD")
 project.value(key="b_cost", units="AUD")
 project.value(key="a_income", units="AUD pa")
 project.value(key="b_income", units="AUD pa")
+project.value(key="shared_opex", units="AUD pa")
 project.value(key="a_opex", units="AUD pa")
 project.value(key="b_opex", units="AUD pa")
+project.value(key="shared_renewal", units="AUD")
 project.value(key="a_renewal", units="AUD")
 project.value(key="b_renewal", units="AUD")
 project.value(key="rent_growth", units="% pa")
@@ -154,8 +195,10 @@ project.flow(key="a_works", units="AUD", periods=years)
 project.flow(key="b_works", units="AUD", periods=years)
 project.flow(key="a_rent", units="AUD", periods=years)
 project.flow(key="b_rent", units="AUD", periods=years)
+project.flow(key="shared_costs", units="AUD", periods=years)
 project.flow(key="a_costs", units="AUD", periods=years)
 project.flow(key="b_costs", units="AUD", periods=years)
+project.flow(key="shared_renewals", units="AUD", periods=years)
 project.flow(key="a_renewals", units="AUD", periods=years)
 project.flow(key="b_renewals", units="AUD", periods=years)
 project.flow(key="sale", units="AUD", periods=years)
@@ -180,7 +223,8 @@ development.equations(
 ```
 
 Narrative: operations. Rents grow on one calendar from 2027, but each building
-earns nothing until it opens. Renewals come every five years after opening.
+earns nothing until it opens. The plinth's operating cost starts when it opens, in
+2028. Renewals come every five years after opening.
 
 ```python
 # cell 7
@@ -188,19 +232,27 @@ operations = project.add_formulation(name="Operations")
 operations.equations(
     "a_rent = rx.profile.compounding(initial=a_income, rate=rent_growth, start=a_open)",
     "b_rent = rx.profile.compounding(initial=b_income, rate=rent_growth, start=b_open)",
+    (
+        "shared_costs = rx.profile.compounding(initial=shared_opex, rate=opex_growth,"
+        " start=shared_open)"
+    ),
     "a_costs = rx.profile.compounding(initial=a_opex, rate=opex_growth, start=a_open)",
     "b_costs = rx.profile.compounding(initial=b_opex, rate=opex_growth, start=b_open)",
     "income = a_rent + b_rent",
-    "opex = -(a_costs + b_costs)",
+    "opex = -(shared_costs + a_costs + b_costs)",
 )
 ```
 
-Narrative: renewals come every five years after each building opens, at costs that
+Narrative: renewals come every five years after each package opens, at costs that
 grow from 2027.
 
 ```python
 # cell 7b
 operations.equations(
+    (
+        "shared_renewals = rx.profile.compounding(initial=shared_renewal,"
+        " rate=opex_growth, start=shared_open + 5 years, every=5 years)"
+    ),
     (
         "a_renewals = rx.profile.compounding(initial=a_renewal, rate=opex_growth,"
         " start=a_open + 5 years, every=5 years)"
@@ -209,7 +261,7 @@ operations.equations(
         "b_renewals = rx.profile.compounding(initial=b_renewal, rate=opex_growth,"
         " start=b_open + 5 years, every=5 years)"
     ),
-    "renewals = -(a_renewals + b_renewals)",
+    "renewals = -(shared_renewals + a_renewals + b_renewals)",
     "operating = income + opex + renewals",
 )
 ```
@@ -245,7 +297,8 @@ base = (
     .fix(land_cost=plan["land_cost"], shared_cost=plan["shared_cost"])
     .fix(a_cost=plan["a_cost"], b_cost=plan["b_cost"])
     .fix(a_income=plan["a_income"], b_income=plan["b_income"])
-    .fix(a_opex=plan["a_opex"], b_opex=plan["b_opex"])
+    .fix(shared_opex=plan["shared_opex"], a_opex=plan["a_opex"])
+    .fix(b_opex=plan["b_opex"], shared_renewal=plan["shared_renewal"])
     .fix(a_renewal=plan["a_renewal"], b_renewal=plan["b_renewal"])
 )
 base = base.fix(rent_growth="3 % pa", exit_cap_rate="5 %")
@@ -257,6 +310,10 @@ outcome["unlevered_npv"]
 ```python
 # cell 10
 outcome.stream("land", "works", "income", "opex", "renewals", "sale").display()
+```
+
+```python
+# cell 10b
 helpers.plot_cash_flows(outcome=outcome, key="net_cash_flow")
 ```
 
@@ -377,16 +434,19 @@ target_outcome["land_cost"]
 ## 9. Can we pay the bills? By hand once
 
 Narrative: a positive NPV does not pay a construction invoice. Payments come at the
-end of each year. Split the first year's payments by hand: equity pays first, and the
-loan pays what the equity cannot.
+end of each year. Split them by hand once, through 2028, the first year in which
+their running total passes the equity: equity pays first, and the loan pays what the
+equity cannot. The need is the running total of the net cash flow, so it includes
+the plinth's operating cost. The loan also pays its own interest for 2028, so it
+lends the rest of the need divided by one less a year's interest on each AUD.
 
 ```python
 # cell 16
-paid_2027 = -(
-    outcome["land"].at(on=date(2027, 1, 1)) + outcome["works"].at(on=date(2027, 1, 1))
-)
-from_equity = min(paid_2027, plan["equity"])
-from_loan = paid_2027 - from_equity
+need = -outcome["net_cash_flow"].cumulative().at(on=date(2028, 1, 1))  # to end 2028
+from_equity = min(need, plan["equity"])
+loan_rate = levered_outcome.case(key="reference")["loan_rate"]
+year_interest = (loan_rate * rk.Quantity(text="1 year")).number  # per AUD of loan
+from_loan = (need - from_equity) / (1 - year_interest)
 from_equity, from_loan
 ```
 
@@ -397,7 +457,8 @@ loan's part of it.
 ```python
 # cell 17
 reference_outcome = levered_outcome.case(key="reference")
-assert reference_outcome["loan_principal"].at(on=date(2027, 1, 1)) == from_loan
+principal_2028 = reference_outcome["loan_principal"].at(on=date(2028, 1, 1))
+assert rk.quantity.isclose(actual=principal_2028, expected=from_loan)
 reference_outcome.stream(
     "net_cash_flow", "funding_need", "loan_draws", "loan_principal", "equity_cash_flow"
 )
@@ -488,6 +549,9 @@ executed = rk.execution.execute(specification=funded.cases(cases=cases), store=s
 executed.run.id
 ```
 
+Narrative: this cell needs only the folder of the store. To see that, restart the
+kernel, import `rangekeeper as rk` and run it.
+
 ```python
 # cell 23 (new kernel)
 store = rk.io.DirectoryStore(path="runs/03")
@@ -523,11 +587,10 @@ rk.execution.compare(
     keys=["peak_shortfall", "equity_npv"],
     baseline="Reference",
 )
+# The shortfall increases. Building A's income is lower, so it pays less of Building
+# B's works. The exit cap rate changes the equity NPV but not the shortfall, because
+# the sale occurs after all works are paid.
 ```
-
-The shortfall increases. Building A's income is lower, so it pays less of Building
-B's works. The exit cap rate changes the equity NPV but not the shortfall, because the
-sale occurs after all works are paid.
 
 **Try it 2: the target IRR in the weak case.** What land price gives a 15 % equity
 IRR in the weak market?
@@ -546,20 +609,27 @@ smallest now?
 ```python
 # solution
 later_outcome = rk.execution.solve(specification=funded.fix(b_start=date(2031, 1, 1)))
-later_outcome["loan_available"].argmin()
+available = later_outcome["loan_available"]
+smallest = available.min()
+for movement in available.movements:
+    if movement.number == smallest.number:
+        print(movement.period, smallest)
 ```
 
 ## Checks and recap
 
+The checks confirm the lesson's results.
+
 ```python
 # cell 24 (checks)
-npvs = cases_outcome.table("unlevered_npv")["unlevered_npv"]
-assert npvs.is_sorted()  # weak < reference < strong
+npvs = cases_outcome.table("unlevered_npv").column("unlevered_npv")
+assert list(npvs) == sorted(npvs)  # weak < reference < strong
 cash = target_outcome["equity_cash_flow"]
 target_npv = rk.finance.npv(flow=cash, rate="15 % pa", on=date(2027, 1, 1))
 assert rk.quantity.isclose(actual=target_npv, expected="0 AUD", tolerance="1 AUD")
 reference_outcome = funded_outcome.case(key="reference")
-assert reference_outcome["loan_principal"].at(on=date(2027, 1, 1)) == from_loan
+principal_2028 = reference_outcome["loan_principal"].at(on=date(2028, 1, 1))
+assert rk.quantity.isclose(actual=principal_2028, expected=from_loan)
 ```
 
 **Recap.**
@@ -575,9 +645,9 @@ assert reference_outcome["loan_principal"].at(on=date(2027, 1, 1)) == from_loan
 
 ## Cell budget
 
-24 core code cells, 3 optional cells (sections 11 and 12, one in a new kernel) and 1 check cell
-(budget 20–25), 3 exercise solutions. The longest cell has 17 lines (optional cell 21). Cells
-follow `ruff format` (D15).
+25 core code cells, 3 optional cells (sections 11 and 12, one in a new kernel) and 1 check cell
+(budget 20–25), 3 exercise solutions. The longest cells have 16 lines (cells 5, 5b and 7b, and
+optional cell 21). Cells follow `ruff format` (D15).
 
 ## Rule check
 
@@ -594,9 +664,9 @@ follow `ruff format` (D15).
 | 12–12b | 3, 6 | The equity-first cascade as equations (D2): G05 (`cumulative()`, `diff()`), G17 (`rx.finance.interest`, `rx.finance.irr`, period-by-period `max`); G09: `max` and `irr` are evaluated in period order after the affine stage |
 | 13 | 2 | G21: `Specification.on(model)` pins a new revision and keeps roles by key |
 | 15 | 6, 8 | G22: a fixed `irr` becomes a linear NPV row; G77: with a free value, the solve picks the active side of each `max` and checks it after the solve |
-| 16 | 6 | By hand once |
+| 16 | 6 | By hand once: the need through 2028, with the loan's own interest for the year |
 | 17 | 6, 8 | G19, G20: the corkscrew read from a case of the batch; composition, with no account class (D2) |
 | 18, 21 | 2, 3, 6 | G05: `total()`, `cumulative()`, `since(on=)`, `max()`; G09 evaluates `max` after the affine stage |
 | 20 | 10 | Helper draws named Flows only (`plot_flows`) |
 | 22–23 | 1, 4 | `execute` ([#126](https://github.com/daniel-fink/rangekeeper/issues/126)); G25: `rk.execution.replay` and `store.find_runs(specification=name)` |
-| 24 | 5, 8 | G06 |
+| 24 | 5, 8 | G06; the NPV column with `Table.column` |

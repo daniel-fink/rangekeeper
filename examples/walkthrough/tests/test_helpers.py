@@ -5,7 +5,7 @@ from urllib.request import urlopen
 
 import plotly.graph_objects as go
 import pytest
-from helpers import load_property, plot, theme
+from helpers import load_base_plan, load_property, plot, theme
 from IPython.display import IFrame
 
 import rangekeeper as rk
@@ -53,14 +53,40 @@ def test_show_flows_labels_year_end_dates_by_year(workdir):
     assert "2027" in read(frame)
 
 
-def test_show_timeline_draws_each_phase(workdir):
-    phases = [
-        {"name": "Building A", "start": "2028-01-01", "open": "2030-01-01"},
-        {"name": "Building B", "start": "2030-01-01", "open": "2032-01-01"},
-    ]
-    plot.show_timeline(phases=phases, path="timeline.html")
+def test_show_timeline_draws_each_package_of_the_plan(workdir):
+    plan = load_base_plan()
+    plot.show_timeline(of=plan, path="timeline.html")
     page = (workdir / "timeline.html").read_text()
-    assert "Building A" in page and "Building B" in page
+    for name in ("Shared plinth", "Building A", "Building B"):
+        assert name in page
+
+
+def test_plot_cash_flows_and_plot_flows_draw_flows_of_an_outcome(workdir):
+    years = rk.duration.Span(start=date(2027, 1, 1), end=date(2030, 1, 1)).periods(
+        frequency=rk.duration.Frequency.YEAR
+    )
+    draft = rk.Model(name="Drawn").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.value(key="cost", units="AUD")
+    project.date(key="start")
+    project.flow(key="works", units="AUD", periods=years)
+    project.equations(
+        "works = -rx.profile.uniform(total=cost, start=start, length=2 years)",
+        "paid = -works.cumulative()",
+    )
+    specification = (
+        draft.commit()
+        .specify(name="Drawn")
+        .fix(cost="10e6 AUD", start=date(2027, 1, 1))
+    )
+    outcome = rk.execution.solve(specification=specification)
+    bars = plot.plot_cash_flows(outcome=outcome, key="works", path="bars.html")
+    assert isinstance(bars, IFrame)
+    assert "works by year" in (workdir / "bars.html").read_text()
+    lines = plot.plot_flows(outcome=outcome, keys=["works", "paid"], path="lines.html")
+    assert isinstance(lines, IFrame)
+    page = (workdir / "lines.html").read_text()
+    assert "works" in page and "paid" in page
 
 
 def test_show_sunburst_labels_entities_and_keeps_uuid_identities(workdir, tree):
@@ -112,6 +138,27 @@ def test_load_property_gives_each_total_with_units_and_origin():
     assert "hotel_vacancy" in data._repr_html_()
     with pytest.raises(ValueError, match="No totals for 2031"):
         load_property(year=2031)
+
+
+def test_load_base_plan_gives_dates_quantities_and_origins():
+    plan = load_base_plan()
+    assert plan["start_date"] == date(2027, 1, 1)
+    assert plan["b_start"] == date(2030, 1, 1)
+    assert plan["a_cost"].units == "AUD"
+    assert plan["a_income"].units == "AUD pa"
+    assert plan["shared_opex"].units == "AUD pa"
+    assert plan["loan_limit"] == rk.Quantity(text="65e6 AUD")
+    assert plan.origin("equity") == "development.json equity"
+    assert plan.areas["building_a"]["hotel"].units == "sqm"
+    assert plan.rates["hotel"] == rk.Quantity(text="3000 AUD per sqm")
+    assert [phase.name for phase in plan.phases] == [
+        "Shared plinth",
+        "Building A",
+        "Building B",
+    ]
+    assert plan.phases[1].open == date(2030, 1, 1)
+    assert "2027-01-01" in repr(plan)
+    assert "<table>" in plan._repr_html_() and "a_cost" in plan._repr_html_()
 
 
 def test_show_equations_joins_each_equation_to_its_values(workdir):

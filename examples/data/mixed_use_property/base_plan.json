@@ -1,0 +1,187 @@
+{
+  "description": "The base plan of the mixed-use development, at 2027 prices. Derived by examples/data/derive_base_plan.py; recreate the file, do not edit it by hand.",
+  "from": [
+    "inventory.csv",
+    "assumptions.json",
+    "development.json"
+  ],
+  "currency": "AUD",
+  "phases": [
+    {
+      "key": "shared",
+      "name": "Shared plinth",
+      "start": "2027-01-01",
+      "open": "2028-01-01"
+    },
+    {
+      "key": "building_a",
+      "name": "Building A",
+      "start": "2028-01-01",
+      "open": "2030-01-01"
+    },
+    {
+      "key": "building_b",
+      "name": "Building B",
+      "start": "2030-01-01",
+      "open": "2032-01-01"
+    }
+  ],
+  "values": {
+    "base_date": {
+      "date": "2027-01-01",
+      "origin": "development.json base date"
+    },
+    "sale_date": {
+      "date": "2036-12-31",
+      "origin": "development.json sale date"
+    },
+    "start_date": {
+      "date": "2027-01-01",
+      "origin": "Start of the shared plinth's works"
+    },
+    "b_start": {
+      "date": "2030-01-01",
+      "origin": "Start of Building B's works"
+    },
+    "land_cost": {
+      "magnitude": 20000000,
+      "units": "AUD",
+      "origin": "development.json land cost"
+    },
+    "shared_cost": {
+      "magnitude": 15328493.053323887,
+      "units": "AUD",
+      "origin": "GFA × construction rate by use, + 10% soft costs + 10% contingency; no finance allowance"
+    },
+    "a_cost": {
+      "magnitude": 54982666.767561935,
+      "units": "AUD",
+      "origin": "GFA × construction rate by use, + 10% soft costs + 10% contingency; no finance allowance"
+    },
+    "b_cost": {
+      "magnitude": 39465168.31554196,
+      "units": "AUD",
+      "origin": "GFA × construction rate by use, + 10% soft costs + 10% contingency; no finance allowance"
+    },
+    "a_income": {
+      "magnitude": 9703514.56159544,
+      "units": "AUD pa",
+      "origin": "GFA × efficiency × 2027 rent × (1 − vacancy), by use"
+    },
+    "b_income": {
+      "magnitude": 6139619.945231567,
+      "units": "AUD pa",
+      "origin": "GFA × efficiency × 2027 rent × (1 − vacancy), by use"
+    },
+    "shared_opex": {
+      "magnitude": 794549.3469595438,
+      "units": "AUD pa",
+      "origin": "Floor and facade OPEX of the package's floors, at 2027 prices"
+    },
+    "a_opex": {
+      "magnitude": 2964970.503920121,
+      "units": "AUD pa",
+      "origin": "Floor and facade OPEX of the package's floors, at 2027 prices"
+    },
+    "b_opex": {
+      "magnitude": 1881822.046323901,
+      "units": "AUD pa",
+      "origin": "Floor and facade OPEX of the package's floors, at 2027 prices"
+    },
+    "shared_renewal": {
+      "magnitude": 1281793.000068591,
+      "units": "AUD",
+      "origin": "Floor capital rate × GFA, + utility capital rate × volume of the package's cores or plant, for one five-yearly renewal"
+    },
+    "a_renewal": {
+      "magnitude": 2732125.214598905,
+      "units": "AUD",
+      "origin": "Floor capital rate × GFA, + utility capital rate × volume of the package's cores or plant, for one five-yearly renewal"
+    },
+    "b_renewal": {
+      "magnitude": 1905174.3910239376,
+      "units": "AUD",
+      "origin": "Floor capital rate × GFA, + utility capital rate × volume of the package's cores or plant, for one five-yearly renewal"
+    },
+    "equity": {
+      "magnitude": 50000000,
+      "units": "AUD",
+      "origin": "development.json equity"
+    },
+    "loan_limit": {
+      "magnitude": 65000000,
+      "units": "AUD",
+      "origin": "development.json bridge limit"
+    }
+  },
+  "areas": {
+    "shared": {
+      "parking": {
+        "magnitude": 12773.744211103238,
+        "units": "sqm",
+        "origin": "inventory.csv floor GFA"
+      }
+    },
+    "building_a": {
+      "hotel": {
+        "magnitude": 11716.690053909613,
+        "units": "sqm",
+        "origin": "inventory.csv floor GFA"
+      },
+      "residential": {
+        "magnitude": 2308.3223687732007,
+        "units": "sqm",
+        "origin": "inventory.csv floor GFA"
+      },
+      "retail": {
+        "magnitude": 1511.8307150059297,
+        "units": "sqm",
+        "origin": "inventory.csv floor GFA"
+      },
+      "parking": {
+        "magnitude": 1038.786936414883,
+        "units": "sqm",
+        "origin": "inventory.csv floor GFA"
+      }
+    },
+    "building_b": {
+      "residential": {
+        "magnitude": 11442.736623932446,
+        "units": "sqm",
+        "origin": "inventory.csv floor GFA"
+      },
+      "retail": {
+        "magnitude": 815.9834537340322,
+        "units": "sqm",
+        "origin": "inventory.csv floor GFA"
+      },
+      "parking": {
+        "magnitude": 1178.164751765595,
+        "units": "sqm",
+        "origin": "inventory.csv floor GFA"
+      }
+    }
+  },
+  "rates": {
+    "hotel": {
+      "magnitude": 3000,
+      "units": "AUD per sqm",
+      "origin": "development.json construction rate"
+    },
+    "residential": {
+      "magnitude": 2600,
+      "units": "AUD per sqm",
+      "origin": "development.json construction rate"
+    },
+    "retail": {
+      "magnitude": 2400,
+      "units": "AUD per sqm",
+      "origin": "development.json construction rate"
+    },
+    "parking": {
+      "magnitude": 1000,
+      "units": "AUD per sqm",
+      "origin": "development.json construction rate"
+    }
+  }
+}

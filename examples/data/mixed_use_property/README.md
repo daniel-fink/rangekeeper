@@ -39,6 +39,16 @@ The Rangekeeper code is licensed separately, under MPL-2.0.
   it, then update its manifest entry; `--check` compares the file with a new
   derivation.
 
+- `base_plan.json` gives the dated plan of walkthrough lesson 03, at 2027 prices,
+  each value with its origin: dates, budgets, incomes, operating costs, renewals,
+  funding, the areas by package and use, and the construction rates. Its loan limit
+  is the plan's bridge limit, and its budgets leave out the construction finance
+  allowance. [`../derive_base_plan.py`](../derive_base_plan.py) derives it from
+  the same three files, and documents each value. Run
+  `python examples/data/derive_base_plan.py` from the repository root to recreate
+  it, then update its manifest entry; `--check` compares the file with a new
+  derivation.
+
 Do not edit the source capture or the derived files by hand. A change to a file
 in this folder needs a matching change to its manifest entry. The test
 `tests/walkthrough/test_example_data.py` checks the manifest and the origins.

@@ -81,7 +81,7 @@ def test_lesson_04_cell_2_shows_the_equations_of_lesson_03(lesson_03):
     cell = statements(cells("04_market_futures.md")["2"], 1)
     shown = eval(cell, {"model": lesson_03})
     assert isinstance(shown, rk.model.Equations)
-    assert len(shown) == 32
+    assert len(shown) == 35
     assert shown.where(key="income")[0].text == "income = a_rent + b_rent"
     assert "<table>" in shown._repr_html_()
 
@@ -119,6 +119,7 @@ def test_lesson_05_cell_2_shows_the_date_equations(lesson_04):
     shown = eval(cell, {"model": lesson_04})
     assert [item.text for item in shown] == [
         "shared_start = start_date",
+        "shared_open = shared_start + 1 year",
         "a_start = shared_start + 1 year",
         "a_open = a_start + 2 years",
         "b_open = b_start + 2 years",
