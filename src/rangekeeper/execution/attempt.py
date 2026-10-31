@@ -2,7 +2,6 @@
 
 import time
 from collections.abc import Mapping, Sequence
-from dataclasses import replace
 from datetime import UTC, date, datetime
 from typing import cast
 from uuid import UUID, uuid4
@@ -231,10 +230,11 @@ class Attempt:
         # equation and equation function is written period by period (#276).
         # The candidate and verification keep every original assertion.
         bound = self.decide(self.binding)
-        settled = dates.settle(bound)
-        self.binding = expansion.expand(replace(settled, assertions=bound.assertions))
+        self.binding, expanded = expansion.expand_settled(
+            dates.settle(bound), original=bound.assertions
+        )
         staged = staging.stage(
-            expansion.expand(settled),
+            expanded,
             solve=self.solve_stage,
             limits=self.limits,
             checkpoint=self.checkpoint,
