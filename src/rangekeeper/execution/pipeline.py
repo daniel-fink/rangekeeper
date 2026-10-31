@@ -1,13 +1,12 @@
 """Run the stages for each case: pure ``solve`` and publishing ``execute``."""
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import replace
 from typing import cast
 from uuid import UUID
 
-from rangekeeper.execution import assembly
-from rangekeeper.execution.attempt import Attempt
-from rangekeeper.execution.backends import Backend, registry
+from rangekeeper.execution import _parallel, assembly
+from rangekeeper.execution.backends import registry
 from rangekeeper.execution.config import ExecutionConfig
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.execution.planning import Cases, resolve_cases
@@ -211,9 +210,17 @@ def _run(
         else config.backend
     )
     cases = resolve_cases(specification=specification, resolver=resolver)
-    scopes: dict[UUID, object] = {}
+    leaves = _leaves(specification, cases)
+    solved = _parallel.solve_leaves(
+        leaves=leaves, cases=cases, config=config, backend=backend
+    )
+    scopes: dict[UUID, object] = {
+        leaf.id: item.scope
+        for leaf, item in zip(leaves, solved, strict=True)
+        if item.scope is not None
+    }
     outcome = _case(
-        specification, cases=cases, config=config, backend=backend, scopes=scopes
+        specification, cases=cases, solved=iter(item.outcome for item in solved)
     )
     tree = tuple(outcome.walk())
     overlay = assembly.Overlay(
@@ -284,53 +291,33 @@ def _unstored(outcome: Outcome, cases: Cases) -> set[UUID]:
     return documents
 
 
+def _leaves(specification: Specification, cases: Cases) -> list[Specification]:
+    """Return each leaf case in Specification order; a repeated case is repeated."""
+    if not specification.record.cases:
+        return [specification]
+    return [
+        leaf
+        for id in specification.record.cases
+        for leaf in _leaves(cases.documents[id], cases)
+    ]
+
+
 def _case(
     specification: Specification,
     *,
     cases: Cases,
-    config: ExecutionConfig,
-    backend: Backend,
-    scopes: dict[UUID, object],
+    solved: Iterator[Outcome],
 ) -> Outcome:
+    """Assemble the Outcome of a case from ``solved``, in the order of ``_leaves``."""
     # A case's key is the name of its Specification.
     key = specification.metadata.name
-    outcome = _attempt(
-        specification, cases=cases, config=config, backend=backend, scopes=scopes
-    )
-    return outcome if key is None else replace(outcome, key=key)
-
-
-def _attempt(
-    specification: Specification,
-    *,
-    cases: Cases,
-    config: ExecutionConfig,
-    backend: Backend,
-    scopes: dict[UUID, object],
-) -> Outcome:
-    if specification.record.cases:
-        return assembly.assemble_batch(
+    outcome = next(solved) if not specification.record.cases else None
+    if outcome is None:
+        outcome = assembly.assemble_batch(
             specification=specification,
             cases=tuple(
-                _case(
-                    cases.documents[id],
-                    cases=cases,
-                    config=config,
-                    backend=backend,
-                    scopes=scopes,
-                )
-                for id in specification.record.cases
+                _case(cases.documents[id], cases=cases, solved=solved)
+                for id in specification.record.cases or ()
             ),
         )
-    attempt = Attempt(
-        specification,
-        cases.failures.get(specification.id) or cases.compositions[specification.id],
-        config=config,
-        backend=backend,
-        resolver=cases,
-    )
-    outcome = attempt.execute()
-    validation = attempt.validation
-    if validation is not None and validation.report.valid and validation._scope:
-        scopes[specification.id] = validation._scope
-    return outcome
+    return outcome if key is None else replace(outcome, key=key)

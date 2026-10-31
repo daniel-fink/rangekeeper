@@ -50,15 +50,24 @@ def _exchange(process: subprocess.Popen[str], *, line: str, reply: list[str]) ->
 class Worker:
     """One child process that answers one JSON line for each JSON line it reads."""
 
-    def __init__(self, *, process: subprocess.Popen[str], stderr: IO[bytes]) -> None:
-        self.process, self.stderr = process, stderr
+    def __init__(
+        self,
+        *,
+        process: subprocess.Popen[str],
+        stderr: IO[bytes],
+        role: str = "solver worker",
+    ) -> None:
+        self.process, self.stderr, self.role = process, stderr, role
         self.owner = os.getpid()
         # The size of stderr after the last response; a failure keeps what follows.
         self.mark = 0
 
     @classmethod
-    def start(cls, command: Sequence[str]) -> "Worker":
-        """Start a worker process; its stderr goes to a temporary file."""
+    def start(cls, command: Sequence[str], *, role: str = "solver worker") -> "Worker":
+        """Start a worker process; its stderr goes to a temporary file.
+
+        ``role`` names the worker in the error of a worker that ends.
+        """
         stderr = tempfile.TemporaryFile()
         try:
             process = subprocess.Popen(
@@ -72,7 +81,7 @@ class Worker:
         except BaseException:
             stderr.close()
             raise
-        return cls(process=process, stderr=stderr)
+        return cls(process=process, stderr=stderr, role=role)
 
     @property
     def usable(self) -> bool:
@@ -115,7 +124,7 @@ class Worker:
         self.stderr.seek(self.mark)
         tail = self.stderr.read().decode("utf-8", errors="replace")[-TAIL:]
         self._release()
-        return NumericalError(f"solver worker exited {code}: {tail}")
+        return NumericalError(f"{self.role} exited {code}: {tail}")
 
     def close(self) -> None:
         """End the worker when its input closes; kill it after ``GRACE`` seconds."""

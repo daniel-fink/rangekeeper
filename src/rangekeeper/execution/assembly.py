@@ -127,7 +127,7 @@ def assemble_batch(
                             else Severity.WARNING
                         ),
                         code=Code.BATCH_ACCOUNTING.value,
-                        message=f"Sequential batch accounted for all {len(cases)} direct cases; outputs are their unique accepted union.",
+                        message=f"Batch accounted for all {len(cases)} direct cases; outputs are their unique accepted union.",
                     ),
                 ),
             ),

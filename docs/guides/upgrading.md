@@ -208,6 +208,21 @@ gives the installation hint in the `backend_unavailable` diagnostic. Evidence
 and results do not change. See the
 [solve worker](../reference/execution.md#solve-worker).
 
+### Batch workers
+
+A batch that gains from it now solves in worker processes, on all cores
+([#529](https://github.com/daniel-fink/rangekeeper/issues/529)). Results, evidence
+and case order do not change. Check these:
+
+- A backend now runs in a worker process when a batch uses them, so a change to its
+  state does not return to the caller. Define a backend, or a unit system or profile
+  that you register, in an importable module. One that cannot move gives a
+  `RuntimeWarning`, and the batch solves in the calling process.
+- If your code runs solves in several processes, or if memory is short, set
+  `ExecutionConfig(workers=)`. `workers=1` is the earlier behaviour.
+
+See [batch workers](../reference/execution.md#batch-workers).
+
 ### Stores
 
 The `RecordStore` protocol has a new method, `find_runs(*, specification)`: the

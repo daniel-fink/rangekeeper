@@ -92,6 +92,7 @@ def test_backend_options_are_frozen():
         "tolerances",
         "backend_options",
         "allow_underdetermined",
+        "workers",
     }
 
 

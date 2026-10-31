@@ -70,6 +70,20 @@ class Registration[T]:
         """
         return f"rangekeeper.{self.point}:{self.name}" if self.registered else self.name
 
+    @property
+    def arguments(self) -> dict[str, Any]:
+        """Return the ``register`` arguments that remake this in another process.
+
+        A fingerprint that was stated, or already calculated, stays the same.
+        Otherwise the other process calculates it when evidence asks for it.
+        """
+        stated = self._fingerprint if isinstance(self._fingerprint, str) else None
+        return {
+            "name": self.name,
+            "implementation": self.implementation,
+            "fingerprint": stated,
+        }
+
 
 class Registry[T]:
     """Named implementations of one Protocol, with optional entry points.
@@ -156,6 +170,11 @@ class Registry[T]:
             )
             self._registered[name] = registration
             return registration
+
+    def registrations(self) -> tuple[Registration[T], ...]:
+        """Return the registrations so far; entry points do not load."""
+        with self._lock:
+            return tuple(self._registered.values())
 
     def names(self) -> tuple[str, ...]:
         """Return the registered and declared names; entry points do not load."""
