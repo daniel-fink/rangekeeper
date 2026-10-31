@@ -258,6 +258,16 @@ class ParameterKind(StrEnum):
     'Supply by name only.'
 
 @unique
+class PeriodTiming(StrEnum):
+    'The date that represents a Period.'
+    FIRST = 'first'
+    'The first day of the Period.'
+    LAST = 'last'
+    'The last day of the Period.'
+    END = 'end'
+    'The end boundary of the Period, the day after its last day.'
+
+@unique
 class ProjectionKind(StrEnum):
     'Whether a Query returns Entity identities or their Values.'
     ENTITY = 'entity'
@@ -383,6 +393,7 @@ _ENUM_TYPES = {
     'ObjectiveKind': ObjectiveKind,
     'Operator': Operator,
     'ParameterKind': ParameterKind,
+    'PeriodTiming': PeriodTiming,
     'ProjectionKind': ProjectionKind,
     'ReconciliationStatus': ReconciliationStatus,
     'SelectionKind': SelectionKind,
@@ -394,4 +405,4 @@ _ENUM_TYPES = {
     'ValueRelation': ValueRelation,
 }
 
-__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'Never', 'ObjectiveKind', 'Operator', 'ParameterKind', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']
+__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'Never', 'ObjectiveKind', 'Operator', 'ParameterKind', 'PeriodTiming', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']

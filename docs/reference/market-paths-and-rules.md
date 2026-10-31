@@ -42,7 +42,8 @@ See [calendar contracts](calculations.md).
 | `market.validation` | The checks of a `Paths` document |
 | `specification.rule` | Generated declarations and evidence |
 | `specification.rule.validation` | Rule declaration checks |
-| `specification.rule._query` | The declaration of a sequential rule, `RuleQuery`, and the checks that need no solve (internal) |
+| `specification.rule._declaration` | `Window`, `Where`, `Rule` and `Rules`, and the stored `RuleDeclaration` of a rule |
+| `specification.rule._query` | What the engine reads of a sequential rule, `RuleQuery`, and the checks that need no solve (internal) |
 | `execution.rule` | `evaluate`, `observe` and derived results |
 | `execution.rule.sequence` | Sequential evaluation: `run_rules` returns `Decisions` for one case (internal) |
 | `execution.rule.provisional` | One provisional solve, with the current decided values fixed (internal) |
@@ -74,7 +75,7 @@ backend never infer assignments from stored amounts.
 | Strict comparison of fixed or literal operands | Exact check before solving and again during independent acceptance |
 | Strict comparison involving an unknown | Rejected before simplification, even when terms cancel |
 | Finite exogenous rules | Evaluate once before compilation, then use explicit control assignments |
-| Sequential rules that read solved values | The internal rule engine ([below](#sequential-rule-evaluation)). `Specification` cannot declare them until #300 |
+| Sequential rules that read solved values | `fix(key=rule)` [declares them](#declare-a-rule). The solve runs them in the next step of #300 |
 | Multistage optimization | Capability rejection |
 
 Discounting begins at exponent one by default; growth starts at the initial amount.
@@ -271,12 +272,59 @@ See [migration](../guides/upgrading.md), [record methods](records.md), and
 
 [ADR-021](../decisions/021-sequential-decisions.md) decides each value of a rule
 during the solve, on each path by itself. The engine is in place and verified
-([#215](https://github.com/daniel-fink/rangekeeper/issues/215)). It is internal:
-the public queries and their stored fields come with
-[#300](https://github.com/daniel-fink/rangekeeper/issues/300), and the parameters
-of rules with [#301](https://github.com/daniel-fink/rangekeeper/issues/301). Until
-then `rk.execution.solve` runs no sequential rule. The dated slice above stays in
-place.
+([#215](https://github.com/daniel-fink/rangekeeper/issues/215)). A Specification
+[declares its rules](#declare-a-rule). The next step of
+[#300](https://github.com/daniel-fink/rangekeeper/issues/300) makes
+`rk.execution.solve` run them; until then, a case with rules ends with the status
+`unsupported`. The parameters of rules come with
+[#301](https://github.com/daniel-fink/rangekeeper/issues/301). The dated slice above
+stays in place.
+
+### Declare a rule
+
+A rule is a query over a window of dates. The query needs no Model:
+
+```python
+window = rk.specification.Window(earliest=date(2027, 1, 1), latest=date(2030, 1, 1))
+rule = window.where(condition="rent_index >= start_trigger").first(
+    otherwise=rk.duration.NEVER
+)
+strategy = fixed.fix(start_trigger=1.05, start_date=rule)
+```
+
+| Call | Meaning |
+| --- | --- |
+| `Window(earliest=None, latest=None, periods=None, timing=PeriodTiming.FIRST)` | The dates on which a rule may act. `earliest` and `latest` are inclusive, and each is a date or date text such as `"shared_start + 1 year"`. Without `periods`, a window date is each date on which a value that the condition reads becomes known. With `periods`, it is the `timing` day of each Period |
+| `where(condition=)` | A condition in the equation language. It writes equality with `==`, as in `b_start == NEVER`; `=` states an equation, and here it is an error that suggests `==`. Text that does not parse raises `EquationError` |
+| `first(otherwise=, then=None)` | The `Rule`: the first window date that meets the condition, or `then` on that date. `otherwise` applies when no window date qualifies. A date Value takes a date or `NEVER`; a scalar Value takes a quantity and needs `then` |
+| `fix(key=rule)` | The value becomes decided. Rules run in the order that they are fixed. A later `fix` of the key replaces the rule or the value, a rule in the same position. `free(key)` removes the rule. One `fix` call can give values and rules together |
+| `spec.rules` | The `Rules` by key, in their order. `spec.rules[key]` is a `Rule` whose `triggers` hold the fixed values that it reads. `fix` with that Rule brings each of them that the other Specification does not fix; a value that it fixes stays. A key without a rule raises `MissingReferenceError` |
+
+`fix` reads the text against the pinned Model and stores a `RuleDeclaration` in the
+ordered `declared_rules` of the Specification. The record has the `target`, and
+Expressions for `condition`, `otherwise`, `then`, `earliest` and `latest`, with the
+`periods` and the `timing`. `otherwise` and `then` are literals.
+
+| Failure at `fix` | Error |
+| --- | --- |
+| A condition that reads ahead, such as `rent_index.shift(by=-1)` | `AvailabilityError` with `key` |
+| A condition that reads its own value or a later rule, or a scalar that depends on one | `ValidationError` with the code `rule_order` |
+| A condition that depends on a free input | `ValidationError` with the code `rule_reads_unknown` |
+| A value that is not a date or a scalar, a value of another kind than its target, a condition that is not a test, a call other than `flow.shift(by=)` in a condition, and a bound that is not a date | `ValidationError` with the code `rule_capability` |
+| A name that the Model lacks | `EquationError` |
+
+A Flow can be free at `fix`, because a later `across` can fix it: lesson 05 calls
+`fix` before `across`. So `fix` counts each Flow as known. `across` checks the rules
+again with the Movements that its paths fix, `free` checks them when it frees a
+value, and `validate` and the solve check them with what the case fixes. A later
+`fix` of a value alone adds what a rule can read, so it does not check them. A rule
+can read a Flow that depends on a later rule, because a decision cannot change the
+past, so that is not `rule_order`.
+
+`Window` itself raises `ContractError` with `rule_capability` for `earliest` after
+`latest`, for no Periods, and for `timing` without `periods`.
+
+### The stage of a rule
 
 `execution.rule.sequence.run_rules(binding=, rules=, solver=, parameters=None,
 paths=None)` takes one bound case, with each decided value free. It returns
@@ -331,8 +379,8 @@ Each failure below ends one case. `Attempt` gives it a Run with the status
 | `DecisionError` | `provisional_infeasible` | The provisional problem is infeasible. `values["constraints"]` gives the date constraints that the decisions break |
 | `DecisionError` | `rule_trace` | `check_trace` rejects the trace |
 
-The `ContractError` rows raise out of the stage: #300 reports them when the
-Specification is made.
+The `ContractError` rows raise out of the stage. `fix` reports the same problems
+[as `ValidationError`](#declare-a-rule) when the Specification is made.
 
 ### The trace check
 

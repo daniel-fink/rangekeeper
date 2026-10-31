@@ -169,6 +169,14 @@ classes:
         description: Optional RuleSet with controlled targets and dated decisions.
         range: RuleSet
         inlined: true
+      declared_rules:
+        description: Nonempty ordered rules, each a query over a window that decides one value. They run in this order.
+          A decided value has no other role.
+        range: RuleDeclaration
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
       path:
         description: The market path whose series fix Flow values in this case. The resolve-cases stage expands
           it into assignments from the Paths document; the case does not copy the amounts.
