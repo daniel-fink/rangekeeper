@@ -221,3 +221,72 @@ def test_free_keeps_an_estimate_and_fix_replaces_it():
     fixed = spec.fix(land_cost=aud("25e6"))
     assert not fixed.record.estimates
     assert not fixed.free("land_cost").record.estimates
+
+
+def three_costs():
+    """Return a committed Model with three independent values."""
+    draft = rk.Model(name="Three costs").edit()
+    project = draft.add_entity(code="project", classification="project")
+    for key in ("first", "middle", "last"):
+        project.value(key=key, units="AUD")
+    return draft.commit()
+
+
+def fixed_three():
+    return three_costs().specify().fix(first="1 AUD", middle="2 AUD", last="3 AUD")
+
+
+def fixed_values(specification):
+    """Return (key, quantity) of each assignment, in stored order."""
+    model = specification.model
+    project = model.entity(code="project").id
+    keys = {
+        model.value(owner=project, key=key).id: key
+        for key in ("first", "middle", "last")
+    }
+    return [
+        (keys[item.target.target], item.quantity)
+        for item in specification.record.assignments
+    ]
+
+
+@pytest.mark.parametrize(
+    ("key", "amount"),
+    [("first", "1"), ("middle", "2"), ("last", "3")],
+)
+def test_fix_with_the_same_value_returns_the_same_specification(key, amount):
+    spec = fixed_three()
+    assert spec.fix(**{key: f"{amount} AUD"}) is spec
+    assert spec.fix(**{key: aud(amount)}) is spec
+
+
+def test_fix_of_the_same_values_in_another_order_returns_the_same_specification():
+    spec = fixed_three()
+    assert spec.fix(last="3 AUD", first="1 AUD") is spec
+    assert spec.fix(middle="2 AUD", last="3 AUD", first="1 AUD") is spec
+
+
+def test_fix_of_each_movement_with_the_same_value_returns_the_same_specification():
+    spec = costs().specify().fix(rent_index=1.0).fix(land_cost="20e6 AUD")
+    assert spec.fix(rent_index=1.0) is spec
+
+
+@pytest.mark.parametrize("key", ["first", "middle", "last"])
+def test_fix_with_another_value_moves_the_assignment_to_the_end(key):
+    spec = fixed_three()
+    changed = spec.fix(**{key: "9 AUD"})
+    assert changed is not spec
+    assert changed.metadata.previous == spec.id
+    assert fixed_values(changed) == [
+        *(item for item in fixed_values(spec) if item[0] != key),
+        (key, aud("9")),
+    ]
+
+
+def test_fix_of_the_same_value_beside_another_value_moves_both_to_the_end():
+    changed = fixed_three().fix(first="1 AUD", middle="9 AUD")
+    assert fixed_values(changed) == [
+        ("last", aud("3")),
+        ("first", aud("1")),
+        ("middle", aud("9")),
+    ]
