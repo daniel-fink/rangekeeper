@@ -18,7 +18,6 @@ from rangekeeper.execution.backends import PyomoHighs, registry
 from rangekeeper.execution.backends import pyomo as pyomo_backend
 from rangekeeper.io import MemoryStore
 from rangekeeper.quantity import UnitSystem, unit_systems
-from rangekeeper.run.documents import Documents
 from rangekeeper.shared.errors import ContractError
 from tests.execution.test_pipeline import Recording, batch_of, dated
 
@@ -80,14 +79,17 @@ def mixed():
     more feasible cases.
     """
     base = dated()
-    rate, *others = [item for item in base.to_data()["assignments"]]
+    first, *others = base.to_data()["assignments"]
     shared = leaf(base, assignments=others, unknowns=[])
-    included = leaf(base, assignments=[rate], includes=[str(shared.id)])
+    included = leaf(base, assignments=[first], includes=[str(shared.id)])
     limited = leaf(base, settings={"time_limit": 1e-9})
     conflict = leaf(base, includes=[str(base.id)])
     leaves = (base, leaf(base), limited, conflict, included, leaf(base), leaf(base))
     batch = batch_of(base.model, *leaves)
-    return batch, Documents((base.model, shared, *leaves, batch))
+    store = MemoryStore()
+    for document in (base.model, shared, *leaves, batch):
+        store.put(document)
+    return batch, store
 
 
 def comparable(outcome):
@@ -145,6 +147,7 @@ def statuses(outcome):
 
 
 def test_workers_do_not_change_results_or_evidence(started):
+    """A leaf solves with the documents of its case graph; the store stays here."""
     batch, resolver = mixed()
     alone = solve(
         specification=batch, resolver=resolver, config=ExecutionConfig(workers=1)
@@ -168,23 +171,18 @@ def test_workers_do_not_change_results_or_evidence(started):
     assert "workers" not in json.dumps(together.run.to_data())
 
 
-def test_cases_come_back_in_their_original_order(started):
+def test_cases_keep_their_order_and_the_calling_process_publishes(started):
     batch = rates()
-    outcome = solve(specification=batch, config=ExecutionConfig(workers=2))
+    store = Recording()
+    outcome = execute(
+        specification=batch, store=store, config=ExecutionConfig(workers=2)
+    )
     assert started
     assert [case.key for case in outcome.cases] == [f"rate_{i}" for i in range(6)]
     assert outcome.run.record.spawns == tuple(case.run.id for case in outcome.cases)
     assert [case.run.record.specification for case in outcome.cases] == list(
         batch.record.cases
     )
-
-
-def test_execute_publishes_from_the_calling_process(started):
-    store = Recording()
-    outcome = execute(
-        specification=rates(), store=store, config=ExecutionConfig(workers=2)
-    )
-    assert started
     assert [item for item in store.puts if item[0] == "Run"] == [
         ("Run", item.run.id) for item in outcome.walk()
     ]
@@ -411,49 +409,31 @@ def test_processes_must_repay_their_start(remaining, seconds, workers, expected)
 
 
 def test_a_script_with_no_guard_runs_once(tmp_path):
-    """A worker process does not import the script, unlike multiprocessing's spawn."""
+    """A worker does not import the script, so it cannot read a class of the script.
+
+    The class of a notebook cell is the same case: it has no module to import.
+    """
     runs = tmp_path / "runs.txt"
     script = tmp_path / "unguarded.py"
     script.write_text(
         textwrap.dedent(
             f"""
-            import sys
+            import sys, warnings
             sys.path.insert(0, {str(ROOT)!r})
             with open({str(runs)!r}, "a") as file:
                 file.write("run\\n")
             from rangekeeper.execution import ExecutionConfig, _parallel, solve
-            from tests.execution.test_parallel import rates, statuses
-            _parallel.START_SECONDS = 0.0
-            outcome = solve(specification=rates(), config=ExecutionConfig(workers=2))
-            assert statuses(outcome) == ["feasible"] * 6
-            """
-        )
-    )
-    done = subprocess.run(
-        [sys.executable, str(script)], capture_output=True, text=True, check=False
-    )
-    assert done.returncode == 0, done.stderr
-    assert "RuntimeWarning" not in done.stderr
-    assert runs.read_text() == "run\n"
-
-
-def test_a_backend_in_main_stays_here_with_a_warning(tmp_path):
-    """An object of a script or a notebook has no module that a worker can import."""
-    script = tmp_path / "local_backend.py"
-    script.write_text(
-        textwrap.dedent(
-            f"""
-            import sys
-            sys.path.insert(0, {str(ROOT)!r})
-            from rangekeeper.execution import ExecutionConfig, _parallel, solve
             from tests.execution.test_parallel import Delegating, rates, statuses
+            _parallel.START_SECONDS = 0.0
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                outcome = solve(specification=rates(), config=ExecutionConfig(workers=2))
+            assert statuses(outcome) == ["feasible"] * 6
             class Local(Delegating):
                 pass
-            if __name__ == "__main__":
-                _parallel.START_SECONDS = 0.0
-                config = ExecutionConfig(workers=2, backend=Local())
-                outcome = solve(specification=rates(), config=config)
-                assert statuses(outcome) == ["feasible"] * 6
+            config = ExecutionConfig(workers=2, backend=Local())
+            outcome = solve(specification=rates(), config=config)
+            assert statuses(outcome) == ["feasible"] * 6
             """
         )
     )
@@ -463,6 +443,7 @@ def test_a_backend_in_main_stays_here_with_a_warning(tmp_path):
     assert done.returncode == 0, done.stderr
     assert "RuntimeWarning" in done.stderr
     assert "calling process" in done.stderr
+    assert runs.read_text() == "run\n"
 
 
 def test_workers_is_checked():
@@ -471,18 +452,3 @@ def test_workers_is_checked():
     for wrong in (True, 2.0, "2"):
         with pytest.raises(TypeError):
             ExecutionConfig(workers=wrong)
-
-
-def test_a_store_resolver_stays_in_the_calling_process(started):
-    """A leaf solves with the documents of the case graph; a store does not move."""
-    batch, resolver = mixed()
-    store = MemoryStore()
-    for document in resolver:
-        store.put(document)
-    outcome = solve(
-        specification=store.load_specification(batch.id),
-        resolver=store,
-        config=ExecutionConfig(workers=2),
-    )
-    assert started
-    assert statuses(outcome)[:3] == ["feasible", "feasible", "limited"]

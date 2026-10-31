@@ -689,8 +689,8 @@ Specification order. `execute` publishes from the calling process.
 
 - **Count.** `ExecutionConfig(workers=)` sets the number of processes. Without it,
   a batch uses all the cores that this process can use. `workers=1` solves in the
-  calling process. Each process needs about 250 MiB with its solve worker, so set
-  a lower count when memory is short.
+  calling process. Each process of lesson 04 needed about 360 MiB with its solve
+  worker at 500 paths, so set a lower count when memory is short.
 - **Small batches.** The first two leaves solve in the calling process, and show
   how long a leaf takes. Processes start only when they save more than 2 seconds.
   A batch of up to 3 leaves, or of cases that take a few milliseconds, starts none.

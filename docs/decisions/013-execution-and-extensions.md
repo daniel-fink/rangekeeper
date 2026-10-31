@@ -101,8 +101,7 @@ processes, not threads. `ExecutionConfig(workers=)` sets another count, and
   imports of the caller, and an extension can come from them.
 - **One solve worker for each process.** Each batch worker holds its own solve
   worker, as in [Worker process](#worker-process). It is about 58 MiB, and it
-  closes at exit. A batch worker with the documents of lesson 04 reached about
-  200 MiB.
+  closes at exit. A batch worker of lesson 04 reached about 300 MiB at 500 paths.
 - **Evidence.** `workers` enters no fingerprint and no Run. The first leaves solve
   in the calling process and the others in workers, by the same `solve_leaf`.
   Results return by position, so the finish order has no effect. The calling
@@ -148,7 +147,8 @@ processes, not threads. `ExecutionConfig(workers=)` sets another count, and
   takes 37 ms to make the Model again, for each leaf.
 - **What stays serial.** Composition and the one validation of the whole tree
   (`validate_executed`, about 60 ms for each leaf) run in the calling process. They
-  limit the gain.
+  limit the gain: on 20 cores, lesson 04 takes 21.1 s at 40 paths against 113.2 s with
+  `workers=1`, and 157 s at 500 paths against about 1,410 s (projected).
 
 ### Extension points
 
