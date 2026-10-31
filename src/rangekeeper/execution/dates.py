@@ -55,7 +55,7 @@ def settle(binding: Binding) -> Binding:
     if not binding.date_unknowns:
         if not any(_reads_dates(item, binding) for item in binding.assertions):
             return binding
-    dates = _determined(binding)
+    dates = determined(binding)
     free = set(binding.date_unknowns) - dates.keys()
     settled = replace(
         binding,
@@ -109,7 +109,7 @@ def decide(
     return compare_dates(node.operator, left, right)
 
 
-def _determined(binding: Binding) -> dict[UUID, DateValue]:
+def determined(binding: Binding) -> dict[UUID, DateValue]:
     """Return the fixed dates and each date that a date equation determines."""
     dates = dict(binding.dates)
     free = set(binding.date_unknowns)
@@ -175,4 +175,4 @@ def _false() -> Expression:
     return Expression(id=uuid4(), kind=ExpressionKind.BOOLEAN, boolean=False)
 
 
-__all__ = ["decide", "settle"]
+__all__ = ["decide", "determined", "settle"]

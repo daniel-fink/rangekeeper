@@ -10,6 +10,7 @@ Every error takes its message first and each field by keyword. The fields of
 """
 
 from collections.abc import Callable, Iterable, Mapping
+from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypedDict, Unpack
 from uuid import UUID
@@ -402,6 +403,63 @@ class NumericalError(RangekeeperError, ValueError):
     """
 
     code = Code.NUMERICAL_FAILURE
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        values: Mapping[str, Any] | None = None,
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        super().__init__(message, **fields)
+        self.values = dict(values or {})
+
+    def _fields(self) -> dict[str, Any]:
+        return {**super()._fields(), "values": self.values}
+
+
+class AvailabilityError(RangekeeperError, ValueError):
+    """A rule reads a value that is not known on its window date (ADR-021).
+
+    ``key`` is the key of the value that the rule decides. ``available_on`` is
+    the date on which the observation becomes known, when it ever does, and
+    ``decision_date`` the window date that reads it, when there is one.
+    """
+
+    code = Code.OBSERVATION_UNAVAILABLE
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        key: str | None = None,
+        available_on: date | None = None,
+        decision_date: date | None = None,
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        super().__init__(message, **fields)
+        self.key = key
+        self.available_on = available_on
+        self.decision_date = decision_date
+
+    def _fields(self) -> dict[str, Any]:
+        return {
+            **super()._fields(),
+            "key": self.key,
+            "available_on": self.available_on,
+            "decision_date": self.decision_date,
+        }
+
+
+class DecisionError(RangekeeperError, ValueError):
+    """The decisions of a case's rules cannot stand (ADR-021).
+
+    The code is ``decision_changes_past``, ``provisional_infeasible`` or
+    ``rule_trace``. ``values`` name the decision: the key, its decision date and
+    the Movement, date, constraint or check that fails.
+    """
+
+    code = Code.DECISION_CHANGES_PAST
 
     def __init__(
         self,

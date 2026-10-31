@@ -1,9 +1,9 @@
 """One leaf attempt: run the pure stages in order and collect their evidence."""
 
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import cast
 from uuid import UUID, uuid4
 
@@ -29,9 +29,18 @@ from rangekeeper.execution.errors import (
 )
 from rangekeeper.execution.implementation import fingerprint
 from rangekeeper.execution.outcome import Outcome
+from rangekeeper.execution.rule.sequence import (
+    Decisions,
+    Solver,
+    check_past,
+    run_rules,
+)
+from rangekeeper.market.paths import Paths
 from rangekeeper.model import Model
-from rangekeeper.quantity import UnitSystem, unit_systems
+from rangekeeper.quantity import Quantity, UnitSystem, unit_systems
 from rangekeeper.run import ImplementationKind, StepKind
+from rangekeeper.run._rule.availability import path_amounts, path_known
+from rangekeeper.run._rule.trace import TraceFacts, candidate_values, check_trace
 from rangekeeper.schema.records import (
     CompletionStatus,
     Diagnostic,
@@ -50,6 +59,8 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import RangekeeperError, ValidationError
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.specification import Composition, Specification
+from rangekeeper.specification._paths import load as load_paths
+from rangekeeper.specification.rule._query import RuleQuery
 
 
 def _now() -> str:
@@ -62,6 +73,10 @@ class Attempt:
     It calls the pure stages in order: validate, bind roles, build the problem,
     solve, make a candidate, verify and assemble. It maps each expected failure
     to a status, so a failure still gives a finalized Run. It stores nothing.
+
+    ``rules`` are the rules of the case and ``parameters`` the values that they
+    read. With rules, the rules stage follows ``bind_roles`` (ADR-021) and
+    ``decisions`` holds its result; the trace check runs on the candidate.
     """
 
     def __init__(
@@ -72,8 +87,12 @@ class Attempt:
         config: ExecutionConfig,
         backend: Backend,
         resolver: DocumentResolver,
+        rules: Sequence[RuleQuery] = (),
+        parameters: Mapping[str, Quantity] | None = None,
     ) -> None:
         self.config, self.backend = config, backend
+        self.rules, self.parameters = tuple(rules), dict(parameters or {})
+        self.decisions: Decisions | None = None
         self.units: UnitSystem | None = config.units
         self.specification, self.view = specification, view
         self.resolver = resolver
@@ -211,7 +230,7 @@ class Attempt:
         # The date equations determine dates first (#280); then each Flow
         # equation and equation function is written period by period (#276).
         # The candidate and verification keep every original assertion.
-        bound = self.binding
+        bound = self.decide(self.binding)
         settled = dates.settle(bound)
         self.binding = expansion.expand(replace(settled, assertions=bound.assertions))
         staged = staging.stage(
@@ -245,6 +264,71 @@ class Attempt:
             )
         self.checkpoint()
         return staged
+
+    def decide(self, binding: preparation.Binding) -> preparation.Binding:
+        """Run the rules stage, and return ``binding`` with the decided values fixed."""
+        if not self.rules:
+            return binding
+        assert self.limits is not None
+        self.decisions = run_rules(
+            binding=binding,
+            rules=self.rules,
+            parameters=self.parameters,
+            paths=self.paths(binding),
+            solver=Solver(
+                backend=self.backend,
+                config=self.config,
+                limits=self.limits,
+                checkpoint=self.checkpoint,
+            ),
+        )
+        self.trace.append(
+            Step(
+                kind=StepKind.SOLVE,
+                at=_now(),
+                message=f"Rules decided {len(self.decisions.decided)} values with "
+                f"{self.decisions.solves} provisional solves.",
+            )
+        )
+        return self.decisions.bind(binding)
+
+    def paths(self, binding: preparation.Binding) -> Paths | None:
+        """Return the Paths document of the case's path, when it has one."""
+        path = binding.composition.requirements.path
+        return None if path is None else load_paths(self.resolver, path.paths)
+
+    def check_decisions(self, candidate: Model) -> None:
+        """Check the candidate against the decisions and their trace (ADR-021)."""
+        if self.decisions is None:
+            return
+        assert self.binding is not None
+        tolerances = self.config.tolerances
+        check_past(
+            binding=self.binding,
+            decisions=self.decisions,
+            solved=candidate_values(candidate),
+            tolerances=tolerances,
+        )
+        path = self.binding.composition.requirements.path
+        paths = self.paths(self.binding)
+        known: Mapping[UUID, date] = {}
+        amounts: Mapping[UUID, Quantity] = {}
+        if path is not None and paths is not None:
+            known = path_known(path=path, paths=paths)
+            amounts = path_amounts(path=path, paths=paths)
+        check_trace(
+            rules=self.rules,
+            checks=self.decisions.checks,
+            facts=TraceFacts(
+                candidate=candidate,
+                path_known=known,
+                path_amounts=amounts,
+                parameters=self.parameters,
+                units=self.binding.units,
+                absolute=tolerances.absolute,
+                relative=tolerances.relative,
+            ),
+        )
 
     def solve_stage(self, problem: compiler.AffineProblem) -> BackendResult:
         """Solve the affine rows of an earlier stage; the result is not a candidate."""
@@ -339,6 +423,7 @@ class Attempt:
             )
             self.findings.extend(checked.diagnostics)
             if checked.passed:
+                self.check_decisions(candidate)
                 if not problem.analysis.underdetermined:
                     acceptance.check_fixed_irrs(
                         binding=self.binding, candidate=candidate

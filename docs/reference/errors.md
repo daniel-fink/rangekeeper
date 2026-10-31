@@ -107,6 +107,10 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | `specification_invalid` | `issues`: each validation issue of the attempt, with its `code`, `message`, `document`, `path`, `targets`, `values` and `evidence` |
 | A failure from another error | `path`, when the error has one; `targets`, when it names more than one record. One target is the diagnostic's `target` |
 | `constraint_residual` | `equation`: the text of the Constraint that was checked. `formulation`: the Formulation that groups an equation of the Model, by its name (such as `"Funding"`) or, for an entity's default Formulation, its code. `target` is the Constraint |
+| `observation_unavailable` | `key`, `available_on` and `decision_date`, from `AvailabilityError` |
+| `decision_changes_past` | `decision`, and `movement` with `before`, `earlier` and `later`, or `decision_date`, `movement` and `date` for a date |
+| `provisional_infeasible` | `constraints`: the text of the date constraints that the decisions break |
+| `rule_trace` | `key`, `on` and `result` of the record that the trace check rejects |
 | `replay_mismatch` | In a `Replay`, not in a Run ([replay a stored Run](execution.md#replay-a-stored-run)). `case`: the case key, or None for a leaf Run. `stored` and `replayed`: the two results as text: a `Status` value, a number of outputs, or an amount, a date or `never`, with None for an unresolved amount. `key`: the key of the Value, as `Model.key_of` gives it. `on`: the Period of a Flow amount as an ISO interval, or its date. For other cases, `stored` and `replayed` are the two lists of case keys |
 
 ```python
@@ -168,6 +172,8 @@ all of its fields through `pickle`.
 | `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
 | `model.system`: `SelectionError`, `RollupError` | `ValueError` | `SELECTION`, `ROLLUP` |
 | `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
+| `AvailabilityError` | `ValueError` | `OBSERVATION_UNAVAILABLE`. A rule reads a value that is not known on its window date. `key` is the decided value; `available_on` and `decision_date` are the dates, when they exist ([sequential rules](market-paths-and-rules.md#failures)) |
+| `DecisionError` | `ValueError` | `DECISION_CHANGES_PAST`, `PROVISIONAL_INFEASIBLE` or `RULE_TRACE`. The decisions of a case's rules cannot stand. `values` name the decision and what fails ([sequential rules](market-paths-and-rules.md#failures)) |
 | `NumericalError` | `ValueError` | `NUMERICAL_FAILURE`, `NUMERICAL_REJECTION` when verification rejected a candidate, or the code of a more specific failure: `ACTIVE_SIDE`, or `NO_SIGN_CHANGE` for an IRR of amounts without a real change of sign. `values` gives the named values of the failure, as in a [Run diagnostic](#run-diagnostics) |
 | `BackendUnavailableError`, `AttemptDeadlineError` | `RuntimeError` | `BACKEND_UNAVAILABLE`, `ATTEMPT_DEADLINE` |
 | `PublishedFileError` | `OSError` | `PUBLISHED_FILE`. `file` is the published file; the `OSError` that stopped the confirmation is the cause |

@@ -128,6 +128,16 @@ class Code(StrEnum):
     # The replay of a stored Run (``rk.execution.replay``): solved again, a
     # case has another status, other outputs or another value.
     REPLAY_MISMATCH = "replay_mismatch"
+    # Rules decided during the solve (ADR-021): a rule that reads a later rule or
+    # a free input, an observation not known on its window date, a decision that
+    # moves an earlier Movement, an infeasible provisional solve, and a decision
+    # trace that its check rejects.
+    RULE_ORDER = "rule_order"
+    RULE_READS_UNKNOWN = "rule_reads_unknown"
+    OBSERVATION_UNAVAILABLE = "observation_unavailable"
+    DECISION_CHANGES_PAST = "decision_changes_past"
+    PROVISIONAL_INFEASIBLE = "provisional_infeasible"
+    RULE_TRACE = "rule_trace"
 
     # Errors outside validation and execution.
     DECODE = "decode"
