@@ -13,7 +13,7 @@ from rangekeeper.run._rule.predicate import evaluate as evaluate_expression
 from rangekeeper.schema.records import (
     ActionKind,
     Assignment,
-    RuleEvidence,
+    DecisionEvidence,
     RuleSet,
 )
 from rangekeeper.shared.errors import ContractError
@@ -47,7 +47,7 @@ def _decide(decision, observation, *, units):
             )
         elif action.kind is ActionKind.TERMINATE:
             terminated = True
-    return RuleEvidence(
+    return DecisionEvidence(
         decision=decision.id,
         at=decision.at,
         rule=selected.id if selected else None,
@@ -77,7 +77,7 @@ def evaluate(
     declaration = rules.to_data()
     validate_rules(declaration, scope=scope, units_compatible=units.compatible)
     controlled = {target.target for target in rules.targets}
-    outcomes: list[RuleEvidence] = []
+    outcomes: list[DecisionEvidence] = []
     prior: dict[UUID, tuple[Quantity, date]] = {}
     for decision in rules.decisions:
         observation = _observe(

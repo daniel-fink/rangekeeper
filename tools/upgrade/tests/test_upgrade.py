@@ -67,7 +67,7 @@ def test_documents_convert_to_valid_1_0_documents():
     specification = documents["specification.yaml"].to_data()
     assert specification["rules"] == load("specification.yaml")["policy"]
     run = documents["run.json"]
-    assert run.report.rule_evidence
+    assert run.report.decision_evidence
     assert validate(run=run, resolver=store).valid
 
 

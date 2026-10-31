@@ -289,12 +289,28 @@ A Specification declares its rules as queries:
 `rk.specification.Window(...).where(condition=...).first(otherwise=...)`, fixed with
 `fix(key=rule)` ([declare a rule](../reference/market-paths-and-rules.md#declare-a-rule)).
 A condition writes equality with `==`, and equation text keeps `=`.
-`rk.Specification.rules` gives the rules by key. This does not change what `solve`
-does for a Specification without these rules. `Specification.declared_rules` is a new
-optional field, and the Bundle slot map changes with it. The dated `RuleSet` slice is
-still there, and a later step of
+`rk.Specification.rules` gives the rules by key. `rk.execution.solve` runs them.
+This does not change what `solve` does for a Specification without these rules.
+`Specification.declared_rules` is a new optional field, and the Bundle slot map
+changes with it. The dated `RuleSet` slice is still there, and a later step of
 [#300](https://github.com/daniel-fink/rangekeeper/issues/300) removes it.
 `rk.duration.PeriodTiming` keeps its members, and is now generated from the schema.
+
+### Decision traces in the Run
+
+A case with rules records [its decision trace](../reference/market-paths-and-rules.md#the-decision-trace).
+`outcome.decisions` and `outcome.case(key=).trace` read it, and `run.rule_evidence`
+gives the stored record. These change:
+
+- `Report.rule_evidence` is now one `RuleEvidence`, the decision trace of the case.
+  The list that the dated `RuleSet` slice writes moves to `Report.decision_evidence`,
+  and its record `RuleEvidence` is now `DecisionEvidence`, also in
+  `rangekeeper.specification.rule`. The conversion tool writes `outcomes`, and the
+  `rule_evidence` of a 1.0.0a2 document, to that field.
+- `rk.execution.DecisionResult` is generated from the schema. It keeps its members.
+  `DecisionResult.of` is gone, because a `Check` records its result.
+- `rk.execution.replay` also compares the decision traces, and `rk.run.validate`
+  checks the trace of each stored Run that has an output.
 
 ### Rule failures
 
@@ -303,7 +319,7 @@ still there, and a later step of
 `observation_unavailable`, `decision_changes_past`, `provisional_infeasible` and
 `rule_trace` ([sequential rules](../reference/market-paths-and-rules.md#failures)).
 Code that matches every value of `Code` must add them. `rk.execution.DecisionResult`
-keeps its name. Its members and `of` do not change.
+keeps its name and its members.
 
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
@@ -400,7 +416,7 @@ For each stored 0.x document or Bundle, choose one route:
 The conversion tool reads Model 0.7.0 and 0.8.0, Specification 0.7.0 and Run
 0.4.0, and Bundles that hold them. It changes the format version, the Period and
 Span fields `start` and `end`, `policy` to `rules`, `outcomes` to
-`rule_evidence`, and currency magnitudes to decimal text. A query `Filter` with a
+`decision_evidence`, and currency magnitudes to decimal text. A query `Filter` with a
 `classification`, and each Label `Criterion`, gets `exclusive: true`, so it keeps
 the exact match of the 0.x formats
 ([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). Each document

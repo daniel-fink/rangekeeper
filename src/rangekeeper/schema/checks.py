@@ -186,6 +186,59 @@ def check_Characteristics(d, fields=None):
     return issues
 
 
+def check_Check(d, fields=None):
+    """Check the fields and rules of one Check node."""
+    issues = []
+    if 'target' not in d:
+        issues.append(('structure.required', 'target is required', ''))
+    if 'key' not in d:
+        issues.append(('structure.required', 'key is required', ''))
+    if 'date' not in d:
+        issues.append(('structure.required', 'date is required', ''))
+    if 'result' not in d:
+        issues.append(('structure.required', 'result is required', ''))
+    for name in d:
+        if name not in ('condition', 'date', 'earliest', 'key', 'latest', 'observations', 'result', 'target', 'value'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'condition' in d and (fields is None or 'condition' in fields):
+        v = d['condition']
+        if not ((type(v) is bool or v is None)):
+            issues.append(('structure.value', 'invalid condition', '/condition'))
+    if 'date' in d and (fields is None or 'date' in fields):
+        v = d['date']
+        if not ((type(v) is not str or _date(v)) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid date', '/date'))
+    if 'earliest' in d and (fields is None or 'earliest' in fields):
+        v = d['earliest']
+        if not (((isinstance(v, Mapping)) or ((v is None)))):
+            issues.append(('structure.value', 'invalid earliest', '/earliest'))
+    if 'key' in d and (fields is None or 'key' in fields):
+        v = d['key']
+        if not ((type(v) is str)):
+            issues.append(('structure.value', 'invalid key', '/key'))
+    if 'latest' in d and (fields is None or 'latest' in fields):
+        v = d['latest']
+        if not (((isinstance(v, Mapping)) or ((v is None)))):
+            issues.append(('structure.value', 'invalid latest', '/latest'))
+    if 'observations' in d and (fields is None or 'observations' in fields):
+        v = d['observations']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
+            issues.append(('structure.value', 'invalid observations', '/observations'))
+    if 'result' in d and (fields is None or 'result' in fields):
+        v = d['result']
+        if not ((v in ('decided', 'not_met', 'skipped', 'otherwise') and (type(v) is str))):
+            issues.append(('structure.value', 'invalid result', '/result'))
+    if 'target' in d and (fields is None or 'target' in fields):
+        v = d['target']
+        if not (isinstance(v, Mapping)):
+            issues.append(('structure.value', 'invalid target', '/target'))
+    if 'value' in d and (fields is None or 'value' in fields):
+        v = d['value']
+        if not (((isinstance(v, Mapping)) or ((v is None)))):
+            issues.append(('structure.value', 'invalid value', '/value'))
+    return issues
+
+
 def check_Claim(d, fields=None):
     """Check the fields and rules of one Claim node."""
     issues = []
@@ -339,6 +392,39 @@ def check_Criterion(d, fields=None):
     return issues
 
 
+def check_DecidedValue(d, fields=None):
+    """Check the fields and rules of one DecidedValue node."""
+    issues = []
+    if 'target' not in d:
+        issues.append(('structure.required', 'target is required', ''))
+    if 'key' not in d:
+        issues.append(('structure.required', 'key is required', ''))
+    if 'value' not in d:
+        issues.append(('structure.required', 'value is required', ''))
+    if 'decision_date' not in d:
+        issues.append(('structure.required', 'decision_date is required', ''))
+    for name in d:
+        if name not in ('decision_date', 'key', 'target', 'value'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'decision_date' in d and (fields is None or 'decision_date' in fields):
+        v = d['decision_date']
+        if not ((type(v) is not str or _date(v)) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid decision_date', '/decision_date'))
+    if 'key' in d and (fields is None or 'key' in fields):
+        v = d['key']
+        if not ((type(v) is str)):
+            issues.append(('structure.value', 'invalid key', '/key'))
+    if 'target' in d and (fields is None or 'target' in fields):
+        v = d['target']
+        if not (isinstance(v, Mapping)):
+            issues.append(('structure.value', 'invalid target', '/target'))
+    if 'value' in d and (fields is None or 'value' in fields):
+        v = d['value']
+        if not (isinstance(v, Mapping)):
+            issues.append(('structure.value', 'invalid value', '/value'))
+    return issues
+
+
 def check_Decision(d, fields=None):
     """Check the fields and rules of one Decision node."""
     issues = []
@@ -375,6 +461,53 @@ def check_Decision(d, fields=None):
         v = d['rules']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
             issues.append(('structure.value', 'invalid rules', '/rules'))
+    return issues
+
+
+def check_DecisionEvidence(d, fields=None):
+    """Check the fields and rules of one DecisionEvidence node."""
+    issues = []
+    if 'decision' not in d:
+        issues.append(('structure.required', 'decision is required', ''))
+    if 'at' not in d:
+        issues.append(('structure.required', 'at is required', ''))
+    if 'observations' not in d:
+        issues.append(('structure.required', 'observations is required', ''))
+    if 'assignments' not in d:
+        issues.append(('structure.required', 'assignments is required', ''))
+    if 'terminated' not in d:
+        issues.append(('structure.required', 'terminated is required', ''))
+    for name in d:
+        if name not in ('assignments', 'at', 'decision', 'observations', 'rule', 'terminated', 'termination_reason'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'assignments' in d and (fields is None or 'assignments' in fields):
+        v = d['assignments']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid assignments', '/assignments'))
+    if 'at' in d and (fields is None or 'at' in fields):
+        v = d['at']
+        if not ((type(v) is not str or _date(v)) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid at', '/at'))
+    if 'decision' in d and (fields is None or 'decision' in fields):
+        v = d['decision']
+        if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
+            issues.append(('structure.value', 'invalid decision', '/decision'))
+    if 'observations' in d and (fields is None or 'observations' in fields):
+        v = d['observations']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
+            issues.append(('structure.value', 'invalid observations', '/observations'))
+    if 'rule' in d and (fields is None or 'rule' in fields):
+        v = d['rule']
+        if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid rule', '/rule'))
+    if 'terminated' in d and (fields is None or 'terminated' in fields):
+        v = d['terminated']
+        if not ((type(v) is bool)):
+            issues.append(('structure.value', 'invalid terminated', '/terminated'))
+    if 'termination_reason' in d and (fields is None or 'termination_reason' in fields):
+        v = d['termination_reason']
+        if not ((type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid termination_reason', '/termination_reason'))
     return issues
 
 
@@ -1282,6 +1415,41 @@ def check_Objective(d, fields=None):
     return issues
 
 
+def check_Observation(d, fields=None):
+    """Check the fields and rules of one Observation node."""
+    issues = []
+    if 'name' not in d:
+        issues.append(('structure.required', 'name is required', ''))
+    if 'target' not in d:
+        issues.append(('structure.required', 'target is required', ''))
+    if 'source' not in d:
+        issues.append(('structure.required', 'source is required', ''))
+    for name in d:
+        if name not in ('available_on', 'name', 'source', 'target', 'value'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'available_on' in d and (fields is None or 'available_on' in fields):
+        v = d['available_on']
+        if not ((type(v) is not str or _date(v)) and (type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid available_on', '/available_on'))
+    if 'name' in d and (fields is None or 'name' in fields):
+        v = d['name']
+        if not ((type(v) is str)):
+            issues.append(('structure.value', 'invalid name', '/name'))
+    if 'source' in d and (fields is None or 'source' in fields):
+        v = d['source']
+        if not ((v in ('path', 'fixed', 'parameter', 'decided', 'solved') and (type(v) is str))):
+            issues.append(('structure.value', 'invalid source', '/source'))
+    if 'target' in d and (fields is None or 'target' in fields):
+        v = d['target']
+        if not (isinstance(v, Mapping)):
+            issues.append(('structure.value', 'invalid target', '/target'))
+    if 'value' in d and (fields is None or 'value' in fields):
+        v = d['value']
+        if not (((isinstance(v, Mapping)) or ((v is None)))):
+            issues.append(('structure.value', 'invalid value', '/value'))
+    return issues
+
+
 def check_ObservationBinding(d, fields=None):
     """Check the fields and rules of one ObservationBinding node."""
     issues = []
@@ -1835,15 +2003,19 @@ def check_Report(d, fields=None):
     if 'status' not in d:
         issues.append(('structure.required', 'status is required', ''))
     for name in d:
-        if name not in ('diagnostics', 'rule_evidence', 'runtime', 'status', 'trace'):
+        if name not in ('decision_evidence', 'diagnostics', 'rule_evidence', 'runtime', 'status', 'trace'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'decision_evidence' in d and (fields is None or 'decision_evidence' in fields):
+        v = d['decision_evidence']
+        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
+            issues.append(('structure.value', 'invalid decision_evidence', '/decision_evidence'))
     if 'diagnostics' in d and (fields is None or 'diagnostics' in fields):
         v = d['diagnostics']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
             issues.append(('structure.value', 'invalid diagnostics', '/diagnostics'))
     if 'rule_evidence' in d and (fields is None or 'rule_evidence' in fields):
         v = d['rule_evidence']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
+        if not ((isinstance(v, Mapping))):
             issues.append(('structure.value', 'invalid rule_evidence', '/rule_evidence'))
     if 'runtime' in d and (fields is None or 'runtime' in fields):
         v = d['runtime']
@@ -1937,47 +2109,33 @@ def check_RuleDeclaration(d, fields=None):
 def check_RuleEvidence(d, fields=None):
     """Check the fields and rules of one RuleEvidence node."""
     issues = []
-    if 'decision' not in d:
-        issues.append(('structure.required', 'decision is required', ''))
-    if 'at' not in d:
-        issues.append(('structure.required', 'at is required', ''))
-    if 'observations' not in d:
-        issues.append(('structure.required', 'observations is required', ''))
-    if 'assignments' not in d:
-        issues.append(('structure.required', 'assignments is required', ''))
-    if 'terminated' not in d:
-        issues.append(('structure.required', 'terminated is required', ''))
+    if 'checks' not in d:
+        issues.append(('structure.required', 'checks is required', ''))
+    if 'decided' not in d:
+        issues.append(('structure.required', 'decided is required', ''))
+    if 'provisional_solves' not in d:
+        issues.append(('structure.required', 'provisional_solves is required', ''))
+    if 'verified' not in d:
+        issues.append(('structure.required', 'verified is required', ''))
     for name in d:
-        if name not in ('assignments', 'at', 'decision', 'observations', 'rule', 'terminated', 'termination_reason'):
+        if name not in ('checks', 'decided', 'provisional_solves', 'verified'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
-    if 'assignments' in d and (fields is None or 'assignments' in fields):
-        v = d['assignments']
+    if 'checks' in d and (fields is None or 'checks' in fields):
+        v = d['checks']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid assignments', '/assignments'))
-    if 'at' in d and (fields is None or 'at' in fields):
-        v = d['at']
-        if not ((type(v) is not str or _date(v)) and (type(v) is str)):
-            issues.append(('structure.value', 'invalid at', '/at'))
-    if 'decision' in d and (fields is None or 'decision' in fields):
-        v = d['decision']
-        if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
-            issues.append(('structure.value', 'invalid decision', '/decision'))
-    if 'observations' in d and (fields is None or 'observations' in fields):
-        v = d['observations']
+            issues.append(('structure.value', 'invalid checks', '/checks'))
+    if 'decided' in d and (fields is None or 'decided' in fields):
+        v = d['decided']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid observations', '/observations'))
-    if 'rule' in d and (fields is None or 'rule' in fields):
-        v = d['rule']
-        if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str or v is None)):
-            issues.append(('structure.value', 'invalid rule', '/rule'))
-    if 'terminated' in d and (fields is None or 'terminated' in fields):
-        v = d['terminated']
+            issues.append(('structure.value', 'invalid decided', '/decided'))
+    if 'provisional_solves' in d and (fields is None or 'provisional_solves' in fields):
+        v = d['provisional_solves']
+        if not ((not _number(v) or v >= 0) and (_integer(v))):
+            issues.append(('structure.value', 'invalid provisional_solves', '/provisional_solves'))
+    if 'verified' in d and (fields is None or 'verified' in fields):
+        v = d['verified']
         if not ((type(v) is bool)):
-            issues.append(('structure.value', 'invalid terminated', '/terminated'))
-    if 'termination_reason' in d and (fields is None or 'termination_reason' in fields):
-        v = d['termination_reason']
-        if not ((type(v) is str or v is None)):
-            issues.append(('structure.value', 'invalid termination_reason', '/termination_reason'))
+            issues.append(('structure.value', 'invalid verified', '/verified'))
     return issues
 
 
@@ -2406,6 +2564,29 @@ def check_Taxonomy(d, fields=None):
     return issues
 
 
+def check_TraceValue(d, fields=None):
+    """Check the fields and rules of one TraceValue node."""
+    issues = []
+    for name in d:
+        if name not in ('date', 'never', 'quantity'):
+            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
+    if 'date' in d and (fields is None or 'date' in fields):
+        v = d['date']
+        if not ((type(v) is not str or _date(v)) and (type(v) is str or v is None)):
+            issues.append(('structure.value', 'invalid date', '/date'))
+    if 'never' in d and (fields is None or 'never' in fields):
+        v = d['never']
+        if not ((v in ('never',) and (type(v) is str))):
+            issues.append(('structure.value', 'invalid never', '/never'))
+    if 'quantity' in d and (fields is None or 'quantity' in fields):
+        v = d['quantity']
+        if not (((isinstance(v, Mapping)) or ((v is None)))):
+            issues.append(('structure.value', 'invalid quantity', '/quantity'))
+    if not ((sum(map(bool, (('quantity' in d), ('date' in d), ('never' in d),))) == 1)):
+        issues.append(('structure.rule', 'a TraceValue rule is not met', ''))
+    return issues
+
+
 def check_Traversal(d, fields=None):
     """Check the fields and rules of one Traversal node."""
     issues = []
@@ -2541,12 +2722,15 @@ CHECKS = {
     'Binding': check_Binding,
     'Call': check_Call,
     'Characteristics': check_Characteristics,
+    'Check': check_Check,
     'Claim': check_Claim,
     'Classification': check_Classification,
     'Constraint': check_Constraint,
     'ContentEntry': check_ContentEntry,
     'Criterion': check_Criterion,
+    'DecidedValue': check_DecidedValue,
     'Decision': check_Decision,
+    'DecisionEvidence': check_DecisionEvidence,
     'Definitions': check_Definitions,
     'Diagnostic': check_Diagnostic,
     'Distribution': check_Distribution,
@@ -2575,6 +2759,7 @@ CHECKS = {
     'Model': check_Model,
     'Movement': check_Movement,
     'Objective': check_Objective,
+    'Observation': check_Observation,
     'ObservationBinding': check_ObservationBinding,
     'ObservedQuantity': check_ObservedQuantity,
     'Parameter': check_Parameter,
@@ -2611,6 +2796,7 @@ CHECKS = {
     'Step': check_Step,
     'System': check_System,
     'Taxonomy': check_Taxonomy,
+    'TraceValue': check_TraceValue,
     'Traversal': check_Traversal,
     'Value': check_Value,
     'ValueTest': check_ValueTest,

@@ -111,20 +111,25 @@ def solve(
     return Solution(values=values, dates=settled.dates)
 
 
-def _check_dates(binding: Binding, *, settled: Binding) -> None:
-    """Raise when the fixed dates alone break a date constraint, with no solve."""
+def broken_dates(binding: Binding, *, settled: Binding) -> tuple[str, ...]:
+    """Return the text of each date constraint that the fixed dates alone break."""
     original = {item.constraint.id: item for item in binding.assertions}
-    broken = [
+    return tuple(
         binding.text(original[item.constraint.id].predicate)
         for item in settled.assertions
         if item.predicate.kind is ExpressionKind.BOOLEAN and not item.predicate.boolean
-    ]
+    )
+
+
+def _check_dates(binding: Binding, *, settled: Binding) -> None:
+    """Raise when the fixed dates alone break a date constraint, with no solve."""
+    broken = broken_dates(binding, settled=settled)
     if broken:
         raise DecisionError(
             "the decisions so far break " + ", ".join(broken),
             code=Code.PROVISIONAL_INFEASIBLE,
-            values={"constraints": broken},
+            values={"constraints": list(broken)},
         )
 
 
-__all__ = ["Solution", "solve", "with_values"]
+__all__ = ["Solution", "broken_dates", "solve", "with_values"]

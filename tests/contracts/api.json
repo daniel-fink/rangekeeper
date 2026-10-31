@@ -70,6 +70,7 @@
     "paths": "property",
     "record": "property",
     "report": "property",
+    "rule_evidence": "property",
     "to_data": "method (self) -> dict[str, object]",
     "validate": "method (self, *, resolver: rangekeeper.shared.references.DocumentResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
@@ -693,12 +694,12 @@
   "Binding": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple(), dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None",
+    "__init__": "method (self, *, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], decision_evidence: tuple[rangekeeper.schema.records.DecisionEvidence, ...] = tuple(), dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None",
     "key": "method (self, reference: rangekeeper.schema.records.Reference) -> str",
     "text": "method (self, expression: rangekeeper.schema.records.Expression) -> str"
    },
    "module": "rangekeeper.execution.preparation",
-   "signature": "(*, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], rule_evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...] = tuple(), dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None"
+   "signature": "(*, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], decision_evidence: tuple[rangekeeper.schema.records.DecisionEvidence, ...] = tuple(), dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "Cases": {
    "kind": "class",
@@ -728,7 +729,27 @@
     "SKIPPED",
     "OTHERWISE"
    ],
-   "module": "rangekeeper.run._rule.result"
+   "module": "rangekeeper.schema.enums"
+  },
+  "DecisionRow": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, case: str | None, key: str, decision_date: datetime.date, result: rangekeeper.schema.enums.DecisionResult, condition: bool | None, value: rangekeeper.quantity.Quantity | datetime.date | rangekeeper.schema.enums.Never | None, observed: collections.abc.Mapping[str, rangekeeper.quantity.Quantity | datetime.date | rangekeeper.schema.enums.Never | None], observations: tuple[rangekeeper.execution.decisions.ObservationRow, ...]) -> None"
+   },
+   "module": "rangekeeper.execution.decisions",
+   "signature": "(*, case: str | None, key: str, decision_date: datetime.date, result: rangekeeper.schema.enums.DecisionResult, condition: bool | None, value: rangekeeper.quantity.Quantity | datetime.date | rangekeeper.schema.enums.Never | None, observed: collections.abc.Mapping[str, rangekeeper.quantity.Quantity | datetime.date | rangekeeper.schema.enums.Never | None], observations: tuple[rangekeeper.execution.decisions.ObservationRow, ...]) -> None"
+  },
+  "DecisionTable": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, rows: collections.abc.Iterable[rangekeeper.execution.decisions.DecisionRow], keys: collections.abc.Iterable[str] | None = None) -> None",
+    "keys": "property",
+    "observations": "property",
+    "table": "property",
+    "where": "method (self, *, key: str | None = None, result: rangekeeper.schema.enums.DecisionResult | None = None) -> DecisionTable"
+   },
+   "module": "rangekeeper.execution.decisions",
+   "signature": "(*, rows: collections.abc.Iterable[rangekeeper.execution.decisions.DecisionRow], keys: collections.abc.Iterable[str] | None = None) -> None"
   },
   "Distribution": {
    "kind": "class",
@@ -784,11 +805,31 @@
    "module": "rangekeeper.execution.distribution",
    "signature": "()"
   },
+  "ObservationRow": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, case: str | None, key: str, decision_date: datetime.date, name: str, target: uuid.UUID, value: rangekeeper.quantity.Quantity | datetime.date | rangekeeper.schema.enums.Never, available_on: datetime.date, source: rangekeeper.schema.enums.ObservationSource) -> None"
+   },
+   "module": "rangekeeper.execution.decisions",
+   "signature": "(*, case: str | None, key: str, decision_date: datetime.date, name: str, target: uuid.UUID, value: rangekeeper.quantity.Quantity | datetime.date | rangekeeper.schema.enums.Never, available_on: datetime.date, source: rangekeeper.schema.enums.ObservationSource) -> None"
+  },
+  "ObservationSource": {
+   "kind": "enum",
+   "members": [
+    "PATH",
+    "FIXED",
+    "PARAMETER",
+    "DECIDED",
+    "SOLVED"
+   ],
+   "module": "rangekeeper.schema.enums"
+  },
   "Outcome": {
    "kind": "class",
    "members": {
     "__init__": "method (self, *, run: rangekeeper.run.run.Run, outputs: tuple[rangekeeper.model.model.Model, ...] = tuple(), cases: tuple['Outcome', ...] = tuple(), key: str | None = None) -> None",
     "case": "method (self, *, key: str) -> Outcome",
+    "decisions": "property",
     "diagnostics": "property",
     "distribution": "method (self, *, key: str) -> Distribution[Outcome] | DateDistribution",
     "evidence": "property",
@@ -800,6 +841,7 @@
     "status": "property",
     "stream": "method (self, *keys: str) -> rangekeeper.flow.stream.Stream",
     "table": "method (self, *keys: str) -> rangekeeper.shared.table.Table",
+    "trace": "property",
     "walk": "method (self) -> collections.abc.Iterator['Outcome']"
    },
    "module": "rangekeeper.execution.outcome",
@@ -1044,11 +1086,11 @@
   "RuleResult": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None",
+    "__init__": "method (self, *, evidence: tuple[rangekeeper.schema.records.DecisionEvidence, ...]) -> None",
     "assignments": "property"
    },
    "module": "rangekeeper.execution.rule.result",
-   "signature": "(*, evidence: tuple[rangekeeper.schema.records.RuleEvidence, ...]) -> None"
+   "signature": "(*, evidence: tuple[rangekeeper.schema.records.DecisionEvidence, ...]) -> None"
   },
   "evaluate": {
    "kind": "function",
@@ -3148,16 +3190,17 @@
   "Report": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: RuleEvidence | Unset = <Unset>, decision_evidence: tuple[DecisionEvidence, ...] | None | Unset = <Unset>) -> None",
+    "decision_evidence": "property",
     "diagnostics": "property",
-    "replace": "method (self, *, status: RunStatus | Unset = <Unset>, runtime: Runtime | Unset | Omit = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = <Unset>, trace: tuple[Step, ...] | None | Unset | Omit = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, status: RunStatus | Unset = <Unset>, runtime: Runtime | Unset | Omit = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = <Unset>, trace: tuple[Step, ...] | None | Unset | Omit = <Unset>, rule_evidence: RuleEvidence | Unset | Omit = <Unset>, decision_evidence: tuple[DecisionEvidence, ...] | None | Unset | Omit = <Unset>) -> Self",
     "rule_evidence": "property",
     "runtime": "property",
     "status": "property",
     "trace": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: tuple[RuleEvidence, ...] | None | Unset = <Unset>) -> None"
+   "signature": "(*, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: RuleEvidence | Unset = <Unset>, decision_evidence: tuple[DecisionEvidence, ...] | None | Unset = <Unset>) -> None"
   },
   "Run": {
    "kind": "class",
@@ -3170,6 +3213,7 @@
     "paths": "property",
     "record": "property",
     "report": "property",
+    "rule_evidence": "property",
     "to_data": "method (self) -> dict[str, object]",
     "validate": "method (self, *, resolver: rangekeeper.shared.references.DocumentResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.shared.diagnostics.ValidationReport"
    },
@@ -3457,6 +3501,22 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, id: UUID, at: Date, observations: tuple[ObservationBinding, ...], rules: tuple[Rule, ...], fallback: tuple[Action, ...]) -> None"
   },
+  "DecisionEvidence": {
+   "kind": "class",
+   "members": {
+    "__init__": "method (self, *, decision: UUID, at: Date, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...], assignments: tuple[Assignment, ...], terminated: bool, termination_reason: str | None | Unset = <Unset>) -> None",
+    "assignments": "property",
+    "at": "property",
+    "decision": "property",
+    "observations": "property",
+    "replace": "method (self, *, decision: UUID | Unset = <Unset>, at: Date | Unset = <Unset>, rule: UUID | None | Unset | Omit = <Unset>, observations: tuple[ObservedQuantity, ...] | Unset = <Unset>, assignments: tuple[Assignment, ...] | Unset = <Unset>, terminated: bool | Unset = <Unset>, termination_reason: str | None | Unset | Omit = <Unset>) -> Self",
+    "rule": "property",
+    "terminated": "property",
+    "termination_reason": "property"
+   },
+   "module": "rangekeeper.schema.records",
+   "signature": "(*, decision: UUID, at: Date, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...], assignments: tuple[Assignment, ...], terminated: bool, termination_reason: str | None | Unset = <Unset>) -> None"
+  },
   "ObservationBinding": {
    "kind": "class",
    "members": {
@@ -3510,22 +3570,6 @@
    },
    "module": "rangekeeper.schema.records",
    "signature": "(*, target: Reference, condition: Expression, otherwise: Expression, then: Expression | None | Unset = <Unset>, earliest: Expression | None | Unset = <Unset>, latest: Expression | None | Unset = <Unset>, periods: tuple[Period, ...] | None | Unset = <Unset>, timing: PeriodTiming | Unset = <Unset>) -> None"
-  },
-  "RuleEvidence": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, decision: UUID, at: Date, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...], assignments: tuple[Assignment, ...], terminated: bool, termination_reason: str | None | Unset = <Unset>) -> None",
-    "assignments": "property",
-    "at": "property",
-    "decision": "property",
-    "observations": "property",
-    "replace": "method (self, *, decision: UUID | Unset = <Unset>, at: Date | Unset = <Unset>, rule: UUID | None | Unset | Omit = <Unset>, observations: tuple[ObservedQuantity, ...] | Unset = <Unset>, assignments: tuple[Assignment, ...] | Unset = <Unset>, terminated: bool | Unset = <Unset>, termination_reason: str | None | Unset | Omit = <Unset>) -> Self",
-    "rule": "property",
-    "terminated": "property",
-    "termination_reason": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, decision: UUID, at: Date, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...], assignments: tuple[Assignment, ...], terminated: bool, termination_reason: str | None | Unset = <Unset>) -> None"
   },
   "RuleSet": {
    "kind": "class",

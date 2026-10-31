@@ -6,7 +6,7 @@ Each release in `RELEASES` names the stored formats it writes:
   formats that the 0.9 and 0.10 lines and 1.0.0a1 write. The conversion changes
   `metadata.schema_version` to the 1.0.0 document version (#118); the Period and
   Span fields `start_inclusive` and `end_exclusive` to `start` and `end` (#119);
-  `Specification.policy` to `rules` and `Report.outcomes` to `rule_evidence`
+  `Specification.policy` to `rules` and `Report.outcomes` to `decision_evidence`
   (policy to rule, #95); and a magnitude in ISO 4217 currency units to the
   canonical text of its amount, at 15 significant digits (#117, ADR-023).
 - **1.0.0a2**: a Model, Specification or Run 1.0.0 that 1.0.0a2 writes. The
@@ -78,13 +78,13 @@ RELEASES = {
             "Period": {"start_inclusive": "start", "end_exclusive": "end"},
             "Span": {"start_inclusive": "start", "end_exclusive": "end"},
             "Specification": {"policy": "rules"},
-            "Report": {"outcomes": "rule_evidence"},
+            "Report": {"outcomes": "decision_evidence"},
         },
     ),
     "1.0.0a2": _release(
         "alpha2_slots.json",
         versions={kind: ("1.0.0",) for kind in ("Model", "Specification", "Run")},
-        renamed={},
+        renamed={"Report": {"rule_evidence": "decision_evidence"}},
     ),
 }
 # Records whose Classification matched exactly in every release in RELEASES.

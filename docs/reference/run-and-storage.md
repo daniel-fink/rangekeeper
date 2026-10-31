@@ -144,8 +144,13 @@ Output checks apply their explicit numerical-field allowlist separately. Store
 revision conflicts use schema equivalence; that does not relax historical evidence.
 See the [comparison rules](identity.md#comparison-rules).
 
-Rule evidence is stored as `Report.rule_evidence`, containing `RuleEvidence` records
-that name their declared `Decision`. Recorded controls cannot substitute for an
+A case with rules stores [its decision trace](market-paths-and-rules.md#the-decision-trace)
+as one `RuleEvidence` in `Report.rule_evidence`. An output needs a verified trace, and
+resolver-backed validation checks the trace again against the path data and the
+output, with no solve.
+
+The dated `RuleSet` slice stores its evidence as `Report.decision_evidence`, containing
+`DecisionEvidence` records that name their declared `Decision`. Recorded controls cannot substitute for an
 earlier outcome. Both output and no-output validation branches use the supplied
 UnitSystem and independently check observations, actions and first matching rules.
 

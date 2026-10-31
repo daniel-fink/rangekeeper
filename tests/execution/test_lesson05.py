@@ -10,14 +10,20 @@ it. These differences wait on other issues:
 - ``parameters``: ``fixed.parameters(start_trigger=1.05)`` is #301. The test
   declares each trigger as a Model Value and fixes it, so the statement runs as
   ``fix``.
-- ``WAITING``: the statements that solve (the next step of #300), and lesson 07's
-  ``rk.io.load`` of lesson 05's strategy (#207).
+- ``stories``: cell 4 loads the three histories (#207). The test makes them on the
+  Periods of lesson 04's ``rent_index``, from 2027, so the first check of cell 6 is on
+  2028-01-01 and reads 2027. ADR-021's table reads a 2026 Period on 2027-01-01; #207
+  settles this.
+- Lesson 07's ``rk.io.load`` of lesson 05's strategy (#207).
+
+Cell 11b waits on two decisions of the maintainer, which ``BLOCKED`` names. Cell 18
+needs its solve, so ``tests/execution/rule/test_rules_in_solve.py`` runs it on a
+smaller project.
 
 Lesson 07's cell 18 calls ``alternatives`` (#244) and reads ``use_index["..."]``
 (#284), so the test runs only its window and its rule on a Value of this Model.
 """
 
-import ast
 import re
 from datetime import date
 from pathlib import Path
@@ -33,13 +39,28 @@ ROOT = Path(__file__).resolve().parents[2]
 LESSON_05 = ROOT / "examples/walkthrough/proposed/05_when_to_commit.md"
 LESSON_07 = ROOT / "examples/walkthrough/proposed/07_policies_and_graph.md"
 TRIGGERS = ("start_trigger", "b_start_trigger")
-# The statements of a cell that wait on the next step of #300.
-WAITING = {
-    "6": (
-        "wait_outcome = rk.execution.solve(specification=wait.across(paths=stories))",
-        'wait_outcome.table("start_date", "b_start", "equity_npv")',
+HISTORIES = {
+    "early recovery": (
+        1.06,
+        1.12,
+        1.15,
+        1.16,
+        1.16,
+        1.16,
+        1.16,
+        1.16,
+        1.16,
+        1.16,
+        1.16,
     ),
+    "long downturn": (0.97, 0.95, 0.94, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93),
+    "short recovery": (0.97, 0.95, 1.06, 1.12, 1.04, 1.0, 0.98, 0.97, 0.96, 0.95, 0.95),
 }
+BLOCKED = (
+    "Cell 10's rent_index.at(on=b_sale_date) has no value for NEVER, and lesson 03's "
+    "b_unpaid = b_works.cumulative() - b_works.total() changes before B's decision "
+    "date, which is decision_changes_past. Both wait on the maintainer's decision."
+)
 
 
 def cells(path: Path) -> dict[str, str]:
@@ -51,13 +72,28 @@ def cells(path: Path) -> dict[str, str]:
     return numbered
 
 
-def run(namespace: dict, source: str, *, waiting: tuple[str, ...] = ()) -> dict:
+def run(namespace: dict, source: str) -> dict:
     """Run a cell as written, with ``parameters`` as ``fix`` until #301."""
-    skipped = {ast.unparse(ast.parse(text)) for text in waiting}
     for code in lesson04.statements(source.replace(".parameters(", ".fix(")):
-        if code not in skipped:
-            exec(code, namespace)
+        exec(code, namespace)
     return namespace
+
+
+def histories() -> rk.market.Paths:
+    """Return three histories on the Periods of lesson 04's ``rent_index``."""
+    years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
+        frequency=rk.duration.Frequency.YEAR
+    )
+    return rk.market.Paths.from_flows(
+        flows={
+            key: {
+                "rent_index": rk.flow.Flow.from_periods(
+                    periods=years, magnitudes=list(index), units="ratio"
+                )
+            }
+            for key, index in HISTORIES.items()
+        }
+    )
 
 
 def lesson_inputs() -> tuple[rk.Model, rk.Specification]:
@@ -76,12 +112,17 @@ def lesson_inputs() -> tuple[rk.Model, rk.Specification]:
 
 @pytest.fixture(scope="module")
 def lesson() -> dict:
-    """Run cells 6, 9, 10 and 11 of lesson 05, without their solves."""
+    """Run cells 6 to 12 of lesson 05 on three histories, without cell 8."""
     model, fixed = lesson_inputs()
-    namespace: dict = {"rk": rk, "date": date, "model": model, "fixed": fixed}
+    namespace: dict = {
+        "rk": rk,
+        "date": date,
+        "model": model,
+        "fixed": fixed,
+        "stories": histories(),
+    }
     written = cells(LESSON_05)
-    run(namespace, written["6"], waiting=WAITING["6"])
-    for key in ("9", "10", "11"):
+    for key in ("6", "7", "7b", "9", "10", "11", "11b", "12"):
         run(namespace, written[key])
     return namespace
 
@@ -97,6 +138,67 @@ def test_cell_6_fixes_the_start_date_with_a_rule(lesson):
     assert rule.window.earliest == date(2027, 1, 1)
     assert rule.window.latest == date(2030, 1, 1)
     assert rule.otherwise is rk.duration.NEVER
+
+
+def test_cell_6_solves_the_rule_on_each_history(lesson):
+    outcome = lesson["wait_outcome"]
+    table = outcome.table("start_date", "b_start", "equity_npv")
+    assert table.column("start_date")[0] == date(2028, 1, 1)
+    status = rk.execution.Status
+    assert table.column("status") == (
+        status.FEASIBLE,
+        status.INFEASIBLE,
+        status.INFEASIBLE,
+    )
+
+
+def test_cell_6_checks_when_each_index_is_known(lesson):
+    """The histories start in 2027, so the first check is on 2028-01-01 (#207)."""
+    trace = lesson["wait_outcome"].case(key="short recovery").trace
+    assert [row.decision_date for row in trace] == [
+        date(2028, 1, 1),
+        date(2029, 1, 1),
+        date(2030, 1, 1),
+    ]
+    assert [row.observed["rent_index"].number for row in trace] == [0.97, 0.95, 1.06]
+    assert trace[-1].value == date(2030, 1, 1)
+
+
+def test_cell_7_reads_the_trace_of_a_case_with_no_output(lesson):
+    trace = lesson["downturn"].trace
+    assert trace[-1].result is rk.execution.DecisionResult.OTHERWISE
+    assert trace[-1].value is rk.duration.NEVER
+    assert lesson["downturn"].run.rule_evidence.verified is False
+
+
+def test_cell_7b_names_the_broken_constraint(lesson):
+    status, diagnostics = lesson["downturn"].status, lesson["downturn"].diagnostics
+    assert status is rk.execution.Status.INFEASIBLE
+    broken = [item.values["equation"] for item in diagnostics if _breaks(item)]
+    assert broken == ["b_start >= shared_start + 1 year"]
+
+
+def _breaks(diagnostic) -> bool:
+    return (
+        diagnostic.severity == rk.run.Severity.ERROR
+        and diagnostic.code == rk.errors.Code.CONSTRAINT_RESIDUAL.value
+    )
+
+
+def test_cell_11b_reads_the_decisions_of_each_history(lesson):
+    outcome = lesson["stories_outcome"]
+    keys = {row.case for row in outcome.decisions}
+    assert keys == set(HISTORIES)
+    downturn = outcome.case(key="long downturn")
+    assert downturn.status is rk.execution.Status.FEASIBLE
+    assert downturn["start_date"] is rk.duration.NEVER
+    assert downturn["b_sale_date"] == date(2033, 1, 1)
+    assert downturn.run.rule_evidence.verified is True
+
+
+@pytest.mark.xfail(strict=True, reason=BLOCKED)
+def test_cell_11b_solves_every_history(lesson):
+    assert lesson["stories_outcome"].status is rk.execution.Status.FEASIBLE
 
 
 def test_cell_8_rejects_a_look_ahead_at_fix(lesson):
@@ -162,6 +264,28 @@ def test_lesson_07_reuses_the_rules_of_lesson_05(lesson):
     fixed_values = dict(zip(table.column("key"), table.column("quantity"), strict=True))
     assert fixed_values["start_trigger"].number == pytest.approx(1.05)
     assert fixed_values["b_start_trigger"].number == pytest.approx(1.10)
+
+
+def test_lesson_07_cell_8b_solves_each_strategy(lesson):
+    """Lesson 07's cell 8b, on the three histories; its switch waits on #244."""
+    fixed = lesson["fixed"].on(model=lesson["model"]).fix(b_land_share="40 %")
+    namespace = {
+        "rk": rk,
+        "fixed": fixed,
+        "timing": lesson["strategy"].rules,
+        "switch": fixed,
+        "use_paths": lesson["stories"],
+        "use_series": None,
+    }
+    written = cells(LESSON_07)
+    exec(written["8"], namespace)
+    exec(written["8b"], namespace)
+    outcomes = namespace["strategy_outcomes"]
+    assert list(outcomes) == ["fixed", "timing", "switch", "both"]
+    assert {case.key for case in outcomes["timing"].cases} == set(HISTORIES)
+    assert {row.key for row in outcomes["timing"].decisions} == set(
+        lesson["strategy"].rules
+    )
 
 
 def test_lesson_07_cell_18_window_and_rule(lesson):

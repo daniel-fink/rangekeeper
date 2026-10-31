@@ -28,10 +28,11 @@ of pairs.
 ``solve`` runs the stages for each case and writes nothing. ``execute`` solves,
 then publishes the documents that made the Specification, the outputs and the
 Runs to a store. ``replay`` solves a stored Run's Specification again and
-compares the result with the stored one, in a ``Replay``.
+compares the result and the decision traces with the stored ones, in a ``Replay``.
 ``ExecutionConfig`` holds the backend, unit system, limits, tolerances and
 backend options, with one source of defaults. ``DecisionResult`` names the
-result of one check of a decision rule.
+result of one check of a decision rule. ``Outcome.decisions`` gives the decision
+traces of a solve in a ``DecisionTable``, and ``Outcome.trace`` the trace of one case.
 """
 
 from rangekeeper.execution.acceptance import Tolerances, Verification, verify
@@ -40,6 +41,7 @@ from rangekeeper.execution.assembly import Overlay, assemble, assemble_batch
 from rangekeeper.execution.comparison import Groups, Pair, Paired, SideBySide, compare
 from rangekeeper.execution.compiler import AffineProblem, Relation, Row, build_problem
 from rangekeeper.execution.config import ExecutionConfig
+from rangekeeper.execution.decisions import DecisionRow, DecisionTable, ObservationRow
 from rangekeeper.execution.distribution import DateDistribution, Distribution, Mean
 from rangekeeper.execution.errors import OutcomeError
 from rangekeeper.execution.outcome import Evidence, Outcome
@@ -57,6 +59,7 @@ from rangekeeper.execution.replaying import Replay, replay
 from rangekeeper.execution.rule.result import DecisionResult
 from rangekeeper.execution.settings import Limits
 from rangekeeper.execution.status import Status
+from rangekeeper.schema.enums import ObservationSource
 
 __all__ = [
     "AffineProblem",
@@ -66,12 +69,16 @@ __all__ = [
     "Cases",
     "DateDistribution",
     "DecisionResult",
+    "DecisionRow",
+    "DecisionTable",
     "Distribution",
     "Evidence",
     "Groups",
     "ExecutionConfig",
     "Limits",
     "Mean",
+    "ObservationRow",
+    "ObservationSource",
     "Outcome",
     "OutcomeError",
     "Overlay",

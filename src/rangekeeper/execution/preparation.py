@@ -16,12 +16,11 @@ from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
     Assignment,
     Constraint,
+    DecisionEvidence,
     Expression,
     Reference,
-    RuleEvidence,
     Value,
 )
-from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.specification import Composition
@@ -76,7 +75,7 @@ class Binding:
     assertions: tuple[Assertion, ...]
     units: UnitSystem
     references: Mapping[UUID, Reference]
-    rule_evidence: tuple[RuleEvidence, ...] = ()
+    decision_evidence: tuple[DecisionEvidence, ...] = ()
     dates: Mapping[UUID, DateValue] = field(
         default_factory=lambda: MappingProxyType({})
     )
@@ -172,9 +171,11 @@ def bind_roles(
     role_references = list(requirements.unknowns or ()) + [
         a.target for a in requirements.assignments or ()
     ]
-    rule_evidence: tuple[RuleEvidence, ...] = ()
+    decision_evidence: tuple[DecisionEvidence, ...] = ()
     rule_assignments: tuple[Assignment, ...] = ()
-    _refuse_declared_rules(requirements)
+    # A rule fixes its value during the solve: the rules stage reads it as free.
+    decided = tuple(rule.target for rule in requirements.declared_rules or ())
+    role_references.extend(decided)
     if requirements.rules is not None:
         unknown_tokens = {ref.target for ref in requirements.unknowns or ()}
         if any(
@@ -193,7 +194,7 @@ def bind_roles(
             checkpoint()
         except RuleCapabilityError as error:
             raise UnsupportedError(str(error)) from error
-        rule_evidence = rule_result.evidence
+        decision_evidence = rule_result.evidence
         rule_assignments = rule_result.assignments
         role_references.extend(a.target for a in rule_assignments)
     if any(ref.target not in model_values for ref in role_references):
@@ -220,7 +221,7 @@ def bind_roles(
         found = _supplied_date(item)
         if found is not None:
             dates[item.target.target] = found
-    free = tuple(ref.target for ref in requirements.unknowns or ())
+    free = tuple(ref.target for ref in (*(requirements.unknowns or ()), *decided))
     return Binding(
         model=model,
         composition=composition,
@@ -237,18 +238,10 @@ def bind_roles(
         ),
         units=units,
         references=MappingProxyType(references),
-        rule_evidence=rule_evidence,
+        decision_evidence=decision_evidence,
         dates=MappingProxyType(dates),
         date_unknowns=tuple(id for id in free if id in dated),
     )
-
-
-def _refuse_declared_rules(requirements: SpecificationRecord) -> None:
-    """Raise UnsupportedError for rules: the solve does not run them yet (#300)."""
-    if requirements.declared_rules:
-        raise UnsupportedError(
-            "rk.execution.solve does not run a Specification's rules yet (#300)"
-        )
 
 
 def _supplied_date(item: Assignment) -> DateValue | None:

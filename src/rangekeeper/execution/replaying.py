@@ -20,6 +20,8 @@ from rangekeeper.flow import Movement
 from rangekeeper.model import Model
 from rangekeeper.quantity import Quantity, isclose
 from rangekeeper.run import Run, Severity
+from rangekeeper.run._rule.stored import read_checks
+from rangekeeper.run._rule.trace import Check
 from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import Diagnostic, Value, ValueKind
 from rangekeeper.schema.runtime import JSONValue
@@ -46,9 +48,9 @@ def replay(
     Replay reads them and writes nothing. It solves the Specification with
     ``store`` as resolver and with ``config``, as ``solve`` does; give the
     configuration of the execution that made the Run. It then compares each
-    case of the new Outcome with the stored case of the same key: the status,
-    the number of outputs, and each value of the output Model, within the
-    tolerances of ``config.tolerances``. Dates compare exactly.
+    case of the new Outcome with the stored case of the same key: the decision
+    trace, the status, the number of outputs, and each value of the output
+    Model, within the tolerances of ``config.tolerances``. Dates compare exactly.
 
     The returned ``Replay`` holds the stored Outcome, the new Outcome and one
     ``replay_mismatch`` diagnostic for each difference;
@@ -79,7 +81,9 @@ class Replay:
     order; it is empty when the replay gives the stored result. Each
     diagnostic's ``values`` name the ``case`` (None for a leaf Run), the
     ``key`` of the value, the coordinate ``on`` of a Flow amount, and the
-    ``stored`` and ``replayed`` results as text.
+    ``stored`` and ``replayed`` results as text. A decision trace gives one
+    diagnostic, for its first record that differs: ``key`` is the rule and
+    ``on`` is its window date.
     """
 
     stored: Outcome
@@ -180,7 +184,8 @@ def _case_differences(
     *,
     tolerances: Tolerances,
 ) -> Iterator[Diagnostic]:
-    """Yield the differences of one case: status, outputs, then each value."""
+    """Yield the differences of one case: trace, status, outputs, then each value."""
+    yield from _trace_differences(case, stored, replayed, tolerances=tolerances)
     if stored.status is not replayed.status:
         yield _mismatch(
             f"{_named(case)} is {replayed.status.value}, not {stored.status.value}",
@@ -200,6 +205,66 @@ def _case_differences(
         return
     for old, new in zip(stored.outputs, replayed.outputs, strict=True):
         yield from _model_differences(case, old, new, tolerances=tolerances)
+
+
+def _trace_differences(
+    case: str | None,
+    stored: Outcome,
+    replayed: Outcome,
+    *,
+    tolerances: Tolerances,
+) -> Iterator[Diagnostic]:
+    """Yield one diagnostic for the first record of the trace that differs."""
+    for old, new in zip_longest(_checks(stored), _checks(replayed)):
+        if _same_check(old, new, tolerances=tolerances):
+            continue
+        first = old if new is None or (old is not None and old.on <= new.on) else new
+        yield _mismatch(
+            f"the trace of {_named(case)} differs for {first.key} on {first.on}",
+            case=case,
+            key=first.key,
+            on=first.on.isoformat(),
+            stored=_check_text(old),
+            replayed=_check_text(new),
+        )
+        return
+
+
+def _checks(outcome: Outcome) -> tuple[Check, ...]:
+    evidence = outcome.run.rule_evidence
+    return () if evidence is None else read_checks(evidence)
+
+
+def _same_check(
+    old: Check | None, new: Check | None, *, tolerances: Tolerances
+) -> bool:
+    """Return whether two records agree: decisions and dates exactly, amounts within."""
+    if old is None or new is None:
+        return old is new
+    return (
+        (old.rule, old.on, old.result, old.condition)
+        == (new.rule, new.on, new.result, new.condition)
+        and old.earliest == new.earliest
+        and old.latest == new.latest
+        and _agree(old.value, new.value, tolerances=tolerances)
+        and len(old.readings) == len(new.readings)
+        and all(
+            (first.name, first.target, first.available_on, first.source)
+            == (second.name, second.target, second.available_on, second.source)
+            and _agree(first.value, second.value, tolerances=tolerances)
+            for first, second in zip(old.readings, new.readings, strict=True)
+        )
+    )
+
+
+def _check_text(check: Check | None) -> str | None:
+    if check is None:
+        return None
+    readings = "; ".join(
+        f"{reading.name} = {_text(reading.value)}" for reading in check.readings
+    )
+    fixed = "" if check.value is None else f" {_text(check.value)}"
+    return f"{check.result.value}{fixed} ({readings})"
 
 
 def _model_differences(

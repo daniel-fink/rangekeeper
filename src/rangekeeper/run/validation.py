@@ -11,6 +11,7 @@ from rangekeeper.model.model import Model
 from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import Quantity, UnitSystem, default_units
 from rangekeeper.run._rule.evidence import validate_evidence
+from rangekeeper.run._rule.stored import check_stored
 from rangekeeper.run.documents import closure
 from rangekeeper.run.outputs import validate_outputs
 from rangekeeper.run.report import (
@@ -26,6 +27,7 @@ from rangekeeper.schema.validation import checked, document_version, supports_ve
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     ContractError,
+    DecisionError,
     IdentityConflictError,
     MissingReferenceError,
     ReferenceTypeError,
@@ -33,6 +35,7 @@ from rangekeeper.shared.errors import (
 )
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.shared.validation import bounded, require, require_acyclic
+from rangekeeper.specification._paths import load as load_paths
 from rangekeeper.specification.composition import (
     compose,
     compose_specification,
@@ -186,7 +189,7 @@ def validate_executed(
         runs, specifications, models = _catalogues(found)
         if units is None:
             units = _input_unit_system(run, found)
-        return validate_records(
+        report = validate_records(
             run.record,
             runs=runs,
             specifications=specifications,
@@ -194,6 +197,9 @@ def validate_executed(
             units=units,
             prerequisites=prerequisites,
         )
+        if report.valid:
+            return _check_traces(found, resolver, prerequisites, units=units)
+        return report
     except (MissingReferenceError, ReferenceTypeError, IdentityConflictError) as error:
         return ValidationReport((Issue(error.code, str(error), run.id),))
 
@@ -226,6 +232,43 @@ def _compose_paths(
         ):
             compositions[identity] = compose(document, resolver=resolver)
     return replace(prerequisites, compositions=compositions)
+
+
+def _check_traces(
+    found: dict,
+    resolver: "DocumentResolver",
+    prerequisites: Prerequisites,
+    *,
+    units: UnitSystem,
+) -> ValidationReport:
+    """Check the stored decision trace of each Run that has an output (ADR-021).
+
+    A trace needs a candidate, so a Run without an output has no trace check.
+    """
+    issues = []
+    for run in found.values():
+        if not isinstance(run, Run) or run.rule_evidence is None:
+            continue
+        if not run.record.outputs:
+            continue
+        specification = found[run.record.specification]
+        composition = prerequisites.compositions.get(specification.id)
+        if composition is None:
+            composition = compose(specification, resolver=resolver)
+        requirements = composition.requirements
+        path = requirements.path
+        try:
+            check_stored(
+                run.rule_evidence,
+                rules=requirements.declared_rules or (),
+                candidate=found[run.record.outputs[0]],
+                path=path,
+                paths=None if path is None else load_paths(resolver, path.paths),
+                units=units,
+            )
+        except DecisionError as error:
+            issues.append(Issue(error.code, str(error), run.id))
+    return ValidationReport(tuple(issues))
 
 
 def _input_unit_system(root: "Run", found: dict) -> UnitSystem:
@@ -475,13 +518,13 @@ class _RunValidation:
                         effective.get("rules")
                         and not outputs
                         and (
-                            run["report"].get("rule_evidence")
+                            run["report"].get("decision_evidence")
                             or solution != "not_assessed"
                         )
                     ):
                         validate_evidence(
                             effective["rules"],
-                            run["report"].get("rule_evidence") or [],
+                            run["report"].get("decision_evidence") or [],
                             scope=scope,
                             units=self.units,
                         )

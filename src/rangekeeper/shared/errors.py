@@ -454,9 +454,9 @@ class AvailabilityError(RangekeeperError, ValueError):
 class DecisionError(RangekeeperError, ValueError):
     """The decisions of a case's rules cannot stand (ADR-021).
 
-    The code is ``decision_changes_past``, ``provisional_infeasible`` or
-    ``rule_trace``. ``values`` name the decision: the key, its decision date and
-    the Movement, date, constraint or check that fails.
+    The code is ``decision_changes_past``, ``provisional_infeasible``,
+    ``rule_capability`` or ``rule_trace``. ``values`` name the decision: the key,
+    its decision date and the Movement, date, constraint or check that fails.
     """
 
     code = Code.DECISION_CHANGES_PAST

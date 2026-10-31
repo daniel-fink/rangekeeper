@@ -146,8 +146,15 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
       rule_evidence:
-        description: Ordered evidence of each evaluated Decision of the Specification rules.
+        description: The decision trace of the rules of this case; absent for a case without rules and for a batch.
         range: RuleEvidence
+        inlined: true
+        all_of:
+        - range: RuleEvidence
+          inlined: true
+      decision_evidence:
+        description: Ordered evidence of each evaluated Decision of the RuleSet of the Specification.
+        range: DecisionEvidence
         inlined: true
         multivalued: true
         inlined_as_list: true

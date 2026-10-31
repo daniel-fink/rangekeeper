@@ -28,8 +28,10 @@ from rangekeeper.execution.errors import (
 )
 from rangekeeper.execution.implementation import fingerprint
 from rangekeeper.execution.outcome import Outcome
+from rangekeeper.execution.rule.provisional import broken_dates
 from rangekeeper.execution.rule.sequence import (
     Decisions,
+    Progress,
     Solver,
     check_past,
     run_rules,
@@ -39,6 +41,7 @@ from rangekeeper.model import Model
 from rangekeeper.quantity import Quantity, UnitSystem, unit_systems
 from rangekeeper.run import ImplementationKind, StepKind
 from rangekeeper.run._rule.availability import path_amounts, path_known
+from rangekeeper.run._rule.stored import stored_evidence
 from rangekeeper.run._rule.trace import TraceFacts, candidate_values, check_trace
 from rangekeeper.schema.records import (
     CompletionStatus,
@@ -46,6 +49,7 @@ from rangekeeper.schema.records import (
     Implementation,
     Reference,
     Report,
+    RuleEvidence,
     RunStatus,
     Runtime,
     Settings,
@@ -55,7 +59,12 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.schema.runtime import UNSET, JSONValue, Unset
 from rangekeeper.shared.codes import Code
-from rangekeeper.shared.errors import RangekeeperError, ValidationError
+from rangekeeper.shared.errors import (
+    ContractError,
+    DecisionError,
+    RangekeeperError,
+    ValidationError,
+)
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.specification import Composition, Specification
 from rangekeeper.specification._paths import load as load_paths
@@ -75,7 +84,8 @@ class Attempt:
 
     ``rules`` are the rules of the case and ``parameters`` the values that they
     read. With rules, the rules stage follows ``bind_roles`` (ADR-021) and
-    ``decisions`` holds its result; the trace check runs on the candidate.
+    ``decisions`` holds its result; the trace check runs on the candidate, and the
+    report records the trace.
     """
 
     def __init__(
@@ -92,6 +102,8 @@ class Attempt:
         self.config, self.backend = config, backend
         self.rules, self.parameters = tuple(rules), dict(parameters or {})
         self.decisions: Decisions | None = None
+        self.progress: Progress | None = None
+        self.verified = False
         self.units: UnitSystem | None = config.units
         self.specification, self.view = specification, view
         self.resolver = resolver
@@ -230,8 +242,10 @@ class Attempt:
         # equation and equation function is written period by period (#276).
         # The candidate and verification keep every original assertion.
         bound = self.decide(self.binding)
+        settled = dates.settle(bound)
+        self.name_broken_dates(bound, settled)
         self.binding, expanded = expansion.expand_settled(
-            dates.settle(bound), original=bound.assertions
+            settled, original=bound.assertions
         )
         staged = staging.stage(
             expanded,
@@ -270,18 +284,30 @@ class Attempt:
         if not self.rules:
             return binding
         assert self.limits is not None
-        self.decisions = run_rules(
-            binding=binding,
-            rules=self.rules,
-            parameters=self.parameters,
-            paths=self.paths(binding),
-            solver=Solver(
-                backend=self.backend,
-                config=self.config,
-                limits=self.limits,
-                checkpoint=self.checkpoint,
-            ),
-        )
+        self.progress = Progress()
+        try:
+            self.decisions = run_rules(
+                binding=binding,
+                rules=self.rules,
+                parameters=self.parameters,
+                paths=self.paths(binding),
+                progress=self.progress,
+                solver=Solver(
+                    backend=self.backend,
+                    config=self.config,
+                    limits=self.limits,
+                    checkpoint=self.checkpoint,
+                ),
+            )
+        except ContractError as error:
+            # Validation found the static problems, so this one is of this case.
+            raise DecisionError(
+                str(error),
+                code=error.code,
+                document_id=binding.model.id,
+                targets=error.targets,
+                values=error.values,
+            ) from error
         self.trace.append(
             Step(
                 kind=StepKind.SOLVE,
@@ -291,6 +317,20 @@ class Attempt:
             )
         )
         return self.decisions.bind(binding)
+
+    def name_broken_dates(
+        self, bound: preparation.Binding, settled: preparation.Binding
+    ) -> None:
+        """Name each date constraint that the decisions break (ADR-021, cell 7)."""
+        if self.decisions is None:
+            return
+        for text in broken_dates(bound, settled=settled):
+            self.diagnose(
+                Code.CONSTRAINT_RESIDUAL,
+                f"The decided dates break the constraint {text}.",
+                severity=Severity.ERROR,
+                values={"equation": text},
+            )
 
     def paths(self, binding: preparation.Binding) -> Paths | None:
         """Return the Paths document of the case's path, when it has one."""
@@ -328,6 +368,17 @@ class Attempt:
                 absolute=tolerances.absolute,
                 relative=tolerances.relative,
             ),
+        )
+        self.verified = True
+
+    def rule_evidence(self) -> RuleEvidence | Unset:
+        """Return the stored trace, when the rules stage recorded any of it."""
+        if self.progress is None or not self.progress.checks:
+            return UNSET
+        return stored_evidence(
+            checks=self.progress.checks,
+            provisional_solves=self.progress.solves,
+            verified=self.verified,
         )
 
     def solve_stage(self, problem: compiler.AffineProblem) -> BackendResult:
@@ -546,7 +597,10 @@ class Attempt:
             ),
             diagnostics=tuple(self.findings),
             trace=tuple(self.trace),
-            rule_evidence=() if self.binding is None else self.binding.rule_evidence,
+            rule_evidence=self.rule_evidence(),
+            decision_evidence=(
+                () if self.binding is None else self.binding.decision_evidence
+            ),
         )
         return assembly.assemble(
             specification=self.specification,

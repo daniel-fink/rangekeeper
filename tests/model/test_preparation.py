@@ -617,7 +617,7 @@ def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
                     dict(kind="evaluator", name="unit-context-test", version="1")
                 ]
             ),
-            rule_evidence=[item.to_data() for item in result.evidence],
+            decision_evidence=[item.to_data() for item in result.evidence],
         ),
     )
     if published:

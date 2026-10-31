@@ -317,8 +317,10 @@ def test_validate_reports_what_fix_reports():
     assert report.issues[0].code is Code.RULE_READS_UNKNOWN
 
 
-def test_solve_does_not_run_rules_yet():
+def test_solve_runs_the_rules_and_fixes_the_decided_value():
     made = spec().fix(first=rising())
     paths = one_path()
     case = rk.execution.solve(specification=made.across(paths=paths)).case(key="one")
-    assert case.status is rk.execution.Status.UNSUPPORTED
+    assert case.run.rule_evidence is not None
+    assert [row.key for row in case.trace] == ["first"] * len(case.trace)
+    assert case.trace[-1].result is rk.execution.DecisionResult.OTHERWISE
