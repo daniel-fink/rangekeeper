@@ -10,6 +10,10 @@ Every extension point uses one pattern ([ADR-013](../decisions/013-execution-and
 The registry class is `rangekeeper.shared.registry.Registry`. `shared` is
 internal, so use the registry objects that the owning packages export.
 
+A batch can solve in [worker processes](execution.md#batch-workers). Each backend,
+unit system and profile must then move to them by `pickle`. If one cannot, the
+calling process solves the batch, with a `RuntimeWarning`.
+
 ## Points
 
 | Point | Registry | Protocol | Built-in names | Evidence |

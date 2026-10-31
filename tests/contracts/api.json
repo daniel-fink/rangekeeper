@@ -756,10 +756,10 @@
   "ExecutionConfig": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>, allow_underdetermined: bool = False) -> None"
+    "__init__": "method (self, *, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>, allow_underdetermined: bool = False, workers: int | None = None) -> None"
    },
    "module": "rangekeeper.execution.config",
-   "signature": "(*, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>, allow_underdetermined: bool = False) -> None"
+   "signature": "(*, backend: rangekeeper.execution.backends.base.Backend | str = 'pyomo-highs', units: rangekeeper.quantity.UnitSystem | None = None, limits: rangekeeper.execution.settings.Limits = <Limits>, tolerances: rangekeeper.execution.acceptance.Tolerances = <Tolerances>, backend_options: collections.abc.Mapping[str, str | int | float | bool] = <_HAS_DEFAULT_FACTORY_CLASS>, allow_underdetermined: bool = False, workers: int | None = None) -> None"
   },
   "Groups": {
    "kind": "class",

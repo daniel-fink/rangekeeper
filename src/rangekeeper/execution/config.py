@@ -9,8 +9,18 @@ from rangekeeper.execution.acceptance import Tolerances
 from rangekeeper.execution.backends import Backend
 from rangekeeper.execution.settings import Limits
 from rangekeeper.quantity import UnitSystem
+from rangekeeper.shared.errors import ContractError
 
 BackendOption = str | int | float | bool
+
+
+def _check_workers(workers: int | None) -> None:
+    if workers is None:
+        return
+    if type(workers) is not int:
+        raise TypeError("workers must be an int or None")
+    if workers < 1:
+        raise ContractError("workers must be at least 1", values={"workers": workers})
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -33,6 +43,10 @@ class ExecutionConfig:
       underdetermined solve as its output. By default an underdetermined solve
       has no output; either way its Run's solution is ``underdetermined`` and
       names the free unknowns (ADR-016).
+    - ``workers`` is the number of processes that may solve the cases of a
+      batch. Without it, a batch uses all the cores of the machine. ``1`` solves
+      in the calling process. A batch too small to gain uses no worker process.
+      The value never changes a result, and no evidence records it.
     """
 
     backend: Backend | str = "pyomo-highs"
@@ -43,6 +57,7 @@ class ExecutionConfig:
         default_factory=lambda: MappingProxyType({})
     )
     allow_underdetermined: bool = False
+    workers: int | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.backend, str) and not isinstance(self.backend, Backend):
@@ -55,6 +70,7 @@ class ExecutionConfig:
             raise TypeError("tolerances must be Tolerances")
         if type(self.allow_underdetermined) is not bool:
             raise TypeError("allow_underdetermined must be True or False")
+        _check_workers(self.workers)
         options = dict(self.backend_options)
         for name, value in options.items():
             if not isinstance(name, str):

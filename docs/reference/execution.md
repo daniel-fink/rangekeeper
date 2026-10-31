@@ -379,6 +379,7 @@ source of its defaults. It is frozen.
 | `tolerances` | `Tolerances()` | The policy of independent verification; see [independent acceptance](#independent-acceptance-and-immutable-publication) |
 | `backend_options` | `{}` | String keys and JSON scalar values that go to the backend unchanged |
 | `allow_underdetermined` | `False` | Publish the verified candidate of an underdetermined solve as its output. The Run's solution stays `underdetermined` and names the free unknowns ([read an Outcome](#read-an-outcome)) |
+| `workers` | `None` | The processes that may solve the cases of a batch. `None` uses all the cores; `1` solves in the calling process. It changes no result, and no evidence records it ([batch workers](#batch-workers)) |
 
 `pyomo-highs` reads `backend_options` as HiGHS options. They replace the
 worker's defaults, and the `solver_termination` evidence records the options that
@@ -390,8 +391,8 @@ asks for one of them fails with an `unsupported_capability` diagnostic.
 
 Execution runs as typed stages ([ADR-013](../decisions/013-execution-and-extensions.md)).
 Each stage is a function in `rangekeeper.execution`. No stage writes to a store,
-and only the backend starts a process. `solve` calls the stages for each case;
-`execute` then stores the results.
+and only the backend and a [batch worker](#batch-workers) start a process.
+`solve` calls the stages for each case; `execute` then stores the results.
 
 | # | Stage | Input | Result | Raises |
 | --- | --- | --- | --- | --- |
@@ -439,7 +440,9 @@ time limit has passed. The stages call it between steps.
 | `execution/comparison.py` | `compare`, `SideBySide`, `Paired` and `Groups`: values side by side, or paired differences from a baseline by case key, with `distribution`, `summary`, `by`, `by_case`, `select` and `where`. |
 | `execution/distribution.py` | `Distribution`, `DateDistribution` and `Mean`: the values of one key across the cases of a batch, their statistics and counts, and the mean of a batch. |
 | `execution/outcome.py` | `Outcome`: the Run, the outputs and the case Outcomes; values by key, `status`, `raise_for_status()`, `free_unknowns`, `Evidence`, and a batch's `distribution` and `mean`. |
-| `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances and backend options, with one source of defaults. |
+| `execution/config.py` | `ExecutionConfig`: the backend, unit system, limits, tolerances, backend options and workers, with one source of defaults. |
+| `execution/_parallel.py`, `execution/_batch_worker.py` | Solve the leaves of a batch in the calling process or in [batch workers](#batch-workers): the rule that chooses, the caller's side and the worker's side. |
+| `execution/_boundary.py` | Write records and facades between processes. |
 | `execution/settings.py` | `Limits`; apply a Specification's requested settings over the configured limits and account for unsupported or adjusted settings. |
 | `execution/attempt.py` | One leaf attempt: the deadline, the stage calls in order, and one `except` arm for the expected failures. It stores nothing. |
 | `execution/status.py` | `Status`, in a module that imports nothing from `execution`. |
@@ -676,6 +679,38 @@ failed native solver cannot stop the caller
   with its exit code and the end of its stderr. After any failure or
   interruption of a solve, the next solve starts a new worker. A worker that
   ended while it waited is replaced, and the next solve does not fail.
+
+## Batch workers
+
+A batch solves its cases in processes when that gains time
+([ADR-013](../decisions/013-execution-and-extensions.md#batch-worker-processes)).
+Nothing else changes: the same stages run, and the Outcome holds the cases in
+Specification order. `execute` publishes from the calling process.
+
+- **Count.** `ExecutionConfig(workers=)` sets the number of processes. Without it,
+  a batch uses all the cores that this process can use. `workers=1` solves in the
+  calling process. Each process of lesson 04 needed about 360 MiB with its solve
+  worker at 500 paths, so set a lower count when memory is short.
+- **Small batches.** The first two leaves solve in the calling process, and show
+  how long a leaf takes. Processes start only when they save more than 2 seconds.
+  A batch of up to 3 leaves, or of cases that take a few milliseconds, starts none.
+- **Scripts and notebooks.** A worker is a new interpreter with the import path and
+  the environment of the caller. It does not import your script, so a script needs
+  no `if __name__ == "__main__"` guard. Each process ends before `solve` returns.
+- **Nested solves.** A solve in a batch worker stays in that process. If your own
+  code runs solves in several processes, give each of them `workers=1`.
+- **Extensions.** A backend, and each unit system and profile that you registered,
+  must move to the workers by `pickle`, so define them in an importable module.
+  One that cannot move, for example a class in a notebook cell, gives a
+  `RuntimeWarning`, and the calling process solves the rest of the batch with the
+  same results. `workers=1` ends the warning. A backend runs in a worker, so a
+  change to its own state does not return to the caller.
+- **Failures.** A deadline, an expected failure and a native solver crash stay with
+  their case, as without workers. A worker process that ends, for example because
+  the machine has no more memory, gives its case a failed Run with a
+  `numerical_failure` diagnostic. The case is not tried again, and the others go on.
+  A programming error raises from `solve`, with the trace of the worker in a note on
+  the error.
 
 ## Settings, limits and conclusions
 
