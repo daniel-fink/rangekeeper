@@ -356,6 +356,7 @@ def rebuilt(
         fields["unknowns"] = _words(values.get("unknowns"))
     if kind is OutcomeError:
         fields["status"] = status
+        fields["equation"] = _text(values.get("equation"))
     if kind is AvailabilityError:
         fields["key"] = _text(values.get("key"))
         fields["available_on"] = _date(values.get("available_on"))

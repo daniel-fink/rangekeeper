@@ -108,7 +108,7 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 | --- | --- | --- |
 | `FEASIBLE` | Solution `feasible`, and no `underdetermined` or `uniqueness_not_assessed` diagnostic | Nothing |
 | `UNDERDETERMINED` | Solution `underdetermined`, with an `underdetermined` or `uniqueness_not_assessed` diagnostic: the equations leave some unknowns free, with or without bounds. A Run written before 1.0.0b1 records solution `feasible` with that diagnostic | `OutcomeError`, with the code of that diagnostic |
-| `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination` |
+| `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination`. When the decisions of rules break a date constraint, code `constraint_residual`, with the constraint in `equation` |
 | `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError`, code `solver_termination` |
 | `INVALID` | Failed, with `specification_invalid`, or `incompatible_units` for units that disagree | `ValidationError`, with the validation issues of the attempt; `UnitError` for `incompatible_units` |
 | `FAILED` | Failed, with `numerical_failure`, `numerical_rejection`, `active_side`, `no_sign_change`, `backend_unavailable` or another error diagnostic, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
@@ -118,7 +118,7 @@ The error class comes from the same `FAILURES` row as the status. Each error
 carries the code of the diagnostic that gives the reason, and the fields that
 the attempt wrote into that diagnostic's `values`: a `ValidationError` has
 every issue of the attempt, with its code, path, targets and values.
-`OutcomeError` also has `status`.
+`OutcomeError` also has `status` and `equation`.
 
 An underdetermined solve has no output by default (ADR-016,
 [#152](https://github.com/daniel-fink/rangekeeper/issues/152)): the Run's

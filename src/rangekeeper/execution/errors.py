@@ -21,6 +21,8 @@ class OutcomeError(RangekeeperError, ValueError):
     infeasible solve, and for a limit or failure that no other error names.
     ``status`` is the Outcome's ``Status``; ``code`` is the code of the
     diagnostic that gives the reason, by default ``solver_termination``.
+    ``equation`` is the text of the constraint that the decisions of rules
+    break, with the code ``constraint_residual``; otherwise it is None.
     ``document_id`` and ``targets`` locate it when they are known.
     """
 
@@ -31,13 +33,15 @@ class OutcomeError(RangekeeperError, ValueError):
         message: str,
         *,
         status: Status,
+        equation: str | None = None,
         **fields: Unpack[ErrorFields],
     ) -> None:
         super().__init__(message, **fields)
         self.status = Status(status)
+        self.equation = equation
 
     def _fields(self) -> dict[str, Any]:
-        return {**super()._fields(), "status": self.status}
+        return {**super()._fields(), "status": self.status, "equation": self.equation}
 
 
 __all__ = [

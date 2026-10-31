@@ -441,6 +441,9 @@ class Outcome:
         | ``FAILED`` | ``NumericalError`` or ``BackendUnavailableError``, else ``OutcomeError`` |
         | ``UNDERDETERMINED``, ``INFEASIBLE`` | ``OutcomeError`` |
 
+        When the decisions of rules break a date constraint, ``OutcomeError``
+        has the code ``constraint_residual`` and that constraint in ``equation``.
+
         A batch raises for its first leaf case, in ``walk()`` order, that is
         not ``FEASIBLE``.
         """
@@ -491,10 +494,22 @@ def _reason(report: Report, status: Status) -> Diagnostic | None:
     codes = report.diagnostics or ()
     if status is Status.UNDERDETERMINED:
         return next(item for item in codes if item.code in _FREE)
-    decisive = None if status is Status.INFEASIBLE else _decisive(report)
+    decisive = _broken(report) if status is Status.INFEASIBLE else _decisive(report)
     if decisive is not None:
         return decisive
     return next((item for item in codes if item.code == Code.SOLVER_TERMINATION), None)
+
+
+def _broken(report: Report) -> Diagnostic | None:
+    """Return the first constraint that the decisions of rules break, or None."""
+    return next(
+        (
+            item
+            for item in report.diagnostics or ()
+            if item.code == Code.CONSTRAINT_RESIDUAL and item.severity == Severity.ERROR
+        ),
+        None,
+    )
 
 
 def _termination(values: dict[str, FrozenJSONValue]) -> Termination:
