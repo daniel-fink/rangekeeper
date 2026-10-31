@@ -620,76 +620,6 @@ class Binding(Record):
         return cast('UUID', _decode_uuid(self._data.get('value')))
 
 
-class CalculationProvenance(Record):
-    'Calculation implementation identity, separate from captured sampling provenance.'
-    __slots__ = ()
-    _kind = 'CalculationProvenance'
-    _SLOTS = _freeze(
-        {'name': {'options': [{'kind': 'string', 'category': 'primitive'}],
-                  'required': True,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': False,
-                  'ordered': False,
-                  'lineage': False},
-         'fingerprint': {'options': [{'kind': 'string', 'category': 'primitive'}],
-                         'required': True,
-                         'many': False,
-                         'mapping': False,
-                         'nullable': False,
-                         'ordered': False,
-                         'lineage': False},
-         'versions': {'options': [{'kind': 'LibraryVersion', 'category': 'record'}],
-                      'required': True,
-                      'many': True,
-                      'mapping': False,
-                      'nullable': False,
-                      'ordered': True,
-                      'lineage': False}}
-    )
-
-    def __init__(self, *,
-        name: str,
-        fingerprint: str,
-        versions: tuple[LibraryVersion, ...],
-    ) -> None:
-        data: dict[str, object] = {}
-        data['name'] = copy_json(name)
-        data['fingerprint'] = copy_json(fingerprint)
-        data['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
-        self._set_checked(data)
-
-    def replace(self, *,
-        name: str | Unset = UNSET,
-        fingerprint: str | Unset = UNSET,
-        versions: tuple[LibraryVersion, ...] | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if name is not UNSET:
-            changes['name'] = copy_json(name)
-        if fingerprint is not UNSET:
-            changes['fingerprint'] = copy_json(fingerprint)
-        if versions is not UNSET:
-            changes['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
-        return self._replace(changes)
-
-    @property
-    def name(self) -> str:
-        'Name of the calculation implementation.'
-        return cast('str', self._data.get('name'))
-
-    @property
-    def fingerprint(self) -> str:
-        'Format-prefixed digest of the calculation manifest, which covers its sources, resources and dependency versions.'
-        return cast('str', self._data.get('fingerprint'))
-
-    @property
-    def versions(self) -> tuple[LibraryVersion, ...]:
-        'Dependency versions included in the fingerprint.'
-        return cast('tuple[LibraryVersion, ...]', self._child('versions', LibraryVersion, True))
-
-
 class Call(Record):
     'Application of an identified Function to positional and named expression arguments.'
     __slots__ = ()
@@ -4230,59 +4160,6 @@ class Objective(Record):
         return cast('ObjectiveKind', _decode_enum(self._data.get('sense'), ObjectiveKind))
 
 
-class ObservationAvailability(Record):
-    'Earliest date a recorded Value or Movement may be supplied to a rule.'
-    __slots__ = ()
-    _kind = 'ObservationAvailability'
-    _SLOTS = _freeze(
-        {'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
-                    'required': True,
-                    'many': False,
-                    'mapping': False,
-                    'nullable': False,
-                    'ordered': False,
-                    'lineage': False},
-         'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
-                          'required': True,
-                          'many': False,
-                          'mapping': False,
-                          'nullable': False,
-                          'ordered': False,
-                          'lineage': False}}
-    )
-
-    def __init__(self, *,
-        target: Reference,
-        available_at: Date,
-    ) -> None:
-        data: dict[str, object] = {}
-        data['target'] = _encode_record(target, Reference, 'target')
-        data['available_at'] = _encode_date(available_at)
-        self._set_checked(data)
-
-    def replace(self, *,
-        target: Reference | Unset = UNSET,
-        available_at: Date | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if target is not UNSET:
-            changes['target'] = _encode_record(target, Reference, 'target')
-        if available_at is not UNSET:
-            changes['available_at'] = _encode_date(available_at)
-        return self._replace(changes)
-
-    @property
-    def target(self) -> Reference:
-        'Recorded Value or Movement; scenario validation requires a Movement.'
-        return cast('Reference', self._child('target', Reference, False))
-
-    @property
-    def available_at(self) -> Date:
-        'Earliest date on which a rule can observe the target.'
-        return cast('Date', _decode_date(self._data.get('available_at')))
-
-
 class ObservationBinding(Record):
     'An explicit observation target. An optional date may delay availability but cannot advance it.'
     __slots__ = ()
@@ -5417,22 +5294,13 @@ class Provenance(Record):
                    'mapping': False,
                    'nullable': True,
                    'ordered': False,
-                   'lineage': False},
-         'scenarios': {'options': [{'kind': 'ScenarioRealization',
-                                    'category': 'record'}],
-                       'required': False,
-                       'many': True,
-                       'mapping': False,
-                       'nullable': True,
-                       'ordered': True,
-                       'lineage': False}}
+                   'lineage': False}}
     )
 
     def __init__(self, *,
         sources: tuple[Source, ...] | None | Unset = UNSET,
         claims: tuple[Claim, ...] | None | Unset = UNSET,
         facts: tuple[Fact, ...] | None | Unset = UNSET,
-        scenarios: tuple[ScenarioRealization, ...] | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         if sources is not UNSET:
@@ -5441,15 +5309,12 @@ class Provenance(Record):
             data['claims'] = _encode_many(claims, lambda v: _encode_record(v, Claim, 'claims'))
         if facts is not UNSET:
             data['facts'] = _encode_many(facts, lambda v: _encode_record(v, Fact, 'facts'))
-        if scenarios is not UNSET:
-            data['scenarios'] = _encode_many(scenarios, lambda v: _encode_record(v, ScenarioRealization, 'scenarios'))
         self._set_checked(data)
 
     def replace(self, *,
         sources: tuple[Source, ...] | None | Unset | Omit = UNSET,
         claims: tuple[Claim, ...] | None | Unset | Omit = UNSET,
         facts: tuple[Fact, ...] | None | Unset | Omit = UNSET,
-        scenarios: tuple[ScenarioRealization, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -5465,10 +5330,6 @@ class Provenance(Record):
             changes['facts'] = OMIT
         elif facts is not UNSET:
             changes['facts'] = _encode_many(facts, lambda v: _encode_record(v, Fact, 'facts'))
-        if scenarios is OMIT:
-            changes['scenarios'] = OMIT
-        elif scenarios is not UNSET:
-            changes['scenarios'] = _encode_many(scenarios, lambda v: _encode_record(v, ScenarioRealization, 'scenarios'))
         return self._replace(changes)
 
     @property
@@ -5485,11 +5346,6 @@ class Provenance(Record):
     def facts(self) -> tuple[Fact, ...] | None:
         'Facts that connect graph objects or characteristics to supporting Claims; at most one Fact per target.'
         return cast('tuple[Fact, ...] | None', self._child('facts', Fact, True))
-
-    @property
-    def scenarios(self) -> tuple[ScenarioRealization, ...] | None:
-        'Captured scenario realizations, in order, with their inputs, paths and observation availability.'
-        return cast('tuple[ScenarioRealization, ...] | None', self._child('scenarios', ScenarioRealization, True))
 
 
 class Quantity(Record):
@@ -6606,381 +6462,6 @@ class Runtime(Record):
     def settings(self) -> Settings | None:
         'Effective numerical settings, rather than merely copied requests.'
         return cast('Settings | None', self._child('settings', Settings, False))
-
-
-class ScenarioParameter(Record):
-    'One named constant or sampled parameter; exactly one input is required by semantic validation.'
-    __slots__ = ()
-    _kind = 'ScenarioParameter'
-    _SLOTS = _freeze(
-        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
-                  'required': True,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': False,
-                  'ordered': False,
-                  'lineage': False},
-         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
-                      'required': False,
-                      'many': False,
-                      'mapping': False,
-                      'nullable': True,
-                      'ordered': False,
-                      'lineage': False},
-         'distribution': {'options': [{'kind': 'Distribution', 'category': 'record'}],
-                          'required': False,
-                          'many': False,
-                          'mapping': False,
-                          'nullable': True,
-                          'ordered': False,
-                          'lineage': False}}
-    )
-
-    def __init__(self, *,
-        name: str,
-        quantity: Quantity | None | Unset = UNSET,
-        distribution: Distribution | None | Unset = UNSET,
-    ) -> None:
-        data: dict[str, object] = {}
-        data['name'] = copy_json(name)
-        if quantity is not UNSET:
-            data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        if distribution is not UNSET:
-            data['distribution'] = _encode_record(distribution, Distribution, 'distribution')
-        self._set_checked(data)
-
-    def replace(self, *,
-        name: str | Unset = UNSET,
-        quantity: Quantity | None | Unset | Omit = UNSET,
-        distribution: Distribution | None | Unset | Omit = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if name is not UNSET:
-            changes['name'] = copy_json(name)
-        if quantity is OMIT:
-            changes['quantity'] = OMIT
-        elif quantity is not UNSET:
-            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        if distribution is OMIT:
-            changes['distribution'] = OMIT
-        elif distribution is not UNSET:
-            changes['distribution'] = _encode_record(distribution, Distribution, 'distribution')
-        return self._replace(changes)
-
-    @property
-    def name(self) -> str:
-        'Parameter name of the market method contract, unique within the plan.'
-        return cast('str', self._data.get('name'))
-
-    @property
-    def quantity(self) -> _Quantity | None:
-        'Fixed quantity; give this or distribution, not both.'
-        return cast('_Quantity | None', self._child('quantity', Quantity, False))
-
-    @property
-    def distribution(self) -> _Distribution | None:
-        'Distribution to sample; give this or quantity, not both.'
-        return cast('_Distribution | None', self._child('distribution', Distribution, False))
-
-
-class ScenarioPlan(Record):
-    'Finite market generation plan. This is input-generation provenance, not governing mathematics.'
-    __slots__ = ()
-    _kind = 'ScenarioPlan'
-    _SLOTS = _freeze(
-        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False,
-                'lineage': False},
-         'method': {'options': [{'kind': 'string', 'category': 'primitive'}],
-                    'required': True,
-                    'many': False,
-                    'mapping': False,
-                    'nullable': False,
-                    'ordered': False,
-                    'lineage': False},
-         'seed': {'options': [{'kind': 'integer', 'category': 'primitive'}],
-                  'required': True,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': False,
-                  'ordered': False,
-                  'lineage': False},
-         'periods': {'options': [{'kind': 'Period', 'category': 'record'}],
-                     'required': True,
-                     'many': True,
-                     'mapping': False,
-                     'nullable': False,
-                     'ordered': True,
-                     'lineage': False},
-         'parameters': {'options': [{'kind': 'ScenarioParameter',
-                                     'category': 'record'}],
-                        'required': True,
-                        'many': True,
-                        'mapping': False,
-                        'nullable': False,
-                        'ordered': True,
-                        'lineage': False}}
-    )
-
-    def __init__(self, *,
-        id: UUID,
-        method: str,
-        seed: int,
-        periods: tuple[Period, ...],
-        parameters: tuple[ScenarioParameter, ...],
-    ) -> None:
-        data: dict[str, object] = {}
-        data['id'] = _encode_uuid(id)
-        data['method'] = copy_json(method)
-        data['seed'] = copy_json(seed)
-        data['periods'] = _encode_many(periods, lambda v: _encode_record(v, Period, 'periods'))
-        data['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, ScenarioParameter, 'parameters'))
-        self._set_checked(data)
-
-    def replace(self, *,
-        id: UUID | Unset = UNSET,
-        method: str | Unset = UNSET,
-        seed: int | Unset = UNSET,
-        periods: tuple[Period, ...] | Unset = UNSET,
-        parameters: tuple[ScenarioParameter, ...] | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if id is not UNSET:
-            changes['id'] = _encode_uuid(id)
-        if method is not UNSET:
-            changes['method'] = copy_json(method)
-        if seed is not UNSET:
-            changes['seed'] = copy_json(seed)
-        if periods is not UNSET:
-            changes['periods'] = _encode_many(periods, lambda v: _encode_record(v, Period, 'periods'))
-        if parameters is not UNSET:
-            changes['parameters'] = _encode_many(parameters, lambda v: _encode_record(v, ScenarioParameter, 'parameters'))
-        return self._replace(changes)
-
-    @property
-    def id(self) -> UUID:
-        'Stable identity of the plan.'
-        return cast('UUID', _decode_uuid(self._data.get('id')))
-
-    @property
-    def method(self) -> str:
-        'Code of the market method contract that the plan uses.'
-        return cast('str', self._data.get('method'))
-
-    @property
-    def seed(self) -> int:
-        'Nonnegative master seed of the random streams.'
-        return cast('int', self._data.get('seed'))
-
-    @property
-    def periods(self) -> tuple[_Period, ...]:
-        'Nonempty ordered calendar periods of the generated paths; periods do not overlap.'
-        return cast('tuple[_Period, ...]', self._child('periods', Period, True))
-
-    @property
-    def parameters(self) -> tuple[ScenarioParameter, ...]:
-        'Parameters of the method; their names match the parameter inventory of the method.'
-        return cast('tuple[ScenarioParameter, ...]', self._child('parameters', ScenarioParameter, True))
-
-
-class ScenarioRealization(Record):
-    'Captured scenario inputs and paths. Stored draws permit replay without random sampling.'
-    __slots__ = ()
-    _kind = 'ScenarioRealization'
-    _SLOTS = _freeze(
-        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False,
-                'lineage': False},
-         'plan': {'options': [{'kind': 'ScenarioPlan', 'category': 'record'}],
-                  'required': True,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': False,
-                  'ordered': False,
-                  'lineage': False},
-         'key': {'options': [{'kind': 'Code', 'category': 'primitive'}],
-                 'required': True,
-                 'many': False,
-                 'mapping': False,
-                 'nullable': False,
-                 'ordered': False,
-                 'lineage': False},
-         'calculation': {'options': [{'kind': 'CalculationProvenance',
-                                      'category': 'record'}],
-                         'required': False,
-                         'many': False,
-                         'mapping': False,
-                         'nullable': True,
-                         'ordered': False,
-                         'lineage': False},
-         'generator': {'options': [{'kind': 'string', 'category': 'primitive'}],
-                       'required': True,
-                       'many': False,
-                       'mapping': False,
-                       'nullable': False,
-                       'ordered': False,
-                       'lineage': False},
-         'versions': {'options': [{'kind': 'LibraryVersion', 'category': 'record'}],
-                      'required': True,
-                      'many': True,
-                      'mapping': False,
-                      'nullable': False,
-                      'ordered': True,
-                      'lineage': False},
-         'streams': {'options': [{'kind': 'RandomStream', 'category': 'record'}],
-                     'required': True,
-                     'many': True,
-                     'mapping': False,
-                     'nullable': False,
-                     'ordered': True,
-                     'lineage': False},
-         'inputs': {'options': [{'kind': 'Binding', 'category': 'record'}],
-                    'required': True,
-                    'many': True,
-                    'mapping': False,
-                    'nullable': False,
-                    'ordered': True,
-                    'lineage': False},
-         'outputs': {'options': [{'kind': 'Binding', 'category': 'record'}],
-                     'required': True,
-                     'many': True,
-                     'mapping': False,
-                     'nullable': False,
-                     'ordered': True,
-                     'lineage': False},
-         'availability': {'options': [{'kind': 'ObservationAvailability',
-                                       'category': 'record'}],
-                          'required': True,
-                          'many': True,
-                          'mapping': False,
-                          'nullable': False,
-                          'ordered': True,
-                          'lineage': False}}
-    )
-
-    def __init__(self, *,
-        id: UUID,
-        plan: ScenarioPlan,
-        key: str,
-        calculation: CalculationProvenance | None | Unset = UNSET,
-        generator: str,
-        versions: tuple[LibraryVersion, ...],
-        streams: tuple[RandomStream, ...],
-        inputs: tuple[Binding, ...],
-        outputs: tuple[Binding, ...],
-        availability: tuple[ObservationAvailability, ...],
-    ) -> None:
-        data: dict[str, object] = {}
-        data['id'] = _encode_uuid(id)
-        data['plan'] = _encode_record(plan, ScenarioPlan, 'plan')
-        data['key'] = copy_json(key)
-        if calculation is not UNSET:
-            data['calculation'] = _encode_record(calculation, CalculationProvenance, 'calculation')
-        data['generator'] = copy_json(generator)
-        data['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
-        data['streams'] = _encode_many(streams, lambda v: _encode_record(v, RandomStream, 'streams'))
-        data['inputs'] = _encode_many(inputs, lambda v: _encode_record(v, Binding, 'inputs'))
-        data['outputs'] = _encode_many(outputs, lambda v: _encode_record(v, Binding, 'outputs'))
-        data['availability'] = _encode_many(availability, lambda v: _encode_record(v, ObservationAvailability, 'availability'))
-        self._set_checked(data)
-
-    def replace(self, *,
-        id: UUID | Unset = UNSET,
-        plan: ScenarioPlan | Unset = UNSET,
-        key: str | Unset = UNSET,
-        calculation: CalculationProvenance | None | Unset | Omit = UNSET,
-        generator: str | Unset = UNSET,
-        versions: tuple[LibraryVersion, ...] | Unset = UNSET,
-        streams: tuple[RandomStream, ...] | Unset = UNSET,
-        inputs: tuple[Binding, ...] | Unset = UNSET,
-        outputs: tuple[Binding, ...] | Unset = UNSET,
-        availability: tuple[ObservationAvailability, ...] | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if id is not UNSET:
-            changes['id'] = _encode_uuid(id)
-        if plan is not UNSET:
-            changes['plan'] = _encode_record(plan, ScenarioPlan, 'plan')
-        if key is not UNSET:
-            changes['key'] = copy_json(key)
-        if calculation is OMIT:
-            changes['calculation'] = OMIT
-        elif calculation is not UNSET:
-            changes['calculation'] = _encode_record(calculation, CalculationProvenance, 'calculation')
-        if generator is not UNSET:
-            changes['generator'] = copy_json(generator)
-        if versions is not UNSET:
-            changes['versions'] = _encode_many(versions, lambda v: _encode_record(v, LibraryVersion, 'versions'))
-        if streams is not UNSET:
-            changes['streams'] = _encode_many(streams, lambda v: _encode_record(v, RandomStream, 'streams'))
-        if inputs is not UNSET:
-            changes['inputs'] = _encode_many(inputs, lambda v: _encode_record(v, Binding, 'inputs'))
-        if outputs is not UNSET:
-            changes['outputs'] = _encode_many(outputs, lambda v: _encode_record(v, Binding, 'outputs'))
-        if availability is not UNSET:
-            changes['availability'] = _encode_many(availability, lambda v: _encode_record(v, ObservationAvailability, 'availability'))
-        return self._replace(changes)
-
-    @property
-    def id(self) -> UUID:
-        'Stable identity of the realization.'
-        return cast('UUID', _decode_uuid(self._data.get('id')))
-
-    @property
-    def plan(self) -> ScenarioPlan:
-        'Complete plan from which the scenario inputs were generated.'
-        return cast('ScenarioPlan', self._child('plan', ScenarioPlan, False))
-
-    @property
-    def key(self) -> str:
-        'Scenario key; with the plan seed, it determines the random streams.'
-        return cast('str', self._data.get('key'))
-
-    @property
-    def calculation(self) -> CalculationProvenance | None:
-        'Calculation that produced the realized paths; absent for inputs without realized paths.'
-        return cast('CalculationProvenance | None', self._child('calculation', CalculationProvenance, False))
-
-    @property
-    def generator(self) -> str:
-        'Random generation algorithm, such as numpy.SeedSequence/PCG64, or supplied for captured inputs.'
-        return cast('str', self._data.get('generator'))
-
-    @property
-    def versions(self) -> tuple[LibraryVersion, ...]:
-        'Dependency versions of the sampling or capture environment.'
-        return cast('tuple[LibraryVersion, ...]', self._child('versions', LibraryVersion, True))
-
-    @property
-    def streams(self) -> tuple[RandomStream, ...]:
-        'Random streams used to sample the inputs; empty for supplied inputs.'
-        return cast('tuple[RandomStream, ...]', self._child('streams', RandomStream, True))
-
-    @property
-    def inputs(self) -> tuple[Binding, ...]:
-        'Bindings of the captured input Values.'
-        return cast('tuple[Binding, ...]', self._child('inputs', Binding, True))
-
-    @property
-    def outputs(self) -> tuple[Binding, ...]:
-        'Bindings of the realized path Values; empty until the paths are realized.'
-        return cast('tuple[Binding, ...]', self._child('outputs', Binding, True))
-
-    @property
-    def availability(self) -> tuple[ObservationAvailability, ...]:
-        'Earliest observation dates of the recorded Movements.'
-        return cast('tuple[ObservationAvailability, ...]', self._child('availability', ObservationAvailability, True))
 
 
 class Selection(Record):
@@ -8489,7 +7970,6 @@ _TYPES = {
     'Assembly': Assembly,
     'Assignment': Assignment,
     'Binding': Binding,
-    'CalculationProvenance': CalculationProvenance,
     'Call': Call,
     'Characteristics': Characteristics,
     'Claim': Claim,
@@ -8526,7 +8006,6 @@ _TYPES = {
     'Model': Model,
     'Movement': Movement,
     'Objective': Objective,
-    'ObservationAvailability': ObservationAvailability,
     'ObservationBinding': ObservationBinding,
     'ObservedQuantity': ObservedQuantity,
     'Parameter': Parameter,
@@ -8553,9 +8032,6 @@ _TYPES = {
     'Run': Run,
     'RunStatus': RunStatus,
     'Runtime': Runtime,
-    'ScenarioParameter': ScenarioParameter,
-    'ScenarioPlan': ScenarioPlan,
-    'ScenarioRealization': ScenarioRealization,
     'Selection': Selection,
     'SeriesBinding': SeriesBinding,
     'Settings': Settings,
@@ -8576,7 +8052,6 @@ _SLOTS = {
     'Assembly': Assembly._SLOTS,
     'Assignment': Assignment._SLOTS,
     'Binding': Binding._SLOTS,
-    'CalculationProvenance': CalculationProvenance._SLOTS,
     'Call': Call._SLOTS,
     'Characteristics': Characteristics._SLOTS,
     'Claim': Claim._SLOTS,
@@ -8613,7 +8088,6 @@ _SLOTS = {
     'Model': Model._SLOTS,
     'Movement': Movement._SLOTS,
     'Objective': Objective._SLOTS,
-    'ObservationAvailability': ObservationAvailability._SLOTS,
     'ObservationBinding': ObservationBinding._SLOTS,
     'ObservedQuantity': ObservedQuantity._SLOTS,
     'Parameter': Parameter._SLOTS,
@@ -8640,9 +8114,6 @@ _SLOTS = {
     'Run': Run._SLOTS,
     'RunStatus': RunStatus._SLOTS,
     'Runtime': Runtime._SLOTS,
-    'ScenarioParameter': ScenarioParameter._SLOTS,
-    'ScenarioPlan': ScenarioPlan._SLOTS,
-    'ScenarioRealization': ScenarioRealization._SLOTS,
     'Selection': Selection._SLOTS,
     'SeriesBinding': SeriesBinding._SLOTS,
     'Settings': Settings._SLOTS,
@@ -8666,4 +8137,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'RunStatus', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'RunStatus', 'Runtime', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']

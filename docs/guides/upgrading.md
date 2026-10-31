@@ -230,8 +230,32 @@ paths = rk.market.generate(
 paths[paths.keys[0]]["rent_index"]  # one path of the series, as a Flow
 ```
 
-`rangekeeper.market.generation` is no longer in `rangekeeper.market.__all__`;
-it stays importable until #140 removes the scenario plan.
+### Market paths replace the scenario plan
+
+The scenario plan and the per-path Model revisions are removed
+([#140](https://github.com/daniel-fink/rangekeeper/issues/140),
+[ADR-014](../decisions/014-market-paths.md)):
+
+| Removed | Use instead |
+| --- | --- |
+| `rangekeeper.market.ScenarioPlan`, `ScenarioParameter`, `generation.make_plan` and the `make_trend`, `make_volatility`, `make_cyclicality`, `make_noise` and `make_black_swan` components | `rk.market.Dynamics(trend=, cycle_period=, cycle_amplitude=, volatility=, noise=, shock_probability=, shock_size=)` |
+| `generation.sample`, `capture`, `realize` and `generate`, and `rangekeeper.market.ScenarioRealization` | `rk.market.generate(dynamics={name: Dynamics}, periods=, seed=, count=)`, which returns a `rk.market.Paths` document; `rk.market.Paths.from_flows(flows=, lag=)` for paths from data |
+| `rangekeeper.market.Market` and its named properties | `paths[key][name]`, the Flow of one series of one path |
+| `rangekeeper.market.replay` and `ReplayUnavailableError` | The stored `Paths` document: a case across the paths uses its amounts, and `paths.regenerate(seed=paths.capture.seed) == paths` checks that the generator makes them again |
+| One Model revision for each path | One Model and `Specification.across(paths=)`: one case for each path |
+| `CalculationProvenance`, `ObservationAvailability` | The capture record of the Paths (`generator`, `fingerprint`, `versions`) and the lag of each series (`paths.available(name=)`) |
+| The modules `market.generation`, `market.components`, `market.contracts`, `market.view` and `market.implementation` | `rangekeeper.market` |
+
+The Model format drops `provenance.scenarios`: a Model that records captured
+realizations no longer reads. Regenerate the paths from their recorded seed and
+parameters with `rk.market.generate`, and fix the Model values from them with
+`across` ([ADR-014](../decisions/014-market-paths.md#removal)). Rule
+observations are available on the dates of their coordinates and declarations;
+scenario availability evidence is gone.
+
+`rangekeeper.market` is a public namespace (`rk.market`). The investment example
+takes one market path as data: `author(parameters, factors=, cap_rates=)`
+replaces `author(parameters, scenario=)`.
 
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 

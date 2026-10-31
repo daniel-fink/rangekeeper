@@ -74,12 +74,12 @@ contracts enforce the rule.
 layer, above the `model` package: it imports `model`, and `model` does not
 import it. Users import from `rangekeeper` and from the namespaces in
 `rangekeeper.__all__`: `quantity`, `money`, `duration`, `profile`, `flow`,
-`finance`, `model`, `expressions`, `specification`, `run`, `execution`, `io` and
-`errors`.
-`schema` and `shared` are internal. `market` is internal now; it becomes public
-with its 1.0.0b1 API
+`market`, `finance`, `model`, `expressions`, `specification`, `run`, `execution`,
+`io` and `errors`.
+`schema` and `shared` are internal. `market` became public with its 1.0.0b1 API
 ([#298](https://github.com/daniel-fink/rangekeeper/issues/298),
-[#299](https://github.com/daniel-fink/rangekeeper/issues/299)). Owners re-export
+[#299](https://github.com/daniel-fink/rangekeeper/issues/299),
+[#140](https://github.com/daniel-fink/rangekeeper/issues/140)). Owners re-export
 the records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
 and [ADR-017](../decisions/017-api-and-formats.md).
 
@@ -184,14 +184,15 @@ show the target API in use.
   [#297](https://github.com/daniel-fink/rangekeeper/issues/297).
 
 **Work with market paths** ([ADR-014](../decisions/014-market-paths.md))
-- Now: in the internal `market` package, `rk.market.Dynamics` declares how a
+- Now: `rk.market.Dynamics` declares how a
   series moves and `rk.market.generate(dynamics=, periods=, seed=, count=)`
   makes a `Paths` document; `Paths.from_flows` makes one from data, and
   `regenerate(seed=)` makes the paths again. Stores and Bundles hold it. A
   Flow fixes a Flow value, `fix(rent_index=paths.mean(name="rent_index"))`,
   and `Specification.across(paths=, series=)` makes one case for each path,
-  matched by key; the Runs pin the Paths. The package still has the scenario
-  plan, its generation, `Market` access and replay. See
+  matched by key; the Runs pin the Paths. The scenario plan, `Market` and
+  per-path Model revisions are removed
+  ([#140](https://github.com/daniel-fink/rangekeeper/issues/140)). See
   [market paths and rules](../reference/market-paths-and-rules.md).
 - 1.0 target:
   1. Choose a path generator (`rk.market.Dynamics`) and its parameters.
@@ -234,7 +235,7 @@ contents are not yet in their 1.0 owner:
 | `duration` | Frequency, Period, Periods, Span, calendar grids and calendar rules | — |
 | `profile` | Growth profiles (`Constant`, `Linear`, `Compounding`), distribution profiles (`Uniform`, `SCurve`), the `Profile` Protocol and the `profiles` registry; the Distribution owner (public as `rangekeeper.model.Distribution`). `Flow.from_profile` in `flow` makes the Flow | — |
 | `flow` | Flow, Movement and Stream, their options, table display and the private engine | — |
-| `market` | `Dynamics` and `generate`, the `Paths` document and the path generator registry; the private kernels; the scenario plan, its generation, `Market` access and replay | `Paths` replaces the scenario plan, `Market` and replay ([#140](https://github.com/daniel-fink/rangekeeper/issues/140)). Generation, `Market` and replay still import `model`, above `market` |
+| `market` | `Dynamics` and `generate`, the `Paths` document, the path generator registry and the private kernels | — |
 | `finance` | Financial valuation: `pv`, `npv`, `irr`, `interest` and `payment`; the older `financial` module with PV, XNPV, IRR and day counts | `pv`, `npv` and `irr` replace `financial.calculate_*` ([#167](https://github.com/daniel-fink/rangekeeper/issues/167)) |
 | `model` | The Model document, definitions, the system graph and rollups, equations, the equation-function registry, provenance and geometry | — |
 | `expressions` | `rx`, the Python form of equations, written from the equation-function registry | — |

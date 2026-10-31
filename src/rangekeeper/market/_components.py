@@ -32,7 +32,7 @@ __all__ = [
 
 # The fixed conventions of the market method (ADR-014): the autoregression and
 # mean reversion of the volatility, and the share of a shock that ends in each
-# Period, as in rk 0.8 and the earlier scenario plan.
+# Period, as in rk 0.8.
 AUTOREGRESSION = 0.2
 MEAN_REVERSION = 0.1
 DISSIPATION = 0.5

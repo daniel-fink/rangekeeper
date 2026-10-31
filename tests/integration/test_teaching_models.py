@@ -2,15 +2,14 @@
 
 import datetime
 import math
-from uuid import uuid4
 
 import pytest
 
 from rangekeeper import execution
 from rangekeeper.duration import Frequency, Periods
+from rangekeeper.flow import Flow
 from rangekeeper.io import MemoryStore
-from rangekeeper.market.generation import generate, make_plan
-from rangekeeper.model import Distribution, DistributionFamily, Metadata, Model
+from rangekeeper.market import Paths
 from rangekeeper.run import validate
 from rangekeeper.schema.enums import SolutionStatus
 from tests.integration.models import deterministic, flexible, linear, probabilistic
@@ -68,26 +67,28 @@ def test_deterministic_horizon_comparison(initial, increment, terminal):
 
 
 def test_probabilistic_and_flexible_use_identical_captured_paths():
-    base = Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
-    plan = make_plan(
-        periods=Periods(
-            start=datetime.date(2021, 1, 1), frequency=Frequency.YEAR, count=4
-        ),
-        seed=17,
-        method="market.independent",
-        parameters=dict(
-            space_factor=Distribution(
-                kind=DistributionFamily.UNIFORM,
-                lower=1.3,
-                upper=1.4,
-                units="dimensionless",
-            ),
-            asset_cap=0.05,
-        ),
+    periods = Periods(
+        start=datetime.date(2021, 1, 1), frequency=Frequency.YEAR, count=4
     )
-    scenario = generate(base, plan, scenario_keys=["paired"])[0]
+
+    def series(*magnitudes):
+        return Flow.from_periods(periods=periods, magnitudes=magnitudes, units="ratio")
+
+    paths = Paths.from_flows(
+        flows={
+            "paired": {
+                "space_market_price_factors": series(1.35, 1.32, 1.38, 1.31),
+                "asset_market": series(0.05, 0.05, 0.05, 0.05),
+            }
+        }
+    )
+    path = paths["paired"]
     model = probabilistic.formulate(
-        probabilistic.author(dict(num_periods=3), scenario=scenario)
+        probabilistic.author(
+            dict(num_periods=3),
+            factors=path["space_market_price_factors"],
+            cap_rates=path["asset_market"],
+        )
     )
     fixed, _ = execute(probabilistic, model)
     rules = flexible.build_stop_gain_resale_rules(
@@ -97,21 +98,21 @@ def test_probabilistic_and_flexible_use_identical_captured_paths():
     assert chosen.sale_date == datetime.date(2022, 12, 31)
     assert fixed.sale_date == datetime.date(2023, 12, 31)
     assert len(run.report.rule_evidence) == 2
-    for name in ("space_market_price_factors", "historical_value"):
-        value = scenario.value(name)
-        assert (
-            fixed.model.value(id=value.id).flow
-            == chosen.model.value(id=value.id).flow
-            == value.flow
-            or name == "space_market_price_factors"
-        )
+    for key, name in (
+        ("space_market_price_factors", "space_market_price_factors"),
+        ("reversion_cap_rates", "asset_market"),
+    ):
+        recorded = [m.number for m in path[name].movements]
         # Assigned observations may gain evidence; their magnitudes and coordinates stay identical.
+        for result in (fixed, chosen):
+            flow = probabilistic.values(result.model)[key].flow
+            assert [m.number for m in flow.movements] == recorded
         assert [
             (m.key, m.date, m.magnitude)
-            for m in fixed.model.value(id=value.id).flow.movements
+            for m in probabilistic.values(fixed.model)[key].flow.movements
         ] == [
             (m.key, m.date, m.magnitude)
-            for m in chosen.model.value(id=value.id).flow.movements
+            for m in probabilistic.values(chosen.model)[key].flow.movements
         ]
     output = flexible.values(chosen.model)
     assert output["total"].flow.movements[-1].magnitude == 0

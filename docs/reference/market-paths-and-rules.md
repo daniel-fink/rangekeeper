@@ -40,10 +40,6 @@ See [calendar contracts](calculations.md).
 | `market._components` | The components of a series (trend, cycle, volatility, noise and shock), each a small object with its parameters per Period (internal) |
 | `market._kernels` | The deterministic trend, cycle, autoregression, volatility and shock kernels over supplied draws (internal) |
 | `market.validation` | The checks of a `Paths` document |
-| `market.contracts` | Immutable method, parameter, input and output inventories; captured-record conformance without random generation |
-| `market.generation` | `make_plan`, `validate`, `sample`, `capture`, `realize` and `generate` |
-| `market.implementation` | Calculation provenance and its source/dependency manifest, from the import closure of the calculation |
-| `market.replay` | Check saved paths against captured inputs and the available calculation |
 | `specification.rule` | Generated declarations and evidence |
 | `specification.rule.validation` | Rule declaration checks |
 | `execution.rule` | `evaluate`, `observe` and derived results |
@@ -120,8 +116,7 @@ shock each multiply it by one plus their value. Rates per year convert for the
 Periods: a growth `g` per year is `(1 + g) ** t - 1` in a Period of `t` years, a
 volatility is `volatility * sqrt(t)`, and a shock probability `p` is
 `1 - (1 - p) ** t`. The Periods must have one length (`ContractError`). On the
-same draws, the components give the results of the earlier `market` scenario
-method.
+same draws, the components give the results of rk 0.8's market dynamics.
 
 The series are independent: `generate` has no correlation argument (D31). Compose
 markets that move together with Flow arithmetic, such as
@@ -226,47 +221,6 @@ its composition expands the path into assignments. Runs pin the Paths in
 under its UUID and return it with `load_paths(id)`; the codecs read it with
 `kind=rk.market.Paths`. An identical write changes nothing.
 
-## Captured market paths and replay
-
-The scenario plan and the realizations below are the earlier design. `Paths`,
-`Dynamics` and `Specification.across` replace them; #140 removes them
-([#140](https://github.com/daniel-fink/rangekeeper/issues/140)).
-
-Use `from rangekeeper.market import generation as market`. Stable method codes are `market`,
-`market.estimates` and `market.independent`. `market.sample` records random inputs only; `market.capture`
-records supplied inputs without randomness. `market.realize(model, plan, draws=)`
-constructs paths from a draw Model derived from that base. `market.generate`
-combines sampling and realization. Its sequential path calls the calculation
-directly; workers exchange detached wire data and preserve requested key order.
-
-SeedSequence/PCG64 streams derive from the seed, scenario key and stable component
-identifier using SHA256. Worker count and key order do not alter a scenario's
-stream. Component authors such as `market.make_trend`, `make_volatility`,
-`make_cyclicality`, `make_noise` and `make_black_swan` create plan parameters.
-Duplicate parameters fail. Space-cycle variation stays centred on zero; amplitude
-is half the full height.
-
-Captured provenance records streams and library versions separately from
-`CalculationProvenance(name, fingerprint, versions)`. A realized Model revision
-hash includes its complete candidate content, except its new root ID, and the
-calculation provenance. The encoding is sorted-key, compact, ASCII JSON with
-nonfinite values forbidden, SHA256, then UUID5 under the realization UUID with
-`realized-model/v1:`. Changed paths or calculation code therefore change the
-revision; declaration IDs and sampling streams remain stable.
-
-`rangekeeper.market.replay` never draws again. It requires captured inputs, checks calculation
-identity, and compares recomputed paths with saved paths. `ReplayUnavailableError`
-means the saved result is readable but its calculation implementation is unavailable.
-It differs from `UnsupportedVersionError`, which rejects a document version at
-load time. Migration preserves saved values and cannot invent current calculation
-provenance for old results.
-
-`Market` provides revision-pinned access, including `space_market_price_factors`,
-`asset_true_value`, `implied_reversion_cap_rates`, `autoregressive_returns` and
-`cumulative_volatility`. `resolve_input` and `resolve_output` are explicit;
-`value(name)` rejects ambiguous names. Access performs no calculation. Next-period
-ratios cannot be observed until their required next period ends.
-
 ## Rule declarations and evidence
 
 Import `RuleSet`, `Decision`, `Rule`, `Action`, `ActionKind` and `RuleEvidence`
@@ -280,9 +234,10 @@ Import `evaluate`, `observe`, `RuleResult` and `RuleCapabilityError` from
 `rangekeeper.execution.rule`. `evaluate(rules=..., model=..., units=None)` prepares the scope and availability index
 once; without `units` it uses `Model.unit_system`. It then applies the first true rule or the explicit fallback. Actions assign
 controls and may terminate. `observe` accepts only named quantities available by
-the decision date. Earlier evidence can supply later observations; a recorded
+the decision date: a dated Movement on its date, a period Movement on the last
+day of its Period. Earlier evidence can supply later observations; a recorded
 control value cannot substitute for an earlier decision. Declared availability can
-delay access, but cannot advance coordinate or provenance requirements.
+delay access, but cannot advance a coordinate.
 
 `RuleResult.evidence` is an immutable tuple. Its assignments are derived from
 that evidence. `rk.execution.DecisionResult` names the result of one check:
@@ -297,7 +252,9 @@ and stored checks use the caller's unit context. Neither certifies numerical
 feasibility; acceptance still checks the original governing equations.
 
 The investment resale example uses a strict factor greater than the threshold,
-a minimum holding period and final-horizon fallback. Sale includes that period's
+a minimum holding period and final-horizon fallback. `author(factors=, cap_rates=)`
+records the factors and capitalization rates of one market path, such as
+`paths[key]["space_market_price_factors"]`. Sale includes that period's
 operating cashflow and proceeds. Later controls are zero; the full market path
 remains recorded. These economic roles belong to the investment example.
 
@@ -309,81 +266,20 @@ See [migration](../guides/upgrading.md), [record methods](records.md), and
 | Name | Responsibility |
 |---|---|
 | Model | Canonical immutable content and provenance |
-| Market | Read-only, typed access to a recorded market within one Model revision |
 | Paths | A captured, replayable set of market paths with its capture record |
 | MarketPath | One path of a Paths document: one Flow for each series |
+| Dynamics | How one series moves: trend, cycle, volatility, noise and shock |
 | PathGenerator | A registered method that makes market paths from parameters |
-| ScenarioPlan | Complete generation inputs, method, periods and seed |
-| ScenarioParameter | Named fixed quantity or distribution input |
-| ScenarioRealization | Captured inputs and outputs, random identities and availability |
+| PathCapture | How a Paths document was made: generator, fingerprint, parameters, seed, streams and versions |
+| PathParameter | One constant or distributed parameter of a generator for one series |
+| PathCase | The reference of a case to one path: the Paths UUID, the path key and the Movements that each series fixes |
 | Distribution | One LinkML-generated probability-distribution record |
 | Binding | A local name referring to a canonical Value; the container defines scope |
 | RandomStream | Recorded identity of a random sequence, separate from a Flow Stream |
 | RuleSet | The rules of a Specification: controlled targets and dated decisions |
 | Decision | Dated rule declaration with observations, rules and fallback |
 | RuleEvidence | Recorded observations, assignments and termination for one Decision |
-| CalculationProvenance | Calculation identity distinct from random-stream evidence |
 
-`schema/distribution.yaml` and `schema/binding.yaml` contain reusable contracts.
-`schema/scenario.yaml` imports them. A Formulation and a realization use the same
-Binding record; each container validates local uniqueness and target resolution.
-No generated field schema is repeated in a handwritten distribution class.
-
-## Composable market authoring
-
-`market.generation` exposes `make_plan`, `make_trend`, `make_volatility`,
-`make_cyclicality`, `make_noise`, `make_black_swan`, `sample`, `capture`, `realize`
-and `generate`. Component constructors return tuples of generated
-ScenarioParameter records. They do not sample or create output Flows. Duplicate
-explicit parameters across components or the parameter mapping fail.
-
-Given a base `model` and explicit calendar `periods`, compose the plan as follows:
-
-```python
-from rangekeeper.market import generation as market
-
-plan = market.make_plan(
-    periods=periods,
-    seed=23,
-    components=(
-        market.make_trend(growth_rate=0.02),
-        market.make_volatility(volatility_per_period=0.03),
-        market.make_cyclicality(space_amplitude=0.25),
-        market.make_noise(lower=-0.02, upper=0.02),
-        market.make_black_swan(likelihood=0.02, impact=-0.25),
-    ),
-)
-markets = market.generate(model, plan, scenario_keys=("base",))
-pricing_value = markets[0].space_market_price_factors
-pricing_flow = pricing_value.flow
-```
-
-`Market` stores only its Model and selected realization. Named properties resolve
-canonical Values; they do not own copied Flow content or calculate on access.
-Missing components raise KeyError, including components not provided by an
-independent-path method. Captured inputs without realized outputs cannot be
-presented as a Market. Selecting evidence from a different revision fails.
-
-## Quantities retain their meaning
-
-| Earlier public name | Current name |
-|---|---|
-| pricing_factor | space_market_price_factors |
-| true_value | asset_true_value |
-| implied_cap_rate | implied_reversion_cap_rates |
-| input volatility | volatility_per_period |
-| output volatility | cumulative_volatility |
-| output autoregression | autoregressive_returns |
-
-The autoregression coefficient is still an input named `autoregression`.
-Cumulative volatility is a rental level after accumulation and mean reversion,
-not a return increment. Space-cycle variation is centred on zero; its multiplier
-is `1 + space_cycle`. The legacy `space_waveform` already included that one, so it
-is not a synonym. Amplitude remains half the peak-to-trough height. No formula,
-Flow semantic kind, or implicit assignment is introduced by these names.
-
-Black Swan is the walkthrough name for the once-per-scenario shock recipe. The
-general numerical kernel is the private `market._kernels.shock`. `make_noise` declares the
-current method's uniform bounds; it does not claim support for arbitrary deal-noise
-distributions. Linked cycle estimates remain available through
-`market.estimates` and explicit plan parameters.
+`schema/market.yaml` holds the Paths records; `schema/distribution.yaml` and
+`schema/binding.yaml` contain reusable contracts. No generated field schema is
+repeated in a handwritten distribution class.

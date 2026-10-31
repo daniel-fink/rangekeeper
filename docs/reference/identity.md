@@ -55,8 +55,8 @@ them.
 
 Records and documents are not transforms. `Movement.replace` and `Flow.replace`
 keep the IDs that they are not given. A Model revision and solver publication keep
-the IDs of existing Movements, and scenario generation makes deterministic IDs from
-the owning Value UUID and period. Methods that return the same Flow
+the IDs of existing Movements. The Flows of a market path (`paths[key][name]`) have
+fresh Movement IDs; their Periods and amounts are their value. Methods that return the same Flow
 (`require_resolved()`, `check()`, unary `+`) make no Movements.
 
 For explicit identity, make the `Movement` records and pass them as

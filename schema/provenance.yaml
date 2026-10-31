@@ -8,7 +8,6 @@ prefixes:
   rk: https://daniel-fink.github.io/rangekeeper/schema/
 imports:
 - assembly
-- scenario
 default_prefix: rk
 default_range: string
 classes:
@@ -38,14 +37,6 @@ classes:
         multivalued: true
         inlined: true
         inlined_as_list: true
-      scenarios:
-        description: Captured scenario realizations, in order, with their inputs, paths and observation
-          availability.
-        range: ScenarioRealization
-        inlined: true
-        multivalued: true
-        inlined_as_list: true
-        list_elements_ordered: true
   Source:
     description: An identifiable edition of an external evidence artifact.
     attributes:

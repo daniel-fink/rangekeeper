@@ -119,15 +119,7 @@ layers = [
 ]
 # Upward imports that a planned change removes. Each entry names its issue;
 # remove the entry with the import.
-ignore_imports = [
-    # #298, #299: Dynamics, generate and Paths replace the scenario plan, which
-    # samples, captures and replays market paths into a Model.
-    "rangekeeper.market._replay -> rangekeeper.model",
-    "rangekeeper.market.components -> rangekeeper.model",
-    "rangekeeper.market.contracts -> rangekeeper.model._scope",
-    "rangekeeper.market.generation -> rangekeeper.model",
-    "rangekeeper.market.view -> rangekeeper.model",
-]
+ignore_imports = []
 
 [tool.uv]
 # Rebuild the editable install when the git version changes (setuptools-scm).
@@ -230,13 +222,6 @@ known-first-party = ["rangekeeper", "rangekeeper_examples"]
 "src/rangekeeper/flow/_batch.py" = ["C901", "PLR0912", "PLR0915", "ANN001", "ANN202", "ANN206"]
 "src/rangekeeper/io/_amounts.py" = ["C901", "PLR0917", "ANN001", "ANN002", "ANN202"]
 "src/rangekeeper/io/bundle.py" = ["B023", "C901", "PLR0915", "PLR0917", "PLC0415", "ANN001", "ANN202", "ANN204"]
-"src/rangekeeper/market/_paths.py" = ["ANN001", "ANN202"]
-"src/rangekeeper/market/components.py" = ["PLR0913"]
-"src/rangekeeper/market/contracts.py" = ["PLC0415", "ANN001", "ANN201", "ANN202"]
-"src/rangekeeper/market/generation.py" = ["PLR0913", "PLR0917", "PLC0415", "ANN001", "ANN201", "ANN202"]
-"src/rangekeeper/market/implementation.py" = ["ANN001"]
-"src/rangekeeper/market/random.py" = ["PLC0415", "ANN201"]
-"src/rangekeeper/market/view.py" = ["ANN001", "ANN202"]
 "src/rangekeeper/model/_scope.py" = ["C901", "PLC0415", "ANN001", "ANN202"]
 "src/rangekeeper/model/content.py" = ["C901", "PLR0911", "PLR0912", "PLR0915", "ANN001", "ANN202"]
 "src/rangekeeper/model/definitions.py" = ["PLC0415", "ANN001", "ANN202"]
@@ -355,7 +340,6 @@ module = [
     "rangekeeper.flow.*",
     "rangekeeper.io.*",
     "rangekeeper.model.*",
-    "rangekeeper.market.*",
 ]
 disallow_any_generics = false
 disallow_subclassing_any = false

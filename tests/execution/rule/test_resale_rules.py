@@ -1,4 +1,8 @@
-"""Determinism, captured-input replay and finite rules information boundaries."""
+"""Rule evaluation and the stored-evidence check, on the investment example.
+
+Moved from ``tests/market/test_paths_and_rules.py`` when #140 removed the
+scenario plan: these tests are about ``execution.rule``, not market paths.
+"""
 
 from datetime import date
 from uuid import uuid4
@@ -7,98 +11,21 @@ import pytest
 
 from rangekeeper.duration import Frequency, Periods
 from rangekeeper.errors import Code
-from rangekeeper.execution.rule import RuleCapabilityError, evaluate, observe
+from rangekeeper.execution.rule import RuleCapabilityError, evaluate
 from rangekeeper.flow import Flow, Movement
-from rangekeeper.market import replay
-from rangekeeper.market.generation import generate, make_plan
 from rangekeeper.model import (
     Definitions,
-    Distribution,
     Formulation,
     Measure,
     Metadata,
     Model,
-    Reference,
     System,
     Update,
     Value,
     ValueKind,
 )
-from rangekeeper.schema.enums import DistributionFamily, Severity, SolutionStatus
-from rangekeeper.specification.rule import ObservationBinding
+from rangekeeper.schema.enums import Severity, SolutionStatus
 from rangekeeper_examples.investment import build_stop_gain_resale_rules
-
-
-def base():
-    return Model.create(metadata=Metadata(id=uuid4(), schema_version="1.0.0"))
-
-
-def test_parallel_streams_and_replay(monkeypatch):
-    model = base()
-    plan = make_plan(
-        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=4),
-        seed=23,
-    )
-    first = generate(model, plan, scenario_keys=("one", "two"))
-    other = generate(model, plan, scenario_keys=("two", "one"), workers=2)
-    assert [r.model.to_data() for r in first] == [
-        r.model.to_data() for r in reversed(other)
-    ]
-
-    def forbidden(*args, **kwargs):
-        raise AssertionError("replay drew randomness")
-
-    monkeypatch.setattr("rangekeeper.market.generation.create_generator", forbidden)
-    assert replay(first[0].model).model is first[0].model
-
-
-def test_fixed_market_oracle_and_shock_applied_once():
-    params = dict(
-        initial_value=2.0,
-        growth_rate=0.1,
-        cap_rate=0.5,
-        volatility_per_period=0.0,
-        space_amplitude=0.0,
-        asset_amplitude=0.0,
-        noise_lower=0.0,
-        noise_upper=0.0,
-        shock_likelihood=1.0,
-        shock_impact=-0.2,
-        shock_dissipation=0.5,
-    )
-    plan = make_plan(
-        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
-        seed=2,
-        parameters=params,
-    )
-    result = generate(base(), plan, scenario_keys=["fixed"])[0]
-    assert [
-        m.number for m in result.value("space_market").flow.movements
-    ] == pytest.approx([2, 2.2, 2.42])
-    assert [
-        m.number for m in result.value("historical_value").flow.movements
-    ] == pytest.approx([3.2, 3.96, 4.598])
-    assert [
-        m.number for m in result.value("shock_effect").flow.movements
-    ] == pytest.approx([-0.2, -0.1, -0.05])
-    ref = Reference(
-        target=result.value("implied_reversion_cap_rates").flow.movements[0].id
-    )
-    with pytest.raises(RuleCapabilityError, match="unavailable"):
-        observe(
-            model=result.model,
-            at=date(2027, 12, 31),
-            bindings=[
-                ObservationBinding(
-                    name="forward", target=ref, available_at=date(2027, 1, 1)
-                )
-            ],
-        )
-    assert observe(
-        model=result.model,
-        at=date(2028, 12, 31),
-        bindings=[ObservationBinding(name="forward", target=ref)],
-    ).quantities[0].quantity.number == pytest.approx(2.2 / 3.2)
 
 
 def rule_model(factors):
@@ -193,73 +120,6 @@ def test_future_changes_cannot_change_earlier_decision_and_missing_is_not_zero()
     data["formulations"][0]["values"][0]["flow"]["movements"][0]["magnitude"] = None
     with pytest.raises(RuleCapabilityError, match="unresolved"):
         evaluate(rules=rules, model=model.revise(Update(system=System.from_data(data))))
-
-
-def test_independent_realizations_capture_distribution_draws():
-    plan = make_plan(
-        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
-        seed=9,
-        method="market.independent",
-        parameters=dict(
-            space_factor=Distribution(
-                kind=DistributionFamily.PERT,
-                lower=0.5,
-                upper=1.5,
-                mode=1,
-                units="dimensionless",
-            ),
-            asset_cap=0.05,
-        ),
-    )
-    result = generate(base(), plan, scenario_keys=["independent"])[0]
-    assert [
-        m.number for m in result.value("space_market_price_factors").flow.movements
-    ] == [m.number for m in result.value("space_factor").flow.movements]
-    assert replay(result.model).model.id == result.model.id
-
-
-def test_supplied_innovations_realize_without_randomness(monkeypatch):
-    from rangekeeper.market.generation import capture, realize
-
-    plan = make_plan(
-        periods=Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
-        seed=123,
-        parameters=dict(
-            initial_value=2.0,
-            growth_rate=0.1,
-            cap_rate=0.5,
-            autoregression=0.5,
-            mean_reversion=0.2,
-            space_amplitude=0.0,
-            asset_amplitude=0.0,
-            noise_lower=0.0,
-            noise_upper=0.0,
-            shock_likelihood=0.0,
-        ),
-    )
-    inputs = {p.name: p.quantity for p in plan.parameters}
-    inputs.update(
-        innovations=[0.01, 0.02, -0.01], noise=[0, 0, 0], events=[0.9, 0.9, 0.9]
-    )
-    model = base()
-
-    def forbidden(*args, **kwargs):
-        raise AssertionError("known-input construction drew randomness")
-
-    monkeypatch.setattr("rangekeeper.market.generation.create_generator", forbidden)
-    draws = capture(model, plan, scenario_key="known", inputs=inputs)
-    result = realize(model, plan, draws=draws)
-    assert [
-        m.number for m in result.resolve_output("autoregressive_returns").flow.movements
-    ] == pytest.approx([0.01, 0.025, 0.0025])
-    assert [
-        m.number for m in result.value("historical_value").flow.movements
-    ] == pytest.approx([4, 4.5, 4.94125])
-    assert replay(result.model).model.id == result.model.id
-    assert result.realization.generator == "supplied"
-    inputs["noise"] = [float("inf"), 0, 0]
-    with pytest.raises(ValueError):
-        capture(model, plan, scenario_key="bad", inputs=inputs)
 
 
 def test_rule_run_rejects_forged_information_timing_and_actions():

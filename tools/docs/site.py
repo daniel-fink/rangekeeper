@@ -16,7 +16,7 @@ source links (default ``develop``).
   of the helpers shows a copy of its file, published at its path under
   ``examples/``;
 - ``api/``: one mkdocstrings page for each public ``rangekeeper`` module: the
-  packages of the API snapshot, without ``market``, and each other module with
+  packages of the API snapshot, and each other module with
   its own ``__all__`` that exports a name that no package page shows.
 
 A link from ``docs/`` to a lesson notebook goes to its page. A link to another
@@ -235,9 +235,9 @@ def walkthrough(output: Path, *, ref: str, lessons: bool) -> None:
     )
 
 
-# The packages that the API reference leaves out: `market` is internal until
-# #298; `schema` and `shared` are internal.
-INTERNAL = frozenset({"market", "schema", "shared"})
+# The packages that the API reference leaves out: `schema` and `shared` are
+# internal.
+INTERNAL = frozenset({"schema", "shared"})
 
 
 def internal(name: str) -> bool:
@@ -308,7 +308,7 @@ def public_modules(packages: list[ModuleType]) -> list[ModuleType]:
 def pages() -> list[ModuleType]:
     """Return the modules that get an API reference page, in name order.
 
-    Each public package of the API snapshot gets a page, without ``market``.
+    Each public package of the API snapshot gets a page.
     Each other public module gets a page when it exports an object that no
     earlier page shows; the page of its package shows the others.
     """

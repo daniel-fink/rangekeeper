@@ -11,7 +11,7 @@ from rangekeeper.model._scope import (
     scope_for_model,
 )
 from rangekeeper.quantity import Quantity
-from rangekeeper.run._rule.availability import available_on, evidence_dates
+from rangekeeper.run._rule.availability import available_on
 from rangekeeper.schema.records import ObservationBinding, ObservedQuantity
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import RangekeeperError
@@ -23,7 +23,7 @@ class RuleCapabilityError(RangekeeperError, ValueError):
     code = Code.RULE_CAPABILITY
 
 
-def _observe(scope, *, at, bindings, evidence, prior, controlled):
+def _observe(scope, *, at, bindings, prior, controlled):
     result = []
     for binding in bindings:
         token = binding.target.target
@@ -48,7 +48,6 @@ def _observe(scope, *, at, bindings, evidence, prior, controlled):
                     if movement and movement.get("period")
                     else None
                 ),
-                scenario_dates=(evidence[token],) if token in evidence else (),
                 declared=binding.available_at,
             )
             data = recorded_quantity(target, scope.targets, scope.measures)
@@ -90,12 +89,10 @@ def observe(
     if any(not isinstance(binding, ObservationBinding) for binding in bindings):
         raise TypeError("bindings must be ObservationBinding records")
     scope = scope_for_model(model)
-    evidence = evidence_dates(model.provenance.to_data() if model.provenance else {})
     return _observe(
         scope,
         at=at,
         bindings=bindings,
-        evidence=evidence,
         prior={},
         controlled=frozenset(),
     )

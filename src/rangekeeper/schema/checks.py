@@ -146,33 +146,6 @@ def check_Binding(d, fields=None):
     return issues
 
 
-def check_CalculationProvenance(d, fields=None):
-    """Check the fields and rules of one CalculationProvenance node."""
-    issues = []
-    if 'name' not in d:
-        issues.append(('structure.required', 'name is required', ''))
-    if 'fingerprint' not in d:
-        issues.append(('structure.required', 'fingerprint is required', ''))
-    if 'versions' not in d:
-        issues.append(('structure.required', 'versions is required', ''))
-    for name in d:
-        if name not in ('fingerprint', 'name', 'versions'):
-            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
-    if 'fingerprint' in d and (fields is None or 'fingerprint' in fields):
-        v = d['fingerprint']
-        if not ((type(v) is str)):
-            issues.append(('structure.value', 'invalid fingerprint', '/fingerprint'))
-    if 'name' in d and (fields is None or 'name' in fields):
-        v = d['name']
-        if not ((type(v) is str)):
-            issues.append(('structure.value', 'invalid name', '/name'))
-    if 'versions' in d and (fields is None or 'versions' in fields):
-        v = d['versions']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid versions', '/versions'))
-    return issues
-
-
 def check_Call(d, fields=None):
     """Check the fields and rules of one Call node."""
     issues = []
@@ -1309,27 +1282,6 @@ def check_Objective(d, fields=None):
     return issues
 
 
-def check_ObservationAvailability(d, fields=None):
-    """Check the fields and rules of one ObservationAvailability node."""
-    issues = []
-    if 'target' not in d:
-        issues.append(('structure.required', 'target is required', ''))
-    if 'available_at' not in d:
-        issues.append(('structure.required', 'available_at is required', ''))
-    for name in d:
-        if name not in ('available_at', 'target'):
-            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
-    if 'available_at' in d and (fields is None or 'available_at' in fields):
-        v = d['available_at']
-        if not ((type(v) is not str or _date(v)) and (type(v) is str)):
-            issues.append(('structure.value', 'invalid available_at', '/available_at'))
-    if 'target' in d and (fields is None or 'target' in fields):
-        v = d['target']
-        if not (isinstance(v, Mapping)):
-            issues.append(('structure.value', 'invalid target', '/target'))
-    return issues
-
-
 def check_ObservationBinding(d, fields=None):
     """Check the fields and rules of one ObservationBinding node."""
     issues = []
@@ -1706,7 +1658,7 @@ def check_Provenance(d, fields=None):
     """Check the fields and rules of one Provenance node."""
     issues = []
     for name in d:
-        if name not in ('claims', 'facts', 'scenarios', 'sources'):
+        if name not in ('claims', 'facts', 'sources'):
             issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
     if 'claims' in d and (fields is None or 'claims' in fields):
         v = d['claims']
@@ -1716,10 +1668,6 @@ def check_Provenance(d, fields=None):
         v = d['facts']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
             issues.append(('structure.value', 'invalid facts', '/facts'))
-    if 'scenarios' in d and (fields is None or 'scenarios' in fields):
-        v = d['scenarios']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
-            issues.append(('structure.value', 'invalid scenarios', '/scenarios'))
     if 'sources' in d and (fields is None or 'sources' in fields):
         v = d['sources']
         if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v) or v is None)):
@@ -2097,135 +2045,6 @@ def check_Runtime(d, fields=None):
         v = d['started_at']
         if not ((type(v) is not str or _datetime(v)) and (type(v) is str or v is None)):
             issues.append(('structure.value', 'invalid started_at', '/started_at'))
-    return issues
-
-
-def check_ScenarioParameter(d, fields=None):
-    """Check the fields and rules of one ScenarioParameter node."""
-    issues = []
-    if 'name' not in d:
-        issues.append(('structure.required', 'name is required', ''))
-    for name in d:
-        if name not in ('distribution', 'name', 'quantity'):
-            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
-    if 'distribution' in d and (fields is None or 'distribution' in fields):
-        v = d['distribution']
-        if not (((isinstance(v, Mapping)) or ((v is None)))):
-            issues.append(('structure.value', 'invalid distribution', '/distribution'))
-    if 'name' in d and (fields is None or 'name' in fields):
-        v = d['name']
-        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str)):
-            issues.append(('structure.value', 'invalid name', '/name'))
-    if 'quantity' in d and (fields is None or 'quantity' in fields):
-        v = d['quantity']
-        if not (((isinstance(v, Mapping)) or ((v is None)))):
-            issues.append(('structure.value', 'invalid quantity', '/quantity'))
-    return issues
-
-
-def check_ScenarioPlan(d, fields=None):
-    """Check the fields and rules of one ScenarioPlan node."""
-    issues = []
-    if 'id' not in d:
-        issues.append(('structure.required', 'id is required', ''))
-    if 'method' not in d:
-        issues.append(('structure.required', 'method is required', ''))
-    if 'seed' not in d:
-        issues.append(('structure.required', 'seed is required', ''))
-    if 'periods' not in d:
-        issues.append(('structure.required', 'periods is required', ''))
-    if 'parameters' not in d:
-        issues.append(('structure.required', 'parameters is required', ''))
-    for name in d:
-        if name not in ('id', 'method', 'parameters', 'periods', 'seed'):
-            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
-    if 'id' in d and (fields is None or 'id' in fields):
-        v = d['id']
-        if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
-            issues.append(('structure.value', 'invalid id', '/id'))
-    if 'method' in d and (fields is None or 'method' in fields):
-        v = d['method']
-        if not ((type(v) is str)):
-            issues.append(('structure.value', 'invalid method', '/method'))
-    if 'parameters' in d and (fields is None or 'parameters' in fields):
-        v = d['parameters']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid parameters', '/parameters'))
-    if 'periods' in d and (fields is None or 'periods' in fields):
-        v = d['periods']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid periods', '/periods'))
-    if 'seed' in d and (fields is None or 'seed' in fields):
-        v = d['seed']
-        if not ((not _number(v) or v >= 0) and (_integer(v))):
-            issues.append(('structure.value', 'invalid seed', '/seed'))
-    return issues
-
-
-def check_ScenarioRealization(d, fields=None):
-    """Check the fields and rules of one ScenarioRealization node."""
-    issues = []
-    if 'id' not in d:
-        issues.append(('structure.required', 'id is required', ''))
-    if 'plan' not in d:
-        issues.append(('structure.required', 'plan is required', ''))
-    if 'key' not in d:
-        issues.append(('structure.required', 'key is required', ''))
-    if 'generator' not in d:
-        issues.append(('structure.required', 'generator is required', ''))
-    if 'versions' not in d:
-        issues.append(('structure.required', 'versions is required', ''))
-    if 'streams' not in d:
-        issues.append(('structure.required', 'streams is required', ''))
-    if 'inputs' not in d:
-        issues.append(('structure.required', 'inputs is required', ''))
-    if 'outputs' not in d:
-        issues.append(('structure.required', 'outputs is required', ''))
-    if 'availability' not in d:
-        issues.append(('structure.required', 'availability is required', ''))
-    for name in d:
-        if name not in ('availability', 'calculation', 'generator', 'id', 'inputs', 'key', 'outputs', 'plan', 'streams', 'versions'):
-            issues.append(('structure.additionalProperties', f'unknown field {name}', ''))
-    if 'availability' in d and (fields is None or 'availability' in fields):
-        v = d['availability']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid availability', '/availability'))
-    if 'calculation' in d and (fields is None or 'calculation' in fields):
-        v = d['calculation']
-        if not (((isinstance(v, Mapping)) or ((v is None)))):
-            issues.append(('structure.value', 'invalid calculation', '/calculation'))
-    if 'generator' in d and (fields is None or 'generator' in fields):
-        v = d['generator']
-        if not ((type(v) is str)):
-            issues.append(('structure.value', 'invalid generator', '/generator'))
-    if 'id' in d and (fields is None or 'id' in fields):
-        v = d['id']
-        if not ((type(v) is not str or _P1.search(v) is not None) and (type(v) is str)):
-            issues.append(('structure.value', 'invalid id', '/id'))
-    if 'inputs' in d and (fields is None or 'inputs' in fields):
-        v = d['inputs']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid inputs', '/inputs'))
-    if 'key' in d and (fields is None or 'key' in fields):
-        v = d['key']
-        if not ((type(v) is not str or _P0.search(v) is not None) and (type(v) is str)):
-            issues.append(('structure.value', 'invalid key', '/key'))
-    if 'outputs' in d and (fields is None or 'outputs' in fields):
-        v = d['outputs']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid outputs', '/outputs'))
-    if 'plan' in d and (fields is None or 'plan' in fields):
-        v = d['plan']
-        if not (isinstance(v, Mapping)):
-            issues.append(('structure.value', 'invalid plan', '/plan'))
-    if 'streams' in d and (fields is None or 'streams' in fields):
-        v = d['streams']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid streams', '/streams'))
-    if 'versions' in d and (fields is None or 'versions' in fields):
-        v = d['versions']
-        if not ((not _array(v) or all((isinstance(x1, Mapping)) for x1 in v)) and (_array(v))):
-            issues.append(('structure.value', 'invalid versions', '/versions'))
     return issues
 
 
@@ -2669,7 +2488,6 @@ CHECKS = {
     'Assembly': check_Assembly,
     'Assignment': check_Assignment,
     'Binding': check_Binding,
-    'CalculationProvenance': check_CalculationProvenance,
     'Call': check_Call,
     'Characteristics': check_Characteristics,
     'Claim': check_Claim,
@@ -2706,7 +2524,6 @@ CHECKS = {
     'Model': check_Model,
     'Movement': check_Movement,
     'Objective': check_Objective,
-    'ObservationAvailability': check_ObservationAvailability,
     'ObservationBinding': check_ObservationBinding,
     'ObservedQuantity': check_ObservedQuantity,
     'Parameter': check_Parameter,
@@ -2733,9 +2550,6 @@ CHECKS = {
     'Run': check_Run,
     'RunStatus': check_RunStatus,
     'Runtime': check_Runtime,
-    'ScenarioParameter': check_ScenarioParameter,
-    'ScenarioPlan': check_ScenarioPlan,
-    'ScenarioRealization': check_ScenarioRealization,
     'Selection': check_Selection,
     'SeriesBinding': check_SeriesBinding,
     'Settings': check_Settings,
