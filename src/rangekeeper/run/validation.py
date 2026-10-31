@@ -10,15 +10,17 @@ from rangekeeper.model._scope import resolve_reference
 from rangekeeper.model.model import Model
 from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import Quantity, UnitSystem, default_units
+from rangekeeper.run._rule.evidence import validate_evidence
+from rangekeeper.run.documents import closure
 from rangekeeper.run.outputs import validate_outputs
 from rangekeeper.run.report import (
     check_non_batch_status,
     check_report,
     completion_for,
 )
+from rangekeeper.run.run import Run, _validate_local
 from rangekeeper.schema.enums import CompletionStatus
 from rangekeeper.schema.index import walk_data
-from rangekeeper.schema.records import Diagnostic, Step
 from rangekeeper.schema.runtime import Record, exact_equal
 from rangekeeper.schema.validation import checked, document_version, supports_version
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
@@ -39,7 +41,6 @@ from rangekeeper.specification.specification import Specification
 from rangekeeper.specification.validation import check_specification
 
 if TYPE_CHECKING:
-    from rangekeeper.run.run import Run
     from rangekeeper.shared.references import DocumentResolver
     from rangekeeper.specification.composition import Composition
 
@@ -134,8 +135,6 @@ def validate_document(
 ) -> ValidationReport:
     """Report the problems of one Run: local rules, or the tree with ``resolver``."""
     if resolver is None:
-        from rangekeeper.run.run import _validate_local
-
         return _validate_local(run.record)
     return validate(run=run, resolver=resolver, units=units)
 
@@ -178,13 +177,6 @@ def validate_executed(
     execution on the same revisions; validation does not repeat them. The
     execution layer calls this; other callers use ``validate``.
     """
-    from rangekeeper.run.run import Run
-    from rangekeeper.shared.errors import (
-        IdentityConflictError,
-        MissingReferenceError,
-        ReferenceTypeError,
-    )
-
     if not isinstance(run, Run):
         raise TypeError("run must be a Run; use validate_records for raw catalogues")
     try:
@@ -229,72 +221,10 @@ def _documents(root: "Run", resolver: DocumentResolver) -> dict:
     Historical predecessors are not required to interpret the current document.
     Untyped report-document references use the resolver's three typed lookups.
     """
-    from rangekeeper.run.run import Run
-
-    found: dict[UUID, Model | Specification | Run] = {root.id: root}
-    pending: list[Model | Specification | Run] = [root]
-    loaders = {
-        Model: resolver.load_model,
-        Specification: resolver.load_specification,
-        Run: resolver.load_run,
-    }
-
-    def resolve(identity, kind=None):
-        if identity in found:
-            document = found[identity]
-            if kind is not None and not isinstance(document, kind):
-                raise ReferenceTypeError(f"{identity} is not a {kind.__name__}")
-            return
-        candidates = (kind,) if kind is not None else (Model, Specification, Run)
-        failures = []
-        for candidate in candidates:
-            try:
-                document = loaders[candidate](identity)
-            except (MissingReferenceError, ReferenceTypeError) as error:
-                failures.append(error)
-                continue
-            if not isinstance(document, candidate):
-                raise ReferenceTypeError(
-                    f"resolver did not return a {candidate.__name__}"
-                )
-            if document.id != identity:
-                raise IdentityConflictError(
-                    f"resolver returned a different revision for {identity}"
-                )
-            found[identity] = document
-            pending.append(document)
-            return
-        raise failures[-1]
-
-    while pending:
-        document = pending.pop()
-        if isinstance(document, Run):
-            record = document.record
-            resolve(record.specification, Specification)
-            for identity in record.spawns or ():
-                resolve(identity, Run)
-            for identity in record.outputs or ():
-                resolve(identity, Model)
-            references: tuple[Diagnostic | Step, ...] = (
-                *(record.report.diagnostics or ()),
-                *(record.report.trace or ()),
-            )
-            for item in references:
-                if item.document is not None:
-                    resolve(item.document)
-        elif isinstance(document, Specification):
-            spec_record = document.record
-            if spec_record.model is not None:
-                resolve(spec_record.model, Model)
-            for identity in (*(spec_record.includes or ()), *(spec_record.cases or ())):
-                resolve(identity, Specification)
-
-    return found
+    return {item.id: item for item in closure([root], resolver=resolver)}
 
 
 def _catalogues(found: dict) -> tuple[dict, dict, dict]:
-    from rangekeeper.run.run import Run
-
     def catalogue(kind):
         return {
             str(identity): (doc._record if isinstance(doc, Model) else doc.record)
@@ -519,8 +449,6 @@ class _RunValidation:
                             or solution != "not_assessed"
                         )
                     ):
-                        from rangekeeper.run._rule.evidence import validate_evidence
-
                         validate_evidence(
                             effective["rules"],
                             run["report"].get("rule_evidence") or [],

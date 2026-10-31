@@ -28,16 +28,12 @@ from uuid import UUID
 
 from rangekeeper import Model, Run, Specification
 from rangekeeper.io._atomic import write_new
-from rangekeeper.io._document import (
-    Document,
-    require_revision,
-    require_same,
-    trusted,
-)
+from rangekeeper.io._document import Document, require_same
 from rangekeeper.io.geometry import GeometryProvider
 from rangekeeper.io.geometry import find as find_provider
 from rangekeeper.market.paths import Paths
 from rangekeeper.model.geometry import safe_path
+from rangekeeper.run.documents import Documents, closure, dependencies
 from rangekeeper.run.validation import validate as validate_run
 from rangekeeper.schema.records import Geometry
 from rangekeeper.schema.runtime import comparison_data, exact_equal
@@ -47,7 +43,6 @@ from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.shared.errors import (
     ContractError,
     MissingReferenceError,
-    ReferenceTypeError,
 )
 from rangekeeper.shared.optional import requires
 from rangekeeper.shared.references import DocumentResolver
@@ -251,110 +246,22 @@ def identity(model, *, documents=(), roots=()):
 KINDS = {k.__name__: k for k in (Model, Specification, Run, Paths)}
 
 
-def _dependencies(document):
-    """Interpretation dependencies only; historical predecessors are not followed."""
-    if isinstance(document, Specification):
-        record = document.record
-        if record.model is not None:
-            yield record.model, Model
-        for identifier in (*(record.includes or ()), *(record.cases or ())):
-            yield identifier, Specification
-    elif isinstance(document, Run):
-        record = document.record
-        yield record.specification, Specification
-        for identifier in record.outputs or ():
-            yield identifier, Model
-        for identifier in record.spawns or ():
-            yield identifier, Run
-        for item in (*(record.report.diagnostics or ()), *(record.report.trace or ())):
-            if item.document is not None:
-                yield item.document, None
-
-
-class _Documents:
-    def __init__(self, documents: Iterable[Document]) -> None:
-        """Hold immutable, validated documents by UUID."""
-        self._documents: dict[UUID, Document] = {}
-        for value in documents:
-            document = trusted(value)
-            if document.id in self._documents:
-                require_same(self._documents[document.id], document)
-            else:
-                self._documents[document.id] = document
-
-    def _load(self, identifier, kind):
-        require_uuid(identifier, "id")
-        try:
-            document = self._documents[identifier]
-        except KeyError:
-            raise MissingReferenceError(
-                identifier, kind=kind.__name__, where=type(self).__name__
-            ) from None
-        return require_revision(document, identifier, kind)
-
-    def load_model(self, id: UUID) -> Model:
-        """Return the retained Model with this UUID."""
-        return self._load(id, Model)
-
-    def load_specification(self, id: UUID) -> Specification:
-        """Return the retained Specification with this UUID."""
-        return self._load(id, Specification)
-
-    def load_run(self, id: UUID) -> Run:
-        """Return the retained Run with this UUID."""
-        return self._load(id, Run)
-
-    def load_paths(self, id: UUID) -> Paths:
-        """Return the retained market paths with this UUID."""
-        return self._load(id, Paths)
-
-    def documents(self) -> tuple[Document, ...]:
-        """Exact immutable roots, ordered by UUID; no execution or mutable state."""
-        return tuple(
-            d for _, d in sorted(self._documents.items(), key=lambda p: str(p[0]))
-        )
-
-
-def _resolve(resolver, identifier, kind):
-    if resolver is None:
-        raise MissingReferenceError(
-            identifier, kind=kind.__name__ if kind else "document", where="no resolver"
-        )
-    for candidate in (kind,) if kind else tuple(KINDS.values()):
-        try:
-            document = getattr(resolver, "load_" + candidate.__name__.lower())(
-                identifier
-            )
-        except (MissingReferenceError, ReferenceTypeError):
-            if kind:
-                raise
-            continue
-        return trusted(require_revision(document, identifier, candidate))
-    raise MissingReferenceError(
-        identifier, kind="document", where=type(resolver).__name__
-    )
-
-
 def _collect(model, documents, resolver, max_documents=1000):
-    found = _Documents((model, *documents))
-    pending = list(found.documents())
-    while pending:
-        document = pending.pop()
-        if len(found._documents) > max_documents:
-            raise ValueError("Bundle document limit exceeded")
-        for identifier, kind in _dependencies(document):
-            if identifier in found._documents:
-                if kind:
-                    found._load(identifier, kind)
-            else:
-                dependency = _resolve(resolver, identifier, kind)
-                found._documents[identifier] = dependency
-                pending.append(dependency)
-    # Saved partial or failed investigation definitions remain valid content.
-    # Check their reference graph without claiming mathematical validity.
+    """Return the main Model, the selected documents and their exact dependencies.
+
+    Saved partial or failed investigation definitions remain valid content: the
+    Specification dependency graph must be acyclic, and each Run must pass its
+    resolved validation, but no mathematical validity is claimed.
+    """
+    found = closure(
+        (model, *documents),
+        resolver=resolver,
+        limit=max_documents,
+        where="no resolver" if resolver is None else type(resolver).__name__,
+    )
     require_acyclic(
         {
-            str(d.id): [str(i) for i, k in _dependencies(d) if k is Specification]
+            str(d.id): [str(i) for i, k in dependencies(d) if k is Specification]
             for d in found.documents()
             if isinstance(d, Specification)
         },
@@ -622,7 +529,7 @@ def _roots(model: Model, documents: tuple[Document, ...]) -> list[dict[str, str]
 
 
 def _plan_geometry(
-    found: _Documents,
+    found: Documents,
     model: Model,
     sources: GeometrySources,
 ) -> tuple[dict[str, str], dict[str, tuple[str, Path, Geometry]]]:
@@ -744,14 +651,14 @@ def _check_written(
     root: Path,
     manifest: dict[str, Any],
     *,
-    found: _Documents,
+    found: Documents,
     providers: Mapping[ProviderKey, GeometryProvider],
 ) -> None:
     """Read a written Bundle before its manifest exists; compare each document."""
     restored = Reader._unpublished(root, manifest, providers=providers)
     for document in found.documents():
         if not exact_equal(
-            restored._documents[document.id].to_data(), document.to_data()
+            restored._found.load(document.id).to_data(), document.to_data()
         ):
             raise ValueError("Bundle reconstruction differs from supplied records")
     restored.verify_geometry()
@@ -1009,7 +916,7 @@ def _check_roots(roots: object) -> list[dict[str, str]]:
     return roots
 
 
-class Reader(_Documents):
+class Reader:
     """The checked, immutable documents of a Bundle, with resolver reads and queries.
 
     Opening checks the manifest, the file hashes and the limits, rebuilds each
@@ -1077,7 +984,7 @@ class Reader(_Documents):
         _check_canonical(root, manifest["files"], limits)
         self._primary = UUID(manifest["model"]["id"])
         # Each document is validated once, when it is rebuilt.
-        super().__init__(self._rebuild(names, index))
+        self._found = Documents(self._rebuild(names, index), where="Reader")
         self._check_closure(limits)
 
     def _rebuild(self, names: list[str], index: IndexCheck) -> list[Document]:
@@ -1143,11 +1050,11 @@ class Reader(_Documents):
     def _check_closure(self, limits: ReadLimits) -> None:
         """Require that the documents are the closure of the roots, and the identity."""
         roots = _check_roots(self.manifest["roots"])
-        selected = [self._load(UUID(r["id"]), KINDS[r["kind"]]) for r in roots]
+        selected = [self._found.load(UUID(r["id"]), KINDS[r["kind"]]) for r in roots]
         if any(d.id == self._primary for d in selected):
             raise ValueError("Primary Model is already selected")
         closed = _collect(self.model(), selected, self, limits.documents)
-        if set(closed._documents) != set(self._documents):
+        if {d.id for d in closed} != {d.id for d in self._found}:
             raise ValueError("Unselected document outside dependency closure")
         found = identity(self.model(), documents=self.documents(), roots=roots)
         if found != self.manifest["id"]:
@@ -1155,6 +1062,26 @@ class Reader(_Documents):
 
     def _prefix(self, identifier: UUID) -> str:
         return _prefix(identifier, self._primary)
+
+    def load_model(self, id: UUID) -> Model:
+        """Return the retained Model with this UUID."""
+        return self._found.load_model(id)
+
+    def load_specification(self, id: UUID) -> Specification:
+        """Return the retained Specification with this UUID."""
+        return self._found.load_specification(id)
+
+    def load_run(self, id: UUID) -> Run:
+        """Return the retained Run with this UUID."""
+        return self._found.load_run(id)
+
+    def load_paths(self, id: UUID) -> Paths:
+        """Return the retained market paths with this UUID."""
+        return self._found.load_paths(id)
+
+    def documents(self) -> tuple[Document, ...]:
+        """Exact immutable roots, ordered by UUID; no execution or mutable state."""
+        return self._found.documents()
 
     def model(self, id: UUID | None = None) -> Model:
         """Return the main Model, or the retained Model with the given UUID."""
@@ -1200,7 +1127,7 @@ class Reader(_Documents):
         documents = self.documents()
         for document in documents:
             try:
-                existing = _resolve(store, document.id, type(document))
+                existing = Documents(fallback=store).load(document.id, type(document))
             except MissingReferenceError:
                 continue
             require_same(existing, document)
@@ -1212,9 +1139,9 @@ class Reader(_Documents):
             if document.id in active:
                 raise ValueError("Cyclic Run publication dependencies")
             active.add(document.id)
-            for identifier, _ in _dependencies(document):
+            for identifier, _ in dependencies(document):
                 if identifier != document.id:
-                    visit(self._documents[identifier])
+                    visit(self._found.load(identifier))
             active.remove(document.id)
             done.add(document.id)
             ordered.append(document)
@@ -1254,9 +1181,7 @@ class Reader(_Documents):
         if path is not None and (type(path) is not str or len(path) > 4096):
             raise ValueError("Invalid record path")
         selected = (
-            self.model()
-            if document is None
-            else self._documents.get(UUID(str(document)))
+            self.model() if document is None else self._found.get(UUID(str(document)))
         )
         if selected is None:
             raise MissingReferenceError(document, kind="document", where="Bundle")

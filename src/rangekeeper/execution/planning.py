@@ -1,12 +1,13 @@
 """Stage 1: resolve the immutable case graph before any stage runs."""
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
 from rangekeeper.model import Model
 from rangekeeper.run import Run
+from rangekeeper.run.documents import Documents
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
@@ -40,20 +41,26 @@ class Cases:
     compositions: Mapping[UUID, Composition]
     failures: Mapping[UUID, ValidationError]
     resolver: DocumentResolver
+    _lookup: Documents = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        # Its own revisions first, else the resolver: one lookup, made once.
+        lookup = Documents(
+            (*self.models.values(), *self.documents.values()), fallback=self.resolver
+        )
+        object.__setattr__(self, "_lookup", lookup)
 
     def load_model(self, id: UUID) -> Model:
         """Return a resolved Model revision, else load it from the resolver."""
-        found = self.models.get(id)
-        return self.resolver.load_model(id) if found is None else found
+        return self._lookup.load_model(id)
 
     def load_specification(self, id: UUID) -> Specification:
         """Return a resolved Specification, else load it from the resolver."""
-        found = self.documents.get(id)
-        return self.resolver.load_specification(id) if found is None else found
+        return self._lookup.load_specification(id)
 
     def load_run(self, id: UUID) -> Run:
         """Load a Run from the resolver."""
-        return self.resolver.load_run(id)
+        return self._lookup.load_run(id)
 
 
 def resolve_cases(*, specification: Specification, resolver: DocumentResolver) -> Cases:

@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from rangekeeper.execution.outcome import Outcome
 from rangekeeper.model import Model
 from rangekeeper.run import Run, RunRecord, Severity, SolutionStatus
+from rangekeeper.run.documents import Documents
 from rangekeeper.run.report import completion_for
 from rangekeeper.schema.records import (
     CompletionStatus,
@@ -29,6 +30,9 @@ class Overlay:
     ``outcome.walk()``. ``execute`` validates its Runs this way.
     """
 
+    __slots__ = ("_documents",)
+    _documents: Documents
+
     def __init__(
         self,
         *,
@@ -36,23 +40,19 @@ class Overlay:
         models: Iterable[Model] = (),
         runs: Iterable[Run] = (),
     ) -> None:
-        self.resolver = resolver
-        self.models = {model.id: model for model in models}
-        self.runs = {run.id: run for run in runs}
+        self._documents = Documents((*models, *runs), fallback=resolver)
 
     def load_model(self, id: UUID) -> Model:
         """Return an overlaid Model, else load it from the resolver."""
-        found = self.models.get(id)
-        return self.resolver.load_model(id) if found is None else found
+        return self._documents.load_model(id)
 
     def load_specification(self, id: UUID) -> Specification:
         """Load a Specification from the resolver."""
-        return self.resolver.load_specification(id)
+        return self._documents.load_specification(id)
 
     def load_run(self, id: UUID) -> Run:
         """Return an overlaid Run, else load it from the resolver."""
-        found = self.runs.get(id)
-        return self.resolver.load_run(id) if found is None else found
+        return self._documents.load_run(id)
 
 
 def assemble(
