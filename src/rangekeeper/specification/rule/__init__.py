@@ -18,6 +18,7 @@ from rangekeeper.schema.records import (
 from rangekeeper.schema.records import (
     Rule as Rule,
 )
+from rangekeeper.schema.records import RuleDeclaration as RuleDeclaration
 from rangekeeper.schema.records import RuleEvidence as RuleEvidence
 from rangekeeper.schema.records import RuleSet as RuleSet
 
@@ -25,6 +26,7 @@ __all__ = [
     "Action",
     "ActionKind",
     "Decision",
+    "RuleDeclaration",
     "RuleEvidence",
     "ObservationBinding",
     "ObservedQuantity",

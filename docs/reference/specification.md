@@ -156,6 +156,9 @@ back = front.fix(rent_factor=1).free("land_cost")
 back.roles  # each value: fixed with its Quantity, free or decided
 ```
 
+A [rule](market-paths-and-rules.md#declare-a-rule) can fix a value during the solve:
+`fix(start_date=rule)`. `rules` gives the rules by key.
+
 `fix(**values)` fixes each named value, and `free(*targets)` releases a value
 that was fixed before. A fix or free replaces an earlier fix or free of the same
 target in this Specification. `fix` also removes the estimate of its target;

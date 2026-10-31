@@ -3119,6 +3119,16 @@
       "title": "Period",
       "type": "object"
     },
+    "PeriodTiming": {
+      "description": "The date that represents a Period.",
+      "enum": [
+        "first",
+        "last",
+        "end"
+      ],
+      "title": "PeriodTiming",
+      "type": "string"
+    },
     "Projection": {
       "additionalProperties": false,
       "allOf": [
@@ -3664,6 +3674,78 @@
         "actions"
       ],
       "title": "Rule",
+      "type": "object"
+    },
+    "RuleDeclaration": {
+      "additionalProperties": false,
+      "description": "One rule as a query over a window of dates. On each path it fixes one value on the first window date on which its condition holds, or fixes otherwise.",
+      "properties": {
+        "condition": {
+          "$ref": "#/$defs/Expression",
+          "description": "Boolean Expression that the rule tests on each window date. It reads Values, parameters and the values of earlier rules."
+        },
+        "earliest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Inclusive first bound of the window, a date Expression. An Expression that reads an undecided value keeps the window closed. Absent or null means no bound."
+        },
+        "latest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Inclusive last bound of the window, a date Expression. An Expression that reads an undecided value keeps the window open. Absent or null means no bound."
+        },
+        "otherwise": {
+          "$ref": "#/$defs/Expression",
+          "description": "Literal Expression that the target takes when no window date meets the condition, a quantity, a date or NEVER."
+        },
+        "periods": {
+          "description": "Nonempty ordered Periods that give the calendar of the window. Absent or null means that the window acts when a value that the condition reads becomes known.",
+          "items": {
+            "$ref": "#/$defs/Period"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/Reference",
+          "description": "The Value that the rule decides, a date Value or a scalar measurement Value."
+        },
+        "then": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Literal Expression that the target takes when the condition holds. Absent or null means the window date itself, which fits a date Value only."
+        },
+        "timing": {
+          "$ref": "#/$defs/PeriodTiming",
+          "description": "The day of each Period that is its window date. Absent or null means the first day. It needs periods."
+        }
+      },
+      "required": [
+        "target",
+        "condition",
+        "otherwise"
+      ],
+      "title": "RuleDeclaration",
       "type": "object"
     },
     "RuleEvidence": {
@@ -4248,6 +4330,16 @@
             ],
             "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
             "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "declared_rules": {
+          "description": "Nonempty ordered rules, each a query over a window that decides one value. They run in this order. A decided value has no other role.",
+          "items": {
+            "$ref": "#/$defs/RuleDeclaration"
           },
           "type": [
             "array",

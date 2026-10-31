@@ -56,6 +56,7 @@ from .enums import Never as Never
 from .enums import ObjectiveKind as ObjectiveKind
 from .enums import Operator as Operator
 from .enums import ParameterKind as ParameterKind
+from .enums import PeriodTiming as PeriodTiming
 from .enums import ProjectionKind as ProjectionKind
 from .enums import ReconciliationStatus as ReconciliationStatus
 from .enums import SelectionKind as SelectionKind
@@ -5968,6 +5969,176 @@ class Rule(Record):
         return cast('tuple[Action, ...]', self._child('actions', Action, True))
 
 
+class RuleDeclaration(Record):
+    'One rule as a query over a window of dates. On each path it fixes one value on the first window date on which its condition holds, or fixes otherwise.'
+    __slots__ = ()
+    _kind = 'RuleDeclaration'
+    _SLOTS = _freeze(
+        {'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
+                    'required': True,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False,
+                    'lineage': False},
+         'condition': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False,
+                       'lineage': False},
+         'otherwise': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                       'required': True,
+                       'many': False,
+                       'mapping': False,
+                       'nullable': False,
+                       'ordered': False,
+                       'lineage': False},
+         'then': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                  'required': False,
+                  'many': False,
+                  'mapping': False,
+                  'nullable': True,
+                  'ordered': False,
+                  'lineage': False},
+         'earliest': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                      'required': False,
+                      'many': False,
+                      'mapping': False,
+                      'nullable': True,
+                      'ordered': False,
+                      'lineage': False},
+         'latest': {'options': [{'kind': 'Expression', 'category': 'record'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': True,
+                    'ordered': False,
+                    'lineage': False},
+         'periods': {'options': [{'kind': 'Period', 'category': 'record'}],
+                     'required': False,
+                     'many': True,
+                     'mapping': False,
+                     'nullable': True,
+                     'ordered': True,
+                     'lineage': False},
+         'timing': {'options': [{'kind': 'PeriodTiming', 'category': 'enum'}],
+                    'required': False,
+                    'many': False,
+                    'mapping': False,
+                    'nullable': False,
+                    'ordered': False,
+                    'lineage': False}}
+    )
+
+    def __init__(self, *,
+        target: Reference,
+        condition: Expression,
+        otherwise: Expression,
+        then: Expression | None | Unset = UNSET,
+        earliest: Expression | None | Unset = UNSET,
+        latest: Expression | None | Unset = UNSET,
+        periods: tuple[Period, ...] | None | Unset = UNSET,
+        timing: PeriodTiming | Unset = UNSET,
+    ) -> None:
+        data: dict[str, object] = {}
+        data['target'] = _encode_record(target, Reference, 'target')
+        data['condition'] = _encode_record(condition, Expression, 'condition')
+        data['otherwise'] = _encode_record(otherwise, Expression, 'otherwise')
+        if then is not UNSET:
+            data['then'] = _encode_record(then, Expression, 'then')
+        if earliest is not UNSET:
+            data['earliest'] = _encode_record(earliest, Expression, 'earliest')
+        if latest is not UNSET:
+            data['latest'] = _encode_record(latest, Expression, 'latest')
+        if periods is not UNSET:
+            data['periods'] = _encode_many(periods, lambda v: _encode_record(v, Period, 'periods'))
+        if timing is not UNSET:
+            data['timing'] = _encode_enum(timing, PeriodTiming, 'timing')
+        self._set_checked(data)
+
+    def replace(self, *,
+        target: Reference | Unset = UNSET,
+        condition: Expression | Unset = UNSET,
+        otherwise: Expression | Unset = UNSET,
+        then: Expression | None | Unset | Omit = UNSET,
+        earliest: Expression | None | Unset | Omit = UNSET,
+        latest: Expression | None | Unset | Omit = UNSET,
+        periods: tuple[Period, ...] | None | Unset | Omit = UNSET,
+        timing: PeriodTiming | Unset | Omit = UNSET,
+    ) -> Self:
+        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
+        changes: dict[str, object] = {}
+        if target is not UNSET:
+            changes['target'] = _encode_record(target, Reference, 'target')
+        if condition is not UNSET:
+            changes['condition'] = _encode_record(condition, Expression, 'condition')
+        if otherwise is not UNSET:
+            changes['otherwise'] = _encode_record(otherwise, Expression, 'otherwise')
+        if then is OMIT:
+            changes['then'] = OMIT
+        elif then is not UNSET:
+            changes['then'] = _encode_record(then, Expression, 'then')
+        if earliest is OMIT:
+            changes['earliest'] = OMIT
+        elif earliest is not UNSET:
+            changes['earliest'] = _encode_record(earliest, Expression, 'earliest')
+        if latest is OMIT:
+            changes['latest'] = OMIT
+        elif latest is not UNSET:
+            changes['latest'] = _encode_record(latest, Expression, 'latest')
+        if periods is OMIT:
+            changes['periods'] = OMIT
+        elif periods is not UNSET:
+            changes['periods'] = _encode_many(periods, lambda v: _encode_record(v, Period, 'periods'))
+        if timing is OMIT:
+            changes['timing'] = OMIT
+        elif timing is not UNSET:
+            changes['timing'] = _encode_enum(timing, PeriodTiming, 'timing')
+        return self._replace(changes)
+
+    @property
+    def target(self) -> Reference:
+        'The Value that the rule decides, a date Value or a scalar measurement Value.'
+        return cast('Reference', self._child('target', Reference, False))
+
+    @property
+    def condition(self) -> Expression:
+        'Boolean Expression that the rule tests on each window date. It reads Values, parameters and the values of earlier rules.'
+        return cast('Expression', self._child('condition', Expression, False))
+
+    @property
+    def otherwise(self) -> Expression:
+        'Literal Expression that the target takes when no window date meets the condition, a quantity, a date or NEVER.'
+        return cast('Expression', self._child('otherwise', Expression, False))
+
+    @property
+    def then(self) -> Expression | None:
+        'Literal Expression that the target takes when the condition holds. Absent or null means the window date itself, which fits a date Value only.'
+        return cast('Expression | None', self._child('then', Expression, False))
+
+    @property
+    def earliest(self) -> Expression | None:
+        'Inclusive first bound of the window, a date Expression. An Expression that reads an undecided value keeps the window closed. Absent or null means no bound.'
+        return cast('Expression | None', self._child('earliest', Expression, False))
+
+    @property
+    def latest(self) -> Expression | None:
+        'Inclusive last bound of the window, a date Expression. An Expression that reads an undecided value keeps the window open. Absent or null means no bound.'
+        return cast('Expression | None', self._child('latest', Expression, False))
+
+    @property
+    def periods(self) -> tuple[_Period, ...] | None:
+        'Nonempty ordered Periods that give the calendar of the window. Absent or null means that the window acts when a value that the condition reads becomes known.'
+        return cast('tuple[_Period, ...] | None', self._child('periods', Period, True))
+
+    @property
+    def timing(self) -> PeriodTiming | None:
+        'The day of each Period that is its window date. Absent or null means the first day. It needs periods.'
+        return cast('PeriodTiming | None', _decode_enum(self._data.get('timing'), PeriodTiming))
+
+
 class RuleEvidence(Record):
     'Recorded evidence of one evaluated decision; absence of a rule means fallback.'
     __slots__ = ()
@@ -7034,6 +7205,14 @@ class Specification(Record):
                    'nullable': True,
                    'ordered': False,
                    'lineage': False},
+         'declared_rules': {'options': [{'kind': 'RuleDeclaration',
+                                         'category': 'record'}],
+                            'required': False,
+                            'many': True,
+                            'mapping': False,
+                            'nullable': True,
+                            'ordered': True,
+                            'lineage': False},
          'path': {'options': [{'kind': 'PathCase', 'category': 'record'}],
                   'required': False,
                   'many': False,
@@ -7055,6 +7234,7 @@ class Specification(Record):
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
         settings: Settings | Unset = UNSET,
         rules: RuleSet | None | Unset = UNSET,
+        declared_rules: tuple[RuleDeclaration, ...] | None | Unset = UNSET,
         path: PathCase | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
@@ -7079,6 +7259,8 @@ class Specification(Record):
             data['settings'] = _encode_record(settings, Settings, 'settings')
         if rules is not UNSET:
             data['rules'] = _encode_record(rules, RuleSet, 'rules')
+        if declared_rules is not UNSET:
+            data['declared_rules'] = _encode_many(declared_rules, lambda v: _encode_record(v, RuleDeclaration, 'declared_rules'))
         if path is not UNSET:
             data['path'] = _encode_record(path, PathCase, 'path')
         self._set_checked(data)
@@ -7095,6 +7277,7 @@ class Specification(Record):
         objectives: tuple[Objective, ...] | None | Unset | Omit = UNSET,
         settings: Settings | Unset | Omit = UNSET,
         rules: RuleSet | None | Unset | Omit = UNSET,
+        declared_rules: tuple[RuleDeclaration, ...] | None | Unset | Omit = UNSET,
         path: PathCase | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
@@ -7141,6 +7324,10 @@ class Specification(Record):
             changes['rules'] = OMIT
         elif rules is not UNSET:
             changes['rules'] = _encode_record(rules, RuleSet, 'rules')
+        if declared_rules is OMIT:
+            changes['declared_rules'] = OMIT
+        elif declared_rules is not UNSET:
+            changes['declared_rules'] = _encode_many(declared_rules, lambda v: _encode_record(v, RuleDeclaration, 'declared_rules'))
         if path is OMIT:
             changes['path'] = OMIT
         elif path is not UNSET:
@@ -7201,6 +7388,11 @@ class Specification(Record):
     def rules(self) -> RuleSet | None:
         'Optional RuleSet with controlled targets and dated decisions.'
         return cast('RuleSet | None', self._child('rules', RuleSet, False))
+
+    @property
+    def declared_rules(self) -> tuple[RuleDeclaration, ...] | None:
+        'Nonempty ordered rules, each a query over a window that decides one value. They run in this order. A decided value has no other role.'
+        return cast('tuple[RuleDeclaration, ...] | None', self._child('declared_rules', RuleDeclaration, True))
 
     @property
     def path(self) -> PathCase | None:
@@ -8027,6 +8219,7 @@ _TYPES = {
     'Relationship': Relationship,
     'Report': Report,
     'Rule': Rule,
+    'RuleDeclaration': RuleDeclaration,
     'RuleEvidence': RuleEvidence,
     'RuleSet': RuleSet,
     'Run': Run,
@@ -8109,6 +8302,7 @@ _SLOTS = {
     'Relationship': Relationship._SLOTS,
     'Report': Report._SLOTS,
     'Rule': Rule._SLOTS,
+    'RuleDeclaration': RuleDeclaration._SLOTS,
     'RuleEvidence': RuleEvidence._SLOTS,
     'RuleSet': RuleSet._SLOTS,
     'Run': Run._SLOTS,
@@ -8137,4 +8331,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'RuleSet', 'Run', 'RunStatus', 'Runtime', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'PeriodTiming', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleDeclaration', 'RuleEvidence', 'RuleSet', 'Run', 'RunStatus', 'Runtime', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']

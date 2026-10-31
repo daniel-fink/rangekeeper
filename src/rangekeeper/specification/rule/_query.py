@@ -1,7 +1,7 @@
 """One rule as a query over a window (ADR-021): what the rule engine reads.
 
-The module is internal. The public query API of #300 makes these declarations;
-#300 also defines their stored fields in LinkML.
+The module is internal. ``_declaration`` makes these from the public query and
+from the stored ``RuleDeclaration`` records.
 
 ``check_queries`` is the check of ADR-021 that needs no solve: a look-ahead, a
 condition that reads a later rule, and a condition that reads a free input.
@@ -15,7 +15,7 @@ from rangekeeper.duration import Period, PeriodTiming
 from rangekeeper.duration.dates import DateValue
 from rangekeeper.model import Model
 from rangekeeper.model.expression.catalogue import functions
-from rangekeeper.model.expression.text import parse
+from rangekeeper.model.expression.text import parse, parse_condition
 from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.index import walk
@@ -108,6 +108,13 @@ def _symbol(value: Value, *, key: str) -> _Symbol:
     )
 
 
+def names_of(
+    model: Model, *, parameters: Mapping[str, Quantity] | None = None
+) -> _Names:
+    """Return what equation text names: the Model's Values and the rule parameters."""
+    return _Names(model=model, parameters=parameters or {})
+
+
 def parse_text(
     *, text: str, model: Model, parameters: Mapping[str, Quantity] | None = None
 ) -> Expression:
@@ -115,7 +122,14 @@ def parse_text(
 
     Names are the Values of ``model`` and the keys of ``parameters``.
     """
-    return parse(text=text, names=_Names(model=model, parameters=parameters or {}))
+    return parse(text=text, names=names_of(model, parameters=parameters))
+
+
+def parse_condition_text(
+    *, text: str, model: Model, parameters: Mapping[str, Quantity] | None = None
+) -> Expression:
+    """Return the Expression of a condition, where ``==`` tests a value."""
+    return parse_condition(text=text, names=names_of(model, parameters=parameters))
 
 
 def leaves(condition: Expression) -> Iterator[Expression]:
@@ -263,6 +277,7 @@ def check_queries(
     for position, rule in enumerate(rules):
         later = {item.target for item in rules[position:]}
         _check_kind(rule, model=model)
+        _check_reads(rule, model=model)
         _check_look_ahead(rule, model=model)
         for read in read_targets(rule.condition):
             _check_read(
@@ -292,6 +307,18 @@ def _check_kind(rule: RuleQuery, *, model: Model) -> None:
             code=Code.RULE_CAPABILITY,
             targets=(rule.target,),
         )
+
+
+def _check_reads(rule: RuleQuery, *, model: Model) -> None:
+    """Check that a condition reads only Values and ``flow.shift(by=)``."""
+    for leaf in leaves(rule.condition):
+        if leaf.kind is ExpressionKind.CALL and shift_of(leaf) is None:
+            raise ContractError(
+                f"the condition of the rule for {model.key_of(rule.target)} calls a "
+                "function; a condition reads values and flow.shift(by=)",
+                code=Code.RULE_CAPABILITY,
+                targets=(rule.target,),
+            )
 
 
 def _check_look_ahead(rule: RuleQuery, *, model: Model) -> None:
@@ -362,7 +389,9 @@ __all__ = [
     "definitions",
     "dependencies",
     "leaves",
+    "names_of",
     "parameter_id",
+    "parse_condition_text",
     "parse_text",
     "read_targets",
     "references",

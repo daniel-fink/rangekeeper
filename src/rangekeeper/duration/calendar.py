@@ -6,6 +6,7 @@ import calendar
 from datetime import date, timedelta
 from enum import StrEnum, unique
 
+from rangekeeper.schema.enums import PeriodTiming as PeriodTiming
 from rangekeeper.shared.errors import ContractError
 
 
@@ -48,15 +49,6 @@ class MonthRoll(StrEnum):
 
     PRESERVE_END = "preserve_end"
     CLAMP = "clamp"
-
-
-@unique
-class PeriodTiming(StrEnum):
-    """Select the date that represents a Period: first day, last day or end boundary."""
-
-    FIRST = "first"
-    LAST = "last"
-    END = "end"
 
 
 @unique

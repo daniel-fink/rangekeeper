@@ -29,6 +29,15 @@ classes:
         description: Optional name of the extent.
         range: string
 enums:
+  PeriodTiming:
+    description: The date that represents a Period.
+    permissible_values:
+      first:
+        description: The first day of the Period.
+      last:
+        description: The last day of the Period.
+      end:
+        description: The end boundary of the Period, the day after its last day.
   Never:
     description: The one word for an event that does not happen. NEVER is a date-valued result, not a
       missing value; an absent date is unresolved.
