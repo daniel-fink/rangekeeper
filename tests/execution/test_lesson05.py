@@ -21,6 +21,7 @@ import ast
 import re
 from datetime import date
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -61,16 +62,16 @@ def run(namespace: dict, source: str, *, waiting: tuple[str, ...] = ()) -> dict:
 
 def lesson_inputs() -> tuple[rk.Model, rk.Specification]:
     """Return lesson 04's Model and base case, with the triggers of #301 in the Model."""
-    earlier = lesson04.lesson03_model()
-    namespace: dict = {"rk": rk, "date": date, "model": earlier}
-    for key in ("3", "3b"):
-        exec(lesson04.cells()[key], namespace)
+    helpers = SimpleNamespace(data_path=lambda *, name: lesson04.DATA / name)
+    namespace: dict = {"rk": rk, "date": date, "helpers": helpers}
+    lesson04.run(namespace, "2", "3", "3b")
     draft = namespace["model"].edit()
     project = draft.entity(code="project")
     for key in TRIGGERS:
         project.value(key=key, units="ratio")
-    model = draft.commit()
-    return model, lesson04.base_case(earlier).free("rent_growth").on(model=model)
+    namespace["model"] = draft.commit()
+    lesson04.run(namespace, "4")
+    return namespace["model"], namespace["base"]
 
 
 @pytest.fixture(scope="module")
