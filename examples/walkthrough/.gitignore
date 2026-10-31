@@ -3,6 +3,8 @@ _build/
 output/
 # The store that lesson 03 executes into
 runs/
+# The paths that lesson 04 saves
+paths/
 .ipynb_checkpoints/
 
 # Local environments and caches

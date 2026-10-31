@@ -251,11 +251,57 @@ def plot_cash_flows(*, outcome, key, path=None):
     return show_plot(figure, path=path)
 
 
-def plot_flows(*, outcome, keys, path=None):
-    """Draw some solved Flows of an Outcome over their Periods; it calculates nothing."""
-    flows = {key: outcome[key] for key in keys}
-    title = ", ".join(keys)
+def plot_flows(*, outcome=None, keys=None, flows=None, path=None):
+    """Draw Flows over their Periods; it calculates nothing.
+
+    Give ``outcome`` and ``keys`` to draw solved Flows of an Outcome, or ``flows``,
+    a mapping from each label to a Flow.
+    """
+    if (flows is None) == (outcome is None or keys is None):
+        raise ValueError("Give outcome and keys, or flows")
+    if flows is None:
+        flows = {key: outcome[key] for key in keys}
+    title = ", ".join(flows)
     return show_flows(flows=flows, title=title, timing=PeriodTiming.LAST, path=path)
+
+
+def plot_paths(*, paths, path=None):
+    """Draw each series of each market path over its Periods; it calculates nothing."""
+    flows = {}
+    for key in paths.keys:
+        for name in paths.names:
+            label = key if len(paths.names) == 1 else f"{key}: {name}"
+            flows[label] = paths[key][name]
+    title = f"{', '.join(paths.names)}: {len(paths)} market paths"
+    # Two sets of paths can have one title; each needs its own display file.
+    path = path or Path("output") / f"paths-{paths.id}.html"
+    return show_flows(flows=flows, title=title, timing=PeriodTiming.LAST, path=path)
+
+
+def plot_target_curve(*, outcomes, key, markers=None, path=None):
+    """Draw the share of cases at or below each value of ``key``; it calculates nothing.
+
+    ``outcomes`` is a batch Outcome. ``markers`` maps each label to a Quantity, which
+    the curve shows as a vertical line. The markers must have the units of the values.
+    """
+    values = outcomes.distribution(key=key).values
+    units = values[0].units
+    figure = chart.plot_distribution(
+        {key: [float(value.magnitude) for value in values]},
+        units=units,
+        title=f"Target curve of {key}, {len(values)} market paths",
+        cumulative=True,
+    )
+    for label, marker in (markers or {}).items():
+        if marker.units != units:
+            raise ValueError(f"The marker {label!r} must have the units {units}")
+        figure.add_vline(
+            x=float(marker.magnitude),
+            line_dash="dash",
+            annotation_text=label,
+            annotation_position="top left",
+        )
+    return show_plot(figure, path=path)
 
 
 def _equations(model):

@@ -5,6 +5,25 @@ Issue: [#206](https://github.com/daniel-fink/rangekeeper/issues/206). Plan:
 and [ADR-014](../../../docs/decisions/014-market-paths.md).
 API conventions and the gap list: [README](README.md).
 
+These places differ from the first proposal, and this file now shows the notebook's
+cells. The notebook leaves out the `# cell` comments.
+
+- **Cell 1** also imports `os`, and follows `ruff`'s import order.
+- **Cell 3b** removes `equity_irr`. A path where the equity gets nothing back has no
+  IRR, and a solve that needs the IRR fails on that path.
+- **Cell 8** reads the count from `RK_PATH_COUNT`, with a default of 500. Nothing
+  reads the "parameters" tag of the proposal.
+- **Cell 9** puts the ID of the paths in the file name. `rk.io.save` never replaces a
+  file, and the capture changes with the path count and with the versions of the
+  libraries. With a fixed name, the cell fails when it runs again after an upgrade.
+  Git ignores `paths/`.
+- **Cell 14** also compares the commitment gap.
+- **Cell 15** also reads the share of paths with an equity NPV below zero.
+- **Cell 19** checks the flaw of averages with the share of paths with a loss. The
+  proposal's `npv.mean() != average_outcome["unlevered_npv"]` does not hold: the
+  unlevered NPV is linear in the rent index. Goal 5, sections 5, 7 and 8 and recap 3
+  say the same.
+
 ## Goals box
 
 > **Question.** How does the same plan perform across many possible market
@@ -17,8 +36,8 @@ API conventions and the gap list: [README](README.md).
 > 3. generate and capture market paths with a seed, and replay them;
 > 4. run the plan across the paths, and read the distribution of NPV and funding
 >    shortfall;
-> 5. explain why the plan valued on average inputs differs from the average of its
->    results.
+> 5. explain why a plan with no loss on the average path can still lose money on many
+>    paths.
 >
 > **Before you start.** Lesson 03.
 >
@@ -37,10 +56,12 @@ data package. Show its equations so that nothing is hidden.
 
 ```python
 # cell 1
+import os
 from datetime import date
 
-import rangekeeper as rk
 import helpers
+
+import rangekeeper as rk
 ```
 
 ```python
@@ -83,8 +104,14 @@ project.replace(
     equation="b_rent = rx.profile.constant(initial=b_income, start=b_open)",
 )
 project.remove(key="rent_growth")
+project.remove(key="equity_irr")
 model = draft.commit()
 ```
+
+Narrative: the cell also removes `equity_irr`. On a path where the equity gets nothing
+back, the equity's cash flow has no change of sign, so it has no IRR, and a solve that
+needs the IRR fails on that path. This lesson reads the equity NPV, which has a value
+on each path.
 
 Narrative: lesson 03's Specification fixed a rent growth rate. This Model has no
 rent growth, so free that value before you move the Specification to the new
@@ -146,10 +173,13 @@ helpers.plot_paths(paths=five_paths)
 Narrative: generate many paths with one seed. The result is an `rk.market.Paths`
 document. Its capture record keeps the generator, its parameters, the seed and the
 library versions. Replay uses the captured values and draws no new random numbers.
+A solve across many paths takes time, so the environment variable `RK_PATH_COUNT`
+sets a smaller count for a quick run. `rk.io.save` never replaces a file, so the file
+name has the ID of the paths: other paths go to another file.
 
 ```python
 # cell 8
-count = 500  # this cell is tagged "parameters": CI runs the lesson with fewer paths
+count = int(os.environ.get("RK_PATH_COUNT", 500))  # CI runs the lesson with 4 paths
 paths = rk.market.generate(
     dynamics={"rent_index": dynamics}, periods=years, seed=1, count=count
 )
@@ -158,15 +188,17 @@ paths.capture  # generator, parameters, seed, versions
 
 ```python
 # cell 9
-rk.io.save(document=paths, path="paths/04_rent_index.json")
-assert rk.io.load(path="paths/04_rent_index.json") == paths
+saved = f"paths/04_rent_index_{paths.id}.json"
+rk.io.save(document=paths, path=saved)
+assert rk.io.load(path=saved) == paths
 assert paths.regenerate(seed=1) == paths  # the same seed gives the same paths
 ```
 
 ## 5. The plan on average inputs
 
-Narrative. **Predict:** is the NPV on the average path the same as the average NPV
-across paths? First, value the plan on the average rent index.
+Narrative. **Predict:** value the plan on the average path. If its unlevered NPV is
+above zero, how many paths lose money: none, a few or many? First, value the plan on
+the average rent index.
 
 ```python
 # cell 10
@@ -205,31 +237,50 @@ helpers.plot_target_curve(
 
 ## 7. The flaw of averages
 
-Narrative: the average of the results differs from the result on the average path.
-Leverage and the funding limit are not linear in the market, so the difference is
-larger for equity and for funding.
+Narrative: compare the result on the average path with the mean of the results
+across the paths. The unlevered NPV is the same on both. Income is the rent index
+times flat rents, and the NPV adds the discounted amounts of that income, so the NPV
+is linear in the index. The mean of the NPVs is then the NPV on the mean path.
+
+Leverage and the funding limit are not linear in the market, so the equity NPV, the
+peak shortfall and the commitment gap can differ. On this plan they differ only
+slightly. Read the difference column.
 
 ```python
 # cell 14
 rk.execution.compare(
     outcomes={"Average path": average_outcome, "Mean of paths": paths_outcome.mean()},
-    keys=["unlevered_npv", "equity_npv", "peak_shortfall"],
+    keys=["unlevered_npv", "equity_npv", "peak_shortfall", "commitment_gap"],
     baseline="Average path",
 )
 ```
 
+Narrative: so the mean does not show the flaw of averages on this plan. The average
+path gives one result, and one result has no spread. The flaw is what that result
+hides: the next section reads it.
+
 > **Finance note.** A plan that looks good on the average path can fail on many paths.
 > Read the downside: the 5 % quantile (value at risk) and the share of paths with a
-> funding shortfall.
+> loss.
 
 ## 8. Downside and funding
 
-Narrative: read the probability of a loss and of a funding shortfall.
+Narrative: read the share of paths with a loss, first on the unlevered NPV and then
+on the equity NPV. The average path shows no unlevered loss, but many paths have one.
+This is the flaw of averages. Then read the share of paths with a funding shortfall.
+Every path has a shortfall, and so does the average path: the loan exceeds its limit
+in a good market and in a bad market. So this share cannot show the flaw. It tells
+you that the plan needs more funding, whichever path occurs.
 
 ```python
 # cell 15
+equity = paths_outcome.distribution(key="equity_npv")
 shortfall = paths_outcome.distribution(key="peak_shortfall")
-npv.probability(below="0 AUD"), shortfall.probability(above="0 AUD")
+(
+    npv.probability(below="0 AUD"),
+    equity.probability(below="0 AUD"),
+    shortfall.probability(above="0 AUD"),
+)
 ```
 
 ```python
@@ -331,7 +382,9 @@ reseeded_outcome.distribution(key="unlevered_npv").mean() - npv.mean()
 # cell 19 (checks)
 assert len(paths_outcome.cases) == count
 assert paths_outcome.run.paths == paths.id  # the Run pins the paths
-assert npv.mean() != average_outcome["unlevered_npv"]  # the flaw of averages
+# The flaw of averages: no loss on the average path, but a loss on some paths.
+assert average_outcome["unlevered_npv"] > rk.Quantity(text="0 AUD")
+assert npv.probability(below="0 AUD") > 0
 first = paths.keys[0]
 assert paths_outcome.case(key=first)["rent_index"] == paths[first]["rent_index"]
 ```
@@ -342,8 +395,8 @@ assert paths_outcome.case(key=first)["rent_index"] == paths[first]["rent_index"]
    Both enter a batch Specification the same way: as fixed values.
 2. Market paths are captured inputs: a seed and parameters give the same paths, and
    the Run pins them.
-3. The result on the average path is not the average result. Read the distribution,
-   and above all its downside.
+3. The average path can show no loss when many paths lose money. Read the
+   distribution, and above all its downside.
 
 **Next.** Lesson 05 lets decisions react to the market path, using only what is
 known at each date.
@@ -351,23 +404,25 @@ known at each date.
 ## Cell budget
 
 17 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 12 lines (cell 17). Cells follow `ruff format` (D15).
+solutions. The longest cells have 11 lines (cells 3b and 17), without the `# cell`
+comment. Cells follow `ruff format` (D15).
 
 ## Rule check
 
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 2 | 1, 10 | G26: `rk.io.load` and `rk.io.save` for any document kind; `model.equations` display ([G10](README.md#gap-list)) |
-| 3–3b | 2, 3 | G27: equation keys, entity `replace(key=, equation=)` and `remove(key=)`; G28: entity `flow(key=, units=, periods=)` |
+| 3–3b | 2, 3 | G27: equation keys, entity `replace(key=, equation=)` and `remove(key=)`; G28: entity `flow(key=, units=, periods=)`. `equity_irr` leaves the Model: a path where the equity gets nothing back has no IRR |
 | 4 | 2, 5 | G21: `free` then `on(model=)`; `on` refuses a fixed value that the new revision does not declare |
 | 5–7 | 6, 11 | `rk.market.Dynamics` and `rk.market.generate(dynamics=, periods=, seed=, count=)` ([#135](https://github.com/daniel-fink/rangekeeper/issues/135), [#136](https://github.com/daniel-fink/rangekeeper/issues/136)). G29: generator parameters as Quantity strings, `replace(...)`; `generate` needs `seed=` only when the dynamics are random |
 | 5–7, 13, 16, 18 | 10 | Helpers draw only |
-| 8–9 | 4, 6 | `rk.market.Paths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06) |
+| 8–9 | 4, 6 | `rk.market.Paths` and its capture ([#137](https://github.com/daniel-fink/rangekeeper/issues/137)); G26; value equality of documents (G06). `RK_PATH_COUNT` sets the count; the saved file's name has the ID of the paths |
 | 10 | 6 | G30: `Paths.mean(name)` gives one Flow |
 | 11 | 8 | `across` ([#138](https://github.com/daniel-fink/rangekeeper/issues/138)). G73: path series match Model values by key |
 | 12–15 | 8 | G31: `Outcome.distribution(key)` with `summary`, `mean`, `quantile(level=)`, `probability`, `case(quantile=)` |
-| 14 | 8 | G66; G31: `Outcome.mean()` gives the mean of a batch as one Outcome for `rk.execution.compare` |
+| 14 | 8 | G66; G31: `Outcome.mean()` gives the mean of a batch as one Outcome for `rk.execution.compare`. The narrative says that the unlevered NPV is linear in the index; `tests/execution/test_lesson04.py` checks it |
+| 15, 19 | 8 | G31: `Distribution.probability`. Cell 19's check of the flaw of averages is the share of paths with a loss: the mean of a linear NPV cannot show it, and each path has a shortfall |
 | 16 | 8 | G31: `Distribution.case(quantile=)` returns the case at a quantile |
 | 17–18 | 6, 10 | G32: `rk.market.generate(dynamics={name: Dynamics})` makes independent named series; co-movement is composed by the author with Flow arithmetic, not declared (D31). The helper draws only |
 | 19 | 8 | G33: `Outcome.run.paths` pin; `Paths[key][name]`; G69: `Paths.regenerate(seed=)` (Try it 3) |
-| — | — | Run time across 500 paths needs the reusable worker ([#130](https://github.com/daniel-fink/rangekeeper/issues/130)) and one structure for all cases (G20) |
+| — | — | Run time across 500 paths needs the reusable worker ([#130](https://github.com/daniel-fink/rangekeeper/issues/130)) and one structure for all cases (G20). It is now about 3 s for each path ([#523](https://github.com/daniel-fink/rangekeeper/issues/523)) |
