@@ -2,16 +2,17 @@
 
 from collections.abc import Sequence
 from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
 from rangekeeper.flow import Flow, Movement
 from rangekeeper.model import Model
 from rangekeeper.model.targets import date_target, target_units
-from rangekeeper.quantity import Quantity
+from rangekeeper.quantity import Quantity, UnitSystem
 from rangekeeper.schema.enums import ValueKind
 from rangekeeper.schema.records import Assignment, Reference, Value
 from rangekeeper.shared.codes import Code
-from rangekeeper.shared.errors import ContractError, MissingReferenceError
+from rangekeeper.shared.errors import ContractError, MissingReferenceError, UnitError
 
 
 def _select(
@@ -146,3 +147,42 @@ def expand_targets(
     if not date_target(model, ref):
         target_units(model, ref)
     return (ref,)
+
+
+def checked_quantity(
+    value: object,
+    *,
+    target: object,
+    units: str,
+    unit_system: UnitSystem,
+) -> Quantity:
+    """Return the Quantity that fixes a target, after a check of its units.
+
+    Text is read as a Quantity. A bare number is a ratio, so its target must have
+    dimensionless units.
+    """
+    if isinstance(value, Quantity):
+        quantity = value
+    elif isinstance(value, str):
+        quantity = Quantity(text=value)
+    elif isinstance(value, (int, float, Decimal)) and not isinstance(value, bool):
+        quantity = Quantity(magnitude=value, units="ratio")
+        if not unit_system.compatible("ratio", units):
+            raise UnitError(
+                f"a bare number fixes a ratio, but {target} has units {units!r}; "
+                f"give a Quantity or text with units, such as '{value} {units}'",
+                code=Code.INCOMPATIBLE_UNITS,
+            )
+    else:
+        raise TypeError(
+            f"the value of {target} must be a Quantity, Quantity text, a number "
+            "or a mapping from Movement UUIDs to these"
+        )
+    if not unit_system.compatible(quantity.units, units):
+        raise UnitError(
+            f"incompatible units: {target} has units {units!r}, and the quantity "
+            f"that fixes it {quantity.units!r}",
+            code=Code.INCOMPATIBLE_UNITS,
+        )
+    unit_system.convert(quantity=quantity, to=units)
+    return quantity

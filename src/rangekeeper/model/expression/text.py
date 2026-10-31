@@ -12,6 +12,9 @@ entity. ``NEVER`` is the date that never comes, and ``date(2027, 1, 1)`` a
 calendar date, as in Python. Functions are called as ``rx.<name>(...)`` and Flow methods as
 ``x.<name>(...)``, from the equation-function registry
 (``rangekeeper.model.expression.catalogue``).
+
+A rule's condition is the same text, except that ``==`` tests a value: ``=``
+states an equation. ``parse_condition`` and ``render_condition`` read and write it.
 """
 
 from datetime import date
@@ -21,7 +24,7 @@ from rangekeeper.duration import NEVER, Never
 from rangekeeper.model.expression import syntax, terms
 from rangekeeper.model.expression.catalogue import functions
 from rangekeeper.model.expression.functions import PREFIX, EquationFunction
-from rangekeeper.model.expression.rendering import render
+from rangekeeper.model.expression.rendering import render, render_condition
 from rangekeeper.model.expression.syntax import (
     Binary,
     Call,
@@ -82,6 +85,15 @@ def parse(*, text: str, names: Names) -> Expression:
     fails.
     """
     return read(text=text, names=names).to_expression()
+
+
+def parse_condition(*, text: str, names: Names) -> Expression:
+    """Return the Expression records of a rule's condition, where ``==`` tests a value.
+
+    It raises as ``parse`` does; ``=`` in a condition is one such text.
+    """
+    tree = syntax.parse_condition(text)
+    return _Reader(text, names).build(tree).to_expression()
 
 
 def read(*, text: str, names: Names) -> Term:
@@ -325,4 +337,12 @@ def _suggestions(error: ContractError) -> tuple[str, ...]:
     return tuple(str(item) for item in found)
 
 
-__all__ = ["RESERVED", "Names", "parse", "read", "render"]
+__all__ = [
+    "RESERVED",
+    "Names",
+    "parse",
+    "parse_condition",
+    "read",
+    "render",
+    "render_condition",
+]

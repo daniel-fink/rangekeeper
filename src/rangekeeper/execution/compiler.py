@@ -104,6 +104,9 @@ class Compiler:
         self.binding = binding
         self.checkpoint = checkpoint
         self.pieces = Pieces.of(binding.model)
+        self.unknowns = frozenset(binding.unknowns)
+        # A problem adds the same few pairs of units many thousands of times.
+        self.factors: dict[tuple[str, str], float] = {}
 
     def nonaffine(self, operation: str, *values: Affine) -> UnsupportedError:
         """Return the error for an operation on unknowns that is not affine.
@@ -123,15 +126,22 @@ class Compiler:
 
     def convert(self, value: Affine, units: str) -> Affine:
         """Convert a whole affine expression; offset units are outside this slice."""
-        zero = self.binding.units.convert(
-            quantity=Quantity(magnitude=0, units=value.units), to=units
-        )
-        one = self.binding.units.convert(
-            quantity=Quantity(magnitude=1, units=value.units), to=units
-        )
-        if zero.number != 0:
-            raise UnsupportedError("offset unit arithmetic is not supported")
-        return self.scale(value, one.number, units)
+        return self.scale(value, self.factor(value.units, units), units)
+
+    def factor(self, source: str, target: str) -> float:
+        """Return the factor between two units, each pair checked once."""
+        found = self.factors.get((source, target))
+        if found is None:
+            zero = self.binding.units.convert(
+                quantity=Quantity(magnitude=0, units=source), to=target
+            )
+            one = self.binding.units.convert(
+                quantity=Quantity(magnitude=1, units=source), to=target
+            )
+            if zero.number != 0:
+                raise UnsupportedError("offset unit arithmetic is not supported")
+            found = self.factors[source, target] = one.number
+        return found
 
     @staticmethod
     def scale(value: Affine, factor: float, units: str) -> Affine:
@@ -193,7 +203,7 @@ class Compiler:
             if token in self.binding.assignments:
                 assigned = self.binding.assignments[token]
                 return _affine(assigned.number, {}, assigned.units)
-            if token in self.binding.unknowns:
+            if token in self.unknowns:
                 return _affine(0, {token: 1}, self.binding.value_units[token])
             raise UnsupportedError("expression reference has no explicit solve role")
         if node.kind == ExpressionKind.UNARY and node.operator == Operator.NEGATE:

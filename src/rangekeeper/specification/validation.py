@@ -35,6 +35,7 @@ from rangekeeper.shared.amounts import number
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
+    AvailabilityError,
     ContractError,
     IdentityConflictError,
     MissingReferenceError,
@@ -587,6 +588,8 @@ def prepare(
                     )
                 )
             )
+        if report.valid:
+            report = _rule_report(composition, model=resolved_model)
         return PreparedValidation(
             report,
             composition,
@@ -605,6 +608,25 @@ def prepare(
             composition,
             model,
         )
+
+
+def _rule_report(composition: Composition, *, model: "Model") -> ValidationReport:
+    """Report the static problems of the rules of one composition (ADR-021)."""
+    from rangekeeper.specification.rule._declaration import check_declared
+
+    requirements = composition.requirements
+    try:
+        check_declared(
+            requirements.declared_rules or (),
+            model=model,
+            fixed={item.target.target for item in requirements.assignments or ()},
+            document_id=composition.root_id,
+        )
+    except ValidationError as error:
+        return error.report
+    except (ContractError, AvailabilityError) as error:
+        return ValidationReport((Issue(error.code, str(error), composition.root_id),))
+    return ValidationReport()
 
 
 def _role_targets(scope: Scope, identity: UUID) -> tuple[UUID, ...]:

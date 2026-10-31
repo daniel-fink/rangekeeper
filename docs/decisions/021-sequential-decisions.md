@@ -1,12 +1,14 @@
 # ADR-021: Decide values by rules over market paths
 
 Status: accepted for 1.0; the evaluation engine is implemented and verified (#215),
-and the public queries, stored records and Outcome API are pending (#300, #301).
+the queries are declared and stored (#300, part), and the solve, the stored evidence
+and the Outcome API are pending (#300, #301).
 Recorded: 2026-10-27. Amended 2026-10-27 by #201 decisions D2, D25 and D26 (`Periods`,
 `NEVER`, the equity-first funding names), 2026-10-28 by decisions D41 (rules, not
 policies) and D42 (a rule is a query over a window), 2026-10-28 by #102 (the shared
-rule semantics are in `run`), and 2026-10-31 by #215 (see
-[how #215 reads the evaluation order](#how-215-reads-the-evaluation-order)).
+rule semantics are in `run`), 2026-10-31 by #215 (see
+[how #215 reads the evaluation order](#how-215-reads-the-evaluation-order)), and
+2026-10-31 by #300 (see [how #300 declares rules](#how-300-declares-rules)).
 
 ## Problem
 
@@ -193,6 +195,21 @@ each reading agrees with the worked examples below:
 - **A date that only date equations determine** is unknown while it reads an undecided
   value, as a bound is. `decision_changes_past` also covers a date that a decision
   determines before its decision date: this meets acceptance 5 with no solve, on a rule set that reads only path values.
+
+#### How #300 declares rules
+
+- **Equality.** A condition writes `==` (the maintainer's decision, 2026-10-31). `=`
+  states an equation, and in a condition it is an error that suggests `==`.
+- **A free Flow at `fix`.** Cell 6 calls `fix` before `across`, so a path series can
+  still be free. `fix` counts each Flow as known. `across`, `free`, `validate` and the
+  solve check the rules again with what the case fixes.
+- **The stored record.** `Specification.declared_rules` holds the ordered
+  `RuleDeclaration` records, while `Specification.rules` still holds the old `RuleSet`.
+  The step of #300 that removes the old slice renames them to `rules` and `Rule`. The
+  target identifies a rule, so the record has no UUID of its own.
+- **Triggers before #301.** `rules[key]` brings the fixed values that the rule reads,
+  because `parameters` does not exist yet. A value that the other Specification fixes
+  stays.
 
 **Decisions do not change the past.** A decision on a date must not change a
 Movement before that date. The executor compares each new provisional solution, and

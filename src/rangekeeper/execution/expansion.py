@@ -100,12 +100,36 @@ def expand(binding: Binding) -> Binding:
     return replace(binding, assertions=tuple(found))
 
 
+def expand_settled(
+    settled: Binding, *, original: Sequence[Assertion]
+) -> tuple[Binding, Binding]:
+    """Return ``settled`` expanded with the ``original`` assertions, then its own.
+
+    The dates settle before the expansion, and an expansion reads no other
+    assertion, so an assertion that ``settled`` keeps expands once for both.
+    """
+    expansion = _Expansion(settled)
+    done: dict[int, tuple[Assertion, ...]] = {}
+
+    def expanded(items: Sequence[Assertion]) -> Binding:
+        found: list[Assertion] = []
+        for item in items:
+            parts = done.get(id(item))
+            if parts is None:
+                parts = done[id(item)] = expansion.assertion(item)
+            found.extend(parts)
+        return replace(settled, assertions=tuple(found))
+
+    return expanded(original), expanded(settled.assertions)
+
+
 @dataclass
 class _Expansion:
     """The expansion of the assertions of one Binding."""
 
     binding: Binding
     lowered: dict[UUID, list[Expression]] = field(default_factory=dict)
+    constants: dict[UUID, Content] = field(default_factory=dict)
 
     # Assertions.
 
@@ -231,7 +255,10 @@ class _Expansion:
         periods: Sequence[Period] | None,
     ) -> Expression:
         """Return the value of a call whose references are all fixed."""
-        result = self.evaluate(node, probes={}, periods=periods)
+        result = self.constants.get(node.id)
+        if result is None:
+            result = self.evaluate(node, probes={}, periods=periods)
+            self.constants[node.id] = result
         return _literal(_amount(result, index, periods), id=_id(node, index))
 
     def linear(
