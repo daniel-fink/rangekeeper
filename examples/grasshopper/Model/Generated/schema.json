@@ -1,51 +1,5 @@
 {
   "$defs": {
-    "Action": {
-      "additionalProperties": false,
-      "description": "An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.",
-      "properties": {
-        "kind": {
-          "$ref": "#/$defs/ActionKind",
-          "description": "Whether the action assigns a control or terminates the decision sequence."
-        },
-        "quantity": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Quantity"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Finite quantity to assign, with units compatible with the target; required for assign and absent for terminate."
-        },
-        "target": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Reference"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Controlled target to assign; required for assign and absent for terminate."
-        }
-      },
-      "required": [
-        "kind"
-      ],
-      "title": "Action",
-      "type": "object"
-    },
-    "ActionKind": {
-      "description": "What a Rule action does.",
-      "enum": [
-        "assign",
-        "terminate"
-      ],
-      "title": "ActionKind",
-      "type": "string"
-    },
     "Argument": {
       "additionalProperties": false,
       "description": "One named expression argument in a Function call.",
@@ -767,110 +721,6 @@
         "decision_date"
       ],
       "title": "DecidedValue",
-      "type": "object"
-    },
-    "Decision": {
-      "additionalProperties": false,
-      "description": "One dated rule decision with explicit observations, first-match rules and fallback.",
-      "properties": {
-        "at": {
-          "description": "Decision date; dates increase strictly within the RuleSet.",
-          "format": "date",
-          "type": "string"
-        },
-        "fallback": {
-          "description": "Nonempty ordered actions applied when no rule condition is true.",
-          "items": {
-            "$ref": "#/$defs/Action"
-          },
-          "type": "array"
-        },
-        "id": {
-          "description": "Stable identity of the Decision, referenced by DecisionEvidence.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "observations": {
-          "description": "Ordered observations that the rule conditions can read.",
-          "items": {
-            "$ref": "#/$defs/ObservationBinding"
-          },
-          "type": "array"
-        },
-        "rules": {
-          "description": "Ordered rules; the first Rule whose condition is true supplies the actions.",
-          "items": {
-            "$ref": "#/$defs/Rule"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "id",
-        "at",
-        "observations",
-        "rules",
-        "fallback"
-      ],
-      "title": "Decision",
-      "type": "object"
-    },
-    "DecisionEvidence": {
-      "additionalProperties": false,
-      "description": "Recorded evidence of one evaluated Decision of a RuleSet; absence of a rule means fallback.",
-      "properties": {
-        "assignments": {
-          "description": "Assignments made by the applied actions, in action order.",
-          "items": {
-            "$ref": "#/$defs/Assignment"
-          },
-          "type": "array"
-        },
-        "at": {
-          "description": "Date of the evaluated Decision.",
-          "format": "date",
-          "type": "string"
-        },
-        "decision": {
-          "description": "UUID of the evaluated Decision.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "observations": {
-          "description": "Observed quantities, in the order of the Decision observations.",
-          "items": {
-            "$ref": "#/$defs/ObservedQuantity"
-          },
-          "type": "array"
-        },
-        "rule": {
-          "description": "UUID of the first Rule whose condition was true; absent or null when the fallback applied.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "terminated": {
-          "description": "Whether the applied actions terminated the decision sequence; no evidence follows a termination.",
-          "type": "boolean"
-        },
-        "termination_reason": {
-          "description": "Reason for termination, required when terminated is true.",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "required": [
-        "decision",
-        "at",
-        "observations",
-        "assignments",
-        "terminated"
-      ],
-      "title": "DecisionEvidence",
       "type": "object"
     },
     "DecisionResult": {
@@ -2939,35 +2789,6 @@
       "title": "Observation",
       "type": "object"
     },
-    "ObservationBinding": {
-      "additionalProperties": false,
-      "description": "An explicit observation target. An optional date may delay availability but cannot advance it.",
-      "properties": {
-        "available_at": {
-          "description": "Optional date that can delay availability; it cannot make the quantity available earlier.",
-          "format": "date",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "name": {
-          "description": "Name of the observation, unique within its Decision.",
-          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
-          "type": "string"
-        },
-        "target": {
-          "$ref": "#/$defs/Reference",
-          "description": "Value or Movement whose recorded or decided quantity the Decision observes."
-        }
-      },
-      "required": [
-        "name",
-        "target"
-      ],
-      "title": "ObservationBinding",
-      "type": "object"
-    },
     "ObservationSource": {
       "description": "Where the value that a rule read comes from.",
       "enum": [
@@ -2979,38 +2800,6 @@
       ],
       "title": "ObservationSource",
       "type": "string"
-    },
-    "ObservedQuantity": {
-      "additionalProperties": false,
-      "description": "The exact quantity and availability supplied to a decision.",
-      "properties": {
-        "available_at": {
-          "description": "Date from which the quantity was available; it is not later than the Decision date.",
-          "format": "date",
-          "type": "string"
-        },
-        "name": {
-          "description": "Name of the ObservationBinding that this quantity satisfies.",
-          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
-          "type": "string"
-        },
-        "quantity": {
-          "$ref": "#/$defs/Quantity",
-          "description": "Exact quantity supplied to the rule conditions."
-        },
-        "target": {
-          "$ref": "#/$defs/Reference",
-          "description": "Observed Value or Movement, equal to the target of the ObservationBinding."
-        }
-      },
-      "required": [
-        "name",
-        "target",
-        "quantity",
-        "available_at"
-      ],
-      "title": "ObservedQuantity",
-      "type": "object"
     },
     "Operator": {
       "description": "The operator of a unary or binary Expression.",
@@ -3830,16 +3619,6 @@
       "additionalProperties": false,
       "description": "Outcome, actual runtime, findings, and ordered execution trace of a Run.",
       "properties": {
-        "decision_evidence": {
-          "description": "Ordered evidence of each evaluated Decision of the RuleSet of the Specification.",
-          "items": {
-            "$ref": "#/$defs/DecisionEvidence"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
         "diagnostics": {
           "description": "Unordered findings supporting interpretation of the outcome.",
           "items": {
@@ -3893,35 +3672,6 @@
       "type": "object"
     },
     "Rule": {
-      "additionalProperties": false,
-      "description": "One ordered Boolean condition and its atomic actions.",
-      "properties": {
-        "actions": {
-          "description": "Nonempty ordered actions applied when this is the first true Rule; terminate can only be last.",
-          "items": {
-            "$ref": "#/$defs/Action"
-          },
-          "type": "array"
-        },
-        "condition": {
-          "$ref": "#/$defs/Expression",
-          "description": "Boolean Expression that refers only to the observations of its Decision."
-        },
-        "id": {
-          "description": "Stable identity of the Rule, referenced by DecisionEvidence.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "id",
-        "condition",
-        "actions"
-      ],
-      "title": "Rule",
-      "type": "object"
-    },
-    "RuleDeclaration": {
       "additionalProperties": false,
       "description": "One rule as a query over a window of dates. On each path it fixes one value on the first window date on which its condition holds, or fixes otherwise.",
       "properties": {
@@ -3990,7 +3740,7 @@
         "condition",
         "otherwise"
       ],
-      "title": "RuleDeclaration",
+      "title": "Rule",
       "type": "object"
     },
     "RuleEvidence": {
@@ -4028,38 +3778,6 @@
         "verified"
       ],
       "title": "RuleEvidence",
-      "type": "object"
-    },
-    "RuleSet": {
-      "additionalProperties": false,
-      "description": "The rules of a Specification, owning explicit controlled targets and ordered dated decisions.",
-      "properties": {
-        "decisions": {
-          "description": "Dated Decisions in strictly increasing date order.",
-          "items": {
-            "$ref": "#/$defs/Decision"
-          },
-          "type": "array"
-        },
-        "id": {
-          "description": "Stable identity of the RuleSet.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "targets": {
-          "description": "Nonempty unique controlled targets; the decision actions must assign each one.",
-          "items": {
-            "$ref": "#/$defs/Reference"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "id",
-        "targets",
-        "decisions"
-      ],
-      "title": "RuleSet",
       "type": "object"
     },
     "Run": {
@@ -4560,16 +4278,6 @@
             "null"
           ]
         },
-        "declared_rules": {
-          "description": "Nonempty ordered rules, each a query over a window that decides one value. They run in this order. A decided value has no other role.",
-          "items": {
-            "$ref": "#/$defs/RuleDeclaration"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
         "estimates": {
           "description": "Initial numerical estimates for unknown Values, used to initialize a solve without fixing them.",
           "items": {
@@ -4652,15 +4360,14 @@
           "description": "The market path whose series fix Flow values in this case. The resolve-cases stage expands it into assignments from the Paths document; the case does not copy the amounts."
         },
         "rules": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/RuleSet"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Optional RuleSet with controlled targets and dated decisions."
+          "description": "Nonempty ordered rules, each a query over a window that decides one value. They run in this order. A decided value has no other role.",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "settings": {
           "allOf": [

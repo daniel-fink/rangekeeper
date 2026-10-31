@@ -1,11 +1,11 @@
-"""Flexible consumer: rules declarations supply controls before the numerical solve."""
+"""Flexible consumer: a rule decides the sale date during the solve."""
 
 from rangekeeper_examples.investment import (
     author,
-    build_stop_gain_resale_rules,
     formulate,
     report,
     specify,
+    stop_gain_resale_rule,
     values,
 )
 
@@ -13,7 +13,7 @@ __all__ = [
     "author",
     "formulate",
     "specify",
-    "build_stop_gain_resale_rules",
+    "stop_gain_resale_rule",
     "report",
     "values",
 ]

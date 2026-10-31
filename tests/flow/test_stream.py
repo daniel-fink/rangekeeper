@@ -21,7 +21,7 @@ from rangekeeper.model.formulation import flow
 from rangekeeper.model.system import FlowRollup, Hierarchy, View
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.enums import SolutionStatus
-from rangekeeper.shared.errors import ContractError, UnitError, UnsupportedError
+from rangekeeper.shared.errors import UnitError, UnsupportedError
 from rangekeeper_examples.flux import (
     collection,
     forward_specification,
@@ -582,29 +582,6 @@ def test_rule_and_scalar_role_editing():
     )
     with pytest.raises(UnitError, match="bare number fixes a ratio"):
         unlocked.fix({ids["initial"]: 120})
-
-
-def test_role_edit_rejects_rule_control_without_changing_the_specification():
-    from rangekeeper.schema.records import RuleSet
-    from rangekeeper.specification import Specification
-    from tests.execution.test_temporal_execution import investigate, oracle
-
-    model, ids = oracle()
-    base = investigate(model, ids)
-    record = base.record.replace(
-        assignments=tuple(
-            a for a in base.record.assignments if a.target.target != ids["initial"]
-        ),
-        rules=RuleSet(
-            id=uuid4(), targets=(Reference(target=ids["initial"]),), decisions=()
-        ),
-    )
-    controlled = Specification(record=record, model=model)
-    before = controlled.to_data()
-    with pytest.raises(ContractError, match="rule controls") as error:
-        controlled.free(Reference(target=ids["initial"]))
-    assert error.value.targets == (ids["initial"],)
-    assert controlled.to_data() == before
 
 
 def _counted_reduce(monkeypatch, values_by_group):

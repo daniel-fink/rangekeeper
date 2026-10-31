@@ -37,7 +37,6 @@ if TYPE_CHECKING:
     from rangekeeper.quantity import Quantity as _Quantity
     from rangekeeper.duration import Span as _Span
 
-from .enums import ActionKind as ActionKind
 from .enums import Cardinality as Cardinality
 from .enums import ClaimKind as ClaimKind
 from .enums import CollectionKind as CollectionKind
@@ -70,82 +69,6 @@ from .enums import ValueKind as ValueKind
 from .enums import ValueRelation as ValueRelation
 Content = FrozenJSONValue
 DiagnosticValues = FrozenJSONValue
-
-class Action(Record):
-    'An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.'
-    __slots__ = ()
-    _kind = 'Action'
-    _SLOTS = _freeze(
-        {'kind': {'options': [{'kind': 'ActionKind', 'category': 'enum'}],
-                  'required': True,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': False,
-                  'ordered': False,
-                  'lineage': False},
-         'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
-                    'required': False,
-                    'many': False,
-                    'mapping': False,
-                    'nullable': True,
-                    'ordered': False,
-                    'lineage': False},
-         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
-                      'required': False,
-                      'many': False,
-                      'mapping': False,
-                      'nullable': True,
-                      'ordered': False,
-                      'lineage': False}}
-    )
-
-    def __init__(self, *,
-        kind: ActionKind,
-        target: Reference | None | Unset = UNSET,
-        quantity: Quantity | None | Unset = UNSET,
-    ) -> None:
-        data: dict[str, object] = {}
-        data['kind'] = _encode_enum(kind, ActionKind, 'kind')
-        if target is not UNSET:
-            data['target'] = _encode_record(target, Reference, 'target')
-        if quantity is not UNSET:
-            data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        self._set_checked(data)
-
-    def replace(self, *,
-        kind: ActionKind | Unset = UNSET,
-        target: Reference | None | Unset | Omit = UNSET,
-        quantity: Quantity | None | Unset | Omit = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if kind is not UNSET:
-            changes['kind'] = _encode_enum(kind, ActionKind, 'kind')
-        if target is OMIT:
-            changes['target'] = OMIT
-        elif target is not UNSET:
-            changes['target'] = _encode_record(target, Reference, 'target')
-        if quantity is OMIT:
-            changes['quantity'] = OMIT
-        elif quantity is not UNSET:
-            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        return self._replace(changes)
-
-    @property
-    def kind(self) -> ActionKind:
-        'Whether the action assigns a control or terminates the decision sequence.'
-        return cast('ActionKind', _decode_enum(self._data.get('kind'), ActionKind))
-
-    @property
-    def target(self) -> Reference | None:
-        'Controlled target to assign; required for assign and absent for terminate.'
-        return cast('Reference | None', self._child('target', Reference, False))
-
-    @property
-    def quantity(self) -> _Quantity | None:
-        'Finite quantity to assign, with units compatible with the target; required for assign and absent for terminate.'
-        return cast('_Quantity | None', self._child('quantity', Quantity, False))
-
 
 class Argument(Record):
     'One named expression argument in a Function call.'
@@ -1490,257 +1413,6 @@ class DecidedValue(Record):
     def decision_date(self) -> Date:
         'The date on which the rule fixed the value.'
         return cast('Date', _decode_date(self._data.get('decision_date')))
-
-
-class Decision(Record):
-    'One dated rule decision with explicit observations, first-match rules and fallback.'
-    __slots__ = ()
-    _kind = 'Decision'
-    _SLOTS = _freeze(
-        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False,
-                'lineage': False},
-         'at': {'options': [{'kind': 'date', 'category': 'primitive'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False,
-                'lineage': False},
-         'observations': {'options': [{'kind': 'ObservationBinding',
-                                       'category': 'record'}],
-                          'required': True,
-                          'many': True,
-                          'mapping': False,
-                          'nullable': False,
-                          'ordered': True,
-                          'lineage': False},
-         'rules': {'options': [{'kind': 'Rule', 'category': 'record'}],
-                   'required': True,
-                   'many': True,
-                   'mapping': False,
-                   'nullable': False,
-                   'ordered': True,
-                   'lineage': False},
-         'fallback': {'options': [{'kind': 'Action', 'category': 'record'}],
-                      'required': True,
-                      'many': True,
-                      'mapping': False,
-                      'nullable': False,
-                      'ordered': True,
-                      'lineage': False}}
-    )
-
-    def __init__(self, *,
-        id: UUID,
-        at: Date,
-        observations: tuple[ObservationBinding, ...],
-        rules: tuple[Rule, ...],
-        fallback: tuple[Action, ...],
-    ) -> None:
-        data: dict[str, object] = {}
-        data['id'] = _encode_uuid(id)
-        data['at'] = _encode_date(at)
-        data['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservationBinding, 'observations'))
-        data['rules'] = _encode_many(rules, lambda v: _encode_record(v, Rule, 'rules'))
-        data['fallback'] = _encode_many(fallback, lambda v: _encode_record(v, Action, 'fallback'))
-        self._set_checked(data)
-
-    def replace(self, *,
-        id: UUID | Unset = UNSET,
-        at: Date | Unset = UNSET,
-        observations: tuple[ObservationBinding, ...] | Unset = UNSET,
-        rules: tuple[Rule, ...] | Unset = UNSET,
-        fallback: tuple[Action, ...] | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if id is not UNSET:
-            changes['id'] = _encode_uuid(id)
-        if at is not UNSET:
-            changes['at'] = _encode_date(at)
-        if observations is not UNSET:
-            changes['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservationBinding, 'observations'))
-        if rules is not UNSET:
-            changes['rules'] = _encode_many(rules, lambda v: _encode_record(v, Rule, 'rules'))
-        if fallback is not UNSET:
-            changes['fallback'] = _encode_many(fallback, lambda v: _encode_record(v, Action, 'fallback'))
-        return self._replace(changes)
-
-    @property
-    def id(self) -> UUID:
-        'Stable identity of the Decision, referenced by DecisionEvidence.'
-        return cast('UUID', _decode_uuid(self._data.get('id')))
-
-    @property
-    def at(self) -> Date:
-        'Decision date; dates increase strictly within the RuleSet.'
-        return cast('Date', _decode_date(self._data.get('at')))
-
-    @property
-    def observations(self) -> tuple[ObservationBinding, ...]:
-        'Ordered observations that the rule conditions can read.'
-        return cast('tuple[ObservationBinding, ...]', self._child('observations', ObservationBinding, True))
-
-    @property
-    def rules(self) -> tuple[Rule, ...]:
-        'Ordered rules; the first Rule whose condition is true supplies the actions.'
-        return cast('tuple[Rule, ...]', self._child('rules', Rule, True))
-
-    @property
-    def fallback(self) -> tuple[Action, ...]:
-        'Nonempty ordered actions applied when no rule condition is true.'
-        return cast('tuple[Action, ...]', self._child('fallback', Action, True))
-
-
-class DecisionEvidence(Record):
-    'Recorded evidence of one evaluated Decision of a RuleSet; absence of a rule means fallback.'
-    __slots__ = ()
-    _kind = 'DecisionEvidence'
-    _SLOTS = _freeze(
-        {'decision': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                      'required': True,
-                      'many': False,
-                      'mapping': False,
-                      'nullable': False,
-                      'ordered': False,
-                      'lineage': False},
-         'at': {'options': [{'kind': 'date', 'category': 'primitive'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False,
-                'lineage': False},
-         'rule': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                  'required': False,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': True,
-                  'ordered': False,
-                  'lineage': False},
-         'observations': {'options': [{'kind': 'ObservedQuantity',
-                                       'category': 'record'}],
-                          'required': True,
-                          'many': True,
-                          'mapping': False,
-                          'nullable': False,
-                          'ordered': True,
-                          'lineage': False},
-         'assignments': {'options': [{'kind': 'Assignment', 'category': 'record'}],
-                         'required': True,
-                         'many': True,
-                         'mapping': False,
-                         'nullable': False,
-                         'ordered': True,
-                         'lineage': False},
-         'terminated': {'options': [{'kind': 'boolean', 'category': 'primitive'}],
-                        'required': True,
-                        'many': False,
-                        'mapping': False,
-                        'nullable': False,
-                        'ordered': False,
-                        'lineage': False},
-         'termination_reason': {'options': [{'kind': 'string',
-                                             'category': 'primitive'}],
-                                'required': False,
-                                'many': False,
-                                'mapping': False,
-                                'nullable': True,
-                                'ordered': False,
-                                'lineage': False}}
-    )
-
-    def __init__(self, *,
-        decision: UUID,
-        at: Date,
-        rule: UUID | None | Unset = UNSET,
-        observations: tuple[ObservedQuantity, ...],
-        assignments: tuple[Assignment, ...],
-        terminated: bool,
-        termination_reason: str | None | Unset = UNSET,
-    ) -> None:
-        data: dict[str, object] = {}
-        data['decision'] = _encode_uuid(decision)
-        data['at'] = _encode_date(at)
-        if rule is not UNSET:
-            data['rule'] = _encode_uuid(rule)
-        data['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
-        data['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
-        data['terminated'] = copy_json(terminated)
-        if termination_reason is not UNSET:
-            data['termination_reason'] = copy_json(termination_reason)
-        self._set_checked(data)
-
-    def replace(self, *,
-        decision: UUID | Unset = UNSET,
-        at: Date | Unset = UNSET,
-        rule: UUID | None | Unset | Omit = UNSET,
-        observations: tuple[ObservedQuantity, ...] | Unset = UNSET,
-        assignments: tuple[Assignment, ...] | Unset = UNSET,
-        terminated: bool | Unset = UNSET,
-        termination_reason: str | None | Unset | Omit = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if decision is not UNSET:
-            changes['decision'] = _encode_uuid(decision)
-        if at is not UNSET:
-            changes['at'] = _encode_date(at)
-        if rule is OMIT:
-            changes['rule'] = OMIT
-        elif rule is not UNSET:
-            changes['rule'] = _encode_uuid(rule)
-        if observations is not UNSET:
-            changes['observations'] = _encode_many(observations, lambda v: _encode_record(v, ObservedQuantity, 'observations'))
-        if assignments is not UNSET:
-            changes['assignments'] = _encode_many(assignments, lambda v: _encode_record(v, Assignment, 'assignments'))
-        if terminated is not UNSET:
-            changes['terminated'] = copy_json(terminated)
-        if termination_reason is OMIT:
-            changes['termination_reason'] = OMIT
-        elif termination_reason is not UNSET:
-            changes['termination_reason'] = copy_json(termination_reason)
-        return self._replace(changes)
-
-    @property
-    def decision(self) -> UUID:
-        'UUID of the evaluated Decision.'
-        return cast('UUID', _decode_uuid(self._data.get('decision')))
-
-    @property
-    def at(self) -> Date:
-        'Date of the evaluated Decision.'
-        return cast('Date', _decode_date(self._data.get('at')))
-
-    @property
-    def rule(self) -> UUID | None:
-        'UUID of the first Rule whose condition was true; absent or null when the fallback applied.'
-        return cast('UUID | None', _decode_uuid(self._data.get('rule')))
-
-    @property
-    def observations(self) -> tuple[ObservedQuantity, ...]:
-        'Observed quantities, in the order of the Decision observations.'
-        return cast('tuple[ObservedQuantity, ...]', self._child('observations', ObservedQuantity, True))
-
-    @property
-    def assignments(self) -> tuple[Assignment, ...]:
-        'Assignments made by the applied actions, in action order.'
-        return cast('tuple[Assignment, ...]', self._child('assignments', Assignment, True))
-
-    @property
-    def terminated(self) -> bool:
-        'Whether the applied actions terminated the decision sequence; no evidence follows a termination.'
-        return cast('bool', self._data.get('terminated'))
-
-    @property
-    def termination_reason(self) -> str | None:
-        'Reason for termination, required when terminated is true.'
-        return cast('str | None', self._data.get('termination_reason'))
 
 
 class Definitions(Record):
@@ -4693,166 +4365,6 @@ class Observation(Record):
         return cast('Date | None', _decode_date(self._data.get('available_on')))
 
 
-class ObservationBinding(Record):
-    'An explicit observation target. An optional date may delay availability but cannot advance it.'
-    __slots__ = ()
-    _kind = 'ObservationBinding'
-    _SLOTS = _freeze(
-        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
-                  'required': True,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': False,
-                  'ordered': False,
-                  'lineage': False},
-         'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
-                    'required': True,
-                    'many': False,
-                    'mapping': False,
-                    'nullable': False,
-                    'ordered': False,
-                    'lineage': False},
-         'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
-                          'required': False,
-                          'many': False,
-                          'mapping': False,
-                          'nullable': True,
-                          'ordered': False,
-                          'lineage': False}}
-    )
-
-    def __init__(self, *,
-        name: str,
-        target: Reference,
-        available_at: Date | None | Unset = UNSET,
-    ) -> None:
-        data: dict[str, object] = {}
-        data['name'] = copy_json(name)
-        data['target'] = _encode_record(target, Reference, 'target')
-        if available_at is not UNSET:
-            data['available_at'] = _encode_date(available_at)
-        self._set_checked(data)
-
-    def replace(self, *,
-        name: str | Unset = UNSET,
-        target: Reference | Unset = UNSET,
-        available_at: Date | None | Unset | Omit = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if name is not UNSET:
-            changes['name'] = copy_json(name)
-        if target is not UNSET:
-            changes['target'] = _encode_record(target, Reference, 'target')
-        if available_at is OMIT:
-            changes['available_at'] = OMIT
-        elif available_at is not UNSET:
-            changes['available_at'] = _encode_date(available_at)
-        return self._replace(changes)
-
-    @property
-    def name(self) -> str:
-        'Name of the observation, unique within its Decision.'
-        return cast('str', self._data.get('name'))
-
-    @property
-    def target(self) -> Reference:
-        'Value or Movement whose recorded or decided quantity the Decision observes.'
-        return cast('Reference', self._child('target', Reference, False))
-
-    @property
-    def available_at(self) -> Date | None:
-        'Optional date that can delay availability; it cannot make the quantity available earlier.'
-        return cast('Date | None', _decode_date(self._data.get('available_at')))
-
-
-class ObservedQuantity(Record):
-    'The exact quantity and availability supplied to a decision.'
-    __slots__ = ()
-    _kind = 'ObservedQuantity'
-    _SLOTS = _freeze(
-        {'name': {'options': [{'kind': 'Code', 'category': 'primitive'}],
-                  'required': True,
-                  'many': False,
-                  'mapping': False,
-                  'nullable': False,
-                  'ordered': False,
-                  'lineage': False},
-         'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
-                    'required': True,
-                    'many': False,
-                    'mapping': False,
-                    'nullable': False,
-                    'ordered': False,
-                    'lineage': False},
-         'quantity': {'options': [{'kind': 'Quantity', 'category': 'record'}],
-                      'required': True,
-                      'many': False,
-                      'mapping': False,
-                      'nullable': False,
-                      'ordered': False,
-                      'lineage': False},
-         'available_at': {'options': [{'kind': 'date', 'category': 'primitive'}],
-                          'required': True,
-                          'many': False,
-                          'mapping': False,
-                          'nullable': False,
-                          'ordered': False,
-                          'lineage': False}}
-    )
-
-    def __init__(self, *,
-        name: str,
-        target: Reference,
-        quantity: Quantity,
-        available_at: Date,
-    ) -> None:
-        data: dict[str, object] = {}
-        data['name'] = copy_json(name)
-        data['target'] = _encode_record(target, Reference, 'target')
-        data['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        data['available_at'] = _encode_date(available_at)
-        self._set_checked(data)
-
-    def replace(self, *,
-        name: str | Unset = UNSET,
-        target: Reference | Unset = UNSET,
-        quantity: Quantity | Unset = UNSET,
-        available_at: Date | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if name is not UNSET:
-            changes['name'] = copy_json(name)
-        if target is not UNSET:
-            changes['target'] = _encode_record(target, Reference, 'target')
-        if quantity is not UNSET:
-            changes['quantity'] = _encode_record(quantity, Quantity, 'quantity')
-        if available_at is not UNSET:
-            changes['available_at'] = _encode_date(available_at)
-        return self._replace(changes)
-
-    @property
-    def name(self) -> str:
-        'Name of the ObservationBinding that this quantity satisfies.'
-        return cast('str', self._data.get('name'))
-
-    @property
-    def target(self) -> Reference:
-        'Observed Value or Movement, equal to the target of the ObservationBinding.'
-        return cast('Reference', self._child('target', Reference, False))
-
-    @property
-    def quantity(self) -> _Quantity:
-        'Exact quantity supplied to the rule conditions.'
-        return cast('_Quantity', self._child('quantity', Quantity, False))
-
-    @property
-    def available_at(self) -> Date:
-        'Date from which the quantity was available; it is not later than the Decision date.'
-        return cast('Date', _decode_date(self._data.get('available_at')))
-
-
 class Parameter(Record):
     'A named argument in a Function signature. List order determines positional argument order.'
     __slots__ = ()
@@ -6354,15 +5866,7 @@ class Report(Record):
                            'mapping': False,
                            'nullable': False,
                            'ordered': False,
-                           'lineage': False},
-         'decision_evidence': {'options': [{'kind': 'DecisionEvidence',
-                                            'category': 'record'}],
-                               'required': False,
-                               'many': True,
-                               'mapping': False,
-                               'nullable': True,
-                               'ordered': True,
-                               'lineage': False}}
+                           'lineage': False}}
     )
 
     def __init__(self, *,
@@ -6371,7 +5875,6 @@ class Report(Record):
         diagnostics: tuple[Diagnostic, ...] | None | Unset = UNSET,
         trace: tuple[Step, ...] | None | Unset = UNSET,
         rule_evidence: RuleEvidence | Unset = UNSET,
-        decision_evidence: tuple[DecisionEvidence, ...] | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
         data['status'] = _encode_record(status, RunStatus, 'status')
@@ -6383,8 +5886,6 @@ class Report(Record):
             data['trace'] = _encode_many(trace, lambda v: _encode_record(v, Step, 'trace'))
         if rule_evidence is not UNSET:
             data['rule_evidence'] = _encode_record(rule_evidence, RuleEvidence, 'rule_evidence')
-        if decision_evidence is not UNSET:
-            data['decision_evidence'] = _encode_many(decision_evidence, lambda v: _encode_record(v, DecisionEvidence, 'decision_evidence'))
         self._set_checked(data)
 
     def replace(self, *,
@@ -6393,7 +5894,6 @@ class Report(Record):
         diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = UNSET,
         trace: tuple[Step, ...] | None | Unset | Omit = UNSET,
         rule_evidence: RuleEvidence | Unset | Omit = UNSET,
-        decision_evidence: tuple[DecisionEvidence, ...] | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
         changes: dict[str, object] = {}
@@ -6415,10 +5915,6 @@ class Report(Record):
             changes['rule_evidence'] = OMIT
         elif rule_evidence is not UNSET:
             changes['rule_evidence'] = _encode_record(rule_evidence, RuleEvidence, 'rule_evidence')
-        if decision_evidence is OMIT:
-            changes['decision_evidence'] = OMIT
-        elif decision_evidence is not UNSET:
-            changes['decision_evidence'] = _encode_many(decision_evidence, lambda v: _encode_record(v, DecisionEvidence, 'decision_evidence'))
         return self._replace(changes)
 
     @property
@@ -6446,86 +5942,11 @@ class Report(Record):
         'The decision trace of the rules of this case; absent for a case without rules and for a batch.'
         return cast('RuleEvidence | None', self._child('rule_evidence', RuleEvidence, False))
 
-    @property
-    def decision_evidence(self) -> tuple[DecisionEvidence, ...] | None:
-        'Ordered evidence of each evaluated Decision of the RuleSet of the Specification.'
-        return cast('tuple[DecisionEvidence, ...] | None', self._child('decision_evidence', DecisionEvidence, True))
-
 
 class Rule(Record):
-    'One ordered Boolean condition and its atomic actions.'
-    __slots__ = ()
-    _kind = 'Rule'
-    _SLOTS = _freeze(
-        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False,
-                'lineage': False},
-         'condition': {'options': [{'kind': 'Expression', 'category': 'record'}],
-                       'required': True,
-                       'many': False,
-                       'mapping': False,
-                       'nullable': False,
-                       'ordered': False,
-                       'lineage': False},
-         'actions': {'options': [{'kind': 'Action', 'category': 'record'}],
-                     'required': True,
-                     'many': True,
-                     'mapping': False,
-                     'nullable': False,
-                     'ordered': True,
-                     'lineage': False}}
-    )
-
-    def __init__(self, *,
-        id: UUID,
-        condition: Expression,
-        actions: tuple[Action, ...],
-    ) -> None:
-        data: dict[str, object] = {}
-        data['id'] = _encode_uuid(id)
-        data['condition'] = _encode_record(condition, Expression, 'condition')
-        data['actions'] = _encode_many(actions, lambda v: _encode_record(v, Action, 'actions'))
-        self._set_checked(data)
-
-    def replace(self, *,
-        id: UUID | Unset = UNSET,
-        condition: Expression | Unset = UNSET,
-        actions: tuple[Action, ...] | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if id is not UNSET:
-            changes['id'] = _encode_uuid(id)
-        if condition is not UNSET:
-            changes['condition'] = _encode_record(condition, Expression, 'condition')
-        if actions is not UNSET:
-            changes['actions'] = _encode_many(actions, lambda v: _encode_record(v, Action, 'actions'))
-        return self._replace(changes)
-
-    @property
-    def id(self) -> UUID:
-        'Stable identity of the Rule, referenced by DecisionEvidence.'
-        return cast('UUID', _decode_uuid(self._data.get('id')))
-
-    @property
-    def condition(self) -> Expression:
-        'Boolean Expression that refers only to the observations of its Decision.'
-        return cast('Expression', self._child('condition', Expression, False))
-
-    @property
-    def actions(self) -> tuple[Action, ...]:
-        'Nonempty ordered actions applied when this is the first true Rule; terminate can only be last.'
-        return cast('tuple[Action, ...]', self._child('actions', Action, True))
-
-
-class RuleDeclaration(Record):
     'One rule as a query over a window of dates. On each path it fixes one value on the first window date on which its condition holds, or fixes otherwise.'
     __slots__ = ()
-    _kind = 'RuleDeclaration'
+    _kind = 'Rule'
     _SLOTS = _freeze(
         {'target': {'options': [{'kind': 'Reference', 'category': 'record'}],
                     'required': True,
@@ -6778,76 +6199,6 @@ class RuleEvidence(Record):
     def verified(self) -> bool:
         'Whether the trace check passed on a candidate. False means that the case has no candidate, or that the check found a difference.'
         return cast('bool', self._data.get('verified'))
-
-
-class RuleSet(Record):
-    'The rules of a Specification, owning explicit controlled targets and ordered dated decisions.'
-    __slots__ = ()
-    _kind = 'RuleSet'
-    _SLOTS = _freeze(
-        {'id': {'options': [{'kind': 'UUID', 'category': 'uuid'}],
-                'required': True,
-                'many': False,
-                'mapping': False,
-                'nullable': False,
-                'ordered': False,
-                'lineage': False},
-         'targets': {'options': [{'kind': 'Reference', 'category': 'record'}],
-                     'required': True,
-                     'many': True,
-                     'mapping': False,
-                     'nullable': False,
-                     'ordered': True,
-                     'lineage': False},
-         'decisions': {'options': [{'kind': 'Decision', 'category': 'record'}],
-                       'required': True,
-                       'many': True,
-                       'mapping': False,
-                       'nullable': False,
-                       'ordered': True,
-                       'lineage': False}}
-    )
-
-    def __init__(self, *,
-        id: UUID,
-        targets: tuple[Reference, ...],
-        decisions: tuple[Decision, ...],
-    ) -> None:
-        data: dict[str, object] = {}
-        data['id'] = _encode_uuid(id)
-        data['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
-        data['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
-        self._set_checked(data)
-
-    def replace(self, *,
-        id: UUID | Unset = UNSET,
-        targets: tuple[Reference, ...] | Unset = UNSET,
-        decisions: tuple[Decision, ...] | Unset = UNSET,
-    ) -> Self:
-        """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
-        changes: dict[str, object] = {}
-        if id is not UNSET:
-            changes['id'] = _encode_uuid(id)
-        if targets is not UNSET:
-            changes['targets'] = _encode_many(targets, lambda v: _encode_record(v, Reference, 'targets'))
-        if decisions is not UNSET:
-            changes['decisions'] = _encode_many(decisions, lambda v: _encode_record(v, Decision, 'decisions'))
-        return self._replace(changes)
-
-    @property
-    def id(self) -> UUID:
-        'Stable identity of the RuleSet.'
-        return cast('UUID', _decode_uuid(self._data.get('id')))
-
-    @property
-    def targets(self) -> tuple[Reference, ...]:
-        'Nonempty unique controlled targets; the decision actions must assign each one.'
-        return cast('tuple[Reference, ...]', self._child('targets', Reference, True))
-
-    @property
-    def decisions(self) -> tuple[Decision, ...]:
-        'Dated Decisions in strictly increasing date order.'
-        return cast('tuple[Decision, ...]', self._child('decisions', Decision, True))
 
 
 class Run(Record):
@@ -7693,21 +7044,13 @@ class Specification(Record):
                       'nullable': False,
                       'ordered': False,
                       'lineage': False},
-         'rules': {'options': [{'kind': 'RuleSet', 'category': 'record'}],
+         'rules': {'options': [{'kind': 'Rule', 'category': 'record'}],
                    'required': False,
-                   'many': False,
+                   'many': True,
                    'mapping': False,
                    'nullable': True,
-                   'ordered': False,
+                   'ordered': True,
                    'lineage': False},
-         'declared_rules': {'options': [{'kind': 'RuleDeclaration',
-                                         'category': 'record'}],
-                            'required': False,
-                            'many': True,
-                            'mapping': False,
-                            'nullable': True,
-                            'ordered': True,
-                            'lineage': False},
          'path': {'options': [{'kind': 'PathCase', 'category': 'record'}],
                   'required': False,
                   'many': False,
@@ -7728,8 +7071,7 @@ class Specification(Record):
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
         settings: Settings | Unset = UNSET,
-        rules: RuleSet | None | Unset = UNSET,
-        declared_rules: tuple[RuleDeclaration, ...] | None | Unset = UNSET,
+        rules: tuple[Rule, ...] | None | Unset = UNSET,
         path: PathCase | None | Unset = UNSET,
     ) -> None:
         data: dict[str, object] = {}
@@ -7753,9 +7095,7 @@ class Specification(Record):
         if settings is not UNSET:
             data['settings'] = _encode_record(settings, Settings, 'settings')
         if rules is not UNSET:
-            data['rules'] = _encode_record(rules, RuleSet, 'rules')
-        if declared_rules is not UNSET:
-            data['declared_rules'] = _encode_many(declared_rules, lambda v: _encode_record(v, RuleDeclaration, 'declared_rules'))
+            data['rules'] = _encode_many(rules, lambda v: _encode_record(v, Rule, 'rules'))
         if path is not UNSET:
             data['path'] = _encode_record(path, PathCase, 'path')
         self._set_checked(data)
@@ -7771,8 +7111,7 @@ class Specification(Record):
         formulations: tuple[Formulation, ...] | None | Unset | Omit = UNSET,
         objectives: tuple[Objective, ...] | None | Unset | Omit = UNSET,
         settings: Settings | Unset | Omit = UNSET,
-        rules: RuleSet | None | Unset | Omit = UNSET,
-        declared_rules: tuple[RuleDeclaration, ...] | None | Unset | Omit = UNSET,
+        rules: tuple[Rule, ...] | None | Unset | Omit = UNSET,
         path: PathCase | None | Unset | Omit = UNSET,
     ) -> Self:
         """Return a checked copy; UNSET keeps a field and OMIT removes an optional field."""
@@ -7818,11 +7157,7 @@ class Specification(Record):
         if rules is OMIT:
             changes['rules'] = OMIT
         elif rules is not UNSET:
-            changes['rules'] = _encode_record(rules, RuleSet, 'rules')
-        if declared_rules is OMIT:
-            changes['declared_rules'] = OMIT
-        elif declared_rules is not UNSET:
-            changes['declared_rules'] = _encode_many(declared_rules, lambda v: _encode_record(v, RuleDeclaration, 'declared_rules'))
+            changes['rules'] = _encode_many(rules, lambda v: _encode_record(v, Rule, 'rules'))
         if path is OMIT:
             changes['path'] = OMIT
         elif path is not UNSET:
@@ -7880,14 +7215,9 @@ class Specification(Record):
         return cast('Settings | None', self._child('settings', Settings, False))
 
     @property
-    def rules(self) -> RuleSet | None:
-        'Optional RuleSet with controlled targets and dated decisions.'
-        return cast('RuleSet | None', self._child('rules', RuleSet, False))
-
-    @property
-    def declared_rules(self) -> tuple[RuleDeclaration, ...] | None:
+    def rules(self) -> tuple[Rule, ...] | None:
         'Nonempty ordered rules, each a query over a window that decides one value. They run in this order. A decided value has no other role.'
-        return cast('tuple[RuleDeclaration, ...] | None', self._child('declared_rules', RuleDeclaration, True))
+        return cast('tuple[Rule, ...] | None', self._child('rules', Rule, True))
 
     @property
     def path(self) -> PathCase | None:
@@ -8731,7 +8061,6 @@ class ValueTest(Record):
 
 
 _TYPES = {
-    'Action': Action,
     'Argument': Argument,
     'Assembly': Assembly,
     'Assignment': Assignment,
@@ -8745,8 +8074,6 @@ _TYPES = {
     'ContentEntry': ContentEntry,
     'Criterion': Criterion,
     'DecidedValue': DecidedValue,
-    'Decision': Decision,
-    'DecisionEvidence': DecisionEvidence,
     'Definitions': Definitions,
     'Diagnostic': Diagnostic,
     'Distribution': Distribution,
@@ -8776,8 +8103,6 @@ _TYPES = {
     'Movement': Movement,
     'Objective': Objective,
     'Observation': Observation,
-    'ObservationBinding': ObservationBinding,
-    'ObservedQuantity': ObservedQuantity,
     'Parameter': Parameter,
     'PathAmounts': PathAmounts,
     'PathCapture': PathCapture,
@@ -8797,9 +8122,7 @@ _TYPES = {
     'Relationship': Relationship,
     'Report': Report,
     'Rule': Rule,
-    'RuleDeclaration': RuleDeclaration,
     'RuleEvidence': RuleEvidence,
-    'RuleSet': RuleSet,
     'Run': Run,
     'RunStatus': RunStatus,
     'Runtime': Runtime,
@@ -8819,7 +8142,6 @@ _TYPES = {
 }
 
 _SLOTS = {
-    'Action': Action._SLOTS,
     'Argument': Argument._SLOTS,
     'Assembly': Assembly._SLOTS,
     'Assignment': Assignment._SLOTS,
@@ -8833,8 +8155,6 @@ _SLOTS = {
     'ContentEntry': ContentEntry._SLOTS,
     'Criterion': Criterion._SLOTS,
     'DecidedValue': DecidedValue._SLOTS,
-    'Decision': Decision._SLOTS,
-    'DecisionEvidence': DecisionEvidence._SLOTS,
     'Definitions': Definitions._SLOTS,
     'Diagnostic': Diagnostic._SLOTS,
     'Distribution': Distribution._SLOTS,
@@ -8864,8 +8184,6 @@ _SLOTS = {
     'Movement': Movement._SLOTS,
     'Objective': Objective._SLOTS,
     'Observation': Observation._SLOTS,
-    'ObservationBinding': ObservationBinding._SLOTS,
-    'ObservedQuantity': ObservedQuantity._SLOTS,
     'Parameter': Parameter._SLOTS,
     'PathAmounts': PathAmounts._SLOTS,
     'PathCapture': PathCapture._SLOTS,
@@ -8885,9 +8203,7 @@ _SLOTS = {
     'Relationship': Relationship._SLOTS,
     'Report': Report._SLOTS,
     'Rule': Rule._SLOTS,
-    'RuleDeclaration': RuleDeclaration._SLOTS,
     'RuleEvidence': RuleEvidence._SLOTS,
-    'RuleSet': RuleSet._SLOTS,
     'Run': Run._SLOTS,
     'RunStatus': RunStatus._SLOTS,
     'Runtime': Runtime._SLOTS,
@@ -8915,4 +8231,4 @@ _OWNERS = {
     'Span': 'rangekeeper.duration',
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Check', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'DecidedValue', 'Decision', 'DecisionEvidence', 'DecisionResult', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'Observation', 'ObservationBinding', 'ObservationSource', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'PeriodTiming', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleDeclaration', 'RuleEvidence', 'RuleSet', 'Run', 'RunStatus', 'Runtime', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'TraceValue', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']
+__all__ = ['Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Check', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'DecidedValue', 'DecisionResult', 'Definitions', 'Depth', 'Diagnostic', 'DiagnosticValues', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'MarketPath', 'Measure', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Never', 'Objective', 'ObjectiveKind', 'Observation', 'ObservationSource', 'Operator', 'Parameter', 'ParameterKind', 'PathAmounts', 'PathCapture', 'PathCase', 'PathParameter', 'PathSeries', 'Paths', 'Period', 'PeriodTiming', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'RuleEvidence', 'Run', 'RunStatus', 'Runtime', 'Selection', 'SelectionKind', 'SeriesBinding', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Step', 'StepKind', 'System', 'Taxonomy', 'TraceValue', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueRelation', 'ValueTest']

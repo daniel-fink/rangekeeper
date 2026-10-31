@@ -456,7 +456,7 @@ time limit has passed. The stages call it between steps.
 | `execution/statuses.py` | `FAILURES`: one row for each expected error, with its completion, solution, `Status` and diagnostic code. `TERMINATIONS`: one row for each `Termination`. |
 | `execution/pipeline.py` | `solve`: the stages for each case of a batch, in order. `execute`: `solve`, then the publication of the inputs that the store lacks, and of each output before its Run. |
 | `execution/replaying.py` | `replay` and `Replay`: solve a stored Run's Specification again and compare each case with the stored case. |
-| `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`), and the internal sequential engine (`execution.rule.sequence`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md#sequential-rule-evaluation). |
+| `execution/rule/` | The internal sequential rule engine (`execution.rule.sequence`). `rk.execution` exports `run_rules` and `Decisions`. The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md#sequential-rule-evaluation). |
 
 Derived stage results are runtime objects, not a second
 authoritative field schema. Domain classes do not import execution or solvers.

@@ -53,8 +53,8 @@ def test_samples_are_the_formats_that_need_conversion():
     assert load("model.json")["metadata"]["schema_version"] == "0.7.0"
     assert load("specification.yaml")["metadata"]["schema_version"] == "0.7.0"
     assert load("run.json")["metadata"]["schema_version"] == "0.4.0"
-    assert "policy" in load("specification.yaml")
-    assert "outcomes" in load("run.json")["report"]
+    assert load("specification.yaml")["policy"] is None
+    assert not load("run.json")["report"].get("outcomes")
     assert "start_inclusive" in keys(load("model.json"))
 
 
@@ -64,11 +64,39 @@ def test_documents_convert_to_valid_1_0_documents():
         assert document.metadata.schema_version == "1.0.0"
         data = document.to_data()
         assert not keys(data) & {"start_inclusive", "end_exclusive", "policy"}
-    specification = documents["specification.yaml"].to_data()
-    assert specification["rules"] == load("specification.yaml")["policy"]
     run = documents["run.json"]
-    assert run.report.decision_evidence
+    assert run.rule_evidence is None
     assert validate(run=run, resolver=store).valid
+
+
+@pytest.mark.parametrize(
+    "name,field", [("specification.yaml", "policy"), ("run.json", "outcomes")]
+)
+def test_a_document_with_old_rules_is_refused_by_name(name, field):
+    data = load(f"rules/{name}")
+    with pytest.raises(ConversionError, match=field) as error:
+        convert(data, release="0.x")
+    assert data["metadata"]["id"] in str(error.value)
+    assert "Window" in str(error.value)
+
+
+@pytest.mark.parametrize("empty", [None, []])
+def test_an_empty_old_field_is_dropped(empty):
+    data = load("specification.yaml")
+    assert "policy" not in convert({**data, "policy": empty}, release="0.x")
+    run = load("run.json")
+    run["report"]["outcomes"] = empty
+    assert "outcomes" not in convert(run, release="0.x")["report"]
+
+
+def test_a_bundle_with_old_rules_is_refused_and_writes_nothing(tmp_path, capsys):
+    pytest.importorskip("pyarrow")
+    source = str(SAMPLES / "rules" / "bundle")
+    assert main(["bundle", source, str(tmp_path / "new")]) == 1
+    message = capsys.readouterr().err
+    assert "the old rule records" in message
+    assert load("rules/run.json")["metadata"]["id"] in message
+    assert not (tmp_path / "new").exists()
 
 
 def test_the_solver_evidence_of_a_converted_run_reads_as_unknown():

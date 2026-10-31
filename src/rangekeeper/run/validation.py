@@ -10,7 +10,6 @@ from rangekeeper.model._scope import resolve_reference
 from rangekeeper.model.model import Model
 from rangekeeper.model.validation import check_model
 from rangekeeper.quantity import Quantity, UnitSystem, default_units
-from rangekeeper.run._rule.evidence import validate_evidence
 from rangekeeper.run._rule.stored import check_stored
 from rangekeeper.run.documents import closure
 from rangekeeper.run.outputs import validate_outputs
@@ -260,7 +259,7 @@ def _check_traces(
         try:
             check_stored(
                 run.rule_evidence,
-                rules=requirements.declared_rules or (),
+                rules=requirements.rules or (),
                 candidate=found[run.record.outputs[0]],
                 path=path,
                 paths=None if path is None else load_paths(resolver, path.paths),
@@ -514,20 +513,6 @@ class _RunValidation:
                         "invalid Specification requires diagnostic",
                     )
                 else:
-                    if (
-                        effective.get("rules")
-                        and not outputs
-                        and (
-                            run["report"].get("decision_evidence")
-                            or solution != "not_assessed"
-                        )
-                    ):
-                        validate_evidence(
-                            effective["rules"],
-                            run["report"].get("decision_evidence") or [],
-                            scope=scope,
-                            units=self.units,
-                        )
                     if outputs:
                         prepared_outputs = []
                         for output_id in run.get("outputs") or ():

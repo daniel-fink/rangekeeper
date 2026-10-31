@@ -694,12 +694,12 @@
   "Binding": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], decision_evidence: tuple[rangekeeper.schema.records.DecisionEvidence, ...] = tuple(), dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None",
+    "__init__": "method (self, *, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None",
     "key": "method (self, reference: rangekeeper.schema.records.Reference) -> str",
     "text": "method (self, expression: rangekeeper.schema.records.Expression) -> str"
    },
    "module": "rangekeeper.execution.preparation",
-   "signature": "(*, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], decision_evidence: tuple[rangekeeper.schema.records.DecisionEvidence, ...] = tuple(), dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None"
+   "signature": "(*, model: rangekeeper.model.model.Model, composition: rangekeeper.specification.composition.Composition, value_units: collections.abc.Mapping[uuid.UUID, str], assignments: collections.abc.Mapping[uuid.UUID, rangekeeper.quantity.Quantity], unknowns: tuple[uuid.UUID, ...], assertions: tuple[rangekeeper.execution.preparation.Assertion, ...], units: rangekeeper.quantity.UnitSystem, references: collections.abc.Mapping[uuid.UUID, rangekeeper.schema.records.Reference], dates: collections.abc.Mapping[uuid.UUID, datetime.date | rangekeeper.schema.enums.Never] = <_HAS_DEFAULT_FACTORY_CLASS>, date_unknowns: tuple[uuid.UUID, ...] = tuple()) -> None"
   },
   "Cases": {
    "kind": "class",
@@ -1064,43 +1064,6 @@
   "registry": {
    "kind": "value",
    "type": "Registry"
-  }
- },
- "rangekeeper.execution.rule": {
-  "Observation": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
-   },
-   "module": "rangekeeper.execution.rule.result",
-   "signature": "(*, at: datetime.date, quantities: tuple[rangekeeper.schema.records.ObservedQuantity, ...]) -> None"
-  },
-  "RuleCapabilityError": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
-   },
-   "module": "rangekeeper.execution.rule.observation",
-   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
-  },
-  "RuleResult": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, evidence: tuple[rangekeeper.schema.records.DecisionEvidence, ...]) -> None",
-    "assignments": "property"
-   },
-   "module": "rangekeeper.execution.rule.result",
-   "signature": "(*, evidence: tuple[rangekeeper.schema.records.DecisionEvidence, ...]) -> None"
-  },
-  "evaluate": {
-   "kind": "function",
-   "module": "rangekeeper.execution.rule.evaluation",
-   "signature": "(*, rules: rangekeeper.schema.records.RuleSet, model: rangekeeper.model.model.Model, units: rangekeeper.quantity.UnitSystem | None = None) -> rangekeeper.execution.rule.result.RuleResult"
-  },
-  "observe": {
-   "kind": "function",
-   "module": "rangekeeper.execution.rule.observation",
-   "signature": "(*, model: rangekeeper.model.model.Model, at: datetime.date, bindings: collections.abc.Sequence[rangekeeper.schema.records.ObservationBinding]) -> rangekeeper.execution.rule.result.Observation"
   }
  },
  "rangekeeper.expressions": {
@@ -3190,17 +3153,16 @@
   "Report": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: RuleEvidence | Unset = <Unset>, decision_evidence: tuple[DecisionEvidence, ...] | None | Unset = <Unset>) -> None",
-    "decision_evidence": "property",
+    "__init__": "method (self, *, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: RuleEvidence | Unset = <Unset>) -> None",
     "diagnostics": "property",
-    "replace": "method (self, *, status: RunStatus | Unset = <Unset>, runtime: Runtime | Unset | Omit = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = <Unset>, trace: tuple[Step, ...] | None | Unset | Omit = <Unset>, rule_evidence: RuleEvidence | Unset | Omit = <Unset>, decision_evidence: tuple[DecisionEvidence, ...] | None | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, status: RunStatus | Unset = <Unset>, runtime: Runtime | Unset | Omit = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset | Omit = <Unset>, trace: tuple[Step, ...] | None | Unset | Omit = <Unset>, rule_evidence: RuleEvidence | Unset | Omit = <Unset>) -> Self",
     "rule_evidence": "property",
     "runtime": "property",
     "status": "property",
     "trace": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: RuleEvidence | Unset = <Unset>, decision_evidence: tuple[DecisionEvidence, ...] | None | Unset = <Unset>) -> None"
+   "signature": "(*, status: RunStatus, runtime: Runtime | Unset = <Unset>, diagnostics: tuple[Diagnostic, ...] | None | Unset = <Unset>, trace: tuple[Step, ...] | None | Unset = <Unset>, rule_evidence: RuleEvidence | Unset = <Unset>) -> None"
   },
   "Run": {
    "kind": "class",
@@ -3377,11 +3339,11 @@
   "Rules": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, rules: collections.abc.Mapping[str, rangekeeper.specification.rule.Rule], where: str) -> None",
+    "__init__": "method (self, *, rules: collections.abc.Mapping[str, rangekeeper.specification.rule._declaration.Rule], where: str) -> None",
     "get": "method (self, key: str, default: object = None) -> object"
    },
    "module": "rangekeeper.specification.rule._declaration",
-   "signature": "(*, rules: collections.abc.Mapping[str, rangekeeper.specification.rule.Rule], where: str) -> None"
+   "signature": "(*, rules: collections.abc.Mapping[str, rangekeeper.specification.rule._declaration.Rule], where: str) -> None"
   },
   "Settings": {
    "kind": "class",
@@ -3428,10 +3390,9 @@
   "SpecificationRecord": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: RuleSet | None | Unset = <Unset>, declared_rules: tuple[RuleDeclaration, ...] | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: tuple[Rule, ...] | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None",
     "assignments": "property",
     "cases": "property",
-    "declared_rules": "property",
     "estimates": "property",
     "formulations": "property",
     "includes": "property",
@@ -3439,19 +3400,19 @@
     "model": "property",
     "objectives": "property",
     "path": "property",
-    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, model: UUID | Unset | Omit = <Unset>, includes: tuple[UUID, ...] | None | Unset | Omit = <Unset>, cases: tuple[UUID, ...] | None | Unset | Omit = <Unset>, assignments: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, unknowns: tuple[Reference, ...] | None | Unset | Omit = <Unset>, estimates: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, formulations: tuple[Formulation, ...] | None | Unset | Omit = <Unset>, objectives: tuple[Objective, ...] | None | Unset | Omit = <Unset>, settings: Settings | Unset | Omit = <Unset>, rules: RuleSet | None | Unset | Omit = <Unset>, declared_rules: tuple[RuleDeclaration, ...] | None | Unset | Omit = <Unset>, path: PathCase | None | Unset | Omit = <Unset>) -> Self",
+    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, model: UUID | Unset | Omit = <Unset>, includes: tuple[UUID, ...] | None | Unset | Omit = <Unset>, cases: tuple[UUID, ...] | None | Unset | Omit = <Unset>, assignments: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, unknowns: tuple[Reference, ...] | None | Unset | Omit = <Unset>, estimates: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, formulations: tuple[Formulation, ...] | None | Unset | Omit = <Unset>, objectives: tuple[Objective, ...] | None | Unset | Omit = <Unset>, settings: Settings | Unset | Omit = <Unset>, rules: tuple[Rule, ...] | None | Unset | Omit = <Unset>, path: PathCase | None | Unset | Omit = <Unset>) -> Self",
     "rules": "property",
     "settings": "property",
     "unknowns": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: RuleSet | None | Unset = <Unset>, declared_rules: tuple[RuleDeclaration, ...] | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None"
+   "signature": "(*, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: tuple[Rule, ...] | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None"
   },
   "Where": {
    "kind": "class",
    "members": {
     "__init__": "method (self, *, window: Window, condition: str) -> None",
-    "first": "method (self, *, otherwise: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never, then: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never | None = None) -> rangekeeper.specification.rule.Rule"
+    "first": "method (self, *, otherwise: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never, then: rangekeeper.quantity.Quantity | str | int | float | decimal.Decimal | datetime.date | rangekeeper.schema.enums.Never | None = None) -> rangekeeper.specification.rule._declaration.Rule"
    },
    "module": "rangekeeper.specification.rule._declaration",
    "signature": "(*, window: Window, condition: str) -> None"
@@ -3464,124 +3425,6 @@
    },
    "module": "rangekeeper.specification.rule._declaration",
    "signature": "(*, earliest: datetime.date | str | None = None, latest: datetime.date | str | None = None, periods: collections.abc.Sequence[rangekeeper.duration.period.Period] | None = None, timing: rangekeeper.schema.enums.PeriodTiming = PeriodTiming.FIRST) -> None"
-  }
- },
- "rangekeeper.specification.rule": {
-  "Action": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, kind: ActionKind, target: Reference | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>) -> None",
-    "kind": "property",
-    "quantity": "property",
-    "replace": "method (self, *, kind: ActionKind | Unset = <Unset>, target: Reference | None | Unset | Omit = <Unset>, quantity: Quantity | None | Unset | Omit = <Unset>) -> Self",
-    "target": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, kind: ActionKind, target: Reference | None | Unset = <Unset>, quantity: Quantity | None | Unset = <Unset>) -> None"
-  },
-  "ActionKind": {
-   "kind": "enum",
-   "members": [
-    "ASSIGN",
-    "TERMINATE"
-   ],
-   "module": "rangekeeper.schema.enums"
-  },
-  "Decision": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, id: UUID, at: Date, observations: tuple[ObservationBinding, ...], rules: tuple[Rule, ...], fallback: tuple[Action, ...]) -> None",
-    "at": "property",
-    "fallback": "property",
-    "id": "property",
-    "observations": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, at: Date | Unset = <Unset>, observations: tuple[ObservationBinding, ...] | Unset = <Unset>, rules: tuple[Rule, ...] | Unset = <Unset>, fallback: tuple[Action, ...] | Unset = <Unset>) -> Self",
-    "rules": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, id: UUID, at: Date, observations: tuple[ObservationBinding, ...], rules: tuple[Rule, ...], fallback: tuple[Action, ...]) -> None"
-  },
-  "DecisionEvidence": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, decision: UUID, at: Date, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...], assignments: tuple[Assignment, ...], terminated: bool, termination_reason: str | None | Unset = <Unset>) -> None",
-    "assignments": "property",
-    "at": "property",
-    "decision": "property",
-    "observations": "property",
-    "replace": "method (self, *, decision: UUID | Unset = <Unset>, at: Date | Unset = <Unset>, rule: UUID | None | Unset | Omit = <Unset>, observations: tuple[ObservedQuantity, ...] | Unset = <Unset>, assignments: tuple[Assignment, ...] | Unset = <Unset>, terminated: bool | Unset = <Unset>, termination_reason: str | None | Unset | Omit = <Unset>) -> Self",
-    "rule": "property",
-    "terminated": "property",
-    "termination_reason": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, decision: UUID, at: Date, rule: UUID | None | Unset = <Unset>, observations: tuple[ObservedQuantity, ...], assignments: tuple[Assignment, ...], terminated: bool, termination_reason: str | None | Unset = <Unset>) -> None"
-  },
-  "ObservationBinding": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, name: str, target: Reference, available_at: Date | None | Unset = <Unset>) -> None",
-    "available_at": "property",
-    "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, target: Reference | Unset = <Unset>, available_at: Date | None | Unset | Omit = <Unset>) -> Self",
-    "target": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, name: str, target: Reference, available_at: Date | None | Unset = <Unset>) -> None"
-  },
-  "ObservedQuantity": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, name: str, target: Reference, quantity: Quantity, available_at: Date) -> None",
-    "available_at": "property",
-    "name": "property",
-    "quantity": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, target: Reference | Unset = <Unset>, quantity: Quantity | Unset = <Unset>, available_at: Date | Unset = <Unset>) -> Self",
-    "target": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, name: str, target: Reference, quantity: Quantity, available_at: Date) -> None"
-  },
-  "Rule": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, id: UUID, condition: Expression, actions: tuple[Action, ...]) -> None",
-    "actions": "property",
-    "condition": "property",
-    "id": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, condition: Expression | Unset = <Unset>, actions: tuple[Action, ...] | Unset = <Unset>) -> Self"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, id: UUID, condition: Expression, actions: tuple[Action, ...]) -> None"
-  },
-  "RuleDeclaration": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, target: Reference, condition: Expression, otherwise: Expression, then: Expression | None | Unset = <Unset>, earliest: Expression | None | Unset = <Unset>, latest: Expression | None | Unset = <Unset>, periods: tuple[Period, ...] | None | Unset = <Unset>, timing: PeriodTiming | Unset = <Unset>) -> None",
-    "condition": "property",
-    "earliest": "property",
-    "latest": "property",
-    "otherwise": "property",
-    "periods": "property",
-    "replace": "method (self, *, target: Reference | Unset = <Unset>, condition: Expression | Unset = <Unset>, otherwise: Expression | Unset = <Unset>, then: Expression | None | Unset | Omit = <Unset>, earliest: Expression | None | Unset | Omit = <Unset>, latest: Expression | None | Unset | Omit = <Unset>, periods: tuple[Period, ...] | None | Unset | Omit = <Unset>, timing: PeriodTiming | Unset | Omit = <Unset>) -> Self",
-    "target": "property",
-    "then": "property",
-    "timing": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, target: Reference, condition: Expression, otherwise: Expression, then: Expression | None | Unset = <Unset>, earliest: Expression | None | Unset = <Unset>, latest: Expression | None | Unset = <Unset>, periods: tuple[Period, ...] | None | Unset = <Unset>, timing: PeriodTiming | Unset = <Unset>) -> None"
-  },
-  "RuleSet": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, id: UUID, targets: tuple[Reference, ...], decisions: tuple[Decision, ...]) -> None",
-    "decisions": "property",
-    "id": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, targets: tuple[Reference, ...] | Unset = <Unset>, decisions: tuple[Decision, ...] | Unset = <Unset>) -> Self",
-    "targets": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, id: UUID, targets: tuple[Reference, ...], decisions: tuple[Decision, ...]) -> None"
   }
  }
 }

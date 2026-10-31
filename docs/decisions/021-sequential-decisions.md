@@ -1,15 +1,16 @@
 # ADR-021: Decide values by rules over market paths
 
 Status: accepted for 1.0; the evaluation engine is implemented and verified (#215),
-the queries are declared and stored, the solve runs them, and the stored evidence, the
-Outcome API and trace replay are in place (#300, part). Parameters are pending (#301),
-and so is the removal of the old slice (#300).
+the queries are declared and stored, the solve runs them, the stored evidence, the
+Outcome API and trace replay are in place, and the old slice is removed (#300).
+Parameters are pending (#301), and so are lesson 05's data and its checks (#207).
 Recorded: 2026-10-27. Amended 2026-10-27 by #201 decisions D2, D25 and D26 (`Periods`,
 `NEVER`, the equity-first funding names), 2026-10-28 by decisions D41 (rules, not
 policies) and D42 (a rule is a query over a window), 2026-10-28 by #102 (the shared
 rule semantics are in `run`), 2026-10-31 by #215 (see
-[how #215 reads the evaluation order](#how-215-reads-the-evaluation-order)), and
-2026-10-31 by #300 (see [how #300 declares rules](#how-300-declares-rules)).
+[how #215 reads the evaluation order](#how-215-reads-the-evaluation-order)),
+2026-10-31 by #300 (see [how #300 declares rules](#how-300-declares-rules)), and
+2026-11-01 by #300 (see [how #300 removes the old slice](#how-300-removes-the-old-slice)).
 
 ## Problem
 
@@ -207,9 +208,7 @@ each reading agrees with the worked examples below:
 - **A free Flow at `fix`.** Cell 6 calls `fix` before `across`, so a path series can
   still be free. `fix` counts each Flow as known. `across`, `free`, `validate` and the
   solve check the rules again with what the case fixes.
-- **The stored record.** `Specification.declared_rules` holds the ordered
-  `RuleDeclaration` records, while `Specification.rules` still holds the old `RuleSet`.
-  The step of #300 that removes the old slice renames them to `rules` and `Rule`. The
+- **The stored record.** `Specification.rules` holds the ordered `Rule` records. The
   target identifies a rule, so the record has no UUID of its own.
 - **Triggers before #301.** `rules[key]` brings the fixed values that the rule reads,
   because `parameters` does not exist yet. A value that the other Specification fixes
@@ -218,10 +217,8 @@ each reading agrees with the worked examples below:
 #### How #300 stores the trace
 
 - **One record for each case.** `Report.rule_evidence` holds one `RuleEvidence`, with
-  `checks`, `decided`, `provisional_solves` and `verified`. The old slice keeps its
-  list as `Report.decision_evidence`, of `DecisionEvidence` records, until the step
-  that removes it. `ObservedQuantity` stays with the old slice: an `Observation` also
-  holds a date, NEVER or an undecided value, with its source.
+  `checks`, `decided`, `provisional_solves` and `verified`. An `Observation` holds a
+  quantity, a date, NEVER or an undecided value, with its source.
 - **Observations with a date.** Cell 18 asserts `row.available_on <= row.decision_date`
   for each row of `decisions.observations`, so a value that is always available, and
   an undecided value, have no row there. `row.observed` holds them.
@@ -234,6 +231,27 @@ each reading agrees with the worked examples below:
 - **Two points that the maintainer decided (2026-11-01).** `at` keeps refusing NEVER,
   so cell 10 writes the sale as an event, which is zero on NEVER. `decision_changes_past`
   stays strict, so lesson 03's commitments have `since` in their definitions.
+
+#### How #300 removes the old slice
+
+- **`ObservedQuantity` goes.** This record said that it stays, but only the old slice
+  used it. An `Observation` holds what a rule reads, so nothing needs it.
+- **Stored documents.** A stored `RuleSet` lists dated decisions with actions, and a
+  `Rule` is a query that decides one value, so one has no form in the other. The
+  conversion tool stops at a document that holds one, or its evidence, and names the
+  document. It does not drop the records. The author writes the rules as queries and
+  solves again. An empty field holds nothing, so the tool drops it. The format stays
+  1.0.0 ([ADR-014](014-market-paths.md)'s reset applies until 1.0.0b1).
+- **The investment example.** A rule decides one value, so `sale_date` is a date
+  Value, and the `holding` and `sale` Flows follow from it with `rx.flow.event`. The
+  sale was on the last day of a period, and the example keeps that day, because its
+  factors have that date, so each is known on it.
+- **A rule that must act by its last window date.** Step 6 of the evaluation order
+  fixes `otherwise` at the end of the last Period, the day after the last day. A date
+  before that day then fails with `decision_changes_past`. So the example's condition
+  also holds in the last period, through a `final_period` Flow, and its `otherwise`
+  does not act. A rule whose `otherwise` is a date must give a date on or after the
+  day on which `otherwise` acts.
 
 **Decisions do not change the past.** A decision on a date must not change a
 Movement before that date. The executor compares each new provisional solution, and
@@ -297,8 +315,8 @@ The `Outcome` reads the trace:
 - `outcome.case(key=...).trace` shows the window dates of one case.
 - Decided values appear in `outcome.table(...)` like other values.
 
-The new `Rule`, `Check` and `RuleEvidence` records replace `Decision`,
-`Action` and `DecisionOutcome`. `ObservedQuantity` stays.
+The new `Rule`, `Check`, `Observation` and `RuleEvidence` records replace `Decision`,
+`Action`, `DecisionOutcome` and `ObservedQuantity`.
 
 ### Verification and replay
 
@@ -338,8 +356,8 @@ a `Comparison`. It is the one call for two Outcomes or more (decision D30 of #20
 
 ### Removed
 
-- `Policy`, `Decision`, the old `Rule`, `Action`, `ActionKind`, `DecisionOutcome`,
-  `evaluate` and `observe` leave `specification.policy`.
+- `Policy`, `Decision`, the old `Rule`, `Action`, `ActionKind`, `ObservationBinding`,
+  `DecisionOutcome`, `ObservedQuantity`, `evaluate` and `observe` are gone (#300).
 - The exact Boolean evaluator and the availability rule are internal modules of
   `run` (`run._rule`), with the trace check. `run.validate` checks the trace of a
   stored Run, and `run` is below `execution`, so `execution` imports them from
@@ -505,8 +523,7 @@ write each rule as a query over a window. The rename pass
 - Proposed cells for lesson 05 and decisions D2, D8, D9, D25 and D26:
   `examples/walkthrough/proposed/` (#201,
   [#255](https://github.com/daniel-fink/rangekeeper/pull/255)).
-- [Scenarios and policies reference](../reference/market-paths-and-rules.md), which
-  changes when #215 lands.
+- [Market paths and rules reference](../reference/market-paths-and-rules.md).
 - Issues: [#213](https://github.com/daniel-fink/rangekeeper/issues/213) (this
   design), [#215](https://github.com/daniel-fink/rangekeeper/issues/215)
   (implementation), [#139](https://github.com/daniel-fink/rangekeeper/issues/139).

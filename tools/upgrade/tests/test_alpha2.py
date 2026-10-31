@@ -63,6 +63,30 @@ def test_a_document_with_exclusive_is_already_current() -> None:
         convert(data, release="1.0.0a2")
 
 
+def test_a_document_with_old_rules_is_refused_by_name() -> None:
+    identity = "00000000-0000-4000-8000-000000000001"
+    metadata = {"id": identity, "schema_version": "1.0.0"}
+    specification = {
+        "metadata": metadata,
+        "model": "00000000-0000-4000-8000-000000000002",
+        "rules": {"id": identity, "targets": [], "decisions": []},
+    }
+    run = {"metadata": metadata, "report": {"rule_evidence": [{"at": "2027-01-01"}]}}
+    for document, field in ((specification, "rules"), (run, "rule_evidence")):
+        with pytest.raises(ConversionError, match=field) as error:
+            convert(document, release="1.0.0a2")
+        assert identity in str(error.value)
+
+
+def test_an_empty_evidence_list_is_dropped() -> None:
+    metadata = {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "schema_version": "1.0.0",
+    }
+    run = {"metadata": metadata, "report": {"rule_evidence": []}}
+    assert "rule_evidence" not in convert(run, release="1.0.0a2")["report"]
+
+
 def test_other_formats_are_refused() -> None:
     data = load()
     older = {**data, "metadata": {**data["metadata"], "schema_version": "0.8.0"}}

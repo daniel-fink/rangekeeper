@@ -9,9 +9,9 @@ from rangekeeper.model import Expression, Value, ValueKind
 from rangekeeper.model.content import encode
 from rangekeeper.model.expression import ExpressionKind, Operator
 from rangekeeper.run import CompletionStatus
-from rangekeeper.schema.enums import _ENUM_TYPES
+from rangekeeper.schema.enums import _ENUM_TYPES, DecisionResult
+from rangekeeper.schema.records import Check
 from rangekeeper.shared.errors import ValidationError
-from rangekeeper.specification.rule import Action, ActionKind
 
 
 def test_generated_enums_are_unique_str_enums_with_unchanged_wire_values():
@@ -24,7 +24,7 @@ def test_generated_enums_are_unique_str_enums_with_unchanged_wire_values():
         assert (kind.__doc__ or "").strip()
     assert ValueKind.MEASUREMENT.value == "measurement"
     assert Operator.LESS_THAN.value == "less_than"
-    assert ActionKind.ASSIGN.value == "assign"
+    assert DecisionResult.NOT_MET.value == "not_met"
     assert CompletionStatus.COMPLETED.value == "completed"
 
 
@@ -51,9 +51,16 @@ def test_nested_decoding_returns_the_same_public_enum_classes():
     expression = Expression.from_data(
         {"id": str(uuid4()), "kind": "boolean", "boolean": True}
     )
-    action = Action.from_data({"kind": "terminate"})
+    check = Check.from_data(
+        {
+            "target": {"target": str(uuid4())},
+            "key": "start_date",
+            "date": "2027-01-01",
+            "result": "decided",
+        }
+    )
     assert expression.kind is ExpressionKind.BOOLEAN
-    assert action.kind is ActionKind.TERMINATE
+    assert check.result is DecisionResult.DECIDED
 
 
 def test_currency_catalogue_restrictions_are_sorted_immutable_and_historical():

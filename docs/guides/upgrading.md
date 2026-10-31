@@ -81,7 +81,6 @@ the store-protocol methods, the Python protocol methods, an error constructor
 | `run` | `rk.run.validate(run, resolver=, units=)` | `rk.run.validate(run=, resolver=, units=)` |
 | `execution` | `resolve_cases(specification, resolver=)`, `validate(composition, resolver=, units=)`, `bind_roles(validation)`, `build_problem(binding, limits=)` | `resolve_cases(specification=, resolver=)`, `validate(composition=, resolver=, units=)`, `bind_roles(validation=)`, `build_problem(binding=, limits=)` |
 | `execution` | `Overlay(resolver, models=, runs=)` | `Overlay(resolver=, models=, runs=)` |
-| `execution` | `rule.evaluate(rules, model=)`, `rule.observe(model, at=, bindings=)` | `evaluate(rules=, model=)`, `observe(model=, at=, bindings=)` |
 | `execution` | A backend: `def solve(self, problem, *, limits, remaining, options)` | `def solve(self, *, problem, limits, remaining, options)`; Rangekeeper calls `solve(problem=, ...)` |
 
 ### Date fixes
@@ -291,9 +290,8 @@ A Specification declares its rules as queries:
 A condition writes equality with `==`, and equation text keeps `=`.
 `rk.Specification.rules` gives the rules by key. `rk.execution.solve` runs them.
 This does not change what `solve` does for a Specification without these rules.
-`Specification.declared_rules` is a new optional field, and the Bundle slot map
-changes with it. The dated `RuleSet` slice is still there, and a later step of
-[#300](https://github.com/daniel-fink/rangekeeper/issues/300) removes it.
+`Specification.rules` is now an optional ordered list of `Rule` records, and the
+Bundle slot map changes with it.
 `rk.duration.PeriodTiming` keeps its members, and is now generated from the schema.
 
 ### Decision traces in the Run
@@ -303,14 +301,28 @@ A case with rules records [its decision trace](../reference/market-paths-and-rul
 gives the stored record. These change:
 
 - `Report.rule_evidence` is now one `RuleEvidence`, the decision trace of the case.
-  The list that the dated `RuleSet` slice writes moves to `Report.decision_evidence`,
-  and its record `RuleEvidence` is now `DecisionEvidence`, also in
-  `rangekeeper.specification.rule`. The conversion tool writes `outcomes`, and the
-  `rule_evidence` of a 1.0.0a2 document, to that field.
 - `rk.execution.DecisionResult` is generated from the schema. It keeps its members.
   `DecisionResult.of` is gone, because a `Check` records its result.
 - `rk.execution.replay` also compares the decision traces, and `rk.run.validate`
   checks the trace of each stored Run that has an output.
+
+### The dated rule records are gone
+
+The records of the dated rule slice have no form in the 1.0.0 format, and the calls
+that read them are gone. A rule is now a query that decides one value, not a list of
+dated decisions with actions.
+
+| Removed | Use |
+| --- | --- |
+| `RuleSet`, `Decision`, the old `Rule`, `Action`, `ActionKind`, `ObservationBinding` | A rule query, fixed by key. `rangekeeper.schema.records.Rule` is the stored form of a rule, with other fields |
+| `Report.decision_evidence`, `DecisionEvidence`, `ObservedQuantity` | `Report.rule_evidence`, one `RuleEvidence` with `Check` and `Observation` records |
+| `rangekeeper.execution.rule`: `evaluate`, `observe`, `Observation`, `RuleResult`, `RuleCapabilityError` | `rk.execution.solve`, which runs the rules. A failure of a rule's kind has the code `rule_capability` |
+| `rangekeeper.specification.rule`: its re-exports of these records, and `validate_rules` | `rk.specification.Rule`, `Rules`, `Where` and `Window`. `rk.Specification.validate` checks the rules |
+| `rangekeeper_examples.investment.build_stop_gain_resale_rules`, `specify(rules=)` | `stop_gain_resale_rule`, `specify(rule=)` |
+
+A document that holds these records does not convert: the
+[conversion tool](../../tools/upgrade/README.md#what-the-tool-refuses) stops and names
+it. Write the rules as queries, and solve again.
 
 ### Rule failures
 
@@ -415,11 +427,12 @@ For each stored 0.x document or Bundle, choose one route:
 
 The conversion tool reads Model 0.7.0 and 0.8.0, Specification 0.7.0 and Run
 0.4.0, and Bundles that hold them. It changes the format version, the Period and
-Span fields `start` and `end`, `policy` to `rules`, `outcomes` to
-`decision_evidence`, and currency magnitudes to decimal text. A query `Filter` with a
+Span fields `start` and `end`, and currency magnitudes to decimal text. A query `Filter` with a
 `classification`, and each Label `Criterion`, gets `exclusive: true`, so it keeps
 the exact match of the 0.x formats
-([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). Each document
+([#121](https://github.com/daniel-fink/rangekeeper/issues/121)). It refuses a
+document with a `policy` or with `outcomes`: a stored rule has
+[no 1.0.0 form](../../tools/upgrade/README.md#what-the-tool-refuses). Each document
 keeps its UUID, so put the converted documents in a new store or Bundle:
 
 ```sh
@@ -521,10 +534,6 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.calculations.projection` | `rangekeeper.profile` | agreed | Growth and distribution profiles. The word "projection" is not used. Profile classes and `Flow.from_profile` follow (#303). |
 | `rangekeeper.calculations.dynamics` | `rangekeeper.market.dynamics` | agreed | Path generators are series maths, so they leave `finance`. `rk.market.Dynamics` follows (#299). |
 | `rangekeeper.run.execution` | `rangekeeper.execution` | agreed |  |
-| `rangekeeper.specification.policy` | `rangekeeper.specification.rule` | agreed | "Policy" is not used. The rule queries of ADR-021 replace the records later (#215). |
-| `rangekeeper.specification.policy.evaluation` | `rangekeeper.execution.rule.evaluation` | agreed | Rule evaluation moves to `execution`. `specification.rule` keeps the declarations. Import `evaluate` from `rangekeeper.execution.rule`. |
-| `rangekeeper.specification.policy.observation` | `rangekeeper.execution.rule.observation` | agreed |  |
-| `rangekeeper.specification.policy.result` | `rangekeeper.execution.rule.result` | agreed |  |
 | `rangekeeper.specification.policy.predicate` | `rangekeeper.run._rule.predicate` | draft | Internal. The exact Boolean truth of a condition is shared by the evaluator and the trace check of a stored Run, so it is below `execution`. |
 | `rangekeeper.specification.policy._availability` | `rangekeeper.run._rule.availability` | draft | Internal. Shared by the evaluator and the trace check of a stored Run. |
 | `rangekeeper.shared.units` | `rangekeeper.quantity` | agreed | The namespace that holds the unit system, the registry and `isclose` is `rangekeeper.quantity`, so "units" keeps one meaning: a unit string. `Quantity` is also at the root. |
@@ -574,17 +583,6 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.model.formulation.account.interest` | `rangekeeper.model.formulation.financial.interest` | draft | The account module is removed; passive interest stays with the other financial equations. |
 | `rangekeeper.model.scenario.replay.replay` | `rangekeeper.market.replay` | agreed | One canonical path for each public name. |
 | `rangekeeper.model.scenario.replay.ReplayUnavailableError` | `rangekeeper.market.ReplayUnavailableError` | agreed | One canonical path for each public name. |
-| `rangekeeper.schema.records.Policy` | `RuleSet` | draft (needs schema) | The record that a Specification holds as `rules`. The schema module `policy` becomes `rule`. `Rule` keeps its name. ADR-021's rule queries replace these records (#215). |
-| `rangekeeper.schema.records.DecisionOutcome` | `RuleEvidence` | draft (needs schema) | The evidence of one rule decision, in `Report.rule_evidence`. |
-| `rangekeeper.specification.policy.result.PolicyResult` | `RuleResult` | agreed |  |
-| `rangekeeper.specification.policy.observation.PolicyCapabilityError` | `RuleCapabilityError` | agreed |  |
-| `rangekeeper.specification.policy.validation.validate_policy` | `validate_rules` | agreed |  |
-| `rangekeeper.specification.policy.validation.validate_outcomes` | `rangekeeper.run._rule.evidence.validate_evidence` | agreed | The trace check of the `RuleEvidence` records of a Run report. It is evidence validation, so it moves to the internal `run._rule` (#102). |
-| `rangekeeper.specification.policy.evaluate` | `rangekeeper.execution.rule.evaluate` | agreed | `specification.rule` exports only the declarations. |
-| `rangekeeper.specification.policy.observe` | `rangekeeper.execution.rule.observe` | agreed |  |
-| `rangekeeper.specification.policy.Observation` | `rangekeeper.execution.rule.Observation` | agreed |  |
-| `rangekeeper.specification.policy.PolicyResult` | `rangekeeper.execution.rule.RuleResult` | agreed |  |
-| `rangekeeper.specification.policy.PolicyCapabilityError` | `rangekeeper.execution.rule.RuleCapabilityError` | agreed |  |
 | `rangekeeper.execution.errors.UnsupportedProblem` | `UnsupportedError` | agreed | Every error name ends in `Error`. |
 | `rangekeeper.model.expression.evaluation.UnsupportedExpression` | `UnsupportedError` | agreed | One error for unsupported expressions and problems. |
 | `rangekeeper.execution.errors.BackendUnavailable` | `BackendUnavailableError` | agreed |  |
@@ -615,9 +613,6 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.schema.records.Period.start_inclusive` | `start` | agreed | Also Span. Half-open; the end is excluded. The package pass changed the schema in 1.0.0a2 (#119), so the consumer pass applies this entry. |
 | `rangekeeper.schema.records.Period.end_exclusive` | `end` | agreed | Also Span. |
 | `rangekeeper.model.flux.Stream.labels` | `names` | draft | Each use needs review. Classification `labels` keep their name. The package pass renamed the Stream field by hand; the consumer pass lists the uses to check. |
-| `rangekeeper.schema.records.Specification.policy` | `rules` | draft (needs schema) | Each use needs review. The Specification field and its wire key. `spec.rules` holds all of a Specification's rules. |
-| `rangekeeper.schema.records.Report.outcomes` | `rule_evidence` | draft (needs schema) | Each use needs review. The Run report field and its wire key. |
-| `rangekeeper.specification.policy.result.PolicyResult.outcomes` | `evidence` | agreed | Each use needs review. The `RuleEvidence` records of one evaluation. |
 | `findings` | `diagnostics` | draft | Each use needs review. |
 | `issues` | `diagnostics` | draft | Each use needs review. |
 | `rangekeeper.model.system.errors.HierarchyError.ids` | `targets` | agreed | Each use needs review. Every error has `targets`. `HierarchyError(code, message, ids=)` becomes `HierarchyError(message, code=, targets=)`: the message comes first and each field is a keyword. |
@@ -625,7 +620,6 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 | `rangekeeper.flow.flow.Flow.difference` | `diff` | agreed | Each use needs review. `flow.diff()` takes no `initial=`: the first Movement is its amount less zero, not unresolved, so `flow.cumulative().diff() == flow`. For another opening value, subtract it in the first Period: `flow.diff() - rk.flow.Flow(amounts={first_period: opening}, units=)`. |
 | Any call: `start_inclusive=` | `start=` | agreed |  |
 | Any call: `end_exclusive=` | `end=` | agreed |  |
-| `rangekeeper.specification.policy.evaluation.evaluate`: `policy=` | `rules=` | agreed |  |
 | `rangekeeper.model.flux.Stream.select`: `labels=` | `names=` | draft |  |
 | `rangekeeper.model.flux.Stream.from_values`: `labels=` | `names=` | draft |  |
 
@@ -633,6 +627,14 @@ first. "Needs refactor" means that the change is more than a rename or a move.
 
 | Current | Use instead | Status |
 | --- | --- | --- |
+| `rangekeeper.specification.policy` | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. `evaluate`, `observe`, `PolicyResult`, `PolicyCapabilityError`, `validate_policy` and `validate_outcomes` have no replacement: the solve runs the rules, and `rk.run.validate` checks their stored trace | agreed |
+| `rangekeeper.schema.records.Policy` | A rule query, fixed by key; `Specification.rules` stores the `Rule` records, and `Specification.policy` has no conversion | agreed |
+| `rangekeeper.schema.records.Decision` | A rule query. A window date takes the place of a dated Decision | agreed |
+| `rangekeeper.schema.records.Action` | A rule decides one value, so there is no action. The Model relates other values to it | agreed |
+| `rangekeeper.schema.records.ActionKind` | A rule decides one value, so there is no action | agreed |
+| `rangekeeper.schema.records.ObservationBinding` | A rule condition names what it reads, as equation text | agreed |
+| `rangekeeper.schema.records.ObservedQuantity` | `Observation`, in each `Check` of `Report.rule_evidence` | agreed |
+| `rangekeeper.schema.records.DecisionOutcome` | `RuleEvidence`, in `Report.rule_evidence`, with another shape: it holds the trace of one case, not one rule decision. `Report.outcomes` has no conversion | agreed |
 | `rangekeeper.flow.MeanWeighting` | `ResampleMethod.MEAN` for `MeanWeighting.OBSERVATIONS` and `ResampleMethod.ELAPSED_MEAN` for `MeanWeighting.ELAPSED`. `resample`, `FlowRollup` and `formulation.flow.resample` take no `weighting=` | agreed |
 | `rangekeeper.flow.ResampleMethod.SPLIT` | `flow.split(periods=)` or `flow.split(frequency=)`, and `Stream.split` | agreed |
 | `rangekeeper.duration.Frequency.BIWEEK` | `offset(..., frequency=Frequency.WEEK, count=2)` for a 14-day step, or explicit 14-day Periods for a grid. There is no fortnight frequency | agreed |
@@ -677,7 +679,7 @@ them; the issues that the table names make the changes.
 | --- | --- | --- |
 | Quantity text in API arguments | Arguments take unit text such as `"7 % pa"`; `per` divides and `pa` means per year. | #255 D13, D16, D17 |
 | Execution configuration | `Executor(store, backend=, units=, tolerances=)` becomes `execute(specification=, store=, config=ExecutionConfig(backend=, units=, tolerances=))`. `ExecutionConfig` also holds the default `limits` and the `backend_options`. | ADR-013, #128 |
-| Execution calls | The arguments of `rk.execution.solve`, `execute`, `assemble`, `assemble_batch`, `make_candidate` and `verify` are keyword-only: `solve(specification, store)` is now `solve(specification=, resolver=)`, and so are the stage calls `resolve_cases(specification=, resolver=)`, `validate(composition=, resolver=, units=)`, `bind_roles(validation=)` and `build_problem(binding=, limits=)`, the rule calls `rk.execution.rule.evaluate(rules=, model=)` and `observe(model=, at=, bindings=)`, `Overlay(resolver=, models=, runs=)` and `rk.run.validate(run=, resolver=)`. A backend declares `def solve(self, *, problem, limits, remaining, options)`. The records of `rk.execution`, `rk.execution.backends` and `rk.execution.rule` take keyword arguments only, for example `Limits(time_limit=)`, `Tolerances(absolute=, relative=)` and `BackendResult(termination=, candidate=)`. | #255 D14, #410 |
+| Execution calls | The arguments of `rk.execution.solve`, `execute`, `assemble`, `assemble_batch`, `make_candidate` and `verify` are keyword-only: `solve(specification, store)` is now `solve(specification=, resolver=)`, and so are the stage calls `resolve_cases(specification=, resolver=)`, `validate(composition=, resolver=, units=)`, `bind_roles(validation=)` and `build_problem(binding=, limits=)`, `Overlay(resolver=, models=, runs=)` and `rk.run.validate(run=, resolver=)`. A backend declares `def solve(self, *, problem, limits, remaining, options)`. The records of `rk.execution` and `rk.execution.backends` take keyword arguments only, for example `Limits(time_limit=)`, `Tolerances(absolute=, relative=)` and `BackendResult(termination=, candidate=)`. | #255 D14, #410 |
 | Resample options | `resample(method=)` takes one `ResampleMethod` for each line, and the weighting of a mean is part of the method: `MEAN` or `ELAPSED_MEAN`. `split(periods=)` or `split(frequency=)` divides amounts over shorter Periods and takes no `method=` or `missing=`. | #399, #405 |
 | Flow and Stream options | Each argument chooses one thing. `flow.check(resolved=True)` is `flow.require_resolved()`. `clean(remove_zeroes=True)` is `clean().drop_zeroes()`; `extent()` takes no flag. `round(mode=)` takes a `rangekeeper.money.RoundingMode`. `collapse(on=)` takes a date or a `PeriodTiming` (was `timing=`). `integrate(day_count=)` is `integrate_time(day_count=)`. `from_periods` and `from_events` take no `dates=` or `ids=`: make the `Movement` records. `multiply` and `scale` follow `*`, so an unresolved amount gives an unresolved product. `Stream.select(value_ids=)` is `Stream.select_values(ids)`. The `missing` and `join` policies live on the Stream: `Stream(..., missing=, join=)` or `stream.with_policy(missing=, join=)`; `aggregate`, `sum`, `min`, `max` and `resample` take no `missing=` or `join=`. `sum(timing=)` is `stream.dated(timing=).sum()`. | #399, #406 |
 | Keyword-only arguments | Every Rangekeeper call names its arguments. | #255 D14 |
@@ -693,7 +695,7 @@ them; the issues that the table names make the changes.
 | Keyword-only arguments in quantity, money and duration | Name each argument: `UnitSystem(currencies=, definitions=)`, `UnitSystem.convert(quantity=, to=)`, `register(name=, definition=, aliases=)`, `alias(alias=, unit=)`, `rk.money.round(amount=, currency=, places=, mode=)`, `rk.duration.offset(value=, frequency=, count=, month_roll=)` and `cover(periods=, name=)`. A natural pair stays positional: `compatible(left, right)`, `multiply(left, right)`, `divide(numerator, denominator)`, `count_steps(start, end, frequency=)` and `year_fraction(start, end, convention=)`. | #410 D14 |
 | Bundle options | `rk.io.bundle.write(root=, model=, documents=, resolver=, geometry=, parquet=)` and `Reader(root=, providers=, limits=, index=)`. `geometry=GeometrySources(directories={model_id: path}, providers={(provider, format, format_version): adapter})` replaces `geometry=`, `geometries=`, `provider=` and `providers=` of `write`; a pin with no provider uses `rk.io.geometry_providers`. `parquet=ParquetOptions(compression=, row_group_size=)` replaces `compression=` and `row_group_size=`. `limits=ReadLimits(documents=, bytes=, rows=)` replaces `max_documents=`, `max_bytes=` and `max_rows=`; `index=IndexCheck.SCHEMA` replaces `check_index=False`. `Reader` has no `provider=`. | #411, #422 |
 | Keyword-only arguments in io and the extension registries | Name each argument: `rk.io.json` and `rk.io.yaml` `loads(text=, kind=)`, `read(path=, kind=)` and `write(document=, path=)`; `rk.io.bundle.write(root=, model=, ...)` and `Reader(root=, ...)`; `rk.io.polars.dates(flow=, ...)` and `from_frame(frame=, units=)`; `GeometryProvider.validate(path=, geometry=)`, so a provider declares `def validate(self, *, path, geometry)`; and `register(name=, implementation=)` on `unit_systems`, `geometry_providers`, `profiles` and the execution backends `registry`. The store protocol stays positional: `put(document)` and `load_model(id)`, `load_specification(id)` and `load_run(id)`. | #410 D14 |
-| Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215). | ADR-021, #255 D41, D42 |
+| Rules | A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. `Specification.rules` stores the `Rule` records, and `Report.rule_evidence` holds a `RuleEvidence` with its `Check` records. They replace the 0.x `Policy`, `Decision`, `Action` and `DecisionOutcome`, with no conversion (#300). | ADR-021, #255 D41, D42 |
 
 <!-- rename-map:end -->
 

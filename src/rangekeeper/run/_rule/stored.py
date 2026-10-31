@@ -21,7 +21,7 @@ from rangekeeper.schema.records import (
     Observation,
     PathCase,
     Reference,
-    RuleDeclaration,
+    Rule,
     RuleEvidence,
     TraceValue,
 )
@@ -79,7 +79,7 @@ def read_checks(evidence: RuleEvidence) -> tuple[Check, ...]:
 def check_stored(
     evidence: RuleEvidence,
     *,
-    rules: Sequence[RuleDeclaration],
+    rules: Sequence[Rule],
     candidate: Model,
     path: PathCase | None,
     paths: Paths | None,

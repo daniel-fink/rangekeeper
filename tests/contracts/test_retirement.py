@@ -74,8 +74,6 @@ from rangekeeper import finance as calculations
 from rangekeeper import duration
 from rangekeeper.model import formulation
 from rangekeeper import market, profile
-from rangekeeper.specification import rule
-from rangekeeper.execution import rule as rule_evaluation
 from rangekeeper.model.system import View
 for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system.graph',
              'rangekeeper.legacy', 'specklepy', 'matplotlib', 'plotly',
@@ -98,6 +96,11 @@ for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system
         "rangekeeper.market.generation",
         "rangekeeper.market.contracts",
         "rangekeeper.market.view",
+        "rangekeeper.execution.rule.evaluation",
+        "rangekeeper.execution.rule.observation",
+        "rangekeeper.execution.rule.result",
+        "rangekeeper.run._rule.evidence",
+        "rangekeeper.specification.rule.validation",
     ],
 )
 def test_removed_1_0_modules_are_absent(name):

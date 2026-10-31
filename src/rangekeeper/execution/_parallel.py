@@ -165,7 +165,7 @@ def _rules(view: Composition | ValidationError) -> tuple[RuleQuery, ...]:
     """Return what the rule engine reads from the rules of a leaf, in their order."""
     if isinstance(view, ValidationError):
         return ()
-    return tuple(query_of(item) for item in view.requirements.declared_rules or ())
+    return tuple(query_of(item) for item in view.requirements.rules or ())
 
 
 def start_session(setup: Setup) -> Session:

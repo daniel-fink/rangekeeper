@@ -16,7 +16,6 @@ from rangekeeper.schema.index import walk
 from rangekeeper.schema.records import (
     Assignment,
     Constraint,
-    DecisionEvidence,
     Expression,
     Reference,
     Value,
@@ -75,7 +74,6 @@ class Binding:
     assertions: tuple[Assertion, ...]
     units: UnitSystem
     references: Mapping[UUID, Reference]
-    decision_evidence: tuple[DecisionEvidence, ...] = ()
     dates: Mapping[UUID, DateValue] = field(
         default_factory=lambda: MappingProxyType({})
     )
@@ -171,32 +169,9 @@ def bind_roles(
     role_references = list(requirements.unknowns or ()) + [
         a.target for a in requirements.assignments or ()
     ]
-    decision_evidence: tuple[DecisionEvidence, ...] = ()
-    rule_assignments: tuple[Assignment, ...] = ()
     # A rule fixes its value during the solve: the rules stage reads it as free.
-    decided = tuple(rule.target for rule in requirements.declared_rules or ())
+    decided = tuple(rule.target for rule in requirements.rules or ())
     role_references.extend(decided)
-    if requirements.rules is not None:
-        unknown_tokens = {ref.target for ref in requirements.unknowns or ()}
-        if any(
-            binding.target.target in unknown_tokens
-            for point in requirements.rules.decisions
-            for binding in point.observations
-        ):
-            raise UnsupportedError(
-                "rule observation targets an endogenous unknown; sequential numerical rules are unsupported"
-            )
-        from rangekeeper.execution.rule.evaluation import evaluate
-        from rangekeeper.execution.rule.observation import RuleCapabilityError
-
-        try:
-            rule_result = evaluate(rules=requirements.rules, model=model, units=units)
-            checkpoint()
-        except RuleCapabilityError as error:
-            raise UnsupportedError(str(error)) from error
-        decision_evidence = rule_result.evidence
-        rule_assignments = rule_result.assignments
-        role_references.extend(a.target for a in rule_assignments)
     if any(ref.target not in model_values for ref in role_references):
         raise UnsupportedError(
             "Specification-local Value publication requires a later adapter"
@@ -208,7 +183,7 @@ def bind_roles(
         for token, ref in references.items()
         if token not in dated
     }
-    supplied = (*(requirements.assignments or ()), *rule_assignments)
+    supplied = requirements.assignments or ()
     assignments = {
         item.target.target: units.convert(
             quantity=item.quantity, to=value_units[item.target.target]
@@ -238,7 +213,6 @@ def bind_roles(
         ),
         units=units,
         references=MappingProxyType(references),
-        decision_evidence=decision_evidence,
         dates=MappingProxyType(dates),
         date_unknowns=tuple(id for id in free if id in dated),
     )

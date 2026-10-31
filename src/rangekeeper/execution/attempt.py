@@ -598,9 +598,6 @@ class Attempt:
             diagnostics=tuple(self.findings),
             trace=tuple(self.trace),
             rule_evidence=self.rule_evidence(),
-            decision_evidence=(
-                () if self.binding is None else self.binding.decision_evidence
-            ),
         )
         return assembly.assemble(
             specification=self.specification,

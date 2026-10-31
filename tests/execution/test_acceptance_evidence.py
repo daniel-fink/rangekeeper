@@ -1,25 +1,22 @@
 """Acceptance is strict, and Run evidence and execution manifests stay exact."""
 
 from copy import deepcopy
-from datetime import date
 from uuid import uuid4
 
 import pytest
 
-from rangekeeper.execution.rule import RuleCapabilityError, evaluate
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import Model
 from rangekeeper.run import Run, validate
 from rangekeeper.schema.validation import document_version
 from rangekeeper.specification import Specification
-from rangekeeper.specification.rule import RuleSet
 
 
 def metadata(kind):
     return {"id": str(uuid4()), "schema_version": document_version(kind)}
 
 
-def publication(model_data, output_data, *, rules=None, decisions=None):
+def publication(model_data, output_data):
     """Construct reported evidence without invoking an evaluator or solver."""
     model = Model.from_data(data=model_data)
     output_data["metadata"] = {
@@ -28,8 +25,6 @@ def publication(model_data, output_data, *, rules=None, decisions=None):
     }
     output = Model.from_data(data=output_data)
     spec_data = {"metadata": metadata("Specification"), "model": str(model.id)}
-    if rules is not None:
-        spec_data["rules"] = rules
     spec = Specification.from_data(spec_data)
     store = MemoryStore()
     for item in (model, output, spec):
@@ -46,8 +41,6 @@ def publication(model_data, output_data, *, rules=None, decisions=None):
             ]
         },
     }
-    if decisions is not None:
-        report["decision_evidence"] = decisions
     run = Run.from_data(
         {
             "metadata": metadata("Run"),
@@ -91,94 +84,6 @@ def test_run_preserves_historical_claim_types_order_and_field_presence(before, a
     result = validate(run=forged, resolver=resolver)
     assert not result.valid
     assert any("historical Claims changed" in issue.message for issue in result.issues)
-
-
-@pytest.mark.parametrize("published", [True, False])
-def test_recorded_control_without_prior_outcome_fails_runtime_and_stored_evidence(
-    published,
-):
-    target, measure, point = (str(uuid4()) for _ in range(3))
-    reference = {"target": target}
-    quantity = {"magnitude": 1, "units": "dimensionless"}
-    at = date(2027, 1, 1).isoformat()
-    data = {
-        "metadata": metadata("Model"),
-        "definitions": {
-            "measures": [
-                {
-                    "id": measure,
-                    "code": "factor",
-                    "name": "Factor",
-                    "units": "dimensionless",
-                }
-            ]
-        },
-        "system": {
-            "formulations": [
-                {
-                    "id": str(uuid4()),
-                    "values": [
-                        {
-                            "id": target,
-                            "key": "control",
-                            "kind": "measurement",
-                            "measure": measure,
-                            "quantity": quantity,
-                        }
-                    ],
-                }
-            ]
-        },
-    }
-    rules = {
-        "id": str(uuid4()),
-        "targets": [reference],
-        "decisions": [
-            {
-                "id": point,
-                "at": at,
-                "observations": [
-                    {"name": "control", "target": reference, "available_at": at}
-                ],
-                "rules": [],
-                "fallback": [
-                    {"kind": "assign", "target": reference, "quantity": quantity}
-                ],
-            }
-        ],
-    }
-    with pytest.raises(RuleCapabilityError, match="earlier decision"):
-        evaluate(rules=RuleSet.from_data(rules), model=Model.from_data(data=data))
-    forged = {
-        "decision": point,
-        "at": at,
-        "observations": [
-            {
-                "name": "control",
-                "target": reference,
-                "quantity": quantity,
-                "available_at": at,
-            }
-        ],
-        "assignments": [{"target": reference, "quantity": quantity}],
-        "terminated": False,
-    }
-    run, resolver = publication(data, deepcopy(data), rules=rules, decisions=[forged])
-    if not published:
-        raw = run.to_data()
-        raw.pop("outputs")
-        raw["report"]["status"]["solution"] = "unknown"
-        raw["report"]["diagnostics"] = [
-            {
-                "severity": "info",
-                "code": "fixture",
-                "message": "Recorded rules trace without publication",
-            }
-        ]
-        run = Run.from_data(raw)
-    result = validate(run=run, resolver=resolver)
-    assert not result.valid
-    assert any("earlier decision" in issue.message for issue in result.issues)
 
 
 def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_path):
@@ -280,36 +185,6 @@ def test_shared_numerical_quantity_rejects_nonfinite_boolean_and_complex(number)
 
     with pytest.raises(NumericalError):
         finite_quantity(number, "dimensionless")
-
-
-def test_rule_result_normalizes_and_checks_outcomes():
-    from dataclasses import FrozenInstanceError
-
-    from rangekeeper.execution.rule import RuleResult
-    from rangekeeper.model import Reference
-    from rangekeeper.quantity import Quantity
-    from rangekeeper.specification import Assignment
-    from rangekeeper.specification.rule import DecisionEvidence
-
-    assignment = Assignment(
-        target=Reference(target=uuid4()),
-        quantity=Quantity(magnitude=1, units="dimensionless"),
-    )
-    outcome = DecisionEvidence(
-        decision=uuid4(),
-        at=date(2027, 1, 1),
-        observations=(),
-        assignments=(assignment,),
-        terminated=False,
-    )
-    supplied = [outcome]
-    result = RuleResult(evidence=supplied)
-    supplied.clear()
-    assert result.evidence == (outcome,) and result.assignments == (assignment,)
-    with pytest.raises(FrozenInstanceError):
-        result.evidence = ()
-    with pytest.raises(TypeError):
-        RuleResult(evidence=[assignment])
 
 
 def test_execution_manifest_tracks_actual_currency_catalogue(monkeypatch):

@@ -2,13 +2,16 @@
 
 This module is an example consumer, not a new domain schema. Generated Values own
 all parameters and outputs. Construction has no random, solver or storage effects.
+
+A date Value, ``sale_date``, decides the sale. ``specify`` fixes it to the last day of
+a period, or with a rule that ``stop_gain_resale_rule`` makes (ADR-021).
 """
 
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
 from typing import Any, cast
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from rangekeeper.duration import Frequency, Periods, PeriodTiming, offset
 from rangekeeper.finance import financial
@@ -25,10 +28,8 @@ from rangekeeper.model import (
     Value,
     ValueKind,
 )
-from rangekeeper.model.expression import Operator
 from rangekeeper.model.expression.authoring import (
     add,
-    binary,
     divide,
     equal,
     literal,
@@ -37,19 +38,10 @@ from rangekeeper.model.expression.authoring import (
 )
 from rangekeeper.model.expression.authoring import reference as ref
 from rangekeeper.model.formulation import declare
-from rangekeeper.model.formulation.authoring import identify, identify_tree
-from rangekeeper.model.formulation.flow import aligned, shape
 from rangekeeper.quantity import Quantity
-from rangekeeper.schema.records import Assignment, RuleSet
+from rangekeeper.schema.records import Assignment
 from rangekeeper.schema.records import Specification as SpecificationRecord
-from rangekeeper.specification import Specification
-from rangekeeper.specification.rule import (
-    Action,
-    ActionKind,
-    Decision,
-    ObservationBinding,
-    Rule,
-)
+from rangekeeper.specification import Rule, Specification, Window
 from rangekeeper.specification.targets import assign_flow, unknown_flow
 
 _DEFAULTS = dict(
@@ -66,11 +58,11 @@ _DEFAULTS = dict(
     discount_rate=0.07,
     acquisition_price=1000.0,
 )
+# The sale date, and the Flows that follow from it.
+_CONTROLS = ("sale_date", "holding", "sale")
 _FULL = ("base_pgi", "pgi", "vacancy", "egi", "opex", "noi", "capex", "ncf")
 _HORIZON = (
     "potential_sale",
-    "holding",
-    "sale",
     "operations",
     "disposition",
     "total",
@@ -79,8 +71,8 @@ _HORIZON = (
 )
 
 
-def values(model: Model) -> dict[str, Value]:
-    """Return the example's owner-local Values by key, with no code/name fallback."""
+def _own(model: Model) -> dict[str, Value]:
+    """Return the Values of the Formulation that ``author`` makes."""
     if model.system is None:
         raise ValueError("Investment requires a System")
     matches = [
@@ -91,6 +83,12 @@ def values(model: Model) -> dict[str, Value]:
     if len(matches) != 1:
         raise ValueError("expected one authored Investment formulation")
     return {v.key: v for v in matches[0].values or ()}
+
+
+def values(model: Model) -> dict[str, Value]:
+    """Return the example's Values by key, with no code/name fallback."""
+    controls = {key: model.value(key=key) for key in _CONTROLS}
+    return {**_own(model), **controls}
 
 
 def author(
@@ -155,21 +153,9 @@ def author(
         )
     for name in (*_FULL, *_HORIZON):
         ps = periods if name in _FULL else periods[:-1]
-        control = name in ("holding", "sale")
-        flow = _paid_at_last_day(
-            ps,
-            (None,) * len(ps),
-            units="dimensionless" if control else p["units"],
-            prefix="p",
-        )
+        flow = _paid_at_last_day(ps, (None,) * len(ps), units=p["units"], prefix="p")
         records.append(
-            Value(
-                id=uuid4(),
-                key=name,
-                kind=ValueKind.FLOW,
-                measure=ratio if control else money,
-                flow=flow,
-            )
+            Value(id=uuid4(), key=name, kind=ValueKind.FLOW, measure=money, flow=flow)
         )
     records.append(
         Value(id=uuid4(), key="pv", kind=ValueKind.MEASUREMENT, measure=money)
@@ -190,6 +176,19 @@ def author(
                 ),
             )
         )
+    # 1 in the last sale period: the resale rule reads it, so a sale always happens.
+    final = (0,) * (p["num_periods"] - 1) + (1,)
+    records.append(
+        Value(
+            id=uuid4(),
+            key="final_period",
+            kind=ValueKind.FLOW,
+            measure=ratio,
+            flow=_paid_at_last_day(
+                periods[:-1], final, units="dimensionless", prefix="p"
+            ),
+        )
+    )
     system = cast(dict[str, Any], base.system.to_data() if base.system else {})
     system.setdefault("formulations", []).append(
         Formulation(
@@ -215,12 +214,31 @@ def author(
             ).to_data(),
         ]
     )
-    return base.revise(
+    authored = base.revise(
         Update(
             system=System.from_data(system),
             definitions=Definitions.from_data(definitions),
         )
     )
+    return _with_sale_controls(authored, periods=periods[:-1])
+
+
+def _with_sale_controls(model: Model, *, periods: Periods) -> Model:
+    """Add the sale date, and the holding and sale Flows that follow from it.
+
+    The sale period holds 1 in both Flows, so its operating income counts. Later
+    periods hold 0.
+    """
+    draft = model.edit()
+    controls = draft.add_entity(code="sale_controls", classification="sale_controls")
+    controls.date(key="sale_date")
+    controls.flow(key="holding", units="dimensionless", periods=periods)
+    controls.flow(key="sale", units="dimensionless", periods=periods)
+    controls.equations(
+        "sale = rx.flow.event(amount=1, on=sale_date)",
+        "holding = 1 - sale.cumulative() + sale",
+    )
+    return draft.commit()
 
 
 def _path_amounts(path: Flow, periods: Periods) -> tuple[float, ...]:
@@ -235,12 +253,18 @@ def _inputs(model):
     return own, own["space_market_price_factors"], own.get("reversion_cap_rates")
 
 
+def _sale_days(model: Model) -> tuple[date, ...]:
+    """Return the day on which a sale in each period happens: its last day."""
+    return tuple(m.resolve() for m in _flow(values(model)["total"]).movements)
+
+
 def formulate(model: Model) -> Model:
     """Declare growth, operating, reversion, control and discount equations only.
 
     Reversion uses next-period NCF. A recorded path of capitalization rates can
     replace the scalar rate. The controls include the sale period's operating
     income. No recorded magnitudes are substituted into the mathematics.
+    ``author`` declares the equations of the controls.
     """
     v, factors, caps = _inputs(model)
     equations = []
@@ -297,16 +321,16 @@ def formulate(model: Model) -> Model:
         set_equation("ncf", key, add(r("noi", key), r("capex", key)))
     discounted_operations = None
     total = None
-    for i, item in enumerate(_flow(v["holding"]).movements):
+    for i, item in enumerate(_flow(v["total"]).movements):
         key, next_key = item.key, _flow(v["ncf"]).movements[i + 1].key
+        holding = ref(Reference(target=_flow(v["holding"]).movements[i].id))
+        sale = ref(Reference(target=_flow(v["sale"]).movements[i].id))
         cap = (
             ref(Reference(target=caps.flow.movements[i].id)) if caps else r("cap_rate")
         )
         set_equation("potential_sale", key, divide(r("ncf", next_key), cap))
-        set_equation("operations", key, multiply(r("ncf", key), r("holding", key)))
-        set_equation(
-            "disposition", key, multiply(r("potential_sale", key), r("sale", key))
-        )
+        set_equation("operations", key, multiply(r("ncf", key), holding))
+        set_equation("disposition", key, multiply(r("potential_sale", key), sale))
         set_equation("total", key, add(r("operations", key), r("disposition", key)))
         divisor = power(add(literal(1), r("discount_rate")), literal(i + 1))
         set_equation("discounted", key, divide(r("total", key), divisor))
@@ -329,7 +353,7 @@ def formulate(model: Model) -> Model:
         name="Investment equations",
         equations=equations,
         # The market path inputs are own Values of the example.
-        values=[x.id for x in v.values()],
+        values=[x.id for x in _own(model).values()],
     )
     assert model.system is not None
     data = cast(dict[str, Any], model.system.to_data())
@@ -338,19 +362,20 @@ def formulate(model: Model) -> Model:
 
 
 def specify(
-    model: Model, *, rules: RuleSet | None = None, sale_period: int | None = None
+    model: Model, *, rule: Rule | None = None, sale_period: int | None = None
 ) -> Specification:
-    """Explicitly fix input parameters/path and select result unknowns and controls.
+    """Explicitly fix input parameters/path and select result unknowns.
 
-    Rules own controls exclusively. Without one, sale_period defaults to the
-    final horizon. This call alone does not solve, save or alter any Model.
+    The sale date is fixed to the last day of ``sale_period``, or decided by
+    ``rule``. Without either, the sale is in the final period. This call alone does
+    not solve, save or alter any Model.
     """
     v, factors, caps = _inputs(model)
-    count = len(_flow(v["holding"]).movements)
-    if rules is not None and sale_period is not None:
-        raise ValueError("choose rules or fixed sale period")
-    sale_period = count if sale_period is None else sale_period
-    if type(sale_period) is not int or not 1 <= sale_period <= count:
+    days = _sale_days(model)
+    if rule is not None and sale_period is not None:
+        raise ValueError("choose a rule or a fixed sale period")
+    sale_period = len(days) if sale_period is None else sale_period
+    if type(sale_period) is not int or not 1 <= sale_period <= len(days):
         raise ValueError("sale period outside investment horizon")
     assignments = [
         Assignment(target=Reference(target=item.id), quantity=item.quantity)
@@ -358,44 +383,27 @@ def specify(
         if item.kind is ValueKind.MEASUREMENT and item.quantity is not None
     ]
     assignments.extend(assign_flow(model, factors.id))
+    assignments.extend(assign_flow(model, v["final_period"].id))
     if caps:
         assignments.extend(assign_flow(model, caps.id))
-    if rules is None:
-        for i in range(count):
-            assignments.extend(
-                (
-                    Assignment(
-                        target=Reference(target=_flow(v["holding"]).movements[i].id),
-                        quantity=Quantity(
-                            magnitude=int(i < sale_period), units="dimensionless"
-                        ),
-                    ),
-                    Assignment(
-                        target=Reference(target=_flow(v["sale"]).movements[i].id),
-                        quantity=Quantity(
-                            magnitude=int(i + 1 == sale_period), units="dimensionless"
-                        ),
-                    ),
-                )
-            )
     unknowns = (
         Reference(target=v["pv"].id),
         *(
             target
-            for name in (*_FULL, *_HORIZON)
-            if name not in ("holding", "sale")
+            for name in (*_FULL, *_HORIZON, "holding", "sale")
             for target in unknown_flow(model, v[name].id)
         ),
     )
-    return Specification(
+    specification = Specification(
         record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
             model=model.id,
             assignments=tuple(assignments),
             unknowns=unknowns,
-            rules=rules,
-        )
+        ),
+        model=model,
     )
+    return specification.fix(sale_date=days[sale_period - 1] if rule is None else rule)
 
 
 @dataclass(frozen=True)
@@ -432,7 +440,8 @@ def report(model: Model) -> InvestmentReport:
     sale = [m for m in _flow(v["sale"]).movements if m.magnitude == 1]
     if len(sale) != 1:
         raise ValueError("investment output must have exactly one sale")
-    sale_date = sale[0].resolve()
+    sale_date = v["sale_date"].date
+    assert sale_date is not None
     first_period = _flow(v["total"]).movements[0].period
     assert first_period is not None
     first = first_period.start
@@ -466,119 +475,31 @@ def report(model: Model) -> InvestmentReport:
     )
 
 
-def build_stop_gain_resale_rules(
+def stop_gain_resale_rule(
     model: Model,
     *,
-    id: UUID | None = None,
-    pricing_factor: UUID | None = None,
-    holding: UUID | None = None,
-    sale: UUID | None = None,
     threshold: float = 1.2,
     minimum_holding_periods: int = 3,
-    mapping: Mapping[UUID, UUID] | None = None,
-) -> RuleSet:
-    """Declare one sale at first factor > threshold, otherwise at the final horizon.
+) -> Rule:
+    """Return a rule that sells at the first factor above a threshold, else at the end.
 
-    Decisions occur on each period's last included date. The sale period has
-    holding=1 and sale=1, so its operating cashflow is included. Later controls
-    are zero. Minimum holding is a positive count including the sale period.
-    An explicit mapping selects observed Movement UUIDs when the market extends beyond the
-    investment horizon. Availability still prevents future observations.
-    Threshold is dimensionless. No path, cashflow or Model is changed.
+    Give it to ``specify``, which fixes ``sale_date`` with it. The market factor of a
+    period is known on the last day of that period, so the rule checks on that day.
+    It starts in the period that ``minimum_holding_periods`` gives, a positive count
+    that includes the sale period. The threshold is dimensionless and strict.
+
+    The condition holds in the last period through ``final_period``, so the rule
+    always decides on or before that day. ``otherwise`` would act only after the last
+    period, and a decision must not change a date before it.
     """
-    if pricing_factor is None and holding is None and sale is None:
-        own, factors, _ = _inputs(model)
-        pricing_factor, holding, sale = factors.id, own["holding"].id, own["sale"].id
-        if mapping is None:
-            mapping = {
-                h.id: p.id
-                for h, p in zip(
-                    own["holding"].flow.movements, factors.flow.movements, strict=False
-                )
-            }
-    elif pricing_factor is None or holding is None or sale is None:
-        raise ValueError("explicit resale roles must supply all three Values")
-    id = id or uuid4()
-    if mapping is None:
-        rows = aligned(model=model, members=(pricing_factor, sale), reference=holding)
-    else:
-        factors = {m.id: m for m in shape(model=model, value=pricing_factor).movements}
-        controls = aligned(model=model, members=(sale,), reference=holding)
-        if set(mapping) != {h.id for h, _ in controls} or not set(
-            mapping.values()
-        ) <= set(factors):
-            raise ValueError("rule mapping must cover every control coordinate")
-        rows = [(h, (factors[mapping[h.id]], matches[0])) for h, matches in controls]
-    if (
-        not rows
-        or type(minimum_holding_periods) is not int
-        or not 1 <= minimum_holding_periods <= len(rows)
-    ):
+    days = _sale_days(model)
+    if type(
+        minimum_holding_periods
+    ) is not int or not 1 <= minimum_holding_periods <= len(days):
         raise ValueError("minimum holding must lie within the declared horizon")
-    targets = tuple(
-        ref
-        for h, (_, s) in rows
-        for ref in (Reference(target=h.id), Reference(target=s.id))
-    )
-
-    def assign(ref, magnitude):
-        return Action(
-            kind=ActionKind.ASSIGN,
-            target=ref,
-            quantity=Quantity(magnitude=magnitude, units="dimensionless"),
-        )
-
-    def sell(index):
-        actions = []
-        for position, (h, (_, s)) in enumerate(rows[index:]):
-            actions.extend(
-                (
-                    assign(Reference(target=h.id), int(position == 0)),
-                    assign(Reference(target=s.id), int(position == 0)),
-                )
-            )
-        return (*actions, Action(kind=ActionKind.TERMINATE))
-
-    points = []
-    for index, (h, (factor, s)) in enumerate(rows):
-        at = h.resolve(timing=PeriodTiming.LAST)
-        observation = ObservationBinding(
-            name="pricing_factor", target=Reference(target=factor.id)
-        )
-        condition = identify_tree(
-            owner=id,
-            operation="resale",
-            key=str(h.id),
-            expression=binary(
-                Operator.GREATER_THAN, ref(observation.target), literal(threshold)
-            ),
-        )
-        rules = (
-            (
-                Rule(
-                    id=identify(id, str(h.id), "rule"),
-                    condition=condition,
-                    actions=sell(index),
-                ),
-            )
-            if index + 1 >= minimum_holding_periods
-            else ()
-        )
-        fallback = (
-            sell(index)
-            if index == len(rows) - 1
-            else (assign(Reference(target=h.id), 1), assign(Reference(target=s.id), 0))
-        )
-        points.append(
-            Decision(
-                id=identify(id, str(h.id), "point"),
-                at=at,
-                observations=(observation,),
-                rules=rules,
-                fallback=fallback,
-            )
-        )
-    return RuleSet(id=id, targets=targets, decisions=tuple(points))
+    window = Window(earliest=days[minimum_holding_periods - 1], latest=days[-1])
+    condition = f"space_market_price_factors > {threshold} or final_period == 1"
+    return window.where(condition=condition).first(otherwise=days[-1])
 
 
 def horizon_returns(model: Model) -> Flow:

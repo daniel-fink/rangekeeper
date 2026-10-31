@@ -80,8 +80,8 @@ classes:
       are deferred; a dedicated Scenario or Evaluation class is not introduced. The objectives collection preserves
       preference order. Other collections here are unordered; the child schemas preserve order where mathematics
       requires it.
-    - Rule-controlled targets are a third, disjoint role category. Exactly one contributor may supply a RuleSet.
-      Actual decisions must supply all controlled assignments before compilation.
+    - Rule-controlled targets are a third, disjoint role category. Exactly one contributor may supply the rules. The
+      rules stage fixes each decided value before the final problem is built.
     attributes:
       metadata:
         description: Identity and schema version of this Specification revision, with optional description and lineage.
@@ -166,13 +166,9 @@ classes:
         - range: Settings
           inlined: true
       rules:
-        description: Optional RuleSet with controlled targets and dated decisions.
-        range: RuleSet
-        inlined: true
-      declared_rules:
         description: Nonempty ordered rules, each a query over a window that decides one value. They run in this order.
           A decided value has no other role.
-        range: RuleDeclaration
+        range: Rule
         inlined: true
         multivalued: true
         inlined_as_list: true

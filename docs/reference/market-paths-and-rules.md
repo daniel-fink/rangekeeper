@@ -40,19 +40,15 @@ See [calendar contracts](calculations.md).
 | `market._components` | The components of a series (trend, cycle, volatility, noise and shock), each a small object with its parameters per Period (internal) |
 | `market._kernels` | The deterministic trend, cycle, autoregression, volatility and shock kernels over supplied draws (internal) |
 | `market.validation` | The checks of a `Paths` document |
-| `specification.rule` | Generated declarations and evidence |
-| `specification.rule.validation` | Rule declaration checks |
-| `specification.rule._declaration` | `Window`, `Where`, `Rule` and `Rules`, and the stored `RuleDeclaration` of a rule |
+| `specification.rule._declaration` | `Window`, `Where`, `Rule` and `Rules`, and the conversion to and from the stored `Rule` record (internal; `rk.specification` exports the names) |
 | `specification.rule._query` | What the engine reads of a sequential rule, `RuleQuery`, and the checks that need no solve (internal) |
-| `execution.rule` | `evaluate`, `observe` and derived results |
 | `execution.rule.sequence` | Sequential evaluation: `run_rules` returns `Decisions` for one case (internal) |
 | `execution.rule.provisional` | One provisional solve, with the current decided values fixed (internal) |
-| `run._rule.availability` | Pure date rule, shared by runtime observation and stored-evidence checks |
+| `run._rule.availability` | When a Movement is known, shared by the rule engine and the trace check |
 | `run._rule.predicate` | Exact Boolean truth and short-circuiting; arithmetic uses the shared evaluator |
 | `run._rule.truth` | The truth of a sequential condition: true, false or unknown |
-| `run._rule.evidence` | Independent stored-evidence checks of the dated rule slice |
 | `run._rule.trace` | The records of a decision trace, and its independent check (`check_trace`) |
-| `rangekeeper_examples.investment` | The model-specific resale rules and investment author/formulate/specify/report operations |
+| `rangekeeper_examples.investment` | The model-specific resale rule and investment author/formulate/specify/report operations |
 
 Builders return immutable declarations. They do not solve or read recorded amounts
 as hidden constants. `rk.model.formulation.declare(id=, name=, equations=, values=)`
@@ -230,35 +226,20 @@ under its UUID and return it with `load_paths(id)`; the codecs read it with
 
 ## Rule declarations and evidence
 
-Import `RuleSet`, `Decision`, `Rule`, `Action`, `ActionKind` and `DecisionEvidence`
-from `rangekeeper.specification.rule`. `Specification.rules` holds a `RuleSet`;
-`RuleSet.decisions` contains dated declarations. `Report.decision_evidence` contains
-the evidence. Each record's `decision` identifies its declaration. The rule
-queries of [ADR-021](../decisions/021-sequential-decisions.md) replace these
-records ([#215](https://github.com/daniel-fink/rangekeeper/issues/215)). There is no public `decide` or `DecisionHistory` wrapper.
+A rule is a query over a window, and a Specification stores it as a `Rule` record
+([declare a rule](#declare-a-rule)). A Run stores what the rule did as one
+`RuleEvidence` ([the decision trace](#the-decision-trace)). There is no public
+`decide` or `DecisionHistory` wrapper.
 
-Import `evaluate`, `observe`, `RuleResult` and `RuleCapabilityError` from
-`rangekeeper.execution.rule`. `evaluate(rules=..., model=..., units=None)` prepares the scope and availability index
-once; without `units` it uses `Model.unit_system`. It then applies the first true rule or the explicit fallback. Actions assign
-controls and may terminate. `observe` accepts only named quantities available by
-the decision date: a dated Movement on its date, a period Movement on the last
-day of its Period. Earlier evidence can supply later observations; a recorded
-control value cannot substitute for an earlier decision. Declared availability can
-delay access, but cannot advance a coordinate.
-
-`RuleResult.evidence` is an immutable tuple. Its assignments are derived from
-that evidence. Independent stored-evidence validation checks dates, observed
-quantities, first-match choice, actions, termination, complete trace and exactly-once
-control coverage. It applies to Runs with and without published outputs. Runtime
-and stored checks use the caller's unit context. Neither certifies numerical
-feasibility; acceptance still checks the original governing equations.
-
-The investment resale example uses a strict factor greater than the threshold,
-a minimum holding period and final-horizon fallback. `author(factors=, cap_rates=)`
+The investment resale example decides its `sale_date` with a rule:
+`stop_gain_resale_rule(model, threshold=, minimum_holding_periods=)` gives it to
+`specify(model, rule=)`. The rule uses a strict factor greater than the threshold, a
+minimum holding period and a sale in the final period. `author(factors=, cap_rates=)`
 records the factors and capitalization rates of one market path, such as
-`paths[key]["space_market_price_factors"]`. Sale includes that period's
-operating cashflow and proceeds. Later controls are zero; the full market path
-remains recorded. These economic roles belong to the investment example.
+`paths[key]["space_market_price_factors"]`. Sale includes that period's operating
+cashflow and proceeds. The `holding` and `sale` Flows follow from `sale_date`, and
+hold zero after it; the full market path remains recorded. These economic roles
+belong to the investment example.
 
 See [migration](../guides/upgrading.md), [record methods](records.md), and
 [verification](../contributing/verification.md) for repeatable checks and their external limits.
@@ -293,8 +274,8 @@ strategy = fixed.fix(start_trigger=1.05, start_date=rule)
 | `fix(key=rule)` | The value becomes decided. Rules run in the order that they are fixed. A later `fix` of the key replaces the rule or the value, a rule in the same position. `free(key)` removes the rule. One `fix` call can give values and rules together |
 | `spec.rules` | The `Rules` by key, in their order. `spec.rules[key]` is a `Rule` whose `triggers` hold the fixed values that it reads. `fix` with that Rule brings each of them that the other Specification does not fix; a value that it fixes stays. A key without a rule raises `MissingReferenceError` |
 
-`fix` reads the text against the pinned Model and stores a `RuleDeclaration` in the
-ordered `declared_rules` of the Specification. The record has the `target`, and
+`fix` reads the text against the pinned Model and stores a `rangekeeper.schema.records.Rule`
+in the ordered `rules` of the Specification. The record has the `target`, and
 Expressions for `condition`, `otherwise`, `then`, `earliest` and `latest`, with the
 `periods` and the `timing`. `otherwise` and `then` are literals.
 
@@ -449,9 +430,7 @@ stored Run and a new solve.
 | Distribution | One LinkML-generated probability-distribution record |
 | Binding | A local name referring to a canonical Value; the container defines scope |
 | RandomStream | Recorded identity of a random sequence, separate from a Flow Stream |
-| RuleSet | The rules of a Specification: controlled targets and dated decisions |
-| Decision | Dated rule declaration with observations, rules and fallback |
-| DecisionEvidence | Recorded observations, assignments and termination for one Decision |
+| Rule | One stored rule of a Specification: its target, condition, `otherwise`, `then` and window |
 | RuleEvidence | The decision trace of one case: its Checks, decided values, solve count and trace check result |
 
 `schema/market.yaml` holds the Paths records; `schema/distribution.yaml` and

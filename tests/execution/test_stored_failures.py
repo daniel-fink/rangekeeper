@@ -6,10 +6,8 @@ import pytest
 
 from rangekeeper import Model, Specification
 from rangekeeper.execution import ExecutionConfig, execute
-from rangekeeper.execution.rule import RuleCapabilityError, evaluate
 from rangekeeper.io import MemoryStore
 from rangekeeper.run import CompletionStatus, SolutionStatus, validate
-from rangekeeper.specification.rule import RuleSet
 
 
 def identity():
@@ -125,82 +123,3 @@ def test_fixed_strict_predicate_failures_become_stored_runs(unsupported):
         )
         assert diagnostic.document == model.id
         assert str(diagnostic.target) == constraint_id
-
-
-def test_incomplete_selected_rule_trace_uses_capability_failure_boundary():
-    measure, target = identity(), identity()
-    reference = {"target": target}
-    model = Model.from_data(
-        data={
-            "metadata": metadata(),
-            "definitions": {
-                "measures": [
-                    {
-                        "id": measure,
-                        "code": "factor",
-                        "name": "Factor",
-                        "units": "dimensionless",
-                    }
-                ]
-            },
-            "system": {
-                "formulations": [
-                    {
-                        "id": identity(),
-                        "values": [
-                            {
-                                "id": target,
-                                "key": "control",
-                                "kind": "measurement",
-                                "measure": measure,
-                            }
-                        ],
-                    }
-                ]
-            },
-        }
-    )
-    rules = {
-        "id": identity(),
-        "targets": [reference],
-        "decisions": [
-            {
-                "id": identity(),
-                "at": "2027-01-01",
-                "observations": [],
-                "rules": [
-                    {
-                        "id": identity(),
-                        "condition": {
-                            "id": identity(),
-                            "kind": "boolean",
-                            "boolean": False,
-                        },
-                        "actions": [
-                            {
-                                "kind": "assign",
-                                "target": reference,
-                                "quantity": {"magnitude": 1, "units": "dimensionless"},
-                            }
-                        ],
-                    }
-                ],
-                "fallback": [{"kind": "terminate"}],
-            }
-        ],
-    }
-    specification = Specification.from_data(
-        {
-            "metadata": metadata(),
-            "model": str(model.id),
-            "rules": rules,
-        }
-    )
-    with pytest.raises(RuleCapabilityError, match="each controlled target"):
-        evaluate(rules=RuleSet.from_data(rules), model=model)
-    failed_run(
-        model,
-        specification,
-        code="unsupported_capability",
-        solution=SolutionStatus.NOT_ASSESSED,
-    )

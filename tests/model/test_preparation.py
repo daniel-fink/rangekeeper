@@ -1,5 +1,6 @@
 """Independent checks for scope preparation, source attribution and comparison."""
 
+from datetime import date
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -498,16 +499,12 @@ def test_run_child_diagnostics_identify_the_child_and_report_field():
     assert result.issues[0].path == "/report"
 
 
-@pytest.mark.parametrize("published", [False, True])
-def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
-    """Exercise real converted comparisons through both public entry points."""
-    from copy import deepcopy
-
-    from rangekeeper.execution.rule import evaluate
+def test_supplied_units_reach_the_check_of_a_stored_trace():
+    """A condition compares across units, on a Run that the solve records."""
+    import rangekeeper as rk
     from rangekeeper.io import MemoryStore
     from rangekeeper.quantity import UnitSystem
-    from rangekeeper.run import Run, validate
-    from rangekeeper.specification.rule import RuleSet
+    from rangekeeper.run import validate
 
     conversions = []
 
@@ -517,128 +514,20 @@ def test_supplied_units_reach_rule_runtime_and_stored_rule_evidence(published):
             return super().convert(quantity=quantity, to=to)
 
     units = TrackingUnits(currencies=())
-    measure, observed, control, decision, rule = (str(uuid4()) for _ in range(5))
-    at = "2027-01-01"
-    reference = dict(target=control)
-    amount = dict(magnitude=1, units="m")
-    data = dict(
-        metadata=dict(id=str(uuid4()), schema_version="1.0.0"),
-        definitions=dict(
-            measures=[dict(id=measure, code="length", name="Length", units="m")]
-        ),
-        system=dict(
-            formulations=[
-                dict(
-                    id=str(uuid4()),
-                    values=[
-                        dict(
-                            id=observed,
-                            key="observed",
-                            kind="measurement",
-                            measure=measure,
-                            quantity=dict(magnitude=2, units="m"),
-                        ),
-                        dict(
-                            id=control,
-                            key="control",
-                            kind="measurement",
-                            measure=measure,
-                        ),
-                    ],
-                )
-            ]
-        ),
+    draft = rk.Model(name="Units").edit()
+    part = draft.add_entity(code="part", classification="part")
+    part.value(key="observed", units="m")
+    part.value(key="control", units="m")
+    model = draft.commit()
+    window = rk.specification.Window(earliest=date(2027, 1, 1), latest=date(2027, 1, 1))
+    rule = window.where(condition="observed > 100 cm").first(
+        otherwise="0 m", then="1 m"
     )
-    action = dict(kind="assign", target=reference, quantity=amount)
-    rules = RuleSet.from_data(
-        dict(
-            id=str(uuid4()),
-            targets=[reference],
-            decisions=[
-                dict(
-                    id=decision,
-                    at=at,
-                    observations=[
-                        dict(
-                            name="observed",
-                            target=dict(target=observed),
-                            available_at=at,
-                        )
-                    ],
-                    rules=[
-                        dict(
-                            id=rule,
-                            condition=dict(
-                                id=str(uuid4()),
-                                kind="binary",
-                                operator="greater_than",
-                                operands=[
-                                    dict(
-                                        id=str(uuid4()),
-                                        kind="reference",
-                                        target=dict(target=observed),
-                                    ),
-                                    dict(
-                                        id=str(uuid4()),
-                                        kind="quantity",
-                                        quantity=dict(magnitude=100, units="cm"),
-                                    ),
-                                ],
-                            ),
-                            actions=[action],
-                        )
-                    ],
-                    fallback=[action],
-                )
-            ],
-        )
-    )
-    model = Model.from_data(data=data)
-    result = evaluate(rules=rules, model=model, units=units)
-    assert result.evidence[0].rule == UUID(rule)
-    assert len(conversions) >= 2
-    assert all(
-        context is units and source == "cm" and target == "m"
-        for context, source, target in conversions
-    )
-    spec = specification(model=model.id, rules=rules)
+    specification = model.specify(name="Units").fix(observed="2 m", control=rule)
     store = MemoryStore()
-    for document in (model, spec):
-        store.put(document)
-    raw = dict(
-        metadata=dict(id=str(uuid4()), schema_version="1.0.0"),
-        specification=str(spec.id),
-        report=dict(
-            status=dict(
-                completion="completed", solution="feasible" if published else "unknown"
-            ),
-            runtime=dict(
-                implementations=[
-                    dict(kind="evaluator", name="unit-context-test", version="1")
-                ]
-            ),
-            decision_evidence=[item.to_data() for item in result.evidence],
-        ),
-    )
-    if published:
-        output = deepcopy(data)
-        output["metadata"] = dict(
-            id=str(uuid4()), previous=str(model.id), schema_version="1.0.0"
-        )
-        output["system"]["formulations"][0]["values"][1]["quantity"] = amount
-        output_model = Model.from_data(data=output)
-        store.put(output_model)
-        raw["outputs"] = [str(output_model.id)]
-    else:
-        raw["report"]["diagnostics"] = [
-            dict(
-                severity="info",
-                code="trace_only",
-                message="Rules evaluated without publication",
-            )
-        ]
-    run = Run.from_data(raw)
-    conversions.clear()
-    report = validate(run=run, resolver=store, units=units)
+    outcome = rk.execution.execute(specification=specification, store=store)
+    outcome.raise_for_status()
+    assert outcome["control"].number == 1
+    report = validate(run=outcome.run, resolver=store, units=units)
     assert report.valid, report.issues
     assert conversions and all(context is units for context, _, _ in conversions)

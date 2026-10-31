@@ -50,7 +50,6 @@ REQUIREMENTS = (
     "objectives",
     "settings",
     "rules",
-    "declared_rules",
     "path",
 )
 # The closed set of Specification fields comes from the schema slots.
@@ -164,12 +163,7 @@ def check_roles(document):
         not groups["assignments"] & groups["unknowns"],
         "assigned and unknown roles overlap",
     )
-    controls = [
-        reference_key(ref) for ref in (document.get("rules") or {}).get("targets", ())
-    ]
-    controls.extend(
-        reference_key(rule["target"]) for rule in document.get("declared_rules") or ()
-    )
+    controls = [reference_key(rule["target"]) for rule in document.get("rules") or ()]
     groups["rules"] = set(controls)
     require(len(controls) == len(groups["rules"]), "duplicate rule-controlled role")
     require(
@@ -300,9 +294,6 @@ def compose_specification(
         if doc.get("rules"):
             claim(("rules",), source, "/rules")
             effective["rules"] = deepcopy(doc["rules"])
-        if doc.get("declared_rules"):
-            claim(("declared_rules",), source, "/declared_rules")
-            effective["declared_rules"] = deepcopy(doc["declared_rules"])
         if doc.get("path"):
             claim(("path",), source, "/path")
             effective["path"] = deepcopy(doc["path"])

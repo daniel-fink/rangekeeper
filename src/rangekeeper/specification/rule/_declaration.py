@@ -2,7 +2,7 @@
 
 ``Window(...).where(condition=...).first(otherwise=...)`` returns a ``Rule``. It
 holds what the author writes, as text, so it needs no Model. ``fix`` then reads it
-against the pinned Model: ``declare`` makes the stored ``RuleDeclaration``, and
+against the pinned Model: ``declare`` makes the stored ``RuleRecord``, and
 ``rule_of`` makes a ``Rule`` from a stored record again. ``query_of`` gives the
 rule engine what it reads.
 """
@@ -30,9 +30,9 @@ from rangekeeper.schema.records import (
     Expression,
     Movement,
     Reference,
-    RuleDeclaration,
     Value,
 )
+from rangekeeper.schema.records import Rule as RuleRecord
 from rangekeeper.schema.runtime import UNSET, Unset
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
@@ -188,7 +188,7 @@ class Rules(Mapping[str, Rule]):
         return f"Rules({dict(self._rules)!r})"
 
 
-def declare(rule: Rule, *, target: Value, model: Model) -> RuleDeclaration:
+def declare(rule: Rule, *, target: Value, model: Model) -> RuleRecord:
     """Return the stored record of ``rule``, which decides ``target`` in ``model``.
 
     A name that the Model lacks raises EquationError. A target that is not a date
@@ -201,7 +201,7 @@ def declare(rule: Rule, *, target: Value, model: Model) -> RuleDeclaration:
             targets=(target.id,),
         )
     window = rule.window
-    return RuleDeclaration(
+    return RuleRecord(
         target=Reference(target=target.id),
         condition=_condition(rule.condition, model=model),
         otherwise=_literal(rule.otherwise, target=target, model=model),
@@ -217,7 +217,7 @@ def declare(rule: Rule, *, target: Value, model: Model) -> RuleDeclaration:
     )
 
 
-def query_of(record: RuleDeclaration) -> RuleQuery:
+def query_of(record: RuleRecord) -> RuleQuery:
     """Return what the rule engine reads from one stored rule."""
     return RuleQuery(
         target=record.target.target,
@@ -232,7 +232,7 @@ def query_of(record: RuleDeclaration) -> RuleQuery:
 
 
 def rule_of(
-    record: RuleDeclaration, *, model: Model, assignments: Sequence[Assignment] = ()
+    record: RuleRecord, *, model: Model, assignments: Sequence[Assignment] = ()
 ) -> Rule:
     """Return the Rule of one stored rule, with the fixed values that it reads.
 
@@ -267,7 +267,7 @@ def path_movements(model: Model) -> frozenset[UUID]:
 
 
 def check_declared(
-    declared: Sequence[RuleDeclaration],
+    declared: Sequence[RuleRecord],
     *,
     model: Model,
     fixed: Collection[UUID],
@@ -356,7 +356,7 @@ def _content(node: Expression) -> Quantity | date | Never:
 
 
 def _triggers(
-    record: RuleDeclaration, *, model: Model, assignments: Sequence[Assignment]
+    record: RuleRecord, *, model: Model, assignments: Sequence[Assignment]
 ) -> Mapping[str, RuleValue]:
     fixed = {item.target.target: item for item in assignments}
     reads = dict.fromkeys(read_targets(record.condition))
