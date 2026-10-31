@@ -326,8 +326,10 @@ it, and so does each Specification that a chained call returns. The `model` and
 pass it: `Specification(record=record, model=model)`; a record that pins another revision
 raises `ContractError` with the code `IDENTITY`. A Specification with includes also needs
 `Specification(record=record, model=model, resolver=store)`. The Model and resolver are
-not saved with the document. Inherited roles and rule-controlled targets must be
-edited at their owner. Composition is checked after each edit, and normal
+not saved with the document. A chained call keeps the resolver, but `on` does not:
+the new Specification has no includes or cases to load, and a resolver of the
+earlier revision does not hold the new Model. Inherited roles and
+rule-controlled targets must be edited at their owner. Composition is checked after each edit, and normal
 execution still performs full effective validation. Annual totals alone do not
 determine monthly allocations; an underdetermined investigation returns a
 feasible candidate with a rank diagnostic.
