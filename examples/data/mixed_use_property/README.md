@@ -49,6 +49,16 @@ The Rangekeeper code is licensed separately, under MPL-2.0.
   it, then update its manifest entry; `--check` compares the file with a new
   derivation.
 
+- `03_base_plan.model.json` and `03_base_case.specification.json` give the Model
+  of walkthrough lesson 03, with the commitments of its optional cell 21, and its
+  `funded` Specification on that Model. Lesson 04 loads them.
+  [`../derive_lesson_documents.py`](../derive_lesson_documents.py) derives them from
+  the cells of lesson 03 and `base_plan.json`. Run
+  `python examples/data/derive_lesson_documents.py` from the repository root to
+  recreate them, then update their manifest entries. Each derivation gives new
+  random IDs, so `--check` reads each ID as the order of its first use, and the
+  script keeps the files when only their IDs differ.
+
 Do not edit the source capture or the derived files by hand. A change to a file
 in this folder needs a matching change to its manifest entry. The test
 `tests/walkthrough/test_example_data.py` checks the manifest and the origins.

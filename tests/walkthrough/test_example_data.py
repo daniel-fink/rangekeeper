@@ -116,3 +116,31 @@ def test_the_totals_file_is_the_derivation_of_the_package():
     keys = {f"{use}_{item}" for use in derive_totals.RENTED for item in items}
     totals = load("totals_2032.json")["totals"]
     assert set(totals) == {"works_cost", "operating_cost", *keys}
+
+
+def test_the_documents_of_lesson_04_are_the_derivation_of_lesson_03():
+    # examples/data/derive_lesson_documents.py writes the files; --check compares them.
+    derive = derivation("derive_lesson_documents")
+    assert derive.main(["--check"]) == 0
+    assert derive.main(["--unknown"]) == 2
+
+
+def test_the_lesson_document_check_ignores_ids_and_finds_other_changes(tmp_path):
+    derive = derivation("derive_lesson_documents")
+    first = "11111111-1111-4111-8111-111111111111"
+    second = "22222222-2222-4222-8222-222222222222"
+    # The same IDs in the same order of first use give the same text.
+    assert derive.without_ids(f"{first} {second} {first}") == derive.without_ids(
+        f"{second} {first} {second}"
+    )
+    # Two IDs cannot become one.
+    assert derive.without_ids(f"{first} {first}") != derive.without_ids(
+        f"{first} {second}"
+    )
+    for name in derive.FILES:
+        text = (DATA / name).read_text(encoding="utf-8")
+        (tmp_path / name).write_text(text, encoding="utf-8")
+    assert derive.differing(tmp_path) == []
+    (name, *_) = derive.FILES
+    (tmp_path / name).write_text("{}", encoding="utf-8")
+    assert derive.differing(tmp_path) == [name]

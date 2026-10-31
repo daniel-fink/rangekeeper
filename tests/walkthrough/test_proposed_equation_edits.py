@@ -86,7 +86,7 @@ def test_lesson_04_cell_2_shows_the_equations_of_lesson_03(lesson_03):
     assert "<table>" in shown._repr_html_()
 
 
-def test_lesson_04_cells_3_and_3b_replace_two_rents_and_remove_the_growth(
+def test_lesson_04_cells_3_and_3b_replace_two_rents_and_remove_growth_and_irr(
     lesson_03, lesson_04
 ):
     replaced = lesson_04.equations.where(key=["income", "a_rent", "b_rent"])
@@ -98,10 +98,11 @@ def test_lesson_04_cells_3_and_3b_replace_two_rents_and_remove_the_growth(
     # Each equation keeps its key and its Formulation.
     assert {item.formulation for item in replaced} == {"Operations"}
     assert [item.key for item in lesson_04.equations] == [
-        item.key for item in lesson_03.equations
+        item.key for item in lesson_03.equations if item.key != "equity_irr"
     ]
-    with pytest.raises(rk.errors.MissingReferenceError):
-        lesson_04.value(key="rent_growth")
+    for removed in ("rent_growth", "equity_irr"):
+        with pytest.raises(rk.errors.MissingReferenceError):
+            lesson_04.value(key=removed)
     assert lesson_04.value(key="rent_index").kind is rk.model.ValueKind.FLOW
 
 

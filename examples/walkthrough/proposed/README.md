@@ -12,10 +12,11 @@ cannot support a cell is a gap, filed under
 These files are not notebooks and do not run. The lessons
 ([#203](https://github.com/daniel-fink/rangekeeper/issues/203)–[#208](https://github.com/daniel-fink/rangekeeper/issues/208),
 [#244](https://github.com/daniel-fink/rangekeeper/issues/244)) are authored from them
-when the library work lands. Lessons 01, 02 and 03 are authored: their notebooks run
-the cells of [01_basic_dcf.md](01_basic_dcf.md),
-[02_front_door_back_door.md](02_front_door_back_door.md) and
-[03_cases_debt_equity.md](03_cases_debt_equity.md). Each file lists where its
+when the library work lands. Lessons 01, 02, 03 and 04 are authored: their notebooks
+run the cells of [01_basic_dcf.md](01_basic_dcf.md),
+[02_front_door_back_door.md](02_front_door_back_door.md),
+[03_cases_debt_equity.md](03_cases_debt_equity.md) and
+[04_market_futures.md](04_market_futures.md). Each file lists where its
 cells differ from the first proposal. In lesson 02, the `rx` aside
 ([#309](https://github.com/daniel-fink/rangekeeper/issues/309)) is prose in the
 notebook, and no infeasible diagnostic names the equations that disagree yet (cell
@@ -467,7 +468,9 @@ Not filed as gaps:
   `show_equations(of=)` and `show_geometry(name=)` to the
   [walkthrough helpers](../helpers/README.md), and lesson 03 added
   `load_base_plan`, `show_timeline(of=)`, `plot_cash_flows(outcome=, key=)` and
-  `plot_flows(outcome=, keys=)`. `load_base_plan` only loads a derived file,
+  `plot_flows(outcome=, keys=)`. Lesson 04 added `data_path(name=)`,
+  `plot_paths(paths=)`, `plot_target_curve(outcomes=, key=, markers=)` and
+  `plot_flows(flows=)`. `load_base_plan` only loads a derived file,
   `base_plan.json`, which
   [`derive_base_plan.py`](../../data/derive_base_plan.py) derives. `load_property` only loads: the
   data package holds the totals as a derived file, `totals_2032.json`, with a
@@ -514,6 +517,12 @@ These are inputs for authoring, not API gaps:
 - The data package maps the source relationship names to one snake_case name each:
   `spatiallyContains` becomes `contains`, and `servedBy` becomes `serves` read in the
   other direction (D29).
+- Lesson 04 loads two documents. [`derive_lesson_documents.py`](../../data/derive_lesson_documents.py)
+  derives `03_base_plan.model.json` and `03_base_case.specification.json` from the
+  cells of lesson 03, and a test runs its `--check`. They have random IDs until the
+  namespace contract ([#147](https://github.com/daniel-fink/rangekeeper/issues/147)),
+  so the check reads each ID as the order of its first use. The `04_*` documents do
+  not exist yet; lesson 05's work adds them.
 - CI writes the documents that later lessons load from the cells of earlier lessons,
   with a namespace, and checks that they do not change: `02_feasibility.model.json`,
   `02_back_door.specification.json`, `03_base_case.specification.json` (lesson 03's

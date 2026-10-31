@@ -5,7 +5,7 @@ from urllib.request import urlopen
 
 import plotly.graph_objects as go
 import pytest
-from helpers import load_base_plan, load_property, plot, theme
+from helpers import data_path, load_base_plan, load_property, plot, theme
 from IPython.display import IFrame
 
 import rangekeeper as rk
@@ -87,6 +87,81 @@ def test_plot_cash_flows_and_plot_flows_draw_flows_of_an_outcome(workdir):
     assert isinstance(lines, IFrame)
     page = (workdir / "lines.html").read_text()
     assert "works" in page and "paid" in page
+
+
+YEARS = rk.duration.Span(start=date(2027, 1, 1), end=date(2030, 1, 1)).periods(
+    frequency=rk.duration.Frequency.YEAR
+)
+
+
+def market_paths(*names):
+    """Return two generated market paths with these series."""
+    dynamics = rk.market.Dynamics(trend="2 % pa", volatility="5 % pa")
+    return rk.market.generate(
+        dynamics=dict.fromkeys(names, dynamics), periods=YEARS, seed=1, count=2
+    )
+
+
+def test_data_path_gives_a_file_of_the_data_package():
+    assert data_path(name="base_plan.json").is_file()
+    with pytest.raises(ValueError, match="no file 'missing.json'"):
+        data_path(name="missing.json")
+
+
+def test_plot_flows_draws_labelled_flows_and_needs_one_source(workdir):
+    flow = Flow.from_events(
+        dates=[date(2027, 12, 31), date(2028, 12, 31)],
+        magnitudes=[1.0, 2.0],
+        units="AUD",
+    )
+    frame = plot.plot_flows(flows={"Hotel": flow}, path="labelled.html")
+    assert isinstance(frame, IFrame)
+    assert "Hotel" in (workdir / "labelled.html").read_text()
+    both = {"flows": {"Hotel": flow}, "outcome": object(), "keys": ["works"]}
+    for arguments in ({}, {"keys": ["works"]}, both):
+        with pytest.raises(ValueError, match="outcome and keys, or flows"):
+            plot.plot_flows(**arguments)
+
+
+def test_plot_paths_draws_each_series_of_each_path_in_its_own_file(workdir):
+    one = market_paths("rent_index")
+    frame = plot.plot_paths(paths=one)
+    assert isinstance(frame, IFrame)
+    page = (workdir / "output" / f"paths-{one.id}.html").read_text()
+    assert all(key in page for key in one.keys)
+    two = market_paths("market_index", "hotel_factor")
+    plot.plot_paths(paths=two)
+    page = (workdir / "output" / f"paths-{two.id}.html").read_text()
+    assert f"{two.keys[0]}: hotel_factor" in page
+
+
+def test_plot_target_curve_draws_a_batch_and_checks_the_marker_units(workdir):
+    draft = rk.Model(name="Drawn").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.value(key="rent", units="AUD")
+    project.flow(key="rent_index", units="ratio", periods=YEARS)
+    project.equations("income = rent_index * rent", "total_income = income.total()")
+    specification = draft.commit().specify(name="Drawn").fix(rent="10 AUD")
+    outcomes = rk.execution.solve(
+        specification=specification.across(paths=market_paths("rent_index"))
+    )
+    frame = plot.plot_target_curve(
+        outcomes=outcomes,
+        key="total_income",
+        markers={"Middle": rk.Quantity(text="20 AUD")},
+        path="curve.html",
+    )
+    assert isinstance(frame, IFrame)
+    page = (workdir / "curve.html").read_text()
+    assert "Target curve of total_income, 2 market paths" in page
+    assert "Middle" in page
+    with pytest.raises(ValueError, match="must have the units"):
+        plot.plot_target_curve(
+            outcomes=outcomes,
+            key="total_income",
+            markers={"Ratio": rk.Quantity(text="1 ratio")},
+            path="wrong.html",
+        )
 
 
 def test_show_sunburst_labels_entities_and_keeps_uuid_identities(workdir, tree):
