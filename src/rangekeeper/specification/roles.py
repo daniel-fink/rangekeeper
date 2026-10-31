@@ -12,6 +12,7 @@ from rangekeeper.schema.records import (
     Constraint,
     Expression,
     Movement,
+    Reference,
     Value,
 )
 from rangekeeper.schema.records import Specification as SpecificationRecord
@@ -96,6 +97,13 @@ def in_model_order(model: "Model", targets) -> tuple:
     )
 
 
+def decided_targets(record: SpecificationRecord) -> tuple[Reference, ...]:
+    """Return the targets that the rules of ``record`` decide, in their order."""
+    dated = record.rules.targets if record.rules is not None else ()
+    declared = tuple(rule.target for rule in record.declared_rules or ())
+    return (*dated, *declared)
+
+
 def role_table(
     model: "Model",
     record: SpecificationRecord,
@@ -112,9 +120,8 @@ def role_table(
         roles[assignment.target.target] = (Role.FIXED, fixed_content(assignment))
     for reference in record.unknowns or ():
         roles[reference.target] = (Role.FREE, None)
-    if record.rules is not None:
-        for reference in record.rules.targets:
-            roles[reference.target] = (Role.DECIDED, None)
+    for reference in decided_targets(record):
+        roles[reference.target] = (Role.DECIDED, None)
     rows = []
     for identity in in_model_order(model, roles):
         role, quantity = roles[identity]

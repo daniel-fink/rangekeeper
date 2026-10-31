@@ -33,7 +33,7 @@ from rangekeeper.run._rule.availability import path_amounts, path_known
 from rangekeeper.run._rule.result import DecisionResult
 from rangekeeper.run._rule.trace import Check, Reading, TraceFacts, check_trace
 from rangekeeper.schema.records import Expression, ExpressionKind
-from rangekeeper.specification.rule._query import RuleQuery, parse_text
+from rangekeeper.specification.rule._query import RuleQuery, parse_condition_text
 from tests.execution.rule.test_sequential_verification import PARAMETERS, attempts
 
 NEVER = rk.duration.NEVER
@@ -102,7 +102,7 @@ def rule(model, key, condition, **fields) -> RuleQuery:
     fields.setdefault("otherwise", NEVER)
     return RuleQuery(
         target=model.value(key=key).id,
-        condition=parse_text(text=condition, model=model),
+        condition=parse_condition_text(text=condition, model=model),
         **fields,
     )
 
@@ -235,10 +235,10 @@ def test_an_undecided_latest_keeps_the_window_open():
     ("condition", "truth", "result"),
     [
         ("first != NEVER", None, NOT_MET),
-        ("not (first = NEVER)", None, NOT_MET),
-        ("rent_index >= 0 and (first = NEVER)", None, NOT_MET),
-        ("rent_index >= 2 and (first = NEVER)", False, NOT_MET),
-        ("rent_index >= 0 or (first = NEVER)", True, DECIDED),
+        ("not (first == NEVER)", None, NOT_MET),
+        ("rent_index >= 0 and (first == NEVER)", None, NOT_MET),
+        ("rent_index >= 2 and (first == NEVER)", False, NOT_MET),
+        ("rent_index >= 0 or (first == NEVER)", True, DECIDED),
     ],
 )
 def test_a_reference_to_an_undecided_value_is_unknown(condition, truth, result):
@@ -358,7 +358,7 @@ def test_a_condition_on_a_later_rule_raises_rule_order():
     with pytest.raises(ContractError) as raised:
         run(
             model,
-            rule(model, "second", "first = NEVER"),
+            rule(model, "second", "first == NEVER"),
             rule(model, "first", "rent_index >= 1"),
         )
     assert raised.value.code is Code.RULE_ORDER
@@ -367,7 +367,7 @@ def test_a_condition_on_a_later_rule_raises_rule_order():
 def test_a_condition_on_its_own_value_raises_rule_order():
     model = small_model()
     with pytest.raises(ContractError) as raised:
-        run(model, rule(model, "first", "first = NEVER", latest=on(date(2030, 1, 1))))
+        run(model, rule(model, "first", "first == NEVER", latest=on(date(2030, 1, 1))))
     assert raised.value.code is Code.RULE_ORDER
 
 
@@ -394,7 +394,7 @@ def test_a_condition_on_a_free_input_raises_rule_reads_unknown():
 def test_a_rule_gives_the_kind_of_value_that_its_value_holds():
     model = small_model()
     level = model.value(key="level").id
-    condition = parse_text(text="rent_index >= 1", model=model)
+    condition = parse_condition_text(text="rent_index >= 1", model=model)
     for declared in (
         RuleQuery(target=level, condition=condition, otherwise=NEVER),
         RuleQuery(target=level, condition=condition, otherwise=_ratio(1)),
@@ -499,7 +499,7 @@ def test_decided_values_that_no_equation_reads_reach_the_candidate():
     model = small_model()
     level = RuleQuery(
         target=model.value(key="level").id,
-        condition=parse_text(text="rent_index >= 1.20", model=model),
+        condition=parse_condition_text(text="rent_index >= 1.20", model=model),
         then=_ratio(3),
         otherwise=_ratio(1),
     )
@@ -518,7 +518,7 @@ def test_a_decided_quantity_is_a_fixed_value_in_the_final_solve():
     model = small_model("doubled = level * 2")
     level = RuleQuery(
         target=model.value(key="level").id,
-        condition=parse_text(text="rent_index >= 1.20", model=model),
+        condition=parse_condition_text(text="rent_index >= 1.20", model=model),
         then=rk.Quantity(magnitude=3, units="ratio"),
         otherwise=rk.Quantity(magnitude=1, units="ratio"),
     )
@@ -686,7 +686,7 @@ def test_a_candidate_with_other_path_data_fails_the_trace_check(traced):
 
 
 def _text(model: rk.Model, source: str) -> Expression:
-    return parse_text(text=source, model=model)
+    return parse_condition_text(text=source, model=model)
 
 
 def _ratio(number: float) -> rk.Quantity:

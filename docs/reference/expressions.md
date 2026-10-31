@@ -77,7 +77,9 @@ Equation text is the Python form of an equation inside a string, with four
 changes ([ADR-015](../decisions/015-authoring.md),
 [D32](../../examples/walkthrough/proposed/README.md#decisions)):
 
-- `=` is equality. Python's `==` is an error that suggests `=`.
+- `=` is equality. Python's `==` is an error that suggests `=`. A
+  [rule's condition](market-paths-and-rules.md#declare-a-rule) is the reverse: `=`
+  states an equation and `==` tests a value, so a condition writes `==`.
 - `and`, `or` and `not` are the logical operators. `&`, `|` and `~` are errors
   that suggest them; `^` suggests `**`.
 - A number followed by unit words is a quantity literal, with no quotes.

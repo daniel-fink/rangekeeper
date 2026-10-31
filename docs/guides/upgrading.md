@@ -268,6 +268,19 @@ scenario availability evidence is gone.
 takes one market path as data: `author(parameters, factors=, cap_rates=)`
 replaces `author(parameters, scenario=)`.
 
+### Rules as queries
+
+A Specification declares its rules as queries:
+`rk.specification.Window(...).where(condition=...).first(otherwise=...)`, fixed with
+`fix(key=rule)` ([declare a rule](../reference/market-paths-and-rules.md#declare-a-rule)).
+A condition writes equality with `==`, and equation text keeps `=`.
+`rk.Specification.rules` gives the rules by key. This does not change what `solve`
+does for a Specification without these rules. `Specification.declared_rules` is a new
+optional field, and the Bundle slot map changes with it. The dated `RuleSet` slice is
+still there, and a later step of
+[#300](https://github.com/daniel-fink/rangekeeper/issues/300) removes it.
+`rk.duration.PeriodTiming` keeps its members, and is now generated from the schema.
+
 ### Rule failures
 
 `rk.errors` has two new errors, `AvailabilityError` and `DecisionError`, and

@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "72d6f86ff6aeec43bf6b5b31407c97278ed1748d89ba91a658d8220038a65f0f",
-    "enums.py": "d3accef130020fb6f1a96cf2350b22f26865659a6b5bac694ee8a60a0e5148a2",
-    "records.py": "b7a2ce4fc1a4c6e04120cbf9b242226b48d4f75bfa1bcf077cda2c1d11887664",
-    "schema.json": "11a5d3e1a309b675cecb34df1c6c55894f15431c505b769d068a7c6cf30402fb",
-    "slots.json": "daa48ee6e8245e5ddd1f713b446ff5c8912d4f21dceb9db6627fcc0599e357cb"
+    "checks.py": "364d499822fb97339dc5e77092f414d98cb4e325aaf70dd30f29ac738597142e",
+    "enums.py": "63692657ce00983963c40c3930a2d8d1aca8d9e9e1f983a898c9f629463d08f1",
+    "records.py": "15fd9e2e106833487400d8122d7dfd12f0b18b7bfc2a3f2ffec06225479b67cf",
+    "schema.json": "0b81962dc5dd3ea762a6c2f1bd99555fe50cff280dac3ee8ab931d1084cef029",
+    "slots.json": "17485c8cd1adf48c323db98efc79dc1d35d04867039fa5aea372a0a02a83e64f"
   },
   "classes": [
     "Action",
@@ -71,6 +71,7 @@
     "Relationship",
     "Report",
     "Rule",
+    "RuleDeclaration",
     "RuleEvidence",
     "RuleSet",
     "Run",
@@ -116,7 +117,7 @@
     "schema/content.yaml": "aaafe5b92a75f288b2c66a3686c60f41c391e0ab6ac4897521fce1c84abaaeb9",
     "schema/definitions.yaml": "31e528ef991f92aa1ce8afea4ec32f2160a03860e8d20a2328560e3f476bde85",
     "schema/distribution.yaml": "8209974aecf07c27f26e1e9bb8fdef34e5b939802d9c495c7ac66d01ec7c16c4",
-    "schema/duration.yaml": "e4d947b8b9d4e37b147e4a6c0963a0e07851f8537cd2535f2eda6dbfe367e9c2",
+    "schema/duration.yaml": "cc9c345ffd352966dc426b293a1ab3bc888410306a67d2f18e1cd1d0e292f411",
     "schema/entity.yaml": "956f005a80a6bcaa58bfd32896cb8e41e4c696dfa3ae02626b949a78a8dde7ae",
     "schema/expression.yaml": "012e2abe86d801c01210bfc75b5bf1520a52878395b66d5c73be91211e48f036",
     "schema/flow.yaml": "445b1b8fea26c26a145de32a70c7b4c312cf419090d3077c1c4251b3fedeaf95",
@@ -130,10 +131,10 @@
     "schema/query.yaml": "a7aaed8586e6b5fdbaabffa15cf4d3f1df7e759eb2cdd3bce4414f75b0ea1a10",
     "schema/reference.yaml": "8d01f4dc6dce689d1a79c4c4c026545434b8f0b8bd37e19c9bba93fccc92f023",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
-    "schema/rule.yaml": "c8c85bcb173b90946556b54335cc59d7ea7b627000f7df61d313c3769b42ea67",
+    "schema/rule.yaml": "a6efe40387cc253319bd238a515632b5fb13ca9ca4e7a483827b7afb32046325",
     "schema/run.yaml": "8524646aa6ff93789530f283ab6d937aac59cce60cdde2e55864b07aced1cb58",
     "schema/settings.yaml": "33b976592d1f15197791e08f1b4c6fa418738a60e77ecc13b955ac94a8396248",
-    "schema/specification.yaml": "7721b2666cc914450db1f745449537d321be5fce7e2006e67d4f7357c736dc30",
+    "schema/specification.yaml": "b4b78cb48f1920a3079b4800af70c941f5ec8e3402247b9df905bd33cc81a765",
     "tools/schema/bundle.yaml": "b40e8c01d8367d9bc274d2512ab462f056170c06a7f7ad62e3cfac01902afc4d",
     "tools/schema/generate.py": "53bafe1468ae417da4cdcd728fcbe4390d5ca944950ec498550e6449b9270955",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"

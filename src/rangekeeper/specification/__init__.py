@@ -14,6 +14,10 @@ from rangekeeper.schema.records import (
 )
 from rangekeeper.specification.composition import Composition as Composition
 from rangekeeper.specification.roles import Role as Role
+from rangekeeper.specification.rule._declaration import Rule as Rule
+from rangekeeper.specification.rule._declaration import Rules as Rules
+from rangekeeper.specification.rule._declaration import Where as Where
+from rangekeeper.specification.rule._declaration import Window as Window
 from rangekeeper.specification.specification import Specification as Specification
 
 __all__ = [
@@ -24,6 +28,10 @@ __all__ = [
     "Settings",
     "Composition",
     "Role",
+    "Rule",
+    "Rules",
+    "Where",
+    "Window",
 ]
 
 from rangekeeper.schema.enums import ObjectiveKind

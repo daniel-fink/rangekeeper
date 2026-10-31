@@ -5,11 +5,67 @@ prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
 imports:
+- duration
 - expression
 - reference
 default_prefix: rk
 default_range: string
 classes:
+  RuleDeclaration:
+    description: One rule as a query over a window of dates. On each path it fixes one value on the first window date
+      on which its condition holds, or fixes otherwise.
+    notes:
+    - The order of the rules in their list is the order in which they run. The target identifies a rule; a Specification
+      has one rule for a target.
+    - A rule is a declaration only. It reads no solved amount until the rules stage runs. The decided value is a fixed
+      value in the affine problem, so the problem never contains a rule (ADR-021).
+    - Without periods, a window date is each date on which a Flow that the condition reads gets a known amount. With
+      periods, a window date is the timing day of each Period.
+    attributes:
+      target:
+        description: The Value that the rule decides, a date Value or a scalar measurement Value.
+        range: Reference
+        required: true
+        inlined: true
+      condition:
+        description: Boolean Expression that the rule tests on each window date. It reads Values, parameters and the
+          values of earlier rules.
+        range: Expression
+        required: true
+        inlined: true
+      otherwise:
+        description: Literal Expression that the target takes when no window date meets the condition, a quantity,
+          a date or NEVER.
+        range: Expression
+        required: true
+        inlined: true
+      then:
+        description: Literal Expression that the target takes when the condition holds. Absent or null means the
+          window date itself, which fits a date Value only.
+        range: Expression
+        inlined: true
+      earliest:
+        description: Inclusive first bound of the window, a date Expression. An Expression that reads an undecided
+          value keeps the window closed. Absent or null means no bound.
+        range: Expression
+        inlined: true
+      latest:
+        description: Inclusive last bound of the window, a date Expression. An Expression that reads an undecided value
+          keeps the window open. Absent or null means no bound.
+        range: Expression
+        inlined: true
+      periods:
+        description: Nonempty ordered Periods that give the calendar of the window. Absent or null means that the
+          window acts when a value that the condition reads becomes known.
+        range: Period
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      timing:
+        description: The day of each Period that is its window date. Absent or null means the first day. It needs
+          periods.
+        range: PeriodTiming
   ObservationBinding:
     description: An explicit observation target. An optional date may delay availability but cannot advance it.
     attributes:

@@ -21,6 +21,7 @@ from rangekeeper.schema.records import (
     RuleEvidence,
     Value,
 )
+from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.specification import Composition
@@ -173,6 +174,7 @@ def bind_roles(
     ]
     rule_evidence: tuple[RuleEvidence, ...] = ()
     rule_assignments: tuple[Assignment, ...] = ()
+    _refuse_declared_rules(requirements)
     if requirements.rules is not None:
         unknown_tokens = {ref.target for ref in requirements.unknowns or ()}
         if any(
@@ -239,6 +241,14 @@ def bind_roles(
         dates=MappingProxyType(dates),
         date_unknowns=tuple(id for id in free if id in dated),
     )
+
+
+def _refuse_declared_rules(requirements: SpecificationRecord) -> None:
+    """Raise UnsupportedError for rules: the solve does not run them yet (#300)."""
+    if requirements.declared_rules:
+        raise UnsupportedError(
+            "rk.execution.solve does not run a Specification's rules yet (#300)"
+        )
 
 
 def _supplied_date(item: Assignment) -> DateValue | None:
