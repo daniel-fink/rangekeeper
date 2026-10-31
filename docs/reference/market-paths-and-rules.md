@@ -42,10 +42,15 @@ See [calendar contracts](calculations.md).
 | `market.validation` | The checks of a `Paths` document |
 | `specification.rule` | Generated declarations and evidence |
 | `specification.rule.validation` | Rule declaration checks |
+| `specification.rule._query` | The declaration of a sequential rule, `RuleQuery`, and the checks that need no solve (internal) |
 | `execution.rule` | `evaluate`, `observe` and derived results |
+| `execution.rule.sequence` | Sequential evaluation: `run_rules` returns `Decisions` for one case (internal) |
+| `execution.rule.provisional` | One provisional solve, with the current decided values fixed (internal) |
 | `run._rule.availability` | Pure date rule, shared by runtime observation and stored-evidence checks |
 | `run._rule.predicate` | Exact Boolean truth and short-circuiting; arithmetic uses the shared evaluator |
-| `run._rule.evidence` | Independent stored-evidence checks (the trace check) |
+| `run._rule.truth` | The truth of a sequential condition: true, false or unknown |
+| `run._rule.evidence` | Independent stored-evidence checks of the dated rule slice |
+| `run._rule.trace` | The records of a decision trace, and its independent check (`check_trace`) |
 | `rangekeeper_examples.investment` | The model-specific resale rules and investment author/formulate/specify/report operations |
 
 Builders return immutable declarations. They do not solve or read recorded amounts
@@ -69,7 +74,8 @@ backend never infer assignments from stored amounts.
 | Strict comparison of fixed or literal operands | Exact check before solving and again during independent acceptance |
 | Strict comparison involving an unknown | Rejected before simplification, even when terms cancel |
 | Finite exogenous rules | Evaluate once before compilation, then use explicit control assignments |
-| Endogenous sequential rules or multistage optimization | Capability rejection |
+| Sequential rules that read solved values | The internal rule engine ([below](#sequential-rule-evaluation)). `Specification` cannot declare them until #300 |
+| Multistage optimization | Capability rejection |
 
 Discounting begins at exponent one by default; growth starts at the initial amount.
 Rates are per declared step. Builders do not infer annualization. `growth.linear`
@@ -260,6 +266,83 @@ remains recorded. These economic roles belong to the investment example.
 
 See [migration](../guides/upgrading.md), [record methods](records.md), and
 [verification](../contributing/verification.md) for repeatable checks and their external limits.
+
+## Sequential rule evaluation
+
+[ADR-021](../decisions/021-sequential-decisions.md) decides each value of a rule
+during the solve, on each path by itself. The engine is in place and verified
+([#215](https://github.com/daniel-fink/rangekeeper/issues/215)). It is internal:
+the public queries and their stored fields come with
+[#300](https://github.com/daniel-fink/rangekeeper/issues/300), and the parameters
+of rules with [#301](https://github.com/daniel-fink/rangekeeper/issues/301). Until
+then `rk.execution.solve` runs no sequential rule. The dated slice above stays in
+place.
+
+`execution.rule.sequence.run_rules(binding=, rules=, solver=, parameters=None,
+paths=None)` takes one bound case, with each decided value free. It returns
+`Decisions`: the decided values with their decision dates, the trace and the number
+of provisional solves. `Decisions.bind(binding)` fixes the decided values, so the
+later stages solve one affine problem that contains no rule.
+
+### The dates of a rule
+
+| Rule | Window dates | Date on which it takes `otherwise` |
+| --- | --- | --- |
+| With `periods` | The `timing` day of each Period | The first date processed after `latest` or, at the latest, the end of the last Period |
+| Without `periods`, reads a Flow | Each date on which an amount of the Flow is known: the end of its Period plus the lag | The next date of this calendar after `latest`. A calendar that ends takes `otherwise` on its last date, after the rules of that date |
+| Without `periods`, reads no Flow | Its `earliest` and `latest` dates, and the decision date of a value that it reads | Its last date, after the rules of that date |
+
+Every rule also takes `otherwise` on any date that is processed after its `latest`
+bound, and when its `earliest` bound becomes `NEVER`. A window date outside a
+literal bound has no record. A window date outside a bound that is an expression,
+or a bound that reads an undecided value, gives the result `SKIPPED`.
+
+A path that starts in 2027 has no amount that is known before 2028-01-01. So a yearly
+rule on it has no window date on 2027-01-01, and its first check reads 2027 on
+2028-01-01. To check on 2027-01-01, give the path the Period of 2026.
+
+### What a rule reads
+
+Availability follows [ADR-021](../decisions/021-sequential-decisions.md#what-a-rule-can-observe).
+A condition reads Values, parameters and `flow.shift(by=)`. Another call in a
+condition raises `UnsupportedError`.
+
+- A direct reference to an undecided value is unknown. So is a date that the date
+  equations determine only from undecided dates. `False and unknown` is false,
+  `True or unknown` is true, and any other expression that reads an unknown is
+  unknown. Only a true condition fixes the value.
+- A rule reads every value of its condition on each check, also when `and` or `or`
+  could decide without it. So an unavailable value always fails the case.
+- A Flow that no path fixes is known at the end of its Period. A fixed Flow
+  follows the same date.
+
+### Failures
+
+Each failure below ends one case. `Attempt` gives it a Run with the status
+`FAILED`.
+
+| Error | Code | When |
+| --- | --- | --- |
+| `AvailabilityError` | `observation_unavailable` | A shift to a later Movement, before any date; a value that is not known on the window date. `key` is the decided value; `available_on` and `decision_date` are the dates, when they exist |
+| `ContractError` | `rule_order` | A condition reads its own value or a later rule's value, or a scalar that depends on one. A Flow can depend on one |
+| `ContractError` | `rule_reads_unknown` | A condition depends on a Value that no equation defines and the case does not fix |
+| `ContractError` | `rule_capability` | A rule gives another kind of value than its Value holds, a value with two rules, or a rule with no window date |
+| `DecisionError` | `decision_changes_past` | A decision determines a date before its decision date, such as `marketing_start = b_start - 6 months`, or a later solution changes a Movement of a Period that ended before a decision. `values` name the decision and the date or Movement |
+| `DecisionError` | `provisional_infeasible` | The provisional problem is infeasible. `values["constraints"]` gives the date constraints that the decisions break |
+| `DecisionError` | `rule_trace` | `check_trace` rejects the trace |
+
+The `ContractError` rows raise out of the stage: #300 reports them when the
+Specification is made.
+
+### The trace check
+
+`run._rule.trace.check_trace(rules=, checks=, facts=)` is the independent check of
+one trace. It reads only the declarations, the recorded readings, the path data and
+the candidate. So it can run on a stored Run, without a solve. It checks the date
+order and the written order; the bounds; each reading against the path, the
+candidate and its availability date; each condition against its readings; the first
+true window date, or `otherwise` on a date that the window allows; that no window
+date of the calendar is missing; and that the candidate holds each decided value.
 
 ## Market path vocabulary
 

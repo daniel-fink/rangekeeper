@@ -268,6 +268,15 @@ scenario availability evidence is gone.
 takes one market path as data: `author(parameters, factors=, cap_rates=)`
 replaces `author(parameters, scenario=)`.
 
+### Rule failures
+
+`rk.errors` has two new errors, `AvailabilityError` and `DecisionError`, and
+`rk.errors.Code` has the codes `rule_order`, `rule_reads_unknown`,
+`observation_unavailable`, `decision_changes_past`, `provisional_infeasible` and
+`rule_trace` ([sequential rules](../reference/market-paths-and-rules.md#failures)).
+Code that matches every value of `Code` must add them. `rk.execution.DecisionResult`
+keeps its name. Its members and `of` do not change.
+
 ## Upgrade from 1.0.0a1 to 1.0.0a2
 
 Release 1.0.0a2 moves the modules into the 1.0 layers, applies the glossary names

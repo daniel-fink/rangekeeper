@@ -1,10 +1,12 @@
 # ADR-021: Decide values by rules over market paths
 
-Status: accepted for 1.0; implementation pending. Recorded: 2026-10-27. Amended
-2026-10-27 by #201 decisions D2, D25 and D26 (`Periods`, `NEVER`, the equity-first
-funding names), 2026-10-28 by decisions D41 (rules, not policies) and D42 (a rule
-is a query over a window), and 2026-10-28 by #102 (the shared rule semantics are in
-`run`).
+Status: accepted for 1.0; the evaluation engine is implemented and verified (#215),
+and the public queries, stored records and Outcome API are pending (#300, #301).
+Recorded: 2026-10-27. Amended 2026-10-27 by #201 decisions D2, D25 and D26 (`Periods`,
+`NEVER`, the equity-first funding names), 2026-10-28 by decisions D41 (rules, not
+policies) and D42 (a rule is a query over a window), 2026-10-28 by #102 (the shared
+rule semantics are in `run`), and 2026-10-31 by #215 (see
+[how #215 reads the evaluation order](#how-215-reads-the-evaluation-order)).
 
 ## Problem
 
@@ -172,6 +174,25 @@ the date after each rule's last window date, in date order:
    date. (A Model has no timeline of its own, decision D20 of #201.)
 7. **Finally,** the executor solves once with every decided value fixed. Then it
    makes the candidate, verifies it and assembles the Outcome.
+
+#### How #215 reads the evaluation order
+
+The text above leaves these points open. The engine reads them as follows, because
+each reading agrees with the worked examples below:
+
+- **"The date after each rule's last window date"** is the next date of the rule's
+  calendar, not the next day. So B's rule in cell 11, with `latest` 2032-01-01, takes
+  `otherwise` on 2033-01-01. **"Has now passed"** in step 5 means that the bound is
+  before the date, or that the calendar has no later date.
+- **A rule that reads no Flow** has its `earliest` and `latest` dates as its calendar,
+  with the decision date of a value that it reads. Cell 11's sale rule needs this.
+- **Cell 6's first check.** A window date without `periods` is a date on which a value
+  becomes known. So a path with no 2026 Period has no window date on 2027-01-01: the
+  first check is on 2028-01-01, and it does not fail. `observation_unavailable` at run
+  time comes from a calendar set with `periods=`, or a shift before the first Movement.
+- **A date that only date equations determine** is unknown while it reads an undecided
+  value, as a bound is. `decision_changes_past` also covers a date that a decision
+  determines before its decision date: this meets acceptance 5 with no solve, on a rule set that reads only path values.
 
 **Decisions do not change the past.** A decision on a date must not change a
 Movement before that date. The executor compares each new provisional solution, and

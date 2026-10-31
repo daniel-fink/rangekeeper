@@ -12,8 +12,10 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import (
     AmbiguousReferenceError,
     AttemptDeadlineError,
+    AvailabilityError,
     BackendUnavailableError,
     ContractError,
+    DecisionError,
     DecodeError,
     EncodingError,
     EquationError,
@@ -37,9 +39,11 @@ from rangekeeper.shared.errors import (
 __all__ = [
     "AmbiguousReferenceError",
     "AttemptDeadlineError",
+    "AvailabilityError",
     "BackendUnavailableError",
     "Code",
     "ContractError",
+    "DecisionError",
     "DecodeError",
     "EncodingError",
     "EquationError",
