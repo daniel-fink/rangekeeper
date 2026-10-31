@@ -116,7 +116,9 @@ def test_lesson_03_cell_24_checks_a_target_npv_with_quantity_text():
     lines = [
         line
         for line in cell.splitlines()
-        if line.startswith(("cash =", "target_npv =", "assert rk.quantity.isclose"))
+        if line.startswith(
+            ("cash =", "target_npv =", "assert rk.quantity.isclose(actual=target_npv")
+        )
     ]
     assert len(lines) == 3
     periods = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=2)
