@@ -7,7 +7,6 @@ The labels and use colours below follow the continuing mixed-use example.
 
 import json
 import re
-from datetime import date
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -15,10 +14,12 @@ import plotly.graph_objects as go
 from IPython.display import IFrame
 
 import rangekeeper as rk
+from rangekeeper.duration import PeriodTiming
 from rangekeeper.errors import MissingReferenceError
 from rangekeeper.model.content import decode
 
-from .chart import plot_flows, plot_partition
+from . import chart
+from .chart import plot_partition
 from .graph import graph_html
 from .local import LocalDisplay
 from .theme import CONFIG, FONT, MODES, PACKAGE_COLORS, USE_COLORS, apply_theme
@@ -114,7 +115,7 @@ def show_plot(figure, *, path=None):
 
 def show_flows(*, flows, title="", timing=None, path=None):
     """Plot named Flows with explicit timing; presentation stays outside the lesson."""
-    figure = plot_flows(flows=flows, title=title, timing=timing)
+    figure = chart.plot_flows(flows, title=title, timing=timing)
     dates = sorted({day for trace in figure.data for day in trace.x})
     if dates and len({(day.month, day.day) for day in dates}) == 1:
         # Put annual labels on the actual observation dates. Automatic January
@@ -200,18 +201,17 @@ def show_sunburst(
     return show_plot(figure, path=path)
 
 
-def show_timeline(*, phases, path):
-    """Display supplied construction/opening dates without selecting a plan."""
+def show_timeline(*, of, path=None):
+    """Draw the start and the opening of each package of a plan, as the plan gives them."""
     figure = go.Figure()
-    for phase in phases:
-        start, end = (date.fromisoformat(phase[k]) for k in ("start", "open"))
+    for phase in of.phases:
         figure.add_trace(
             go.Scatter(
-                x=[start, end],
-                y=[phase["name"]] * 2,
+                x=[phase.start, phase.open],
+                y=[phase.name] * 2,
                 mode="lines+markers",
-                name=phase["name"],
-                line=dict(width=12, color=PACKAGE_COLORS.get(phase["name"], "#999999")),
+                name=phase.name,
+                line=dict(width=12, color=PACKAGE_COLORS.get(phase.name, "#999999")),
                 marker=dict(size=12, symbol=["square", "diamond"]),
                 hovertemplate="%{y}<br>%{x|%d %b %Y}<extra></extra>",
             )
@@ -223,9 +223,7 @@ def show_timeline(*, phases, path):
         margin=dict(l=130),
     )
     figure.update_yaxes(autorange="reversed", title_text="Package")
-    dates = sorted(
-        {date.fromisoformat(p[key]) for p in phases for key in ("start", "open")}
-    )
+    dates = sorted({day for p in of.phases for day in (p.start, p.open)})
     figure.update_xaxes(
         type="date",
         title_text="Start (square) → opening (diamond)",
@@ -234,6 +232,30 @@ def show_timeline(*, phases, path):
         ticktext=[str(d.year) for d in dates],
     )
     return show_plot(figure, path=path)
+
+
+def plot_cash_flows(*, outcome, key, path=None):
+    """Draw one solved Flow of an Outcome as a bar for each Period; it calculates nothing."""
+    flow = outcome[key]
+    figure = go.Figure(
+        go.Bar(
+            x=[movement.period.start.year for movement in flow.movements],
+            y=[movement.number for movement in flow.movements],
+            name=key,
+            hovertemplate="%{x}<br>%{y:,.0f} " + flow.units + "<extra></extra>",
+        )
+    )
+    figure.update_layout(title=f"{key} by year", height=420)
+    figure.update_xaxes(title_text="Year", type="category")
+    figure.update_yaxes(title_text=flow.units)
+    return show_plot(figure, path=path)
+
+
+def plot_flows(*, outcome, keys, path=None):
+    """Draw some solved Flows of an Outcome over their Periods; it calculates nothing."""
+    flows = {key: outcome[key] for key in keys}
+    title = ", ".join(keys)
+    return show_flows(flows=flows, title=title, timing=PeriodTiming.LAST, path=path)
 
 
 def _equations(model):

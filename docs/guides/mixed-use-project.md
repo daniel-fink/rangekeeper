@@ -219,6 +219,7 @@ The original property collection is `bed351126771f61e3d6255c18cd48aa5`.
 | [audit.json](../../examples/data/mixed_use_property/audit.json) | Counts, exact graph reconciliation, quantity checks and geometry-summary checks |
 | [assumptions.json](../../examples/data/mixed_use_property/assumptions.json) | Separate legacy teaching assumptions and calculation conventions |
 | [development.json](../../examples/data/mixed_use_property/development.json) | Teaching inputs for the development plan |
+| [base_plan.json](../../examples/data/mixed_use_property/base_plan.json) | The dated plan of walkthrough lesson 03 at 2027 prices, derived from the inventory, the assumptions and the development plan |
 | [origins.json](../../examples/data/mixed_use_property/origins.json) | The origin of each teaching assumption: a legacy notebook cell, a book method or the author's choice |
 
 SDK reserialization changes content IDs for this historical payload. The package

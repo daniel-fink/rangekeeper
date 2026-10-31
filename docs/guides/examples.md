@@ -26,6 +26,7 @@ Install the matching library and the extras each example needs.
 | [`walkthrough/proposed/`](../../examples/walkthrough/proposed/README.md) | Proposed cells for the seven 1.0 lessons, written against the 1.0 API, with the decisions and the API gap list ([#201](https://github.com/daniel-fink/rangekeeper/issues/201)). They do not run |
 | [`data/mixed_use_property/`](../../examples/data/mixed_use_property/README.md) | The data package for walkthrough lessons 02–07, under CC BY 4.0 |
 | [`data/derive_totals.py`](../../examples/data/derive_totals.py) | Derives the data package's 2032 totals file for lesson 02 |
+| [`data/derive_base_plan.py`](../../examples/data/derive_base_plan.py) | Derives the data package's base plan file for lesson 03 |
 | [`rangekeeper_examples/`](../../examples/rangekeeper_examples) | Shared design and investment builders |
 | [`schema/`](../../examples/schema) | Complete wire documents and smaller syntax fragments, described below |
 | [`execution/`](../../examples/execution) | Forward and inverse valuation using the wire documents |

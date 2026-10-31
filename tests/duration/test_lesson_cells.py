@@ -50,7 +50,7 @@ def test_the_cells_make_the_yearly_periods_of_the_plan(lesson, number):
 
 
 def test_lesson_03_cell_3_runs_as_written_with_a_drawing_helper():
-    """Cell 3 draws the plan's timeline with a helper, then makes the Periods."""
+    """Cell 3 makes the Periods, then draws the plan's timeline with a helper."""
     drawn = []
 
     class Helpers:

@@ -22,6 +22,13 @@
       "origin": "derived",
       "sha256": "7210f5ce07fba42b5049a5a48c196f1744aed531e897fe3e27dee3c8cb98abea"
     },
+    "base_plan.json": {
+      "bytes": 5278,
+      "description": "The base plan of the development for walkthrough lesson 03, at 2027 prices: dates, budgets, incomes, operating costs, renewals, funding, areas and rates, each amount with its origin. examples/data/derive_base_plan.py derives it from inventory.csv, assumptions.json and development.json.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
+      "sha256": "ca2b4f286299679526479c64ef28c77d7e81f25c974a291df533bfd36c5241e2"
+    },
     "development.json": {
       "bytes": 3376,
       "description": "Teaching inputs for the development plan. origins.json gives the origin of each value.",

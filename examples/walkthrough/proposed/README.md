@@ -12,9 +12,10 @@ cannot support a cell is a gap, filed under
 These files are not notebooks and do not run. The lessons
 ([#203](https://github.com/daniel-fink/rangekeeper/issues/203)–[#208](https://github.com/daniel-fink/rangekeeper/issues/208),
 [#244](https://github.com/daniel-fink/rangekeeper/issues/244)) are authored from them
-when the library work lands. Lessons 01 and 02 are authored: their notebooks run
-the cells of [01_basic_dcf.md](01_basic_dcf.md) and
-[02_front_door_back_door.md](02_front_door_back_door.md). Each file lists where its
+when the library work lands. Lessons 01, 02 and 03 are authored: their notebooks run
+the cells of [01_basic_dcf.md](01_basic_dcf.md),
+[02_front_door_back_door.md](02_front_door_back_door.md) and
+[03_cases_debt_equity.md](03_cases_debt_equity.md). Each file lists where its
 cells differ from the first proposal. In lesson 02, the `rx` aside
 ([#309](https://github.com/daniel-fink/rangekeeper/issues/309)) is prose in the
 notebook, and no infeasible diagnostic names the equations that disagree yet (cell
@@ -24,7 +25,7 @@ notebook, and no infeasible diagnostic names the equations that disagree yet (ce
 | --- | --- | --- |
 | 01 Basic discounted cash flow | [01_basic_dcf.md](01_basic_dcf.md) | 20 |
 | 02 Front door, back door | [02_front_door_back_door.md](02_front_door_back_door.md) | 22 + 4 optional |
-| 03 Cases, debt and equity | [03_cases_debt_equity.md](03_cases_debt_equity.md) | 24 + 3 optional |
+| 03 Cases, debt and equity | [03_cases_debt_equity.md](03_cases_debt_equity.md) | 25 + 3 optional |
 | 04 Many market futures | [04_market_futures.md](04_market_futures.md) | 17 + 2 optional |
 | 05 When to commit | [05_when_to_commit.md](05_when_to_commit.md) | 18 + 2 optional |
 | 06 Project structure | [06_project_structure.md](06_project_structure.md) | 25 + 1 optional |
@@ -464,7 +465,11 @@ Not filed as gaps:
   `show_decisions`, `plot_paths`, `plot_cash_flows`, `plot_flows`,
   `plot_target_curve` and `plot_decisions`. Lesson 02 added `load_property`,
   `show_equations(of=)` and `show_geometry(name=)` to the
-  [walkthrough helpers](../helpers/README.md). `load_property` only loads: the
+  [walkthrough helpers](../helpers/README.md), and lesson 03 added
+  `load_base_plan`, `show_timeline(of=)`, `plot_cash_flows(outcome=, key=)` and
+  `plot_flows(outcome=, keys=)`. `load_base_plan` only loads a derived file,
+  `base_plan.json`, which
+  [`derive_base_plan.py`](../../data/derive_base_plan.py) derives. `load_property` only loads: the
   data package holds the totals as a derived file, `totals_2032.json`, with a
   manifest entry, and
   [`derive_totals.py`](../../data/derive_totals.py) derives it from the inventory
@@ -522,7 +527,7 @@ These are inputs for authoring, not API gaps:
   keyed `use_factor` and `use_index = market_index * use_factor` (D31).
 - The root entity of the project has the code and classification `project` (D35), in the
   1.0 data package and in every Model the lessons build.
-- The base plan gives `equity` and `loan_limit` (in place of `bridge_limit`) for lesson
+- The base plan gives `equity` and `loan_limit` (the data package's `bridge_limit`) for lesson
   03's funding cascade (D2).
 - Lesson 07's notebook keeps the file name `07_policies_and_graph.ipynb` for now; rename
   it and its heading to "Rules and design options" when #244 authors the lesson (D41).

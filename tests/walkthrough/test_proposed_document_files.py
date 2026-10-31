@@ -90,7 +90,7 @@ def test_lesson_04_cell_2_loads_the_plan_of_lesson_03_and_shows_its_equations(da
     namespace = run(cells("04_market_futures.md")["2"], data)
     model = namespace["model"]
     assert isinstance(model, rk.Model)
-    assert len(model.equations) == 32
+    assert len(model.equations) == 35
 
 
 def test_lesson_04_cell_4_moves_lesson_03_s_base_case_to_the_new_plan(data):
@@ -133,6 +133,7 @@ def test_lesson_05_cells_2_and_3_load_the_plan_the_paths_and_the_base_case(data)
     dates = eval(statements(numbered["2"], 2), loaded)
     assert [item.key for item in dates] == [
         "shared_start",
+        "shared_open",
         "a_start",
         "a_open",
         "b_open",

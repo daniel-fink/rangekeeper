@@ -72,13 +72,44 @@ def test_each_teaching_assumption_names_its_origin(name):
             assert origin["note"], pattern
 
 
+def derivation(name):
+    """Return the derivation script of the data package with this name."""
+    path = DATA.parent / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_base_plan_file_is_the_derivation_of_the_package():
+    # examples/data/derive_base_plan.py writes the file; it must not be edited by hand.
+    derive_base_plan = derivation("derive_base_plan")
+    text = (DATA / "base_plan.json").read_text(encoding="utf-8")
+    assert text == derive_base_plan.text()
+    plan = load("base_plan.json")
+    amounts = plan["values"]
+    # The budgets of the three packages and the allowance are the works cost.
+    works = load("totals_2032.json")["totals"]["works_cost"]["magnitude"]
+    allowance = load("development.json")["construction_finance_allowance_AUD"]
+    budgets = sum(
+        amounts[key]["magnitude"] for key in ("shared_cost", "a_cost", "b_cost")
+    )
+    assert budgets + allowance == pytest.approx(works)
+    # The operating costs of the three packages grow to the total of 2032.
+    opex = sum(amounts[key]["magnitude"] for key in ("shared_opex", "a_opex", "b_opex"))
+    total = load("totals_2032.json")["totals"]["operating_cost"]["magnitude"]
+    assert opex * 1.035**5 == pytest.approx(total)
+    assert (
+        amounts["loan_limit"]["magnitude"]
+        == (load("development.json")["funding"]["bridge_limit_AUD"])
+    )
+    assert set(plan["areas"]) == {"shared", "building_a", "building_b"}
+
+
 def test_the_totals_file_is_the_derivation_of_the_package():
     # examples/data/derive_totals.py writes the file; it must not be edited by hand.
-    path = DATA.parent / "derive_totals.py"
-    spec = importlib.util.spec_from_file_location("derive_totals", path)
-    assert spec is not None and spec.loader is not None
-    derive_totals = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(derive_totals)
+    derive_totals = derivation("derive_totals")
     text = (DATA / "totals_2032.json").read_text(encoding="utf-8")
     assert text == derive_totals.text()
     items = ("area", "rent", "vacancy")
