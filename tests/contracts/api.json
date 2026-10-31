@@ -67,6 +67,7 @@
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Run",
     "id": "property",
     "metadata": "property",
+    "paths": "property",
     "record": "property",
     "report": "property",
     "to_data": "method (self) -> dict[str, object]",
@@ -79,6 +80,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *, record: rangekeeper.schema.records.Specification, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
+    "across": "method (self, *, paths: Paths, series: Mapping[str, str | Mapping[str, str]] | None = None) -> Specification",
     "case": "method (self, *, key: str) -> Specification",
     "cases": "method (self, *, cases: Mapping[str, Mapping[str | UUID | Reference, object]]) -> Specification",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
@@ -672,13 +674,14 @@
   "Cases": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None",
+    "__init__": "method (self, *, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], paths: collections.abc.Mapping[uuid.UUID, rangekeeper.market.paths.Paths], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
+    "load_paths": "method (self, id: uuid.UUID) -> rangekeeper.market.paths.Paths",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
     "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification"
    },
    "module": "rangekeeper.execution.planning",
-   "signature": "(*, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
+   "signature": "(*, root: rangekeeper.specification.specification.Specification, documents: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.specification.Specification], models: collections.abc.Mapping[uuid.UUID, rangekeeper.model.model.Model], paths: collections.abc.Mapping[uuid.UUID, rangekeeper.market.paths.Paths], compositions: collections.abc.Mapping[uuid.UUID, rangekeeper.specification.composition.Composition], failures: collections.abc.Mapping[uuid.UUID, rangekeeper.shared.errors.ValidationError], resolver: rangekeeper.shared.references.DocumentResolver) -> None"
   },
   "DateDistribution": {
    "kind": "class",
@@ -786,6 +789,7 @@
    "members": {
     "__init__": "method (self, *, resolver: rangekeeper.shared.references.DocumentResolver, models: collections.abc.Iterable[rangekeeper.model.model.Model] = tuple(), runs: collections.abc.Iterable[rangekeeper.run.run.Run] = tuple()) -> None",
     "load_model": "method (self, id: uuid.UUID) -> rangekeeper.model.model.Model",
+    "load_paths": "method (self, id: uuid.UUID) -> rangekeeper.market.paths.Paths",
     "load_run": "method (self, id: uuid.UUID) -> rangekeeper.run.run.Run",
     "load_specification": "method (self, id: uuid.UUID) -> rangekeeper.specification.specification.Specification"
    },
@@ -3242,6 +3246,7 @@
     "from_data": "classmethod (cls, data: collections.abc.Mapping[str, object]) -> Run",
     "id": "property",
     "metadata": "property",
+    "paths": "property",
     "record": "property",
     "report": "property",
     "to_data": "method (self) -> dict[str, object]",
@@ -3253,16 +3258,17 @@
   "RunRecord": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, report: Report) -> None",
+    "__init__": "method (self, *, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, paths: UUID | Unset = <Unset>, report: Report) -> None",
     "metadata": "property",
     "outputs": "property",
-    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, specification: UUID | Unset = <Unset>, spawns: tuple[UUID, ...] | None | Unset | Omit = <Unset>, outputs: tuple[UUID, ...] | None | Unset | Omit = <Unset>, report: Report | Unset = <Unset>) -> Self",
+    "paths": "property",
+    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, specification: UUID | Unset = <Unset>, spawns: tuple[UUID, ...] | None | Unset | Omit = <Unset>, outputs: tuple[UUID, ...] | None | Unset | Omit = <Unset>, paths: UUID | Unset | Omit = <Unset>, report: Report | Unset = <Unset>) -> Self",
     "report": "property",
     "spawns": "property",
     "specification": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, report: Report) -> None"
+   "signature": "(*, metadata: Metadata, specification: UUID, spawns: tuple[UUID, ...] | None | Unset = <Unset>, outputs: tuple[UUID, ...] | None | Unset = <Unset>, paths: UUID | Unset = <Unset>, report: Report) -> None"
   },
   "RunStatus": {
    "kind": "class",
@@ -3413,6 +3419,7 @@
    "kind": "class",
    "members": {
     "__init__": "method (self, *, record: rangekeeper.schema.records.Specification, model: Model | None = None, resolver: rangekeeper.shared.references.SpecificationResolver | None = None) -> None",
+    "across": "method (self, *, paths: Paths, series: Mapping[str, str | Mapping[str, str]] | None = None) -> Specification",
     "case": "method (self, *, key: str) -> Specification",
     "cases": "method (self, *, cases: Mapping[str, Mapping[str | UUID | Reference, object]]) -> Specification",
     "check": "method (self, *, resolver: rangekeeper.shared.references.SpecificationResolver | None = None, units: rangekeeper.quantity.UnitSystem | None = None) -> Self",
@@ -3438,7 +3445,7 @@
   "SpecificationRecord": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: RuleSet | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: RuleSet | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None",
     "assignments": "property",
     "cases": "property",
     "estimates": "property",
@@ -3447,13 +3454,14 @@
     "metadata": "property",
     "model": "property",
     "objectives": "property",
-    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, model: UUID | Unset | Omit = <Unset>, includes: tuple[UUID, ...] | None | Unset | Omit = <Unset>, cases: tuple[UUID, ...] | None | Unset | Omit = <Unset>, assignments: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, unknowns: tuple[Reference, ...] | None | Unset | Omit = <Unset>, estimates: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, formulations: tuple[Formulation, ...] | None | Unset | Omit = <Unset>, objectives: tuple[Objective, ...] | None | Unset | Omit = <Unset>, settings: Settings | Unset | Omit = <Unset>, rules: RuleSet | None | Unset | Omit = <Unset>) -> Self",
+    "path": "property",
+    "replace": "method (self, *, metadata: Metadata | Unset = <Unset>, model: UUID | Unset | Omit = <Unset>, includes: tuple[UUID, ...] | None | Unset | Omit = <Unset>, cases: tuple[UUID, ...] | None | Unset | Omit = <Unset>, assignments: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, unknowns: tuple[Reference, ...] | None | Unset | Omit = <Unset>, estimates: tuple[Assignment, ...] | None | Unset | Omit = <Unset>, formulations: tuple[Formulation, ...] | None | Unset | Omit = <Unset>, objectives: tuple[Objective, ...] | None | Unset | Omit = <Unset>, settings: Settings | Unset | Omit = <Unset>, rules: RuleSet | None | Unset | Omit = <Unset>, path: PathCase | None | Unset | Omit = <Unset>) -> Self",
     "rules": "property",
     "settings": "property",
     "unknowns": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: RuleSet | None | Unset = <Unset>) -> None"
+   "signature": "(*, metadata: Metadata, model: UUID | Unset = <Unset>, includes: tuple[UUID, ...] | None | Unset = <Unset>, cases: tuple[UUID, ...] | None | Unset = <Unset>, assignments: tuple[Assignment, ...] | None | Unset = <Unset>, unknowns: tuple[Reference, ...] | None | Unset = <Unset>, estimates: tuple[Assignment, ...] | None | Unset = <Unset>, formulations: tuple[Formulation, ...] | None | Unset = <Unset>, objectives: tuple[Objective, ...] | None | Unset = <Unset>, settings: Settings | Unset = <Unset>, rules: RuleSet | None | Unset = <Unset>, path: PathCase | None | Unset = <Unset>) -> None"
   }
  },
  "rangekeeper.specification.rule": {

@@ -2977,6 +2977,50 @@
       "required": true
     }
   },
+  "PathCase": {
+    "key": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "paths": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "Metadata"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "series": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "SeriesBinding"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    }
+  },
   "PathParameter": {
     "distribution": {
       "lineage": false,
@@ -3954,6 +3998,20 @@
       "ordered": false,
       "required": false
     },
+    "paths": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "Metadata"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
     "report": {
       "lineage": false,
       "many": false,
@@ -4401,6 +4459,50 @@
       "required": false
     }
   },
+  "SeriesBinding": {
+    "movements": {
+      "lineage": false,
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Reference"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "series": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "value": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Reference"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
   "Settings": {
     "constraint_limit": {
       "lineage": false,
@@ -4722,6 +4824,20 @@
         }
       ],
       "ordered": true,
+      "required": false
+    },
+    "path": {
+      "lineage": false,
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "PathCase"
+        }
+      ],
+      "ordered": false,
       "required": false
     },
     "rules": {

@@ -4,6 +4,7 @@ from collections.abc import Iterable, Sequence
 from uuid import UUID, uuid4
 
 from rangekeeper.execution.outcome import Outcome
+from rangekeeper.market.paths import Paths
 from rangekeeper.model import Model
 from rangekeeper.run import Run, RunRecord, Severity, SolutionStatus
 from rangekeeper.run.documents import Documents
@@ -15,6 +16,7 @@ from rangekeeper.schema.records import (
     Report,
     RunStatus,
 )
+from rangekeeper.schema.runtime import UNSET
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.references import DocumentResolver
@@ -54,6 +56,10 @@ class Overlay:
         """Return an overlaid Run, else load it from the resolver."""
         return self._documents.load_run(id)
 
+    def load_paths(self, id: UUID) -> Paths:
+        """Load market paths from the resolver."""
+        return self._documents.load_paths(id)
+
 
 def assemble(
     *,
@@ -68,11 +74,13 @@ def assemble(
     ``rk.run.validate(run=outcome.run, resolver=Overlay(resolver=resolver,
     models=outcome.outputs))``, or let a store validate it on ``put``.
     """
+    path = specification.record.path
     run = Run(
         RunRecord(
             metadata=Metadata(id=id, schema_version=document_version("Run")),
             specification=specification.id,
             outputs=() if output is None else (output.id,),
+            paths=UNSET if path is None else path.paths,
             report=report,
         )
     )
@@ -96,12 +104,16 @@ def assemble_batch(
         for model in case.outputs:
             outputs.setdefault(model.id, model)
     completion = completion_for(case.run.report.status.completion for case in cases)
+    # A batch pins the Paths that each of its cases takes its path from.
+    pinned = {case.run.paths for case in cases}
+    paths = pinned.pop() if len(pinned) == 1 else None
     run = Run(
         RunRecord(
             metadata=Metadata(id=uuid4(), schema_version=document_version("Run")),
             specification=specification.id,
             spawns=tuple(case.run.id for case in cases),
             outputs=tuple(outputs),
+            paths=UNSET if paths is None else paths,
             report=Report(
                 status=RunStatus(
                     completion=completion,

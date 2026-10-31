@@ -6,7 +6,7 @@ Derived views are internal check results, not revisions to serialize or publish.
 """
 
 import math
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass
 from types import MappingProxyType
@@ -35,8 +35,10 @@ from rangekeeper.shared.validation import (
     require_acyclic,
     require_ownership,
 )
+from rangekeeper.specification import _paths
 
 if TYPE_CHECKING:
+    from rangekeeper.market.paths import Paths
     from rangekeeper.specification.specification import Specification
 
 
@@ -48,6 +50,7 @@ REQUIREMENTS = (
     "objectives",
     "settings",
     "rules",
+    "path",
 )
 # The closed set of Specification fields comes from the schema slots.
 FIELDS = frozenset(slots_for("Specification"))
@@ -172,6 +175,25 @@ def check_roles(document):
     return groups
 
 
+def check_path(document):
+    """Check the local roles, then require path Movements that take no other role."""
+    groups = check_roles(document)
+    path = document.get("path")
+    if path is None:
+        return
+    targets = [
+        reference_key(reference)
+        for binding in path["series"]
+        for reference in binding["movements"]
+    ]
+    require(len(targets) == len(set(targets)), "duplicate path target")
+    require(
+        not set(targets)
+        & (groups["assignments"] | groups["unknowns"] | groups["rules"]),
+        "a path fixes a value that also has another role",
+    )
+
+
 def specification_catalogue(root, specifications, schema_version):
     """Resolve reachable includes/cases and check their shared revision graph."""
     catalogue = dict(specifications or {})
@@ -218,12 +240,14 @@ def compose_specification(
     *,
     documents=None,
     catalogue=None,
+    paths: "Mapping[UUID, Paths] | None" = None,
 ):
     """Accumulate one investigation without overrides; permit incomplete views.
 
     Completeness and Model-dependent reference/role validation happen separately.
     A diamond includes each revision once. Independent repeated requirements are
     errors even when identical. Empty containers are neutral, including objectives.
+    A path expands into assignments from its document in ``paths`` (ADR-021).
     """
     if catalogue is None:
         catalogue = specification_catalogue(
@@ -243,7 +267,8 @@ def compose_specification(
     contributors = tuple(catalogue[key] for key in sorted(included))
     require_ownership(list(contributors))
     effective = {"metadata": deepcopy(specification["metadata"])}
-    sources, model_ids = {}, set()
+    sources: dict[tuple[str, ...], Source] = {}
+    model_ids: set[str] = set()
 
     def claim(key, source, path):
         require(
@@ -253,7 +278,7 @@ def compose_specification(
         sources[key] = Source(UUID(source), path)
 
     for doc in contributors:
-        check_roles(doc)
+        check_path(doc)
         source = doc["metadata"]["id"]
         if doc.get("model") is not None:
             model_ids.add(doc["model"])
@@ -271,6 +296,9 @@ def compose_specification(
         if doc.get("rules"):
             claim(("rules",), source, "/rules")
             effective["rules"] = deepcopy(doc["rules"])
+        if doc.get("path"):
+            claim(("path",), source, "/path")
+            effective["path"] = deepcopy(doc["path"])
         if doc.get("objectives"):
             claim(("objectives",), source, "/objectives")
             effective["objectives"] = deepcopy(doc["objectives"])
@@ -283,6 +311,7 @@ def compose_specification(
     require(len(model_ids) <= 1, "conflicting input Model revisions")
     if model_ids:
         effective["model"] = next(iter(model_ids))
+    _paths.expand(effective, paths=paths or {})
     check_roles(effective)
     from rangekeeper.specification.specification import Specification
 
@@ -376,6 +405,30 @@ def collect_specifications(
     return documents, catalogue
 
 
+def collect_paths(
+    documents: "Iterable[Specification]",
+    *,
+    resolver: object,
+) -> "dict[UUID, Paths]":
+    """Return the Paths document of each Specification with a path, by UUID.
+
+    A Specification that ``across`` made keeps its document; ``resolver``
+    loads the others. A resolver that cannot load Paths raises ContractError.
+    """
+    found: dict[UUID, Paths] = {}
+    for document in documents:
+        path = document.record.path
+        if path is None or path.paths in found:
+            continue
+        kept = document._paths
+        found[path.paths] = (
+            kept
+            if kept is not None and kept.id == path.paths
+            else _paths.load(resolver, path.paths)
+        )
+    return found
+
+
 def compose(
     root: "Specification",
     *,
@@ -383,7 +436,11 @@ def compose(
     documents=None,
     catalogue=None,
 ) -> Composition:
-    """Compose exact resolved snapshots without rebuilding a supplied catalogue."""
+    """Compose exact resolved snapshots without rebuilding a supplied catalogue.
+
+    A case with a path reads its Paths document from the Specification that
+    ``across`` made, else from ``resolver``.
+    """
     if documents is None and catalogue is None:
         documents, catalogue = collect_specifications(root, resolver=resolver)
     elif documents is None or catalogue is None:
@@ -399,6 +456,7 @@ def compose(
             document_version("Specification"),
             documents=documents,
             catalogue=catalogue,
+            paths=collect_paths(documents.values(), resolver=resolver),
         )
 
     bounded([], check, document=data).raise_if_invalid()

@@ -2,7 +2,7 @@
 
 import weakref
 from collections.abc import Callable, Iterable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
@@ -34,6 +34,7 @@ from rangekeeper.shared.errors import (
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.shared.validation import bounded, require, require_acyclic
 from rangekeeper.specification.composition import (
+    compose,
     compose_specification,
     specification_catalogue,
 )
@@ -181,6 +182,7 @@ def validate_executed(
         raise TypeError("run must be a Run; use validate_records for raw catalogues")
     try:
         found = _documents(run, resolver)
+        prerequisites = _compose_paths(found, resolver, prerequisites)
         runs, specifications, models = _catalogues(found)
         if units is None:
             units = _input_unit_system(run, found)
@@ -205,6 +207,25 @@ def collect_documents(
     Return the Run, Specification and Model records, keyed by revision text.
     """
     return _catalogues(_documents(root, resolver))
+
+
+def _compose_paths(
+    found: dict, resolver: "DocumentResolver", prerequisites: Prerequisites
+) -> Prerequisites:
+    """Compose each case that takes a path, with its Paths from ``resolver``.
+
+    The raw-record checks cannot read a Paths document, so this composes
+    each such case once, and validation uses the composition (ADR-021).
+    """
+    compositions = dict(prerequisites.compositions)
+    for identity, document in found.items():
+        if (
+            isinstance(document, Specification)
+            and document.record.path is not None
+            and identity not in compositions
+        ):
+            compositions[identity] = compose(document, resolver=resolver)
+    return replace(prerequisites, compositions=compositions)
 
 
 def _input_unit_system(root: "Run", found: dict) -> UnitSystem:
@@ -383,6 +404,11 @@ class _RunValidation:
                     == {m for child in children for m in child.get("outputs") or []},
                     "batch outputs must equal spawned output union",
                 )
+                pinned = {child.get("paths") for child in children}
+                require(
+                    run.get("paths") == (pinned.pop() if len(pinned) == 1 else None),
+                    "a batch pins the Paths of its cases when they share one",
+                )
                 if spec.get("model") is not None:
                     self.resolve(spec["model"], "Model")
 
@@ -396,6 +422,10 @@ class _RunValidation:
                     )
             else:
                 check_non_batch_status(run)
+                require(
+                    run.get("paths") == (spec.get("path") or {}).get("paths"),
+                    "the Run pins other Paths than the path of its Specification",
+                )
                 try:
                     spec_id = spec["metadata"]["id"]
                     if spec_id not in self.compositions:

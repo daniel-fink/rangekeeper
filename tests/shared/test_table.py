@@ -5,8 +5,22 @@ from decimal import Decimal
 from enum import Enum, StrEnum
 from uuid import UUID
 
+import pytest
+
 import rangekeeper as rk
 from rangekeeper.shared.table import Row, Table
+
+
+def test_head_gives_the_first_rows():
+    table = Table(("n",), [Row({"n": i}, UUID(int=i + 1)) for i in range(8)])
+    head = table.head()
+    assert head.columns == ("n",) and head.column("n") == (0, 1, 2, 3, 4)
+    assert head.row(UUID(int=1)).values["n"] == 0
+    assert table.head(count=2).column("n") == (0, 1)
+    assert table.head(count=20).rows == table.rows
+    with pytest.raises(rk.errors.ContractError):
+        table.head(count=-1)
+
 
 FIRST = UUID("11111111-2222-3333-4444-555555555555")
 SECOND = UUID("66666666-7777-8888-9999-000000000000")

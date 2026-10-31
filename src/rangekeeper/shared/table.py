@@ -18,7 +18,7 @@ from types import MappingProxyType
 from typing import TypeGuard
 from uuid import UUID
 
-from rangekeeper.shared.errors import MissingReferenceError, TableError
+from rangekeeper.shared.errors import ContractError, MissingReferenceError, TableError
 
 
 @dataclass(frozen=True, slots=True)
@@ -119,6 +119,19 @@ class Table:
                 candidates=get_close_matches(str(name), self.columns, n=3),
             )
         return tuple(row.values[name] for row in self.rows)
+
+    def head(self, *, count: int = 5) -> Table:
+        """Return a Table of the first ``count`` rows, with the same columns.
+
+        A count below zero raises ``ContractError``.
+        """
+        if type(count) is not int:
+            raise TypeError("count must be an int")
+        if count < 0:
+            raise ContractError(
+                f"count must not be negative, not {count}", values={"count": count}
+            )
+        return Table(self.columns, self.rows[:count])
 
     def __repr__(self) -> str:
         names = ", ".join(self.columns[:_NAMED_COLUMNS])

@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "checks.py": "7d647d3cbb15f447e03b6edaf19a74e7ec90011f2518c0e9aa18c05c4dd57f91",
+    "checks.py": "5136b2e128bad037eb106a87441e1f7bbfa008eedefd027f7cd9c0c74f661ad5",
     "enums.py": "d3accef130020fb6f1a96cf2350b22f26865659a6b5bac694ee8a60a0e5148a2",
-    "records.py": "da3452aac4989a0a961b65ed7d0fd8ec2f42f86e08ae36b2d2f5d488be65a4f9",
-    "schema.json": "e6029d963d551fd7905470e7594e8acbeb8d9d76310c260896b7f672cc2be00b",
-    "slots.json": "2d4d8c6334c4d421f976f0632800c6140d3d4a9385daaa0dc5c80c6ff69753b4"
+    "records.py": "5c6ee946ef8146e7485881b82b4f4724064a3881df434ffdb1e0a3225dc2760c",
+    "schema.json": "f413a390627b063e23b3320a2d47c39f10a56876e2e646ea6d968316eec5f2d3",
+    "slots.json": "2d7214fa57c08a2d4df7a49fae12cccb68f750e9605a8b119bda67f6292f2662"
   },
   "classes": [
     "Action",
@@ -57,6 +57,7 @@
     "Parameter",
     "PathAmounts",
     "PathCapture",
+    "PathCase",
     "PathParameter",
     "PathSeries",
     "Paths",
@@ -81,6 +82,7 @@
     "ScenarioPlan",
     "ScenarioRealization",
     "Selection",
+    "SeriesBinding",
     "Settings",
     "Source",
     "Span",
@@ -134,10 +136,10 @@
     "schema/reference.yaml": "8d01f4dc6dce689d1a79c4c4c026545434b8f0b8bd37e19c9bba93fccc92f023",
     "schema/relationship.yaml": "a10513359bee85d04a74ca0e1679f08bba26251beea6bc85c82a5396509feb78",
     "schema/rule.yaml": "c8c85bcb173b90946556b54335cc59d7ea7b627000f7df61d313c3769b42ea67",
-    "schema/run.yaml": "c2b9fa623bab2ec76ff0d693fe1f31e3e530fa7a7e8da51923e9a99701d84a7b",
+    "schema/run.yaml": "8524646aa6ff93789530f283ab6d937aac59cce60cdde2e55864b07aced1cb58",
     "schema/scenario.yaml": "d466bd9a698fe92e685c1bf4e1cff320a118dfef8663cc97ddec7f99670041df",
     "schema/settings.yaml": "33b976592d1f15197791e08f1b4c6fa418738a60e77ecc13b955ac94a8396248",
-    "schema/specification.yaml": "4030d7a99e7fb92e2895893e77ea88decb8479ad942bce7abbd95748898a433c",
+    "schema/specification.yaml": "7721b2666cc914450db1f745449537d321be5fce7e2006e67d4f7357c736dc30",
     "tools/schema/bundle.yaml": "b40e8c01d8367d9bc274d2512ab462f056170c06a7f7ad62e3cfac01902afc4d",
     "tools/schema/generate.py": "53bafe1468ae417da4cdcd728fcbe4390d5ca944950ec498550e6449b9270955",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"

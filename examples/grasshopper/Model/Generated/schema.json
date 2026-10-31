@@ -2990,6 +2990,42 @@
       "title": "PathCapture",
       "type": "object"
     },
+    "PathCase": {
+      "additionalProperties": false,
+      "description": "A reference to one path of a Paths document, and the Movements that each of its series fixes.",
+      "properties": {
+        "key": {
+          "description": "Key of the path in the Paths document.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "paths": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "description": "UUID of the Paths revision.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "series": {
+          "description": "Each series of the path that fixes a Flow value, in order.",
+          "items": {
+            "$ref": "#/$defs/SeriesBinding"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "paths",
+        "key",
+        "series"
+      ],
+      "title": "PathCase",
+      "type": "object"
+    },
     "PathParameter": {
       "additionalProperties": false,
       "description": "One parameter of a path generator for one series, a constant or a distribution.",
@@ -3809,6 +3845,20 @@
             "null"
           ]
         },
+        "paths": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "UUID of the Paths revision whose series fix the cases of this Run; absent when no case takes a path.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
         "report": {
           "$ref": "#/$defs/Report",
           "allOf": [
@@ -4198,6 +4248,35 @@
       "title": "SelectionKind",
       "type": "string"
     },
+    "SeriesBinding": {
+      "additionalProperties": false,
+      "description": "One path series and the Flow Value whose Movements it fixes, one Movement for each Period of the paths.",
+      "properties": {
+        "movements": {
+          "description": "The Movement of the Value that each Period of the paths fixes, in the order of the Periods.",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "type": "array"
+        },
+        "series": {
+          "description": "Name of the path series.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/Reference",
+          "description": "The Flow Value that the series fixes."
+        }
+      },
+      "required": [
+        "series",
+        "value",
+        "movements"
+      ],
+      "title": "SeriesBinding",
+      "type": "object"
+    },
     "Settings": {
       "additionalProperties": false,
       "description": "Numerical convergence and resource settings; the containing record distinguishes requested from effective values.",
@@ -4467,6 +4546,17 @@
             "array",
             "null"
           ]
+        },
+        "path": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PathCase"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The market path whose series fix Flow values in this case. The resolve-cases stage expands it into assignments from the Paths document; the case does not copy the amounts."
         },
         "rules": {
           "anyOf": [

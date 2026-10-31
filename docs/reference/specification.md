@@ -18,6 +18,7 @@ for the supported numerical subset.
 | `specification/composition.py` | Additive requirements, exact contributor snapshots and original source locations |
 | `specification/validation.py` | Complete investigation validation using a supplied read-only resolver |
 | `specification/targets.py` | Explicit expansion of Flow assignments and unknown roles |
+| `specification/_paths.py` | Series matching for `across`, and the expansion of a case's path into assignments (internal) |
 | `specification/rule/` | Dated declarations, causal observation and independent evidence validation |
 | `shared/references.py` | Resolver protocols without a storage dependency |
 
@@ -269,6 +270,53 @@ resolver. No case with the key raises `MissingReferenceError` with
 raises `ContractError` with the code `BATCH_UNSUPPORTED`, and `case` of a
 concrete Specification with the code `BATCH_REQUIRED`. Each case Outcome has the case key as its `key`; see
 [reading an Outcome](execution.md#read-an-outcome).
+
+## Cases across market paths
+
+`across(paths=, series=None)` returns a batch Specification with one case for
+each path of a `rk.market.Paths` document
+([#306](https://github.com/daniel-fink/rangekeeper/issues/306),
+[ADR-014](../decisions/014-market-paths.md),
+[ADR-021](../decisions/021-sequential-decisions.md)). Each case fixes each Model
+value from the path series with the same key. `series=` maps a Model key to a
+series whose name differs:
+
+```python
+paths_outcome = rk.execution.solve(specification=base.across(paths=paths))
+paths_outcome.case(key=paths.keys[0])["rent_index"]  # that path's rent index
+base.across(paths=use_paths, series={"rent_index": "market_index"})
+```
+
+Each case is a new revision of the Specification that `across` is called on: its
+Metadata name is the path key, and `previous` is that Specification. Its `path`
+field refers to the path by the UUID of the Paths document and the path key, with
+the Movement of the value that each Period of the paths fixes; it does not copy
+the amounts. The composition of the case expands the path into assignments, in
+the units of the series, from the Paths document. `roles` shows them as fixed.
+The batch keeps its cases and the Paths, so `solve` resolves them without a
+store, and `execute` puts the Paths in its store before the Specifications. A
+case read from data loads the Paths with its resolver (`load_paths`); a resolver
+without `load_paths` raises `ContractError` with the code `RESOLVER_MISSING`.
+
+The Run of each case and of the batch pins the Paths in `run.paths`, so Runs
+show that two strategies used the same futures. Each assigned Movement is known
+on the date that `paths.available(name=)` gives, which rules read
+([#300](https://github.com/daniel-fink/rangekeeper/issues/300)).
+
+| Failure | Error |
+| --- | --- |
+| A path series that fixes no Model value | `ContractError` with the code `REFERENCE_MISSING`: map it with `series=` |
+| A key of `series=` whose series the paths lack | `ContractError` with the code `REFERENCE_MISSING` |
+| A value with two series | `ContractError` with the code `UNIQUE` |
+| A value that the Specification fixes or a rule decides | `ContractError`: free it, then call `across` |
+| A value that is not a Flow, or a Flow over other Periods than the paths | `ContractError`, with `ALIGNMENT_DIFFER` for the Periods |
+| Series units that do not convert to the value's units | `UnitError` |
+| The members of a keyed value in `series=` | `ContractError`: keyed values come with [#284](https://github.com/daniel-fink/rangekeeper/issues/284) |
+| `across` of a batch | `ContractError` with the code `BATCH_UNSUPPORTED` |
+| `fix`, `free`, `on`, `cases` or `across` of a case that `across` made | `ContractError`: change the Specification that `across` was called on |
+
+The `values` of a matching error give the `key`, the path `series` and the
+`model` keys of the Flow values.
 
 ## Model and resolver
 

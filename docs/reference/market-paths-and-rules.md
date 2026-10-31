@@ -212,6 +212,14 @@ record keeps the registered name, the fingerprint and the parameters, so
 `regenerate` finds the generator by its name; an unknown name raises
 `UnknownExtensionError`.
 
+### Investigation across paths
+
+`Specification.across(paths=, series=None)` makes one case for each path: each
+path series fixes the Model value with the same key, and `series=` maps the
+others. A case refers to its path by UUID and key and does not copy the amounts;
+its composition expands the path into assignments. Runs pin the Paths in
+`run.paths`. See [cases across market paths](specification.md#cases-across-market-paths).
+
 ### Storage
 
 `MemoryStore`, `DirectoryStore` and the Bundle `Reader` store a Paths document
@@ -221,9 +229,8 @@ under its UUID and return it with `load_paths(id)`; the codecs read it with
 ## Captured market paths and replay
 
 The scenario plan and the realizations below are the earlier design. `Paths`,
-`Dynamics` and `Specification.across` replace them
-([#306](https://github.com/daniel-fink/rangekeeper/issues/306),
-[#140](https://github.com/daniel-fink/rangekeeper/issues/140)).
+`Dynamics` and `Specification.across` replace them; #140 removes them
+([#140](https://github.com/daniel-fink/rangekeeper/issues/140)).
 
 Use `from rangekeeper.market import generation as market`. Stable method codes are `market`,
 `market.estimates` and `market.independent`. `market.sample` records random inputs only; `market.capture`

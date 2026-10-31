@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
+from rangekeeper.market.paths import Paths
 from rangekeeper.model import Model
 from rangekeeper.run import Run
 from rangekeeper.run.documents import Documents
@@ -17,7 +18,11 @@ from rangekeeper.shared.errors import (
 )
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.specification import Composition, Specification
-from rangekeeper.specification.composition import collect_specifications, compose
+from rangekeeper.specification.composition import (
+    collect_paths,
+    collect_specifications,
+    compose,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -25,7 +30,8 @@ class Cases:
     """The resolved case graph of one root Specification.
 
     ``documents`` holds the root and each reachable include and case.
-    ``models`` holds each Model revision that a document pins. ``compositions``
+    ``models`` holds each Model revision that a document pins, and ``paths``
+    each Paths document that a case takes its path from. ``compositions``
     holds the composition of each leaf case that composes, and ``failures``
     the ValidationError of each leaf case that does not, so that the leaf can
     record its own Run evidence. Each leaf case is in one of the two.
@@ -38,6 +44,7 @@ class Cases:
     root: Specification
     documents: Mapping[UUID, Specification]
     models: Mapping[UUID, Model]
+    paths: Mapping[UUID, Paths]
     compositions: Mapping[UUID, Composition]
     failures: Mapping[UUID, ValidationError]
     resolver: DocumentResolver
@@ -46,7 +53,8 @@ class Cases:
     def __post_init__(self) -> None:
         # Its own revisions first, else the resolver: one lookup, made once.
         lookup = Documents(
-            (*self.models.values(), *self.documents.values()), fallback=self.resolver
+            (*self.models.values(), *self.documents.values(), *self.paths.values()),
+            fallback=self.resolver,
         )
         object.__setattr__(self, "_lookup", lookup)
 
@@ -61,6 +69,10 @@ class Cases:
     def load_run(self, id: UUID) -> Run:
         """Load a Run from the resolver."""
         return self._lookup.load_run(id)
+
+    def load_paths(self, id: UUID) -> Paths:
+        """Return a resolved Paths document, else load it from the resolver."""
+        return self._lookup.load_paths(id)
 
 
 def resolve_cases(*, specification: Specification, resolver: DocumentResolver) -> Cases:
@@ -84,10 +96,12 @@ def resolve_cases(*, specification: Specification, resolver: DocumentResolver) -
         if model.id != identity:
             raise IdentityConflictError("input resolver returned a different revision")
         models[identity] = model
+    paths = MappingProxyType(collect_paths(documents.values(), resolver=resolver))
     graph = Cases(
         root=specification,
         documents=MappingProxyType(documents),
         models=MappingProxyType(models),
+        paths=paths,
         compositions=MappingProxyType({}),
         failures=MappingProxyType({}),
         resolver=resolver,
@@ -132,6 +146,7 @@ def resolve_cases(*, specification: Specification, resolver: DocumentResolver) -
         root=specification,
         documents=MappingProxyType(documents),
         models=MappingProxyType(models),
+        paths=paths,
         compositions=MappingProxyType(compositions),
         failures=MappingProxyType(failures),
         resolver=resolver,

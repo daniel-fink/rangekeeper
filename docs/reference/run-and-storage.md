@@ -6,7 +6,7 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 
 | Package/module | Responsibility |
 | --- | --- |
-| `run/run.py` | Frozen Run facade over the generated `RunRecord`, with `from_data`, `id`, `metadata`, `record`, `report`, and detached `to_data`. No revise method. |
+| `run/run.py` | Frozen Run facade over the generated `RunRecord`, with `from_data`, `id`, `metadata`, `record`, `report`, `paths` (the UUID of the market paths whose series fix its cases, or None) and detached `to_data`. No revise method. |
 | `run/report.py`, `run/outputs.py` | Shared status/report rules and pure output conformance checks; no output helper owns traversal state. |
 | `run/validation.py` | One operation-local owner resolves exact documents, caches matching preparation, and checks the Run tree; public `validate(*, run, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
 | `run/documents.py` | For internal use by `run`, `execution` and `io`: `Documents`, a read-only resolver of its own documents first, else a fallback resolver; `dependencies(document)`, the one list of the documents that a document needs; and `closure(roots, resolver=)`, which resolves them once each. Run validation, `Overlay`, `Cases` and the Bundle use them. |
