@@ -1,13 +1,14 @@
 """rk.finance pv, npv, irr and payment against standard definitions (#167)."""
 
 import math
+import pickle
 from datetime import date
 
 import pytest
 
 import rangekeeper as rk
 from rangekeeper.duration import DayCount, Frequency, Periods, PeriodTiming
-from rangekeeper.errors import ContractError, NumericalError, UnitError
+from rangekeeper.errors import Code, ContractError, NumericalError, UnitError
 from rangekeeper.finance import irr, npv, payment, pv
 from rangekeeper.flow import Flow
 from rangekeeper.quantity import Quantity, isclose
@@ -84,15 +85,80 @@ def test_a_price_equal_to_the_npv_earns_the_discount_rate():
     assert isclose(actual=irr(flow=investment), expected=Quantity(text="7 % pa"))
 
 
-def test_irr_needs_both_signs_and_two_dates():
-    with pytest.raises(NumericalError, match="both"):
+def test_irr_needs_a_sign_change_and_two_dates():
+    with pytest.raises(NumericalError) as raised:
         irr(flow=yearly([1, 2]))
+    assert raised.value.code is Code.NO_SIGN_CHANGE
+    assert raised.value.values["inflows"] == "3 USD"
+    assert raised.value.values["outflows"] == "0 USD"
     with pytest.raises(NumericalError, match="two dates"):
         irr(
             flow=Flow.from_events(
                 dates=[START, START], magnitudes=[-1, 2], units="USD", keys=["a", "b"]
             )
         )
+
+
+def test_irr_gives_no_rate_from_inflows_of_rounding_noise():
+    """The equity of a sale that leaves the loan unpaid, after an affine solve (#518).
+
+    Before #518, PyXIRR gave about -99.99 % pa for these amounts, and failed
+    for others of the same size.
+    """
+    noise = [
+        -50e6,
+        0,
+        6.51925802230835e-09,
+        -1.39698386192322e-08,
+        3.72529029846191e-09,
+    ]
+    with pytest.raises(NumericalError) as raised:
+        irr(flow=yearly(noise, units="AUD"))
+    error = raised.value
+    assert error.code is Code.NO_SIGN_CHANGE
+    assert error.values == {
+        "inflows": "0.0000000102445483207703 AUD",
+        "outflows": "-50000000 AUD",
+        "tolerance": "0.5 AUD",
+    }
+    assert error.values["inflows"] in str(error)
+    assert error.values["outflows"] in str(error)
+    assert pickle.loads(pickle.dumps(error)).values == error.values
+
+
+@pytest.mark.parametrize(
+    "amounts",
+    [
+        # Outflows of noise, with real inflows.
+        [1000, 0, -1e-9],
+        # An inflow equal to the tolerance: 1e-8 of the gross amounts.
+        [-1000, 1e-5],
+        # No amount above the floor of the tolerance, 1e-8 of one unit.
+        [-1e-9, 2e-9],
+        [0, 0],
+        [],
+    ],
+)
+def test_an_amount_within_the_tolerance_counts_as_zero(amounts):
+    with pytest.raises(NumericalError) as raised:
+        irr(flow=yearly(amounts, units="AUD"))
+    assert raised.value.code is Code.NO_SIGN_CHANGE
+
+
+def test_a_small_inflow_above_the_tolerance_has_a_rate():
+    rate = irr(flow=yearly([-1000, 1.01e-5], units="AUD"))
+    assert rate.magnitude == pytest.approx(100 * (1.01e-8 - 1), rel=1e-12)
+    # The floor of the tolerance applies to small amounts on both sides.
+    assert isclose(
+        actual=irr(flow=yearly([-1e-6, 1.1e-6], units="AUD")),
+        expected=Quantity(text="10 % pa"),
+    )
+
+
+def test_noise_beside_a_real_sign_change_keeps_the_rate():
+    flow = yearly([-100, -1e-9, 1e-9, 110], units="AUD")
+    expected = 100 * (1.1 ** (1 / 3) - 1)
+    assert irr(flow=flow).magnitude == pytest.approx(expected, rel=1e-6)
 
 
 def test_payment_is_pmt_with_units():

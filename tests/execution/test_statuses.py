@@ -92,7 +92,11 @@ def test_each_expected_failure_has_one_row(error, reached, completion, solution,
 
 def test_numerical_codes_are_failed_and_raise_numerical_errors():
     conclusion = statuses.failure(NumericalError("nan"), Reached.SOLVED)
-    assert conclusion.names == (Code.NUMERICAL_FAILURE, Code.ACTIVE_SIDE)
+    assert conclusion.names == (
+        Code.NUMERICAL_FAILURE,
+        Code.ACTIVE_SIDE,
+        Code.NO_SIGN_CHANGE,
+    )
     for code in conclusion.names:
         assert statuses.BY_CODE[code.value].raises is NumericalError
         assert statuses.failed(code.value) is Status.FAILED
@@ -210,6 +214,25 @@ def test_an_expected_error_keeps_its_fields_in_its_diagnostic():
         diagnostic, message=str(error), status=statuses.Status.UNSUPPORTED
     )
     assert type(again) is UnsupportedError
+    assert again._fields() == error._fields()
+
+
+def test_a_numerical_error_keeps_its_values_in_its_diagnostic():
+    error = NumericalError(
+        "no sign change",
+        code=Code.NO_SIGN_CHANGE,
+        values={"inflows": "0 AUD", "outflows": "-5 AUD", "tolerance": "0.5 AUD"},
+    )
+    diagnostic = Diagnostic(
+        severity=Severity.ERROR,
+        code=error.code.value,
+        message=str(error),
+        values=statuses.diagnosed(error),
+    )
+    again = statuses.rebuilt(
+        diagnostic, message=str(error), status=statuses.Status.FAILED
+    )
+    assert type(again) is NumericalError
     assert again._fields() == error._fields()
 
 

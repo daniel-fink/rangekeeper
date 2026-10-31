@@ -8,9 +8,10 @@ from uuid import UUID
 from rangekeeper.duration.dates import NEVER, DateValue
 from rangekeeper.execution.dates import decide
 from rangekeeper.execution.errors import NumericalError, UnsupportedError
-from rangekeeper.execution.expansion import resolve
+from rangekeeper.execution.expansion import fixed_irr_flows, resolve
 from rangekeeper.execution.piecewise import Pieces
 from rangekeeper.execution.preparation import Assertion, Binding
+from rangekeeper.finance.valuation import check_sign_change
 from rangekeeper.model import Model
 from rangekeeper.model.expression.evaluation import (
     evaluate,
@@ -79,12 +80,7 @@ def verify(
     Diagnostics target declarations in the input/contributor revisions so rejected
     candidates never need to be persisted just to support their evidence.
     """
-    values = {}
-    for id in (*binding.assignments, *binding.unknowns):
-        value = recorded_scalar(candidate, binding.references[id])
-        if value is None:
-            raise NumericalError(f"candidate has no quantity for {id}")
-        values[id] = binding.units.convert(quantity=value, to=binding.value_units[id])
+    values = _numbers(binding, candidate)
     dated = {
         id: _recorded_date(candidate, binding.references[id]) for id in binding.dates
     }
@@ -168,6 +164,31 @@ def verify(
                 )
             )
     return Verification(passed=passed, diagnostics=tuple(diagnostics))
+
+
+def check_fixed_irrs(*, binding: Binding, candidate: Model) -> None:
+    """Raise NumericalError when a Flow whose IRR an equation fixes has no sign change.
+
+    A fixed IRR is its NPV row (#277), which holds at any rate on a Flow of
+    zeros. ``rk.finance.irr`` gives no rate for that Flow, so the solve accepts
+    none: the error has the same code, ``no_sign_change`` (#518). A candidate
+    with free unknowns holds only one of its solutions, so call this function
+    only for a candidate whose equations determine every unknown.
+    """
+    values = _numbers(binding, candidate)
+    for flow in fixed_irr_flows(binding, values=values):
+        check_sign_change(flow)
+
+
+def _numbers(binding: Binding, candidate: Model) -> dict[UUID, Quantity]:
+    """Return each numerical value of ``candidate``, in its Measure units."""
+    values = {}
+    for id in (*binding.assignments, *binding.unknowns):
+        value = recorded_scalar(candidate, binding.references[id])
+        if value is None:
+            raise NumericalError(f"candidate has no quantity for {id}")
+        values[id] = binding.units.convert(quantity=value, to=binding.value_units[id])
+    return values
 
 
 def _equation_values(binding: Binding, assertion: Assertion) -> dict[str, str]:

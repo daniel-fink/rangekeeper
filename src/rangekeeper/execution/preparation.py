@@ -29,11 +29,16 @@ from rangekeeper.specification.validation import prepare as validate_prepared
 
 @dataclass(frozen=True, kw_only=True)
 class Assertion:
-    """One imposed predicate and the revision owning its Constraint declaration."""
+    """One imposed predicate and the revision owning its Constraint declaration.
+
+    ``irr_flow`` is the Flow of an equation that fixes an IRR, when ``predicate``
+    is the NPV row of that equation (``execution.expansion``).
+    """
 
     document: UUID
     constraint: Constraint
     predicate: Expression
+    irr_flow: Expression | None = None
 
 
 @dataclass(frozen=True, kw_only=True)

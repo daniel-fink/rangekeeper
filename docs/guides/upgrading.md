@@ -109,6 +109,17 @@ many of the free unknowns as the equations lack. A Run that 1.0.0a2 wrote, with
 the solution `feasible` and an `underdetermined` diagnostic, still reads as
 `UNDERDETERMINED`; nothing needs conversion.
 
+### IRR of near-zero amounts
+
+`rk.finance.irr` and `rx.finance.irr` count an amount of at most
+`1e-8 * max(gross amounts, 1)` as zero when they check for a change of sign
+([#518](https://github.com/daniel-fink/rangekeeper/issues/518)). A cash flow whose
+only inflows are rounding noise now raises `NumericalError` with the code
+`no_sign_change`. It gave a rate near -100 % pa or `numerical_failure` before. A
+solve that evaluates the IRR ends `FAILED` with the same code, so a case that gave
+such a rate has no output now. Read `error.code` and `error.values` to handle it. A
+fixed IRR whose solved Flow has no real change of sign fails in the same way.
+
 ### Flow differences
 
 `Flow.difference(initial=None)` is now `Flow.diff()`, the reverse of

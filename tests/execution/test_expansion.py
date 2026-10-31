@@ -10,7 +10,7 @@ from datetime import date
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.errors import Code, UnsupportedError
+from rangekeeper.errors import Code, NumericalError, UnsupportedError
 from rangekeeper.execution import Status, solve
 from rangekeeper.quantity import isclose
 
@@ -160,6 +160,103 @@ def test_a_fixed_irr_finds_the_land_cost():
         expected=rk.Quantity(text="15 % pa"),
         relative=1e-9,
     )
+
+
+def require_no_sign_change(outcome: rk.execution.Outcome) -> None:
+    """Check that ``outcome`` failed with the code of ``rk.finance.irr`` (#518)."""
+    assert outcome.status is Status.FAILED
+    assert [d.code for d in outcome.diagnostics if d.severity == "error"] == [
+        Code.NO_SIGN_CHANGE
+    ]
+    with pytest.raises(NumericalError) as raised:
+        outcome.raise_for_status()
+    assert raised.value.code is Code.NO_SIGN_CHANGE
+    assert raised.value.values["inflows"] in str(raised.value)
+    assert raised.value.values["outflows"] in str(raised.value)
+
+
+def test_a_solve_gives_no_irr_from_inflows_of_rounding_noise():
+    """The sale leaves part of the loan unpaid, so the equity receives nothing (#518)."""
+    require_no_sign_change(solve(specification=levered().fix(sale_amount="10e6 AUD")))
+
+
+def test_a_fixed_irr_on_the_stressed_plan_finds_a_real_sign_change():
+    target = levered().fix(sale_amount="10e6 AUD", irr="15 % pa").free("land_cost")
+    outcome = solve(specification=target).raise_for_status()
+    assert isclose(
+        actual=rk.finance.irr(flow=outcome["equity_cash"]),
+        expected=rk.Quantity(text="15 % pa"),
+        relative=1e-9,
+    )
+
+
+def event_cash(**values: str) -> rk.Specification:
+    """Return ``cash``: ``-cost`` on the first date and ``income`` on the sale date."""
+    draft = rk.Model(name="Events").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.value(key="cost", units="AUD")
+    project.value(key="income", units="AUD")
+    project.value(key="irr", units="% pa")
+    project.date(key="start_date")
+    project.date(key="sale_date")
+    project.flow(key="cash", units="AUD", periods=YEARS)
+    project.equations(
+        "cash = rx.flow.event(amount=income, on=sale_date)"
+        " - rx.flow.event(amount=cost, on=start_date)",
+        "irr = rx.finance.irr(flow=cash)",
+    )
+    return (
+        draft.commit()
+        .specify(name="Events")
+        .fix(start_date=date(2027, 1, 1), sale_date=date(2031, 1, 1))
+        .fix(**values)
+    )
+
+
+NOISE = "0.000000001 AUD"
+SMALL = "0.00002 AUD"
+
+
+def test_an_irr_of_a_small_inflow_above_the_tolerance_is_a_rate():
+    outcome = solve(specification=event_cash(cost="1000 AUD", income=SMALL))
+    outcome.raise_for_status()
+    assert outcome["irr"] == rk.finance.irr(flow=outcome["cash"])
+
+
+def test_an_irr_of_an_inflow_of_noise_is_not_a_rate():
+    require_no_sign_change(
+        solve(specification=event_cash(cost="1000 AUD", income=NOISE))
+    )
+
+
+@pytest.mark.parametrize("income", [NOISE, SMALL])
+def test_a_fixed_irr_does_not_hold_on_a_small_inflow(income):
+    """The NPV of a real outflow at a real rate is not zero: the row has no solution."""
+    specification = event_cash(cost="1000 AUD", income=income, irr="15 % pa")
+    assert solve(specification=specification).status is Status.INFEASIBLE
+
+
+@pytest.mark.parametrize("income", [NOISE, "0 AUD"])
+def test_a_fixed_irr_gives_no_solution_without_a_real_sign_change(income):
+    """The NPV row holds at any rate here; ``rk.finance.irr`` gives no rate (#518)."""
+    specification = event_cash(income=income, irr="15 % pa").free("cost")
+    require_no_sign_change(solve(specification=specification))
+
+
+def test_a_fixed_irr_solves_a_small_inflow_above_the_tolerance():
+    specification = event_cash(income=SMALL, irr="15 % pa").free("cost")
+    outcome = solve(specification=specification).raise_for_status()
+    assert isclose(
+        actual=rk.finance.irr(flow=outcome["cash"]),
+        expected=rk.Quantity(text="15 % pa"),
+        relative=1e-6,
+    )
+
+
+def test_a_fixed_irr_with_free_unknowns_stays_underdetermined():
+    """The candidate holds one solution of many, so its sign change proves nothing."""
+    specification = event_cash(irr="15 % pa").free("cost", "income")
+    assert solve(specification=specification).status is Status.UNDERDETERMINED
 
 
 def floor(amount: str) -> rk.execution.Outcome:
