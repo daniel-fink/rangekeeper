@@ -181,7 +181,7 @@ def test_the_table_shows_the_records(solved):
 
 
 def test_cell_18_runs_as_written(solved, paths):
-    """Lesson 05's checks, on this project: lesson 05's Model waits (see test_lesson05)."""
+    """Lesson 05's checks, on this project; test_lesson05 runs them on the lesson's Model."""
     fixed = base().fix(
         start_date=date(2028, 1, 1), b_start=date(2030, 1, 1), b_sale_date=NEVER
     )

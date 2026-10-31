@@ -518,11 +518,10 @@ draft = model.edit()
 project = draft.entity(code="project")
 funding = project.formulation(name="Funding")
 funding.equations(
-    "shared_unpaid = shared_works.cumulative() - shared_works.total()",
-    "a_unpaid = a_works.cumulative() - a_works.total()",
-    "b_unpaid = b_works.cumulative() - b_works.total()",
-    "committed = shared_unpaid.since(on=shared_start) + a_unpaid.since(on=a_start)"
-    " + b_unpaid.since(on=b_start)",
+    "shared_unpaid = (shared_works.cumulative() - shared_works.total()).since(on=shared_start)",
+    "a_unpaid = (a_works.cumulative() - a_works.total()).since(on=a_start)",
+    "b_unpaid = (b_works.cumulative() - b_works.total()).since(on=b_start)",
+    "committed = shared_unpaid + a_unpaid + b_unpaid",
     "commitment_gap = rx.max(0 AUD, (committed - equity_available - loan_available).max())",
 )
 model = draft.commit()

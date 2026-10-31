@@ -175,7 +175,8 @@ helpers.show_decisions(of=start_b)
 Narrative: if Building B has not started by 2033, sell its share of the site. The
 price rule is part of the modelling: the site sells at its share of the land cost,
 scaled by the rent index on the sale date. Add it to the Model. The sale date is a
-decided value.
+decided value. The sale is an event, so a site that is not sold has no sale: with
+`NEVER`, the event is zero in every period.
 
 ```python
 # cell 10
@@ -189,8 +190,7 @@ project.value(key="b_land_share", units="ratio")
 project.date(key="b_sale_date")
 project.flow(key="b_site_sale", units="AUD", periods=years)
 project.equations(
-    "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
-    "b_site_sale = rx.flow.event(amount=b_site_value, on=b_sale_date)",
+    "b_site_sale = rx.flow.event(amount=b_land_share * land_cost, on=b_sale_date) * rent_index",
 )
 project.add_to(key="project_cash", term="b_site_sale")
 model = draft.commit()

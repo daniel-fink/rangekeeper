@@ -2,18 +2,18 @@
   "captured_on": "2026-10-12",
   "files": {
     "03_base_case.specification.json": {
-      "bytes": 289687,
+      "bytes": 289843,
       "description": "The funded Specification of walkthrough lesson 03 (cell 19), on 03_base_plan.model.json, with that Model. Walkthrough lesson 04 loads it. examples/data/derive_lesson_documents.py derives it from the cells of lesson 03 and base_plan.json.",
       "licence": "CC-BY-4.0",
       "origin": "derived",
-      "sha256": "494405021c5477c54813306929c0150a9780e38b3b5136122e76c9ff4d6f2b55"
+      "sha256": "28ad35b15e7896e9a9a28668ed15fd54b19f3a0df33caade12f1929cf7a6963a"
     },
     "03_base_plan.model.json": {
-      "bytes": 233645,
+      "bytes": 233801,
       "description": "The Model of walkthrough lesson 03, with the commitments of its optional cell 21. Walkthrough lesson 04 loads it. examples/data/derive_lesson_documents.py derives it from the cells of lesson 03.",
       "licence": "CC-BY-4.0",
       "origin": "derived",
-      "sha256": "05805e82480b84ad0d20e019698015988178de798fe7bc08e209b56e7c382cd8"
+      "sha256": "9bb6cb2972e17eb4444b813fd593e39de65ca12e0e3f34653545cc39bac56e6e"
     },
     "associations.json": {
       "bytes": 9415,
