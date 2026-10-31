@@ -8,9 +8,7 @@ import pytest
 import rangekeeper as rk
 from rangekeeper.errors import ContractError, UnitError
 from rangekeeper.market import Dynamics, PathGenerator, generate, generators
-from rangekeeper.market._components import Draws, path
-from rangekeeper.market._paths import construct_paths
-from rangekeeper.market.contracts import DIRECT
+from rangekeeper.market._components import Components, Draws, path
 from rangekeeper.market.series import GENERATOR, components
 from rangekeeper.model import Distribution
 
@@ -114,37 +112,41 @@ def test_the_capture_record_keeps_the_generator_and_its_parameters():
     assert isinstance(GENERATOR, PathGenerator) and "dynamics" in generators
 
 
-def test_dynamics_match_the_earlier_market_method_on_the_same_draws():
-    """The private components against ``_paths.construct_paths`` on the same draws.
+def earlier_market_method(innovations, noise, events):
+    """Return the earlier ``market`` method's index and its noise and shock factors.
 
-    #299 requires the results of today's dynamics on the same draws. The
-    earlier method is the private ``market`` scenario method, which #140
-    removes with the scenario plan.
+    This is an independent copy of the formulas of the scenario method that
+    #140 removed (rk 0.8's market dynamics): growth 2 %, AR(1) coefficient 0.2,
+    mean reversion 0.1, a 10-period cycle of amplitude 0.1, and a shock of
+    -25 % with dissipation 0.5 at the first event below 0.02. #299 compared the
+    components with that method on the same draws.
     """
+    growth, count = 0.02, len(innovations)
+    trend = [(1 + growth) ** i for i in range(count)]
+    returns, level = [], []
+    for i, innovation in enumerate(innovations):
+        returns.append(innovation + (0.2 * returns[-1] if returns else 0))
+        level.append(
+            trend[0]
+            if i == 0
+            else level[-1] * (1 + growth + returns[i])
+            + 0.1 * (trend[i - 1] - level[-1])
+        )
+    space = [
+        (1 + 0.1 * math.sin(2 * math.pi * i / 10)) * level[i] for i in range(count)
+    ]
+    first = next(i for i, event in enumerate(events) if event < 0.02)
+    shock = [0.0 if i < first else -0.25 * 0.5 ** (i - first) for i in range(count)]
+    return space, [(1 + n) * (1 + s) for n, s in zip(noise, shock, strict=True)]
+
+
+def test_dynamics_match_the_earlier_market_method_on_the_same_draws():
+    """The private components on fixed draws, against ``earlier_market_method``."""
     count = 12
     innovations = tuple(0.03 * math.sin(3.1 * i) for i in range(count))
     noise = tuple(0.015 * math.cos(1.7 * i) for i in range(count))
     events = (0.9, 0.5, 0.01, 0.7, *([0.5] * (count - 4)))
-    parameters = {
-        name: rule.default for name, rule in DIRECT.items() if rule.default is not None
-    }
-    parameters.update(
-        growth_rate=0.02,
-        volatility_per_period=0.03,
-        space_period=10.0,
-        space_amplitude=0.1,
-        space_phase=0.0,
-        noise_lower=-0.02,
-        noise_upper=0.02,
-        shock_likelihood=0.02,
-        shock_impact=-0.25,
-        shock_dissipation=0.5,
-    )
-    earlier, _ = construct_paths(
-        "market",
-        parameters,
-        {"innovations": innovations, "noise": noise, "events": events},
-    )
+    space, factors = earlier_market_method(innovations, noise, events)
     parts = components(
         {
             "trend": 0.02,
@@ -158,24 +160,18 @@ def test_dynamics_match_the_earlier_market_method_on_the_same_draws():
         step=1.0,
     )
     level = path(
-        components=parts.__class__(
+        components=Components(
             trend=parts.trend, cycle=parts.cycle, volatility=parts.volatility
         ),
         count=count,
         draws=Draws(innovations=innovations),
     )
-    assert level == pytest.approx(earlier["space_market_price_factors"], rel=1e-12)
+    assert level == pytest.approx(space, rel=1e-12)
     full = path(
         components=parts,
         count=count,
         draws=Draws(innovations=innovations, noise=noise, events=events),
     )
-    factors = [
-        h / t
-        for h, t in zip(
-            earlier["historical_value"], earlier["asset_true_value"], strict=True
-        )
-    ]
     assert [f / s for f, s in zip(full, level, strict=True)] == pytest.approx(
         factors, rel=1e-12
     )

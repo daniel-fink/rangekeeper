@@ -234,34 +234,6 @@
       "title": "Binding",
       "type": "object"
     },
-    "CalculationProvenance": {
-      "additionalProperties": false,
-      "description": "Calculation implementation identity, separate from captured sampling provenance.",
-      "properties": {
-        "fingerprint": {
-          "description": "Format-prefixed digest of the calculation manifest, which covers its sources, resources and dependency versions.",
-          "type": "string"
-        },
-        "name": {
-          "description": "Name of the calculation implementation.",
-          "type": "string"
-        },
-        "versions": {
-          "description": "Dependency versions included in the fingerprint.",
-          "items": {
-            "$ref": "#/$defs/LibraryVersion"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "name",
-        "fingerprint",
-        "versions"
-      ],
-      "title": "CalculationProvenance",
-      "type": "object"
-    },
     "Call": {
       "additionalProperties": false,
       "description": "Application of an identified Function to positional and named expression arguments.",
@@ -2742,27 +2714,6 @@
       "title": "ObjectiveKind",
       "type": "string"
     },
-    "ObservationAvailability": {
-      "additionalProperties": false,
-      "description": "Earliest date a recorded Value or Movement may be supplied to a rule.",
-      "properties": {
-        "available_at": {
-          "description": "Earliest date on which a rule can observe the target.",
-          "format": "date",
-          "type": "string"
-        },
-        "target": {
-          "$ref": "#/$defs/Reference",
-          "description": "Recorded Value or Movement; scenario validation requires a Movement."
-        }
-      },
-      "required": [
-        "target",
-        "available_at"
-      ],
-      "title": "ObservationAvailability",
-      "type": "object"
-    },
     "ObservationBinding": {
       "additionalProperties": false,
       "description": "An explicit observation target. An optional date may delay availability but cannot advance it.",
@@ -3407,16 +3358,6 @@
             "null"
           ]
         },
-        "scenarios": {
-          "description": "Captured scenario realizations, in order, with their inputs, paths and observation availability.",
-          "items": {
-            "$ref": "#/$defs/ScenarioRealization"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
         "sources": {
           "description": "Source editions referenced by Claim Locations; each Source is stored once.",
           "items": {
@@ -3966,170 +3907,6 @@
         "implementations"
       ],
       "title": "Runtime",
-      "type": "object"
-    },
-    "ScenarioParameter": {
-      "additionalProperties": false,
-      "description": "One named constant or sampled parameter; exactly one input is required by semantic validation.",
-      "properties": {
-        "distribution": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Distribution"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Distribution to sample; give this or quantity, not both."
-        },
-        "name": {
-          "description": "Parameter name of the market method contract, unique within the plan.",
-          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
-          "type": "string"
-        },
-        "quantity": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Quantity"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Fixed quantity; give this or distribution, not both."
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "title": "ScenarioParameter",
-      "type": "object"
-    },
-    "ScenarioPlan": {
-      "additionalProperties": false,
-      "description": "Finite market generation plan. This is input-generation provenance, not governing mathematics.",
-      "properties": {
-        "id": {
-          "description": "Stable identity of the plan.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "method": {
-          "description": "Code of the market method contract that the plan uses.",
-          "type": "string"
-        },
-        "parameters": {
-          "description": "Parameters of the method; their names match the parameter inventory of the method.",
-          "items": {
-            "$ref": "#/$defs/ScenarioParameter"
-          },
-          "type": "array"
-        },
-        "periods": {
-          "description": "Nonempty ordered calendar periods of the generated paths; periods do not overlap.",
-          "items": {
-            "$ref": "#/$defs/Period"
-          },
-          "type": "array"
-        },
-        "seed": {
-          "description": "Nonnegative master seed of the random streams.",
-          "minimum": 0,
-          "type": "integer"
-        }
-      },
-      "required": [
-        "id",
-        "method",
-        "seed",
-        "periods",
-        "parameters"
-      ],
-      "title": "ScenarioPlan",
-      "type": "object"
-    },
-    "ScenarioRealization": {
-      "additionalProperties": false,
-      "description": "Captured scenario inputs and paths. Stored draws permit replay without random sampling.",
-      "properties": {
-        "availability": {
-          "description": "Earliest observation dates of the recorded Movements.",
-          "items": {
-            "$ref": "#/$defs/ObservationAvailability"
-          },
-          "type": "array"
-        },
-        "calculation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/CalculationProvenance"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Calculation that produced the realized paths; absent for inputs without realized paths."
-        },
-        "generator": {
-          "description": "Random generation algorithm, such as numpy.SeedSequence/PCG64, or supplied for captured inputs.",
-          "type": "string"
-        },
-        "id": {
-          "description": "Stable identity of the realization.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "inputs": {
-          "description": "Bindings of the captured input Values.",
-          "items": {
-            "$ref": "#/$defs/Binding"
-          },
-          "type": "array"
-        },
-        "key": {
-          "description": "Scenario key; with the plan seed, it determines the random streams.",
-          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
-          "type": "string"
-        },
-        "outputs": {
-          "description": "Bindings of the realized path Values; empty until the paths are realized.",
-          "items": {
-            "$ref": "#/$defs/Binding"
-          },
-          "type": "array"
-        },
-        "plan": {
-          "$ref": "#/$defs/ScenarioPlan",
-          "description": "Complete plan from which the scenario inputs were generated."
-        },
-        "streams": {
-          "description": "Random streams used to sample the inputs; empty for supplied inputs.",
-          "items": {
-            "$ref": "#/$defs/RandomStream"
-          },
-          "type": "array"
-        },
-        "versions": {
-          "description": "Dependency versions of the sampling or capture environment.",
-          "items": {
-            "$ref": "#/$defs/LibraryVersion"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "id",
-        "plan",
-        "key",
-        "generator",
-        "versions",
-        "streams",
-        "inputs",
-        "outputs",
-        "availability"
-      ],
-      "title": "ScenarioRealization",
       "type": "object"
     },
     "Selection": {

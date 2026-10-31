@@ -483,7 +483,6 @@ class _RunValidation:
                             effective["rules"],
                             run["report"].get("rule_evidence") or [],
                             scope=scope,
-                            provenance=model.get("provenance") or {},
                             units=self.units,
                         )
                     if outputs:

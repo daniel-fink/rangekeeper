@@ -46,7 +46,6 @@ def validate_outputs(
                 effective["rules"],
                 decisions,
                 scope=scope,
-                provenance=model.get("provenance") or {},
                 units=units,
             )
         )

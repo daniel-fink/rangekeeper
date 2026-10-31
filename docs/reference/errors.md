@@ -33,7 +33,7 @@ contract: a Run that is read back has the same code text.
 | Hierarchies | `hierarchy.*` | `HIERARCHY_CYCLE`, `HIERARCHY_MULTIPLE_PARENTS` |
 | Equation text | `equation.*` | `EQUATION_SYNTAX` (text that does not parse), `EQUATION_FUNCTION` (a function, method or member that equation text cannot use) |
 | Alignment | `alignment.*` for Periods and Flow coordinates that do not align | `ALIGNMENT_CROSSES`, `ALIGNMENT_PARTIAL`, `ALIGNMENT_MIXED`, `ALIGNMENT_DIFFER`, `ALIGNMENT_DUPLICATE`, `ALIGNMENT_GAP` |
-| Comparisons | `comparison.*`, from `rk.execution.compare` | `COMPARISON_CASES`, `COMPARISON_SCALAR`, `COMPARISON_BATCH`, `COMPARISON_EMPTY` |
+| Comparisons | `comparison.*`, from `rk.execution.compare` | `COMPARISON_CASES`, `COMPARISON_PATHS` (batches across other market paths), `COMPARISON_SCALAR`, `COMPARISON_BATCH`, `COMPARISON_EMPTY` |
 | Distributions | `distribution.*`, from `Outcome.distribution` and `Outcome.mean` | `DISTRIBUTION_VALUE`: a Flow value has no distribution, and a date value has counts but no mean |
 | Other errors | Bare words | `DECODE`, `ENCODING`, `REVISION_CONFLICT`, `UNSUPPORTED_VERSION` |
 | Execution | Bare words in Run diagnostics, and in the diagnostics of a `Replay` | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED`; `REPLAY_MISMATCH` (a replay of a stored Run gives another result) |
@@ -166,7 +166,6 @@ all of its fields through `pickle`.
 | `UnknownExtensionError` | `LookupError` | `EXTENSION_UNKNOWN`. `suggestions` gives registered names to try ([extension points](extensions.md)) |
 | `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
 | `model.system`: `SelectionError`, `RollupError` | `ValueError` | `SELECTION`, `ROLLUP` |
-| `market`: `ReplayUnavailableError` | `ValueError` | `REPLAY_UNAVAILABLE` |
 | `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
 | `NumericalError` | `ValueError` | `NUMERICAL_FAILURE`, or `NUMERICAL_REJECTION` when verification rejected a candidate |
 | `BackendUnavailableError`, `AttemptDeadlineError` | `RuntimeError` | `BACKEND_UNAVAILABLE`, `ATTEMPT_DEADLINE` |
@@ -223,10 +222,9 @@ unresolved or non-finite amount raises `NumericalError`, incompatible units
 raise `UnitError`, coordinates that do not align raise `AlignmentError`, a
 missing line raises `MissingReferenceError`, and conflicting names or revisions
 in `Stream.merge` raise `IdentityConflictError` or `RevisionConflictError`. The
-older `finance.financial` functions and the other internal `market` modules
-still raise plain errors; their replacements
-([#167](https://github.com/daniel-fink/rangekeeper/issues/167),
-[#298](https://github.com/daniel-fink/rangekeeper/issues/298)) follow the rule.
+older `finance.financial` functions still raise plain errors; their
+replacements ([#167](https://github.com/daniel-fink/rangekeeper/issues/167))
+follow the rule.
 An optional dependency that is not installed raises
 `ImportError`.
 `ValidationError` has the same name as an error in jsonschema, which the

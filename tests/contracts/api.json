@@ -131,6 +131,10 @@
    "kind": "module",
    "module": "rangekeeper.io"
   },
+  "market": {
+   "kind": "module",
+   "module": "rangekeeper.market"
+  },
   "model": {
    "kind": "module",
    "module": "rangekeeper.model"
@@ -469,6 +473,7 @@
     "COMPARISON_BATCH",
     "COMPARISON_CASES",
     "COMPARISON_EMPTY",
+    "COMPARISON_PATHS",
     "COMPARISON_SCALAR",
     "DISTRIBUTION_VALUE",
     "HIERARCHY_CYCLE",
@@ -1608,18 +1613,6 @@
   }
  },
  "rangekeeper.market": {
-  "CalculationProvenance": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, name: str, fingerprint: str, versions: tuple[LibraryVersion, ...]) -> None",
-    "fingerprint": "property",
-    "name": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, fingerprint: str | Unset = <Unset>, versions: tuple[LibraryVersion, ...] | Unset = <Unset>) -> Self",
-    "versions": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, name: str, fingerprint: str, versions: tuple[LibraryVersion, ...]) -> None"
-  },
   "Dynamics": {
    "kind": "class",
    "members": {
@@ -1652,32 +1645,6 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, name: str, version: str) -> None"
   },
-  "Market": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, model: rangekeeper.model.model.Model, realization: rangekeeper.schema.records.ScenarioRealization) -> None",
-    "asset_cycle": "property",
-    "asset_market": "property",
-    "asset_true_value": "property",
-    "autoregressive_returns": "property",
-    "black_swan": "property",
-    "cumulative_volatility": "property",
-    "historical_value": "property",
-    "implied_reversion_cap_rates": "property",
-    "noise": "property",
-    "noisy_value": "property",
-    "resolve_input": "method (self, name: str) -> rangekeeper.schema.records.Value",
-    "resolve_output": "method (self, name: str) -> rangekeeper.schema.records.Value",
-    "returns": "property",
-    "space_cycle": "property",
-    "space_market": "property",
-    "space_market_price_factors": "property",
-    "trend": "property",
-    "value": "method (self, name: str) -> rangekeeper.schema.records.Value"
-   },
-   "module": "rangekeeper.market.view",
-   "signature": "(model: rangekeeper.model.model.Model, realization: rangekeeper.schema.records.ScenarioRealization) -> None"
-  },
   "MarketPath": {
    "kind": "class",
    "members": {
@@ -1687,17 +1654,6 @@
    },
    "module": "rangekeeper.market.paths",
    "signature": "(paths: Paths, record: rangekeeper.schema.records.MarketPath) -> None"
-  },
-  "ObservationAvailability": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, target: Reference, available_at: Date) -> None",
-    "available_at": "property",
-    "replace": "method (self, *, target: Reference | Unset = <Unset>, available_at: Date | Unset = <Unset>) -> Self",
-    "target": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, target: Reference, available_at: Date) -> None"
   },
   "PathAmounts": {
    "kind": "class",
@@ -1797,59 +1753,6 @@
    "module": "rangekeeper.schema.records",
    "signature": "(*, name: str, identifier: str) -> None"
   },
-  "ReplayUnavailableError": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
-   },
-   "module": "rangekeeper.market._replay",
-   "signature": "(message: str, *, code: rangekeeper.shared.codes.Code | None = None, document_id: uuid.UUID | None = None, path: str = '', targets: collections.abc.Iterable[uuid.UUID] = tuple()) -> None"
-  },
-  "ScenarioParameter": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, name: str, quantity: Quantity | None | Unset = <Unset>, distribution: Distribution | None | Unset = <Unset>) -> None",
-    "distribution": "property",
-    "name": "property",
-    "quantity": "property",
-    "replace": "method (self, *, name: str | Unset = <Unset>, quantity: Quantity | None | Unset | Omit = <Unset>, distribution: Distribution | None | Unset | Omit = <Unset>) -> Self"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, name: str, quantity: Quantity | None | Unset = <Unset>, distribution: Distribution | None | Unset = <Unset>) -> None"
-  },
-  "ScenarioPlan": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, id: UUID, method: str, seed: int, periods: tuple[Period, ...], parameters: tuple[ScenarioParameter, ...]) -> None",
-    "id": "property",
-    "method": "property",
-    "parameters": "property",
-    "periods": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, method: str | Unset = <Unset>, seed: int | Unset = <Unset>, periods: tuple[Period, ...] | Unset = <Unset>, parameters: tuple[ScenarioParameter, ...] | Unset = <Unset>) -> Self",
-    "seed": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, id: UUID, method: str, seed: int, periods: tuple[Period, ...], parameters: tuple[ScenarioParameter, ...]) -> None"
-  },
-  "ScenarioRealization": {
-   "kind": "class",
-   "members": {
-    "__init__": "method (self, *, id: UUID, plan: ScenarioPlan, key: str, calculation: CalculationProvenance | None | Unset = <Unset>, generator: str, versions: tuple[LibraryVersion, ...], streams: tuple[RandomStream, ...], inputs: tuple[Binding, ...], outputs: tuple[Binding, ...], availability: tuple[ObservationAvailability, ...]) -> None",
-    "availability": "property",
-    "calculation": "property",
-    "generator": "property",
-    "id": "property",
-    "inputs": "property",
-    "key": "property",
-    "outputs": "property",
-    "plan": "property",
-    "replace": "method (self, *, id: UUID | Unset = <Unset>, plan: ScenarioPlan | Unset = <Unset>, key: str | Unset = <Unset>, calculation: CalculationProvenance | None | Unset | Omit = <Unset>, generator: str | Unset = <Unset>, versions: tuple[LibraryVersion, ...] | Unset = <Unset>, streams: tuple[RandomStream, ...] | Unset = <Unset>, inputs: tuple[Binding, ...] | Unset = <Unset>, outputs: tuple[Binding, ...] | Unset = <Unset>, availability: tuple[ObservationAvailability, ...] | Unset = <Unset>) -> Self",
-    "streams": "property",
-    "versions": "property"
-   },
-   "module": "rangekeeper.schema.records",
-   "signature": "(*, id: UUID, plan: ScenarioPlan, key: str, calculation: CalculationProvenance | None | Unset = <Unset>, generator: str, versions: tuple[LibraryVersion, ...], streams: tuple[RandomStream, ...], inputs: tuple[Binding, ...], outputs: tuple[Binding, ...], availability: tuple[ObservationAvailability, ...]) -> None"
-  },
   "generate": {
    "kind": "function",
    "module": "rangekeeper.market.series",
@@ -1858,11 +1761,6 @@
   "generators": {
    "kind": "value",
    "type": "Registry"
-  },
-  "replay": {
-   "kind": "function",
-   "module": "rangekeeper.market._replay",
-   "signature": "(model: rangekeeper.model.model.Model, *, realization: uuid.UUID | None = None) -> rangekeeper.market.view.Market"
   }
  },
  "rangekeeper.model": {
@@ -2359,15 +2257,14 @@
   "Provenance": {
    "kind": "class",
    "members": {
-    "__init__": "method (self, *, sources: tuple[Source, ...] | None | Unset = <Unset>, claims: tuple[Claim, ...] | None | Unset = <Unset>, facts: tuple[Fact, ...] | None | Unset = <Unset>, scenarios: tuple[ScenarioRealization, ...] | None | Unset = <Unset>) -> None",
+    "__init__": "method (self, *, sources: tuple[Source, ...] | None | Unset = <Unset>, claims: tuple[Claim, ...] | None | Unset = <Unset>, facts: tuple[Fact, ...] | None | Unset = <Unset>) -> None",
     "claims": "property",
     "facts": "property",
-    "replace": "method (self, *, sources: tuple[Source, ...] | None | Unset | Omit = <Unset>, claims: tuple[Claim, ...] | None | Unset | Omit = <Unset>, facts: tuple[Fact, ...] | None | Unset | Omit = <Unset>, scenarios: tuple[ScenarioRealization, ...] | None | Unset | Omit = <Unset>) -> Self",
-    "scenarios": "property",
+    "replace": "method (self, *, sources: tuple[Source, ...] | None | Unset | Omit = <Unset>, claims: tuple[Claim, ...] | None | Unset | Omit = <Unset>, facts: tuple[Fact, ...] | None | Unset | Omit = <Unset>) -> Self",
     "sources": "property"
    },
    "module": "rangekeeper.schema.records",
-   "signature": "(*, sources: tuple[Source, ...] | None | Unset = <Unset>, claims: tuple[Claim, ...] | None | Unset = <Unset>, facts: tuple[Fact, ...] | None | Unset = <Unset>, scenarios: tuple[ScenarioRealization, ...] | None | Unset = <Unset>) -> None"
+   "signature": "(*, sources: tuple[Source, ...] | None | Unset = <Unset>, claims: tuple[Claim, ...] | None | Unset = <Unset>, facts: tuple[Fact, ...] | None | Unset = <Unset>) -> None"
   },
   "ReconciliationStatus": {
    "kind": "enum",

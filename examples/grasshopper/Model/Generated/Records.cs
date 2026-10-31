@@ -151,32 +151,6 @@ public sealed class Binding : WireRecord
     }
 }
 
-/// <summary>Schema-derived CalculationProvenance wire record. Exports and nested reads are detached.</summary>
-public sealed class CalculationProvenance : WireRecord
-{
-    public CalculationProvenance() { }
-    public CalculationProvenance(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field fingerprint; missing and null remain distinct.</summary>
-    public string Fingerprint
-    {
-        get => Read<string>("fingerprint");
-        init => Write("fingerprint", value);
-    }
-    /// <summary>Wire field name; missing and null remain distinct.</summary>
-    public string Name
-    {
-        get => Read<string>("name");
-        init => Write("name", value);
-    }
-    /// <summary>Wire field versions; missing and null remain distinct.</summary>
-    public IReadOnlyList<LibraryVersion> Versions
-    {
-        get => Read<IReadOnlyList<LibraryVersion>>("versions");
-        init => Write("versions", value);
-    }
-}
-
 /// <summary>Schema-derived Call wire record. Exports and nested reads are detached.</summary>
 public sealed class Call : WireRecord
 {
@@ -1441,26 +1415,6 @@ public sealed class Objective : WireRecord
     }
 }
 
-/// <summary>Schema-derived ObservationAvailability wire record. Exports and nested reads are detached.</summary>
-public sealed class ObservationAvailability : WireRecord
-{
-    public ObservationAvailability() { }
-    public ObservationAvailability(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field available_at; missing and null remain distinct.</summary>
-    public DateOnly AvailableAt
-    {
-        get => Read<DateOnly>("available_at");
-        init => Write("available_at", value);
-    }
-    /// <summary>Wire field target; missing and null remain distinct.</summary>
-    public Reference Target
-    {
-        get => Read<Reference>("target");
-        init => Write("target", value);
-    }
-}
-
 /// <summary>Schema-derived ObservationBinding wire record. Exports and nested reads are detached.</summary>
 public sealed class ObservationBinding : WireRecord
 {
@@ -1869,12 +1823,6 @@ public sealed class Provenance : WireRecord
         get => ReadOptional<IReadOnlyList<Fact>>("facts");
         init => WriteOptional("facts", value);
     }
-    /// <summary>Wire field scenarios; missing and null remain distinct.</summary>
-    public Optional<IReadOnlyList<ScenarioRealization>> Scenarios
-    {
-        get => ReadOptional<IReadOnlyList<ScenarioRealization>>("scenarios");
-        init => WriteOptional("scenarios", value);
-    }
     /// <summary>Wire field sources; missing and null remain distinct.</summary>
     public Optional<IReadOnlyList<Source>> Sources
     {
@@ -2272,138 +2220,6 @@ public sealed class Runtime : WireRecord
     {
         get => ReadOptional<DateTimeOffset>("started_at");
         init => WriteOptional("started_at", value);
-    }
-}
-
-/// <summary>Schema-derived ScenarioParameter wire record. Exports and nested reads are detached.</summary>
-public sealed class ScenarioParameter : WireRecord
-{
-    public ScenarioParameter() { }
-    public ScenarioParameter(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field distribution; missing and null remain distinct.</summary>
-    public Optional<Distribution> Distribution
-    {
-        get => ReadOptional<Distribution>("distribution");
-        init => WriteOptional("distribution", value);
-    }
-    /// <summary>Wire field name; missing and null remain distinct.</summary>
-    public string Name
-    {
-        get => Read<string>("name");
-        init => Write("name", value);
-    }
-    /// <summary>Wire field quantity; missing and null remain distinct.</summary>
-    public Optional<Quantity> Quantity
-    {
-        get => ReadOptional<Quantity>("quantity");
-        init => WriteOptional("quantity", value);
-    }
-}
-
-/// <summary>Schema-derived ScenarioPlan wire record. Exports and nested reads are detached.</summary>
-public sealed class ScenarioPlan : WireRecord
-{
-    public ScenarioPlan() { }
-    public ScenarioPlan(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field id; missing and null remain distinct.</summary>
-    public Guid Id
-    {
-        get => Read<Guid>("id");
-        init => Write("id", value);
-    }
-    /// <summary>Wire field method; missing and null remain distinct.</summary>
-    public string Method
-    {
-        get => Read<string>("method");
-        init => Write("method", value);
-    }
-    /// <summary>Wire field parameters; missing and null remain distinct.</summary>
-    public IReadOnlyList<ScenarioParameter> Parameters
-    {
-        get => Read<IReadOnlyList<ScenarioParameter>>("parameters");
-        init => Write("parameters", value);
-    }
-    /// <summary>Wire field periods; missing and null remain distinct.</summary>
-    public IReadOnlyList<Period> Periods
-    {
-        get => Read<IReadOnlyList<Period>>("periods");
-        init => Write("periods", value);
-    }
-    /// <summary>Wire field seed; missing and null remain distinct.</summary>
-    public global::System.Numerics.BigInteger Seed
-    {
-        get => Read<global::System.Numerics.BigInteger>("seed");
-        init => Write("seed", value);
-    }
-}
-
-/// <summary>Schema-derived ScenarioRealization wire record. Exports and nested reads are detached.</summary>
-public sealed class ScenarioRealization : WireRecord
-{
-    public ScenarioRealization() { }
-    public ScenarioRealization(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field availability; missing and null remain distinct.</summary>
-    public IReadOnlyList<ObservationAvailability> Availability
-    {
-        get => Read<IReadOnlyList<ObservationAvailability>>("availability");
-        init => Write("availability", value);
-    }
-    /// <summary>Wire field calculation; missing and null remain distinct.</summary>
-    public Optional<CalculationProvenance> Calculation
-    {
-        get => ReadOptional<CalculationProvenance>("calculation");
-        init => WriteOptional("calculation", value);
-    }
-    /// <summary>Wire field generator; missing and null remain distinct.</summary>
-    public string Generator
-    {
-        get => Read<string>("generator");
-        init => Write("generator", value);
-    }
-    /// <summary>Wire field id; missing and null remain distinct.</summary>
-    public Guid Id
-    {
-        get => Read<Guid>("id");
-        init => Write("id", value);
-    }
-    /// <summary>Wire field inputs; missing and null remain distinct.</summary>
-    public IReadOnlyList<Binding> Inputs
-    {
-        get => Read<IReadOnlyList<Binding>>("inputs");
-        init => Write("inputs", value);
-    }
-    /// <summary>Wire field key; missing and null remain distinct.</summary>
-    public string Key
-    {
-        get => Read<string>("key");
-        init => Write("key", value);
-    }
-    /// <summary>Wire field outputs; missing and null remain distinct.</summary>
-    public IReadOnlyList<Binding> Outputs
-    {
-        get => Read<IReadOnlyList<Binding>>("outputs");
-        init => Write("outputs", value);
-    }
-    /// <summary>Wire field plan; missing and null remain distinct.</summary>
-    public ScenarioPlan Plan
-    {
-        get => Read<ScenarioPlan>("plan");
-        init => Write("plan", value);
-    }
-    /// <summary>Wire field streams; missing and null remain distinct.</summary>
-    public IReadOnlyList<RandomStream> Streams
-    {
-        get => Read<IReadOnlyList<RandomStream>>("streams");
-        init => Write("streams", value);
-    }
-    /// <summary>Wire field versions; missing and null remain distinct.</summary>
-    public IReadOnlyList<LibraryVersion> Versions
-    {
-        get => Read<IReadOnlyList<LibraryVersion>>("versions");
-        init => Write("versions", value);
     }
 }
 

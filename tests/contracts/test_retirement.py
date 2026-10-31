@@ -94,6 +94,10 @@ for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system
         "rangekeeper.model.distribution",
         "rangekeeper.model.characteristics",
         "rangekeeper.io.migration",
+        "rangekeeper.market.dynamics",
+        "rangekeeper.market.generation",
+        "rangekeeper.market.contracts",
+        "rangekeeper.market.view",
     ],
 )
 def test_removed_1_0_modules_are_absent(name):

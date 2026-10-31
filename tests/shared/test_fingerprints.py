@@ -56,7 +56,7 @@ def test_closure_follows_static_lazy_and_relative_imports(tmp_path):
 def test_closure_names_real_files_and_fails_on_missing_modules(tmp_path):
     # A re-exported class name never resolves to a same-named file on a
     # case-insensitive file system.
-    closure = import_closure(["market/generation.py"], package=PACKAGE)
+    closure = import_closure(["market/series.py"], package=PACKAGE)
     names = {
         path: set(p.name for p in (PACKAGE / path).parent.iterdir()) for path in closure
     }
@@ -137,12 +137,22 @@ def test_execution_closures_cover_every_module_that_runs(monkeypatch):
         assert trace.outside(closure, injected=injected) == set(), role
 
 
-def test_scenario_closure_covers_every_module_that_runs():
-    from rangekeeper.market import generation as market
-    from rangekeeper.market import implementation
-    from tests.market.test_contracts import base, plan
+def test_path_generator_closure_covers_every_module_that_runs():
+    """The fingerprint of the dynamics generator covers the modules that it runs."""
+    from datetime import date
 
+    from rangekeeper.duration import Frequency, Periods
+    from rangekeeper.market import Dynamics, generate
+    from rangekeeper.market.series import GENERATOR
+
+    periods = Periods(start=date(2027, 1, 1), frequency=Frequency.YEAR, count=3)
+    dynamics = Dynamics(trend="2 % pa", volatility="5 % pa", noise="1 %")
     trace = Trace()
-    trace.wrap(market.generate)(base(), plan(), scenario_keys=["traced"])
+    trace.wrap(generate)(
+        dynamics={"rent_index": dynamics}, periods=periods, seed=1, count=2
+    )
     assert trace.ran
-    assert trace.outside(implementation.source_paths()) == set()
+    module = type(GENERATOR).__module__.removeprefix("rangekeeper.")
+    closure = import_closure([module.replace(".", "/") + ".py"], package=PACKAGE)
+    assert {"market/_kernels.py", "market/_components.py"} <= set(closure)
+    assert trace.outside(closure) == set()
