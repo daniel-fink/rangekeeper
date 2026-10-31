@@ -362,9 +362,9 @@ This is the replay of a Run. The path replay of the internal `market` package,
 their captured inputs, and it solves nothing
 ([market paths](market-paths-and-rules.md)). Replay does not compare rule
 evidence yet: the comparison of decision traces, with the first window date
-that differs, follows with sequential rules
+that differs, needs the stored trace
 ([ADR-021](../decisions/021-sequential-decisions.md#verification-and-replay),
-[#215](https://github.com/daniel-fink/rangekeeper/issues/215)).
+[#300](https://github.com/daniel-fink/rangekeeper/issues/300)).
 
 ## Configuration
 
@@ -446,7 +446,7 @@ time limit has passed. The stages call it between steps.
 | `execution/statuses.py` | `FAILURES`: one row for each expected error, with its completion, solution, `Status` and diagnostic code. `TERMINATIONS`: one row for each `Termination`. |
 | `execution/pipeline.py` | `solve`: the stages for each case of a batch, in order. `execute`: `solve`, then the publication of the inputs that the store lacks, and of each output before its Run. |
 | `execution/replaying.py` | `replay` and `Replay`: solve a stored Run's Specification again and compare each case with the stored case. |
-| `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md). |
+| `execution/rule/` | Finite rule evaluation over explicit observations (`execution.rule.evaluate`), and the internal sequential engine (`execution.rule.sequence`). The rule declarations are in `specification.rule`. See [market paths and rules](market-paths-and-rules.md#sequential-rule-evaluation). |
 
 Derived stage results are runtime objects, not a second
 authoritative field schema. Domain classes do not import execution or solvers.
@@ -748,6 +748,8 @@ severity, or else the last error. A code that the table does not name gives
 | `UnitError` | failed | `not_assessed`; `unknown` once solved | `INVALID` | `incompatible_units` | `UnitError` |
 | `BackendUnavailableError` | failed | `not_assessed` | `FAILED` | `backend_unavailable` | `BackendUnavailableError` |
 | `NumericalError` | failed | `unknown` | `FAILED` | The error's own code: `numerical_failure`, `active_side` when no active side of each `max` and `min` holds ([piecewise equations](#piecewise-equations)), or `no_sign_change` for an IRR of a Flow without a real change of sign | `NumericalError` |
+| `AvailabilityError` | failed | `not_assessed` | `FAILED` | `observation_unavailable` | `AvailabilityError` |
+| `DecisionError` | failed | `unknown` | `FAILED` | The error's own code: `decision_changes_past`, `provisional_infeasible` or `rule_trace` | `DecisionError` |
 | `ArithmeticError` | failed | `unknown` | `FAILED` | `numerical_failure` | `NumericalError` |
 
 `Attempt.fail` builds the diagnostic of each expected failure.

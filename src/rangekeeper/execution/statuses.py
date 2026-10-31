@@ -12,6 +12,7 @@ diagnostic, and ``rebuilt`` reads them back into the same error class.
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import date
 from enum import Enum, IntEnum
 from types import MappingProxyType
 from typing import Any
@@ -32,7 +33,9 @@ from rangekeeper.shared.codes import Code
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import (
     AttemptDeadlineError,
+    AvailabilityError,
     BackendUnavailableError,
+    DecisionError,
     NumericalError,
     RangekeeperError,
     UnitError,
@@ -109,6 +112,13 @@ UNSUPPORTED_CODES = (
 # of each max or min that holds at its solution (#308), or an IRR of amounts
 # without a real change of sign (#518).
 NUMERICAL_CODES = (Code.NUMERICAL_FAILURE, Code.ACTIVE_SIDE, Code.NO_SIGN_CHANGE)
+
+# The codes that a DecisionError carries.
+DECISION_CODES = (
+    Code.DECISION_CHANGES_PAST,
+    Code.PROVISIONAL_INFEASIBLE,
+    Code.RULE_TRACE,
+)
 
 # Each expected error, in matching order. Any other error raises to the caller.
 FAILURES: tuple[Failure, ...] = (
@@ -191,6 +201,25 @@ FAILURES: tuple[Failure, ...] = (
             raises=NumericalError,
         ),
     ),
+    # A rule's failure ends one case, and other cases continue (ADR-021).
+    Failure(
+        errors=(AvailabilityError,),
+        before=Conclusion(
+            solution=NOT_ASSESSED,
+            status=Status.FAILED,
+            code=Code.OBSERVATION_UNAVAILABLE,
+            raises=AvailabilityError,
+        ),
+    ),
+    Failure(
+        errors=(DecisionError,),
+        before=Conclusion(
+            solution=UNKNOWN,
+            status=Status.FAILED,
+            codes=DECISION_CODES,
+            raises=DecisionError,
+        ),
+    ),
     Failure(
         errors=(ArithmeticError,),
         before=Conclusion(
@@ -263,8 +292,16 @@ def diagnosed(error: BaseException) -> dict[str, JSONValue]:
             values["equation"] = error.equation
         if error.unknowns:
             values["unknowns"] = list(error.unknowns)
-    if isinstance(error, NumericalError):
+    if isinstance(error, (NumericalError, DecisionError)):
         values.update({name: _json(item) for name, item in error.values.items()})
+    if isinstance(error, AvailabilityError):
+        values.update(
+            {
+                "key": error.key,
+                "available_on": _json(error.available_on),
+                "decision_date": _json(error.decision_date),
+            }
+        )
     if isinstance(error, RangekeeperError):
         if error.path:
             values["path"] = error.path
@@ -318,7 +355,11 @@ def rebuilt(
         fields["unknowns"] = _words(values.get("unknowns"))
     if kind is OutcomeError:
         fields["status"] = status
-    if kind is NumericalError:
+    if kind is AvailabilityError:
+        fields["key"] = _text(values.get("key"))
+        fields["available_on"] = _date(values.get("available_on"))
+        fields["decision_date"] = _date(values.get("decision_date"))
+    if kind in (NumericalError, DecisionError):
         fields["values"] = {
             name: item
             for name, item in values.items()
@@ -389,6 +430,10 @@ def _uuid(value: object) -> UUID | None:
     if value is None or isinstance(value, UUID):
         return value
     return UUID(str(value))
+
+
+def _date(value: object) -> date | None:
+    return date.fromisoformat(value) if isinstance(value, str) else None
 
 
 def _text(value: object) -> str | None:
