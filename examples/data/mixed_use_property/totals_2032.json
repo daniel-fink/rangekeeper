@@ -13,7 +13,7 @@
       "origin": "GFA × construction rate by use, + 10% soft costs + 10% contingency, + 4 million AUD finance allowance"
     },
     "operating_cost": {
-      "magnitude": 7444605.018645148,
+      "magnitude": 6700144.516780633,
       "units": "AUD pa",
       "origin": "Floor and facade OPEX of all uses, grown 3.5% pa for 5 years"
     },
@@ -23,9 +23,9 @@
       "origin": "inventory.csv GFA × efficiency 0.8"
     },
     "hotel_rent": {
-      "magnitude": 890.7647292351559,
+      "magnitude": 979.8412021586714,
       "units": "AUD per sqm pa",
-      "origin": "750 AUD per sqm pa, grown 3.5% pa for 5 years"
+      "origin": "825 AUD per sqm pa, grown 3.5% pa for 5 years"
     },
     "hotel_vacancy": {
       "magnitude": 2.5,
@@ -38,9 +38,9 @@
       "origin": "inventory.csv GFA × efficiency 0.75"
     },
     "residential_rent": {
-      "magnitude": 784.1760038456248,
+      "magnitude": 862.5936042301873,
       "units": "AUD per sqm pa",
-      "origin": "600 AUD per sqm pa, grown 5.5% pa for 5 years"
+      "origin": "660 AUD per sqm pa, grown 5.5% pa for 5 years"
     },
     "residential_vacancy": {
       "magnitude": 1.5,
@@ -53,9 +53,9 @@
       "origin": "inventory.csv GFA × efficiency 0.675"
     },
     "retail_rent": {
-      "magnitude": 1435.6293261718747,
+      "magnitude": 1579.1922587890622,
       "units": "AUD per sqm pa",
-      "origin": "1000 AUD per sqm pa, grown 7.5% pa for 5 years"
+      "origin": "1100 AUD per sqm pa, grown 7.5% pa for 5 years"
     },
     "retail_vacancy": {
       "magnitude": 7.5,

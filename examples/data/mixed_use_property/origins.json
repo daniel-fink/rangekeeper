@@ -128,10 +128,11 @@
       ]
     },
     "/use_assumptions/*/initial_rent_AUD_per_m2_per_year": {
-      "origin": "legacy-notebook",
+      "origin": "author",
       "cells": [
         26
-      ]
+      ],
+      "note": "The legacy rent of cell 26, 10 % higher (2026-10-31, #205), so that the dated plan of lesson 03 can pay for its costs and its loan."
     },
     "/use_assumptions/*/vacancy": {
       "origin": "legacy-notebook",
@@ -140,16 +141,18 @@
       ]
     },
     "/use_assumptions/*/facade_opex_AUD_per_m2_per_year": {
-      "origin": "legacy-notebook",
+      "origin": "author",
       "cells": [
         58
-      ]
+      ],
+      "note": "The legacy rate of cell 58, 10 % lower (2026-10-31, #205), so that the dated plan of lesson 03 can pay for its costs and its loan."
     },
     "/use_assumptions/*/floor_opex_AUD_per_m2_per_year": {
-      "origin": "legacy-notebook",
+      "origin": "author",
       "cells": [
         58
-      ]
+      ],
+      "note": "The legacy rate of cell 58, 10 % lower (2026-10-31, #205), so that the dated plan of lesson 03 can pay for its costs and its loan."
     },
     "/use_assumptions/*/floor_capex_AUD_per_m2_per_payment": {
       "origin": "legacy-notebook",

@@ -41,7 +41,7 @@
       "income": 26
     }
   },
-  "status": "Legacy teaching assumptions retained for notebook 02; not market estimates or measured geometry",
+  "status": "Legacy teaching assumptions retained for notebook 02, with the rents 10 % higher and the floor and facade OPEX rates 10 % lower than in the legacy notebook (2026-10-31); not market estimates or measured geometry",
   "timing": {
     "annual_discount_rate": 0.07,
     "discount_exponents": [
@@ -66,37 +66,37 @@
     "hotel": {
       "annual_income_growth": 0.035,
       "efficiency": 0.8,
-      "facade_opex_AUD_per_m2_per_year": -50,
+      "facade_opex_AUD_per_m2_per_year": -45,
       "floor_capex_AUD_per_m2_per_payment": -100,
-      "floor_opex_AUD_per_m2_per_year": -175,
-      "initial_rent_AUD_per_m2_per_year": 750,
+      "floor_opex_AUD_per_m2_per_year": -157.5,
+      "initial_rent_AUD_per_m2_per_year": 825,
       "vacancy": 0.025
     },
     "parking": {
       "annual_income_growth": 0,
       "efficiency": 0.9,
-      "facade_opex_AUD_per_m2_per_year": -25,
+      "facade_opex_AUD_per_m2_per_year": -22.5,
       "floor_capex_AUD_per_m2_per_payment": -50,
-      "floor_opex_AUD_per_m2_per_year": -65,
+      "floor_opex_AUD_per_m2_per_year": -58.5,
       "initial_rent_AUD_per_m2_per_year": 0,
       "vacancy": 0
     },
     "residential": {
       "annual_income_growth": 0.055,
       "efficiency": 0.75,
-      "facade_opex_AUD_per_m2_per_year": -50,
+      "facade_opex_AUD_per_m2_per_year": -45,
       "floor_capex_AUD_per_m2_per_payment": -75,
-      "floor_opex_AUD_per_m2_per_year": -125,
-      "initial_rent_AUD_per_m2_per_year": 600,
+      "floor_opex_AUD_per_m2_per_year": -112.5,
+      "initial_rent_AUD_per_m2_per_year": 660,
       "vacancy": 0.015
     },
     "retail": {
       "annual_income_growth": 0.075,
       "efficiency": 0.675,
-      "facade_opex_AUD_per_m2_per_year": -100,
+      "facade_opex_AUD_per_m2_per_year": -90,
       "floor_capex_AUD_per_m2_per_payment": -150,
-      "floor_opex_AUD_per_m2_per_year": -225,
-      "initial_rent_AUD_per_m2_per_year": 1000,
+      "floor_opex_AUD_per_m2_per_year": -202.5,
+      "initial_rent_AUD_per_m2_per_year": 1100,
       "vacancy": 0.075
     }
   },

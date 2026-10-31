@@ -97,18 +97,24 @@ recompute Brep geometry or establish browser-viewer acceptance.
 
 ## Financial assumptions for notebook 02
 
-Retain the following legacy teaching assumptions to preserve the example's
-meaning. They are not current market estimates or source geometry facts. The
-readable [assumptions file](../../examples/data/mixed_use_property/assumptions.json)
-records the source notebook cells and conventions separately from `model.json`.
+Retain the following teaching assumptions to preserve the example's meaning.
+They are not current market estimates or source geometry facts. They are the
+legacy rates, except two changes of 31 October 2026
+([#205](https://github.com/daniel-fink/rangekeeper/issues/205)): each rent is 10 %
+higher, and each floor and facade OPEX rate is 10 % lower, so that the dated plan
+of lesson 03 can pay for its costs and its loan. The readable
+[assumptions file](../../examples/data/mixed_use_property/assumptions.json)
+records the source notebook cells and conventions separately from `model.json`,
+and [`origins.json`](../../examples/data/mixed_use_property/origins.json) records
+the two changes.
 
 ### Income
 
 | Use | Efficiency | Initial rent (AUD/m² per year) | Annual income growth | Vacancy |
 | --- | ---: | ---: | ---: | ---: |
-| Hotel | 0.800 | 750 | 3.5% | 2.5% |
-| Residential | 0.750 | 600 | 5.5% | 1.5% |
-| Retail | 0.675 | 1,000 | 7.5% | 7.5% |
+| Hotel | 0.800 | 825 | 3.5% | 2.5% |
+| Residential | 0.750 | 660 | 5.5% | 1.5% |
+| Retail | 0.675 | 1,100 | 7.5% | 7.5% |
 | Parking | 0.900 | 0 | 0% | 0% |
 
 Initial potential income is GFA × efficiency × rent. Vacancy is a deduction from
@@ -116,8 +122,8 @@ potential income. Zero parking rent is an explicit simplification; parking still
 incurs operating and capital costs.
 
 Use Building A hotel Floor 1 as the first worked object. Its GFA is
-1,697.4515719337053 m². The retained assumptions produce initial potential income
-of AUD 1,018,470.94 and effective income of AUD 993,009.17. Show this arithmetic
+1,697.4515719337053 m². The assumptions produce initial potential income of
+AUD 1,120,318.04 and effective income of AUD 1,092,310.09. Show this arithmetic
 before applying it to every floor. Its identifier is
 `22851887-f9ee-4aa8-8755-bc021c3a3b30`.
 
@@ -129,10 +135,10 @@ that this does not prove that every measured boundary is an external facade.
 
 | Use | Floor OPEX (AUD/m² per year) | Facade OPEX (AUD/m² per year) | Floor CAPEX (AUD/m² per capital payment) |
 | --- | ---: | ---: | ---: |
-| Hotel | -175 | -50 | -100 |
-| Residential | -125 | -50 | -75 |
-| Retail | -225 | -100 | -150 |
-| Parking | -65 | -25 | -50 |
+| Hotel | -157.5 | -45 | -100 |
+| Residential | -112.5 | -45 | -75 |
+| Retail | -202.5 | -90 | -150 |
+| Parking | -58.5 | -22.5 | -50 |
 
 Core CAPEX is AUD -100/m³ per capital payment; plant CAPEX is AUD -1,000/m³ per
 capital payment. The example's capital payments occur on 2005-12-31 and 2010-12-31.
