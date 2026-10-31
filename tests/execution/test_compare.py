@@ -17,6 +17,7 @@ from rangekeeper.execution import (
     compare,
     solve,
 )
+from rangekeeper.market import Paths
 from tests.execution.lesson02 import MODEL, back, q, store
 from tests.execution.test_outcome_cases import batch_outcome
 
@@ -426,3 +427,136 @@ def test_by_case_groups_the_leaves_of_each_direct_case():
     assert summary.column("count") == (2, 2)
     weak = comparison.difference(outcome="Nested", key="land_cost")[:2]
     assert summary.rows[0].values["minimum"] == min(weak)
+
+
+YEARS = rk.duration.Span(start=date(2027, 1, 1), end=date(2030, 1, 1)).periods(
+    frequency=rk.duration.Frequency.YEAR
+)
+
+
+def market(*, up: tuple[float, ...] = (1, 1.1, 1.2)) -> Paths:
+    """Return two market paths of a rent index, ``up`` and ``down``."""
+
+    def index(*magnitudes: float) -> rk.flow.Flow:
+        return rk.flow.Flow.from_periods(
+            periods=YEARS, magnitudes=magnitudes, units="ratio"
+        )
+
+    return Paths.from_flows(
+        flows={
+            "up": {"rent_index": index(*up)},
+            "down": {"rent_index": index(1, 0.9, 0.8)},
+        }
+    )
+
+
+@pytest.fixture(scope="module")
+def priced() -> rk.Model:
+    """Return a Model whose worth is a price times the total of a rent index."""
+    draft = rk.Model(name="Priced").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.flow(key="rent_index", units="ratio", periods=YEARS)
+    project.value(key="price", units="AUD")
+    project.value(key="worth", units="AUD")
+    project.equations("worth = price * rent_index.total()")
+    return draft.commit()
+
+
+def test_batches_across_the_same_paths_pair_by_path(priced):
+    paths = market()
+    low = solve(
+        specification=priced.specify(name="Low")
+        .fix(price="100 AUD")
+        .across(paths=paths)
+    ).raise_for_status()
+    high = solve(
+        specification=priced.specify(name="High")
+        .fix(price="120 AUD")
+        .across(paths=paths)
+    ).raise_for_status()
+    comparison = compare(
+        outcomes={"Low": low, "High": high}, keys=["worth"], baseline="Low"
+    )
+    pairs = comparison.pairs(outcome="High")
+    assert [pair.case for pair in pairs] == ["up", "down"]
+    assert all(pair.member.run.paths == pair.baseline.run.paths for pair in pairs)
+    assert comparison.difference(outcome="High", key="worth") == (
+        q("66 AUD"),
+        q("54 AUD"),
+    )
+    # Other Paths with the same path keys do not pair.
+    other = solve(
+        specification=priced.specify(name="Other")
+        .fix(price="120 AUD")
+        .across(paths=market(up=(1, 1.2, 1.4)))
+    ).raise_for_status()
+    with pytest.raises(ContractError, match="other Paths") as raised:
+        compare(outcomes={"Low": low, "Other": other}, keys=["worth"], baseline="Low")
+    assert raised.value.code is Code.COMPARISON_PATHS
+    assert raised.value.values["paths"] != raised.value.values["baseline_paths"]
+
+
+def test_cases_each_across_the_paths_pair_with_one_batch_by_path(priced):
+    """A batch of cases, each across the same paths, pairs path by path.
+
+    ``across`` of a batch is not yet available (#306), so the batch of the
+    cases is made from records, as ``batch_of`` makes one.
+    """
+    paths = market()
+    prices = priced.specify(name="Prices").cases(
+        cases={"110": {"price": "110 AUD"}, "130": {"price": "130 AUD"}}
+    )
+    batches = [prices.case(key=key).across(paths=paths) for key in ("110", "130")]
+    leaves = [batch.case(key=key) for batch in batches for key in paths.keys]
+    nested = Specification.from_data(
+        {
+            "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
+            "model": str(priced.id),
+            "cases": [str(batch.id) for batch in batches],
+        }
+    )
+    resolver = rk.io.MemoryStore()
+    for document in (priced, paths, *leaves, *batches, nested):
+        resolver.put(document)
+    outcome = solve(specification=nested, resolver=resolver).raise_for_status()
+    low = solve(
+        specification=priced.specify(name="Low")
+        .fix(price="100 AUD")
+        .across(paths=paths)
+    ).raise_for_status()
+    comparison = compare(
+        outcomes={"Prices": outcome, "Low": low}, keys=["worth"], baseline="Low"
+    )
+    pairs = comparison.pairs(outcome="Prices")
+    assert [pair.case for pair in pairs] == ["110/up", "110/down", "130/up", "130/down"]
+    assert [pair.baseline.key for pair in pairs] == ["up", "down", "up", "down"]
+    assert comparison.difference(outcome="Prices", key="worth") == (
+        q("33 AUD"),
+        q("27 AUD"),
+        q("99 AUD"),
+        q("81 AUD"),
+    )
+    summary = comparison.by_case.summary()
+    assert summary.column("case") == ("110", "130")
+    assert summary.column("mean") == (q("30 AUD"), q("90 AUD"))
+    # A batch on some of the paths, or with two cases on one path, does not
+    # pair with a batch on all of them.
+    for chosen, match in (
+        ((leaves[0],), "different paths"),
+        ((leaves[0], leaves[2]), "one case"),
+    ):
+        some = Specification.from_data(
+            {
+                "metadata": {"id": str(uuid4()), "schema_version": "1.0.0"},
+                "model": str(priced.id),
+                "cases": [str(leaf.id) for leaf in chosen],
+            }
+        )
+        resolver.put(some)
+        found = solve(specification=some, resolver=resolver).raise_for_status()
+        with pytest.raises(ContractError, match=match) as raised:
+            compare(
+                outcomes={"Some": found, "Low": low}, keys=["worth"], baseline="Some"
+            )
+        assert raised.value.code is Code.COMPARISON_CASES
+    assert raised.value.values["repeated"] == ["up"]

@@ -339,6 +339,10 @@ class Attempt:
             )
             self.findings.extend(checked.diagnostics)
             if checked.passed:
+                if not problem.analysis.underdetermined:
+                    acceptance.check_fixed_irrs(
+                        binding=self.binding, candidate=candidate
+                    )
                 self.diagnose(
                     Code.FEASIBLE_CANDIDATE,
                     "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made.",

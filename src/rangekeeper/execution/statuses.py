@@ -105,9 +105,10 @@ UNSUPPORTED_CODES = (
     Code.SYMBOL_LIMIT,
     Code.CONSTRAINT_LIMIT,
 )
-# The codes that a NumericalError carries: a failed calculation, or no active
-# side of each max or min that holds at its solution (#308).
-NUMERICAL_CODES = (Code.NUMERICAL_FAILURE, Code.ACTIVE_SIDE)
+# The codes that a NumericalError carries: a failed calculation, no active side
+# of each max or min that holds at its solution (#308), or an IRR of amounts
+# without a real change of sign (#518).
+NUMERICAL_CODES = (Code.NUMERICAL_FAILURE, Code.ACTIVE_SIDE, Code.NO_SIGN_CHANGE)
 
 # Each expected error, in matching order. Any other error raises to the caller.
 FAILURES: tuple[Failure, ...] = (
@@ -249,8 +250,9 @@ def diagnosed(error: BaseException) -> dict[str, JSONValue]:
 
     A reader of the Run then needs no message text: ``issues`` for a
     ValidationError, ``equation`` and ``unknowns`` for an UnsupportedError,
-    and ``path`` and ``targets`` when the error has them and the diagnostic's
-    own ``document`` and ``target`` cannot hold them.
+    the ``values`` of a NumericalError, and ``path`` and ``targets`` when the
+    error has them and the diagnostic's own ``document`` and ``target`` cannot
+    hold them.
     """
     values: dict[str, JSONValue] = {}
     if isinstance(error, ValidationError):
@@ -261,6 +263,8 @@ def diagnosed(error: BaseException) -> dict[str, JSONValue]:
             values["equation"] = error.equation
         if error.unknowns:
             values["unknowns"] = list(error.unknowns)
+    if isinstance(error, NumericalError):
+        values.update({name: _json(item) for name, item in error.values.items()})
     if isinstance(error, RangekeeperError):
         if error.path:
             values["path"] = error.path
@@ -314,6 +318,12 @@ def rebuilt(
         fields["unknowns"] = _words(values.get("unknowns"))
     if kind is OutcomeError:
         fields["status"] = status
+    if kind is NumericalError:
+        fields["values"] = {
+            name: item
+            for name, item in values.items()
+            if name not in {"path", "targets"}
+        }
     return kind(message, **fields)
 
 

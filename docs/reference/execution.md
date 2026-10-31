@@ -109,7 +109,7 @@ outcome["project.land_cost"]  # the same value, by its dotted key
 | `INFEASIBLE` | Solution `infeasible` | `OutcomeError`, code `solver_termination` |
 | `LIMITED` | Completion `limited`, with no accepted candidate | `AttemptDeadlineError` for `attempt_deadline`; else `OutcomeError`, code `solver_termination` |
 | `INVALID` | Failed, with `specification_invalid`, or `incompatible_units` for units that disagree | `ValidationError`, with the validation issues of the attempt; `UnitError` for `incompatible_units` |
-| `FAILED` | Failed, with `numerical_failure`, `numerical_rejection`, `active_side`, `backend_unavailable` or another error diagnostic, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
+| `FAILED` | Failed, with `numerical_failure`, `numerical_rejection`, `active_side`, `no_sign_change`, `backend_unavailable` or another error diagnostic, or with no error diagnostic | `NumericalError` or `BackendUnavailableError`; else `OutcomeError` |
 | `UNSUPPORTED` | Failed, with the code of an `UnsupportedError`: `unsupported_capability`, `nonaffine_unknowns`, `symbol_limit` or `constraint_limit` | `UnsupportedError` with that code, `document_id`, `targets`, `equation` and `unknowns` |
 
 The error class comes from the same `FAILURES` row as the status. Each error
@@ -270,12 +270,27 @@ difference.distribution(outcome="Strategy", key="equity_npv").quantile(level=0.0
 difference.by(key="start_date").summary()  # where waiting gains, and where it costs
 ```
 
-Each member is one leaf case, in `walk()` order. The cases of two batches pair
-by case key, the `case` column of `Outcome.table`: the keys of nested batches
-joined by `/`, or the position of a case without a key. A leaf pairs with every
-case of the other side. The [`Mean`](#distributions-of-a-batch) of a batch
-compares as one leaf. Neither type has a public constructor: make them with
-`compare`.
+Each member is one leaf case, in `walk()` order. When each case of two batches
+takes a market path (`Specification.across`), their cases pair by path: the
+Paths that each case's Run pins (`run.paths`) and the path key, which names
+the case. So a batch of cases, each across the paths, pairs with one batch
+across the same paths, case by case and path by path, and `by_case` gives the
+statistics of each case. Other batches pair by case key, the `case` column of
+`Outcome.table`: the keys of nested batches joined by `/`, or the position of a
+case without a key. A leaf pairs with every case of the other side. The
+[`Mean`](#distributions-of-a-batch) of a batch compares as one leaf. `Pair.case`
+is the case key of the compared member. Neither type has a public constructor:
+make them with `compare`.
+
+```python
+paths_outcome = rk.execution.solve(specification=base.across(paths=paths))
+strategy_outcome = rk.execution.solve(specification=strategy.across(paths=paths))
+rk.execution.compare(
+    outcomes={"Strategy": strategy_outcome, "Base": paths_outcome},
+    keys=["equity_npv"],
+    baseline="Base",
+).summary()  # paired path by path
+```
 
 | Failure | Error |
 | --- | --- |
@@ -283,16 +298,17 @@ compares as one leaf. Neither type has a public constructor: make them with
 | A baseline or outcome name that is not compared | `MissingReferenceError` (`kind="Outcome"`, `by="name"`) |
 | A Flow value, also as the key of `by` | `ContractError`, `comparison.scalar` |
 | A batch without `baseline` | `ContractError`, `comparison.batch` |
-| Batches with different case keys, or a key that two cases share | `ContractError`, `comparison.cases`, with `missing` and `extra`, or `repeated`, in `values` |
+| Batches across other Paths | `ContractError`, `comparison.paths`, with `paths` and `baseline_paths` in `values` |
+| Batches with different case keys or paths, or a key or a path that two baseline cases share | `ContractError`, `comparison.cases`, with `missing` and `extra`, or `repeated`, in `values` |
 | `where` keeps no case of an Outcome | `ContractError`, `comparison.empty` |
 | Fewer than two Outcomes, or a repeated key | `ContractError` |
 | A wrong Python type, such as one string for `keys` | `TypeError` |
 
-Pairing by path key follows with `across`
-([#306](https://github.com/daniel-fink/rangekeeper/issues/306)): the cases of
-a batch of cases across paths pair with the cases of a batch across the same
-paths. The query operations of `by_case`, such as `where(condition=)`,
-`order_by` and `max`, follow with
+`across` of a batch of cases, one case for each pair of a case and a path,
+follows with the rules of
+[#300](https://github.com/daniel-fink/rangekeeper/issues/300); until then a batch
+of the cases' batches pairs in the same way. The query operations of `by_case`,
+such as `where(condition=)`, `order_by` and `max`, follow with
 [#310](https://github.com/daniel-fink/rangekeeper/issues/310).
 
 ## Replay a stored Run
@@ -578,7 +594,9 @@ it defines, and each call of an equation function as rows that the compiler take
   calls over the periods of `x`, which the solve picks a side for. In the rounds
   of active sides, an equation after the affine stage that only reports a value,
   such as `equity_irr = rx.finance.irr(flow=equity_cash_flow)`, waits for the last
-  problem: it defines an unknown that no other equation reads.
+  problem: it defines an unknown that no other equation reads. When the Flow has no
+  real change of sign, the solve fails with the code of `rk.finance.irr`,
+  `no_sign_change` ([near-zero amounts](calculations.md#present-value-npv-irr-interest-and-payments)).
 - A call whose values are all fixed, or settled dates, is evaluated once.
 
 Two inverse rewrites make an equation affine (D5,
@@ -588,7 +606,12 @@ Two inverse rewrites make an equation affine (D5,
   is its NPV row at that rate: `rx.finance.npv(flow=cash, rate=r, on=start) = 0`,
   where `start` begins the first period of `cash`. A fixed IRR then answers an
   inverse question, such as the land price of lesson 03 cell 15, and verification
-  checks the NPV row.
+  checks the NPV row. The NPV row of a real outflow at a real rate has no solution,
+  so the solve is infeasible. The NPV row of a Flow of zeros holds at any rate, so
+  when the equations determine every unknown, a solve also applies the sign check of
+  `rk.finance.irr` to the solved Flow: without a real change of sign it fails with
+  `no_sign_change`. An underdetermined solve stays `UNDERDETERMINED`, because its
+  candidate holds only one of its solutions.
 - A bound on a minimum or a maximum, `x.min() >= c` or `x.max() <= c`, or the same
   with the sides exchanged, holds in every period: one row `x >= c`, or `x <= c`,
   for each period of `x`. The other bounds on them, such as `x.min() <= c`, hold in
@@ -724,13 +747,14 @@ severity, or else the last error. A code that the table does not name gives
 | `UnsupportedError` | failed | `not_assessed`; `unknown` once solved | `UNSUPPORTED` | The error's own code: `unsupported_capability`, `nonaffine_unknowns`, `symbol_limit` or `constraint_limit` | `UnsupportedError` |
 | `UnitError` | failed | `not_assessed`; `unknown` once solved | `INVALID` | `incompatible_units` | `UnitError` |
 | `BackendUnavailableError` | failed | `not_assessed` | `FAILED` | `backend_unavailable` | `BackendUnavailableError` |
-| `NumericalError` | failed | `unknown` | `FAILED` | The error's own code: `numerical_failure`, or `active_side` when no active side of each `max` and `min` holds ([piecewise equations](#piecewise-equations)) | `NumericalError` |
+| `NumericalError` | failed | `unknown` | `FAILED` | The error's own code: `numerical_failure`, `active_side` when no active side of each `max` and `min` holds ([piecewise equations](#piecewise-equations)), or `no_sign_change` for an IRR of a Flow without a real change of sign | `NumericalError` |
 | `ArithmeticError` | failed | `unknown` | `FAILED` | `numerical_failure` | `NumericalError` |
 
 `Attempt.fail` builds the diagnostic of each expected failure.
 `statuses.diagnosed` copies the error's structured fields into the diagnostic's
-`values`: the `equation` and `unknowns` of an `UnsupportedError`, and each
-issue of a `ValidationError`. `statuses.rebuilt` reads them back into the
+`values`: the `equation` and `unknowns` of an `UnsupportedError`, the `values`
+of a `NumericalError`, and each issue of a `ValidationError`.
+`statuses.rebuilt` reads them back into the
 error that `raise_for_status()` raises
 ([Run diagnostics](errors.md#run-diagnostics)).
 

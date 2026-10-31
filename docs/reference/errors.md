@@ -33,10 +33,10 @@ contract: a Run that is read back has the same code text.
 | Hierarchies | `hierarchy.*` | `HIERARCHY_CYCLE`, `HIERARCHY_MULTIPLE_PARENTS` |
 | Equation text | `equation.*` | `EQUATION_SYNTAX` (text that does not parse), `EQUATION_FUNCTION` (a function, method or member that equation text cannot use) |
 | Alignment | `alignment.*` for Periods and Flow coordinates that do not align | `ALIGNMENT_CROSSES`, `ALIGNMENT_PARTIAL`, `ALIGNMENT_MIXED`, `ALIGNMENT_DIFFER`, `ALIGNMENT_DUPLICATE`, `ALIGNMENT_GAP` |
-| Comparisons | `comparison.*`, from `rk.execution.compare` | `COMPARISON_CASES`, `COMPARISON_SCALAR`, `COMPARISON_BATCH`, `COMPARISON_EMPTY` |
+| Comparisons | `comparison.*`, from `rk.execution.compare` | `COMPARISON_CASES`, `COMPARISON_PATHS` (batches across other market paths), `COMPARISON_SCALAR`, `COMPARISON_BATCH`, `COMPARISON_EMPTY` |
 | Distributions | `distribution.*`, from `Outcome.distribution` and `Outcome.mean` | `DISTRIBUTION_VALUE`: a Flow value has no distribution, and a date value has counts but no mean |
 | Other errors | Bare words | `DECODE`, `ENCODING`, `REVISION_CONFLICT`, `UNSUPPORTED_VERSION` |
-| Execution | Bare words in Run diagnostics, and in the diagnostics of a `Replay` | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED`; `REPLAY_MISMATCH` (a replay of a stored Run gives another result) |
+| Execution | Bare words in Run diagnostics, and in the diagnostics of a `Replay` | `SOLVER_TERMINATION`, `UNDERDETERMINED`, `NONAFFINE_UNKNOWNS`, `SYMBOL_LIMIT`, `CONSTRAINT_LIMIT`, `SETTINGS_ADJUSTED`; `REPLAY_MISMATCH` (a replay of a stored Run gives another result); `NO_SIGN_CHANGE` (an IRR of amounts without inflows and outflows above the tolerance, also from `rk.finance.irr`) |
 
 `CONTRACT` is the general code of a semantic rule. Rules that callers must tell
 apart have their own codes.
@@ -103,6 +103,7 @@ the limit. See [execution](execution.md#settings-limits-and-conclusions).
 | `nonaffine_unknowns` | `equation`: the text of the Constraint, for example `"noi = coverage * debt_service"`. `unknowns`: the keys of the unknowns in the term that is not affine, as `Model.key_of` gives them. The diagnostic's `references` are those unknowns, as for `underdetermined` |
 | A failure from `UnsupportedError` | `equation`, when the failure is in one Constraint |
 | `active_side` | No active side of each `max` and `min` held ([piecewise equations](execution.md#piecewise-equations)). `target` is the Constraint whose side disagrees; `targets` names several. The message gives the equations |
+| `no_sign_change` | `inflows` and `outflows`: the totals of the positive and of the negative amounts, as Quantity text, before near-zero amounts count as zero. `tolerance`: the size at or below which an amount counts as zero, `1e-8 * max(gross amounts, 1)` ([IRR](calculations.md#present-value-npv-irr-interest-and-payments)) |
 | `specification_invalid` | `issues`: each validation issue of the attempt, with its `code`, `message`, `document`, `path`, `targets`, `values` and `evidence` |
 | A failure from another error | `path`, when the error has one; `targets`, when it names more than one record. One target is the diagnostic's `target` |
 | `constraint_residual` | `equation`: the text of the Constraint that was checked. `formulation`: the Formulation that groups an equation of the Model, by its name (such as `"Funding"`) or, for an entity's default Formulation, its code. `target` is the Constraint |
@@ -167,7 +168,7 @@ all of its fields through `pickle`.
 | `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
 | `model.system`: `SelectionError`, `RollupError` | `ValueError` | `SELECTION`, `ROLLUP` |
 | `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
-| `NumericalError` | `ValueError` | `NUMERICAL_FAILURE`, or `NUMERICAL_REJECTION` when verification rejected a candidate |
+| `NumericalError` | `ValueError` | `NUMERICAL_FAILURE`, `NUMERICAL_REJECTION` when verification rejected a candidate, or the code of a more specific failure: `ACTIVE_SIDE`, or `NO_SIGN_CHANGE` for an IRR of amounts without a real change of sign. `values` gives the named values of the failure, as in a [Run diagnostic](#run-diagnostics) |
 | `BackendUnavailableError`, `AttemptDeadlineError` | `RuntimeError` | `BACKEND_UNAVAILABLE`, `ATTEMPT_DEADLINE` |
 | `PublishedFileError` | `OSError` | `PUBLISHED_FILE`. `file` is the published file; the `OSError` that stopped the confirmation is the cause |
 

@@ -24,13 +24,15 @@ staged solve, the piecewise solve and verification work on scalar rows:
   periods of their Flow, which ``execution.piecewise`` solves.
 - An equation that fixes an IRR, ``r = rx.finance.irr(flow=cash)`` with ``r``
   fixed, becomes its NPV row at that rate: the NPV of the Flow at ``r`` is
-  zero (D5, #277).
+  zero (D5, #277). The row holds at any rate on a Flow of zeros, so the
+  assertion keeps the Flow, and acceptance applies the sign check of ``irr``
+  to it (``fixed_irr_flows``, #518).
 
 A call whose references are all fixed is evaluated once. Each expanded
 assertion keeps the Constraint of its equation.
 """
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from uuid import NAMESPACE_URL, UUID, uuid5
 
@@ -118,7 +120,8 @@ class _Expansion:
                 for child in node.operands or ()
                 for part in self.assertion(replace(item, predicate=child))
             )
-        node = self.target(node)
+        item = self.target(item)
+        node = item.predicate
         spread = self.spread(node)
         if spread is not None:
             return tuple(replace(item, predicate=row) for row in spread)
@@ -374,18 +377,20 @@ class _Expansion:
 
     # A fixed IRR (#277).
 
-    def target(self, node: Expression) -> Expression:
+    def target(self, item: Assertion) -> Assertion:
         """Return an equation that fixes an IRR as its NPV row at that rate.
 
         ``r = rx.finance.irr(flow=cash)`` with ``r`` fixed is
         ``rx.finance.npv(flow=cash, rate=r, on=start) = 0``, where ``start``
-        begins the Flow's first period. Another equation is unchanged.
+        begins the Flow's first period. The assertion keeps the Flow in
+        ``irr_flow``. Another equation is unchanged.
         """
+        node = item.predicate
         if (
             node.kind is not ExpressionKind.BINARY
             or node.operator is not Operator.EQUAL
         ):
-            return node
+            return item
         left, right = node.operands or (None, None)
         assert left is not None and right is not None
         for rate, call in ((left, right), (right, left)):
@@ -396,8 +401,12 @@ class _Expansion:
                 and rate.kind is ExpressionKind.REFERENCE
                 and self.fixed(rate)
             ):
-                return self.npv_row(node, rate=rate, call=call)
-        return node
+                return replace(
+                    item,
+                    predicate=self.npv_row(node, rate=rate, call=call),
+                    irr_flow=_operands(call)[0],
+                )
+        return item
 
     def npv_row(
         self, node: Expression, *, rate: Expression, call: Expression
@@ -864,6 +873,22 @@ def _rebuilt(
     return node
 
 
+def fixed_irr_flows(
+    binding: Binding, *, values: Mapping[UUID, Quantity]
+) -> Iterator[Flow]:
+    """Return the Flow of each equation that fixes an IRR, at ``values``.
+
+    ``values`` gives each value that the Flows read. ``binding`` is expanded.
+    """
+    solved = _Expansion(replace(binding, assignments=values, unknowns=()))
+    for item in binding.assertions:
+        if item.irr_flow is not None:
+            periods = solved.periods(item.irr_flow)
+            flow = solved.evaluate(item.irr_flow, probes={}, periods=periods)
+            assert isinstance(flow, Flow)
+            yield flow
+
+
 # Evaluation of the calls that the expansion defers.
 
 
@@ -931,6 +956,8 @@ def _evaluated(
     name = function.parameters[0].name
     try:
         result = function.evaluate(arguments={name: flow})
+    except NumericalError:
+        raise  # keeps its code and values, such as ``no_sign_change``
     except (ArithmeticError, ValueError) as error:
         raise NumericalError(str(error)) from error
     if not isinstance(result, Quantity):
@@ -938,4 +965,4 @@ def _evaluated(
     return _literal(result, id=node.id)
 
 
-__all__ = ["expand", "resolve"]
+__all__ = ["expand", "fixed_irr_flows", "resolve"]

@@ -395,11 +395,26 @@ class UnsupportedError(RangekeeperError, ValueError):
 class NumericalError(RangekeeperError, ValueError):
     """Arithmetic or a backend candidate cannot support numerical acceptance.
 
-    The code is ``numerical_failure``, or ``numerical_rejection`` when
-    verification rejected a candidate.
+    The code is ``numerical_failure``, ``numerical_rejection`` when
+    verification rejected a candidate, or the code of a more specific failure,
+    such as ``no_sign_change`` for an IRR. ``values`` are the named values of
+    the failure, such as the totals of the inflows and outflows of an IRR.
     """
 
     code = Code.NUMERICAL_FAILURE
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        values: Mapping[str, Any] | None = None,
+        **fields: Unpack[ErrorFields],
+    ) -> None:
+        super().__init__(message, **fields)
+        self.values = dict(values or {})
+
+    def _fields(self) -> dict[str, Any]:
+        return {**super()._fields(), "values": self.values}
 
 
 class BackendUnavailableError(RangekeeperError, RuntimeError):
