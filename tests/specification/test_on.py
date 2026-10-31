@@ -5,12 +5,15 @@ from uuid import UUID, uuid4
 import pytest
 
 import rangekeeper as rk
+from rangekeeper.execution import Status, solve
 from rangekeeper.model.expression.authoring import add, equal, reference
 from rangekeeper.schema.records import Assignment, Reference
 from rangekeeper.shared.codes import Code
 from rangekeeper.shared.errors import ContractError, UnitError
 from rangekeeper.specification import Role
 from tests.specification.lesson_02 import lesson_02_model
+from tests.specification.test_across import flow, paths
+from tests.specification.test_across import model as index_model
 from tests.specification.test_roles import front_door
 
 NAMESPACE = UUID("0b4c9a52-3f7e-4f0e-9d55-6a1f3c2b8e10")
@@ -115,3 +118,47 @@ def test_on_checks_its_arguments_and_units():
     project.value(key="coverage", units="ratio")
     with pytest.raises(UnitError):
         front.on(model=draft.commit())
+
+
+def moved_after_load(tmp_path):
+    """Return a Specification that ``rk.io.load`` read and ``on`` moved (#522)."""
+    base = index_model().specify(name="Base").fix(base_rent="100 AUD", cost_index=1)
+    loaded = rk.io.load(path=rk.io.save(document=base, path=tmp_path / "base.json"))
+    draft = loaded.model.edit()
+    project = draft.entity(code="project")
+    project.value(key="fees", units="AUD")
+    project.equations("fees = 2 * base_rent")
+    revised = draft.commit()
+    assert loaded.resolver is not None
+    return loaded.on(model=revised), revised
+
+
+def test_on_after_load_gives_a_specification_to_edit(tmp_path):
+    moved, revised = moved_after_load(tmp_path)
+    assert moved.model is revised
+    assert moved.resolver is None
+    fixed = moved.fix(fees="1e6 AUD")
+    assert roles(fixed)["fees"] is Role.FIXED
+    assert fixed.model_id == revised.id
+    assert roles(moved.free("base_rent"))["base_rent"] is Role.FREE
+    # The file of the moved Specification holds the new revision.
+    reloaded = rk.io.load(path=rk.io.save(document=fixed, path=tmp_path / "moved.json"))
+    assert reloaded.model_id == revised.id
+    assert roles(reloaded.fix(base_rent="200 AUD"))["base_rent"] is Role.FIXED
+
+
+def test_on_after_load_gives_a_specification_to_solve(tmp_path):
+    moved, _ = moved_after_load(tmp_path)
+    outcome = solve(specification=moved.fix(rent_index=flow(1, 1.1, 1.2)))
+    assert outcome.status is Status.FEASIBLE
+    assert outcome["fees"].number == pytest.approx(200)
+
+
+def test_on_after_load_gives_a_specification_to_run_across_paths(tmp_path):
+    moved, _ = moved_after_load(tmp_path)
+    market = paths()
+    outcome = solve(specification=moved.across(paths=market))
+    assert outcome.status is Status.FEASIBLE
+    rent = outcome.case(key="down")["rent"]
+    assert [m.number for m in rent.movements] == pytest.approx([100, 90, 80])
+    assert outcome.case(key="up")["fees"].number == pytest.approx(200)

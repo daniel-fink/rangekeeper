@@ -301,16 +301,20 @@ class Specification:
         """Return the next revision with these record changes and new Metadata.
 
         Each chained call makes its revision here: a new UUID, and ``previous``
-        is this revision. ``model`` pins another Model revision and keeps it.
+        is this revision. ``model`` pins another Model revision and keeps it,
+        without the resolver: that resolver holds the documents of the earlier
+        revision.
         ``name`` is the Metadata name of the new revision; None keeps the name.
         ``cases`` maps the UUID of each case to its Specification: the new
         revision is a batch that pins the same Model, lists those cases and
         keeps them.
         """
+        resolver = self._resolver
         if model is None:
             model = self._model
         else:
             changes["model"] = model.id
+            resolver = None
         metadata = self.metadata.replace(id=uuid4(), previous=self.id)
         name = changes.pop("name", None)
         if name is not None:
@@ -329,7 +333,7 @@ class Specification:
                 **changes,  # type: ignore[arg-type]
             )
         check_revision(self._record, replacement)
-        revised = type(self)(record=replacement, model=model, resolver=self._resolver)
+        revised = type(self)(record=replacement, model=model, resolver=resolver)
         if isinstance(documents, Mapping):
             object.__setattr__(revised, "_cases", MappingProxyType(dict(documents)))
         return revised
@@ -563,6 +567,10 @@ class Specification:
         nothing controls. An estimate stays only when its target is free in
         ``model``, and its Quantity must convert to the units of the target;
         ``on`` drops the estimate of any other value.
+
+        The new Specification keeps ``model`` and no resolver: it has no
+        includes or cases to load, and a resolver of the earlier revision, such
+        as the documents of a file, does not hold ``model``.
 
         A Specification with includes, or a batch, raises ValueError. When
         ``model`` is the pinned revision, ``on`` returns this Specification.
