@@ -144,9 +144,12 @@ Validation rejects a rule that reads the future. It checks in two places:
   Abandonment is a separate decided value that the Model relates to the plan,
   such as `b_sale_date`.
 - **Commitments belong to the Model.** Equations compose them from `cumulative()`,
-  `total()` and `since(on=b_start)` (decision D2 of #201). When a rule decides
-  `b_start`, `committed` includes B's budget from that date. The executor adds no
-  commitment of its own.
+  `total()` and `since(on=b_start)` (decision D2 of #201). `since` is in the
+  definition, `b_unpaid = (b_works.cumulative() - b_works.total()).since(on=b_start)`,
+  because `total()` reads the future: without `since`, the decision changes the value
+  in each earlier Period, and the case fails with `decision_changes_past`. When a rule
+  decides `b_start`, `committed` includes B's budget from that date. The executor adds
+  no commitment of its own.
 - **Funding feasibility is part of the condition.** The author writes it, for
   example `equity_available + loan_available >= b_cost`. The executor does not
   block a decision that makes the commitment gap positive. The commitment gap is a
@@ -225,13 +228,12 @@ each reading agrees with the worked examples below:
 - **The solve count.** `provisional_solves` does not count the final solve.
 - **`verified` and its diagnostics.** A failed check is a `rule_trace` diagnostic in
   the report, so the record holds only the result.
-- **Open: three points for the maintainer.** The table under cell 6 reads a 2026
-  Period on 2027-01-01, but lesson 04's `rent_index` starts in 2027, so the first
-  check on the lesson's paths is on 2028-01-01, and it reads 2027; #207 settles this.
-  Cell 10 calls `rent_index.at(on=b_sale_date)`, and `at` has no value for NEVER. And
-  lesson 03's `b_unpaid = b_works.cumulative() - b_works.total()` changes before B's
-  decision date when B starts, which is `decision_changes_past` under the rule below.
-  Until the last two are decided, cell 11b is not feasible on a path where B starts.
+- **Open: one point for the maintainer.** The table under cell 6 reads a 2026 Period
+  on 2027-01-01, but lesson 04's `rent_index` starts in 2027, so the first check on
+  the lesson's paths is on 2028-01-01, and it reads 2027; #207 settles this.
+- **Two points that the maintainer decided (2026-11-01).** `at` keeps refusing NEVER,
+  so cell 10 writes the sale as an event, which is zero on NEVER. `decision_changes_past`
+  stays strict, so lesson 03's commitments have `since` in their definitions.
 
 **Decisions do not change the past.** A decision on a date must not change a
 Movement before that date. The executor compares each new provisional solution, and

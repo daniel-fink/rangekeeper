@@ -137,10 +137,8 @@ def test_lesson_05_cell_10_adds_the_site_sale_to_the_project_cash(lesson_04):
     (cash,) = model.equations.where(key="project_cash")
     assert cash.text == "project_cash = land + works + operating + sale + b_site_sale"
     assert cash.formulation == "Sale and value"
-    assert [item.key for item in model.equations.where(entity="project")][:2] == [
-        "b_site_value",
-        "b_site_sale",
-    ]
+    keys = [item.key for item in model.equations.where(entity="project")]
+    assert keys[0] == "b_site_sale"
 
 
 def floors() -> rk.Model:

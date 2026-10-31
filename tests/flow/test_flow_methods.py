@@ -2,7 +2,7 @@
 
 Lessons 03 and 05 use these methods in equations: ``funding_need =
 -(net_cash_flow + loan_interest).cumulative()``, ``loan_draws =
-loan_principal.diff()``, ``a_unpaid.since(on=a_start)``,
+loan_principal.diff()``, ``(a_works.cumulative() - a_works.total()).since(on=a_start)``,
 ``project_cash.until(on=sale_date)`` and ``shortfall.max()``. These tests run
 the value methods that the equations mirror.
 """

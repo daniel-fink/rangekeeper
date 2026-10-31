@@ -16,10 +16,6 @@ it. These differences wait on other issues:
   settles this.
 - Lesson 07's ``rk.io.load`` of lesson 05's strategy (#207).
 
-Cell 11b waits on two decisions of the maintainer, which ``BLOCKED`` names. Cell 18
-needs its solve, so ``tests/execution/rule/test_rules_in_solve.py`` runs it on a
-smaller project.
-
 Lesson 07's cell 18 calls ``alternatives`` (#244) and reads ``use_index["..."]``
 (#284), so the test runs only its window and its rule on a Value of this Model.
 """
@@ -56,11 +52,6 @@ HISTORIES = {
     "long downturn": (0.97, 0.95, 0.94, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93),
     "short recovery": (0.97, 0.95, 1.06, 1.12, 1.04, 1.0, 0.98, 0.97, 0.96, 0.95, 0.95),
 }
-BLOCKED = (
-    "Cell 10's rent_index.at(on=b_sale_date) has no value for NEVER, and lesson 03's "
-    "b_unpaid = b_works.cumulative() - b_works.total() changes before B's decision "
-    "date, which is decision_changes_past. Both wait on the maintainer's decision."
-)
 
 
 def cells(path: Path) -> dict[str, str]:
@@ -196,9 +187,51 @@ def test_cell_11b_reads_the_decisions_of_each_history(lesson):
     assert downturn.run.rule_evidence.verified is True
 
 
-@pytest.mark.xfail(strict=True, reason=BLOCKED)
 def test_cell_11b_solves_every_history(lesson):
     assert lesson["stories_outcome"].status is rk.execution.Status.FEASIBLE
+
+
+@pytest.mark.parametrize(
+    ("key", "start", "b_start", "sale"),
+    [
+        ("early recovery", date(2028, 1, 1), date(2029, 1, 1), rk.duration.NEVER),
+        ("long downturn", rk.duration.NEVER, rk.duration.NEVER, date(2033, 1, 1)),
+        ("short recovery", date(2030, 1, 1), date(2031, 1, 1), rk.duration.NEVER),
+    ],
+)
+def test_cell_11b_decides_on_each_history(lesson, key, start, b_start, sale):
+    case = lesson["stories_outcome"].case(key=key)
+    assert (case["start_date"], case["b_start"], case["b_sale_date"]) == (
+        start,
+        b_start,
+        sale,
+    )
+    assert case.run.rule_evidence.verified is True
+
+
+def test_cell_10_has_a_site_sale_only_on_its_sale_date(lesson):
+    """An unsold site has no sale; a sold site is 40 % of the land at the index of 2033."""
+    outcome = lesson["stories_outcome"]
+    for key in ("early recovery", "short recovery"):
+        amounts = outcome.case(key=key)["b_site_sale"].movements
+        assert not [movement for movement in amounts if movement.number]
+    sold = outcome.case(key="long downturn")["b_site_sale"]
+    ((period, amount),) = [
+        (movement.period, movement.number)
+        for movement in sold.movements
+        if movement.number
+    ]
+    assert period.start == date(2033, 1, 1)
+    assert amount == pytest.approx(0.4 * 20_000_000 * 0.93)
+
+
+def test_cell_18_checks_the_strategy_on_the_lesson_model(lesson):
+    """Cells 13 and 18, on the three histories of this test (#207)."""
+    namespace = dict(lesson)
+    namespace["paths"] = lesson["stories"]
+    written = cells(LESSON_05)
+    run(namespace, written["13"])
+    exec(written["18"], namespace)
 
 
 def test_cell_8_rejects_a_look_ahead_at_fix(lesson):
@@ -286,6 +319,7 @@ def test_lesson_07_cell_8b_solves_each_strategy(lesson):
     assert {row.key for row in outcomes["timing"].decisions} == set(
         lesson["strategy"].rules
     )
+    assert outcomes["timing"].status is rk.execution.Status.FEASIBLE
 
 
 def test_lesson_07_cell_18_window_and_rule(lesson):

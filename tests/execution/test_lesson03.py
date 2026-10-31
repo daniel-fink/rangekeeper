@@ -213,6 +213,15 @@ def test_cell_21_reports_the_commitment_gap(lesson):
             case["peak_shortfall"]
             == lesson["funded_outcome"].case(key=key)["peak_shortfall"]
         )
+        # ``since`` is in each definition, so no value changes before its decision.
+        for unpaid, start in (
+            ("shared_unpaid", "shared_start"),
+            ("a_unpaid", "a_start"),
+            ("b_unpaid", "b_start"),
+        ):
+            for movement in case[unpaid].movements:
+                if movement.period.end <= case[start]:
+                    assert movement.number == 0
 
 
 def test_cell_22_executes_the_funded_cases_into_an_empty_store(lesson, kernel):

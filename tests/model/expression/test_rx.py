@@ -698,8 +698,7 @@ def test_the_calls_of_lessons_05_and_07_parse_as_written(draft):
     project = draft.add_entity(code="project", classification="project")
     for key, units in (("b_land_share", "ratio"), ("land_cost", "AUD")):
         project.value(key=key, units=units)
-    for key in ("x_cost", "b_site_value"):
-        project.value(key=key, units="AUD")
+    project.value(key="x_cost", units="AUD")
     project.value(key="x_income", units="AUD pa")
     for key in ("b_sale_date", "expansion_date", "x_open"):
         project.date(key=key)
@@ -707,8 +706,7 @@ def test_the_calls_of_lessons_05_and_07_parse_as_written(draft):
         units = "ratio" if key == "rent_index" else "AUD"
         project.flow(key=key, units=units, periods=YEARS)
     sources = (
-        "b_site_value = b_land_share * land_cost * rent_index.at(on=b_sale_date)",
-        "b_site_sale = rx.flow.event(amount=b_site_value, on=b_sale_date)",
+        "b_site_sale = rx.flow.event(amount=b_land_share * land_cost, on=b_sale_date) * rent_index",
         "x_open = expansion_date + 1 year",
         "works = -rx.profile.uniform(total=x_cost, start=expansion_date, length=1 year)",
         "income = rx.profile.constant(initial=x_income, start=x_open)",
