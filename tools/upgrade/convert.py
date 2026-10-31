@@ -6,9 +6,8 @@ Each release in `RELEASES` names the stored formats it writes:
   formats that the 0.9 and 0.10 lines and 1.0.0a1 write. The conversion changes
   `metadata.schema_version` to the 1.0.0 document version (#118); the Period and
   Span fields `start_inclusive` and `end_exclusive` to `start` and `end` (#119);
-  `Specification.policy` to `rules` and `Report.outcomes` to `decision_evidence`
-  (policy to rule, #95); and a magnitude in ISO 4217 currency units to the
-  canonical text of its amount, at 15 significant digits (#117, ADR-023).
+  and a magnitude in ISO 4217 currency units to the canonical text of its amount,
+  at 15 significant digits (#117, ADR-023).
 - **1.0.0a2**: a Model, Specification or Run 1.0.0 that 1.0.0a2 writes. The
   format version stays 1.0.0.
 
@@ -51,6 +50,8 @@ class Release(NamedTuple):
     versions: Mapping[str, tuple[str, ...]]
     """The document formats that the release writes, by root kind."""
     renamed: Mapping[str, Mapping[str, str]]
+    # The fields of each record kind that hold records with no current form.
+    retired: Mapping[str, tuple[str, ...]]
     """Fields that the current formats name otherwise, by record kind."""
 
 
@@ -59,10 +60,13 @@ def _release(
     *,
     versions: Mapping[str, tuple[str, ...]],
     renamed: Mapping[str, Mapping[str, str]],
+    retired: Mapping[str, tuple[str, ...]],
 ) -> Release:
     """Return a release with the slot map in the file ``slots`` beside this module."""
     content = Path(__file__).with_name(slots).read_bytes()
-    return Release(json.loads(content), sha256(content).hexdigest(), versions, renamed)
+    return Release(
+        json.loads(content), sha256(content).hexdigest(), versions, renamed, retired
+    )
 
 
 RELEASES = {
@@ -77,14 +81,14 @@ RELEASES = {
         renamed={
             "Period": {"start_inclusive": "start", "end_exclusive": "end"},
             "Span": {"start_inclusive": "start", "end_exclusive": "end"},
-            "Specification": {"policy": "rules"},
-            "Report": {"outcomes": "decision_evidence"},
         },
+        retired={"Specification": ("policy",), "Report": ("outcomes",)},
     ),
     "1.0.0a2": _release(
         "alpha2_slots.json",
         versions={kind: ("1.0.0",) for kind in ("Model", "Specification", "Run")},
-        renamed={"Report": {"rule_evidence": "decision_evidence"}},
+        renamed={},
+        retired={"Specification": ("rules",), "Report": ("rule_evidence",)},
     ),
 }
 # Records whose Classification matched exactly in every release in RELEASES.
@@ -146,8 +150,12 @@ def _fields(kind: str, data: object, release: Release) -> object:
     if not isinstance(data, Mapping) or kind not in release.slots:
         return data
     renamed = release.renamed.get(kind, {})
+    retired = release.retired.get(kind, ())
     result = {}
     for name, value in data.items():
+        # `_refuse_retired` has checked that the field holds nothing.
+        if name in retired:
+            continue
         meta = release.slots[kind].get(name)
         converted = (
             _records(meta, value, release)
@@ -183,6 +191,29 @@ def _require_version(data: Data, kind: str, release: str) -> None:
         )
 
 
+def _refuse_retired(data: Data, kind: str, release: Release) -> None:
+    """Refuse a document that holds records with no current form.
+
+    The old rule records (`RuleSet`, `Decision`, `Action`) and their evidence have no
+    form in the 1.0.0 format: a current rule is a query over a window, not a list of
+    dated decisions (ADR-021). The tool cannot write one from the other, and it does
+    not drop what the document records.
+    """
+    owner = data.get("report") if kind == "Run" else data
+    record = "Report" if kind == "Run" else kind
+    if not isinstance(owner, Mapping):
+        return
+    held = [name for name in release.retired.get(record, ()) if owner.get(name)]
+    if held:
+        raise ConversionError(
+            f"{kind} {data['metadata'].get('id')} holds {' and '.join(held)}: the old "
+            "rule records have no 1.0.0 form, so the tool does not convert this "
+            "document. Write each rule as a query, "
+            "`rk.specification.Window(...).where(condition=...).first(otherwise=...)`, "
+            "fix it by key, and solve again"
+        )
+
+
 def convert(data: Data, kind: str | None = None, *, release: str) -> dict[str, Any]:
     """Return the current data of one document of ``release``.
 
@@ -194,6 +225,7 @@ def convert(data: Data, kind: str | None = None, *, release: str) -> dict[str, A
     if kind not in RELEASES[release].versions:
         raise ConversionError(f"unknown document kind {kind!r}")
     _require_version(data, kind, release)
+    _refuse_retired(data, kind, RELEASES[release])
     result = _fields(kind, data, RELEASES[release])
     assert isinstance(result, dict)
     result["metadata"] = {

@@ -23,8 +23,8 @@ from rangekeeper.schema.records import (
     Assignment,
     Metadata,
     Reference,
-    RuleDeclaration,
 )
+from rangekeeper.schema.records import Rule as RuleRecord
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.revision import check_revision
 from rangekeeper.schema.runtime import UNSET
@@ -270,7 +270,7 @@ class Specification:
                 model.key_of(item.target.target): rule_of(
                     item, model=model, assignments=assignments
                 )
-                for item in record.declared_rules or ()
+                for item in record.rules or ()
             },
             where=self._where,
         )
@@ -438,7 +438,7 @@ class Specification:
                 },
             )
         check_declared(
-            requirements.declared_rules or (),
+            requirements.rules or (),
             model=model,
             fixed=given | fixed,
             document_id=self.id,
@@ -568,7 +568,7 @@ class Specification:
         return self._edit_roles(
             refs,
             tuple(assignments),
-            rules=_placed(self.record.declared_rules or (), declared),
+            rules=_placed(self.record.rules or (), declared),
             name=name,
         )
 
@@ -697,7 +697,7 @@ class Specification:
         controlled.extend(decided_targets(record))
         read = [
             Reference(target=token)
-            for rule in record.declared_rules or ()
+            for rule in record.rules or ()
             for token in _rule_reads(rule)
         ]
         missing = [
@@ -800,7 +800,7 @@ class Specification:
         refs: "list[Reference]",
         assignments: "tuple[Assignment, ...] | None",
         *,
-        rules: "tuple[RuleDeclaration, ...] | None" = None,
+        rules: "tuple[RuleRecord, ...] | None" = None,
         name: str | None = None,
     ) -> "Specification":
         """Return the revision that fixes ``refs`` to ``assignments``, or frees them.
@@ -834,9 +834,7 @@ class Specification:
         declared = rules
         if declared is None:
             declared = tuple(
-                rule
-                for rule in record.declared_rules or ()
-                if rule.target.target not in targets
+                rule for rule in record.rules or () if rule.target.target not in targets
             )
         controlled.update(rule.target.target for rule in declared)
         local_unknowns += tuple(
@@ -849,7 +847,7 @@ class Specification:
             record.assignments or (),
             record.unknowns or (),
             record.estimates or (),
-            record.declared_rules or (),
+            record.rules or (),
         ):
             # The roles do not change: a free of a free value, or the same fix.
             return self
@@ -859,8 +857,8 @@ class Specification:
             "unknowns": unknowns,
             "estimates": estimates,
         }
-        if declared or record.declared_rules:
-            changes["declared_rules"] = declared
+        if declared or record.rules:
+            changes["rules"] = declared
         revised = self._derive(name=name, **changes)
         # A Specification without includes composes without a resolver.
         composed = revised.compose(resolver=self._resolver)  # type: ignore[arg-type]
@@ -869,7 +867,7 @@ class Specification:
             requirements = composed.requirements
             given = {a.target.target for a in requirements.assignments or ()}
             check_declared(
-                requirements.declared_rules or (),
+                requirements.rules or (),
                 model=model,
                 fixed=given | path_movements(model),
                 document_id=revised.id,
@@ -921,7 +919,7 @@ class Specification:
 
 def _declared(
     specification: "Specification", rules: Mapping, *, model: "Model"
-) -> "dict[UUID, RuleDeclaration]":
+) -> "dict[UUID, RuleRecord]":
     """Return the stored record of each Rule, by the UUID of the value it decides.
 
     A record that does not fit its value raises ValidationError.
@@ -941,8 +939,8 @@ def _declared(
 
 
 def _placed(
-    current: "Sequence[RuleDeclaration]", new: "dict[UUID, RuleDeclaration]"
-) -> "tuple[RuleDeclaration, ...]":
+    current: "Sequence[RuleRecord]", new: "dict[UUID, RuleRecord]"
+) -> "tuple[RuleRecord, ...]":
     """Return the rules with each new one in the position of the one it replaces."""
     kept = [new.get(rule.target.target, rule) for rule in current]
     held = {rule.target.target for rule in current}
@@ -950,7 +948,7 @@ def _placed(
     return tuple(kept)
 
 
-def _rule_reads(rule: RuleDeclaration) -> "tuple[UUID, ...]":
+def _rule_reads(rule: RuleRecord) -> "tuple[UUID, ...]":
     """Return each Value that a rule's condition and bounds read."""
     found = dict.fromkeys(read_targets(rule.condition))
     for bound in (rule.earliest, rule.latest):
@@ -973,7 +971,7 @@ def _controlled(composition: Composition, *, local: UUID) -> set[UUID]:
 def _roles(record: SpecificationRecord) -> set[UUID]:
     """Return the targets that a Specification fixes, frees, estimates or decides."""
     found = {ref.target for ref in record.unknowns or ()}
-    found.update(rule.target.target for rule in record.declared_rules or ())
+    found.update(rule.target.target for rule in record.rules or ())
     found.update(a.target.target for a in record.assignments or ())
     found.update(e.target.target for e in record.estimates or ())
     return found
@@ -982,19 +980,10 @@ def _roles(record: SpecificationRecord) -> set[UUID]:
 def _check_owned(
     contribution: "Specification", targets: set[UUID], *, local: UUID
 ) -> None:
-    """Raise ContractError when a rule or an included Specification owns a target."""
-    record = contribution.record
-    ruled = targets & {
-        ref.target for ref in (record.rules.targets if record.rules else ())
-    }
-    if ruled:
-        raise ContractError(
-            "a target that a rule controls changes only through its rule",
-            document_id=local,
-            targets=ruled,
-            values={"rules": contribution.id},
-        )
-    inherited = targets & _roles(record) if contribution.id != local else set()
+    """Raise ContractError when an included Specification owns a target."""
+    inherited = (
+        targets & _roles(contribution.record) if contribution.id != local else set()
+    )
     if inherited:
         raise ContractError(
             f"change an inherited role in the included Specification {contribution.id}",

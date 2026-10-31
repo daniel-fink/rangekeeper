@@ -94,11 +94,7 @@ def check_report(run, *, batch, effective=None):
     data = run["report"]
     if effective is not None:
         require(
-            not data.get("decision_evidence") or effective.get("rules") is not None,
-            "decision evidence requires rules",
-        )
-        require(
-            not data.get("rule_evidence") or effective.get("declared_rules"),
+            not data.get("rule_evidence") or effective.get("rules"),
             "rule evidence requires rules",
         )
     status = data["status"]

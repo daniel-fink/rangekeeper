@@ -91,13 +91,15 @@ def test_probabilistic_and_flexible_use_identical_captured_paths():
         )
     )
     fixed, _ = execute(probabilistic, model)
-    rules = flexible.build_stop_gain_resale_rules(
+    rule = flexible.stop_gain_resale_rule(
         model, minimum_holding_periods=2, threshold=1.2
     )
-    chosen, run = execute(flexible, model, rules=rules)
+    chosen, run = execute(flexible, model, rule=rule)
     assert chosen.sale_date == datetime.date(2022, 12, 31)
     assert fixed.sale_date == datetime.date(2023, 12, 31)
-    assert len(run.report.decision_evidence) == 2
+    (decided,) = run.rule_evidence.decided
+    assert decided.decision_date == datetime.date(2022, 12, 31)
+    assert decided.value.date == datetime.date(2022, 12, 31)
     for key, name in (
         ("space_market_price_factors", "space_market_price_factors"),
         ("reversion_cap_rates", "asset_market"),

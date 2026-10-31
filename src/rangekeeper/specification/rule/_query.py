@@ -1,7 +1,7 @@
 """One rule as a query over a window (ADR-021): what the rule engine reads.
 
 The module is internal. ``_declaration`` makes these from the public query and
-from the stored ``RuleDeclaration`` records.
+from the stored ``Rule`` records.
 
 ``check_queries`` is the check of ADR-021 that needs no solve: a look-ahead, a
 condition that reads a later rule, and a condition that reads a free input.

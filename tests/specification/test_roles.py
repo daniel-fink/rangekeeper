@@ -1,12 +1,13 @@
 """Specification roles: unfixed values are free; fix takes text, numbers and Quantities."""
 
 import importlib.util
+from datetime import date
 from uuid import uuid4
 
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.schema.records import Reference, RuleSet
+from rangekeeper.schema.records import Reference
 from rangekeeper.shared.errors import UnitError
 from rangekeeper.specification import Role, Specification
 from tests.specification.lesson_02 import DATA, lesson_02_model
@@ -141,16 +142,11 @@ def test_roles_need_the_model_and_a_concrete_specification():
 def test_a_rule_decides_its_target():
     model = lesson_02_model()
     land = model.value(owner=model.entity(code="project").id, key="land_cost")
-    record = model.specify().record
-    controlled = Specification(
-        record=record.replace(
-            unknowns=tuple(r for r in record.unknowns if r.target != land.id),
-            rules=RuleSet(
-                id=uuid4(), targets=(Reference(target=land.id),), decisions=()
-            ),
-        ),
-        model=model,
+    window = rk.specification.Window(earliest=date(2027, 1, 1), latest=date(2027, 1, 1))
+    rule = window.where(condition="leverage >= 50 %").first(
+        otherwise="1 AUD", then="2 AUD"
     )
+    controlled = model.specify().fix(leverage="60 %", land_cost=rule)
     assert controlled.roles.row(land.id).values["role"] is Role.DECIDED
     # A chained call does not free a decided value.
     fixed = controlled.fix(leverage="65 %")

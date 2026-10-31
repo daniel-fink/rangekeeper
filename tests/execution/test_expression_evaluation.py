@@ -2,7 +2,6 @@
 
 import subprocess
 import sys
-from datetime import date
 from uuid import uuid4
 
 import pytest
@@ -191,17 +190,7 @@ def test_conjunction_diagnostics_preserve_expression_order():
         tuple(_comparisons(literal(1), {}, units=default_units))
 
 
-def test_availability_combines_dates_without_runtime_imports():
-    from rangekeeper.run._rule.availability import available_on
-
-    assert available_on() is None
-    assert available_on(period_end=date(2027, 2, 1)) == date(2027, 1, 31)
-    assert available_on(
-        movement_date=date(2027, 1, 2), period_end=date(2027, 2, 1)
-    ) == date(2027, 1, 2)
-    assert available_on(
-        movement_date=date(2027, 1, 2), declared=date(2027, 1, 5)
-    ) == date(2027, 1, 5)
+def test_rule_availability_has_no_runtime_imports():
     for imports in (
         "import rangekeeper.specification.validation; import rangekeeper.run._rule.availability",
         "import rangekeeper.run._rule.availability; import rangekeeper.specification.validation",
@@ -211,12 +200,12 @@ def test_availability_combines_dates_without_runtime_imports():
                 sys.executable,
                 "-c",
                 imports
-                + "; import sys; assert not any(n.startswith(('rangekeeper.execution.rule.evaluation', 'rangekeeper.execution.compiler', 'numpy', 'scipy', 'pint', 'pyomo')) for n in sys.modules)",
+                + "; import sys; assert not any(n.startswith(('rangekeeper.execution.rule.sequence', 'rangekeeper.execution.compiler', 'numpy', 'scipy', 'pint', 'pyomo')) for n in sys.modules)",
             ],
             check=True,
         )
     for imports in (
-        "import rangekeeper.specification.validation; from rangekeeper.execution.rule import evaluate",
-        "from rangekeeper.execution.rule import evaluate; import rangekeeper.specification.validation",
+        "import rangekeeper.specification.validation; from rangekeeper.execution.rule.sequence import run_rules",
+        "from rangekeeper.execution.rule.sequence import run_rules; import rangekeeper.specification.validation",
     ):
         subprocess.run([sys.executable, "-c", imports], check=True)

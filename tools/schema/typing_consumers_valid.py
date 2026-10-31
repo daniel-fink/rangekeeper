@@ -1,7 +1,6 @@
 """Statically checked Model projection and source workflow calls."""
 
 from rangekeeper import Model
-from rangekeeper.execution.rule import RuleResult
 from rangekeeper.flow import Flow
 from rangekeeper.market import Paths
 from rangekeeper.model import Distribution
@@ -24,5 +23,4 @@ def consume_market(paths: "Paths", distribution: "Distribution") -> "Flow":
     distribution.check()
     index: Flow = paths[paths.keys[0]]["rent_index"]
     mean: Flow = paths.mean(name="rent_index")
-    result: RuleResult = RuleResult(evidence=())
     return index

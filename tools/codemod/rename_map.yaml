@@ -121,26 +121,6 @@ modules:
     new: rangekeeper.execution
     status: agreed
     source: ADR-010
-  - old: rangekeeper.specification.policy
-    new: rangekeeper.specification.rule
-    status: agreed
-    source: "ADR-021, #255 D41"
-    note: '"Policy" is not used. The rule queries of ADR-021 replace the records later (#215).'
-  - old: rangekeeper.specification.policy.evaluation
-    new: rangekeeper.execution.rule.evaluation
-    status: agreed
-    source: "ADR-010, #102"
-    note: >-
-      Rule evaluation moves to `execution`. `specification.rule` keeps the
-      declarations. Import `evaluate` from `rangekeeper.execution.rule`.
-  - old: rangekeeper.specification.policy.observation
-    new: rangekeeper.execution.rule.observation
-    status: agreed
-    source: "ADR-010, #102"
-  - old: rangekeeper.specification.policy.result
-    new: rangekeeper.execution.rule.result
-    status: agreed
-    source: "ADR-010, #102"
   - old: rangekeeper.specification.policy.predicate
     new: rangekeeper.run._rule.predicate
     status: draft
@@ -423,75 +403,6 @@ symbols:
     status: agreed
     source: "ADR-017, #255 D29"
     note: One canonical path for each public name.
-  - module: rangekeeper.schema.records
-    name: Policy
-    new_name: RuleSet
-    status: draft
-    source: "ADR-021, #255 D41"
-    requires: [schema]
-    note: >-
-      The record that a Specification holds as `rules`. The schema module
-      `policy` becomes `rule`. `Rule` keeps its name. ADR-021's rule queries
-      replace these records (#215).
-  - module: rangekeeper.schema.records
-    name: DecisionOutcome
-    new_name: RuleEvidence
-    status: draft
-    source: "ADR-021, #255 D41"
-    requires: [schema]
-    note: The evidence of one rule decision, in `Report.rule_evidence`.
-  - module: rangekeeper.specification.policy.result
-    name: PolicyResult
-    new_name: RuleResult
-    status: agreed
-    source: "#255 D41"
-  - module: rangekeeper.specification.policy.observation
-    name: PolicyCapabilityError
-    new_name: RuleCapabilityError
-    status: agreed
-    source: "#255 D41"
-  - module: rangekeeper.specification.policy.validation
-    name: validate_policy
-    new_name: validate_rules
-    status: agreed
-    source: "#255 D41"
-  - module: rangekeeper.specification.policy.validation
-    name: validate_outcomes
-    new_name: validate_evidence
-    new_module: rangekeeper.run._rule.evidence
-    status: agreed
-    source: "#255 D41, #102"
-    note: >-
-      The trace check of the `RuleEvidence` records of a Run report. It is
-      evidence validation, so it moves to the internal `run._rule` (#102).
-  - module: rangekeeper.specification.policy
-    name: evaluate
-    new_module: rangekeeper.execution.rule
-    status: agreed
-    source: "ADR-010, #102"
-    note: "`specification.rule` exports only the declarations."
-  - module: rangekeeper.specification.policy
-    name: observe
-    new_module: rangekeeper.execution.rule
-    status: agreed
-    source: "ADR-010, #102"
-  - module: rangekeeper.specification.policy
-    name: Observation
-    new_module: rangekeeper.execution.rule
-    status: agreed
-    source: "ADR-010, #102"
-  - module: rangekeeper.specification.policy
-    name: PolicyResult
-    new_name: RuleResult
-    new_module: rangekeeper.execution.rule
-    status: agreed
-    source: "#255 D41, ADR-010, #102"
-  - module: rangekeeper.specification.policy
-    name: PolicyCapabilityError
-    new_name: RuleCapabilityError
-    new_module: rangekeeper.execution.rule
-    status: agreed
-    source: "#255 D41, ADR-010, #102"
   - module: rangekeeper.execution.errors
     name: UnsupportedProblem
     new_name: UnsupportedError
@@ -697,29 +608,6 @@ attributes:
     note: >-
       Classification `labels` keep their name. The package pass renamed the
       Stream field by hand; the consumer pass lists the uses to check.
-  - owner: rangekeeper.schema.records.Specification
-    name: policy
-    new_name: rules
-    apply: review
-    status: draft
-    source: "ADR-021, #255 D41"
-    requires: [schema]
-    note: The Specification field and its wire key. `spec.rules` holds all of a Specification's rules.
-  - owner: rangekeeper.schema.records.Report
-    name: outcomes
-    new_name: rule_evidence
-    apply: review
-    status: draft
-    source: "ADR-021, #255 D41"
-    requires: [schema]
-    note: The Run report field and its wire key.
-  - owner: rangekeeper.specification.policy.result.PolicyResult
-    name: outcomes
-    new_name: evidence
-    apply: review
-    status: agreed
-    source: "#255 D41"
-    note: The `RuleEvidence` records of one evaluation.
   - owner: "*"
     name: findings
     new_name: diagnostics
@@ -776,11 +664,6 @@ parameters:
     new_name: end
     status: agreed
     source: ADR-012
-  - callable: rangekeeper.specification.policy.evaluation.evaluate
-    name: policy
-    new_name: rules
-    status: agreed
-    source: "#255 D41"
   - callable: rangekeeper.model.flux.Stream.select
     name: labels
     new_name: names
@@ -796,6 +679,46 @@ parameters:
 # uses; it lists them with the replacement. Entries with `requires: [refactor]`
 # are removed by later work; the codemod lists them only with `--with refactor`.
 removed:
+  - name: rangekeeper.specification.policy
+    replacement: >-
+      A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`,
+      fixed by key. `evaluate`, `observe`, `PolicyResult`, `PolicyCapabilityError`,
+      `validate_policy` and `validate_outcomes` have no replacement: the solve runs the
+      rules, and `rk.run.validate` checks their stored trace
+    status: agreed
+    source: "ADR-021, #300"
+  - name: rangekeeper.schema.records.Policy
+    replacement: >-
+      A rule query, fixed by key; `Specification.rules` stores the `Rule` records, and
+      `Specification.policy` has no conversion
+    status: agreed
+    source: "ADR-021, #300"
+  - name: rangekeeper.schema.records.Decision
+    replacement: A rule query. A window date takes the place of a dated Decision
+    status: agreed
+    source: "ADR-021, #300"
+  - name: rangekeeper.schema.records.Action
+    replacement: A rule decides one value, so there is no action. The Model relates other values to it
+    status: agreed
+    source: "ADR-021, D9, #300"
+  - name: rangekeeper.schema.records.ActionKind
+    replacement: A rule decides one value, so there is no action
+    status: agreed
+    source: "ADR-021, D9, #300"
+  - name: rangekeeper.schema.records.ObservationBinding
+    replacement: A rule condition names what it reads, as equation text
+    status: agreed
+    source: "ADR-021, #300"
+  - name: rangekeeper.schema.records.ObservedQuantity
+    replacement: "`Observation`, in each `Check` of `Report.rule_evidence`"
+    status: agreed
+    source: "ADR-021, #300"
+  - name: rangekeeper.schema.records.DecisionOutcome
+    replacement: >-
+      `RuleEvidence`, in `Report.rule_evidence`, with another shape: it holds the trace
+      of one case, not one rule decision. `Report.outcomes` has no conversion
+    status: agreed
+    source: "ADR-021, #300"
   - name: rangekeeper.flow.MeanWeighting
     replacement: >-
       `ResampleMethod.MEAN` for `MeanWeighting.OBSERVATIONS` and
@@ -1005,12 +928,11 @@ notes:
       `solve(specification, store)` is now `solve(specification=,
       resolver=)`, and so are the stage calls `resolve_cases(specification=,
       resolver=)`, `validate(composition=, resolver=, units=)`,
-      `bind_roles(validation=)` and `build_problem(binding=, limits=)`, the
-      rule calls `rk.execution.rule.evaluate(rules=, model=)` and
-      `observe(model=, at=, bindings=)`, `Overlay(resolver=, models=, runs=)`
+      `bind_roles(validation=)` and `build_problem(binding=, limits=)`,
+      `Overlay(resolver=, models=, runs=)`
       and `rk.run.validate(run=, resolver=)`. A backend declares
-      `def solve(self, *, problem, limits, remaining, options)`. The records of `rk.execution`, `rk.execution.backends`
-      and `rk.execution.rule` take keyword arguments only, for example
+      `def solve(self, *, problem, limits, remaining, options)`. The records of `rk.execution`
+      and `rk.execution.backends` take keyword arguments only, for example
       `Limits(time_limit=)`, `Tolerances(absolute=, relative=)` and
       `BackendResult(termination=, candidate=)`.
   - topic: Resample options
@@ -1093,7 +1015,7 @@ notes:
   - topic: Rules
     status: agreed
     source: "ADR-021, #255 D41, D42"
-    note: "A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. The `Rule`, `Check` and `RuleEvidence` records of ADR-021 replace `RuleSet`, `Decision` and `Action` (#215)."
+    note: "A rule is a query, `rk.specification.Window(...).where(condition=).first(otherwise=)`, fixed by key. `Specification.rules` stores the `Rule` records, and `Report.rule_evidence` holds a `RuleEvidence` with its `Check` records. They replace the 0.x `Policy`, `Decision`, `Action` and `DecisionOutcome`, with no conversion (#300)."
 
 # Exact text edits for cases that the rules do not cover. Each edit applies
 # only when `old` occurs once in the file, so a second run changes nothing.

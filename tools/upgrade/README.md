@@ -29,7 +29,6 @@ The tool changes only what the 1.0.0 formats change:
 | --- | --- |
 | `metadata.schema_version` becomes `1.0.0` | [#118](https://github.com/daniel-fink/rangekeeper/issues/118) |
 | Period and Span `start_inclusive` and `end_exclusive` become `start` and `end` | [#119](https://github.com/daniel-fink/rangekeeper/issues/119) |
-| `Specification.policy` becomes `rules`, and `Report.outcomes` becomes `decision_evidence` | [#95](https://github.com/daniel-fink/rangekeeper/issues/95) |
 | A magnitude in ISO 4217 currency units, such as `AUD`, becomes the canonical text of its amount, at 15 significant digits (`0.30000000000000004` becomes `"0.3"`) | [#117](https://github.com/daniel-fink/rangekeeper/issues/117), [ADR-023](../../docs/decisions/023-decimal-money.md) |
 | A query `Filter` with a `classification`, and each Label `Criterion`, gets `exclusive: true`. The 0.x formats matched them exactly; 1.0.0 also matches sub-types unless `exclusive` is true | [#121](https://github.com/daniel-fink/rangekeeper/issues/121) |
 
@@ -47,6 +46,22 @@ Convert only the documents that 1.0.0a2 wrote. In a later document, a Filter
 without `exclusive` asks for sub-types, and the conversion would make it exact.
 No release before #121 wrote `exclusive`, so the tool refuses a document with
 a Filter or Criterion that has it.
+
+### What the tool refuses
+
+The tool stops, and names the document, when a document holds the old rule
+records: a `RuleSet` (`Specification.policy` in the 0.x formats,
+`Specification.rules` in 1.0.0a2) or its evidence (`Report.outcomes` in the 0.x
+formats, the `Report.rule_evidence` list in 1.0.0a2). These records list dated
+decisions and actions. A current rule is a query over a window that decides one
+value ([ADR-021](../../docs/decisions/021-sequential-decisions.md)), so the tool
+cannot write one from the other, and it does not drop what the document records.
+A Bundle with such a document converts to nothing.
+
+To move such a document, write each rule as a query,
+`rk.specification.Window(...).where(condition=...).first(otherwise=...)`, fix it
+by key and solve again. The solve writes a new Run with the evidence of the new
+rule. An empty field of these names holds nothing, so the tool drops it.
 
 ### What stays the same
 

@@ -56,10 +56,9 @@ from rangekeeper.execution.preparation import (
 )
 from rangekeeper.execution.publication import make_candidate
 from rangekeeper.execution.replaying import Replay, replay
-from rangekeeper.execution.rule.result import DecisionResult
 from rangekeeper.execution.settings import Limits
 from rangekeeper.execution.status import Status
-from rangekeeper.schema.enums import ObservationSource
+from rangekeeper.schema.enums import DecisionResult, ObservationSource
 
 __all__ = [
     "AffineProblem",

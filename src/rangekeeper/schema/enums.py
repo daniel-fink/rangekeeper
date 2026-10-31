@@ -2,14 +2,6 @@
 from enum import StrEnum, unique
 
 @unique
-class ActionKind(StrEnum):
-    'What a Rule action does.'
-    ASSIGN = 'assign'
-    'Assign a quantity to a controlled target.'
-    TERMINATE = 'terminate'
-    'End the decision sequence.'
-
-@unique
 class Cardinality(StrEnum):
     'How many Values a projection permits for each Entity.'
     ONE = 'one'
@@ -400,7 +392,6 @@ class ValueRelation(StrEnum):
     'The Entity has no Value with this key, or the Value has no recorded content.'
 
 _ENUM_TYPES = {
-    'ActionKind': ActionKind,
     'Cardinality': Cardinality,
     'ClaimKind': ClaimKind,
     'CollectionKind': CollectionKind,
@@ -433,4 +424,4 @@ _ENUM_TYPES = {
     'ValueRelation': ValueRelation,
 }
 
-__all__ = ['ActionKind', 'Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'DecisionResult', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'Never', 'ObjectiveKind', 'ObservationSource', 'Operator', 'ParameterKind', 'PeriodTiming', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']
+__all__ = ['Cardinality', 'ClaimKind', 'CollectionKind', 'CompletionStatus', 'ContentKind', 'DecisionResult', 'Depth', 'Direction', 'DistributionFamily', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'ExpressionKind', 'ImplementationKind', 'MissingHandling', 'Never', 'ObjectiveKind', 'ObservationSource', 'Operator', 'ParameterKind', 'PeriodTiming', 'ProjectionKind', 'ReconciliationStatus', 'SelectionKind', 'Severity', 'SolutionStatus', 'StepKind', 'TraversalKind', 'ValueKind', 'ValueRelation']

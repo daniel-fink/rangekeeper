@@ -149,11 +149,6 @@ as one `RuleEvidence` in `Report.rule_evidence`. An output needs a verified trac
 resolver-backed validation checks the trace again against the path data and the
 output, with no solve.
 
-The dated `RuleSet` slice stores its evidence as `Report.decision_evidence`, containing
-`DecisionEvidence` records that name their declared `Decision`. Recorded controls cannot substitute for an
-earlier outcome. Both output and no-output validation branches use the supplied
-UnitSystem and independently check observations, actions and first matching rules.
-
 A valid composed Model pin remains available for batch assertions after a later
 mathematical failure. Child checks retain these pins for their parent; parent
 accounting does not recompose each descendant. `completion_for` consumes canonical

@@ -152,13 +152,6 @@ classes:
         all_of:
         - range: RuleEvidence
           inlined: true
-      decision_evidence:
-        description: Ordered evidence of each evaluated Decision of the RuleSet of the Specification.
-        range: DecisionEvidence
-        inlined: true
-        multivalued: true
-        inlined_as_list: true
-        list_elements_ordered: true
   RunStatus:
     description: Execution completion and mathematical conclusion of a Run, recorded independently.
     notes:

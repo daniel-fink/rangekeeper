@@ -1,7 +1,8 @@
-"""Rule evaluation and the stored-evidence check, on the investment example.
+"""The investment example's resale rule, run through the public solve and stored Run.
 
-Moved from ``tests/market/test_paths_and_rules.py`` when #140 removed the
-scenario plan: these tests are about ``execution.rule``, not market paths.
+The expected sale periods are worked by hand: a factor is known on the last day of its
+period, the threshold is strict, and the first period that the rule checks is the one
+that the minimum holding gives.
 """
 
 from datetime import date
@@ -10,57 +11,43 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper.duration import Frequency, Periods
-from rangekeeper.errors import Code
-from rangekeeper.execution.rule import RuleCapabilityError, evaluate
-from rangekeeper.flow import Flow, Movement
-from rangekeeper.model import (
-    Definitions,
-    Formulation,
-    Measure,
-    Metadata,
-    Model,
-    System,
-    Update,
-    Value,
-    ValueKind,
-)
-from rangekeeper.schema.enums import Severity, SolutionStatus
-from rangekeeper_examples.investment import build_stop_gain_resale_rules
+from rangekeeper.execution import DecisionResult, execute
+from rangekeeper.flow import Flow
+from rangekeeper.io import MemoryStore
+from rangekeeper.model import Metadata
+from rangekeeper.run import Run, validate
+from rangekeeper.schema.enums import SolutionStatus
+from rangekeeper.shared.errors import ValidationError
+from rangekeeper.specification import Specification, SpecificationRecord
+from rangekeeper_examples import investment
+
+pytest.importorskip("pyomo")
+pytest.importorskip("highspy")
 
 
-def rule_model(factors):
-    measure = Measure(id=uuid4(), code="factor", name="Factor", units="dimensionless")
+def priced(factors: list[float]):
+    """Return an investment Model that holds ``factors``, one for each sale period."""
     periods = Periods(
-        start=date(2027, 1, 1), frequency=Frequency.YEAR, count=len(factors)
+        start=date(2027, 1, 1), frequency=Frequency.YEAR, count=len(factors) + 1
     )
-    values = []
-    for name in ("pricing", "holding", "sale"):
-        values.append(
-            Value(
-                id=uuid4(),
-                key=name,
-                kind=ValueKind.FLOW,
-                measure=measure.id,
-                flow=Flow(
-                    units="dimensionless",
-                    movements=tuple(
-                        Movement(
-                            id=uuid4(),
-                            key=f"p{i + 1}",
-                            period=p,
-                            magnitude=factors[i] if name == "pricing" else None,
-                        )
-                        for i, p in enumerate(periods)
-                    ),
-                ),
-            )
+    flow = Flow.from_periods(
+        periods=periods, magnitudes=[*factors, 1.0], units="dimensionless"
+    )
+    return investment.formulate(
+        investment.author(
+            dict(num_periods=len(factors), start_date=date(2026, 1, 1)), factors=flow
         )
-    model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
-        definitions=Definitions(measures=(measure,)),
-        system=System(formulations=(Formulation(id=uuid4(), values=tuple(values)),)),
     )
-    return model, {v.key: v for v in values}
+
+
+def solved(model, rule):
+    store = MemoryStore()
+    store.put(model)
+    specification = investment.specify(model, rule=rule)
+    run = execute(specification=specification, store=store).run
+    assert run.report.status.solution is SolutionStatus.FEASIBLE, run.report.to_data()
+    validate(run=run, resolver=store).raise_if_invalid()
+    return store, run
 
 
 @pytest.mark.parametrize(
@@ -74,124 +61,80 @@ def rule_model(factors):
     ],
 )
 def test_resale_dates_strict_threshold_and_holding(factors, minimum, sale):
-    model, v = rule_model(factors)
-    rules = build_stop_gain_resale_rules(
-        model,
-        id=uuid4(),
-        pricing_factor=v["pricing"].id,
-        holding=v["holding"].id,
-        sale=v["sale"].id,
-        threshold=1.2,
-        minimum_holding_periods=minimum,
+    model = priced(factors)
+    rule = investment.stop_gain_resale_rule(
+        model, threshold=1.2, minimum_holding_periods=minimum
     )
-    result = evaluate(rules=rules, model=model)
-    sales = [
-        a.quantity.magnitude
-        for a in result.assignments
-        if a.target.target in {m.id for m in v["sale"].flow.movements}
+    store, run = solved(model, rule)
+    report = investment.report(store.load_model(run.record.outputs[0]))
+    assert report.sale_date == date(2026 + sale, 12, 31)
+    output = investment.values(report.model)
+    assert [m.number for m in output["sale"].flow.movements] == [
+        int(i + 1 == sale) for i in range(len(factors))
     ]
-    holding = [
-        a.quantity.magnitude
-        for a in result.assignments
-        if a.target.target in {m.id for m in v["holding"].flow.movements}
+    assert [m.number for m in output["holding"].flow.movements] == [
+        int(i < sale) for i in range(len(factors))
     ]
-    assert sales == [int(i + 1 == sale) for i in range(len(factors))]
-    assert holding == [int(i < sale) for i in range(len(factors))]
-    assert result.evidence[-1].at == date(2026 + sale, 12, 31)
-    assert result.evidence[-1].terminated
-    assert model.value(id=v["sale"].id).flow.movements[0].magnitude is None
 
 
-def test_future_changes_cannot_change_earlier_decision_and_missing_is_not_zero():
-    model, v = rule_model([1, 1.1, 1.4])
-    rules = build_stop_gain_resale_rules(
-        model,
-        id=uuid4(),
-        pricing_factor=v["pricing"].id,
-        holding=v["holding"].id,
-        sale=v["sale"].id,
-        threshold=1.2,
+def test_a_rule_that_never_meets_its_condition_sells_at_the_end():
+    model = priced([1, 1, 1])
+    _, run = solved(model, investment.stop_gain_resale_rule(model))
+    (decided,) = run.rule_evidence.decided
+    assert decided.value.date == date(2029, 12, 31)
+    assert decided.decision_date == date(2029, 12, 31)
+    assert [check.result for check in run.rule_evidence.checks] == [
+        DecisionResult.DECIDED
+    ]
+
+
+def test_a_later_factor_does_not_change_an_earlier_decision():
+    rule = dict(threshold=1.2, minimum_holding_periods=1)
+    before = priced([1, 1.3, 1])
+    after = priced([1, 1.3, 99])
+    decided = [
+        solved(model, investment.stop_gain_resale_rule(model, **rule))[1]
+        .rule_evidence.decided[0]
+        .value.date
+        for model in (before, after)
+    ]
+    assert decided == [date(2028, 12, 31)] * 2
+
+
+def test_a_changed_stored_trace_fails_validation():
+    model = priced([1, 1.3, 2])
+    rule = investment.stop_gain_resale_rule(model, minimum_holding_periods=1)
+    store, run = solved(model, rule)
+    data = run.to_data()
+    data["metadata"]["id"] = str(uuid4())
+    data["report"]["rule_evidence"]["checks"][0]["observations"][0]["available_on"] = (
+        "2000-01-01"
     )
-    before = evaluate(rules=rules, model=model)
-    data = model.system.to_data()
-    data["formulations"][0]["values"][0]["flow"]["movements"][-1]["magnitude"] = 99
-    revised = model.revise(Update(system=System.from_data(data)))
-    assert evaluate(rules=rules, model=revised).evidence[:2] == before.evidence[:2]
-    data["formulations"][0]["values"][0]["flow"]["movements"][0]["magnitude"] = None
-    with pytest.raises(RuleCapabilityError, match="unresolved"):
-        evaluate(rules=rules, model=model.revise(Update(system=System.from_data(data))))
+    assert not validate(run=Run.from_data(data), resolver=store).valid
 
 
-def test_rule_run_rejects_forged_information_timing_and_actions():
-    from rangekeeper.execution import execute
-    from rangekeeper.io import MemoryStore
-    from rangekeeper.run import Run, validate
-    from rangekeeper_examples import investment
-
-    model = investment.formulate(investment.author(dict(num_periods=2)))
-    rules = investment.build_stop_gain_resale_rules(model, minimum_holding_periods=1)
+def test_a_sale_rule_and_a_fixed_sale_date_cannot_both_come_from_contributors():
+    model = priced([1, 1.3, 2])
+    rule = investment.stop_gain_resale_rule(model, minimum_holding_periods=1)
+    ruled = investment.specify(model, rule=rule)
+    fixed = investment.specify(model, sale_period=2)
     store = MemoryStore()
-    store.put(model)
-    run = execute(specification=investment.specify(model, rules=rules), store=store).run
-    assert run.report.status.solution is SolutionStatus.FEASIBLE
-    for mutation in ("availability", "assignment", "rule", "termination"):
-        data = run.to_data()
-        data["metadata"]["id"] = str(uuid4())
-        decision = data["report"]["decision_evidence"][0]
-        if mutation == "availability":
-            decision["observations"][0]["available_at"] = "2000-01-01"
-        elif mutation == "assignment":
-            decision["assignments"][0]["quantity"]["magnitude"] = 0
-        elif mutation == "rule":
-            decision["rule"] = str(rules.decisions[0].rules[0].id)
-        else:
-            decision["terminated"] = True
-        candidate = Run.from_data(data)
-        assert not validate(run=candidate, resolver=store).valid
-
-
-def test_control_roles_conflict_across_contributors_and_endogenous_observation_fails():
-    from rangekeeper.execution import execute
-    from rangekeeper.io import MemoryStore
-    from rangekeeper.shared.errors import ValidationError
-    from rangekeeper.specification import Specification, SpecificationRecord
-    from rangekeeper_examples import investment
-
-    model = investment.formulate(investment.author(dict(num_periods=2)))
-    rules = investment.build_stop_gain_resale_rules(model, minimum_holding_periods=1)
-    spec = investment.specify(model, rules=rules)
-    store = MemoryStore()
-    store.put(model)
-    store.put(spec)
-    other = Specification(
-        record=SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
-            model=model.id,
-            rules=rules,
-        )
-    )
-    store.put(other)
+    for document in (model, ruled, fixed):
+        store.put(document)
     joined = Specification(
         record=SpecificationRecord(
             metadata=Metadata(id=uuid4(), schema_version="1.0.0"),
-            includes=(spec.id, other.id),
+            includes=(ruled.id, fixed.id),
         )
     )
     with pytest.raises(ValidationError):
         joined.compose(resolver=store)
-    data = spec.to_data()
-    data["unknowns"].append(rules.targets[0].to_data())
-    with pytest.raises(ValidationError):
-        Specification.from_data(data).compose(resolver=store)
-    observed = rules.decisions[0].observations[0].target
-    data = spec.to_data()
-    data["metadata"]["id"] = str(uuid4())
-    data["assignments"] = [
-        a for a in data["assignments"] if a["target"] != observed.to_data()
-    ]
-    data["unknowns"].append(observed.to_data())
-    run = execute(specification=Specification.from_data(data), store=store).run
-    assert not run.record.outputs
-    assert [d.code for d in run.report.diagnostics if d.severity == Severity.ERROR] == [
-        Code.UNSUPPORTED_CAPABILITY
-    ]
+
+
+def test_a_rule_with_a_fixed_sale_period_is_refused():
+    model = priced([1, 1])
+    rule = investment.stop_gain_resale_rule(model, minimum_holding_periods=1)
+    with pytest.raises(ValueError, match="choose a rule"):
+        investment.specify(model, rule=rule, sale_period=1)
+    with pytest.raises(ValueError, match="minimum holding"):
+        investment.stop_gain_resale_rule(model, minimum_holding_periods=3)

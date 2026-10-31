@@ -362,12 +362,6 @@ def _check_concrete(
             eligible(target)
     supplied("estimates")
     require(roles["estimates"] <= unknowns, "estimate target is not an unknown")
-    if specification.get("rules"):
-        from rangekeeper.specification.rule.validation import validate_rules
-
-        validate_rules(
-            specification["rules"], scope=scope, units_compatible=units_compatible
-        )
 
     # Imposed predicates and every objective need role completeness. Unused
     # expressions (including reporting queries) need not be prepared for a solve.
@@ -617,7 +611,7 @@ def _rule_report(composition: Composition, *, model: "Model") -> ValidationRepor
     requirements = composition.requirements
     try:
         check_declared(
-            requirements.declared_rules or (),
+            requirements.rules or (),
             model=model,
             fixed={item.target.target for item in requirements.assignments or ()},
             document_id=composition.root_id,

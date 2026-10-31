@@ -1,27 +1,13 @@
 """Rule observation dates derived from coordinates and declared dates."""
 
 from collections.abc import Mapping
-from datetime import date, timedelta
+from datetime import date
 from uuid import UUID
 
 from rangekeeper.flow import Movement
 from rangekeeper.market.paths import Paths
 from rangekeeper.quantity import Quantity
 from rangekeeper.schema.records import PathCase
-
-
-def available_on(
-    *,
-    movement_date: date | None = None,
-    period_end: date | None = None,
-    declared: date | None = None,
-) -> date | None:
-    """Return the latest boundary; an explicit Movement date takes precedence."""
-    coordinate = movement_date or (
-        period_end - timedelta(days=1) if period_end else None
-    )
-    dates = [d for d in (coordinate, declared) if d is not None]
-    return max(dates) if dates else None
 
 
 def known_on(movement: Movement) -> date:

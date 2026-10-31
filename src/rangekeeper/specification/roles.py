@@ -99,9 +99,7 @@ def in_model_order(model: "Model", targets) -> tuple:
 
 def decided_targets(record: SpecificationRecord) -> tuple[Reference, ...]:
     """Return the targets that the rules of ``record`` decide, in their order."""
-    dated = record.rules.targets if record.rules is not None else ()
-    declared = tuple(rule.target for rule in record.declared_rules or ())
-    return (*dated, *declared)
+    return tuple(rule.target for rule in record.rules or ())
 
 
 def role_table(

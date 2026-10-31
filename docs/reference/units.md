@@ -221,7 +221,6 @@ unit system:
   and pivots);
 - `Specification.fix` and `Specification.free`;
 - `Composition.validate` and Specification preparation;
-- `execution.rule.evaluate`;
 - `execution.solve`, `execution.execute` and the execution stages;
 - `run.validate`, which uses the unit system of the root's input Model.
 

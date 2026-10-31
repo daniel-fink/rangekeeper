@@ -80,7 +80,7 @@ def test_fix_makes_a_value_decided_and_stores_its_rule():
     made = spec().fix(first=rising())
     assert role_of(made, "first") is Role.DECIDED
     assert role_of(made, "after_first") is Role.FREE
-    (stored,) = made.record.declared_rules
+    (stored,) = made.record.rules
     assert stored.target.target == made.model.value(key="first").id
     assert stored.earliest.date == date(2027, 1, 1)
     assert stored.latest.date == date(2031, 1, 1)
@@ -93,7 +93,7 @@ def test_stored_rules_read_back():
     made = spec().fix(first=rising())
     data = made.to_data()
     again = rk.Specification.from_data(data)
-    assert again.record.declared_rules == made.record.declared_rules
+    assert again.record.rules == made.record.rules
     assert again.to_data() == data
 
 
@@ -242,7 +242,7 @@ def test_a_rule_of_the_wrong_kind_raises_rule_capability(key, rule):
 def test_a_quantity_rule_needs_then_and_takes_quantity_text():
     rule = WINDOW.where(condition="rent_index >= 1").first(then="2 ratio", otherwise=0)
     made = spec().fix(level=rule)
-    stored = made.record.declared_rules[0]
+    stored = made.record.rules[0]
     assert stored.then.quantity.number == 2
     assert stored.otherwise.quantity.number == 0
 

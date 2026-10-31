@@ -260,7 +260,7 @@ def test_cell_11_reads_equality_with_two_equals_signs(lesson):
     strategy = lesson["strategy"]
     assert list(strategy.rules) == ["start_date", "b_start", "b_sale_date"]
     assert strategy.rules["b_sale_date"].condition == "b_start == NEVER"
-    stored = strategy.record.declared_rules[-1]
+    stored = strategy.record.rules[-1]
     assert stored.earliest.date == stored.latest.date == date(2033, 1, 1)
     assert stored.otherwise.never is rk.duration.NEVER
 
@@ -268,7 +268,7 @@ def test_cell_11_reads_equality_with_two_equals_signs(lesson):
 def test_the_rules_survive_across_and_storage(lesson):
     strategy = lesson["strategy"]
     again = rk.Specification.from_data(strategy.to_data())
-    assert again.record.declared_rules == strategy.record.declared_rules
+    assert again.record.rules == strategy.record.rules
     years = rk.duration.Span(start=date(2027, 1, 1), end=date(2038, 1, 1)).periods(
         frequency=rk.duration.Frequency.YEAR
     )
@@ -278,7 +278,7 @@ def test_the_rules_survive_across_and_storage(lesson):
     stories = rk.market.Paths.from_flows(flows={"one": {"rent_index": flow}})
     batch = strategy.across(paths=stories)
     case = batch.case(key="one")
-    assert case.record.declared_rules == strategy.record.declared_rules
+    assert case.record.rules == strategy.record.rules
 
 
 def test_lesson_07_reuses_the_rules_of_lesson_05(lesson):
@@ -344,7 +344,7 @@ def test_a_window_with_periods_keeps_its_calendar(lesson):
     window = rk.specification.Window(periods=years, timing=PeriodTiming.LAST)
     rule = window.where(condition="rent_index >= 1").first(otherwise=date(2033, 1, 1))
     spec = lesson["wait"].fix(b_start=rule)
-    stored = spec.record.declared_rules[-1]
+    stored = spec.record.rules[-1]
     assert tuple(stored.periods) == tuple(years)
     assert stored.timing is PeriodTiming.LAST
     assert spec.rules["b_start"].window.periods == tuple(years)

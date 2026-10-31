@@ -171,7 +171,6 @@ all of its fields through `pickle`.
 | `UnknownExtensionError` | `LookupError` | `EXTENSION_UNKNOWN`. `suggestions` gives registered names to try ([extension points](extensions.md)) |
 | `ExtensionConflictError` | `ValueError` | `EXTENSION_CONFLICT` |
 | `model.system`: `SelectionError`, `RollupError` | `ValueError` | `SELECTION`, `ROLLUP` |
-| `execution.rule`: `RuleCapabilityError` | `ValueError` | `RULE_CAPABILITY` |
 | `AvailabilityError` | `ValueError` | `OBSERVATION_UNAVAILABLE`. A rule reads a value that is not known on its window date. `key` is the decided value; `available_on` and `decision_date` are the dates, when they exist ([sequential rules](market-paths-and-rules.md#failures)) |
 | `DecisionError` | `ValueError` | `DECISION_CHANGES_PAST`, `PROVISIONAL_INFEASIBLE` or `RULE_TRACE`. The decisions of a case's rules cannot stand. `values` name the decision and what fails ([sequential rules](market-paths-and-rules.md#failures)) |
 | `NumericalError` | `ValueError` | `NUMERICAL_FAILURE`, `NUMERICAL_REJECTION` when verification rejected a candidate, or the code of a more specific failure: `ACTIVE_SIDE`, or `NO_SIGN_CHANGE` for an IRR of amounts without a real change of sign. `values` gives the named values of the failure, as in a [Run diagnostic](#run-diagnostics) |
