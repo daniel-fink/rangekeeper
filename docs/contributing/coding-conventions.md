@@ -200,7 +200,8 @@ the values of that case.
 
 ## Errors
 
-A wrong Python type for an argument raises `TypeError`. Every other failure on
+A wrong Python type for an argument, or a call with the wrong set of arguments,
+raises `TypeError`. Every other failure on
 a public path raises a `RangekeeperError` subclass with an `rk.errors.Code`: a
 wrong value, a lookup that finds nothing, an unresolved amount, data that does
 not decode. Do not raise plain `ValueError` or `KeyError`. `ContractError`,

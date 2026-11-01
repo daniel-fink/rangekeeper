@@ -104,11 +104,26 @@ Update decision status only when the implementation supports it.
 Push the branch and open a pull request into `develop`. In the description,
 give the issue, what changed, the API snapshot and changelog changes, and the
 checks that you ran, with their results. Say when the change needs a new
-required CI check; the maintainer updates the branch protection.
+required CI check; the maintainer updates the branch protection. List the choices
+that the maintainer has not confirmed
+([record each decision](documentation.md#record-each-decision)).
+
+The repository is public. In issues, pull requests, commits and documents, name
+a consumer of the library by its role, not by its name.
 
 CI runs the [jobs](README.md#continuous-integration) on the pull request. A
+pull request merges into `develop` when the maintainer approves it, every
+required check passes and the branch is up to date with `develop`. A pull
+request that changes a lesson notebook waits for the maintainer's review. A
 squash merge into `develop` does not close the issue; the maintainer closes it
 after the merge.
+
+The Status field of the
+[Rangekeeper project](https://github.com/users/daniel-fink/projects/8) has three
+values: a closed issue is Done, an open issue that an open pull request title
+names is In progress, and all other issues are Todo. Set In progress by hand when
+work starts before a pull request exists. Blocked-by links, not Status, show that
+an issue is blocked.
 
 ## 9. Release
 
