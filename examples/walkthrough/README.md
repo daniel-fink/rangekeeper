@@ -28,9 +28,10 @@ check the lessons.
 | [06](06_project_structure.ipynb) | Project structure | [#208](https://github.com/daniel-fink/rangekeeper/issues/208) |
 | [07](07_policies_and_graph.ipynb) | Rules and design options | [#244](https://github.com/daniel-fink/rangekeeper/issues/244) |
 
-Lessons 01, 02, 03 and 04 run their proposed cells ([01](proposed/01_basic_dcf.md),
+Lessons 01, 02, 03, 04 and 05 run their proposed cells ([01](proposed/01_basic_dcf.md),
 [02](proposed/02_front_door_back_door.md),
-[03](proposed/03_cases_debt_equity.md), [04](proposed/04_market_futures.md)). The
+[03](proposed/03_cases_debt_equity.md), [04](proposed/04_market_futures.md),
+[05](proposed/05_when_to_commit.md)). The
 other lessons are skeletons until their issues are done. Lesson 03 executes into a
 store in `runs/`, and lesson 04 saves its paths in `paths/`; git ignores both.
 
@@ -58,7 +59,9 @@ checkout, not from a published release.
 - Read the market path count from `RK_PATH_COUNT` and the design source mode
   from `RK_DESIGN_MODE`. CI sets four paths and `fixture`. The full count takes
   about 100 minutes in lesson 04
-  ([#523](https://github.com/daniel-fink/rangekeeper/issues/523)).
+  ([#523](https://github.com/daniel-fink/rangekeeper/issues/523)). Lesson 05 reads
+  the paths that the data package stores; `helpers.load_paths` keeps the first
+  `RK_PATH_COUNT` of them.
 
 ## Test
 

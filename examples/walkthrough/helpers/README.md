@@ -10,8 +10,8 @@ principle 10).
 
 | Module | Contents |
 | --- | --- |
-| `data` | `load_property(year=)`: the totals of the mixed-use property in a stabilised year, each with its origin, and `load_base_plan()`: the dates, budgets, incomes, operating costs, renewals and funding of the development, with its areas, rates and phases, from the [data package](../../data/mixed_use_property/README.md), and `data_path(name=)`: the path of one file of the package, for `rk.io.load` |
-| `plot` | Notebook display: `show_plot`, `show_flows`, `plot_cash_flows`, `plot_flows`, `plot_paths`, `plot_target_curve`, `show_graph`, `show_sunburst`, `show_timeline`, `show_equations`, `show_relations` and `show_geometry` |
+| `data` | `load_property(year=)`: the totals of the mixed-use property in a stabilised year, each with its origin, and `load_base_plan()`: the dates, budgets, incomes, operating costs, renewals and funding of the development, with its areas, rates and phases, from the [data package](../../data/mixed_use_property/README.md), `data_path(name=)`: the path of one file of the package, for `rk.io.load`, and `load_paths(name=)`: stored market paths, the first `RK_PATH_COUNT` of them when that variable is set |
+| `plot` | Notebook display: `show_plot`, `show_flows`, `plot_cash_flows`, `plot_flows`, `plot_paths`, `plot_decisions`, `plot_target_curve`, `show_decisions`, `show_graph`, `show_sunburst`, `show_timeline`, `show_equations`, `show_relations` and `show_geometry` |
 | `theme`, `theme.js` | The shared Plotly style and the light/dark bridge |
 | `chart` | Plotly charts of Flows, hierarchies and distributions |
 | `graph` | PyVis graph display of a View |
@@ -19,9 +19,10 @@ principle 10).
 | `speckle`, `speckle_contract.json` | The canonical design envelope, below |
 | `geometry`, `assets/geometry/` | The local geometry viewer and its verified assets, with `SPECKLE-LICENSE`; the [viewer build](../viewer/README.md) makes the assets |
 
-The lessons import `load_property`, `load_base_plan`, `data_path`, `show_equations`,
-`show_geometry`, `show_timeline`, `plot_cash_flows`, `plot_flows`, `plot_paths` and
-`plot_target_curve` from `helpers` directly. `load_property` reads the derived totals file of the data package and
+The lessons import `load_property`, `load_base_plan`, `load_paths`, `data_path`,
+`show_equations`, `show_decisions`, `show_geometry`, `show_timeline`, `plot_cash_flows`,
+`plot_decisions`, `plot_flows`, `plot_paths` and `plot_target_curve` from `helpers`
+directly. `load_property` reads the derived totals file of the data package and
 does no arithmetic; [`derive_totals.py`](../../data/derive_totals.py) derives the
 file and documents each total. The works cost includes the plan's soft costs,
 contingency and construction finance allowance. `load_base_plan` reads the derived
@@ -33,9 +34,13 @@ free values, with no calculation direction. `show_timeline(of=)` draws the phase
 of a plan as the plan gives them. `plot_cash_flows(outcome=, key=)` and
 `plot_flows(outcome=, keys=)` draw solved Flows of an Outcome and calculate
 nothing; `plot_flows(flows=)` draws Flows that the lesson labels and calculates.
-`plot_paths(paths=)` draws each series of each market path.
+`plot_paths(paths=, names=)` draws each series of each market path, or the series that
+`names` selects.
 `plot_target_curve(outcomes=, key=, markers=)` draws the share of the cases of a
-batch at or below each value, and each marker as a vertical line.
+batch, or of each batch of a mapping, at or below each value, and each marker as a
+vertical line. `show_decisions(of=)` gives a Table of a Specification's rules and their
+windows. `plot_decisions(outcome=, key=)` draws a Flow of each case of a batch, with the
+dates that its rules decided as markers.
 
 The [walkthrough guide](../../../docs/guides/walkthroughs.md#shared-chart-style)
 describes the chart style and the local display. The helper tests are in

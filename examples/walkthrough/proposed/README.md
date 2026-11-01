@@ -89,6 +89,7 @@ pass.
 | D42 | How is a rule written? | As a query, composed from what readers already know: `rk.specification.Window(earliest=, latest=, periods=None).where(condition=...).first(otherwise=..., then=None)`, fixed by key with `fix(start_date=rule)`, so a decided value is a fixed value whose value the solve finds (D9). A window acts each time a value that the condition reads becomes known, unless `periods=` sets a calendar; `earliest` and `latest` bound it and can be expressions. The first date that meets the condition is the decision date; otherwise the default applies. Rules run in the order they are fixed; `spec.rules[key]` returns a rule with the triggers it reads. There is no `decide`, no `Rule` class to build by hand and no `with_rules`; "review" is not used. As in SQL (`COALESCE(MIN(date) WHERE …)`) and LINQ (`Where(...).FirstOrDefault(...)`) | 05, 07 |
 | D43 | How are equations grouped? | In a named Formulation, made once as a handle: `funding = project.add_formulation(name="Funding")`, then `funding.equations(...)`, the same call as on the entity. `project.formulation(name=)` finds one from an earlier revision and raises if there is none, as `draft.entity(code=)` does. The name is written once, so a typo cannot make a second group. A Formulation only groups equations; values stay on the entity. `model.equations.where(formulation="Dates")` reads one (D40) | 03, 05 |
 | D44 | Must every value declare its units? | No. Declare every input, and every result you rely on (such as `unlevered_npv`, `equity_npv`, `equity_irr` and `peak_shortfall`); the draft infers the units and shape of the rest from the equations, and `commit()` names any value it cannot work out. A declaration is a check: `commit()` fails if an equation gives the value other units, which catches an equation that is wrong but consistent in its units. `Entity.values` shows each value's units as declared or inferred. Lesson 02 declares every value, to teach them | 02–07 |
+| D45 | What funding does lesson 05 use? | Decision (maintainer, 2026-11-01, [#207](https://github.com/daniel-fink/rangekeeper/issues/207)): lesson 05 raises `loan_limit` to 90e6 AUD at its start, because lesson 04 ends by saying that the plan needs more funding. Lessons 03 and 04 and the data package's `bridge_limit` stay as they are. The fixed plan and the strategy both use the higher limit. The funding check of cell 9 counts `b_cost + still_due`. Try it 2 removes the check at lesson 04's limit, which is where the commitment gap appears. The Model has no fee or pricing for a larger loan, and the limit does not change the NPV | 05 |
 
 ## Target API at a glance
 
@@ -521,8 +522,13 @@ These are inputs for authoring, not API gaps:
   derives `03_base_plan.model.json` and `03_base_case.specification.json` from the
   cells of lesson 03, and a test runs its `--check`. They have random IDs until the
   namespace contract ([#147](https://github.com/daniel-fink/rangekeeper/issues/147)),
-  so the check reads each ID as the order of its first use. The `04_*` documents do
-  not exist yet; lesson 05's work adds them.
+  so the check reads each ID as the order of its first use. The same script derives
+  the documents that lesson 05 loads: `04_base_plan_on_paths.model.json`,
+  `04_base_case.specification.json`, `04_rent_index.paths.json` and
+  `05_histories.paths.json`. The ID of Paths is a digest of their content, and their
+  capture record holds the Python and numpy versions, so the check leaves the versions
+  out and rounds the amounts. `04_use_factors.paths.json` and
+  `05_strategy.specification.json` wait for lesson 07 (#244).
 - CI writes the documents that later lessons load from the cells of earlier lessons,
   with a namespace, and checks that they do not change: `02_feasibility.model.json`,
   `02_back_door.specification.json`, `03_base_case.specification.json` (lesson 03's
@@ -540,7 +546,10 @@ These are inputs for authoring, not API gaps:
   03's funding cascade (D2).
 - Lesson 07's notebook keeps the file name `07_policies_and_graph.ipynb` for now; rename
   it and its heading to "Rules and design options" when #244 authors the lesson (D41).
-- Lesson 05 needs the three readable histories (`05_histories.paths.json`).
+- Lesson 05 raises `loan_limit` in that lesson only (D45), and its rule for `b_start`
+  reads `still_due`. So lesson 07 needs `still_due` in its Model and the higher limit in
+  its Specifications when it reuses lesson 05's rules
+  ([#244](https://github.com/daniel-fink/rangekeeper/issues/244)).
 - Lesson 07 needs the Building B hotel fragment and the Building A expansion fragment
   ([#214](https://github.com/daniel-fink/rangekeeper/issues/214)). If the fragments
   carry geometry, lesson 07 can show the realised design of one path.

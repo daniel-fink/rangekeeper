@@ -15,6 +15,34 @@
       "origin": "derived",
       "sha256": "9bb6cb2972e17eb4444b813fd593e39de65ca12e0e3f34653545cc39bac56e6e"
     },
+    "04_base_case.specification.json": {
+      "bytes": 292884,
+      "description": "The base Specification of walkthrough lesson 04 (cell 4), on 04_base_plan_on_paths.model.json, with that Model. Walkthrough lesson 05 loads it. examples/data/derive_lesson_documents.py derives it from the cells of lesson 04.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
+      "sha256": "1ab9635bd7e42c8f8086b6ca0bb4ee488f1c36a2665d588f906cf8591e3046f8"
+    },
+    "04_base_plan_on_paths.model.json": {
+      "bytes": 236019,
+      "description": "The Model of walkthrough lesson 04, with the rent index (cells 2 to 3b). Walkthrough lesson 05 loads it. examples/data/derive_lesson_documents.py derives it from the cells of lesson 04.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
+      "sha256": "f34a3c0fa31be2a941edc998635257c09891b99a7aa8fa6173100c6425d92206"
+    },
+    "04_rent_index.paths.json": {
+      "bytes": 277203,
+      "description": "The 500 market paths of walkthrough lesson 04 (cells 5 to 8), with seed 1. Walkthrough lesson 05 loads them. examples/data/derive_lesson_documents.py derives them from the cells of lesson 04.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
+      "sha256": "319ca617895a74d32c2133451e3759145493a8f6d2df479573f06fca55a8115d"
+    },
+    "05_histories.paths.json": {
+      "bytes": 2558,
+      "description": "The three readable histories of walkthrough lesson 05, as market paths. examples/data/derive_lesson_documents.py gives their values.",
+      "licence": "CC-BY-4.0",
+      "origin": "derived",
+      "sha256": "25b66287137d3f7fcb855bf83234dc119b23f6d8180bf8317cce1f46c8d75c6c"
+    },
     "associations.json": {
       "bytes": 9415,
       "description": "Model-scoped links from domain records to the original content IDs in transport.json.gz.",

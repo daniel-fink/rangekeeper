@@ -7,6 +7,7 @@ The labels and use colours below follow the continuing mixed-use example.
 
 import json
 import re
+from collections.abc import Mapping
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -17,6 +18,7 @@ import rangekeeper as rk
 from rangekeeper.duration import PeriodTiming
 from rangekeeper.errors import MissingReferenceError
 from rangekeeper.model.content import decode
+from rangekeeper.shared.table import Table
 
 from . import chart
 from .chart import plot_partition
@@ -265,31 +267,114 @@ def plot_flows(*, outcome=None, keys=None, flows=None, path=None):
     return show_flows(flows=flows, title=title, timing=PeriodTiming.LAST, path=path)
 
 
-def plot_paths(*, paths, path=None):
-    """Draw each series of each market path over its Periods; it calculates nothing."""
+def plot_paths(*, paths, names=None, path=None):
+    """Draw each series of each market path over its Periods; it calculates nothing.
+
+    ``names`` selects series; without it, the chart draws every series.
+    """
+    chosen = paths.names if names is None else tuple(names)
     flows = {}
     for key in paths.keys:
-        for name in paths.names:
-            label = key if len(paths.names) == 1 else f"{key}: {name}"
+        for name in chosen:
+            label = key if len(chosen) == 1 else f"{key}: {name}"
             flows[label] = paths[key][name]
-    title = f"{', '.join(paths.names)}: {len(paths)} market paths"
+    title = f"{', '.join(chosen)}: {len(paths)} market paths"
     # Two sets of paths can have one title; each needs its own display file.
-    path = path or Path("output") / f"paths-{paths.id}.html"
+    file = (
+        f"paths-{paths.id}.html"
+        if names is None
+        else (f"paths-{paths.id}-{'-'.join(chosen)}.html")
+    )
+    path = path or Path("output") / file
     return show_flows(flows=flows, title=title, timing=PeriodTiming.LAST, path=path)
+
+
+def show_decisions(*, of):
+    """Return a Table of the decided values of a Specification: its rules and windows.
+
+    Each row shows one rule as the Specification states it; the table calculates
+    nothing.
+    """
+    return Table(
+        ("key", "condition", "earliest", "latest", "otherwise", "triggers"),
+        (
+            {
+                "key": key,
+                "condition": rule.condition,
+                "earliest": rule.window.earliest,
+                "latest": rule.window.latest,
+                "otherwise": rule.otherwise,
+                "triggers": ", ".join(
+                    f"{name} = {value.number:g}"
+                    for name, value in rule.triggers.items()
+                ),
+            }
+            for key, rule in of.rules.items()
+        ),
+    )
+
+
+def plot_decisions(*, outcome, key, path=None):
+    """Draw the Flow ``key`` of each case of a batch, with its decided dates as markers.
+
+    A marker is on the case's line, at the last amount known on the date that the
+    rule fixed. A value that a rule did not fix to a date has no marker. It
+    calculates nothing.
+    """
+    cases = {case.key: case for case in outcome.cases}
+    flows = {name: case[key] for name, case in cases.items()}
+    figure = chart.plot_flows(
+        flows,
+        title=f"{key} and the decided dates, {len(cases)} market paths",
+        timing=PeriodTiming.LAST,
+    )
+    for name, case in cases.items():
+        for rule in outcome.decisions.keys:
+            day = case[rule]
+            if day is rk.duration.NEVER:
+                continue
+            before = [
+                movement
+                for movement in flows[name].movements
+                if movement.resolve(timing=PeriodTiming.LAST) <= day
+            ] or flows[name].movements[:1]
+            figure.add_trace(
+                go.Scatter(
+                    x=[day],
+                    y=[before[-1].number],
+                    mode="markers+text",
+                    marker=dict(size=11, symbol="diamond"),
+                    text=[rule],
+                    textposition="top center",
+                    name=f"{name}: {rule}",
+                    showlegend=False,
+                    hovertemplate="%{text}<br>%{x|%d %b %Y}<extra>" + name + "</extra>",
+                )
+            )
+    path = path or Path("output") / f"decisions-{outcome.run.id}-{key}.html"
+    return show_plot(figure, path=path)
 
 
 def plot_target_curve(*, outcomes, key, markers=None, path=None):
     """Draw the share of cases at or below each value of ``key``; it calculates nothing.
 
-    ``outcomes`` is a batch Outcome. ``markers`` maps each label to a Quantity, which
+    ``outcomes`` is a batch Outcome, or a mapping from each label to a batch Outcome,
+    with one curve for each label. ``markers`` maps each label to a Quantity, which
     the curve shows as a vertical line. The markers must have the units of the values.
     """
-    values = outcomes.distribution(key=key).values
-    units = values[0].units
+    batches = outcomes if isinstance(outcomes, Mapping) else {key: outcomes}
+    found = {
+        label: batch.distribution(key=key).values for label, batch in batches.items()
+    }
+    first = next(iter(found.values()))
+    units = first[0].units
     figure = chart.plot_distribution(
-        {key: [float(value.magnitude) for value in values]},
+        {
+            label: [float(value.magnitude) for value in values]
+            for label, values in found.items()
+        },
         units=units,
-        title=f"Target curve of {key}, {len(values)} market paths",
+        title=f"Target curve of {key}, {len(first)} market paths",
         cumulative=True,
     )
     for label, marker in (markers or {}).items():

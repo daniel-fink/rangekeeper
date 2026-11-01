@@ -7,14 +7,27 @@ decisions), [#139](https://github.com/daniel-fink/rangekeeper/issues/139)
 (availability). Implementation: [#215](https://github.com/daniel-fink/rangekeeper/issues/215).
 API conventions and the gap list: [README](README.md).
 
+These places differ from the first proposal, and this file now shows the notebook's
+cells. The notebook leaves out the `# cell` and `# solution` comments.
+
+- **Cell 2** loads the paths with `helpers.load_paths`, so `RK_PATH_COUNT` sets a smaller
+  count for a quick run.
+- **Cell 3b** raises the loan limit to 90e6 AUD, in this lesson only
+  ([D45](README.md#decisions)). The fixed plan and the strategy both use the higher
+  limit, so cell 14 compares two funded plans.
+- **Cell 8b** adds `still_due` to the Model, and **cell 9** checks `b_cost + still_due`.
+  Budgets alone start B on a plan whose other works are not paid yet.
+- **Cells 14b to 14f** read each plan alone, answer the prediction of section 7, and
+  read the share of paths with a commitment gap.
+- **Try it 2** removes the check at lesson 04's limit. **Try it 3** reads the row of
+  `NEVER` with `by`, so it runs on paths where B always starts.
+
 Decision used here (D9 in the [README](README.md#decisions)): if a value can change,
 it belongs in the Specification; if it is part of the modelling, it belongs in the
 Model. The Model declares the date equations (lesson 03). A rule **decides**
 one value: it fixes the value on the first date in its window on which its condition
 holds (D42).
 "Decided" is a role beside fixed and free. There is no separate action concept.
-
-The lesson is not authored until #215 is verified (ADR-020).
 
 ## Goals box
 
@@ -49,14 +62,15 @@ the Model. Only two dates are inputs: the start date and Building B's start.
 # cell 1
 from datetime import date
 
-import rangekeeper as rk
 import helpers
+
+import rangekeeper as rk
 ```
 
 ```python
 # cell 2
 model = rk.io.load(path=helpers.data_path(name="04_base_plan_on_paths.model.json"))
-paths = rk.io.load(path=helpers.data_path(name="04_rent_index.paths.json"))
+paths = helpers.load_paths(name="04_rent_index.paths.json")
 model.equations.where(formulation="Dates")  # the plan's date equations
 ```
 
@@ -65,6 +79,21 @@ model.equations.where(formulation="Dates")  # the plan's date equations
 fixed = rk.io.load(path=helpers.data_path(name="04_base_case.specification.json"))
 fixed.roles  # lesson 04's base case: start in 2027, Building B in 2030
 ```
+
+Narrative: lesson 04 ended with a funding shortfall on every path: the plan needs more
+funding, whichever path occurs. So this lesson raises the loan limit to 90e6 AUD, for
+the fixed plan and for each strategy. The change is in this lesson only: lessons 03 and
+04 and the data package keep their limit.
+
+```python
+# cell 3b
+fixed = fixed.fix(loan_limit="90e6 AUD")
+```
+
+> **Finance note.** This Model has no fee and no pricing for a larger loan. Interest
+> stays at the same rate, and the limit is not an amount that the plan draws. So the
+> higher limit does not change the NPV of a plan. It changes only the funding that a
+> rule can read. A real lender would charge for it.
 
 ## 2. Three readable histories
 
@@ -154,8 +183,23 @@ except rk.errors.AvailabilityError as error:
 ## 5. Start Building B when the market and funding allow
 
 Narrative: a rule for Building B's start too. Start B when the index reaches its
-own trigger, 1.10, and the available equity and the available loan cover B's whole
-budget. Both come from lesson 03's funding equations, with the decisions made so far.
+own trigger, 1.10, and the funding allows it. The funding check counts what is still
+due. When B starts, the project owes B's whole budget and what it has not yet paid on
+the shared works and on Building A. Add that amount to the Model as `still_due`.
+
+```python
+# cell 8b
+draft = model.edit()
+project = draft.entity(code="project")
+funding = project.formulation(name="Funding")
+funding.equations(
+    "still_due = (shared_works.cumulative() + a_works.cumulative() - shared_works.total() - a_works.total()).since(on=start_date)",
+)
+model = draft.commit()
+```
+
+Narrative: the available equity and the available loan must cover `b_cost + still_due`.
+All of these come from lesson 03's funding equations, with the decisions made so far.
 Building B cannot start before the shared works finish, so the window's `earliest`
 is an expression: on each path, it skips the dates before the shared works finish.
 
@@ -165,12 +209,21 @@ b_window = rk.specification.Window(
     earliest="shared_start + 1 year", latest=date(2032, 1, 1)
 )
 b_rule = b_window.where(
-    condition="rent_index >= b_start_trigger and equity_available + loan_available >= b_cost"
+    condition="rent_index >= b_start_trigger and equity_available + loan_available >= b_cost + still_due"
 ).first(otherwise=rk.duration.NEVER)
-start_b = wait.parameters(b_start_trigger=1.10).fix(b_start=b_rule)
+start_b = wait.on(model=model).parameters(b_start_trigger=1.10).fix(b_start=b_rule)
 # the decided values, their rules and their windows
 helpers.show_decisions(of=start_b)
 ```
+
+Narrative: read what this check promises. On the decision date, the funding that is
+known covers the budgets that are still due. It promises nothing about later dates. It
+does not count loan interest, operating costs, renewals or the income to come. After
+the decision, a shock can lower the income, and interest and costs do not fall with it.
+The loan can then go above its limit. `commitment_gap` shows this too: it is the largest
+amount of `committed - equity_available - loan_available` on any date, and when the works
+are paid, that is the amount of the loan above its limit. Section 7 reads how often this
+happens.
 
 ## 6. Stop and sell Building B's site
 
@@ -225,8 +278,9 @@ helpers.plot_decisions(outcome=stories_outcome, key="rent_index")
 ## 7. All paths: paired comparison
 
 Narrative. **Predict:** does the strategy raise the mean equity NPV? Run the fixed
-plan and the strategy on the same paths. Compare them path by path: each paired
-difference holds the market fixed and shows the effect of the rules alone.
+plan and the strategy on the same paths, both with the higher loan limit.
+Compare them path by path: each paired difference holds the market fixed and shows the
+effect of the rules alone.
 
 ```python
 # cell 13
@@ -247,6 +301,70 @@ difference = rk.execution.compare(
 difference.summary()  # mean difference, share of paths better, worst loss
 ```
 
+Narrative: then read each plan alone: the mean, the spread, the worst path and the
+best path.
+
+```python
+# cell 14b
+fixed_equity = fixed_outcome.distribution(key="equity_npv")
+fixed_equity.summary()
+```
+
+```python
+# cell 14c
+strategy_equity = strategy_outcome.distribution(key="equity_npv")
+strategy_equity.summary()
+```
+
+```python
+# cell 14d
+strategy_outcome.distribution(key="b_start").counts()
+```
+
+```python
+# cell 14e
+(
+    strategy_equity.mean() > fixed_equity.mean(),
+    strategy_equity.quantile(level=0) > fixed_equity.quantile(level=0),
+    strategy_equity.quantile(level=1) > fixed_equity.quantile(level=1),
+    fixed_equity.probability(above="0 AUD"),
+    strategy_equity.probability(above="0 AUD"),
+)
+```
+
+Narrative: **The answer.** The last cell answers the prediction on the paths that you ran:
+its first value is true only if the strategy raises the mean, the next two compare the
+worst and the best path, and the last two are the shares of paths above zero. On the
+lesson's 500 paths, the answer is no. At these triggers, the strategy has a lower mean
+equity NPV than the fixed plan. It also has a smaller share of paths above zero. These
+rules do not show that flexibility pays. A quick run with `RK_PATH_COUNT` has few paths,
+so its values can differ.
+
+The strategy gains only at the two ends: on the worst path and on the best path. Its 5 %
+quantile is almost the same as the fixed plan's, and its 95 % quantile is lower. Read the
+worst path with care. On the 500 paths, the worst path of each plan loses all of the
+equity, 50e6 AUD. The strategy's loss comes two years later, so its NPV is less negative
+at the equity discount rate. The money that is lost is the same, and more of the
+strategy's paths lose it. The next sections read where waiting gains and where it costs.
+
+```python
+# cell 14f
+(
+    fixed_outcome.distribution(key="commitment_gap").probability(above="0 AUD"),
+    strategy_outcome.distribution(key="commitment_gap").probability(above="0 AUD"),
+)
+```
+
+Narrative: the last cell reads the share of paths with a commitment gap, for the fixed plan
+and for the strategy. Section 5 said what the funding check promises, so expect a share
+that can be above zero, on either plan.
+On the 500 paths it is small, and on those paths each gap comes after the works are paid.
+Two effects cause it. A shock lowers the income for some years, and the income does not
+cover the loan interest. Or a shock in the last year, with a renewal in that year, makes
+the operating cash flow negative: the sale value of lesson 03 capitalises that cash flow,
+so the sale value is negative, and the loan goes up at the sale. The funding check does
+not close these gaps, because it reads only the budgets on its date.
+
 ```python
 # cell 15
 helpers.plot_target_curve(
@@ -264,12 +382,21 @@ realised start years, and the paired difference for each.
 ```python
 # cell 16
 strategy_outcome.distribution(key="start_date").counts()
+```
+
+```python
+# cell 16b
 difference.by(key="start_date").summary()  # where waiting gains, and where it costs
 ```
 
+Narrative: read the mean of each row. On the 500 paths, a path that starts in 2029 has a
+mean paired difference below zero: the project waits, and then gains less than the fixed
+plan. A path that starts later or never has one above zero: on these paths, the market is
+weak at the start, and waiting avoids it.
+
 ## 9. Optional: several triggers
 
-Narrative: the trigger is a value in the Specification (cell 6), so cases can test
+Narrative: the trigger is a value in the Specification, so cases can test
 several triggers, like any other value: a sensitivity analysis of the rule. Cases
 and paths multiply: each trigger runs on every path.
 
@@ -295,6 +422,10 @@ trigger_difference = rk.execution.compare(
 trigger_difference.by_case.summary()
 ```
 
+Narrative: on the 500 paths, the mean paired difference does not move in one direction
+with the trigger, and some triggers raise the mean a little. Read the spread as well as the
+mean before you choose a trigger.
+
 ## Exercises
 
 **Try it 1: a lower trigger.** Start when the index reaches 1.02. How many paths
@@ -305,6 +436,10 @@ start in 2027? Does the mean paired difference rise?
 early = strategy.fix(start_trigger=1.02)
 early_outcome = rk.execution.solve(specification=early.across(paths=paths))
 early_outcome.distribution(key="start_date").counts()
+```
+
+```python
+# solution
 rk.execution.compare(
     outcomes={"Early": early_outcome, "Fixed plan": fixed_outcome},
     keys=["equity_npv"],
@@ -312,21 +447,38 @@ rk.execution.compare(
 ).summary()
 ```
 
-**Try it 2: no funding check.** Remove the funding condition from Building B's rule.
-On how many paths does the commitment gap become positive? The commitment gap is the
-largest amount by which committed but unpaid costs exceed the available equity and
-loan (lesson 03, optional section 11).
+No path starts in 2027: the first check is on 2028-01-01. On the 500 paths, the lower
+trigger starts more paths in 2029 and fewer later or never, and the mean paired difference
+does not rise: it falls. Section 8 shows why: the paths that start in 2029 are the ones
+with a mean paired difference below zero.
+
+**Try it 2: no funding check.** Go back to lesson 04's loan limit, which is where the
+commitment gap appears, and remove the funding condition from Building B's rule. On how
+many paths does the commitment gap become positive? The commitment gap is the largest
+amount by which committed but unpaid costs exceed the available equity and loan
+(lesson 03, optional section 11).
 
 ```python
 # solution
 reckless_rule = b_window.where(condition="rent_index >= b_start_trigger").first(
     otherwise=rk.duration.NEVER
 )
-reckless = strategy.fix(b_start=reckless_rule)  # replaces the rule for b_start
+lesson_04_limit = helpers.load_base_plan()["loan_limit"]
+reckless = strategy.fix(b_start=reckless_rule, loan_limit=lesson_04_limit)
 reckless_outcome = rk.execution.solve(specification=reckless.across(paths=paths))
 gaps = reckless_outcome.distribution(key="commitment_gap")
 gaps.probability(above="0 AUD")
 ```
+
+```python
+# solution
+reckless_outcome.distribution(key="b_start").counts()
+```
+
+Each path where Building B starts has a commitment gap. Lesson 04's limit does not
+cover the plan's land and works, so without the check the rule commits to what the funding
+cannot pay. With the check at that limit, B starts on no path. That is why this lesson
+raises the limit.
 
 **Try it 3: a worse site price.** Lower Building B's land share to 25 %. How does
 the paired difference change on the paths where B never starts?
@@ -340,8 +492,11 @@ cheap_difference = rk.execution.compare(
     keys=["equity_npv"],
     baseline="Fixed plan",
 )
-cheap_difference.where(b_start=rk.duration.NEVER).summary()
+cheap_difference.by(key="b_start").summary()  # the row of NEVER: B never starts
 ```
+
+On a path that sells the site, a smaller share sells for less. A path that never starts
+the project has nothing to sell, and a quick run can have no path in the row of `NEVER`.
 
 ## Checks and recap
 
@@ -353,7 +508,7 @@ for row in strategy_outcome.decisions.observations:
 decided = rk.execution.DecisionResult.DECIDED
 for row in strategy_outcome.decisions.where(key="b_start", result=decided):
     available = row.observed["equity_available"] + row.observed["loan_available"]
-    assert available >= row.observed["b_cost"]
+    assert available >= row.observed["b_cost"] + row.observed["still_due"]
 assert strategy_outcome.case(key=paths.keys[0]).run.rule_evidence.verified
 ```
 
@@ -362,17 +517,20 @@ assert strategy_outcome.case(key=paths.keys[0]).run.rule_evidence.verified
 1. A rule decides a value that the Model relates to the rest of the plan. The Model
    says how dates depend on each other; the Specification says when to commit.
 2. A rule sees only what is known at its date. Funding is checked with the decisions
-   made so far.
+   made so far. The check holds on its date, and a later shock can still take the loan
+   above its limit.
 3. Compare strategies path by path on the same paths. A rule's parameters are fixed;
-   its decisions vary by path.
+   its decisions vary by path. A rule can lower the mean: read the result, and do not
+   assume that flexibility pays.
 
 **Next.** Lesson 06 opens the project's structure. Lesson 07 lets rules choose
 between designs.
 
 ## Cell budget
 
-18 core code cells, 2 optional cells and 1 check cell (budget 20–25), 3 exercise
-solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (D15).
+26 core code cells, 2 optional cells and 1 check cell, 5 exercise solutions. This is
+above the budget of 20–25, because the prediction of section 7 needs a cell for each
+reading. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (D15).
 
 ## Rule check
 
@@ -388,6 +546,9 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | 9, 11 | 3 | G55: a window's `earliest` and `latest` as expressions; rules that observe earlier decisions (`b_start == NEVER`, `start_date != NEVER`) |
 | 10 | 2, 3 | G27 (`add_to(key=, term=)`); G17 (`at`, `rx.flow.event`) |
 | 13–16 | 8 | G56, G66: `rk.execution.compare(outcomes=, keys=, baseline=)` paired by path, with `summary`, `by`, `by_case`, `where` |
+| 2 | 10 | `helpers.load_paths` loads data and calculates nothing |
+| 3b, 8b | 2, 6 | A fixed value replaced in the lesson's plan; a new equation in a named Formulation (D43) |
+| 14b–14f | 8 | `Distribution.summary`, `quantile`, `probability`, `DateDistribution.counts` |
 | 15 | 10 | Helper draws only |
 | 17–17b, Try it 1 | 2 | G57: a rule's trigger fixed and tested as cases like any Specification value; cases × paths |
 | 18 | 8 | G58: rule evidence in the Run (`rule_evidence.verified`), observations with `available_on`; `rk.execution.DecisionResult` |
@@ -398,7 +559,7 @@ The design for sequential decisions must support:
 
 - **Observations.** A rule names Model values (`rent_index`, `equity_available`,
   `loan_available`,
-  `b_cost`) and earlier decided values (`b_start == NEVER`). The value read is the
+  `b_cost`, `still_due`) and earlier decided values (`b_start == NEVER`). The value read is the
   latest one available on the window date.
 - **Availability.** Market path Flows carry availability dates (period end by
   default). Solved values, such as the available loan, are available on the window date

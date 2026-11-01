@@ -59,7 +59,10 @@ saves its market paths to `examples/walkthrough/paths/`, which git also ignores.
 
 Without `RK_PATH_COUNT`, lesson 04 uses 500 paths. One batch takes about 3 s for
 each path, so its four batches take about 100 minutes
-([#523](https://github.com/daniel-fink/rangekeeper/issues/523)). `RK_PATH_COUNT`
+([#523](https://github.com/daniel-fink/rangekeeper/issues/523)). Lesson 05 reads the
+500 paths that the data package stores; `RK_PATH_COUNT` makes `helpers.load_paths`
+keep the first of them. Some of its text describes the 500 paths, and says so. Its cells
+read the paths that you ran, and a small count can give other values. `RK_PATH_COUNT`
 also applies to the [docs site build](../contributing/README.md#docs-site).
 
 ## Convert for the docs site
@@ -138,8 +141,11 @@ Use colours stay the same across the hierarchy charts. Package colours stay the
 same in the development timeline. `show_timeline(of=)` displays the dates of a
 plan's phases; `plot_cash_flows(outcome=, key=)` and `plot_flows(outcome=, keys=)`
 draw solved Flows of an Outcome; `plot_flows(flows=)` draws labelled Flows;
-`plot_paths(paths=)` draws market paths; `plot_target_curve(outcomes=, key=, markers=)`
-draws the distribution of a batch; `show_equations(of=)` derives its edges from the actual equations; for a
+`plot_paths(paths=, names=)` draws market paths; `plot_target_curve(outcomes=, key=, markers=)`
+draws the distribution of a batch, or of each batch of a mapping;
+`show_decisions(of=)` gives a Table of a Specification's rules and windows;
+`plot_decisions(outcome=, key=)` draws a Flow of each case with its decided dates;
+`show_equations(of=)` derives its edges from the actual equations; for a
 Specification it marks each value fixed or free without changing the relationships,
 and `show_relations()` lets the reader switch between Specifications. Line charts also
 use different dashes and markers. Helpers apply the style to a copy of the Figure.

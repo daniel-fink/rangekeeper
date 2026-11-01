@@ -3,7 +3,7 @@
 Status: accepted for 1.0; the evaluation engine is implemented and verified (#215),
 the queries are declared and stored, the solve runs them, the stored evidence, the
 Outcome API and trace replay are in place, and the old slice is removed (#300).
-Parameters are in place (#301). Lesson 05's data and its checks are pending (#207).
+Parameters are in place (#301). Lesson 05's data and its checks are in place (#207).
 Recorded: 2026-10-27. Amended 2026-10-27 by #201 decisions D2, D25 and D26 (`Periods`,
 `NEVER`, the equity-first funding names), 2026-10-28 by decisions D41 (rules, not
 policies) and D42 (a rule is a query over a window), 2026-10-28 by #102 (the shared
@@ -13,8 +13,9 @@ rule semantics are in `run`), 2026-10-31 by #215 (see
 2026-11-01 by #300 (see [how #300 removes the old slice](#how-300-removes-the-old-slice)),
 2026-11-01 by #301 (see [how #301 stores parameters](#how-301-stores-parameters)),
 2026-11-01 by #538 (a rule that must act by its last window date),
-and 2026-11-01 by the maintainer's decisions on #207 (the first check of cell 6, and the
-condition of the sale rule in cell 11).
+and 2026-11-01 by the maintainer's decisions on #207 (the first check of cell 6, the
+condition of the sale rule in cell 11, the funding check of cell 9 with `still_due`, and
+lesson 05's loan limit of 90e6 AUD).
 
 ## Problem
 
@@ -156,7 +157,7 @@ Validation rejects a rule that reads the future. It checks in two places:
   decides `b_start`, `committed` includes B's budget from that date. The executor adds
   no commitment of its own.
 - **Funding feasibility is part of the condition.** The author writes it, for
-  example `equity_available + loan_available >= b_cost`. The executor does not
+  example `equity_available + loan_available >= b_cost + still_due`. The executor does not
   block a decision that makes the commitment gap positive. The commitment gap is a
   Model value, and the Outcome reports it (lesson 05, exercise 2).
 
@@ -431,10 +432,17 @@ b_window = rk.specification.Window(
     earliest="shared_start + 1 year", latest=date(2032, 1, 1)
 )
 b_rule = b_window.where(
-    condition="rent_index >= b_start_trigger and equity_available + loan_available >= b_cost"
+    condition="rent_index >= b_start_trigger and equity_available + loan_available >= b_cost + still_due"
 ).first(otherwise=rk.duration.NEVER)
-start_b = wait.parameters(b_start_trigger=1.10).fix(b_start=b_rule)
+start_b = wait.on(model=model).parameters(b_start_trigger=1.10).fix(b_start=b_rule)
 ```
+
+Cell 8b adds `still_due` to the Model: what is not yet paid on the shared works and on
+Building A, from the start date. Decision (maintainer, 2026-11-01, #207): the check
+counts it, and lesson 05 raises `loan_limit` to 90e6 AUD in that lesson only, because
+with lesson 04's limit B starts on no path. The check holds on its decision date. It
+does not count later interest, costs or income, so a later shock can still make the
+commitment gap positive (lesson 05, section 7).
 
 The window dates stay closed until `start_date` is decided, because `earliest` refers to
 it. `equity_available` and `loan_available` are solved Flows. On each window date, the
@@ -477,11 +485,12 @@ case name and the path member key ([ADR-014](014-market-paths.md)), as
    `decision_changes_past`.
 6. The trace check passes for each lesson 05 case. Each observation has
    `available_on <= decision_date` (cell 18). A changed trace fails the check.
+   The notebook runs this check on the CI path count (#207).
 7. Replay gives the same trace. Replay against changed path data gives
    `replay_mismatch`.
 8. `compare` raises `different_paths` for different paths. It pairs
    cases across paths, and `summary()` counts failed cases.
-9. Lesson 05 cells 5 to 18 run on the three histories and on the CI path count.
+9. Lesson 05 cells 5 to 18 run on the three histories and on the CI path count (#207).
    On the three histories, the decisions and equity NPVs agree with an
    independent calculation of the rules on known data.
 10. The old policy slice is removed, and the investment example and its tests use

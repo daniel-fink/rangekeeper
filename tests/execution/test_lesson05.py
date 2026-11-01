@@ -1,16 +1,12 @@
 """The rules of lessons 05 and 07 and a lookup of lesson 06, from the proposed cells.
 
 The cells come from ``examples/walkthrough/proposed/05_when_to_commit.md`` and
-``07_policies_and_graph.md``, and run statement by statement, as written. A call
-to ``helpers`` only draws, so the test evaluates its arguments and does not call
-it. These differences wait on other issues:
+``07_policies_and_graph.md``, and run statement by statement, as written. Cells 2 to 4
+load the real documents of the data package. A call to another ``helpers`` function
+only draws, so the test evaluates its arguments and does not call it. These differences
+wait on other issues:
 
-- ``lesson_model`` and ``plan``: lesson 05 loads lesson 04's Model and base case
-  (cells 2 and 3, ``rk.io.load``, #207). The test runs lesson 04's cells.
-- ``stories``: cell 4 loads the three histories (#207). The test makes them on the
-  Periods of lesson 04's ``rent_index``, from 2027, so the first check of cell 6 is on
-  2028-01-01 and reads 2027, as ADR-021's table shows.
-- Lesson 07's ``rk.io.load`` of lesson 05's strategy (#207).
+- Lesson 07's ``rk.io.load`` of lesson 05's strategy (#244).
 
 Lesson 07's cell 18 calls ``alternatives`` (#302) and reads ``use_index["..."]``
 (#284), so the test runs only its window and its rule on a Value of this Model.
@@ -23,6 +19,7 @@ Lesson 06's cell 16 reads ``model.entities`` (#288), so the test runs only cell 
 on a small Model with two entities of one name.
 """
 
+import json
 import re
 from datetime import date
 from pathlib import Path
@@ -55,6 +52,8 @@ HISTORIES = {
     "long downturn": (0.97, 0.95, 0.94, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93, 0.93),
     "short recovery": (0.97, 0.95, 1.06, 1.12, 1.04, 1.0, 0.98, 0.97, 0.96, 0.95, 0.95),
 }
+# The data package's loan limit, which lessons 03 and 04 use.
+LESSON_04_LIMIT = 65_000_000
 # A history that starts the project and never reaches Building B's trigger, so it sells
 # B's share of the site. None of the three histories does this.
 UNBUILT = {"no second trigger": (1.06,) + (1.07,) * 10}
@@ -93,28 +92,43 @@ def histories(indexes: dict[str, tuple[float, ...]] = HISTORIES) -> rk.market.Pa
     )
 
 
-def lesson_inputs() -> tuple[rk.Model, rk.Specification]:
-    """Return lesson 04's Model and base case."""
-    helpers = SimpleNamespace(data_path=lambda *, name: lesson04.DATA / name)
-    namespace: dict = {"rk": rk, "date": date, "helpers": helpers}
-    lesson04.run(namespace, "2", "3", "3b")
-    lesson04.run(namespace, "4")
-    return namespace["model"], namespace["base"]
+def _load_paths(*, name: str) -> rk.market.Paths:
+    return rk.io.load(path=lesson04.DATA / name)
+
+
+def _base_plan() -> dict[str, rk.Quantity]:
+    content = json.loads((lesson04.DATA / "base_plan.json").read_text(encoding="utf-8"))
+    item = content["values"]["loan_limit"]
+    return {"loan_limit": rk.Quantity(magnitude=item["magnitude"], units=item["units"])}
+
+
+HELPERS = SimpleNamespace(
+    data_path=lambda *, name: lesson04.DATA / name,
+    load_paths=_load_paths,
+    load_base_plan=_base_plan,
+)
 
 
 @pytest.fixture(scope="module")
 def lesson() -> dict:
-    """Run cells 6 to 12 of lesson 05 on three histories, without cell 8."""
-    model, fixed = lesson_inputs()
-    namespace: dict = {
-        "rk": rk,
-        "date": date,
-        "model": model,
-        "fixed": fixed,
-        "stories": histories(),
-    }
+    """Run cells 2 to 12 of lesson 05 on three histories, without cell 8."""
+    namespace: dict = {"rk": rk, "date": date, "helpers": HELPERS}
     written = cells(LESSON_05)
-    for key in ("6", "7", "7b", "9", "10", "11", "11b", "12"):
+    for key in (
+        "2",
+        "3",
+        "3b",
+        "4",
+        "6",
+        "7",
+        "7b",
+        "8b",
+        "9",
+        "10",
+        "11",
+        "11b",
+        "12",
+    ):
         run(namespace, written[key])
     return namespace
 
@@ -267,8 +281,44 @@ def test_cell_9_adds_a_rule_with_an_expression_bound(lesson):
     rule = start_b.rules["b_start"]
     assert rule.window.earliest == "shared_start + 1 year"
     assert rule.condition == (
-        "rent_index >= b_start_trigger and equity_available + loan_available >= b_cost"
+        "rent_index >= b_start_trigger and equity_available + loan_available "
+        ">= b_cost + still_due"
     )
+
+
+def test_cell_3b_raises_the_limit_of_this_lesson_only(lesson):
+    fixed = lesson["fixed"]
+    table = fixed.roles
+    limits = dict(zip(table.column("key"), table.column("quantity"), strict=True))
+    assert limits["loan_limit"].number == pytest.approx(90_000_000)
+    stored = rk.io.load(path=lesson04.DATA / "04_base_case.specification.json")
+    table = stored.roles
+    limits = dict(zip(table.column("key"), table.column("quantity"), strict=True))
+    assert limits["loan_limit"].number == pytest.approx(LESSON_04_LIMIT)
+
+
+def test_cell_8b_counts_what_is_still_due(lesson):
+    case = lesson["stories_outcome"].case(key="early recovery")
+    due = {item.period.start.year: item.number for item in case["still_due"].movements}
+    assert due[2027] == pytest.approx(0)
+    # The project starts in 2028 and pays for the shared works in that year, so all of
+    # Building A's budget is due at its end; Building A pays half in each of two years.
+    a_budget = -case["a_works"].total().number
+    assert due[2028] == pytest.approx(a_budget)
+    assert due[2029] == pytest.approx(a_budget / 2)
+    assert due[2030] == pytest.approx(0)
+
+
+def test_cell_9_reads_the_funding_on_each_decision(lesson):
+    decided = rk.execution.DecisionResult.DECIDED
+    rows = lesson["stories_outcome"].decisions.where(key="b_start", result=decided)
+    for row in rows:
+        available = row.observed["equity_available"] + row.observed["loan_available"]
+        assert (
+            available.number
+            >= (row.observed["b_cost"] + row.observed["still_due"]).number
+        )
+    assert len(list(rows)) == 2
 
 
 def test_cell_11_reads_equality_with_two_equals_signs(lesson):
@@ -411,7 +461,7 @@ def compared(lesson) -> dict:
     """Run cells 13, 14 and 16 on the three histories of this test (#207)."""
     namespace = {**lesson, "paths": lesson["stories"]}
     written = cells(LESSON_05)
-    for key in ("13", "14", "16"):
+    for key in ("13", "14", "14b", "14c", "14d", "14e", "16", "16b"):
         run(namespace, written[key])
     return namespace
 
@@ -455,6 +505,10 @@ def test_the_exercises_run_on_the_histories(compared):
     for block in re.findall(r"```python\n(# solution.*?)```", text, re.S):
         run(namespace, block)
     assert namespace["early_outcome"].status is rk.execution.Status.FEASIBLE
+    # Try it 2: at lesson 04's limit, each history that starts B has a commitment gap.
+    assert namespace["reckless_outcome"].case(key="early recovery")[
+        "loan_limit"
+    ].number == pytest.approx(LESSON_04_LIMIT)
     assert namespace["gaps"].probability(above="0 AUD") == pytest.approx(2 / 3)
     unbuilt = namespace["cheap_difference"].where(b_start=rk.duration.NEVER).summary()
     assert unbuilt.column("count") == (1,)

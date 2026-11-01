@@ -6,7 +6,8 @@ its origin. ``load_base_plan()`` reads ``base_plan.json``: the dates, budgets,
 incomes, operating costs, renewals and funding of the development, each with its
 origin, and the areas, rates and phases of the plan. Neither does arithmetic.
 ``data_path(name=)`` gives the path of a document of the data package, for
-``rk.io.load``.
+``rk.io.load``. ``load_paths(name=)`` loads stored market paths, and keeps the first
+``RK_PATH_COUNT`` of them when that environment variable is set.
 ``examples/data/derive_totals.py`` and ``examples/data/derive_base_plan.py``
 derive the files from the floor inventory and the teaching assumptions, and
 document how. The lessons declare every financial equation (ADR-020, principle
@@ -14,6 +15,7 @@ document how. The lessons declare every financial equation (ADR-020, principle
 """
 
 import json
+import os
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from datetime import date
@@ -203,6 +205,25 @@ def data_path(*, name: str) -> Path:
     if not path.is_file():
         raise ValueError(f"The data package has no file {name!r}")
     return path
+
+
+def load_paths(*, name: str) -> rk.market.Paths:
+    """Load stored market paths; ``RK_PATH_COUNT`` sets a smaller count for a quick run.
+
+    Without the variable, or with a count that is not smaller than the stored count,
+    this returns the stored document, with its capture record and its ID. With a
+    smaller count, it returns new Paths with the first paths and their keys. These
+    Paths have another ID and no generator.
+    """
+    stored = rk.io.load(path=data_path(name=name))
+    count = int(os.environ.get("RK_PATH_COUNT", len(stored)))
+    if count >= len(stored):
+        return stored
+    flows = {
+        key: {series: stored[key][series] for series in stored.names}
+        for key in stored.keys[:count]
+    }
+    return rk.market.Paths.from_flows(flows=flows, name=f"First {count} of {name}")
 
 
 def load_base_plan() -> BasePlan:
