@@ -92,7 +92,8 @@ over a window of dates: the first date in the window where a condition holds, or
 default. A window acts each time a value that the condition reads becomes known;
 `earliest` and `latest` bound it. The trigger, 1.05, is a value in the Specification,
 so you can change it later without rewriting the rule. `rk.duration.NEVER` means the
-event does not happen.
+event does not happen. The paths start in 2027, so the 2027 index is the first value
+known: the first check is on 2028-01-01, and no value is known on 2027-01-01.
 
 ```python
 # cell 6
@@ -133,7 +134,8 @@ downturn.status, downturn.diagnostics
 
 Narrative: a rule cannot use the future. The 2028 rent index is known only at the
 end of 2028. A rule that reads next year's index fails when the Specification is
-made, before any solve.
+made, before any solve. No date is known at that time, so the error names the rule and
+prints `None` for `available_on` and `decision_date`.
 
 ```python
 # cell 8
@@ -172,8 +174,9 @@ helpers.show_decisions(of=start_b)
 
 ## 6. Stop and sell Building B's site
 
-Narrative: if Building B has not started by 2033, sell its share of the site. The
-price rule is part of the modelling: the site sells at its share of the land cost,
+Narrative: if the project started and Building B has not started by 2033, sell B's
+share of the site. A project that never started never bought the site, so it has
+nothing to sell. The price rule is part of the modelling: the site sells at its share of the land cost,
 scaled by the rent index on the sale date. Add it to the Model. The sale date is a
 decided value. The sale is an event, so a site that is not sold has no sale: with
 `NEVER`, the event is zero in every period.
@@ -201,9 +204,9 @@ model = draft.commit()
 sale_window = rk.specification.Window(
     earliest=date(2033, 1, 1), latest=date(2033, 1, 1)
 )
-sale_rule = sale_window.where(condition="b_start == NEVER").first(
-    otherwise=rk.duration.NEVER
-)
+sale_rule = sale_window.where(
+    condition="start_date != NEVER and b_start == NEVER"
+).first(otherwise=rk.duration.NEVER)
 strategy = start_b.on(model=model).fix(b_land_share="40 %", b_sale_date=sale_rule)
 ```
 
@@ -382,7 +385,7 @@ solutions. The longest cell has 15 lines (cell 10). Cells follow `ruff format` (
 | 7–7b, 11b, 12 | 8, 9 | G51: `Outcome.trace` and `Outcome.decisions` tables; infeasible decided values name the constraint (G52) |
 | 8 | 9 | G53: `AvailabilityError` (with `key`) at Specification validation ([#139](https://github.com/daniel-fink/rangekeeper/issues/139)) |
 | 9 | 6 | G54: sequential solve: a rule observes solved values (funding) under the decisions so far ([#213](https://github.com/daniel-fink/rangekeeper/issues/213)) |
-| 9, 11 | 3 | G55: a window's `earliest` and `latest` as expressions; rules that observe earlier decisions (`b_start == never`) |
+| 9, 11 | 3 | G55: a window's `earliest` and `latest` as expressions; rules that observe earlier decisions (`b_start == NEVER`, `start_date != NEVER`) |
 | 10 | 2, 3 | G27 (`add_to(key=, term=)`); G17 (`at`, `rx.flow.event`) |
 | 13–16 | 8 | G56, G66: `rk.execution.compare(outcomes=, keys=, baseline=)` paired by path, with `summary`, `by`, `by_case`, `where` |
 | 15 | 10 | Helper draws only |

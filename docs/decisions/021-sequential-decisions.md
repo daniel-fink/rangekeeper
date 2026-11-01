@@ -12,7 +12,9 @@ rule semantics are in `run`), 2026-10-31 by #215 (see
 2026-10-31 by #300 (see [how #300 declares rules](#how-300-declares-rules)), and
 2026-11-01 by #300 (see [how #300 removes the old slice](#how-300-removes-the-old-slice)),
 2026-11-01 by #301 (see [how #301 stores parameters](#how-301-stores-parameters)),
-and 2026-11-01 by #538 (a rule that must act by its last window date).
+2026-11-01 by #538 (a rule that must act by its last window date),
+and 2026-11-01 by the maintainer's decisions on #207 (the first check of cell 6, and the
+condition of the sale rule in cell 11).
 
 ## Problem
 
@@ -242,9 +244,10 @@ each reading agrees with the worked examples below:
 - **The solve count.** `provisional_solves` does not count the final solve.
 - **`verified` and its diagnostics.** A failed check is a `rule_trace` diagnostic in
   the report, so the record holds only the result.
-- **Open: one point for the maintainer.** The table under cell 6 reads a 2026 Period
-  on 2027-01-01, but lesson 04's `rent_index` starts in 2027, so the first check on
-  the lesson's paths is on 2028-01-01, and it reads 2027; #207 settles this.
+- **The first check (the maintainer's decision on #207, 2026-11-01).** Lesson 04's
+  `rent_index` starts in 2027, so the first check on the lesson's paths is on
+  2028-01-01, and it reads 2027. The histories keep their start, and the table under
+  cell 6 shows this.
 - **Two points that the maintainer decided (2026-11-01).** `at` keeps refusing NEVER,
   so cell 10 writes the sale as an event, which is zero on NEVER. `decision_changes_past`
   stays strict, so lesson 03's commitments have `since` in their definitions.
@@ -402,17 +405,15 @@ wait = fixed.parameters(start_trigger=1.05).fix(start_date=start_rule)
 
 | Date | Kind | Period read | `rent_index` | Condition | Result |
 | --- | --- | --- | --- | --- | --- |
-| 2027-01-01 | check | 2026 | 1.00 | false | — |
 | 2028-01-01 | check | 2027 | 0.97 | false | — |
 | 2029-01-01 | check | 2028 | 0.95 | false | — |
 | 2030-01-01 | check | 2029 | 1.06 | true | `start_date = 2030-01-01` |
 
 The window dates are the dates on which a new rent index becomes known: each
 January, when the year before ends. Each check reads the period that ended on that
-date. The path must therefore include the period before the first window date. If it
-does not, the first check fails with `observation_unavailable`. The rule reads only
-a path Flow, so
-each path has one solve. On this path, B's
+date. The window opens on 2027-01-01, but the paths start in 2027, so no value becomes
+known on that date, and the first check is on 2028-01-01. The rule reads only a path
+Flow, so each path has one solve. On this path, B's
 fixed start in 2030 is before the shared works finish. The case fails, and the
 diagnostic names the constraint `b_start >= shared_start + 1 year` (cell 7). On a
 path that never passes 1.05, the last window date (2030-01-01) passes and the rule fixes
@@ -420,7 +421,8 @@ path that never passes 1.05, the last window date (2030-01-01) passes and the ru
 
 **A look-ahead (cell 8).** The condition `"rent_index.shift(by=-1) >= 1.05"` reads
 the next period. `fix` raises `AvailabilityError` before any solve. The error has `code`,
-`key`, `available_on` and `decision_date`.
+`key`, `available_on` and `decision_date`. No date is known at `fix`, so the two dates
+are `None`.
 
 **Start Building B with a funding check (cell 9).**
 
@@ -442,8 +444,9 @@ first window date of B solves again, and later window dates reuse that solution 
 decision changes the state. On 2031-01-01 the rule reads both at the end of the
 2030 period.
 
-**Abandon (cell 11).** The rule for `b_sale_date` reads `b_start == NEVER`.
-`b_start` is fixed first. On 2033-01-01, B's rule runs first: its last window date
+**Abandon (cell 11).** The rule for `b_sale_date` reads
+`start_date != NEVER and b_start == NEVER`: a project that never started never bought
+the site, so it has nothing to sell. `b_start` is fixed first. On 2033-01-01, B's rule runs first: its last window date
 has passed, so it fixes `NEVER`. Then the sale rule runs. Its window, 2033-01-01, is
 open, and its condition is true. If the sale rule were fixed first, `fix` would
 reject it with `rule_order`.
