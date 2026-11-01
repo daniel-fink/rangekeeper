@@ -92,6 +92,26 @@ Use this completion check for every change: **current guides match the code;
 examples and commands use current paths; superseded plans are archived and linked;
 unfinished work remains visible; verification claims match the checks run.**
 
+### Record each decision
+
+Record a maintainer's decision when it is made. Notes outside this repository,
+and chat, are not records. Write it on the issue that it affects, as
+"Decision (maintainer, YYYY-MM-DD): ...". Then, in the same pull request as the
+change that it causes, also write it in the page that owns it:
+
+| The decision changes | Also write it in |
+| --- | --- |
+| A contract or a boundary that lasts | The ADR. Add the date and the issue to its Status line |
+| The behaviour of a public call | The [reference](../reference/) page, and the [upgrade guide](../guides/upgrading.md) if it breaks a call |
+| How contributors work | The page in `docs/contributing/` that owns the procedure |
+| A proposed lesson cell or an API name for lessons | The decisions table of the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
+
+An implementer's choice that the maintainer has not confirmed is not a decision.
+List it under `## Judgement calls for review` in the pull request. Until 1.0.0b1
+is published, also add it to
+[#538](https://github.com/daniel-fink/rangekeeper/issues/538), with any defect
+that you find and do not fix.
+
 ## Verification records
 
 Record the date, source revision, command, environment and limits of a result.

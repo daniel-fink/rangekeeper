@@ -141,6 +141,8 @@ Run the affected [standalone examples](../guides/examples.md#run-standalone-exam
 For walkthrough changes, execute all affected lessons in fresh kernels, inspect
 tables and figures, and [convert them for the docs site](../guides/walkthroughs.md#convert-for-the-docs-site)
 from those executed notebooks. Routine design checks use explicit fixture mode.
+When lesson cells change, run the full test suite even with no change in `src/`,
+because tests in `tests/` read lesson cells.
 
 Apply [documentation upkeep](documentation.md) in the same change. Check incoming
 and outgoing relative links and headings after moves. Check example paths,

@@ -456,7 +456,9 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
 10. **Helpers load and show.** Helpers load data, draw charts, graphs and
     geometry. They never select financial contributors, supply rates or hide an
     equation.
-11. **One idea per cell.** A teaching cell has about 15 lines or fewer.
+11. **One idea per cell.** A teaching cell has about 15 lines or fewer. This is
+    a guideline (maintainer, 2026-10-28, #201): do not split or change a cell only
+    to meet it.
     Plain Python is for loading data, naming inputs and display.
 
 | Problem in lesson 03 today | Rule | Library work |

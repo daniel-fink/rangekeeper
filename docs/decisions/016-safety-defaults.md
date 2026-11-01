@@ -1,6 +1,6 @@
 # ADR-016: Safety defaults for units, outcomes and diagnostics
 
-Status: accepted for 1.0; curated units, structured diagnostics and errors implemented in 1.0.0a2 (#149, #154, #155, #156, #312); missing values in filters and rollups implemented (#121, #157); dimensional checks of Model equations and Specification assignments implemented (#151); the underdetermined outcome implemented (#442, #152). Recorded: 2026-10-26.
+Status: accepted for 1.0; curated units, structured diagnostics and errors implemented in 1.0.0a2 (#149, #154, #155, #156, #312); missing values in filters and rollups implemented (#121, #157); dimensional checks of Model equations and Specification assignments implemented (#151); the underdetermined outcome implemented (#442, #152). Recorded: 2026-10-26. Amended 2026-10-30 by #500.
 
 ## Problem
 
@@ -36,6 +36,13 @@ An unknown or ambiguous string fails with suggestions. The registry follows
 the extension pattern in [ADR-013](013-execution-and-extensions.md). A Model
 records its unit system. `Model.unit_system` is public, and derived operations
 use it by default.
+
+**An amount per year in a profile (maintainer, 2026-10-30, #500).** A profile
+gives each Period the amount times the Period's length, so `"1e6 AUD pa"` gives a
+quarterly Period `250e3 AUD`. A plain amount does not change. The alternative was
+that a profile keeps the units of its amount, which made a Flow in `AUD` equal to
+an amount in `AUD pa`. The [reference](../reference/calculations.md#amounts-per-year)
+has the full rule.
 
 ### Dimensions
 
