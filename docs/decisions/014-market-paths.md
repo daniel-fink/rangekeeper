@@ -3,7 +3,8 @@
 Status: accepted for 1.0; implemented: the package move in 1.0.0a2, the `Paths` document (#298), `Dynamics` with `generate` (#299), `across` (#306) and the removal (#140). The independent-paths generator is not built. Recorded: 2026-10-26. Amended
 2026-10-28 by #201 decisions D29 and D31 and gap G73: generators and paths move to
 `rk.market` (`Dynamics`, `generate`, `Paths`), and `across` matches path series to
-Model values by key.
+Model values by key. Amended 2026-11-01 by #538: the maintainer confirmed the
+two-part key of a case.
 
 ## Problem
 
@@ -101,7 +102,8 @@ document.
   assignments, and each assigned Movement carries its availability date.
 - **Other values.** A value that `fix` supplies is available on every review date.
 - **Cases across paths.** `cases(...)` with `across(...)` makes one case for each
-  pair. Its key has two parts: the case name and the member key. Each part is stored
+  pair. Its key has two parts: the case name and the member key (maintainer, 2026-11-01,
+  #538). Each part is stored
   once, and no record holds them joined (#301): the batch of a case has the case name
   as its Metadata name, and the leaf holds the member key in `PathCase.key`. A batch of
   batches was already valid and reported its keys joined by `/`, so this needs no new

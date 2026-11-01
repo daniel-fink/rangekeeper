@@ -11,7 +11,8 @@ rule semantics are in `run`), 2026-10-31 by #215 (see
 [how #215 reads the evaluation order](#how-215-reads-the-evaluation-order)),
 2026-10-31 by #300 (see [how #300 declares rules](#how-300-declares-rules)), and
 2026-11-01 by #300 (see [how #300 removes the old slice](#how-300-removes-the-old-slice)),
-and 2026-11-01 by #301 (see [how #301 stores parameters](#how-301-stores-parameters)).
+2026-11-01 by #301 (see [how #301 stores parameters](#how-301-stores-parameters)),
+and 2026-11-01 by #538 (a rule that must act by its last window date).
 
 ## Problem
 
@@ -267,7 +268,9 @@ each reading agrees with the worked examples below:
   before that day then fails with `decision_changes_past`. So the example's condition
   also holds in the last period, through a `final_period` Flow, and its `otherwise`
   does not act. A rule whose `otherwise` is a date must give a date on or after the
-  day on which `otherwise` acts.
+  day on which `otherwise` acts. Step 6 stays as it is (maintainer, 2026-11-01, #538):
+  the failure names the decision and the Movement, so it is not silent, and the
+  alternative is a change to the evaluation order just before the format freeze.
 
 **Decisions do not change the past.** A decision on a date must not change a
 Movement before that date. The executor compares each new provisional solution, and
