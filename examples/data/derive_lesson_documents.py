@@ -29,9 +29,10 @@ different IDs. The comparison reads each UUID as the order of its first use, and
 script keeps the files when only their IDs differ.
 
 The UUID of Paths is a digest of their content, and their capture record holds the
-Python and numpy versions, so the same seed on another version gives Paths with
-another ID. The stored file keeps its ID and its Runs pin it. The comparison leaves out
-the versions, and rounds the amounts to nine decimal places, because the last digits of
+Python and numpy versions and a generator fingerprint that names the Python version, so
+the same seed on another version gives Paths with another ID. The stored file keeps its
+ID and its Runs pin it. The comparison leaves out the versions and the fingerprint, and
+rounds the amounts to nine decimal places, because the last digits of
 a floating point calculation can differ from one machine to another.
 
 After a change, update the ``bytes`` and ``sha256`` of the files in
@@ -189,6 +190,7 @@ def comparable(name: str, text: str) -> str:
     document = content["document"]
     del document["metadata"]["id"]
     document["capture"]["versions"] = []
+    document["capture"].pop("fingerprint", None)
     for member in document["members"]:
         for amount in member["amounts"]:
             amount["magnitudes"] = [round(item, 9) for item in amount["magnitudes"]]

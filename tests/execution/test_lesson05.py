@@ -178,7 +178,7 @@ def test_cell_7_reads_the_trace_of_a_case_with_no_output(lesson):
 
 
 def test_cell_7b_names_the_broken_constraint(lesson):
-    status, diagnostics = lesson["downturn"].status, lesson["downturn"].diagnostics
+    status, diagnostics = lesson["recovery"].status, lesson["recovery"].diagnostics
     assert status is rk.execution.Status.INFEASIBLE
     broken = [item.values["equation"] for item in diagnostics if _breaks(item)]
     assert broken == ["b_start >= shared_start + 1 year"]

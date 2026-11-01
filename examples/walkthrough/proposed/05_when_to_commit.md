@@ -152,7 +152,8 @@ downturn.trace  # each window date: observed value, when it was known, result
 
 ```python
 # cell 7b
-downturn.status, downturn.diagnostics
+recovery = wait_outcome.case(key="short recovery")  # it starts in 2030
+recovery.status, recovery.diagnostics
 ```
 
 > **Finance note.** A start date that follows the market is an option to wait. Its

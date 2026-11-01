@@ -24,7 +24,15 @@ from . import chart
 from .chart import plot_partition
 from .graph import graph_html
 from .local import LocalDisplay
-from .theme import CONFIG, FONT, MODES, PACKAGE_COLORS, USE_COLORS, apply_theme
+from .theme import (
+    CONFIG,
+    FONT,
+    MODES,
+    PACKAGE_COLORS,
+    SERIES_COLORS,
+    USE_COLORS,
+    apply_theme,
+)
 
 LESSONS = Path(__file__).resolve().parents[1]
 EXAMPLES = LESSONS.parent
@@ -328,7 +336,8 @@ def plot_decisions(*, outcome, key, path=None):
         title=f"{key} and the decided dates, {len(cases)} market paths",
         timing=PeriodTiming.LAST,
     )
-    for name, case in cases.items():
+    for index, (name, case) in enumerate(cases.items()):
+        color = SERIES_COLORS[index % len(SERIES_COLORS)]  # the colour of its line
         for rule in outcome.decisions.keys:
             day = case[rule]
             if day is rk.duration.NEVER:
@@ -343,7 +352,7 @@ def plot_decisions(*, outcome, key, path=None):
                     x=[day],
                     y=[before[-1].number],
                     mode="markers+text",
-                    marker=dict(size=11, symbol="diamond"),
+                    marker=dict(size=11, symbol="diamond", color=color),
                     text=[rule],
                     textposition="top center",
                     name=f"{name}: {rule}",
