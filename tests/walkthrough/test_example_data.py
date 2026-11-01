@@ -118,7 +118,7 @@ def test_the_totals_file_is_the_derivation_of_the_package():
     assert set(totals) == {"works_cost", "operating_cost", *keys}
 
 
-def test_the_documents_of_lesson_04_are_the_derivation_of_lesson_03():
+def test_the_documents_of_lessons_04_and_05_are_the_derivation_of_the_lessons():
     # examples/data/derive_lesson_documents.py writes the files; --check compares them.
     derive = derivation("derive_lesson_documents")
     assert derive.main(["--check"]) == 0
@@ -144,3 +144,20 @@ def test_the_lesson_document_check_ignores_ids_and_finds_other_changes(tmp_path)
     (name, *_) = derive.FILES
     (tmp_path / name).write_text("{}", encoding="utf-8")
     assert derive.differing(tmp_path) == [name]
+
+
+def test_the_lesson_document_check_ignores_versions_and_small_rounding_of_paths(
+    tmp_path,
+):
+    derive = derivation("derive_lesson_documents")
+    name = "05_histories.paths.json"
+    content = json.loads((DATA / name).read_text(encoding="utf-8"))
+    content["document"]["capture"]["versions"] = [{"name": "numpy", "version": "9"}]
+    content["document"]["metadata"]["id"] = "other"
+    amounts = content["document"]["members"][0]["amounts"][0]["magnitudes"]
+    amounts[0] += 1e-13
+    (tmp_path / name).write_text(json.dumps(content), encoding="utf-8")
+    assert derive.differing(tmp_path, names=(name,)) == []
+    amounts[0] += 1e-3
+    (tmp_path / name).write_text(json.dumps(content), encoding="utf-8")
+    assert derive.differing(tmp_path, names=(name,)) == [name]

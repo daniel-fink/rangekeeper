@@ -1,0 +1,137 @@
+{
+  "kind": "Paths",
+  "document": {
+    "metadata": {
+      "id": "575dc270-20e2-5c35-95c8-fdcb629633df",
+      "schema_version": "1.0.0",
+      "name": "Lesson 05 histories"
+    },
+    "periods": [
+      {
+        "start": "2027-01-01",
+        "end": "2028-01-01"
+      },
+      {
+        "start": "2028-01-01",
+        "end": "2029-01-01"
+      },
+      {
+        "start": "2029-01-01",
+        "end": "2030-01-01"
+      },
+      {
+        "start": "2030-01-01",
+        "end": "2031-01-01"
+      },
+      {
+        "start": "2031-01-01",
+        "end": "2032-01-01"
+      },
+      {
+        "start": "2032-01-01",
+        "end": "2033-01-01"
+      },
+      {
+        "start": "2033-01-01",
+        "end": "2034-01-01"
+      },
+      {
+        "start": "2034-01-01",
+        "end": "2035-01-01"
+      },
+      {
+        "start": "2035-01-01",
+        "end": "2036-01-01"
+      },
+      {
+        "start": "2036-01-01",
+        "end": "2037-01-01"
+      },
+      {
+        "start": "2037-01-01",
+        "end": "2038-01-01"
+      }
+    ],
+    "series": [
+      {
+        "name": "rent_index",
+        "units": "ratio",
+        "lag": {
+          "magnitude": 0.0,
+          "units": "days"
+        }
+      }
+    ],
+    "members": [
+      {
+        "key": "early recovery",
+        "amounts": [
+          {
+            "series": "rent_index",
+            "magnitudes": [
+              1.06,
+              1.12,
+              1.15,
+              1.16,
+              1.16,
+              1.16,
+              1.16,
+              1.16,
+              1.16,
+              1.16,
+              1.16
+            ]
+          }
+        ]
+      },
+      {
+        "key": "long downturn",
+        "amounts": [
+          {
+            "series": "rent_index",
+            "magnitudes": [
+              0.97,
+              0.95,
+              0.94,
+              0.93,
+              0.93,
+              0.93,
+              0.93,
+              0.93,
+              0.93,
+              0.93,
+              0.93
+            ]
+          }
+        ]
+      },
+      {
+        "key": "short recovery",
+        "amounts": [
+          {
+            "series": "rent_index",
+            "magnitudes": [
+              0.97,
+              0.95,
+              1.06,
+              1.12,
+              1.04,
+              1.0,
+              0.98,
+              0.97,
+              0.96,
+              0.95,
+              0.95
+            ]
+          }
+        ]
+      }
+    ],
+    "capture": {
+      "count": 3,
+      "parameters": [],
+      "streams": [],
+      "versions": []
+    }
+  }
+}

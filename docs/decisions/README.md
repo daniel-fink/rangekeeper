@@ -66,7 +66,7 @@ need ([ADR-019](019-walkthrough-direction.md)). ADR-021 and ADR-022 were accepte
 
 | Decision | Status | Scope |
 | --- | --- | --- |
-| [ADR-021: Decide values by rules over market paths](021-sequential-decisions.md) | Accepted for 1.0; implementation pending | Rules that decide one value, observations and availability, evaluation order, staged solves for each path, decision traces, replay and paired comparison; amends ADR-013 and ADR-014 |
+| [ADR-021: Decide values by rules over market paths](021-sequential-decisions.md) | Accepted for 1.0; engine and parameters implemented (#215, #300, #301); lesson 05 written (#207) | Rules that decide one value, observations and availability, evaluation order, staged solves for each path, decision traces, replay and paired comparison; amends ADR-013 and ADR-014 |
 | [ADR-022: Choose between design alternatives with rules](022-design-alternatives.md) | Accepted for 1.0; implementation pending | Alternatives as Model revisions, choice keys, realised structure for each path, strategy comparison and the premium question; amends ADR-001 |
 | [ADR-024: Search as a query over a range of cases](024-search-as-query.md) | Accepted for 1.0; implementation pending | A range of one value as a source of cases, deferred Outcomes, the by-case table as a query, the exact and bracketed plan, and no range over a rule's inputs; amends ADR-021 and ADR-022 |
 

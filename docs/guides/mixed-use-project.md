@@ -222,6 +222,10 @@ The original property collection is `bed351126771f61e3d6255c18cd48aa5`.
 | [base_plan.json](../../examples/data/mixed_use_property/base_plan.json) | The dated plan of walkthrough lesson 03 at 2027 prices, derived from the inventory, the assumptions and the development plan |
 | [03_base_plan.model.json](../../examples/data/mixed_use_property/03_base_plan.model.json) | The Model of walkthrough lesson 03, with its commitments, derived from the cells of the lesson. Lesson 04 loads it |
 | [03_base_case.specification.json](../../examples/data/mixed_use_property/03_base_case.specification.json) | The funded Specification of walkthrough lesson 03, on that Model, derived in the same way. Lesson 04 loads it |
+| [04_base_plan_on_paths.model.json](../../examples/data/mixed_use_property/04_base_plan_on_paths.model.json) | The Model of walkthrough lesson 04, with the rent index, derived from the cells of the lesson. Lesson 05 loads it |
+| [04_base_case.specification.json](../../examples/data/mixed_use_property/04_base_case.specification.json) | The base Specification of walkthrough lesson 04, on that Model, derived in the same way. Lesson 05 loads it |
+| [04_rent_index.paths.json](../../examples/data/mixed_use_property/04_rent_index.paths.json) | The 500 market paths of walkthrough lesson 04, with seed 1. Lesson 05 loads them |
+| [05_histories.paths.json](../../examples/data/mixed_use_property/05_histories.paths.json) | The three readable histories of walkthrough lesson 05 |
 | [origins.json](../../examples/data/mixed_use_property/origins.json) | The origin of each teaching assumption: a legacy notebook cell, a book method or the author's choice |
 
 SDK reserialization changes content IDs for this historical payload. The package

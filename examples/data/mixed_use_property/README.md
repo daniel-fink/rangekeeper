@@ -59,6 +59,15 @@ The Rangekeeper code is licensed separately, under MPL-2.0.
   random IDs, so `--check` reads each ID as the order of its first use, and the
   script keeps the files when only their IDs differ.
 
+- `04_base_plan_on_paths.model.json`, `04_base_case.specification.json`,
+  `04_rent_index.paths.json` and `05_histories.paths.json` give lesson 04's Model with
+  the rent index, its `base` Specification on that Model, its 500 market paths with
+  seed 1, and the three readable histories of lesson 05. Lesson 05 loads them. The same
+  script derives them. The ID of Paths is a digest of their content, which includes the
+  Python and numpy versions of the capture, so the same seed on another version gives
+  another ID. The stored files keep their IDs. `--check` leaves the versions out, and
+  rounds the amounts to nine decimal places.
+
 Do not edit the source capture or the derived files by hand. A change to a file
 in this folder needs a matching change to its manifest entry. The test
 `tests/walkthrough/test_example_data.py` checks the manifest and the origins.

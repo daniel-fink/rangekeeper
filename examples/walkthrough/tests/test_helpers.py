@@ -5,7 +5,7 @@ from urllib.request import urlopen
 
 import plotly.graph_objects as go
 import pytest
-from helpers import data_path, load_base_plan, load_property, plot, theme
+from helpers import data_path, load_base_plan, load_paths, load_property, plot, theme
 from IPython.display import IFrame
 
 import rangekeeper as rk
@@ -133,6 +133,101 @@ def test_plot_paths_draws_each_series_of_each_path_in_its_own_file(workdir):
     plot.plot_paths(paths=two)
     page = (workdir / "output" / f"paths-{two.id}.html").read_text()
     assert f"{two.keys[0]}: hotel_factor" in page
+
+
+def test_plot_paths_draws_the_series_that_it_names(workdir):
+    both = market_paths("market_index", "hotel_factor")
+    plot.plot_paths(paths=both, names=["hotel_factor"], path="named.html")
+    page = (workdir / "named.html").read_text()
+    assert "hotel_factor" in page and "market_index" not in page
+    assert f"{both.keys[0]}: " not in page
+
+
+def test_load_paths_keeps_the_first_paths_of_a_smaller_count(monkeypatch):
+    monkeypatch.delenv("RK_PATH_COUNT", raising=False)
+    stored = load_paths(name="05_histories.paths.json")
+    assert stored == rk.io.load(path=data_path(name="05_histories.paths.json"))
+    monkeypatch.setenv("RK_PATH_COUNT", "9")
+    assert load_paths(name="05_histories.paths.json") == stored
+    monkeypatch.setenv("RK_PATH_COUNT", "2")
+    fewer = load_paths(name="05_histories.paths.json")
+    assert fewer.keys == stored.keys[:2]
+    assert fewer[fewer.keys[1]]["rent_index"] == stored[fewer.keys[1]]["rent_index"]
+
+
+def strategy_on_paths():
+    """Return a strategy with two rules, and its Outcome on two paths."""
+    years = rk.duration.Span(start=date(2027, 1, 1), end=date(2033, 1, 1)).periods(
+        frequency=rk.duration.Frequency.YEAR
+    )
+    draft = rk.Model(name="Decided").edit()
+    project = draft.add_entity(code="project", classification="project")
+    project.value(key="cost", units="AUD")
+    project.date(key="start")
+    project.date(key="sale")
+    project.flow(key="rent_index", units="ratio", periods=years)
+    project.flow(key="works", units="AUD", periods=years)
+    project.equations("works = -rx.flow.event(amount=cost, on=start)")
+    window = rk.specification.Window(earliest=date(2027, 1, 1), latest=date(2029, 1, 1))
+    specification = (
+        draft.commit()
+        .specify(name="Decided")
+        .fix(cost="10e6 AUD")
+        .parameters(trigger=1.05)
+        .fix(
+            start=window.where(condition="rent_index >= trigger").first(
+                otherwise=rk.duration.NEVER
+            )
+        )
+        .fix(
+            sale=window.where(condition="start == NEVER").first(
+                otherwise=rk.duration.NEVER
+            )
+        )
+    )
+    rising = [1.0, 1.1, 1.1, 1.1, 1.1, 1.1]
+    flat = [1.0] * 6
+    paths = rk.market.Paths.from_flows(
+        flows={
+            key: {
+                "rent_index": Flow.from_periods(
+                    periods=years, magnitudes=index, units="ratio"
+                )
+            }
+            for key, index in {"rising": rising, "flat": flat}.items()
+        }
+    )
+    return specification, rk.execution.solve(
+        specification=specification.across(paths=paths)
+    )
+
+
+def test_show_decisions_gives_each_rule_and_window():
+    specification, _ = strategy_on_paths()
+    table = plot.show_decisions(of=specification)
+    assert table.column("key") == ("start", "sale")
+    assert table.column("condition")[0] == "rent_index >= trigger"
+    assert table.column("earliest")[0] == date(2027, 1, 1)
+    assert table.column("otherwise")[0] is rk.duration.NEVER
+    assert table.column("triggers") == ("trigger = 1.05", "")
+
+
+def test_plot_decisions_marks_each_decided_date_on_its_path(workdir):
+    _, outcome = strategy_on_paths()
+    frame = plot.plot_decisions(outcome=outcome, key="rent_index", path="decided.html")
+    assert isinstance(frame, IFrame)
+    page = (workdir / "decided.html").read_text()
+    assert "rising: start" in page
+    assert "flat: start" not in page
+
+
+def test_plot_target_curve_draws_a_curve_for_each_outcome(workdir):
+    _, outcome = strategy_on_paths()
+    plot.plot_target_curve(
+        outcomes={"One": outcome, "Two": outcome}, key="cost", path="curves.html"
+    )
+    page = (workdir / "curves.html").read_text()
+    assert '"name":"One"' in page and '"name":"Two"' in page
 
 
 def test_plot_target_curve_draws_a_batch_and_checks_the_marker_units(workdir):

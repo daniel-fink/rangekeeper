@@ -180,8 +180,11 @@ def test_the_table_shows_the_records(solved):
     assert "<table" in solved.decisions._repr_html_()
 
 
-def test_cell_18_runs_as_written(solved, paths):
-    """Lesson 05's checks, on this project; test_lesson05 runs them on the lesson's Model."""
+def test_cell_18_runs_on_this_project(solved, paths):
+    """Lesson 05's checks, without ``still_due``, which this project does not have.
+
+    ``test_lesson05`` runs them as written, on the lesson's Model.
+    """
     fixed = base().fix(
         start_date=date(2028, 1, 1), b_start=date(2030, 1, 1), b_sale_date=NEVER
     )
@@ -191,7 +194,9 @@ def test_cell_18_runs_as_written(solved, paths):
         "strategy_outcome": solved,
         "fixed_outcome": rk.execution.solve(specification=fixed.across(paths=paths)),
     }
-    exec(cells(LESSON_05)["18"], namespace)
+    written = cells(LESSON_05)["18"]
+    assert ' + row.observed["still_due"]' in written
+    exec(written.replace(' + row.observed["still_due"]', ""), namespace)
 
 
 def _many_histories() -> rk.market.Paths:

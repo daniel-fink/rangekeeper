@@ -131,7 +131,12 @@ def test_lesson_04_cell_9_saves_and_loads_the_generated_paths(tmp_path, monkeypa
 
 def test_lesson_05_cells_2_and_3_load_the_plan_the_paths_and_the_base_case(data):
     numbered = cells("05_when_to_commit.md")
-    loaded = run(numbered["2"], data)
+    loaded = run(
+        numbered["2"]
+        .replace("helpers.load_paths(name=", "rk.io.load(path=helpers.data_path(name=")
+        .replace('.paths.json")', '.paths.json"))'),
+        data,
+    )
     model = loaded["model"]
     assert loaded["paths"] == histories()
     dates = eval(statements(numbered["2"], 2), loaded)
